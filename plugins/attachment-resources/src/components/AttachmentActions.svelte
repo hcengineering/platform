@@ -73,7 +73,6 @@
       {
         file: attachment.$lookup?.file ?? attachment.file,
         name: attachment.name,
-        contentType: attachment.type ?? '',
         metadata: attachment.metadata
       },
       getPreviewAlignment(attachment.type ?? '')

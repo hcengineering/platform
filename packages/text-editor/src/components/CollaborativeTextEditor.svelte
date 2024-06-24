@@ -44,7 +44,7 @@
   import { textEditorCommandHandler } from '../commands'
   import { EditorKit } from '../kits/editor-kit'
   import textEditorPlugin from '../plugin'
-  import { MinioProvider } from '../provider/minio'
+  import { DirectStorageProvider } from '../provider/storage'
   import { TiptapCollabProvider } from '../provider/tiptap'
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import {
@@ -135,7 +135,7 @@
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
   const contextProvider = getContext<TiptapCollabProvider>(CollaborationIds.Provider)
 
-  const localProvider = contextProvider === undefined ? new MinioProvider(documentId, ydoc) : undefined
+  const localProvider = contextProvider === undefined ? new DirectStorageProvider(collaborativeDoc, ydoc) : undefined
 
   const remoteProvider: TiptapCollabProvider =
     contextProvider ??

@@ -1,0 +1,10 @@
+{
+  "string": {
+    "CreatePublicLink": "Créer un lien public",
+    "PublicLink": "Lien public",
+    "Revoke": "Révoquer",
+    "RevokeConfirmation": "Cela rendra le lien précédemment partagé inopérant. Êtes-vous sûr de vouloir révoquer ce lien public ?",
+    "LinkWasRevoked": "Le lien public a été révoqué",
+    "Copy": "Copier"
+  }
+}

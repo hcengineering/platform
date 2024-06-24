@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "取消",
+    "Templates": "文本模板",
+    "TemplatesHeader": "文本模板",
+    "CreateTemplate": "创建模板",
+    "SaveTemplate": "保存模板",
+    "EditTemplate": "编辑模板",
+    "ViewTemplate": "查看模板",
+    "Suggested": "建议",
+    "SearchTemplate": "搜索模板",
+    "TemplatePlaceholder": "新模板",
+    "Title": "标题",
+    "Message": "消息",
+    "Field": "字段",
+    "TemplateCategory": "模板组",
+    "CreateTemplateCategory": "创建组",
+    "Copy": "复制",
+    "Template": "模板"
+  }
+}

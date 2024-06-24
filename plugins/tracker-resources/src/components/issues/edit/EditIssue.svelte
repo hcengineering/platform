@@ -15,9 +15,7 @@
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource } from '@hcengineering/platform'
   import presentation, {
     ActionContext,
     ComponentExtensions,
@@ -44,21 +42,23 @@
   import view from '@hcengineering/view'
   import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { generateIssueShortLink } from '../../../issues'
+  import { generateIssueShortLink, getIssueIdByIdentifier } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
-  export let _id: Ref<Issue>
+  export let _id: Ref<Issue> | string
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
   export let kind: 'default' | 'modern' = 'default'
   export let readonly: boolean = false
 
-  let lastId: Ref<Doc> = _id
+  let lastId: Ref<Issue> | undefined
+
   const queryClient = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -70,28 +70,39 @@
   let descriptionBox: AttachmentStyleBoxCollabEditor
   let showAllMixins: boolean
 
-  const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  $: read(_id)
-  function read (_id: Ref<Doc>): void {
-    if (lastId !== _id) {
+  let issueId: Ref<Issue> | undefined
+
+  $: void getIssueIdByIdentifier(_id).then((res) => {
+    issueId = res ?? (_id as Ref<Issue>)
+
+    if (lastId === undefined) {
+      lastId = issueId
+    }
+  })
+
+  $: read(issueId)
+
+  function read (_id?: Ref<Issue>): void {
+    if (_id && lastId && lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void inboxClient.then((client) => client.readDoc(getClient(), prev))
+      void inboxClient.readDoc(getClient(), prev)
     }
   }
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    if (issueId === undefined) return
+    void inboxClient.readDoc(getClient(), issueId)
   })
 
-  $: _id !== undefined &&
-    _class !== undefined &&
+  $: if (issueId !== undefined && _class !== undefined) {
     queryClient.query<Issue>(
       _class,
-      { _id },
+      { _id: issueId },
       async (result) => {
-        if (lastId !== _id) {
+        if (lastId !== issueId) {
           await save()
         }
         ;[issue] = result
@@ -103,6 +114,7 @@
         limit: 1
       }
     )
+  }
 
   $: canSave = title.trim().length > 0
   $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent

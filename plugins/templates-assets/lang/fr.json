@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Annuler",
+    "Templates": "Modèles de texte",
+    "TemplatesHeader": "MODÈLES DE TEXTE",
+    "CreateTemplate": "CRÉER UN MODÈLE",
+    "SaveTemplate": "Enregistrer le modèle",
+    "EditTemplate": "Modifier le modèle",
+    "ViewTemplate": "Voir le modèle",
+    "Suggested": "SUGGÉRÉ",
+    "SearchTemplate": "rechercher un modèle",
+    "TemplatePlaceholder": "Nouveau modèle",
+    "Title": "Titre",
+    "Message": "Message",
+    "Field": "Champ",
+    "TemplateCategory": "Groupe de modèles",
+    "CreateTemplateCategory": "Créer un groupe",
+    "Copy": "Copier",
+    "Template": "Modèle"
+  }
+}

@@ -21,7 +21,16 @@
   import type { TagElement } from '@hcengineering/tags'
   import type { Project } from '@hcengineering/tracker'
   import type { ToDosMode } from '..'
-  import { Scroller, areDatesEqual, todosSP, defaultSP, Header, ButtonIcon, Label } from '@hcengineering/ui'
+  import {
+    Scroller,
+    areDatesEqual,
+    todosSP,
+    defaultSP,
+    Header,
+    ButtonIcon,
+    Label,
+    deviceOptionsStore as deviceInfo
+  } from '@hcengineering/ui'
   import { getCurrentAccount, toIdMap, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import tracker from '@hcengineering/tracker'
@@ -32,13 +41,11 @@
   import ToDoGroup from './ToDoGroup.svelte'
   import MenuClose from './icons/MenuClose.svelte'
   import MenuOpen from './icons/MenuOpen.svelte'
-  import IconDiff from './icons/Diff.svelte'
   import time from '../plugin'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElement> | undefined
   export let currentDate: Date
-  export let visibleNav: boolean = true
 
   const acc = getCurrentAccount() as PersonAccount
   const user = acc.person
@@ -59,7 +66,7 @@
   $: updateTags(mode, tag)
 
   function togglePlannerNav (): void {
-    visibleNav = !visibleNav
+    $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
   }
 
   function updateTags (mode: ToDosMode, tag: Ref<TagElement> | undefined): void {
@@ -279,10 +286,10 @@
 <div class="toDos-container">
   <Header type={'type-panel'} hideSeparator>
     <ButtonIcon
-      icon={visibleNav ? MenuClose : MenuOpen}
+      icon={$deviceInfo.navigator.visible ? MenuClose : MenuOpen}
       kind={'tertiary'}
       size={'small'}
-      pressed={!visibleNav}
+      pressed={!$deviceInfo.navigator.visible}
       on:click={togglePlannerNav}
     />
     <div class="heading-bold-20 ml-4">

@@ -1,0 +1,23 @@
+{
+  "status": {
+    "LoadingPlugin": "正在加载插件 {plugin}...",
+    "UnknownError": "未知错误: {message}",
+    "InvalidId": "无效的 Id: {id}",
+    "BadRequest": "错误的请求",
+    "Forbidden": "禁止访问",
+    "ExpiredLink": "此邀请链接已过期",
+    "Unauthorized": "未授权",
+    "UnknownMethod": "未知方法: {method}",
+    "InternalServerError": "内部服务器错误",
+    "MaintenanceWarning": "计划在 {time, plural, =1 {不到一分钟} other {# 分钟}} 内进行维护",
+    "AccountNotFound": "账户未找到",
+    "AccountNotConfirmed": "账户未确认",
+    "WorkspaceNotFound": "工作区未找到",
+    "InvalidPassword": "无效的密码",
+    "AccountAlreadyExists": "账户已存在",
+    "WorkspaceRateLimit": "服务器繁忙，请稍后再试",
+    "AccountAlreadyConfirmed": "账户已确认",
+    "WorkspaceAlreadyExists": "工作区已存在",
+    "ProductIdMismatch": "产品不匹配"
+  }
+}

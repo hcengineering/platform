@@ -15,6 +15,7 @@
 
 import { Plugin, plugin, Resource } from '@hcengineering/platform'
 import type { TriggerFunc } from '@hcengineering/server-core'
+import { Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -25,6 +26,9 @@ export const serverRequestId = 'server-request' as Plugin
  * @public
  */
 export default plugin(serverRequestId, {
+  function: {
+    RequestTextPresenter: '' as Resource<Presenter>
+  },
   trigger: {
     OnRequest: '' as Resource<TriggerFunc>
   }

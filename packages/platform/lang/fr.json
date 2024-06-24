@@ -1,0 +1,23 @@
+{
+  "status": {
+    "LoadingPlugin": "Chargement du plugin {plugin}...",
+    "UnknownError": "Erreur inconnue : {message}",
+    "InvalidId": "Id invalide : {id}",
+    "BadRequest": "Mauvaise requête",
+    "Forbidden": "Interdit",
+    "ExpiredLink": "Ce lien d'invitation est expiré",
+    "Unauthorized": "Non autorisé",
+    "UnknownMethod": "Méthode inconnue : {method}",
+    "InternalServerError": "Erreur interne du serveur",
+    "MaintenanceWarning": "Maintenance prévue dans {time, plural, =1 {moins d'une minute} other {# minutes}}",
+    "AccountNotFound": "Compte non trouvé",
+    "AccountNotConfirmed": "Compte non confirmé",
+    "WorkspaceNotFound": "Espace de travail non trouvé",
+    "InvalidPassword": "Mot de passe invalide",
+    "AccountAlreadyExists": "Le compte existe déjà",
+    "WorkspaceRateLimit": "Le serveur est occupé, veuillez patienter un moment et réessayer",
+    "AccountAlreadyConfirmed": "Compte déjà confirmé",
+    "WorkspaceAlreadyExists": "L'espace de travail existe déjà",
+    "ProductIdMismatch": "Incompatibilité de produit"
+  }
+}

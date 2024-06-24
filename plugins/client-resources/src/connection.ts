@@ -87,7 +87,7 @@ class Connection implements ClientConnection {
 
   private openAction: any
 
-  private sessionId: string | undefined
+  private readonly sessionId: string | undefined
   private closed = false
 
   private upgrading: boolean = false
@@ -103,6 +103,25 @@ class Connection implements ClientConnection {
     private readonly onUnauthorized?: () => void,
     readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
   ) {
+    if (typeof sessionStorage !== 'undefined') {
+      // Find local session id in session storage only if user refresh a page.
+      const sKey = 'session.id.' + this.url
+      let sessionId = sessionStorage.getItem(sKey) ?? undefined
+      if (sessionId === undefined) {
+        sessionId = generateId()
+        console.log('Generate new SessionId', sessionId)
+        this.sessionId = sessionId
+      } else {
+        this.sessionId = sessionId
+        sessionStorage.removeItem(sKey)
+      }
+      window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem(sKey, sessionId as string)
+      })
+    } else {
+      this.sessionId = generateId()
+    }
+
     this.scheduleOpen(false)
   }
 
@@ -230,16 +249,6 @@ class Connection implements ClientConnection {
         }
 
         this.upgrading = false
-        if ((resp as HelloResponse).alreadyConnected === true) {
-          this.sessionId = generateId()
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-          }
-          console.log('Connection: alreadyConnected, reconnect with new Id')
-          clearTimeout(dialTimeout)
-          this.scheduleOpen(true)
-          return
-        }
         if ((resp as HelloResponse).binary) {
           this.binaryMode = true
         }
@@ -378,17 +387,6 @@ class Connection implements ClientConnection {
         return s as ClientSocket
       })
 
-    if (this.sessionId === undefined) {
-      // Find local session id in session storage.
-      this.sessionId =
-        typeof sessionStorage !== 'undefined'
-          ? sessionStorage.getItem('session.id.' + this.url) ?? undefined
-          : undefined
-      this.sessionId = this.sessionId ?? generateId()
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-      }
-    }
     if (socketId !== this.sockets) {
       return
     }

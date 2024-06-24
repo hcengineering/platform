@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   ClassifierKind,
   DOMAIN_MODEL,
@@ -74,7 +75,6 @@ import type {
   TriggerControl
 } from '../types'
 import { SessionContextImpl, createBroadcastEvent } from '../utils'
-import { Analytics } from '@hcengineering/analytics'
 
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
@@ -146,7 +146,13 @@ export class TServerStorage implements ServerStorage {
       findOne: async (_class, query, options) => {
         return (
           await metrics.with('query', {}, async (ctx) => {
-            return await this.findAll(ctx, _class, query, { ...options, limit: 1 })
+            const results = await this.findAll(ctx, _class, query, { ...options, limit: 1 })
+            return toFindResult(
+              results.map((v) => {
+                return this.hierarchy.updateLookupMixin(_class, v, options)
+              }),
+              results.total
+            )
           })
         )[0]
       },
@@ -232,9 +238,7 @@ export class TServerStorage implements ServerStorage {
         const r = await ctx.with('adapter-tx', { domain: lastDomain }, async (ctx) => await adapter.tx(ctx, ...part))
 
         // Update server live queries.
-        for (const t of part) {
-          await this.liveQuery.tx(t)
-        }
+        await this.liveQuery.tx(...part)
         if (Array.isArray(r)) {
           result.push(...r)
         } else {
@@ -702,8 +706,10 @@ export class TServerStorage implements ServerStorage {
     const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
 
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
+      operationContext: ctx,
       removedMap,
       workspace: this.workspaceId,
+      branding: this.options.branding,
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.serviceAdaptersManager,
       findAll: fAll(ctx.ctx),
@@ -741,14 +747,15 @@ export class TServerStorage implements ServerStorage {
               sctx.sessionId,
               sctx.admin,
               [],
-              this.workspaceId
+              this.workspaceId,
+              this.options.branding
             )
             const result = await performAsync(applyCtx)
             // We need to broadcast changes
             await this.broadcastCtx([{ derived: result }, ...applyCtx.derived])
           })
         }
-        setImmediate(() => {
+        setTimeout(() => {
           void asyncTriggerProcessor()
         })
       }

@@ -40,10 +40,18 @@ export default mergeIds(documentId, document, {
   actionImpl: {
     CreateChildDocument: '' as ViewAction,
     CreateDocument: '' as ViewAction,
-    EditTeamspace: '' as ViewAction
+    EditTeamspace: '' as ViewAction,
+    LockContent: '' as ViewAction,
+    UnlockContent: '' as ViewAction
   },
   action: {
-    PublicLink: '' as Ref<Action<Doc, any>>
+    PublicLink: '' as Ref<Action<Doc, any>>,
+    LockContent: '' as Ref<Action<Doc, any>>,
+    UnlockContent: '' as Ref<Action<Doc, any>>
+  },
+  function: {
+    CanLockDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanUnlockDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   viewlet: {
     TeamspaceTable: '' as Ref<Viewlet>
@@ -55,6 +63,7 @@ export default mergeIds(documentId, document, {
   string: {
     ConfigDescription: '' as IntlString,
     ParentDocument: '' as IntlString,
-    ChildDocument: '' as IntlString
+    ChildDocument: '' as IntlString,
+    LockedBy: '' as IntlString
   }
 })

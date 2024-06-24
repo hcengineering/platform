@@ -8,7 +8,8 @@ import {
   type Ref,
   type Tx,
   type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 import { type Request, type Response } from '@hcengineering/rpc'
 import { type BroadcastFunc, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
@@ -92,7 +93,8 @@ export type PipelineFactory = (
   ctx: MeasureContext,
   ws: WorkspaceIdWithUrl,
   upgrade: boolean,
-  broadcast: BroadcastFunc
+  broadcast: BroadcastFunc,
+  branding: Branding | null
 ) => Promise<Pipeline>
 
 /**
@@ -134,6 +136,7 @@ export interface Workspace {
 
   workspaceId: WorkspaceId
   workspaceName: string
+  branding: Branding | null
 }
 
 export interface AddSessionActive {

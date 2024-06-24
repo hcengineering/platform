@@ -233,8 +233,8 @@ export const chunterOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, chunterId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, chunterId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

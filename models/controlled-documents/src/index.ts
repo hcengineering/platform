@@ -210,7 +210,7 @@ export function createModel (builder: Builder): void {
         spaces: [
           {
             id: 'orgspaces',
-            label: documents.string.Organisation,
+            label: documents.string.GeneralDocumentation,
             spaceClass: documents.class.OrgSpace,
             addSpaceLabel: documents.string.CreateOrgSpace,
             createComponent: documents.component.CreateDocumentsSpace,
@@ -225,7 +225,7 @@ export function createModel (builder: Builder): void {
           },
           {
             id: 'projectspaces',
-            label: documents.string.Projects,
+            label: documents.string.TechnicalDocumentation,
             spaceClass: documents.class.ExternalSpace,
             specials: [
               {
@@ -926,6 +926,11 @@ export function defineNotifications (builder: Builder): void {
         [notification.providers.PlatformNotification]: true,
         [notification.providers.BrowserNotification]: false,
         [notification.providers.EmailNotification]: false
+      },
+      templates: {
+        textTemplate: '{sender} changed {doc} status',
+        htmlTemplate: '<p>{sender} changed {doc} status</p>',
+        subjectTemplate: '{doc} status changed'
       }
     },
     documents.notification.StateNotification
@@ -941,12 +946,17 @@ export function defineNotifications (builder: Builder): void {
       label: documents.string.CoAuthors,
       group: documents.notification.DocumentsNotificationGroup,
       field: 'coAuthors',
-      txClasses: [core.class.TxUpdateDoc],
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
       providers: {
         [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false,
-        [notification.providers.EmailNotification]: false
+        [notification.providers.BrowserNotification]: true,
+        [notification.providers.EmailNotification]: true
+      },
+      templates: {
+        textTemplate: '{sender} assigned you as a co-author of {doc}',
+        htmlTemplate: '<p>{sender} assigned you as a co-author of {doc}</p>',
+        subjectTemplate: 'Co-authoring assignment for {doc}'
       }
     },
     documents.notification.CoAuthorsNotification
@@ -978,7 +988,7 @@ export function defineNotifications (builder: Builder): void {
       'changeControl',
       'coAuthors'
     ],
-    ['owner']
+    ['owner', 'comments', 'reviewers', 'approvers']
   )
 }
 

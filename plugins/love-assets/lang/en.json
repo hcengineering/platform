@@ -44,6 +44,8 @@
     "NoiseCancellation": "Noise cancellation",
     "KnockingLabel": "Knocking",
     "InivitingLabel": "Invite",
+    "Invite": "Invite",
+    "KnockAction": "Knock",
     "NoiseCancellationNotSupported": "Noise cancellation is not supported in this browser",
     "Blur": "Background blur",
     "BlurRadius": "Radius",
@@ -53,6 +55,10 @@
     "Record": "Record",
     "StopRecord": "Stop record",
     "LeaveRoomConfirmation": "Are you sure you want to leave the room?",
-    "ServiceNotConfigured": "Service is not configured"
+    "ServiceNotConfigured": "Service is not configured",
+    "FullscreenMode": "Full-screen mode",
+    "ExitingFullscreenMode": "Exiting fullscreen mode",
+    "Select": "Select",
+    "ChooseShare": "Choose what to share"
   }
 }

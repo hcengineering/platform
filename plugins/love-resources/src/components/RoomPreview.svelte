@@ -16,12 +16,13 @@
   import { Person, type PersonAccount } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
-  import { Icon, Label } from '@hcengineering/ui'
   import { ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
+  import { Icon, Label, eventToHTMLElement, showPopup, showTooltip } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { invites, myInfo, myRequests } from '../stores'
-  import { getRoomLabel, invite, tryConnect } from '../utils'
-  import { createEventDispatcher } from 'svelte'
+  import { getRoomLabel, tryConnect } from '../utils'
+  import PersonActionPopup from './PersonActionPopup.svelte'
 
   export let room: Room
   export let info: ParticipantInfo[]
@@ -51,16 +52,59 @@
   }
 
   function mouseEnter (): void {
+    hovered = true
     dispatch('hover', { name: getRoomLabel(room, $personByIdStore) })
   }
 
-  function clickHandler (x: number, y: number, person: Person | undefined): void {
+  function mouseLeave (): void {
+    hovered = false
+  }
+
+  function clickHandler (e: MouseEvent, x: number, y: number, person: Person | undefined): void {
     if (person !== undefined) {
-      if (room._id === $myInfo?.room) return
-      invite(person._id, $myInfo?.room)
+      if (room._id === $myInfo?.room || $myInfo === undefined) return
+      showPopup(PersonActionPopup, { room, person: person._id }, eventToHTMLElement(e))
     } else {
       tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites, { x, y })
     }
+  }
+
+  $: extraRow = calcExtraRows(hovered, room, info, $myInfo)
+
+  function calcExtraRows (
+    hovered: boolean,
+    room: Room,
+    info: ParticipantInfo[],
+    myInfo: ParticipantInfo | undefined
+  ): number {
+    if (!hovered) return 0
+    let maxX = info.reduce((acc, p) => {
+      acc = Math.max(acc, p.x)
+      return acc
+    }, 0)
+    maxX++
+    let init = maxX > room.width ? maxX - room.width : 0
+
+    for (let y = 0; y < room.height; y++) {
+      for (let x = 0; x < room.width; x++) {
+        if (info.find((p) => p.x === x && p.y === y) === undefined) {
+          return init
+        }
+      }
+    }
+    if (myInfo?.room !== room._id) {
+      init++
+      while (init < 5) {
+        const x = room.width + init
+        for (let y = 0; y < room.height; y++) {
+          if (info.find((p) => p.x === x && p.y === y) === undefined) {
+            return init
+          }
+        }
+        init++
+      }
+    }
+    return init
   }
 </script>
 
@@ -73,17 +117,19 @@
   class:hovered
   class:disabled
   class:myOffice={$myInfo?.room === room._id}
-  style:--huly-floor-roomWidth={room.width}
+  style:--huly-floor-roomWidth={room.width + extraRow}
   style:--huly-floor-roomHeight={room.height}
-  style:grid-column={`${room.x + 2} / span ${room.width}`}
+  style:grid-column={`${room.x + 2} / span ${room.width + extraRow}`}
   style:grid-row={`${room.y + 2} / span ${room.height}`}
-  style:grid-template-columns={`repeat(${room.width}, 1fr)`}
+  style:grid-template-columns={`repeat(${room.width + extraRow}, 1fr)`}
   style:grid-template-rows={`repeat(${room.height}, 1fr)`}
-  style:aspect-ratio={`${room.width} / ${room.height}`}
+  style:aspect-ratio={`${room.width + extraRow} / ${room.height}`}
+  on:mouseover|stopPropagation
   on:mouseenter|stopPropagation={mouseEnter}
+  on:mouseleave|stopPropagation={mouseLeave}
 >
   {#each new Array(room.height) as _, y}
-    {#each new Array(room.width) as _, x}
+    {#each new Array(room.width + extraRow) as _, x}
       {@const personInfo = getPersonInfo(y, x, info)}
       {@const person = getPerson(personInfo, $personByIdStore)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -101,8 +147,8 @@
           hoveredRoomX = undefined
           hoveredRoomY = undefined
         }}
-        on:click={() => {
-          clickHandler(x, y, person)
+        on:click={(e) => {
+          clickHandler(e, x, y, person)
         }}
       >
         {#if personInfo}

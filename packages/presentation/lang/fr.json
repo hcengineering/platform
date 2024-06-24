@@ -1,0 +1,41 @@
+{
+  "string": {
+    "Create": "Créer",
+    "Cancel": "Annuler",
+    "Ok": "Ok",
+    "Save": "Enregistrer",
+    "Saved": "Enregistré...",
+    "Download": "Télécharger",
+    "Delete": "Supprimer",
+    "Close": "Fermer",
+    "NotSelected": "Non sélectionné",
+    "Deselect": "Désélectionner",
+    "Archived": "(archivé)",
+    "AddSocialLinks": "Ajouter des liens sociaux",
+    "EditSocialLinks": "Modifier les liens sociaux",
+    "Change": "Changer",
+    "Remove": "Retirer",
+    "Search": "Rechercher...",
+    "Spaces": "Espaces",
+    "NumberSpaces": "{count, plural, =0 {Dans} =1 {Dans 1 place} other {Dans # endroits}}",
+    "InThis": "Dans cet {space}",
+    "NoMatchesInThis": "Aucun résultat dans cet {space}",
+    "NoMatchesFound": "Aucun résultat trouvé",
+    "NotInThis": "Pas dans cet {space}",
+    "Match": "Correspondance",
+    "Add": "Ajouter",
+    "Edit": "Modifier",
+    "DocumentPreview": "Aperçu",
+    "MakePrivate": "Rendre privé",
+    "MakePrivateDescription": "Seuls les membres peuvent le voir",
+    "Created": "Créé",
+    "NoResults": "Aucun résultat à afficher",
+    "Next": "Suivant",
+    "FailedToPreview": "Échec de l'aperçu",
+    "ContentType": "Type de contenu",
+    "ContentTypeNotSupported": "L'aperçu n'est pas disponible pour ce type de contenu"
+  },
+  "status": {
+    "FileTooLarge": "Fichier trop volumineux"
+  }
+}

@@ -60,10 +60,12 @@ import {
   ViewAction,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  LinkIdProvider
 } from './types'
 
 export * from './types'
+export * from './utils'
 
 /**
  * @public
@@ -103,6 +105,7 @@ const view = plugin(viewId, {
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
+    LinkIdProvider: '' as Ref<Mixin<LinkIdProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
     Aggregation: '' as Ref<Mixin<Aggregation>>,

@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Drive": "磁盘",
+    "Drives": "磁盘",
+    "Grid": "网格",
+    "File": "文件",
+    "Folder": "文件夹",
+    "Resource": "资源",
+    "Name": "名称",
+    "Description": "描述",
+    "Parent": "父级",
+    "Path": "路径",
+    "Download": "下载",
+    "CreateDrive": "创建磁盘",
+    "CreateFolder": "创建文件夹",
+    "UploadFile": "上传文件",
+    "UploadFolder": "上传文件夹",
+    "EditDrive": "编辑磁盘",
+    "Rename": "重命名",
+    "RoleLabel": "角色",
+    "Root": "/"
+  }
+}

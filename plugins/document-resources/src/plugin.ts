@@ -14,7 +14,7 @@
 //
 
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
-import document, { documentId } from '@hcengineering/document'
+import document, { type Document, documentId } from '@hcengineering/document'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 
@@ -29,13 +29,14 @@ export default mergeIds(documentId, document, {
   function: {
     DocumentTitleProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>,
     GetDocumentLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    GetDocumentLinkId: '' as Resource<(doc: Doc) => Promise<string>>,
+    ParseDocumentId: '' as Resource<(id: string) => Promise<Ref<Document> | undefined>>
   },
   string: {
     DocumentNamePlaceholder: '' as IntlString,
     Name: '' as IntlString,
     Cancel: '' as IntlString,
-    Documents: '' as IntlString,
     Document: '' as IntlString,
     SearchDocument: '' as IntlString,
     Version: '' as IntlString,
@@ -71,6 +72,10 @@ export default mergeIds(documentId, document, {
     Star: '' as IntlString,
     Unstar: '' as IntlString,
     CopyDocumentUrl: '' as IntlString,
+
+    Lock: '' as IntlString,
+    Unlock: '' as IntlString,
+    Locked: '' as IntlString,
 
     ViewMode: '' as IntlString,
     EditMode: '' as IntlString,

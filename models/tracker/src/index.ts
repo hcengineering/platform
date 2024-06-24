@@ -438,6 +438,11 @@ export function createModel (builder: Builder): void {
   builder.mixin(tracker.class.Component, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(tracker.class.IssueTemplate, core.class.Class, activity.mixin.ActivityDoc, {})
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: tracker.function.GetIssueId,
+    decode: tracker.function.GetIssueIdByIdentifier
+  })
+
   builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
     objectClass: tracker.class.Issue,
     skip: [

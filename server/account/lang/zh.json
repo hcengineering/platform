@@ -1,0 +1,13 @@
+{
+  "string": {
+    "ConfirmationText": "感谢您对 {name} 的兴趣。要完成注册过程，请将以下链接复制到您的浏览器的 URL 栏中 {link}。此致，{name} 团队。",
+    "ConfirmationHTML": "<p>您好，</p><p>感谢您对 {name} 的兴趣。要完成注册过程，请点击 <a href={link}>此链接</a> 或将以下链接复制到您的浏览器的 URL 栏中。</p><p>{link}</p><p>此致，</p><p>{name} 团队。</p>",
+    "ConfirmationSubject": "确认您的电子邮件地址以注册 {name}",
+    "RecoveryText": "我们收到了重置您账户密码的请求。要重置您的密码，请将以下链接粘贴到您的浏览器地址栏中：{link}。如果您没有请求密码重置，请忽略此邮件。",
+    "RecoveryHTML": "<p>我们收到了重置您账户密码的请求。要重置您的密码，请点击以下链接：<a href={link}>重置密码</a></p><p>如果上面的重置密码链接不起作用，请将以下链接粘贴到您的浏览器地址栏中：{link}</p><p>如果您没有请求密码重置，请忽略此邮件。</p>",
+    "RecoverySubject": "密码恢复",
+    "InviteText": "您被邀请加入 {ws}。要加入，请将以下链接粘贴到您的浏览器地址栏中：{link}。链接有效期为 {expHours} 小时。",
+    "InviteHTML": "<p>您被邀请加入 {ws}。要加入，请点击以下链接：<a href={link}>加入</a></p><p>如果上面的邀请链接不起作用，请将以下链接粘贴到您的浏览器地址栏中：{link}</p><p>链接有效期为 {expHours} 小时。</p>",
+    "InviteSubject": "邀请加入 {ws}"
+  }
+}

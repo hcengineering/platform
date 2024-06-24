@@ -42,7 +42,8 @@ import core, {
   TxOperations,
   Version,
   versionToString,
-  WorkspaceId
+  WorkspaceId,
+  type Branding
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -513,7 +514,7 @@ async function sendConfirmation (productId: string, branding: Branding | null, a
     console.info('Please provide email service url to enable email confirmations.')
     return
   }
-  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
   }
@@ -806,10 +807,12 @@ async function generateWorkspaceRecord (
   email: string,
   productId: string,
   version: Data<Version>,
+  branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string
 ): Promise<Workspace> {
   const coll = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+  const brandingKey = branding?.key ?? 'huly'
   if (fixedWorkspace !== undefined) {
     const ws = await coll.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
     if ((await getWorkspaceById(db, productId, fixedWorkspace)) !== null || ws.length > 0) {
@@ -822,6 +825,7 @@ async function generateWorkspaceRecord (
       workspaceUrl: fixedWorkspace,
       productId,
       version,
+      branding: brandingKey,
       workspaceName,
       accounts: [],
       disabled: true,
@@ -854,6 +858,7 @@ async function generateWorkspaceRecord (
         workspaceUrl,
         productId,
         version,
+        branding: brandingKey,
         workspaceName,
         accounts: [],
         disabled: true,
@@ -886,7 +891,7 @@ async function generateWorkspaceRecord (
 
 let searchPromise: Promise<Workspace> | undefined
 
-const rateLimiter = new RateLimiter(3)
+const rateLimiter = new RateLimiter(parseInt(process.env.RATELIMIT ?? '10'))
 
 /**
  * @public
@@ -905,26 +910,26 @@ export async function createWorkspace (
   notifyHandler?: (workspace: Workspace) => void,
   postInitHandler?: (workspace: Workspace, model: Tx[]) => Promise<void>
 ): Promise<{ workspaceInfo: Workspace, err?: any, model?: Tx[] }> {
+  // We need to search for duplicate workspaceUrl
+  await searchPromise
+
+  // Safe generate workspace record.
+  searchPromise = generateWorkspaceRecord(db, email, productId, version, branding, workspaceName, workspace)
+
+  const workspaceInfo = await searchPromise
+
+  notifyHandler?.(workspaceInfo)
+
+  const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+
+  async function updateInfo (ops: Partial<Workspace>): Promise<void> {
+    await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
+    console.log('update', ops)
+  }
+
+  await updateInfo({ createProgress: 10 })
+
   return await rateLimiter.exec(async () => {
-    // We need to search for duplicate workspaceUrl
-    await searchPromise
-
-    // Safe generate workspace record.
-    searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
-
-    const workspaceInfo = await searchPromise
-
-    notifyHandler?.(workspaceInfo)
-
-    const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
-
-    async function updateInfo (ops: Partial<Workspace>): Promise<void> {
-      await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
-      console.log('update', ops)
-    }
-
-    await updateInfo({ createProgress: 10 })
-
     const childLogger = ctx.newChild('createWorkspace', { workspace: workspaceInfo.workspace })
     const ctxModellogger: ModelLogger = {
       log: (msg, data) => {
@@ -959,7 +964,8 @@ export async function createWorkspace (
           true,
           async (value) => {
             await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 30) })
-          }
+          },
+          true
         )
         await updateInfo({ createProgress: 50 })
         model = await upgradeModel(
@@ -1669,7 +1675,7 @@ export async function requestPassword (
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
-  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
   }
@@ -1935,7 +1941,7 @@ export async function sendInvite (
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
-  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
   }
@@ -1993,14 +1999,6 @@ async function deactivatePersonAccount (
     await connection.close()
   }
 }
-
-export interface Branding {
-  title?: string
-  language?: string
-  initWorkspace?: string
-}
-
-export type BrandingMap = Record<string, Branding>
 
 /**
  * @public
@@ -2063,35 +2061,61 @@ export async function joinWithProvider (
   inviteId: ObjectId,
   extra?: Record<string, string>
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
-  const email = cleanEmail(_email)
-  const invite = await getInvite(db, inviteId)
-  const workspace = await checkInvite(ctx, invite, email)
-  if (last == null) {
-    last = ''
-  }
-  let account = await getAccount(db, email)
-  if (account == null && extra !== undefined) {
-    account = await getAccountByQuery(db, extra)
-  }
-  if (account !== null) {
-    // we should clean password if account is not confirmed
-    if (account.confirmed === false) {
-      await updatePassword(db, account, null)
+  try {
+    const email = cleanEmail(_email)
+    const invite = await getInvite(db, inviteId)
+    const workspace = await checkInvite(ctx, invite, email)
+    if (last == null) {
+      last = ''
     }
-
-    const token = generateToken(email, getWorkspaceId('', productId), getExtra(account))
-    const ws = await getWorkspaceById(db, productId, workspace.name)
-
-    if (ws?.accounts.includes(account._id) ?? false) {
-      const result = {
-        endpoint: getEndpoint(),
-        email,
-        token
+    let account = await getAccount(db, email)
+    if (account == null && extra !== undefined) {
+      account = await getAccountByQuery(db, extra)
+    }
+    if (account !== null) {
+      // we should clean password if account is not confirmed
+      if (account.confirmed === false) {
+        await updatePassword(db, account, null)
       }
+
+      const token = generateToken(email, getWorkspaceId('', productId), getExtra(account))
+      const ws = await getWorkspaceById(db, productId, workspace.name)
+
+      if (ws?.accounts.includes(account._id) ?? false) {
+        const result = {
+          endpoint: getEndpoint(),
+          email,
+          token
+        }
+        return result
+      }
+
+      const wsRes = await assignWorkspace(
+        ctx,
+        db,
+        productId,
+        branding,
+        email,
+        workspace.name,
+        invite?.role ?? AccountRole.User,
+        invite?.personId
+      )
+      const result = await selectWorkspace(
+        ctx,
+        db,
+        productId,
+        branding,
+        token,
+        wsRes.workspaceUrl ?? wsRes.workspace,
+        false
+      )
+
+      await useInvite(db, inviteId)
       return result
     }
-
-    const wsRes = await assignWorkspace(
+    const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
+    const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
+    const ws = await assignWorkspace(
       ctx,
       db,
       productId,
@@ -2101,37 +2125,16 @@ export async function joinWithProvider (
       invite?.role ?? AccountRole.User,
       invite?.personId
     )
-    const result = await selectWorkspace(
-      ctx,
-      db,
-      productId,
-      branding,
-      token,
-      wsRes.workspaceUrl ?? wsRes.workspace,
-      false
-    )
+    const result = await selectWorkspace(ctx, db, productId, branding, token, ws.workspaceUrl ?? ws.workspace, false)
 
     await useInvite(db, inviteId)
+
     return result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    ctx.error('joinWithProvider error', { email: _email, ...extra, err })
+    throw err
   }
-
-  const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
-  const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
-  const ws = await assignWorkspace(
-    ctx,
-    db,
-    productId,
-    branding,
-    email,
-    workspace.name,
-    invite?.role ?? AccountRole.User,
-    invite?.personId
-  )
-  const result = await selectWorkspace(ctx, db, productId, branding, token, ws.workspaceUrl ?? ws.workspace, false)
-
-  await useInvite(db, inviteId)
-
-  return result
 }
 
 export async function loginWithProvider (
@@ -2144,34 +2147,40 @@ export async function loginWithProvider (
   last: string,
   extra?: Record<string, string>
 ): Promise<LoginInfo> {
-  const email = cleanEmail(_email)
-  if (last == null) {
-    last = ''
-  }
-  let account = await getAccount(db, email)
-  if (account == null && extra !== undefined) {
-    account = await getAccountByQuery(db, extra)
-  }
-  if (account !== null) {
-    // we should clean password if account is not confirmed
-    if (account.confirmed === false) {
-      await updatePassword(db, account, null)
+  try {
+    const email = cleanEmail(_email)
+    if (last == null) {
+      last = ''
     }
+    let account = await getAccount(db, email)
+    if (account == null && extra !== undefined) {
+      account = await getAccountByQuery(db, extra)
+    }
+    if (account !== null) {
+      // we should clean password if account is not confirmed
+      if (account.confirmed === false) {
+        await updatePassword(db, account, null)
+      }
+      const result = {
+        endpoint: getEndpoint(),
+        email,
+        token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
+      }
+      return result
+    }
+    const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
+
     const result = {
       endpoint: getEndpoint(),
       email,
-      token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
+      token: generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
     }
     return result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    ctx.error('loginWithProvider error', { email: _email, ...extra, err })
+    throw err
   }
-  const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
-
-  const result = {
-    endpoint: getEndpoint(),
-    email,
-    token: generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
-  }
-  return result
 }
 
 /**

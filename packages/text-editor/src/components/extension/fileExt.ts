@@ -122,14 +122,12 @@ export const FileExtension = FileNode.extend<FileOptions>({
             const fileId = node.attrs['file-id'] ?? ''
             if (fileId === '') return
             const fileName = node.attrs['data-file-name'] ?? ''
-            const fileType: string = node.attrs['data-file-type'] ?? ''
 
             showPopup(
               FilePreviewPopup,
               {
                 file: fileId,
                 name: fileName,
-                contentType: fileType,
                 fullSize: false,
                 showIcon: false
               },

@@ -221,7 +221,6 @@ async function getFile (
 export function start (
   ctx: MeasureContext,
   config: {
-    transactorEndpoint: string
     elasticUrl: string
     storageAdapter: StorageAdapter
     accountsUrl: string
@@ -305,6 +304,15 @@ export function start (
   const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
 
+  let brandingUrl: URL | undefined
+  if (config.brandingUrl !== undefined) {
+    try {
+      brandingUrl = new URL(config.brandingUrl)
+    } catch (e) {
+      console.error('Invalid branding URL. Must be absolute URL.', e)
+    }
+  }
+
   app.use(
     expressStaticGzip(dist, {
       serveStatic: {
@@ -315,7 +323,10 @@ export function start (
         lastModified: true,
         index: false,
         setHeaders (res, path) {
-          if (path.toLowerCase().includes('index.html')) {
+          if (
+            path.toLowerCase().includes('index.html') ||
+            (brandingUrl !== undefined && path.toLowerCase().includes(brandingUrl.pathname))
+          ) {
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
         }
@@ -332,7 +343,9 @@ export function start (
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
-          const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
+          const token =
+            cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
+            (req.query.token as string | undefined)
           payload = token !== undefined ? decodeToken(token) : payload
 
           let uuid = req.params.file ?? req.query.file
@@ -387,7 +400,7 @@ export function start (
             uuid = await ctx.with(
               'resize',
               {},
-              async () => await getGeneratePreview(ctx, size ?? -1, uuid, config, payload, format)
+              async () => await getGeneratePreview(ctx, blobInfo, size ?? -1, uuid, config, payload, format)
             )
           }
 
@@ -701,6 +714,7 @@ export function start (
 
 async function getGeneratePreview (
   ctx: MeasureContext,
+  blob: PlatformBlob,
   size: number | undefined,
   uuid: string,
   config: { storageAdapter: StorageAdapter },
@@ -719,54 +733,70 @@ async function getGeneratePreview (
     // We have cached small document, let's proceed with it.
     uuid = sizeId
   } else {
-    // Let's get data and resize it
-    const data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
+    let data: Buffer
+    try {
+      // Let's get data and resize it
+      data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
 
-    let pipeline = sharp(data)
+      let pipeline = sharp(data)
 
-    // const metadata = await pipeline.metadata()
+      sharp.cache(false)
 
-    if (size !== -1) {
-      pipeline = pipeline.resize({
-        width: size,
-        fit: 'cover',
-        withoutEnlargement: true
+      // const metadata = await pipeline.metadata()
+
+      if (size !== -1) {
+        pipeline = pipeline.resize({
+          width: size,
+          fit: 'cover',
+          withoutEnlargement: true
+        })
+      }
+
+      let contentType = 'image/jpeg'
+      switch (format) {
+        case 'jpeg':
+          pipeline = pipeline.jpeg({})
+          contentType = 'image/jpeg'
+          break
+        case 'avif':
+          pipeline = pipeline.avif({
+            quality: size !== undefined && size < 128 ? undefined : 85
+          })
+          contentType = 'image/avif'
+          break
+        case 'heif':
+          pipeline = pipeline.heif({
+            quality: size !== undefined && size < 128 ? undefined : 80
+          })
+          contentType = 'image/heif'
+          break
+        case 'webp':
+          pipeline = pipeline.webp()
+          contentType = 'image/webp'
+          break
+        case 'png':
+          pipeline = pipeline.png()
+          contentType = 'image/png'
+          break
+      }
+
+      const dataBuff = await pipeline.toBuffer()
+      pipeline.destroy()
+
+      // Add support of avif as well.
+      await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
+      uuid = sizeId
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('failed to resize image', {
+        err,
+        format,
+        contentType: blob.contentType,
+        uuid,
+        size: blob.size,
+        provider: blob.provider
       })
     }
-
-    let contentType = 'image/jpeg'
-    switch (format) {
-      case 'jpeg':
-        pipeline = pipeline.jpeg({})
-        contentType = 'image/jpeg'
-        break
-      case 'avif':
-        pipeline = pipeline.avif({
-          quality: size !== undefined && size < 128 ? undefined : 85
-        })
-        contentType = 'image/avif'
-        break
-      case 'heif':
-        pipeline = pipeline.heif({
-          quality: size !== undefined && size < 128 ? undefined : 80
-        })
-        contentType = 'image/heif'
-        break
-      case 'webp':
-        pipeline = pipeline.webp()
-        contentType = 'image/webp'
-        break
-      case 'png':
-        pipeline = pipeline.png()
-        contentType = 'image/png'
-        break
-    }
-
-    const dataBuff = await pipeline.toBuffer()
-
-    // Add support of avif as well.
-    await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
-    uuid = sizeId
   }
   return uuid
 }

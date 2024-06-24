@@ -33,7 +33,7 @@
     "Next": "Далее",
     "FailedToPreview": "Ошибка предпросмотра",
     "ContentType": "Тип контента",
-    "ContentTypeNotSupported": "Тип контента не поддерживается"
+    "ContentTypeNotSupported": "Предварительный просмотр недоступен для этого типа контента"
   },
   "status": {
     "FileTooLarge": "Файл слишком большой"

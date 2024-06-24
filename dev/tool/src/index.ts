@@ -38,6 +38,7 @@ import {
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
+  backupFind,
   backupList,
   compactBackup,
   createFileBackupStorage,
@@ -60,6 +61,8 @@ import core, {
   metricsToString,
   versionToString,
   type Data,
+  type Doc,
+  type Ref,
   type Tx,
   type Version
 } from '@hcengineering/core'
@@ -282,7 +285,8 @@ export function devTool (
     .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
     .option('-e, --email <email>', 'Author email', 'platform@email.com')
     .option('-i, --init <ws>', 'Init from workspace')
-    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string }) => {
+    .option('-b, --branding <key>', 'Branding key')
+    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string, branding?: string }) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await createWorkspace(
@@ -292,7 +296,9 @@ export function devTool (
           migrateOperations,
           db,
           productId,
-          cmd.init !== undefined ? { initWorkspace: cmd.init } : null,
+          cmd.init !== undefined || cmd.branding !== undefined
+            ? { initWorkspace: cmd.init, key: cmd.branding ?? 'huly' }
+            : null,
           cmd.email,
           cmd.workspaceName,
           workspace
@@ -584,6 +590,7 @@ export function devTool (
   program
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('-f, --force', 'Force backup', false)
     .option('-c, --recheck', 'Force hash recheck on server', false)
@@ -592,18 +599,27 @@ export function devTool (
       async (
         dirName: string,
         workspace: string,
-        cmd: { skip: string, force: boolean, recheck: boolean, timeout: string }
+        cmd: { skip: string, force: boolean, recheck: boolean, timeout: string, include: string }
       ) => {
         const storage = await createFileBackupStorage(dirName)
         await backup(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, {
           force: cmd.force,
           recheck: cmd.recheck,
+          include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
           skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
           timeout: 0,
           connectTimeout: parseInt(cmd.timeout) * 1000
         })
       }
     )
+  program
+    .command('backup-find <dirName> <fileId>')
+    .description('dump workspace transactions and minio resources')
+    .option('-d, --domain <domain>', 'Check only domain')
+    .action(async (dirName: string, fileId: string, cmd: { domain: string | undefined }) => {
+      const storage = await createFileBackupStorage(dirName)
+      await backupFind(storage, fileId as unknown as Ref<Doc>, cmd.domain)
+    })
 
   program
     .command('backup-compact <dirName>')
@@ -619,7 +635,7 @@ export function devTool (
     .option('-m, --merge', 'Enable merge of remote and backup content.', false)
     .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
     .option('-c, --recheck', 'Force hash recheck on server', false)
-    .option('-s, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .description('dump workspace transactions and minio resources')
     .action(
@@ -862,7 +878,7 @@ export function devTool (
           productId
         })
         const buffer = readFileSync(local)
-        await blobClient.upload(remote, buffer.length, contentType, buffer)
+        await blobClient.upload(toolCtx, remote, buffer.length, contentType, buffer)
       })
     })
 

@@ -42,6 +42,7 @@
   let monthYear: string
   const today: Date = new Date(Date.now())
   const viewDate: Date = new Date(currentDate ?? today)
+  let selectedDate: Date = new Date(currentDate ?? today)
   $: firstDayOfCurrentMonth = firstDay(viewDate, mondayStart)
   const isToday = (n: number): boolean => {
     if (areDatesEqual(today, new Date(viewDate.getFullYear(), viewDate.getMonth(), n))) return true
@@ -50,8 +51,8 @@
 
   let days: ICell[] = []
   const getDateStyle = (date: Date): TCellStyle => {
-    if (currentDate != null) {
-      const zonedTime = fromCurrentToTz(currentDate, timeZone)
+    if (selectedDate != null) {
+      const zonedTime = fromCurrentToTz(selectedDate, timeZone)
       if (areDatesEqual(zonedTime, date)) {
         return 'selected'
       }
@@ -129,6 +130,7 @@
               : day.dayOfWeek + 2};"
           on:click|stopPropagation={() => {
             viewDate.setDate(i + 1)
+            selectedDate = new Date(viewDate)
             dispatch('update', viewDate)
           }}
         >

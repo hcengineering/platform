@@ -82,7 +82,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   const room = (await control.findAll(love.class.Office, { person: personId }))[0]
   const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, love.space.Rooms, {
     person: personId,
-    name: person !== undefined ? getName(control.hierarchy, person) : account.email,
+    name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
     room: room?._id ?? love.ids.Reception,
     x: 0,
     y: 0
@@ -136,7 +136,7 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
       } else {
         setTimeout(() => {
           void removeUserInfo(status.user, control)
-        }, 5000)
+        }, 20000)
         return []
       }
     }
@@ -164,6 +164,32 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
       })
     ]
   }
+}
+
+async function rejectJoinRequests (
+  info: ParticipantInfo,
+  control: TriggerControl,
+  roomInfos: RoomInfo[]
+): Promise<Tx[]> {
+  const res: Tx[] = []
+  const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
+  if (oldRoomInfo !== undefined) {
+    const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
+    if (restPersons.length === 0) {
+      const requests = await control.findAll(love.class.JoinRequest, {
+        room: oldRoomInfo.room,
+        status: RequestStatus.Pending
+      })
+      for (const request of requests) {
+        res.push(
+          control.txFactory.createTxUpdateDoc(love.class.JoinRequest, love.space.Rooms, request._id, {
+            status: RequestStatus.Rejected
+          })
+        )
+      }
+    }
+  }
+  return res
 }
 
 function setDefaultRoomAccess (info: ParticipantInfo, roomInfos: RoomInfo[], control: TriggerControl): Tx[] {
@@ -209,6 +235,7 @@ export async function OnParticipantInfo (tx: Tx, control: TriggerControl): Promi
     const info = (await control.findAll(love.class.ParticipantInfo, { _id: actualTx.objectId }, { limit: 1 }))[0]
     if (info === undefined) return []
     const res: Tx[] = []
+    res.push(...(await rejectJoinRequests(info, control, roomInfos)))
     res.push(...setDefaultRoomAccess(info, roomInfos, control))
     res.push(...(await roomJoinHandler(info, control, roomInfos)))
     return res
@@ -239,7 +266,9 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
           ) {
             const path = [workbenchId, control.workspace.workspaceUrl, loveId]
             const title = await translate(love.string.KnockingLabel, {})
-            const body = await translate(love.string.IsKnocking, { name: formatName(from.name) })
+            const body = await translate(love.string.IsKnocking, {
+              name: formatName(from.name, control.branding?.lastNameFirst)
+            })
             await createPushNotification(control, userAcc._id, title, body, request._id, from, path)
           }
         }
@@ -267,7 +296,9 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
         const title = await translate(love.string.InivitingLabel, {})
         const body =
           from !== undefined
-            ? await translate(love.string.InvitingYou, { name: formatName(from.name) })
+            ? await translate(love.string.InvitingYou, {
+              name: formatName(from.name, control.branding?.lastNameFirst)
+            })
             : await translate(love.string.InivitingLabel, {})
         await createPushNotification(control, userAcc._id, title, body, invite._id, from, path)
       }

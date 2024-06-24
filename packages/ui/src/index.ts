@@ -106,6 +106,7 @@ export { default as Chip } from './components/Chip.svelte'
 export { default as Loading } from './components/Loading.svelte'
 export { default as Spinner } from './components/Spinner.svelte'
 export { default as Popup } from './components/Popup.svelte'
+export { default as PopupInstance } from './components/PopupInstance.svelte'
 export { default as CircleButton } from './components/CircleButton.svelte'
 export { default as Link } from './components/Link.svelte'
 export { default as LinkWrapper } from './components/LinkWrapper.svelte'
@@ -298,6 +299,7 @@ export const deviceOptionsStore = writable<DeviceOptions>({
   docHeight: 0,
   isPortrait: false,
   isMobile: false,
+  navigator: { visible: true, float: false, direction: 'vertical' },
   fontSize: 0,
   size: null,
   sizes: { xs: false, sm: false, md: false, lg: false, xl: false, xxl: false },

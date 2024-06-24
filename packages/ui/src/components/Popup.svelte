@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { popupstore as modal } from '../popups'
+  import { popupstore as popups } from '../popups'
+  import { modalStore as modals } from '../modals'
+
   import PopupInstance from './PopupInstance.svelte'
 
   export let contentPanel: HTMLElement | undefined = undefined
@@ -24,13 +26,13 @@
     instances.forEach((p) => p.fitPopupInstance())
   }
 
-  $: instances.length = $modal.filter((p) => p.dock !== true).length
+  $: instances.length = $popups.filter((p) => p.dock !== true).length
 </script>
 
-{#if $modal.length > 0}
+{#if $popups.length > 0}
   <slot name="popup-header" />
 {/if}
-{#each $modal.filter((p) => p.dock !== true) as popup, i (popup.id)}
+{#each $popups.filter((p) => p.dock !== true) as popup, i (popup.id)}
   <PopupInstance
     bind:this={instances[i]}
     is={popup.is}
@@ -38,8 +40,8 @@
     element={popup.element}
     onClose={popup.onClose}
     onUpdate={popup.onUpdate}
-    zIndex={(i + 1) * 500}
-    top={$modal.length - 1 === i}
+    zIndex={($modals.findIndex((modal) => modal.type === 'popup' && modal.id === popup.id) ?? i) + 10000}
+    top={$popups.length - 1 === i}
     close={popup.close}
     {contentPanel}
     overlay={popup.options.overlay}

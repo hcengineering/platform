@@ -12,6 +12,7 @@ import {
 } from '@hcengineering/recruit'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
+import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'
 
@@ -67,6 +68,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   }
   const doc = await client.findOne(_class, { _id: _id as Ref<Doc> })
   if (doc === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with id ${_id}.`)
     return undefined
   }
@@ -90,15 +92,41 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   }
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+export async function parseLinkId (id: string): Promise<Ref<Doc> | undefined> {
+  if (isShortId(id)) {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const data = getShortLinkData(hierarchy, id)
+
+    if (data === undefined) {
+      return id as Ref<Doc>
+    }
+
+    const [_class, , number] = data
+
+    if (_class === undefined) {
+      return id as Ref<Doc>
+    }
+
+    const doc = await client.findOne(_class, { number }, { projection: { _id: 1 } })
+
+    return doc?._id
+  }
+
+  return id as Ref<Doc>
+}
+
+function getShortLinkData (
+  hierarchy: Hierarchy,
+  shortLink: string
+): [Ref<Class<Doc>> | undefined, string, number] | undefined {
   const tokens = shortLink.split('-')
   if (tokens.length < 2) {
     return undefined
   }
   const classLabel = tokens[0]
   const number = Number(tokens[1])
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+
   const classes = [recruit.class.Applicant, recruit.class.Vacancy, recruit.class.Review]
   let _class: Ref<Class<Doc>> | undefined
   for (const clazz of classes) {
@@ -107,12 +135,28 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
       break
     }
   }
+
+  return [_class, classLabel, number]
+}
+
+async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const data = getShortLinkData(hierarchy, shortLink)
+
+  if (data === undefined) {
+    return
+  }
+
+  const [_class, classLabel, number] = data
+
   if (_class === undefined) {
     console.error(`Not found class with short label ${classLabel}`)
     return undefined
   }
   const doc = await client.findOne(_class, { number })
   if (doc === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with number ${number}.`)
     return undefined
   }
@@ -163,15 +207,6 @@ export async function getObjectLink (doc: Candidate | VacancyList): Promise<Loca
   return loc
 }
 
-async function getTitle<T extends RecruitDocument> (
-  client: Client,
-  ref: Ref<T>,
-  _class: Ref<Class<T>>
-): Promise<string> {
-  const object = await client.findOne<RecruitDocument>(_class, { _id: ref as Ref<any> })
-  return object != null ? await getSequenceId(object) : ''
-}
-
 export async function getVacTitle (client: Client, ref: Ref<Vacancy>, doc?: Vacancy): Promise<string> {
   const object = doc ?? (await client.findOne(recruit.class.Vacancy, { _id: ref }))
   return object != null ? object.name : ''
@@ -195,8 +230,9 @@ export async function getAppIdentifier (client: Client, ref: Ref<Applicant>, doc
   return applicant.identifier
 }
 
-export async function getRevTitle (client: Client, ref: Ref<Review>): Promise<string> {
-  return await getTitle(client, ref, recruit.class.Review)
+export async function getRevTitle (client: Client, ref: Ref<Review>, doc?: Review): Promise<string> {
+  const object = doc ?? (await client.findOne(recruit.class.Review, { _id: ref }))
+  return object != null ? object.title : ''
 }
 
 export async function getSequenceId (doc: RecruitDocument): Promise<string> {
@@ -217,4 +253,24 @@ export async function getSequenceId (doc: RecruitDocument): Promise<string> {
 
 export async function getTalentId (doc: Candidate): Promise<string> {
   return doc._id
+}
+
+export async function getVacancyIdentifier (client: Client, ref: Ref<Vacancy>, doc?: Vacancy): Promise<string> {
+  const vacancy = doc ?? (await client.findOne(recruit.class.Vacancy, { _id: ref }))
+
+  if (vacancy === undefined) {
+    return ''
+  }
+
+  return await getSequenceId(vacancy)
+}
+
+export async function getReviewIdentifier (client: Client, ref: Ref<Review>, doc?: Review): Promise<string> {
+  const review = doc ?? (await client.findOne(recruit.class.Review, { _id: ref }))
+
+  if (review === undefined) {
+    return ''
+  }
+
+  return await getSequenceId(review)
 }

@@ -104,6 +104,42 @@
   }
 
   $: isShort = canDisplayShort(type, isSaved)
+
+  function isInside (x: number, y: number, rect: DOMRect): boolean {
+    return x >= rect.left && y >= rect.top && x <= rect.right && y <= rect.bottom
+  }
+
+  function isTextClicked (element: HTMLElement | null, x: number, y: number): boolean {
+    if (element == null) {
+      return false
+    }
+
+    const nodes = element.childNodes
+    const range = document.createRange()
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+
+      if (node.nodeType !== Node.TEXT_NODE) continue
+
+      range.selectNodeContents(node)
+
+      if (isInside(x, y, range.getBoundingClientRect())) {
+        return true
+      }
+    }
+    return false
+  }
+
+  function handleContextMenu (event: MouseEvent): void {
+    const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
+    if (showCustomPopup) {
+      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
+        isActionsOpened = false
+      })
+      isActionsOpened = true
+    }
+  }
 </script>
 
 {#if !isHidden}
@@ -123,12 +159,7 @@
       class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
       on:click={onClick}
-      on:contextmenu={(evt) => {
-        showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
-          isActionsOpened = false
-        })
-        isActionsOpened = true
-      }}
+      on:contextmenu={handleContextMenu}
     >
       {#if showNotify && !embedded && !isShort}
         <div class="notify" />

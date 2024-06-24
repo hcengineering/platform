@@ -71,7 +71,7 @@
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
       const loadAll = isDocChannel
-      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp, selectedMessageId, loadAll)
+      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp ?? 0, selectedMessageId, loadAll)
     }
   }
 </script>

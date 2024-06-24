@@ -26,7 +26,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function leadHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const lead = doc as Lead
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${leadId}/${lead.space}/#${view.component.EditDoc}|${lead._id}|${lead._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${lead.title}</a>`

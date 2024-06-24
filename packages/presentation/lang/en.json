@@ -33,7 +33,7 @@
     "Next": "Next",
     "FailedToPreview": "Failed to preview",
     "ContentType": "Content type",
-    "ContentTypeNotSupported": "Content type not supported"
+    "ContentTypeNotSupported": "Preview is not available for this content type"
   },
   "status": {
     "FileTooLarge": "File too large"

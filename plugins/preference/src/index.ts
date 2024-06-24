@@ -56,7 +56,6 @@ const preference = plugin(preferenceId, {
     Star: '' as Asset
   },
   string: {
-    DeleteStarred: '' as IntlString,
     Starred: '' as IntlString,
     Star: '' as IntlString,
     Unstar: '' as IntlString

@@ -36,7 +36,7 @@
         return { id: i, text: title }
       }
     })
-    showPopup(SelectPopup, { value: items }, event.currentTarget)
+    showPopup(SelectPopup, { value: items, componentLink: true }, event.currentTarget)
   }
 </script>
 

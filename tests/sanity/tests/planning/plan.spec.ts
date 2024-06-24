@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
@@ -158,5 +158,24 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.openToDoByName(toDoSeveralSlots.title)
     await planningPage.checkTimeSlotEndDate(0, dateEndToday.getDate().toString())
     await planningPage.checkTimeSlotEndDate(1, dateEndTomorrow.getDate().toString())
+  })
+
+  test("Drag'n'drop added Todo", async ({ page }) => {
+    let hour = new Date().getHours()
+    const ampm = hour < 13 ? 'am' : 'pm'
+    hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
+    const time = `${hour}${ampm}`
+    const title = `Drag and drop ToDo ${generateId()}`
+
+    const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
+    const planningPage = new PlanningPage(page)
+    await planningPage.selectInputToDo().fill(title)
+    await planningPage.selectInputToDo().press('Enter')
+    await planningPage.dragdropTomorrow(title, time)
+    await planningPage.eventInSchedule(title).click()
+    await planningPage.buttonPopupCreateVisible().click()
+    await planningPage.buttonPopupVisibleToEveryone().click()
+    await planningPage.buttonPopupSave().click()
   })
 })

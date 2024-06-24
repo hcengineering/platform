@@ -426,12 +426,12 @@ export const trackerOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await tryUpgrade(client, trackerId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, trackerId, [
       {
         state: 'create-defaults',
-        func: async () => {
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
       }

@@ -33,7 +33,7 @@
     "Next": "Seguinte",
     "FailedToPreview": "Falha ao pré-visualizar",
     "ContentType": "Tipo de conteúdo",
-    "ContentTypeNotSupported": "Tipo de conteúdo não suportado"
+    "ContentTypeNotSupported": "A visualização não está disponível para este tipo de conteúdo"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"

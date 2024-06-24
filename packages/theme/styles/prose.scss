@@ -358,6 +358,8 @@ table.proseTable {
   border: 1px solid var(--theme-button-border);
   border-radius: .25rem;
   padding: .5rem;
+  user-select: text;
+  cursor: auto;
 
   pre { white-space: pre-wrap; }
 }

@@ -27,6 +27,7 @@
     "ServerUnderMaintenance": "Server is under maintenance",
     "MobileNotSupported": "Sorry, mobile devices support coming soon. In the meantime, please use Desktop",
     "LogInAnyway": "Log in anyway",
-    "WorkspaceCreating": "Creation in progress..."
+    "WorkspaceCreating": "Creation in progress...",
+    "AccessDenied": "Object doesn't exist or you are not permitted to access it."
   }
 }

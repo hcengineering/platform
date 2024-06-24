@@ -756,6 +756,11 @@ export interface LinkProvider extends Class<Doc> {
   encode: Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
 }
 
+export interface LinkIdProvider extends Class<Doc> {
+  encode: Resource<(doc: Doc) => Promise<string>>
+  decode: Resource<(id: string) => Promise<Ref<Doc> | undefined>>
+}
+
 /**
  * @public
  */

@@ -1,0 +1,31 @@
+{
+  "string": {
+    "SharedMessages": "共享的 Telegram 消息",
+    "Next": "下一步",
+    "Back": "上一步",
+    "Connect": "连接",
+    "Connecting": "连接中...",
+    "ConnectFull": "连接 Telegram 帐户",
+    "Password": "密码",
+    "Phone": "电话",
+    "PhonePlaceholder": "+1 555 333 7777",
+    "PhoneDescr": "输入您的 Telegram 电话号码以连接您的帐户。",
+    "PasswordDescr": "输入您的二次验证密码",
+    "CodeDescr": "输入您在 Telegram 帐户上收到的 5 位数字代码。",
+    "Cancel": "取消",
+    "Share": "分享消息",
+    "PublishSelected": "发布选中",
+    "SharedMessage": "共享消息",
+    "Content": "内容",
+    "Incoming": "收件箱",
+    "Messages": "消息",
+    "NewMessage": "新消息",
+    "NewIncomingMessage": "给您发送了一条新消息",
+    "Telegram": "Telegram",
+    "TelegramIntegrationDesc": "使用 Telegram 集成",
+    "Status": "状态",
+    "MessagesSelected": "选中的消息",
+    "ConfigLabel": "Telegram",
+    "ConfigDescription": "扩展以读取和撰写 Telegram 消息"
+  }
+}

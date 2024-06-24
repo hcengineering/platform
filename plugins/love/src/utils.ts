@@ -173,3 +173,10 @@ export function checkIntersection (rooms: Slot[], width: number, height: number,
   }
   return false
 }
+
+export interface ScreenSource {
+  id: string
+  name: string
+  thumbnailURL: string
+  appIconURL: string
+}

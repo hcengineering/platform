@@ -52,7 +52,7 @@
       {#if value.allDay}
         <DatePresenter value={value.date} />
       {:else}
-        <div class="flex-row-center">
+        <div class="flex-row-center flex-no-shrink">
           <DateTimeRangePresenter value={value.date} /> <span class="p-1">-</span>
           <DateRangePresenter value={value.dueDate} mode={DateRangeMode.TIME} editable={false} />
         </div>

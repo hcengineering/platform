@@ -87,7 +87,8 @@ import view, {
   type BuildModelOptions,
   type CollectionPresenter,
   type Viewlet,
-  type ViewletDescriptor
+  type ViewletDescriptor,
+  type LinkIdProvider
 } from '@hcengineering/view'
 
 import contact, { getName, type Contact, type PersonAccount } from '@hcengineering/contact'
@@ -1023,8 +1024,16 @@ export async function getObjectLinkFragment (
     }
   }
   const loc = getCurrentResolvedLocation()
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  let id: string = object._id
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    id = await encodeFn(object)
+  }
+
   if (hasResource(component) === true) {
-    loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+    loc.fragment = getPanelURI(component, id, Hierarchy.mixinOrClass(object), 'content')
   }
   return loc
 }
@@ -1375,6 +1384,8 @@ export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>,
   return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
 }
 
+export const accessDeniedStore = writable<boolean>(false)
+
 export const permissionsStore = writable<PermissionsStore>({
   ps: {},
   ap: {},
@@ -1445,4 +1456,46 @@ export function getCollaborationUser (): CollaborationUser {
     email: me.email,
     color
   }
+}
+
+export async function getObjectLinkId (
+  providers: LinkIdProvider[],
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  doc?: Doc
+): Promise<string> {
+  const provider = providers.find(({ _id }) => _id === _class)
+
+  if (provider === undefined) {
+    return _id
+  }
+
+  const client = getClient()
+  const object = doc ?? (await client.findOne(_class, { _id }))
+
+  if (object === undefined) {
+    return _id
+  }
+
+  const encodeFn = await getResource(provider.encode)
+  return await encodeFn(object)
+}
+
+export async function parseLinkId<T extends Doc> (
+  providers: LinkIdProvider[],
+  id: string,
+  _class: Ref<Class<T>>
+): Promise<Ref<T>> {
+  const hierarchy = getClient().getHierarchy()
+  const provider =
+    providers.find(({ _id }) => id === _class) ?? providers.find(({ _id }) => hierarchy.isDerived(_class, _id))
+
+  if (provider === undefined) {
+    return id as Ref<T>
+  }
+
+  const decodeFn = await getResource(provider.decode)
+  const _id = await decodeFn(id)
+
+  return (_id ?? id) as Ref<T>
 }

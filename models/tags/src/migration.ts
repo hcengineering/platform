@@ -10,8 +10,8 @@ import tags from './plugin'
 
 export const tagsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, tagsId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, tagsId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

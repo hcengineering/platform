@@ -13,18 +13,19 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
+import chunter from '@hcengineering/chunter'
 import core, {
   type Blob,
   type Domain,
+  type FindOptions,
   type Role,
   type RolesAssignment,
-  type Type,
   Account,
   AccountRole,
   IndexKind,
   Ref,
-  SortingOrder,
-  DOMAIN_MODEL
+  SortingOrder
 } from '@hcengineering/core'
 import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
 import {
@@ -38,11 +39,13 @@ import {
   TypeRecord,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  Collection
 } from '@hcengineering/model'
-import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import { TDoc, TTypedSpace } from '@hcengineering/model-core'
+import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
+import view, { type Viewlet, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
@@ -52,14 +55,6 @@ export { driveId } from '@hcengineering/drive'
 export { drive as default }
 
 export const DOMAIN_DRIVE = 'drive' as Domain
-
-/** @public */
-export function TypeFilesize (): Type<number> {
-  return { _class: drive.class.TypeFileSize, label: drive.string.Size }
-}
-
-@Model(drive.class.TypeFileSize, core.class.Type, DOMAIN_MODEL)
-export class TTypeFileSize extends TType {}
 
 @Model(drive.class.Drive, core.class.TypedSpace)
 @UX(drive.string.Drive)
@@ -84,6 +79,11 @@ export class TResource extends TDoc implements Resource {
   @ReadOnly()
     file?: Ref<Blob>
 
+  @Prop(TypeRef(core.class.Blob), drive.string.Preview)
+  @ReadOnly()
+  @Hidden()
+    preview?: Ref<Blob>
+
   @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
@@ -92,6 +92,9 @@ export class TResource extends TDoc implements Resource {
   @Prop(TypeRef(drive.class.Resource), drive.string.Path)
   @ReadOnly()
     path!: Ref<Resource>[]
+
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+    comments?: number
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
@@ -107,6 +110,7 @@ export class TFolder extends TResource implements Folder {
   declare path: Ref<Folder>[]
 
   declare file: undefined
+  declare preview: undefined
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
@@ -118,7 +122,6 @@ export class TFile extends TResource implements File {
 
   @Prop(TypeRecord(), drive.string.Metadata)
   @ReadOnly()
-  @Hidden()
     metadata?: Record<string, any>
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
@@ -200,7 +203,7 @@ function defineDrive (builder: Builder): void {
   // Actions
 
   builder.mixin(drive.class.Drive, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+    actions: [tracker.action.EditRelatedTargets, print.action.Print, tracker.action.NewRelatedIssue]
   })
 
   createAction(
@@ -242,9 +245,7 @@ function defineDrive (builder: Builder): void {
 }
 
 function defineResource (builder: Builder): void {
-  builder.createModel(TTypeFileSize, TResource)
-
-  classPresenter(builder, drive.class.TypeFileSize, drive.component.FileSizePresenter)
+  builder.createModel(TResource)
 
   builder.mixin(drive.class.Resource, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: drive.component.ResourcePresenter
@@ -263,44 +264,83 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        {
-          key: '$lookup.file.size',
-          presenter: drive.component.FileSizePresenter,
-          label: drive.string.Size,
-          sortingKey: '$lookup.file.size'
-        },
-        {
-          key: '$lookup.file.modifiedOn'
-        },
+        '$lookup.file.size',
+        'comments',
+        '$lookup.file.modifiedOn',
         'createdBy'
       ],
+      /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
+        lookup: {
+          file: core.class.Blob,
+          preview: core.class.Blob
+        },
         sort: {
           _class: SortingOrder.Descending
         }
-      },
+      } as FindOptions<Resource>,
       configOptions: {
-        hiddenKeys: ['name', 'file', 'parent', 'path'],
+        hiddenKeys: ['name', 'file', 'parent', 'path', 'type'],
         sortable: true
       }
     },
     drive.viewlet.FileTable
   )
 
-  // builder.createDoc<Viewlet>(
-  //   view.class.Viewlet,
-  //   core.space.Model,
-  //   {
-  //     attachTo: drive.class.Resource,
-  //     descriptor: drive.viewlet.Grid,
-  //     config: ['', 'type', 'size', 'lastModified', 'createdBy'],
-  //     configOptions: {
-  //       hiddenKeys: ['name', 'file', 'parent', 'path'],
-  //       sortable: true
-  //     }
-  //   },
-  //   drive.viewlet.FileGrid
-  // )
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: drive.string.Grid,
+      icon: drive.icon.Grid,
+      component: drive.component.GridView
+    },
+    drive.viewlet.Grid
+  )
+
+  builder.createDoc<Viewlet>(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: drive.class.Resource,
+      descriptor: drive.viewlet.Grid,
+      viewOptions: {
+        groupBy: [],
+        orderBy: [
+          ['name', SortingOrder.Ascending],
+          ['$lookup.file.size', SortingOrder.Ascending],
+          ['$lookup.file.modifiedOn', SortingOrder.Descending]
+        ],
+        other: []
+      },
+      config: [
+        {
+          key: '',
+          presenter: drive.component.ResourcePresenter,
+          label: drive.string.Name,
+          sortingKey: 'name'
+        },
+        '$lookup.file.size',
+        '$lookup.file.modifiedOn',
+        'createdBy'
+      ],
+      configOptions: {
+        hiddenKeys: ['name', 'file', 'parent', 'path'],
+        sortable: true
+      },
+      /* eslint-disable @typescript-eslint/consistent-type-assertions */
+      options: {
+        lookup: {
+          file: core.class.Blob,
+          preview: core.class.Blob
+        },
+        sort: {
+          _class: SortingOrder.Descending
+        }
+      } as FindOptions<Resource>
+    },
+    drive.viewlet.FileGrid
+  )
 }
 
 function defineFolder (builder: Builder): void {
@@ -328,6 +368,7 @@ function defineFolder (builder: Builder): void {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
     ]
@@ -378,12 +419,34 @@ function defineFile (builder: Builder): void {
     presenter: drive.component.FilePresenter
   })
 
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.ObjectEditor, {
+    editor: drive.component.EditFile
+  })
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.ObjectPanel, {
+    component: drive.component.FilePanel
+  })
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.LinkProvider, {
+    encode: drive.function.FileLinkProvider
+  })
+
+  // Activity
+
+  builder.mixin(drive.class.File, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: drive.class.File,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
   // Actions
 
   builder.mixin(drive.class.File, core.class.Class, view.mixin.IgnoreActions, {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
     ]

@@ -189,14 +189,15 @@ function configureI18n(): void {
 
 export async function configurePlatform() {
   setMetadata(platform.metadata.LoadHelper, async (loader) => {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 6; i++) {
       try {
         return loader()
       } catch (err: any) {
-        if (err.message.includes('Loading chunk') && i != 2) {
+        if (err.message.includes('Loading chunk') && i != 5) {
           continue
         }
         Analytics.handleError(err)
+        location.reload()
       }
     }
   })
@@ -204,7 +205,7 @@ export async function configurePlatform() {
   configureI18n()
 
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
-  const branding: BrandingMap = await (await fetch(config.BRANDING_URL ?? '/branding.json')).json()
+  const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
   console.log('loading configuration', config)
@@ -265,7 +266,7 @@ export async function configurePlatform() {
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 
   setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
-  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
+  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh', 'fr']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
   setMetadata(

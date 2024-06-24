@@ -13,67 +13,30 @@
 // limitations under the License.
 //
 
+import { TxOperations, type Ref, type TypedSpace } from '@hcengineering/core'
 import {
-  tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { type Ref, TxOperations, type TypedSpace } from '@hcengineering/core'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import core from '@hcengineering/model-core'
 import training, { trainingId, type Sequence } from '@hcengineering/training'
-import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
-import { Person, PersonAccount } from '@hcengineering/contact'
 
 export const trainingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, trainingId, [
+  async migrate (client: MigrationClient): Promise<void> {},
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, trainingId, [
       {
-        state: 'migrateDefaultSpaceMembers',
-        func: migrateDefaultSpaceMembers
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await ensureTypedSpace(tx)
+          await ensureSequence(tx)
+        }
       }
     ])
-  },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await ensureTypedSpace(tx)
-    await ensureSequence(tx)
   }
-}
-
-async function migrateDefaultSpaceMembers (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: training.space.Trainings,
-      autoJoin: false
-    },
-    {
-      $set: {
-        autoJoin: true
-      }
-    }
-  )
-
-  const employees = await client.find<Person>(DOMAIN_CONTACT, {
-    _class: contact.class.Person,
-    [contact.mixin.Employee]: { $exists: true }
-  })
-  const empAccs = await client.model.findAll<PersonAccount>(contact.class.PersonAccount, {
-    person: { $in: employees.map((e) => e._id) }
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: training.space.Trainings
-    },
-    {
-      $addToSet: {
-        members: { $each: empAccs.map((e) => e._id) }
-      }
-    }
-  )
 }
 
 async function ensureTypedSpace (tx: TxOperations): Promise<Ref<TypedSpace>> {

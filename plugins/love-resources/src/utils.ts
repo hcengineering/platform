@@ -22,6 +22,7 @@ import {
   ConnectionState,
   Room as LKRoom,
   LocalAudioTrack,
+  type LocalTrack,
   LocalVideoTrack,
   RoomEvent,
   Track,
@@ -95,6 +96,10 @@ export const lk: LKRoom = new LKRoom({
   }
 })
 
+export function setCustomCreateScreenTracks (value: () => Promise<Array<LocalTrack<Track.Kind>>>): void {
+  lk.localParticipant.createScreenTracks = value
+}
+
 async function prepare (): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
   if (wsURL !== undefined) {
@@ -112,10 +117,11 @@ isCurrentInstanceConnected.subscribe((value) => {
 })
 export const screenSharing = writable<boolean>(false)
 export const isRecording = writable<boolean>(false)
-export const isRecordingAvailable = writable<boolean | undefined>(undefined)
+export const isRecordingAvailable = writable<boolean>(false)
 export const isMicEnabled = writable<boolean>(false)
 export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
+export const isFullScreen = writable<boolean>(false)
 
 function handleTrackSubscribed (
   track: RemoteTrack,
@@ -424,7 +430,7 @@ export async function setMic (value: boolean): Promise<void> {
           opt.deviceId = available.deviceId
         }
       }
-      await lk.localParticipant.setMicrophoneEnabled(value)
+      await lk.localParticipant.setMicrophoneEnabled(value, opt)
     } catch (err) {
       console.error(err)
     }
@@ -691,16 +697,18 @@ export async function record (room: Room): Promise<void> {
   }
 }
 
-export async function checkRecordAvailable (): Promise<void> {
+async function checkRecordAvailable (): Promise<void> {
   try {
     const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
     if (endpoint === undefined) {
-      throw new Error('Love service endpoint not found')
+      setTimeout(() => {
+        void checkRecordAvailable()
+      }, 500)
+    } else {
+      const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
+      const result = await res.json()
+      isRecordingAvailable.set(result)
     }
-
-    const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
-    const result = await res.json()
-    isRecordingAvailable.set(result)
   } catch (err: any) {
     Analytics.handleError(err)
     console.error(err)

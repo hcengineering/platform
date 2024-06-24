@@ -471,6 +471,13 @@ export function TypeEnum (of: Ref<Enum>): EnumOf {
 /**
  * @public
  */
+export function TypeFileSize (): Type<number> {
+  return { _class: core.class.TypeFileSize, label: core.string.Size }
+}
+
+/**
+ * @public
+ */
 export function TypeAny<AnyComponent = any> (
   presenter: AnyComponent,
   label: IntlString,

@@ -15,8 +15,8 @@
 <script lang="ts">
   import { type Doc, type DocumentQuery, type Ref, type WithLookup } from '@hcengineering/core'
   import drive, { type Drive, type Folder } from '@hcengineering/drive'
-  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import { Scroller, SearchEdit } from '@hcengineering/ui'
+  import { Viewlet, ViewOptions } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
@@ -25,7 +25,7 @@
     ViewletSettingButton
   } from '@hcengineering/view-resources'
 
-  import { createFiles } from '../utils'
+  import FileDropArea from './FileDropArea.svelte'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
@@ -34,8 +34,6 @@
   const _class = drive.class.Resource
 
   $: query = { space, parent }
-
-  let dragover = false
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
   let viewOptions: ViewOptions | undefined
@@ -50,35 +48,11 @@
   function updateSearchQuery (search: string): void {
     searchQuery = search === '' ? { ...query } : { ...query, $search: search }
   }
-
-  async function handleDrop (e: DragEvent): Promise<void> {
-    if (readonly) {
-      return
-    }
-    // progress = true
-    const list = e.dataTransfer?.files
-    if (list !== undefined && list.length !== 0) {
-      await createFiles(list, space, parent)
-    }
-    // progress = false
-  }
 </script>
 
 {#if space !== undefined}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="antiComponent"
-    class:solid={dragover}
-    on:dragover|preventDefault={() => {
-      dragover = true
-    }}
-    on:dragleave={() => {
-      dragover = false
-    }}
-    on:drop|preventDefault|stopPropagation={(ev) => {
-      void handleDrop(ev)
-    }}
-  >
+  <div class="antiComponent">
     <div class="ac-header full divide caption-height">
       <div class="ac-header-full small-gap">
         <SearchEdit bind:value={search} on:change={() => {}} />
@@ -93,10 +67,12 @@
 
     {#if viewlet !== undefined && viewOptions}
       <FilterBar {_class} {space} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
-      <div class="popupPanel rowContent">
+      <div class="popupPanel rowContent" on:contextmenu>
         {#if viewlet}
           <Scroller horizontal={true}>
-            <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />
+            <FileDropArea {space} {parent} canDrop={() => !readonly}>
+              <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />
+            </FileDropArea>
           </Scroller>
         {/if}
       </div>

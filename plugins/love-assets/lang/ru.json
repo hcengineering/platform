@@ -39,6 +39,8 @@
     "RenameAFloor": "Переименовать этаж",
     "StartWithoutVideo": "Всегда начинать с выключенной камерой",
     "StartWithMutedMic": "Всегда начинать с выключенным звуком",
+    "Invite": "Пригласить",
+    "KnockAction": "Постучать",
     "InvitingYou": "{name} приглашает вас присоединиться",
     "YouInivite": "Вы приглашаете присоединиться",
     "NoiseCancellation": "Подавление шума",
@@ -53,6 +55,10 @@
     "Record": "Запись",
     "StopRecord": "Остановить запись",
     "LeaveRoomConfirmation": "Вы уверены, что хотите покинуть комнату?",
-    "ServiceNotConfigured": "Сервис не настроен"
+    "ServiceNotConfigured": "Сервис не настроен",
+    "FullscreenMode": "Полноэкранный режим",
+    "ExitingFullscreenMode": "Выход из полноэкранного режима",
+    "Select": "Выбрать",
+    "ChooseShare": "Выберите, чем вы хотите поделиться"
   }
 }

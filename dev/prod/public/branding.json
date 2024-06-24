@@ -1,7 +1,7 @@
 {
   "localhost:8080": {
     "title": "Platform",
-    "languages": "en,ru,pt,es",
+    "languages": "en,ru,pt,es,zh,fr",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
     "defaultSpace": "tracker:project:DefaultProject",
@@ -29,7 +29,7 @@
   },
   "localhost:8087": {
     "title": "DevPlatform",
-    "languages": "en,ru,pt,es",
+    "languages": "en,ru,pt,es,zh,fr",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
     "defaultSpace": "tracker:project:DefaultProject",

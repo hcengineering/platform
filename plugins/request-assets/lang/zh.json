@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Requests": "请求",
+    "Request": "请求",
+    "Approve": "批准",
+    "Approved": "已批准",
+    "CreatedRequest": "创建了一个",
+    "For": "为",
+    "Change": "更改",
+    "Add": "添加",
+    "Remove": "移除",
+    "Status": "状态",
+    "Requested": "已请求",
+    "Completed": "已完成",
+    "Reject": "拒绝",
+    "Rejected": "已拒绝",
+    "Comment": "评论",
+    "PleaseTypeMessage": "请键入评论消息以继续...",
+    "NoRequests": "没有请求",
+    "Cancel": "取消",
+    "Cancelled": "已取消"
+  }
+}

@@ -55,7 +55,7 @@
 
   const dateSelectorHeight = 30
   const headerHeight = 52
-  const minMsgHeightRem = 4.375
+  const minMsgHeightRem = 2
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -236,7 +236,7 @@
 
     const { scrollHeight, scrollTop, clientHeight } = scrollElement
 
-    return scrollTop + clientHeight === scrollHeight
+    return scrollHeight - Math.ceil(scrollTop + clientHeight) <= 0
   }
 
   let scrollToRestore = 0
@@ -425,9 +425,9 @@
         autoscroll = false
       })
     } else if (separatorElement) {
-      isScrollInitialized = true
       await wait()
       scrollToSeparator()
+      isScrollInitialized = true
       isInitialScrolling = false
     }
   }
@@ -554,7 +554,7 @@
   beforeUpdate(() => {
     if (!scrollElement) return
 
-    if (scrollElement.scrollHeight === scrollElement.clientHeight) {
+    if (isScrollInitialized && scrollElement.scrollHeight === scrollElement.clientHeight) {
       isScrollAtBottom = true
     }
   })

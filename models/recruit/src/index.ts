@@ -900,12 +900,16 @@ export function createModel (builder: Builder): void {
     titleProvider: recruit.function.RevTitleProvider
   })
 
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: recruit.function.ReviewIdentifierProvider
+  })
+
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: recruit.function.VacTitleProvider
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectIdentifier, {
-    provider: recruit.function.VacTitleProvider
+    provider: recruit.function.VacancyIdentifierProvider
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.LinkProvider, {
@@ -930,6 +934,26 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.LinkProvider, {
     encode: recruit.function.GetIdObjectLinkFragment
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
   })
 
   builder.createDoc(

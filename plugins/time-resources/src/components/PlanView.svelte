@@ -29,10 +29,6 @@
   import { dragging } from '../dragging'
   import time from '../plugin'
 
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
-
   const dispatch = createEventDispatcher()
 
   const defaultDuration = 30 * 60 * 1000
@@ -52,7 +48,7 @@
     const date = e.detail.date.getTime()
     const currentUser = getCurrentAccount() as PersonAccount
     const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      members: currentUser._id,
+      createdBy: currentUser._id,
       hidden: false,
       default: true
     })
@@ -84,28 +80,22 @@
   })
 </script>
 
-{#if visibleNav}
-  <ToDosNavigator bind:mode bind:tag bind:currentDate {navFloat} {appsDirection} />
+{#if $deviceInfo.navigator.visible}
+  <ToDosNavigator bind:mode bind:tag bind:currentDate />
   <Separator
     name={'time'}
-    float={navFloat}
+    float={$deviceInfo.navigator.float}
     index={0}
     disabledWhen={['panel-aside']}
     color={'var(--theme-navpanel-border)'}
   />
 {/if}
-<div class="flex-col w-full clear-mins" class:left-divider={!visibleNav} bind:this={mainPanel}>
-  <ToDos {mode} {tag} bind:visibleNav bind:currentDate />
+<div class="flex-col w-full clear-mins" class:left-divider={!$deviceInfo.navigator.visible} bind:this={mainPanel}>
+  <ToDos {mode} {tag} bind:currentDate />
 </div>
 {#if visibleCalendar}
   <Separator name={'time'} index={1} color={'transparent'} separatorSize={0} short />
   <div class="flex-col clear-mins" bind:this={replacedPanel}>
-    <PlanningCalendar
-      {dragItem}
-      bind:currentDate
-      displayedDaysCount={5}
-      on:dragDrop={drop}
-      on:change={(event) => (visibleNav = event.detail)}
-    />
+    <PlanningCalendar {dragItem} bind:currentDate displayedDaysCount={5} on:dragDrop={drop} />
   </div>
 {/if}

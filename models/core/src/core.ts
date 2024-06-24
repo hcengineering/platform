@@ -63,8 +63,8 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
+  TypeFileSize,
   TypeIntlString,
-  TypeNumber,
   TypeRecord,
   TypeRef,
   TypeString,
@@ -155,7 +155,7 @@ export class TBlob extends TDoc implements Blob {
   @ReadOnly()
     version!: string
 
-  @Prop(TypeNumber(), core.string.BlobSize)
+  @Prop(TypeFileSize(), core.string.BlobSize)
   @ReadOnly()
     size!: number
 }
@@ -227,6 +227,10 @@ export class TTypeIntlString extends TType {}
 @UX(core.string.Number)
 @Model(core.class.TypeNumber, core.class.Type)
 export class TTypeNumber extends TType {}
+
+@UX(core.string.BlobSize)
+@Model(core.class.TypeFileSize, core.class.Type)
+export class TTypeFileSize extends TType {}
 
 @UX(core.string.Markup)
 @Model(core.class.TypeMarkup, core.class.Type)

@@ -57,7 +57,12 @@ const recruit = plugin(recruitId, {
     EditVacancy: '' as AnyComponent
   },
   string: {
-    ConfigLabel: '' as IntlString
+    ConfigLabel: '' as IntlString,
+    RecruitApplication: '' as IntlString,
+    Application: '' as IntlString,
+    Vacancy: '' as IntlString,
+    Review: '' as IntlString,
+    Talent: '' as IntlString
   },
   icon: {
     RecruitApplication: '' as Asset,

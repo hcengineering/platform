@@ -19,12 +19,8 @@
   import { getClient } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()

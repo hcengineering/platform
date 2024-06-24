@@ -55,7 +55,6 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let standby: boolean = false
   export let showStatus: boolean = true
   export let account: Ref<Account> | undefined = undefined
 
@@ -141,17 +140,10 @@
       {variant}
       {color}
       {bColor}
-      {standby}
       bind:element
       withStatus
     />
-    {#if showStatus && account}
-      <div
-        class="hulyAvatar-statusMarker {size}"
-        class:online={userStatus?.online}
-        class:offline={!userStatus?.online}
-      />
-    {/if}
+    <div class="hulyAvatar-statusMarker {size}" class:online={userStatus?.online} class:offline={!userStatus?.online} />
   </div>
 {:else}
   <AvatarInstance
@@ -164,7 +156,6 @@
     {variant}
     {color}
     {bColor}
-    {standby}
     bind:element
   />
 {/if}

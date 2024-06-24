@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "Bitrix24 令牌 URL",
+    "Bitrix": "",
+    "BitrixDesc": "Bitrix 24 集成",
+    "Settings": "配置",
+    "NotAllowed": "没有管理员权限不允许",
+    "BitrixEntityType": "实体映射",
+    "FieldMapping": "字段映射",
+    "AddField": "添加映射",
+    "Attribute": "属性",
+    "MapField": "映射...",
+    "BitrixImport": "与 Bitrix 同步",
+    "AddMapping": "添加实体映射",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "Bitrix 24 集成扩展"
+  }
+}

@@ -36,7 +36,9 @@ export default mergeIds(driveId, drive, {
     DriveSpacePresenter: '' as AnyComponent,
     DrivePanel: '' as AnyComponent,
     DrivePresenter: '' as AnyComponent,
+    EditFile: '' as AnyComponent,
     EditFolder: '' as AnyComponent,
+    FilePanel: '' as AnyComponent,
     FolderPanel: '' as AnyComponent,
     FolderPresenter: '' as AnyComponent,
     FilePresenter: '' as AnyComponent,
@@ -46,6 +48,7 @@ export default mergeIds(driveId, drive, {
   function: {
     DriveLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     FolderLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    FileLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanRenameFile: '' as Resource<ViewActionAvailabilityFunction>,
     CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>
   },
@@ -75,15 +78,14 @@ export default mergeIds(driveId, drive, {
     RenameFolder: '' as ViewAction
   },
   string: {
+    Grid: '' as IntlString,
     Name: '' as IntlString,
     Description: '' as IntlString,
-    Size: '' as IntlString,
-    Type: '' as IntlString,
     Metadata: '' as IntlString,
-    LastModified: '' as IntlString,
     Parent: '' as IntlString,
     Path: '' as IntlString,
     Drives: '' as IntlString,
-    Download: '' as IntlString
+    Download: '' as IntlString,
+    Preview: '' as IntlString
   }
 })

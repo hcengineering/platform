@@ -1,5 +1,6 @@
 import {
   docKey,
+  type Branding,
   type Class,
   type Doc,
   type DocIndexState,
@@ -110,7 +111,8 @@ export async function updateDocWithPresenter (
   refDocs: {
     parentDoc: DocIndexState | undefined
     spaceDoc: DocIndexState | undefined
-  }
+  },
+  branding: Branding | null
 ): Promise<void> {
   const searchPresenter = findSearchPresenter(hierarchy, doc.objectClass)
   if (searchPresenter === undefined) {
@@ -134,7 +136,8 @@ export async function updateDocWithPresenter (
     props.push({
       name: 'searchShortTitle',
       config: searchPresenter.searchConfig.shortTitle,
-      provider: searchPresenter.getSearchShortTitle
+      provider: searchPresenter.getSearchShortTitle,
+      lastNameFirst: branding?.lastNameFirst
     })
   }
 

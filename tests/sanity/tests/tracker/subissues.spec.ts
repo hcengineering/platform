@@ -161,4 +161,32 @@ test.describe('Tracker sub-issues tests', () => {
       parentIssue: parentIssue.title
     })
   })
+
+  test('Sub-issues move with parent issue', async ({ page }) => {
+    const secondProjectName = 'Second Project'
+    const newIssue: NewIssue = {
+      title: `Issue for the sub-issue-${generateId()}`,
+      description: 'Description Issue for the sub-issue'
+    }
+    const newSubIssue: NewIssue = {
+      title: `New Sub-Issue with parameter-${generateId()}`,
+      description: 'New Description Sub-Issue with parameter'
+    }
+
+    await leftSideMenuPage.clickTracker()
+    await issuesPage.clickModelSelectorAll()
+    await issuesPage.createNewIssue(newIssue)
+    await issuesPage.searchIssueByName(newIssue.title)
+    await issuesPage.openIssueByName(newIssue.title)
+    await issuesDetailsPage.clickButtonAddSubIssue()
+
+    await issuesPage.fillNewIssueForm(newSubIssue)
+    await issuesPage.clickButtonCreateIssue()
+
+    await issuesDetailsPage.moreActionOnIssue('Move to project')
+    await issuesDetailsPage.fillMoveIssuesModal(secondProjectName)
+    await page.waitForTimeout(1500)
+    await issuesDetailsPage.openSubIssueByName(newSubIssue.title)
+    await expect(issuesDetailsPage.textIdentifier()).toHaveText(/SECON-\d+/)
+  })
 })

@@ -13,6 +13,7 @@ export class PlanningPage extends CalendarPage {
   private readonly popup = (): Locator => this.page.locator('div.popup')
   private readonly panel = (): Locator => this.page.locator('div.hulyModal-container')
   private readonly toDosContainer = (): Locator => this.page.locator('div.toDos-container')
+  private readonly schedule = (): Locator => this.page.locator('div.hulyComponent.modal')
   readonly pageHeader = (): Locator =>
     this.page.locator('div[class*="navigator"] div[class*="header"]', { hasText: 'Planning' })
 
@@ -30,6 +31,10 @@ export class PlanningPage extends CalendarPage {
   readonly buttonPanelCreatePriority = (): Locator => this.panel().locator('button#priorityButton')
   readonly buttonPopupCreateVisible = (): Locator => this.popup().locator('button#visibleButton')
   readonly buttonPanelCreateVisible = (): Locator => this.panel().locator('button#visibleButton')
+  readonly buttonPopupVisibleToEveryone = (): Locator =>
+    this.popup().getByRole('button', { name: 'Visible to everyone' })
+
+  readonly buttonPopupSave = (): Locator => this.popup().getByRole('button', { name: 'Save' })
   readonly buttonPopupCreateAddLabel = (): Locator =>
     this.popup().locator('button.antiButton', { hasText: 'Add label' })
 
@@ -65,6 +70,29 @@ export class PlanningPage extends CalendarPage {
   readonly buttonMenuDelete = (): Locator => this.page.locator('button.ap-menuItem span', { hasText: 'Delete' })
   readonly buttonPopupSelectDateNextMonth = (): Locator =>
     this.popup().locator('div.header > div:last-child > button:last-child')
+
+  readonly selectInputToDo = (): Locator => this.toDosContainer().getByPlaceholder('Add todo, press Enter to save')
+  readonly selectTomorrow = (time: string): Locator =>
+    this.schedule().locator(`div.time-cell:text-is('${time}')`).locator('xpath=following::div[2]')
+
+  readonly eventInSchedule = (title: string): Locator =>
+    this.schedule().locator('div.event-container', { hasText: title })
+
+  async dragdropTomorrow (title: string, time: string): Promise<void> {
+    await this.toDosContainer().getByRole('button', { name: title }).hover()
+    await this.page.mouse.down()
+    const boundingBox = await this.selectTomorrow(time).boundingBox()
+    expect(boundingBox).toBeTruthy()
+    if (boundingBox != null) {
+      await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
+      await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 20)
+      await this.page.mouse.up()
+    }
+  }
+
+  async checkInSchedule (title: string): Promise<void> {
+    await expect(this.eventInSchedule(title)).toBeVisible()
+  }
 
   async clickButtonCreateAddSlot (): Promise<void> {
     await this.buttonPanelCreateAddSlot().click({ force: true })

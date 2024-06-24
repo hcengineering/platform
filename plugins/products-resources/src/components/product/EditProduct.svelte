@@ -58,13 +58,6 @@
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   const me = getCurrentAccount()._id
-  // We need to think about this issue and redesign somehow?
-  const ignoredMixins = [
-    core.mixin.SpacesTypeData,
-    documents.mixin.DocumentSpaceTypeData,
-    'training:mixin:TrainingsTypeData' as any
-  ]
-
   let object: Product | undefined
   let title = ''
   let showAllMixins = false
@@ -118,12 +111,30 @@
   $: canEdit =
     !readonly &&
     object !== undefined &&
+    !object.archived &&
     ((object.owners?.includes(me) ?? false) ||
       checkMyPermission(core.permission.UpdateSpace, _id, $permissionsStore) ||
       checkMyPermission(core.permission.UpdateObject, core.space.Space, $permissionsStore))
 
   $: descriptionKey = client.getHierarchy().getAttribute(products.class.Product, 'fullDescription')
-  $: mixins = object !== undefined ? getDocMixins(object, showAllMixins, new Set(ignoredMixins)) : []
+  $: otherSpaceTypesMixins = new Set(
+    object !== undefined
+      ? client
+        .getModel()
+        .findAllSync(
+          core.class.SpaceType,
+          {
+            _id: { $ne: object.type }
+          },
+          {
+            projection: { targetClass: 1 }
+          }
+        )
+        ?.map((st) => st.targetClass) ?? []
+      : []
+  )
+  $: mixins =
+    object !== undefined ? getDocMixins(object, showAllMixins).filter((m) => !otherSpaceTypesMixins.has(m._id)) : []
 </script>
 
 {#if object !== undefined}

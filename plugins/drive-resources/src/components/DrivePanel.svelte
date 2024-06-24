@@ -16,10 +16,10 @@
   import { type Ref } from '@hcengineering/core'
   import drive, { type Drive } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
-  import { Separator } from '@hcengineering/ui'
-  import { DocAttributeBar } from '@hcengineering/view-resources'
+  import { Panel, Scroller, Button, IconMoreH } from '@hcengineering/ui'
+  import { DocAttributeBar, showMenu } from '@hcengineering/view-resources'
 
-  import DriveHeader from './DriveHeader.svelte'
+  import DrivePresenter from './DrivePresenter.svelte'
   import FolderBrowser from './FolderBrowser.svelte'
 
   export let _id: Ref<Drive>
@@ -32,7 +32,6 @@
   }
 
   let object: Drive | undefined = undefined
-  let asideShown = false
 
   const query = createQuery()
   $: query.query(drive.class.Drive, { _id }, (res) => {
@@ -41,23 +40,36 @@
 </script>
 
 {#if object}
-  <div class="popupPanel panel {kind}" class:embedded>
-    <DriveHeader {object} bind:asideShown />
-
-    <div class="popupPanel-body">
-      <div class="popupPanel-body__main">
-        <FolderBrowser space={object._id} parent={drive.ids.Root} />
+  <Panel {embedded} allowClose={false} {kind} selectedAside={false}>
+    <svelte:fragment slot="title">
+      <div class="title">
+        <DrivePresenter value={object} shouldShowAvatar={false} disabled noUnderline />
       </div>
+    </svelte:fragment>
+    <svelte:fragment slot="utils">
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={(ev) => {
+          showMenu(ev, { object })
+        }}
+      />
+      <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
+    </svelte:fragment>
+    <svelte:fragment slot="aside">
+      <Scroller>
+        <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
+        <div class="space-divider bottom" />
+      </Scroller>
+    </svelte:fragment>
 
-      {#if asideShown}
-        <Separator name="aside" float={false} index={0} />
-        <div class="popupPanel-body__aside no-print" class:shown={asideShown}>
-          <Separator name={'panel-aside'} float={true} index={0} />
-          <div class="antiPanel-wrap__content">
-            <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
-          </div>
-        </div>
-      {/if}
-    </div>
-  </div>
+    <FolderBrowser
+      space={object._id}
+      parent={drive.ids.Root}
+      on:contextmenu={(evt) => {
+        showMenu(evt, { object })
+      }}
+    />
+  </Panel>
 {/if}

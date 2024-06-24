@@ -40,7 +40,8 @@ import {
   type TxFactory,
   type TxResult,
   type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import { type Readable } from 'stream'
@@ -68,7 +69,7 @@ export interface ServerStorage extends LowLevelStorage {
   close: () => Promise<void>
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   workspaceId: WorkspaceIdWithUrl
-
+  branding?: string
   storageAdapter: StorageAdapter
 }
 
@@ -81,6 +82,7 @@ export interface SessionContext extends SessionOperationContext {
   admin?: boolean
 
   workspace: WorkspaceIdWithUrl
+  branding: Branding | null
 }
 
 /**
@@ -139,8 +141,10 @@ export interface Pipeline extends LowLevelStorage {
  * @public
  */
 export interface TriggerControl {
+  operationContext: SessionOperationContext
   ctx: MeasureContext
   workspace: WorkspaceIdWithUrl
+  branding: Branding | null
   txFactory: TxFactory
   findAll: Storage['findAll']
   findAllCtx: <T extends Doc>(
@@ -437,6 +441,7 @@ export interface ServerStorageOptions {
   upgrade: boolean
 
   broadcast: BroadcastFunc
+  branding: Branding | null
 }
 
 export interface ServiceAdapter {
@@ -457,6 +462,8 @@ export interface StorageConfig {
   kind: string
   endpoint: string
   port?: number
+
+  contentTypes?: string[]
 }
 
 export interface StorageConfiguration {

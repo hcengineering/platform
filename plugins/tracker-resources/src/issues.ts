@@ -3,6 +3,7 @@ import { getMetadata } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { trackerId, type Component, type Issue, type Milestone } from '@hcengineering/tracker'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
@@ -40,7 +41,7 @@ export async function getTitle (doc: Doc): Promise<string> {
 }
 
 export function generateIssuePanelUri (issue: Issue): string {
-  return getPanelURI(tracker.component.EditIssue, issue._id, issue._class, 'content')
+  return getPanelURI(tracker.component.EditIssue, issue.identifier, issue._class, 'content')
 }
 
 export async function issueLinkFragmentProvider (doc: Doc): Promise<Location> {
@@ -73,6 +74,7 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   const client = getClient()
   const issue = await client.findOne(tracker.class.Issue, { identifier: issueId })
   if (issue === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find issue ${issueId}.`)
     return undefined
   }
@@ -123,4 +125,11 @@ export async function updateIssueRelation (
       break
   }
   await client.update(value, update)
+}
+
+export async function getIssueIdByIdentifier (identifier: string): Promise<Ref<Issue> | undefined> {
+  const client = getClient()
+  const issue = await client.findOne(tracker.class.Issue, { identifier }, { projection: { _id: 1 } })
+
+  return issue?._id
 }

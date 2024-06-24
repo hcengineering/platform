@@ -315,6 +315,7 @@
       min-height: 0;
 
       .title {
+        min-width: 0;
         padding: .125rem .375rem;
         font-size: .8125rem;
         color: var(--theme-content-color);

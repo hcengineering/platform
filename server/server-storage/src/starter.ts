@@ -1,4 +1,4 @@
-import { MinioConfig, MinioService } from '@hcengineering/minio'
+import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
 import { S3Service, type S3Config } from '@hcengineering/s3'
 import {
@@ -8,15 +8,20 @@ import {
   buildStorage,
   type StorageConfig
 } from '@hcengineering/server-core'
-import { addMinioFallback } from './minio'
 
 /*
 
-  A ';' separated list of URI's to configure the storage adapters.
+  A ';' separated list of URI's to configure the storage adapters. A new lines will be ommited during parse.
 
-  Each config is in `kind|name|uri` format.
-  Each config is in `kind===name|uri` format.
-  Last one is used as default one.
+  Each config is in `kind(,name)?|uri|contentTypes` format.
+
+  * kind - an storage kind minior/s3 for now.
+  * name - a symbolic name for provider, name could be ommited in case kind will be used as name.
+  * uri - an storage URI with encoded parameters.
+  * contentTypes - a comma separated list of content type patterns. Like 'image/*,video/gif' will match all image/* and video/gif formats.
+  So * will be replaced to `.*` for regexp
+
+  Last one is used as default one, or one with conrent type matched will be used.
 
   Example:
   STORAGE_CONFIG=kind|minio|minio:9000?accessKey=minio&secretKey=minio&useSSL=false;\
@@ -45,9 +50,9 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
     if (st.trim().length === 0 || !st.includes('|')) {
       throw new Error('Invalid storage config:' + st)
     }
-    let [kind, name, url] = st.split('|')
-    if (url == null) {
-      url = name
+    let [kindName, url, contentTypes] = st.split('|')
+    let [kind, name] = kindName.split(',')
+    if (name == null) {
       name = kind
     }
     let hasProtocol = true
@@ -61,7 +66,8 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
       kind,
       name,
       endpoint: (hasProtocol ? uri.protocol + '//' : '') + uri.hostname, // Port should go away
-      port: uri.port !== '' ? parseInt(uri.port) : undefined
+      port: uri.port !== '' ? parseInt(uri.port) : undefined,
+      contentTypes: contentTypes !== undefined ? contentTypes.split(',') : undefined
     }
 
     // Add all extra parameters

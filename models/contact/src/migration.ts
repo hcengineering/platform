@@ -254,8 +254,8 @@ export const contactOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, contactId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, contactId, [
       {
         state: 'createSpace-v2',
         func: async (client) => {

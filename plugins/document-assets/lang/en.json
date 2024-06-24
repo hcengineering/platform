@@ -48,6 +48,10 @@
     "Star": "Star",
     "Unstar": "Unstar",
 
+    "Lock": "Lock",
+    "Unlock": "Unlock",
+    "Locked": "Locked",
+
     "ConfigLabel": "Documents",
     "ConfigDescription": "Extension for collaborative document editing",
 

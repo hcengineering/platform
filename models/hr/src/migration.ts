@@ -86,8 +86,8 @@ export const hrOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, hrId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, hrId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

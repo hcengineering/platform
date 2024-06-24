@@ -24,7 +24,9 @@ import DrivePanel from './components/DrivePanel.svelte'
 import DrivePresenter from './components/DrivePresenter.svelte'
 import DriveSpaceHeader from './components/DriveSpaceHeader.svelte'
 import DriveSpacePresenter from './components/DriveSpacePresenter.svelte'
+import EditFile from './components/EditFile.svelte'
 import EditFolder from './components/EditFolder.svelte'
+import FilePanel from './components/FilePanel.svelte'
 import FilePresenter from './components/FilePresenter.svelte'
 import FileSizePresenter from './components/FileSizePresenter.svelte'
 import FolderPanel from './components/FolderPanel.svelte'
@@ -32,7 +34,7 @@ import FolderPresenter from './components/FolderPresenter.svelte'
 import GridView from './components/GridView.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
-import { getDriveLink, getFolderLink, resolveLocation } from './navigation'
+import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
 import { createFolder, renameResource } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
@@ -68,6 +70,10 @@ async function FolderLinkProvider (doc: Doc): Promise<Location> {
   return getFolderLink(doc._id as Ref<Folder>)
 }
 
+async function FileLinkProvider (doc: Doc): Promise<Location> {
+  return getFileLink(doc._id as Ref<File>)
+}
+
 async function RenameFile (doc: File | File[]): Promise<void> {
   if (!Array.isArray(doc)) {
     await renameResource(doc)
@@ -95,7 +101,9 @@ export default async (): Promise<Resources> => ({
     DriveSpaceHeader,
     DriveSpacePresenter,
     DrivePresenter,
+    EditFile,
     EditFolder,
+    FilePanel,
     FilePresenter,
     FileSizePresenter,
     FolderPanel,
@@ -113,6 +121,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     DriveLinkProvider,
+    FileLinkProvider,
     FolderLinkProvider,
     CanRenameFile,
     CanRenameFolder

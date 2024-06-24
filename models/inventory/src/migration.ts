@@ -25,8 +25,8 @@ import inventory from './plugin'
 
 export const inventoryOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, inventoryId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, inventoryId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

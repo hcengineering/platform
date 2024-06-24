@@ -31,13 +31,8 @@
     showPopup
   } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
   import EnumValues from './EnumValues.svelte'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const query = createQuery()
 
@@ -60,7 +55,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.Enums} label={setting.string.Enums} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       <ModernButton

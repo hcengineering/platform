@@ -38,7 +38,6 @@
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
-  export let visibleNav: boolean
   export let excludedPersons: Ref<Contact>[] = []
 
   const client = getClient()
@@ -48,6 +47,7 @@
   let resizeInitParams: ResizeInitParams | undefined = undefined
   let floorContainer: HTMLDivElement
   let floorRect: DOMRect
+  let floorOffsetInline: number
   const floorSize: FloorSize = {
     cols: GRID_WIDTH + 2,
     rows: 5,
@@ -290,7 +290,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       <ButtonIcon icon={IconAdd} size={'small'} on:click={addRoom} />
@@ -342,6 +342,7 @@
               if (event.detail === undefined) return
               const { room, size, offset } = event.detail
               floorRect = floorContainer.getBoundingClientRect()
+              floorOffsetInline = floorRect.x - divScroll.getBoundingClientRect().x
               dragged = {
                 x: size.x - floorRect.x + floorSize.cellRound,
                 y: size.y - floorRect.y + floorSize.cellRound,
@@ -363,7 +364,7 @@
           room={locked.room}
           cellSize={floorSize.cellSize}
           top={dragged.y}
-          left={dragged.x}
+          left={dragged.x + floorOffsetInline - floorSize.cellRound}
         />
       {/if}
     </Scroller>

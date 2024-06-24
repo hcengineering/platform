@@ -129,6 +129,7 @@ export class TDocumentSpaceType extends TSpaceType implements DocumentSpaceType 
 @Model(documents.class.DocumentSpaceTypeDescriptor, core.class.SpaceTypeDescriptor)
 export class TDocumentSpaceTypeDescriptor extends TSpaceTypeDescriptor implements DocumentSpaceTypeDescriptor {
   projectClass?: Ref<Class<Project>>
+  withProjects?: boolean
 }
 
 @Model(documents.class.OrgSpace, documents.class.DocumentSpace)
@@ -269,7 +270,6 @@ export class TDocument extends TDoc implements Document {
     state!: DocumentState
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
-  @Hidden()
     content!: CollaborativeDoc
 
   @Prop(Collection(tags.class.TagReference), documents.string.Labels)

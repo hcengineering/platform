@@ -25,7 +25,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function productHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const product = doc as Product
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${inventoryId}/Products/#${view.component.EditDoc}|${product._id}|${product._class}|content`
   const link = concatLink(front, path)
   return `<a href="${link}">${product.name}</a>`

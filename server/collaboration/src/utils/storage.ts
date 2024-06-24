@@ -27,19 +27,18 @@ export async function yDocFromStorage (
   minioDocumentId: string,
   ydoc?: YDoc
 ): Promise<YDoc | undefined> {
+  // stat the object to ensure it exists, because read will throw an error in this case
+  const blob = await storageAdapter.stat(ctx, workspace, minioDocumentId)
+  if (blob === undefined) {
+    return undefined
+  }
+
   // no need to apply gc because we load existing document
   // it is either already gc-ed, or gc not needed and it is disabled
   ydoc ??= new YDoc({ gc: false })
 
-  try {
-    const buffer = await storageAdapter.read(ctx, workspace, minioDocumentId)
-    return yDocFromBuffer(Buffer.concat(buffer), ydoc)
-  } catch (err: any) {
-    if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
-      return undefined
-    }
-    throw err
-  }
+  const buffer = await storageAdapter.read(ctx, workspace, minioDocumentId)
+  return yDocFromBuffer(Buffer.concat(buffer), ydoc)
 }
 
 /** @public */

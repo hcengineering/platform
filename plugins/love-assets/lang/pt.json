@@ -43,7 +43,9 @@
     "YouInivite": "Você está convidando para entrar",
     "NoiseCancellation": "Cancelamento de ruído",
     "KnockingLabel": "Batendo",
-    "InivitingLabel": "Convidar",
+    "InivitingLabel": "Convite",
+    "Invite": "Convidar",
+    "KnockAction": "Bater",
     "NoiseCancellationNotSupported": "Seu navegador não suporta cancelamento de ruído",
     "Blur": "Desfoque de fundo",
     "BlurRadius": "Raio de desfoque",
@@ -53,6 +55,10 @@
     "Record": "Gravar",
     "StopRecord": "Parar gravação",
     "LeaveRoomConfirmation": "Tem certeza de que deseja sair da sala?",
-    "ServiceNotConfigured": "O serviço não está configurado"
+    "ServiceNotConfigured": "O serviço não está configurado",
+    "FullscreenMode": "Modo de ecrã inteiro",
+    "ExitingFullscreenMode": "Saindo do modo de tela cheia",
+    "Select": "Seleccione",
+    "ChooseShare": "Escolha o que partilhar"
   }
 }

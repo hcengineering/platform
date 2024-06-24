@@ -275,11 +275,7 @@ async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> 
 
 async function migrateContentField (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('migrate_content_field', {})
-
   const storage = client.storageAdapter
-  if (storage === undefined) {
-    return
-  }
 
   const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
     _class: document.class.Document,
@@ -290,17 +286,20 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
     try {
       const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
       if (ydoc === undefined) {
+        ctx.error('document content not found', { document: document.name })
         continue
       }
 
-      if (!ydoc.share.has('')) {
+      if (!ydoc.share.has('') || ydoc.share.has('content')) {
         continue
       }
 
       yDocCopyXmlField(ydoc, '', 'content')
 
       await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
-    } catch {}
+    } catch (err) {
+      ctx.error('error document content migration', { error: err, document: document.name })
+    }
   }
 }
 
@@ -348,5 +347,5 @@ export const documentOperation: MigrateOperation = {
     ])
   },
 
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

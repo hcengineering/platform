@@ -14,24 +14,27 @@
 -->
 <script lang="ts">
   import { RoomType } from '@hcengineering/love'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { currentRoom } from '../stores'
   import { screenSharing } from '../utils'
   import Hall from './Hall.svelte'
   import RoomComponent from './Room.svelte'
+  import { onMount, onDestroy } from 'svelte'
 
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
+  const localNav: boolean = $deviceInfo.navigator.visible
+  const savedNav = localStorage.getItem('love-visibleNav')
+  if (savedNav !== undefined) $deviceInfo.navigator.visible = savedNav === 'true'
+  $: localStorage.setItem('love-visibleNav', JSON.stringify($deviceInfo.navigator.visible))
 
-  const saved = localStorage.getItem('love-visibleNav')
-  if (saved !== undefined) visibleNav = saved === 'true'
-  $: localStorage.setItem('love-visibleNav', JSON.stringify(visibleNav))
+  onDestroy(() => {
+    $deviceInfo.navigator.visible = localNav
+  })
 </script>
 
 <div class="hulyPanels-container" class:left-divider={$screenSharing || $currentRoom?.type === RoomType.Video}>
   {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
     <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} />
   {:else}
-    <Hall bind:visibleNav {navFloat} {appsDirection} />
+    <Hall />
   {/if}
 </div>

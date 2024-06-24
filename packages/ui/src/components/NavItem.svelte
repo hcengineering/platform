@@ -78,7 +78,7 @@
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <button
-  class="hulyNavItem-container {type} {type === 'type-anchor-link' || isSecondary
+  class="hulyNavItem-container line-height-auto {type} {type === 'type-anchor-link' || isSecondary
     ? 'font-regular-12'
     : 'font-regular-14'}"
   class:selected
@@ -128,7 +128,7 @@
     style:color={type === 'type-tag' && selected ? color : null}
   >
     {#if description}
-      <span class="hulyNavItem-label font-medium-12 mr-0-5">
+      <span class="hulyNavItem-label font-medium-12 line-height-auto mr-0-5">
         {#if label}<Label {label} />{/if}
         {#if title}{title}{/if}
         <slot />

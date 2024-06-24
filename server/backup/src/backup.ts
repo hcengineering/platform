@@ -20,6 +20,7 @@ import core, {
   Client as CoreClient,
   Doc,
   Domain,
+  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   MeasureContext,
@@ -29,7 +30,8 @@ import core, {
   SortingOrder,
   TxCollectionCUD,
   WorkspaceId,
-  type Blob
+  type Blob,
+  type DocIndexState
 } from '@hcengineering/core'
 import { BlobClient, connect } from '@hcengineering/server-tool'
 import { createGzip } from 'node:zlib'
@@ -223,7 +225,8 @@ export async function cloneWorkspace (
   sourceWorkspaceId: WorkspaceId,
   targetWorkspaceId: WorkspaceId,
   clearTime: boolean = true,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  skipFullText: boolean
 ): Promise<void> {
   const sourceConnection = (await connect(transactorUrl, sourceWorkspaceId, undefined, {
     mode: 'backup'
@@ -245,6 +248,10 @@ export async function cloneWorkspace (
 
     let i = 0
     for (const c of domains) {
+      if (skipFullText && c === DOMAIN_FULLTEXT_BLOB) {
+        console.log('clone skip domain...', c)
+        continue
+      }
       console.log('clone domain...', c)
 
       // We need to clean target connection before copying something.
@@ -321,6 +328,12 @@ export async function cloneWorkspace (
               } catch (err: any) {
                 console.log(err)
               }
+
+              // if full text is skipped, we need to clean stages for indexes.
+              if (p._class === core.class.DocIndexState && skipFullText) {
+                ;(p as DocIndexState).stages = {}
+              }
+
               if (collectionCud) {
                 return {
                   ...p,
@@ -346,7 +359,8 @@ export async function cloneWorkspace (
               const blob = d as Blob
               const blobs: Buffer[] = []
               try {
-                await blobClientSource.writeTo(new MeasureMetricsContext('upload', {}), blob._id, blob.size, {
+                const ctx = new MeasureMetricsContext('upload', {})
+                await blobClientSource.writeTo(ctx, blob._id, blob.size, {
                   write: (b, cb) => {
                     blobs.push(b)
                     cb()
@@ -356,7 +370,7 @@ export async function cloneWorkspace (
                   }
                 })
 
-                await blobClientTarget.upload(blob._id, blob.size, blob.contentType, Buffer.concat(blobs))
+                await blobClientTarget.upload(ctx, blob._id, blob.size, blob.contentType, Buffer.concat(blobs))
               } catch (err: any) {
                 console.error(err)
               }
@@ -419,6 +433,7 @@ export async function backup (
   workspaceId: WorkspaceId,
   storage: BackupStorage,
   options: {
+    include?: Set<string>
     skipDomains: string[]
     force: boolean
     recheck: boolean
@@ -461,7 +476,13 @@ export async function backup (
       ...connection
         .getHierarchy()
         .domains()
-        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL && !options.skipDomains.includes(it))
+        .filter(
+          (it) =>
+            it !== DOMAIN_TRANSIENT &&
+            it !== DOMAIN_MODEL &&
+            !options.skipDomains.includes(it) &&
+            (options.include === undefined || options.include.has(it))
+        )
     ]
     ctx.info('domains for dump', { domains: domains.length })
 
@@ -859,6 +880,80 @@ export async function backupList (storage: BackupStorage): Promise<void> {
 
 /**
  * @public
+ */
+export async function backupFind (storage: BackupStorage, id: Ref<Doc>, domain?: string): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+
+  const toolCtx = new MeasureMetricsContext('', {})
+
+  const snapshots = backupInfo.snapshots
+  const rnapshots = Array.from(backupInfo.snapshots).reverse()
+
+  // Collect all possible domains
+  const domains = new Set<Domain>()
+  for (const s of snapshots) {
+    Object.keys(s.domains).forEach((it) => domains.add(it as Domain))
+  }
+
+  for (const dd of domains) {
+    if (domain !== undefined && dd !== domain) {
+      continue
+    }
+    console.log('checking:', dd)
+    const sDigest = await loadDigest(toolCtx, storage, snapshots, dd)
+    if (sDigest.has(id)) {
+      console.log('we found file')
+      let found = false
+      for (const sn of rnapshots) {
+        const d = sn.domains[dd]
+        if (found) {
+          break
+        }
+        for (const sf of d?.storage ?? []) {
+          if (found) {
+            break
+          }
+          console.log('processing', sf)
+          const readStream = await storage.load(sf)
+          const ex = extract()
+
+          ex.on('entry', (headers, stream, next) => {
+            if (headers.name === id + '.json') {
+              console.log('file found in:', sf)
+              found = true
+            }
+            next()
+            stream.resume() // just auto drain the stream
+          })
+
+          const endPromise = new Promise((resolve) => {
+            ex.on('finish', () => {
+              resolve(null)
+            })
+          })
+          const unzip = createGunzip({ level: defaultLevel })
+
+          readStream.on('end', () => {
+            readStream.destroy()
+          })
+          readStream.pipe(unzip)
+          unzip.pipe(ex)
+
+          await endPromise
+        }
+      }
+    }
+  }
+}
+
+/**
+ * @public
  * Restore state of DB to specified point.
  */
 export async function restore (
@@ -913,6 +1008,22 @@ export async function restore (
   const allDomains = connection.getHierarchy().domains()
   for (const d of allDomains) {
     domains.add(d)
+  }
+
+  let uploadedMb = 0
+  let uploaded = 0
+
+  const printUploaded = (msg: string, size: number): void => {
+    uploaded += size
+    const newDownloadedMb = Math.round(uploaded / (1024 * 1024))
+    const newId = Math.round(newDownloadedMb / 10)
+    if (uploadedMb !== newId) {
+      uploadedMb = newId
+      ctx.info('Uploaded', {
+        msg,
+        written: newDownloadedMb
+      })
+    }
   }
 
   async function processDomain (c: Domain): Promise<void> {
@@ -973,13 +1084,15 @@ export async function restore (
         docs.push(doc)
       }
       sendSize = sendSize + len
+
       if (sendSize > dataUploadSize || (doc === undefined && docs.length > 0)) {
-        console.log('upload', docs.length, `send: ${totalSend} from ${docsToAdd.size + totalSend}`, 'size:', sendSize)
         totalSend += docs.length
+        console.log('upload', docs.length, `send: ${totalSend} from ${docsToAdd.size + totalSend}`, 'size:', sendSize)
         await connection.upload(c, docs)
         docs.length = 0
         sendSize = 0
       }
+      printUploaded('upload', len)
     }
     let processed = 0
 
@@ -1020,9 +1133,10 @@ export async function restore (
                     blobs.delete(name)
                     const doc = d?.doc as Blob
                     ;(doc as any)['%hash%'] = changeset.get(doc._id)
-                    void blobClient.upload(doc._id, doc.size, doc.contentType, bf).then(() => {
+                    void blobClient.upload(ctx, doc._id, doc.size, doc.contentType, bf).then(() => {
                       void sendChunk(doc, bf.length).finally(() => {
                         requiredDocs.delete(doc._id)
+                        printUploaded('upload', bf.length)
                         next()
                       })
                     })
@@ -1038,21 +1152,30 @@ export async function restore (
                   const bf = Buffer.concat(chunks)
                   const doc = JSON.parse(bf.toString()) as Doc
                   if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
-                    migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
-                    const d = blobs.get(bname)
+                    const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
+                    const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
                     if (d === undefined) {
                       blobs.set(bname, { doc, buffer: undefined })
                       next()
                     } else {
                       blobs.delete(bname)
                       const blob = doc as Blob
-                      void blobClient.upload(blob._id, blob.size, blob.contentType, d.buffer as Buffer).then(() => {
-                        ;(doc as any)['%hash%'] = changeset.get(doc._id)
-                        void sendChunk(doc, bf.length).finally(() => {
-                          requiredDocs.delete(doc._id)
-                          next()
+                      void blobClient
+                        .upload(
+                          ctx,
+                          blob._id,
+                          blob.size,
+                          blob.contentType,
+                          d instanceof Buffer ? d : (d.buffer as Buffer)
+                        )
+                        .then(() => {
+                          ;(doc as any)['%hash%'] = changeset.get(doc._id)
+                          void sendChunk(doc, bf.length).finally(() => {
+                            requiredDocs.delete(doc._id)
+                            next()
+                            printUploaded('upload', bf.length)
+                          })
                         })
-                      })
                     }
                   } else {
                     ;(doc as any)['%hash%'] = changeset.get(doc._id)
@@ -1457,7 +1580,7 @@ export async function compactBackup (
 }
 
 export * from './service'
-function migradeBlobData (blob: Blob, etag: string): void {
+function migradeBlobData (blob: Blob, etag: string): string {
   if (blob._class === 'core:class:BlobData') {
     const bd = blob as unknown as BlobData
     blob.contentType = blob.contentType ?? bd.type
@@ -1465,6 +1588,9 @@ function migradeBlobData (blob: Blob, etag: string): void {
     blob.etag = etag
     blob._class = core.class.Blob
     delete (blob as any).type
+    const result = (blob as any).base64Data
     delete (blob as any).base64Data
+    return result
   }
+  return ''
 }

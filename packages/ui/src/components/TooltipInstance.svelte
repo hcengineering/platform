@@ -15,7 +15,8 @@
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
   import { resizeObserver } from '../resize'
-  import { closeTooltip, showTooltip, tooltipstore as tooltip } from '../tooltips'
+  import { closeTooltip, tooltipstore as tooltip } from '../tooltips'
+  import { modalStore as modals } from '../modals'
   import type { TooltipAlignment } from '../types'
   import Component from './Component.svelte'
   import Label from './Label.svelte'
@@ -259,6 +260,7 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="modal-overlay antiOverlay"
+    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
     on:click|stopPropagation|preventDefault={() => {
       closeTooltip()
     }}
@@ -301,6 +303,7 @@
     style:width={options.width}
     style:height={options.height}
     style:transform={options.transform}
+    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
     bind:this={tooltipHTML}
   >
     {#if $tooltip.label}
@@ -319,13 +322,18 @@
         this={$tooltip.component}
         {...$tooltip.props}
         on:tooltip={(evt) => {
-          $tooltip = { ...$tooltip, ...evt.detail }
+          $modals = [...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail }]
         }}
         on:update={onUpdate !== undefined ? onUpdate : async () => {}}
       />
     {/if}
   </div>
-  <div bind:this={nubHTML} class="nub {nubDirection ?? ''}" class:shown />
+  <div
+    bind:this={nubHTML}
+    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
+    class="nub {nubDirection ?? ''}"
+    class:shown
+  />
 {:else if $tooltip.label && $tooltip.kind !== 'submenu'}
   <div
     class="tooltip {dir ?? ''} {options.classList}"
@@ -337,6 +345,7 @@
     style:width={options.width}
     style:height={options.height}
     style:transform={options.transform}
+    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
   >
     <Label label={$tooltip.label} params={$tooltip.props ?? {}} />
     {#if $tooltip.keys !== undefined}
@@ -372,6 +381,7 @@
     style:width={options.width}
     style:height={options.height}
     style:transform={options.transform}
+    style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
     bind:this={tooltipHTML}
   >
     {#if typeof $tooltip.component === 'string'}
@@ -396,7 +406,6 @@
     width: auto;
     height: auto;
     border-radius: 0.5rem;
-    z-index: 10000;
   }
   .popup-tooltip {
     overflow: hidden;
@@ -412,7 +421,6 @@
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
     opacity: 0;
-    z-index: 10000;
 
     &.doublePadding {
       padding: 1rem;
@@ -425,7 +433,6 @@
     user-select: none;
     pointer-events: none;
     opacity: 0;
-    z-index: 10000;
 
     &::after,
     &::before {
@@ -522,7 +529,6 @@
     border-radius: 0.25rem;
     box-shadow: var(--theme-popup-shadow);
     user-select: none;
-    z-index: 10000;
     display: flex;
     align-items: center;
 
@@ -545,8 +551,6 @@
     }
   }
   .modal-overlay {
-    z-index: 10000;
-
     position: fixed;
     top: 0;
     left: 0;
