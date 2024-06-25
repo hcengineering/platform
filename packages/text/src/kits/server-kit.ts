@@ -80,7 +80,6 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       }),
       CodeBlockExtension.configure(codeBlockOptions),
       CodeExtension.configure(codeOptions),
-      CodeBlockExtension.configure(codeBlockOptions),
       ...tableExtensions,
       ...taskListExtensions,
       ...fileExtensions,
