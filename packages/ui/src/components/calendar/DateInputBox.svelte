@@ -118,6 +118,7 @@
       if (edit.value === -1 && full && i > 2) result = true
       if (edit.value === -1 && !full && i < 3) result = true
       if (i === 0 && edit.value === 0) result = true
+      if (i === 1 && edit.value === 0) result = true
       if (i === 2 && (edit.value < 1970 || edit.value > 3000)) result = true
     })
     return result
