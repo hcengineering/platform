@@ -64,6 +64,7 @@
     "Leave": "Leave workspace",
     "LeaveDescr": "Are you sure you want to leave the workspace? This action cannot be undone.",
     "Owners": "Owners",
+    "Security": "Security",
     "WorkspaceSettings": "Workspace settings",
     "Select": "Select",
     "AddOwner": "Add owner",

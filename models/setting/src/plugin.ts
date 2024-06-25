@@ -15,13 +15,13 @@
 
 import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type Doc, type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
+import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { settingId } from '@hcengineering/setting'
 import setting from '@hcengineering/setting-resources/src/plugin'
+import { type TemplateFieldFunc } from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
-import { type TemplateFieldFunc } from '@hcengineering/templates'
-import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(settingId, setting, {
   ids: {
@@ -41,6 +41,7 @@ export default mergeIds(settingId, setting, {
     RefEditor: '' as AnyComponent,
     EnumTypeEditor: '' as AnyComponent,
     Owners: '' as AnyComponent,
+    Security: '' as AnyComponent,
     CreateMixin: '' as AnyComponent,
     InviteSetting: '' as AnyComponent,
     ArrayEditor: '' as AnyComponent,

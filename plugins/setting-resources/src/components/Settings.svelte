@@ -27,6 +27,7 @@
     Scroller,
     Separator,
     defineSeparators,
+    deviceOptionsStore as deviceInfo,
     fetchMetadataLocalStorage,
     getCurrentResolvedLocation,
     navigate,
@@ -34,8 +35,7 @@
     setMetadataLocalStorage,
     settingsSeparators,
     showPopup,
-    type AnyComponent,
-    deviceOptionsStore as deviceInfo
+    type AnyComponent
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { ComponentType, onDestroy } from 'svelte'

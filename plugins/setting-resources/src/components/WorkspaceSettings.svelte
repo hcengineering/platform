@@ -45,6 +45,7 @@
     {},
     (res) => {
       categories = res.filter((p) => hasAccountRole(account, p.role))
+      console.log(categories)
       if (!admin) {
         categories = categories.filter((p) => !(p.adminOnly ?? false))
       }

@@ -15,11 +15,11 @@
 
 import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
-import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
+import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
+import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import { AnyComponent } from '@hcengineering/ui'
-import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 
-import { SpaceTypeEditor, SpaceTypeCreator } from './spaceTypeEditor'
+import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 
 export * from './spaceTypeEditor'
 export * from './utils'
@@ -126,6 +126,7 @@ export default plugin(settingId, {
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
     Owners: '' as Ref<Doc>,
+    Security: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
@@ -197,6 +198,7 @@ export default plugin(settingId, {
     ClassSetting: '' as IntlString,
     Classes: '' as IntlString,
     Owners: '' as IntlString,
+    Security: '' as IntlString,
     Configure: '' as IntlString,
     InviteSettings: '' as IntlString,
     General: '' as IntlString,
@@ -210,6 +212,7 @@ export default plugin(settingId, {
   icon: {
     AccountSettings: '' as Asset,
     Owners: '' as Asset,
+    Security: '' as Asset,
     Password: '' as Asset,
     Setting: '' as Asset,
     Integrations: '' as Asset,
