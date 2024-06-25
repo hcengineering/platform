@@ -129,7 +129,7 @@ export const completionConfig: Partial<CompletionOptions> = {
   }
 }
 
-const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line'] as const
+const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line', 'todo-list'] as const
 export type InlineCommandId = (typeof inlineCommandsIds)[number]
 
 /**
@@ -146,7 +146,8 @@ export function inlineCommandsConfig (
           { id: 'image', label: plugin.string.Image, icon: view.icon.Image },
           { id: 'table', label: plugin.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: plugin.string.CodeBlock, icon: view.icon.CodeBlock },
-          { id: 'separator-line', label: plugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
+          { id: 'separator-line', label: plugin.string.SeparatorLine, icon: view.icon.SeparatorLine },
+          { id: 'todo-list', label: plugin.string.TodoList, icon: view.icon.TodoList }
         ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {

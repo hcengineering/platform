@@ -51,6 +51,7 @@ loadMetadata(view.icon, {
   Table2: `${icons}#table2`,
   CodeBlock: `${icons}#code-block`,
   SeparatorLine: `${icons}#separator-line`,
+  TodoList: `${icons}#todo-list`,
   Circle: `${icons}#circle`,
   Join: `${icons}#join`,
   Leave: `${icons}#leave`,

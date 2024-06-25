@@ -50,6 +50,7 @@
     "Height": "Height",
     "Unset": "Unset",
     "Image": "Image",
-    "SeparatorLine": "Separator line"
+    "SeparatorLine": "Separator line",
+    "TodoList": "Todo list"
   }
 }
