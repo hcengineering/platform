@@ -116,7 +116,7 @@
   }
 
   async function selectProject (space: DocumentSpace): Promise<void> {
-    project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id)) ?? documents.ids.NoProject
+    project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id, true)) ?? documents.ids.NoProject
   }
 
   function handleDocumentSelected (doc: WithLookup<ProjectDocument>): void {
