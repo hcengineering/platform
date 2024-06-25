@@ -15,12 +15,13 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
+  import { AggregateValue, Ref } from '@hcengineering/core'
   import { IconSize } from '@hcengineering/ui'
   import { personAccountByIdStore } from '../utils'
   import PersonAccountPresenter from './PersonAccountPresenter.svelte'
+  import { personStore } from '..'
 
-  export let value: Ref<PersonAccount>
+  export let value: Ref<PersonAccount> | AggregateValue
   export let avatarSize: IconSize = 'x-small'
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
@@ -30,7 +31,8 @@
   export let noUnderline: boolean = false
   export let compact = false
 
-  $: account = $personAccountByIdStore.get(value)
+  $: _value = $personStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<PersonAccount>))
+  $: account = $personAccountByIdStore.get(_value?._id ?? (value as Ref<PersonAccount>))
 </script>
 
 {#if account}

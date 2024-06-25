@@ -15,7 +15,7 @@
 //
 import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
-import { type StatusCategory, type Doc, type Ref } from '@hcengineering/core'
+import { type StatusCategory, type Doc, type Ref, type DocManager } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
@@ -119,5 +119,10 @@ export default mergeIds(trackerId, tracker, {
     Started: '' as Ref<StatusCategory>,
     Completed: '' as Ref<StatusCategory>,
     Canceled: '' as Ref<StatusCategory>
+  },
+
+  function: {
+    SetComponentStore: '' as Resource<(manager: DocManager<any>) => void>,
+    ComponentFilterFunction: '' as Resource<(doc: Doc, target: Doc) => boolean>
   }
 })

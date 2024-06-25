@@ -20,7 +20,7 @@ import core, {
 } from '@hcengineering/core'
 import { getResource, translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
-import view, { type AggregationManager } from '@hcengineering/view'
+import view, { type IAggregationManager } from '@hcengineering/view'
 
 /**
  * @public
@@ -39,7 +39,7 @@ export interface DocSubScriber<T extends Doc = Doc> {
  * @public
  */
 export class AggregationMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
-  mgrs: Map<Ref<Class<Doc>>, AggregationManager> = new Map<Ref<Class<Doc>>, AggregationManager>()
+  mgrs: Map<Ref<Class<Doc>>, IAggregationManager<any>> = new Map<Ref<Class<Doc>>, IAggregationManager<any>>()
   docs: Doc[] | undefined
 
   subscribers: Map<string, DocSubScriber> = new Map<string, DocSubScriber>()
@@ -121,17 +121,30 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     return { unsubscribe: ret.unsubscribe }
   }
 
-  private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<AggregationManager | undefined> {
+  private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<IAggregationManager<any> | undefined> {
     let mgr = this.mgrs.get(_class)
 
     if (mgr === undefined) {
       const h = this.client.getHierarchy()
       const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
-      if (mixin?.createAggregationManager !== undefined) {
+      if (
+        mixin?.createAggregationManager !== undefined &&
+        mixin?.setStoreFunc !== undefined &&
+        mixin?.filterFunc !== undefined &&
+        mixin?._class !== undefined
+      ) {
         const f = await getResource(mixin.createAggregationManager)
-        mgr = f(this.client, () => {
-          this.refreshSubscribers()
-        })
+        const storeFunc = await getResource(mixin.setStoreFunc)
+        const filterFunc = await getResource(mixin.filterFunc)
+        mgr = f(
+          this.client,
+          () => {
+            this.refreshSubscribers()
+          },
+          storeFunc,
+          filterFunc,
+          _class
+        )
         this.mgrs.set(_class, mgr)
       }
     }
