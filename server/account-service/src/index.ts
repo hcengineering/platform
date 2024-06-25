@@ -13,10 +13,17 @@ import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { type Data, type MeasureContext, type Tx, type Version, type BrandingMap } from '@hcengineering/core'
+import {
+  metricsAggregate,
+  type BrandingMap,
+  type Data,
+  type MeasureContext,
+  type Tx,
+  type Version
+} from '@hcengineering/core'
 import { type MigrateOperation } from '@hcengineering/model'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
 import { type IncomingHttpHeaders } from 'http'
@@ -24,6 +31,7 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
+import os from 'os'
 
 /**
  * @public
@@ -107,15 +115,17 @@ export function serveAccount (
 
     const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
     if (performUpgrade) {
-      worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
-      await worker.upgradeAll(measureCtx, {
-        errorHandler: async (ws, err) => {
-          Analytics.handleError(err)
-        },
-        force: false,
-        console: false,
-        logs: 'upgrade-logs',
-        parallel: parseInt(process.env.PARALLEL ?? '1')
+      await measureCtx.with('upgrade-all-models', {}, async (ctx) => {
+        worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
+        await worker.upgradeAll(ctx, {
+          errorHandler: async (ws, err) => {
+            Analytics.handleError(err)
+          },
+          force: false,
+          console: false,
+          logs: 'upgrade-logs',
+          parallel: parseInt(process.env.PARALLEL ?? '1')
+        })
       })
     }
   })
@@ -127,6 +137,32 @@ export function serveAccount (
       return undefined
     }
   }
+
+  router.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      const data: Record<string, any> = {
+        metrics: admin ? metricsAggregate((measureCtx as any).metrics) : {},
+        statistics: {}
+      }
+      data.statistics.totalClients = 0
+      data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100
+      data.statistics.memoryTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100
+      data.statistics.cpuUsage = Math.round(os.loadavg()[0] * 100) / 100
+      data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
+      data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100
+      const json = JSON.stringify(data)
+      req.res.writeHead(200, { 'Content-Type': 'application/json' })
+      req.res.end(json)
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.error(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
@@ -153,7 +189,11 @@ export function serveAccount (
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await method(measureCtx, db, productId, branding, request, token)
+    const result = await measureCtx.with(
+      request.method,
+      {},
+      async (ctx) => await method(ctx, db, productId, branding, request, token)
+    )
 
     worker?.updateResponseStatistics(result)
     ctx.body = result

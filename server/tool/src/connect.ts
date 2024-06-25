@@ -139,7 +139,7 @@ export class BlobClient {
     }
   ): Promise<void> {
     let written = 0
-    const chunkSize = 1024 * 1024
+    const chunkSize = 50 * 1024 * 1024
     let writtenMb = 0
 
     // Use ranges to iterave through file with retry if required.
@@ -148,12 +148,25 @@ export class BlobClient {
       let response: Response | undefined
       for (; i < 5; i++) {
         try {
-          response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, {
-            headers: {
-              Authorization: 'Bearer ' + this.token,
-              Range: `bytes=${written}-${size === -1 ? written + chunkSize : Math.min(size - 1, written + chunkSize)}`
-            }
-          })
+          const st = Date.now()
+
+          const header: Record<string, string> = {
+            Authorization: 'Bearer ' + this.token
+          }
+
+          if (!(size !== -1 && written === 0 && size < chunkSize)) {
+            header.Range = `bytes=${written}-${size === -1 ? written + chunkSize : Math.min(size - 1, written + chunkSize)}`
+          }
+
+          response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, { headers: header })
+          if (header.Range != null) {
+            ctx.info('fetch part', { time: Date.now() - st, blobId: name, written, size })
+          }
+          if (response.status === 403) {
+            i = 5
+            // No file, so make it empty
+            throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+          }
           if (response.status === 404) {
             i = 5
             // No file, so make it empty
@@ -169,6 +182,10 @@ export class BlobClient {
             throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
           }
           const chunk = Buffer.from(await response.arrayBuffer())
+
+          if (header.Range == null) {
+            size = chunk.length
+          }
           // We need to parse
           // 'Content-Range': `bytes ${start}-${end}/${size}`
           // To determine if something is left
@@ -223,12 +240,13 @@ export class BlobClient {
     for (let i = 0; i < 5; i++) {
       try {
         await fetch(
-          this.transactorAPIUrl + `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}`,
+          this.transactorAPIUrl +
+            `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}&size=${size}`,
           {
             method: 'PUT',
             headers: {
               Authorization: 'Bearer ' + this.token,
-              'Content-Type': 'application/octet-stream'
+              'Content-Type': contentType
             },
             body: buffer
           }
@@ -239,9 +257,6 @@ export class BlobClient {
           ctx.error('failed to upload file', { name })
           throw err
         }
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, 500)
-        })
       }
     }
   }

@@ -87,10 +87,11 @@ import {
   TSpace,
   TSpaceType,
   TSpaceTypeDescriptor,
-  TTypedSpace,
-  TSystemSpace
+  TSystemSpace,
+  TTypedSpace
 } from './security'
-import { TStatus, TStatusCategory, TDomainStatusPlaceholder } from './status'
+import { defineSpaceType } from './spaceType'
+import { TDomainStatusPlaceholder, TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
 import {
   TTx,
@@ -103,7 +104,6 @@ import {
   TTxUpdateDoc,
   TTxWorkspaceEvent
 } from './tx'
-import { defineSpaceType } from './spaceType'
 
 export { coreId } from '@hcengineering/core'
 export * from './core'

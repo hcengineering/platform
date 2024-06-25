@@ -75,12 +75,25 @@ class StorageBlobAdapter implements DbAdapter {
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
     // We need to update docs to have provider === defualt one.
     if ('adapters' in this.client) {
+      const toUpload: Doc[] = []
       const adapterEx = this.client as StorageAdapterEx
       for (const d of docs) {
+        // We need sync stats to be sure all info are correct from storage.
         if (d._class === core.class.Blob) {
-          ;(d as Blob).provider = adapterEx.defaultAdapter
+          const blob = d as Blob
+          const blobStat = await this.client.stat(ctx, this.workspaceId, blob.storageId)
+          if (blobStat !== undefined) {
+            blob.provider = adapterEx.defaultAdapter
+            blob.etag = blobStat.etag
+            blob.contentType = blobStat.contentType
+            blob.version = blobStat.version
+            blob.size = blobStat.size
+
+            toUpload.push(blob)
+          }
         }
       }
+      docs = toUpload
     }
     await this.blobAdapter.upload(ctx, domain, docs)
   }

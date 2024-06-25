@@ -183,27 +183,28 @@ export class MemRawDBAdapter implements RawDBAdapter {
     ctx: MeasureContext,
     workspace: WorkspaceId,
     domain: Domain,
-    query: { _class: Ref<Class<T>> } & DocumentQuery<T>,
+    query: DocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ): Promise<FindResult<T>> {
     const db = this.workspaces.get(workspace.name)
     if (db === undefined) {
       return toFindResult([])
     }
-    return await db.findAll(query._class as Ref<Class<T>>, query, options)
+    return await db.findAll(core.class.Blob as Ref<Class<T>>, query, options)
   }
 
   async findStream<T extends Doc>(
     ctx: MeasureContext,
     workspace: WorkspaceId,
     domain: Domain,
-    query: { _class: Ref<Class<T>> } & DocumentQuery<T>,
+    query: DocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ): Promise<RawDBAdapterStream<T>> {
     const db = this.workspaces.get(workspace.name)
+
     let result: T[] = []
     if (db !== undefined) {
-      result = await db.findAll(query._class as Ref<Class<T>>, query, options)
+      result = await db.findAll(core.class.Blob as Ref<Class<T>>, query, options)
     }
     return {
       next: async () => {

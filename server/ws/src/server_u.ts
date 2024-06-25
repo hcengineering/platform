@@ -318,13 +318,22 @@ export function startUWebsocketServer (
 
         const name = req.getQuery('name') as string
         const contentType = req.getQuery('contentType') as string
+        const size = parseInt((req.getQuery('size') as string) ?? '-1')
 
         const pipe = pipeFromRequest(res)
         void ctx
           .with(
             'storage upload',
             { workspace: payload.workspace.name },
-            async () => await externalStorage.put(ctx, payload.workspace, name, pipe, contentType),
+            async () =>
+              await externalStorage.put(
+                ctx,
+                payload.workspace,
+                name,
+                pipe,
+                contentType,
+                size !== -1 ? size : undefined
+              ),
             { file: name, contentType }
           )
           .then(() => {

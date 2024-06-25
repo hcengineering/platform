@@ -136,11 +136,11 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
 export class TBlob extends TDoc implements Blob {
   @Prop(TypeString(), core.string.Blob)
   @ReadOnly()
+  @Index(IndexKind.Indexed)
     provider!: string
 
   @Prop(TypeString(), core.string.BlobContentType)
   @ReadOnly()
-  @Index(IndexKind.Indexed)
     contentType!: string
 
   @Prop(TypeString(), core.string.BlobStorageId)

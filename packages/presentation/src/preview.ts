@@ -44,22 +44,9 @@ const defaultPreview = (): ProviderPreviewConfig => ({
 - contentTypes - a ',' separated list of content type patterns.
 
  */
-export function parsePreviewConfig (config?: string): PreviewConfig {
+export function parsePreviewConfig (config?: string): PreviewConfig | undefined {
   if (config === undefined) {
-    // TODO: Remove after all migrated
-    return {
-      default: defaultPreview(),
-      previewers: {
-        '': [
-          {
-            providerId: '',
-            contentTypes: ['image/gif', 'image/apng', 'image/svg'], // Disable gif and apng format preview.
-            formats: [],
-            previewUrl: ''
-          }
-        ]
-      }
-    }
+    return
   }
   const result: PreviewConfig = { previewers: {} }
   const nolineData = config
@@ -99,7 +86,21 @@ export function parsePreviewConfig (config?: string): PreviewConfig {
 }
 
 export function getPreviewConfig (): PreviewConfig {
-  return getMetadata(presentation.metadata.PreviewConfig) as PreviewConfig
+  return (
+    (getMetadata(presentation.metadata.PreviewConfig) as PreviewConfig) ?? {
+      default: defaultPreview(),
+      previewers: {
+        '': [
+          {
+            providerId: '',
+            contentTypes: ['image/gif', 'image/apng', 'image/svg'], // Disable gif and apng format preview.
+            formats: [],
+            previewUrl: ''
+          }
+        ]
+      }
+    }
+  )
 }
 
 export async function getBlobRef (

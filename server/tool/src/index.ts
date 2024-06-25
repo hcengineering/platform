@@ -174,6 +174,13 @@ export async function initModel (
   }
 }
 
+export function getStorageAdapter (): StorageAdapter {
+  const { mongodbUri } = prepareTools([])
+
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  return buildStorageFromConfig(storageConfig, mongodbUri)
+}
+
 /**
  * @public
  */
@@ -213,16 +220,19 @@ export async function upgradeModel (
     )
 
     await progress(0)
-    await ctx.with('pre-migrate', {}, async () => {
+    await ctx.with('pre-migrate', {}, async (ctx) => {
       let i = 0
       for (const op of migrateOperations) {
         if (op[1].preMigrate === undefined) {
           continue
         }
+        const preMigrate = op[1].preMigrate
 
         const t = Date.now()
         try {
-          await op[1].preMigrate(preMigrateClient, logger)
+          await ctx.with(op[0], {}, async (ctx) => {
+            await preMigrate(preMigrateClient, logger)
+          })
         } catch (err: any) {
           logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
           throw err
@@ -280,12 +290,14 @@ export async function upgradeModel (
       workspaceId
     )
 
-    await ctx.with('migrate', {}, async () => {
+    await ctx.with('migrate', {}, async (ctx) => {
       let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
         try {
-          await op[1].migrate(migrateClient, logger)
+          await ctx.with(op[0], {}, async () => {
+            await op[1].migrate(migrateClient, logger)
+          })
         } catch (err: any) {
           logger.error(`error during migrate: ${op[0]} ${err.message}`, err)
           throw err
@@ -295,6 +307,7 @@ export async function upgradeModel (
         i++
       }
     })
+
     logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
 
     let connection: (CoreClient & BackupClient) | undefined
@@ -317,11 +330,13 @@ export async function upgradeModel (
         return connection
       })
     try {
-      await ctx.with('upgrade', {}, async () => {
+      await ctx.with('upgrade', {}, async (ctx) => {
         let i = 0
         for (const op of migrateOperations) {
           const t = Date.now()
-          await op[1].upgrade(migrateState, getUpgradeClient, logger)
+          await ctx.with(op[0], {}, async () => {
+            await op[1].upgrade(migrateState, getUpgradeClient, logger)
+          })
           logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
           await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
           i++

@@ -592,6 +592,12 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
+    .option(
+      '-ct, --contentTypes <contentTypes>',
+      'A list of ; separated content types for blobs to skip download if size >= limit',
+      ''
+    )
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 15mb)', '15')
     .option('-f, --force', 'Force backup', false)
     .option('-c, --recheck', 'Force hash recheck on server', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
@@ -599,7 +605,15 @@ export function devTool (
       async (
         dirName: string,
         workspace: string,
-        cmd: { skip: string, force: boolean, recheck: boolean, timeout: string, include: string }
+        cmd: {
+          skip: string
+          force: boolean
+          recheck: boolean
+          timeout: string
+          include: string
+          blobLimit: string
+          contentTypes: string
+        }
       ) => {
         const storage = await createFileBackupStorage(dirName)
         await backup(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, {
@@ -608,7 +622,12 @@ export function devTool (
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
           skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
           timeout: 0,
-          connectTimeout: parseInt(cmd.timeout) * 1000
+          connectTimeout: parseInt(cmd.timeout) * 1000,
+          blobDownloadLimit: parseInt(cmd.blobLimit),
+          skipBlobContentTypes: cmd.contentTypes
+            .split(';')
+            .map((it) => it.trim())
+            .filter((it) => it.length > 0)
         })
       }
     )

@@ -17,7 +17,7 @@ import { MeasureMetricsContext, generateId } from '@hcengineering/core'
 import { objectsToArray, type StorageConfiguration } from '@hcengineering/server-core'
 import { S3Service, processConfigFromEnv, type S3Config } from '..'
 
-describe('minio operations', () => {
+describe('s3 operations', () => {
   const config: StorageConfiguration = { default: 'minio', storages: [] }
   const minioConfigVar = processConfigFromEnv(config)
   if (minioConfigVar !== undefined || config.storages[0] === undefined) {
