@@ -304,6 +304,12 @@
                   size={'small'}
                   label={setting.string.EnterOptionTitle}
                   on:keydown={handleKeydown}
+                  on:blur={() => {
+                    newValue = newValue.trim()
+                    if (!newValue.length) return
+                    add()
+                    newItem = false
+                  }}
                   bind:value={newValue}
                   width={'100%'}
                   autoFocus
