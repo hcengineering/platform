@@ -107,6 +107,7 @@ export default mergeIds(settingId, setting, {
     AddDomain: '' as IntlString,
     Domain: '' as IntlString,
     EnterDomain: '' as IntlString,
-    SaveDomain: '' as IntlString
+    SaveDomain: '' as IntlString,
+    AllowMembersToInvite: '' as IntlString
   }
 })

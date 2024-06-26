@@ -120,6 +120,7 @@
     "AddDomain": "Add domain",
     "Domain": "Domain",
     "EnterDomain": "Enter domain",
-    "SaveDomain": "Save domain"
+    "SaveDomain": "Save domain",
+    "AllowMembersToInvite": "Allow members to invite new users to the workspace"
   }
 }

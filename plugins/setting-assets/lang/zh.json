@@ -120,6 +120,7 @@
     "AddDomain": "添加域",
     "Domain": "域",
     "EnterDomain": "输入域",
-    "SaveDomain": "保存域"
+    "SaveDomain": "保存域",
+    "AllowMembersToInvite": "允许成员邀请新用户加入工作区"
   }
 }

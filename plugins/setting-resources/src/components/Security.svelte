@@ -13,10 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Breadcrumb, Button, Header, Scroller, showPopup } from '@hcengineering/ui'
+  import { Breadcrumb, Button, Header, Scroller, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
   import setting from '../plugin'
   import AddDomain from './AddDomain.svelte'
+
+  let allowMembersToInvite = false // TODO: Get from settings
 
   const showCreateDialog = async () => {
     showPopup(AddDomain, { targetElement: null }, 'top')
@@ -33,9 +35,18 @@
         <div class="mb-1 text-normal font-medium caption-color">
           <Label label={setting.string.PermittedEmailDomains} />
         </div>
-        <div class="flex-col flex-gap-2 items-start">
+        <div class="mb-1 flex-col flex-gap-2 items-start">
           <Label label={setting.string.EmailDomainRegistrationMessage} />
           <Button label={setting.string.AddDomain} on:click={showCreateDialog} />
+        </div>
+        <div class="flex-col flex-gap-2 items-start">
+          <ToggleWithLabel 
+            label={setting.string.AllowMembersToInvite}
+            bind:on={allowMembersToInvite}
+            on:change={(e) => {
+              // TODO: Save to settings
+            }}
+          />
         </div>
       </div>
     </Scroller>

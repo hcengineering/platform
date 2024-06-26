@@ -111,6 +111,7 @@
     "AddDomain": "Agregar dominio",
     "Domain": "Dominio",
     "EnterDomain": "Introduce el dominio",
-    "SaveDomain": "Guardar dominio"
+    "SaveDomain": "Guardar dominio",
+    "AllowMembersToInvite": "Permitir a los miembros invitar a nuevos usuarios al espacio de trabajo"
   }
 }
