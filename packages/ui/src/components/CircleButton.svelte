@@ -54,7 +54,7 @@
   {#if $$slots.content}
     <slot name="content" />
   {:else if icon}
-    <div class="content">
+    <div class="flex-center content">
       <Icon {icon} size={'full'} />
     </div>
   {/if}
