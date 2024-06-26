@@ -81,6 +81,7 @@ export default plugin(textEditorId, {
     Height: '' as IntlString,
     Unset: '' as IntlString,
     Image: '' as IntlString,
-    SeparatorLine: '' as IntlString
+    SeparatorLine: '' as IntlString,
+    TodoList: '' as IntlString
   }
 })

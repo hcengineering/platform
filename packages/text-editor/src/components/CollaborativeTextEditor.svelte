@@ -308,7 +308,8 @@
             ...(canEmbedImages ? [{ id: 'image', label: textEditorPlugin.string.Image, icon: view.icon.Image }] : []),
             { id: 'table', label: textEditorPlugin.string.Table, icon: view.icon.Table2 },
             { id: 'code-block', label: textEditorPlugin.string.CodeBlock, icon: view.icon.CodeBlock },
-            { id: 'separator-line', label: textEditorPlugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
+            { id: 'separator-line', label: textEditorPlugin.string.SeparatorLine, icon: view.icon.SeparatorLine },
+            { id: 'todo-list', label: textEditorPlugin.string.TodoList, icon: view.icon.TodoList }
           ],
           handleSelect: handleLeftMenuClick
         })
@@ -401,6 +402,9 @@
           }
         )
         editor.commands.focus(pos, { scrollIntoView: false })
+        break
+      case 'todo-list':
+        editor.commands.toggleTaskList()
         break
       case 'separator-line':
         editor.commands.setHorizontalRule()
