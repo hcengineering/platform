@@ -105,6 +105,12 @@
     "Branding": "Marca",
     "Assignees": "Atribuídos",
     "DeleteRole": "Eliminar función",
-    "DeleteRoleConfirmation": "¿Está seguro de que desea eliminar esta función? Todos los usuarios con este rol perderán sus permisos"
+    "DeleteRoleConfirmation": "¿Está seguro de que desea eliminar esta función? Todos los usuarios con este rol perderán sus permisos",
+    "PermittedEmailDomains": "Permitir dominios de correo electrónico",
+    "EmailDomainRegistrationMessage": "Solo las personas con un correo electrónico de la lista de dominios pueden registrarse para este espacio de trabajo.",
+    "AddDomain": "Agregar dominio",
+    "Domain": "Dominio",
+    "EnterDomain": "Introduce el dominio",
+    "SaveDomain": "Guardar dominio"
   }
 }

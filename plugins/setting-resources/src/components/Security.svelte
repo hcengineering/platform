@@ -13,74 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
-  import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
-  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, Button, Header, Scroller, showPopup } from '@hcengineering/ui'
+  import Label from '@hcengineering/ui/src/components/Label.svelte'
   import setting from '../plugin'
+  import AddDomain from './AddDomain.svelte'
 
-  const client = getClient()
-  const query = createQuery()
-  const currentAccount = getCurrentAccount()
-
-  const items: DropdownIntlItem[] = [
-    { id: AccountRole.User, label: setting.string.User },
-    { id: AccountRole.Maintainer, label: setting.string.Maintainer },
-    { id: AccountRole.Owner, label: setting.string.Owner }
-  ]
-
-  let accounts: PersonAccount[] = []
-  let owners: PersonAccount[] = []
-  $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
-
-  query.query(contact.class.PersonAccount, {}, (res) => {
-    owners = res.filter((p) => p.role === AccountRole.Owner)
-    accounts = res
-  })
-
-  async function change (account: PersonAccount, value: AccountRole): Promise<void> {
-    await client.update(account, {
-      role: value
-    })
+  const showCreateDialog = async () => {
+    showPopup(AddDomain, { targetElement: null }, 'top')
   }
-  let search = ''
-
-  $: employees = $employeesStore
-    .filter((p) => p.active)
-    .sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
 </script>
 
 <div class="hulyComponent">
   <Header>
     <Breadcrumb icon={setting.icon.Security} label={setting.string.Security} size={'large'} isCurrent />
-    <EditBox kind={'search-style'} focusIndex={1} bind:value={search} placeholder={presentation.string.Search} />
   </Header>
   <div class="hulyComponent-content__column content">
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="hulyComponent-content">
-        {#each employees as employee (employee._id)}
-          {@const acc = accounts.find((p) => p.person === employee._id)}
-          {#if acc && employee.name?.includes(search)}
-            <div class="flex-row-center p-2 flex-no-shrink">
-              <div class="p-1 min-w-80">
-                <EmployeePresenter value={employee} disabled={false} />
-              </div>
-              <DropdownLabelsIntl
-                label={setting.string.Role}
-                disabled={!hasAccountRole(currentAccount, acc.role) ||
-                  (acc.role === AccountRole.Owner && owners.length === 1)}
-                kind={'primary'}
-                size={'medium'}
-                {items}
-                selected={acc.role}
-                on:selected={(e) => {
-                  void change(acc, e.detail)
-                }}
-              />
-            </div>
-          {/if}
-        {/each}
+        <div class="mb-1 text-normal font-medium caption-color">
+          <Label label={setting.string.PermittedEmailDomains} />
+        </div>
+        <div class="flex-col flex-gap-2 items-start">
+          <Label label={setting.string.EmailDomainRegistrationMessage} />
+          <Button label={setting.string.AddDomain} on:click={showCreateDialog} />
+        </div>
       </div>
     </Scroller>
   </div>

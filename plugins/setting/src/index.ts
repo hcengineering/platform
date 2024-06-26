@@ -112,6 +112,13 @@ export interface WorkspaceSetting extends Doc {
 /**
  * @public
  */
+export interface DomainSetting extends Doc {
+  domain: string
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {

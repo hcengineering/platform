@@ -101,6 +101,12 @@ export default mergeIds(settingId, setting, {
     Permissions: '' as IntlString,
     Assignees: '' as IntlString,
     DeleteRole: '' as IntlString,
-    DeleteRoleConfirmation: '' as IntlString
+    DeleteRoleConfirmation: '' as IntlString,
+    PermittedEmailDomains: '' as IntlString,
+    EmailDomainRegistrationMessage: '' as IntlString,
+    AddDomain: '' as IntlString,
+    Domain: '' as IntlString,
+    EnterDomain: '' as IntlString,
+    SaveDomain: '' as IntlString
   }
 })

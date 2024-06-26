@@ -1,7 +1,7 @@
 {
   "string": {
     "Setting": "设置",
-    "Spaces": "空间", 
+    "Spaces": "空间",
     "Integrations": "集成",
     "Support": "支持",
     "Privacy": "隐私",
@@ -114,6 +114,12 @@
     "Permissions": "权限",
     "Assignees": "受托人",
     "DeleteRole": "删除角色",
-    "DeleteRoleConfirmation": "您确定要删除此角色吗？拥有此角色的所有用户将失去其权限。"
+    "DeleteRoleConfirmation": "您确定要删除此角色吗？拥有此角色的所有用户将失去其权限。",
+    "PermittedEmailDomains": "允许的电子邮件域",
+    "EmailDomainRegistrationMessage": "仅有从列出的域的电子邮件才能注册此工作区。",
+    "AddDomain": "添加域",
+    "Domain": "域",
+    "EnterDomain": "输入域",
+    "SaveDomain": "保存域"
   }
 }

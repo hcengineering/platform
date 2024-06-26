@@ -114,6 +114,12 @@
     "Permissions": "Permissions",
     "Assignees": "Assignés",
     "DeleteRole": "Supprimer le rôle",
-    "DeleteRoleConfirmation": "Êtes-vous sûr de vouloir supprimer ce rôle ? Tous les utilisateurs ayant ce rôle perdront leurs permissions."
+    "DeleteRoleConfirmation": "Êtes-vous sûr de vouloir supprimer ce rôle ? Tous les utilisateurs ayant ce rôle perdront leurs permissions.",
+    "PermittedEmailDomains": "Domaines de courriel autorisés",
+    "EmailDomainRegistrationMessage": "Seuls les individus ayant un courriel de la liste des domaines peuvent s'inscrire pour cet espace de travail.",
+    "AddDomain": "Ajouter un domaine",
+    "Domain": "Domaine",
+    "EnterDomain": "Entrez le domaine",
+    "SaveDomain": "Enregistrer le domaine"
   }
 }
