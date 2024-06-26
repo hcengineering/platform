@@ -305,6 +305,8 @@
                   label={setting.string.EnterOptionTitle}
                   on:keydown={handleKeydown}
                   on:blur={() => {
+                    newValue = newValue.trim()
+                    if (!newValue.length) return
                     add()
                     newItem = false
                   }}
