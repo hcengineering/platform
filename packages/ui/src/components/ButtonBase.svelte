@@ -98,7 +98,7 @@
   class:iconOnly
   disabled={loading || disabled}
   use:tp={tooltip}
-  on:click|stopPropagation
+  on:click|stopPropagation|preventDefault
   on:keydown
 >
   {#if loading}

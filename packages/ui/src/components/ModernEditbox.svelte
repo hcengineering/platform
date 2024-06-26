@@ -65,7 +65,7 @@
   class:error
   class:disabled
   style:width
-  on:click={() => {
+  on:click|stopPropagation={() => {
     if (!autoAction) element?.focus()
   }}
 >
