@@ -5,13 +5,13 @@ import { StagingUrl } from '../utils'
 // import { SignUpPage } from '../model/signup-page'
 // import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 // import { SelectWorkspacePage } from '../model/select-workspace-page'
-import { GithubIntegration } from '../API/GithubIntegration'
-import { faker } from '@faker-js/faker'
+// import { GithubIntegration } from '../API/GithubIntegration'
+// import { faker } from '@faker-js/faker'
 
 test.describe('Github integrations @staging', () => {
-  let githubIntegrations: GithubIntegration
+  //   let githubIntegrations: GithubIntegration
 
-  test.beforeEach(async ({ page, request }) => {
+  test.beforeEach(async ({ page }) => {
     // loginPage = new LoginPage(page)
     // commonTrackerPage = new CommonTrackerPage(page)
     // signupPage = new SignUpPage(page)
