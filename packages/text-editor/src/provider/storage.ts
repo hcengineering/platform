@@ -40,7 +40,7 @@ async function fetchContent (blob: Ref<Blob>, doc: YDoc): Promise<boolean> {
 async function fetchBlobContent (_id: Ref<Blob>): Promise<Uint8Array | undefined> {
   try {
     const blob = (await getClient().findOne(core.class.Blob, { _id })) as BlobLookup
-    if (blob?.size === 0) {
+    if (blob === undefined || blob.size === 0) {
       return undefined
     }
     const href = await getBlobHref(blob, _id)
