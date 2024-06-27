@@ -75,6 +75,7 @@ import {
   type ServerStorage
 } from '@hcengineering/server-core'
 import { serverDocumentId } from '@hcengineering/server-document'
+import { serverDriveId } from '@hcengineering/server-drive'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverGuestId } from '@hcengineering/server-guest'
 import { serverHrId } from '@hcengineering/server-hr'
@@ -195,9 +196,9 @@ addStringsLoader(trackerId, async (lang: string) => trackerEn)
 addStringsLoader(boardId, async (lang: string) => boardEn)
 addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
 addStringsLoader(hrId, async (lang: string) => hrEn)
+addStringsLoader(documentId, async (lang: string) => documentEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
-addStringsLoader(documentId, async (lang: string) => documentEn)
 addStringsLoader(loveId, async (lang: string) => loveEn)
 addStringsLoader(driveId, async (lang: string) => driveEn)
 addStringsLoader(documentsId, async (lang: string) => documentsEn)
@@ -226,6 +227,7 @@ export function start (
     accountsUrl: string
   }
 ): () => Promise<void> {
+  addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
   addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
   addLocation(serverCollaborationId, () => import('@hcengineering/server-collaboration-resources'))
   addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
@@ -244,12 +246,12 @@ export function start (
   addLocation(serverRequestId, () => import('@hcengineering/server-request-resources'))
   addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
-  addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
   addLocation(serverLoveId, () => import('@hcengineering/server-love-resources'))
   addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
   addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
   addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
+  addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))
   addLocation(serverDocumentsId, () => import('@hcengineering/server-controlled-documents-resources'))
   addLocation(serverTrainingId, () => import('@hcengineering/server-training-resources'))
 
@@ -328,14 +330,13 @@ export function start (
 
     return stages
   }
-
   const pipelineFactory: PipelineFactory = (ctx, workspace, upgrade, broadcast, branding) => {
     const wsMetrics = metrics.newChild('🧲 session', {})
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'MongoTx',
         [DOMAIN_TRANSIENT]: 'InMemory',
-        [DOMAIN_BLOB]: 'Blob',
+        [DOMAIN_BLOB]: 'StorageData',
         [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
         [DOMAIN_MODEL]: 'Null'
       },
@@ -358,7 +359,7 @@ export function start (
           factory: createInMemoryAdapter,
           url: ''
         },
-        Blob: {
+        StorageData: {
           factory: createStorageDataAdapter,
           url: dbUrl
         },
@@ -381,6 +382,7 @@ export function start (
             contentAdapter
           )
       },
+      serviceAdapters: {},
       contentAdapters: {
         Rekoni: {
           factory: createRekoniAdapter,
@@ -393,7 +395,6 @@ export function start (
           url: ''
         }
       },
-      serviceAdapters: {},
       defaultContentAdapter: 'Rekoni',
       storageFactory: externalStorage,
       workspace

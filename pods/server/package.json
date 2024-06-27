@@ -153,6 +153,8 @@
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/drive": "^0.6.0",
+    "@hcengineering/server-drive": "^0.6.0",
+    "@hcengineering/server-drive-resources": "^0.6.0",
     "@hcengineering/gmail": "^0.6.22",
     "@hcengineering/inventory": "^0.6.11",
     "@hcengineering/templates": "^0.6.11",
