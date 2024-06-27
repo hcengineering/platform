@@ -168,7 +168,12 @@ async function getFile (
     preConditions.IfModifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'notModified'
   ) {
     // Matched, return not modified
-    res.statusCode = 304
+    res.writeHead(304, {
+      'content-type': stat.contentType,
+      etag: stat.etag,
+      'last-modified': new Date(stat.modifiedOn).toISOString(),
+      'cache-control': cacheControlValue
+    })
     res.end()
     return
   }
@@ -375,7 +380,10 @@ export function start (
             res.status(404).send()
             return
           }
-          const isImage = blobInfo.contentType.includes('image/')
+
+          // try image and octet streams
+          const isImage =
+            blobInfo.contentType.includes('image/') || blobInfo.contentType.includes('application/octet-stream')
 
           if (token === undefined) {
             if (blobInfo !== undefined && !isImage) {
