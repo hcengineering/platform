@@ -18,46 +18,26 @@ import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
-import bp from 'body-parser'
-import cors from 'cors'
-import express, { Request, Response } from 'express'
-import fileUpload, { UploadedFile } from 'express-fileupload'
-import expressStaticGzip from 'express-static-gzip'
-import https from 'https'
-import morgan from 'morgan'
-import { join, resolve } from 'path'
+
+import { resolve } from 'path'
 import { cwd } from 'process'
 import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
-import fs from 'fs'
+import https from 'https'
+
+import cors from '@fastify/cors'
+import multipart from '@fastify/multipart'
+import fastifyStatic from '@fastify/static'
+import fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
+import { Readable } from 'stream'
 
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 type SupportedFormat = 'jpeg' | 'avif' | 'heif' | 'webp' | 'png'
 const supportedFormats: SupportedFormat[] = ['avif', 'webp', 'heif', 'jpeg', 'png']
-
-async function storageUpload (
-  ctx: MeasureContext,
-  storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
-  file: UploadedFile
-): Promise<string> {
-  const id = uuid()
-
-  const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
-  const resp = await ctx.with(
-    'storage upload',
-    { workspace: workspace.name },
-    async (ctx) => await storageAdapter.put(ctx, workspace, id, data, file.mimetype, file.size),
-    { file: file.name, contentType: file.mimetype }
-  )
-
-  ctx.info('minio upload', resp)
-  return id
-}
 
 function getRange (range: string, size: number): [number, number] {
   const [startStr, endStr] = range.replace(/bytes=/, '').split('-')
@@ -83,17 +63,19 @@ async function getFileRange (
   range: string,
   client: StorageAdapter,
   workspace: WorkspaceId,
-  res: Response
+  res: FastifyReply
 ): Promise<void> {
   const size: number = stat.size
 
   const [start, end] = getRange(range, size)
 
   if (start >= size || end >= size) {
-    res.writeHead(416, {
-      'Content-Range': `bytes */${size}`
-    })
-    res.end()
+    await res
+      .status(416)
+      .headers({
+        'content-range': `bytes */${size}`
+      })
+      .send()
     return
   }
 
@@ -108,44 +90,28 @@ async function getFileRange (
           async (ctx) => await client.partial(ctx, workspace, stat._id, start, end - start + 1),
           {}
         )
-        res.writeHead(206, {
-          Connection: 'keep-alive',
-          'Content-Range': `bytes ${start}-${end}/${size}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Length': end - start + 1,
-          'Content-Type': stat.contentType,
-          Etag: stat.etag,
-          'Last-Modified': new Date(stat.modifiedOn).toISOString()
-        })
-
-        dataStream.pipe(res)
-
-        await new Promise<void>((resolve, reject) => {
-          dataStream.on('end', () => {
-            dataStream.destroy()
-            res.end()
-            resolve()
+        await res
+          .status(206)
+          .headers({
+            Connection: 'keep-alive',
+            'content-range': `bytes ${start}-${end}/${size}`,
+            'accept-ranges': 'bytes',
+            'content-length': end - start + 1,
+            'content-type': stat.contentType,
+            etag: stat.etag,
+            'last-modified': new Date(stat.modifiedOn).toISOString()
           })
-          dataStream.on('error', (err) => {
-            ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
-            Analytics.handleError(err)
-            res.end()
-            reject(err)
-          })
-          dataStream.on('close', () => {
-            res.end()
-          })
-        })
+          .send(Readable.toWeb(dataStream))
       } catch (err: any) {
         if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
           ctx.info('No such key', { workspace: workspace.name, uuid })
-          res.status(404).send()
+          await res.status(404).send()
           return
         } else {
           Analytics.handleError(err)
           ctx.error(err)
         }
-        res.status(500).send()
+        await res.status(500).send()
       }
     },
     { uuid, start, end: end - start + 1 }
@@ -157,8 +123,8 @@ async function getFile (
   stat: PlatformBlob,
   client: StorageAdapter,
   workspace: WorkspaceId,
-  req: Request,
-  res: Response
+  req: FastifyRequest,
+  res: FastifyReply
 ): Promise<void> {
   const etag = stat.etag
 
@@ -168,14 +134,20 @@ async function getFile (
     preConditions.IfModifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'notModified'
   ) {
     // Matched, return not modified
-    res.statusCode = 304
-    res.end()
+    await res
+      .status(304)
+      .headers({
+        'content-type': stat.contentType,
+        etag: stat.etag,
+        'last-modified': new Date(stat.modifiedOn).toISOString(),
+        'cache-control': cacheControlValue
+      })
+      .send()
     return
   }
   if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'failed') {
     // Send 412 (Precondition Failed)
-    res.statusCode = 412
-    res.end()
+    await res.status(412).send()
     return
   }
 
@@ -185,30 +157,19 @@ async function getFile (
     async (ctx) => {
       try {
         const dataStream = await ctx.with('readable', {}, async (ctx) => await client.get(ctx, workspace, stat._id))
-        res.writeHead(200, {
-          'Content-Type': stat.contentType,
-          Etag: stat.etag,
-          'Last-Modified': new Date(stat.modifiedOn).toISOString(),
-          'Cache-Control': cacheControlValue
-        })
-
-        dataStream.pipe(res)
-        await new Promise<void>((resolve, reject) => {
-          dataStream.on('end', function () {
-            res.end()
-            dataStream.destroy()
-            resolve()
+        await res
+          .status(200)
+          .headers({
+            'content-type': stat.contentType,
+            etag: stat.etag,
+            'last-modified': new Date(stat.modifiedOn).toISOString(),
+            'cache-control': cacheControlValue
           })
-          dataStream.on('error', function (err) {
-            Analytics.handleError(err)
-            ctx.error('error', { err })
-            reject(err)
-          })
-        })
+          .send(Readable.toWeb(dataStream))
       } catch (err: any) {
         ctx.error('get-file-error', { workspace: workspace.name, err })
         Analytics.handleError(err)
-        res.status(500).send()
+        await res.status(500).send()
       }
     },
     {}
@@ -219,7 +180,7 @@ async function getFile (
  * @public
  * @param port -
  */
-export function start (
+export async function start (
   ctx: MeasureContext,
   config: {
     elasticUrl: string
@@ -238,27 +199,65 @@ export function start (
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
-): () => void {
-  const app = express()
+): Promise<() => void> {
+  const httpLogger = ctx.newChild('http', {}, {}, ctx.logger.childLogger?.('http', {}))
+  const app = fastify({
+    logger: {
+      level: 'info',
+      stream: {
+        write (msg) {
+          httpLogger.info('http', JSON.parse(msg))
+        }
+      }
+    }
+  })
 
-  app.use(cors())
-  app.use(
-    fileUpload({
-      useTempFiles: true
-    })
-  )
-  app.use(bp.json())
-  app.use(bp.urlencoded({ extended: true }))
+  const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
+  console.log('serving static files from', dist)
 
-  class MyStream {
-    write (text: string): void {
-      ctx.info(text)
+  let brandingUrl: URL | undefined
+  if (config.brandingUrl !== undefined) {
+    try {
+      brandingUrl = new URL(config.brandingUrl)
+    } catch (e) {
+      console.error('Invalid branding URL. Must be absolute URL.', e)
     }
   }
 
-  const myStream = new MyStream()
+  await app.register(fastifyStatic, {
+    root: dist,
+    prefix: '/', // optional: default '/'
+    dotfiles: 'allow',
+    acceptRanges: true,
+    etag: true,
+    wildcard: false,
+    serveDotFiles: true,
+    maxAge: '7d',
+    preCompressed: true,
+    cacheControl: true,
+    list: false,
+    lastModified: true,
+    setHeaders: (res, path, stat) => {
+      if (
+        path.toLowerCase().includes('index.html') ||
+        (brandingUrl !== undefined && path.toLowerCase().includes(brandingUrl.pathname))
+      ) {
+        void res.setHeader('cache-control', cacheControlNoCache)
+      }
+    }
+  })
 
-  app.use(morgan('short', { stream: myStream }))
+  await app.register(multipart, {
+    limits: {
+      fileSize: 512 * 1024 * 1024,
+      files: 50
+    }
+  })
+
+  await app.register(cors, {
+    // put your options here
+    credentials: true
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/config.json', async (req, res) => {
@@ -276,86 +275,70 @@ export function start (
       PREVIEW_CONFIG: config.previewConfig,
       ...(extraConfig ?? {})
     }
-    res.set('Cache-Control', cacheControlNoCache)
-    res.status(200)
-    res.json(data)
-  })
-
-  app.get('/api/v1/statistics', (req, res) => {
-    try {
-      const token = req.query.token as string
-      const payload = decodeToken(token)
-      const admin = payload.extra?.admin === 'true'
-      res.status(200)
-      res.setHeader('Content-Type', 'application/json')
-      res.setHeader('Cache-Control', cacheControlNoCache)
-
-      const json = JSON.stringify({
-        metrics: metricsAggregate((ctx as any).metrics),
-        statistics: {
-          activeSessions: {}
-        },
-        admin
+    await res
+      .code(200)
+      .headers({
+        'cache-control': cacheControlNoCache,
+        'content-type': 'application/json'
       })
-      res.end(json)
-    } catch (err: any) {
-      ctx.error('statistics error', { err })
-      Analytics.handleError(err)
-      res.writeHead(404, {})
-      res.end()
-    }
+      .send(JSON.stringify(data))
   })
 
-  const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
-  console.log('serving static files from', dist)
-
-  let brandingUrl: URL | undefined
-  if (config.brandingUrl !== undefined) {
-    try {
-      brandingUrl = new URL(config.brandingUrl)
-    } catch (e) {
-      console.error('Invalid branding URL. Must be absolute URL.', e)
-    }
-  }
-
-  app.use(
-    expressStaticGzip(dist, {
-      serveStatic: {
-        cacheControl: true,
-        dotfiles: 'allow',
-        maxAge: '365d',
-        etag: true,
-        lastModified: true,
-        index: false,
-        setHeaders (res, path) {
-          if (
-            path.toLowerCase().includes('index.html') ||
-            (brandingUrl !== undefined && path.toLowerCase().includes(brandingUrl.pathname))
-          ) {
-            res.setHeader('Cache-Control', cacheControlNoCache)
-          }
-        }
+  app.get(
+    '/api/v1/statistics',
+    async (
+      req: FastifyRequest<{
+        Querystring: { token: string }
+      }>,
+      res
+    ) => {
+      try {
+        const token = req.query.token
+        const payload = decodeToken(token)
+        const admin = payload.extra?.admin === 'true'
+        const json = JSON.stringify({
+          metrics: metricsAggregate((ctx as any).metrics),
+          statistics: {
+            activeSessions: {}
+          },
+          admin
+        })
+        await res
+          .status(200)
+          .headers({
+            'content-type': 'application/json',
+            'cache-control': cacheControlNoCache
+          })
+          .send(json)
+      } catch (err: any) {
+        ctx.error('statistics error', { err })
+        Analytics.handleError(err)
+        await res.code(404)
       }
-    })
+    }
   )
 
-  const filesHandler = async (req: Request<any>, res: Response<any>): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const filesHandler = async (
+    req: FastifyRequest<{
+      Querystring: { workspace: string, token?: string, file: string, size?: string }
+    }>,
+    res: FastifyReply
+  ): Promise<void> => {
     await ctx.with(
       'handle-file',
       {},
       async (ctx) => {
-        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
+        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace, productId: '' } }
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
-          const token =
-            cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
-            (req.query.token as string | undefined)
+          const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ?? req.query.token
           payload = token !== undefined ? decodeToken(token) : payload
 
-          let uuid = req.params.file ?? req.query.file
+          let uuid = req.query.file
           if (uuid === undefined) {
-            res.status(404).send()
+            await res.status(404).send()
             return
           }
 
@@ -372,35 +355,38 @@ export function start (
 
           if (blobInfo === undefined) {
             ctx.error('No such key', { file: uuid, workspace: payload.workspace })
-            res.status(404).send()
+            await res.status(404).send()
             return
           }
-          const isImage = blobInfo.contentType.includes('image/')
+
+          // try image and octet streams
+          const isImage =
+            blobInfo.contentType.includes('image/') || blobInfo.contentType.includes('application/octet-stream')
 
           if (token === undefined) {
             if (blobInfo !== undefined && !isImage) {
               // Do not allow to return non images with no token.
               if (token === undefined) {
-                res.status(403).send()
+                await res.status(403).send()
                 return
               }
             }
           }
 
           if (req.method === 'HEAD') {
-            res.writeHead(200, {
-              'accept-ranges': 'bytes',
-              'content-length': blobInfo.size,
-              Etag: blobInfo.etag,
-              'Last-Modified': new Date(blobInfo.modifiedOn).toISOString()
-            })
-            res.status(200)
-
-            res.end()
+            await res
+              .status(200)
+              .headers({
+                'accept-ranges': 'bytes',
+                'content-length': blobInfo.size,
+                etag: blobInfo.etag,
+                'last-modified': new Date(blobInfo.modifiedOn).toISOString()
+              })
+              .send()
             return
           }
 
-          const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
+          const size = req.query.size !== undefined ? parseInt(req.query.size) : undefined
           if (format !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
             blobInfo = await ctx.with(
               'resize',
@@ -432,28 +418,24 @@ export function start (
               workspace: payload?.workspace,
               email: payload?.email
             })
-            res.status(404).send()
+            await res.status(404).send()
             return
           } else {
             ctx.error('error-handle-files', { error })
           }
-          res.status(500).send()
+          await res.status(500).send()
         }
       },
-      { url: req.path, query: req.query }
+      { url: req.originalUrl, query: req.query }
     )
   }
 
-  app.get('/files', (req, res) => {
-    void filesHandler(req, res)
+  app.get('/files*', async (req, res) => {
+    await filesHandler(req as any, res)
   })
 
-  app.head('/files/*', (req, res) => {
-    void filesHandler(req, res)
-  })
-
-  app.get('/files/*', (req, res) => {
-    void filesHandler(req, res)
+  app.head('/files*', async (req, res) => {
+    await filesHandler(req as any, res)
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -462,47 +444,59 @@ export function start (
       'post-file',
       {},
       async (ctx) => {
-        const file = req.files?.file as UploadedFile
-
-        if (file === undefined) {
-          res.status(400).send()
-          return
-        }
-
         const authHeader = req.headers.authorization
         if (authHeader === undefined) {
-          res.status(403).send()
+          await res.status(403).send()
           return
         }
-
         try {
           const token = authHeader.split(' ')[1]
           const payload = decodeToken(token)
-          const uuid = await storageUpload(ctx, config.storageAdapter, payload.workspace, file)
+          let result = ''
 
-          res.status(200).send(uuid)
+          const parts = req.files()
+          for await (const part of parts) {
+            const id = uuid()
+
+            const data = part.file
+            const resp = await ctx.with(
+              'storage upload',
+              { workspace: payload.workspace.name },
+              async (ctx) => await config.storageAdapter.put(ctx, payload.workspace, id, data, part.mimetype),
+              { file: part.filename, contentType: part.mimetype }
+            )
+            result += (result.length > 0 ? ',' : '') + id
+
+            ctx.info('uploaded', resp)
+          }
+
+          await res.code(200).send(result)
         } catch (error: any) {
           ctx.error('error-post-files', error)
-          res.status(500).send()
+          await res.code(500).send()
         }
       },
-      { url: req.path, query: req.query }
+      { url: req.originalUrl, query: req.query }
     )
   })
-
-  const handleDelete = async (req: Request, res: Response): Promise<void> => {
+  const handleDelete = async (
+    req: FastifyRequest<{
+      Querystring: { file: string }
+    }>,
+    res: FastifyReply
+  ): Promise<void> => {
     try {
       const authHeader = req.headers.authorization
       if (authHeader === undefined) {
-        res.status(403).send()
+        await res.code(403).send()
         return
       }
 
       const token = authHeader.split(' ')[1]
       const payload = decodeToken(token)
-      const uuid = req.query.file as string
+      const uuid = req.query.file
       if (uuid === '') {
-        res.status(500).send()
+        await res.code(500).send()
         return
       }
 
@@ -513,59 +507,157 @@ export function start (
       // TODO: Move support of image resize/format change to separate place.
       await removeAllObjects(ctx, config.storageAdapter, payload.workspace, uuid)
 
-      res.status(200).send()
+      await res.code(200).send()
     } catch (error: any) {
       Analytics.handleError(error)
       ctx.error('failed to delete', { url: req.url })
-      res.status(500).send()
+      await res.code(500).send()
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files', handleDelete)
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files/*', handleDelete)
+  app.delete('/files', async (req, res) => {
+    await handleDelete(req as any, res)
+  })
 
   // todo remove it after update all customers chrome extensions
-  app.get('/import', (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send()
-        return
-      }
-      const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
-      const url = req.query.url as string
-      const cookie = req.query.cookie as string | undefined
-      // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
-      if (url === undefined) {
-        res.status(500).send('URL param is not defined')
-        return
-      }
+  app.get(
+    '/import',
+    async (
+      req: FastifyRequest<{
+        Querystring: {
+          url: string
+          cookie?: string
+        }
+      }>,
+      res
+    ) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          await res.code(403).send()
+          return
+        }
+        const token = authHeader.split(' ')[1]
+        const payload = decodeToken(token)
+        const url = req.query.url
+        const cookie = req.query.cookie
+        // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
+        if (url === undefined) {
+          await res.status(500).send('URL param is not defined')
+          return
+        }
 
-      console.log('importing from', url)
-      console.log('cookie', cookie)
+        console.log('importing from', url)
+        console.log('cookie', cookie)
 
-      const options =
-        cookie !== undefined
-          ? {
-              headers: {
-                Cookie: cookie
+        const options =
+          cookie !== undefined
+            ? {
+                headers: {
+                  cookie
+                }
               }
-            }
-          : {}
+            : {}
 
-      https
-        .get(url, options, (response) => {
+        https
+          .get(url, options, (response) => {
+            if (response.statusCode !== 200) {
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+              void res.status(500).send(`server returned ${response.statusCode}`)
+              return
+            }
+            const id = uuid()
+            const contentType = response.headers['content-type'] ?? 'application/octet-stream'
+            const data: Buffer[] = []
+            response
+              .on('data', function (chunk) {
+                data.push(chunk)
+              })
+              .on('end', function () {
+                const buffer = Buffer.concat(data)
+                config.storageAdapter
+                  .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
+                  .then(async (objInfo) => {
+                    void res.status(200).send({
+                      id,
+                      contentType,
+                      size: buffer.length
+                    })
+                  })
+                  .catch((err: any) => {
+                    if (err !== null) {
+                      Analytics.handleError(err)
+                      ctx.error('error', { err })
+                      void res.status(500).send(err)
+                    }
+                  })
+              })
+              .on('error', function (err) {
+                Analytics.handleError(err)
+                ctx.error('error', { err })
+                void res.status(500).send(err)
+              })
+          })
+          .on('error', (e) => {
+            Analytics.handleError(e)
+            ctx.error('error', { e })
+            void res.status(500).send(e)
+          })
+      } catch (error: any) {
+        Analytics.handleError(error)
+        ctx.error('error', { error })
+        void res.status(500).send()
+      }
+    }
+  )
+
+  app.post(
+    '/import',
+    async (
+      req: FastifyRequest<{
+        Body: {
+          url: string
+          cookie: string
+        }
+      }>,
+      res
+    ) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          await res.status(403).send()
+          return
+        }
+        const token = authHeader.split(' ')[1]
+        const payload = decodeToken(token)
+        const { url, cookie } = req.body
+        if (url === undefined) {
+          await res.status(500).send('URL param is not defined')
+          return
+        }
+
+        console.log('importing from', url)
+        console.log('cookie', cookie)
+
+        const options =
+          cookie !== undefined
+            ? {
+                headers: {
+                  cookie
+                }
+              }
+            : {}
+
+        https.get(url, options, (response) => {
+          console.log('status', response.statusCode)
           if (response.statusCode !== 200) {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            res.status(500).send(`server returned ${response.statusCode}`)
+            void res.status(500).send(`server returned ${response.statusCode}`)
             return
           }
           const id = uuid()
-          const contentType = response.headers['content-type'] ?? 'application/octet-stream'
+          const contentType = response.headers['content-type']
           const data: Buffer[] = []
           response
             .on('data', function (chunk) {
@@ -573,112 +665,35 @@ export function start (
             })
             .on('end', function () {
               const buffer = Buffer.concat(data)
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
               config.storageAdapter
-                .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
-                .then(async (objInfo) => {
-                  res.status(200).send({
+                .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
+                .then(async () => {
+                  void res.status(200).send({
                     id,
                     contentType,
                     size: buffer.length
                   })
                 })
                 .catch((err: any) => {
-                  if (err !== null) {
-                    Analytics.handleError(err)
-                    ctx.error('error', { err })
-                    res.status(500).send(err)
-                  }
+                  Analytics.handleError(err)
+                  ctx.error('error', { err })
+                  void res.status(500).send(err)
                 })
             })
             .on('error', function (err) {
               Analytics.handleError(err)
               ctx.error('error', { err })
-              res.status(500).send(err)
+              void res.status(500).send(err)
             })
         })
-        .on('error', (e) => {
-          Analytics.handleError(e)
-          ctx.error('error', { e })
-          res.status(500).send(e)
-        })
-    } catch (error: any) {
-      Analytics.handleError(error)
-      ctx.error('error', { error })
-      res.status(500).send()
-    }
-  })
-
-  app.post('/import', (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send()
-        return
+      } catch (error: any) {
+        Analytics.handleError(error)
+        ctx.error('error', { error })
+        await res.status(500).send()
       }
-      const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
-      const { url, cookie } = req.body
-      if (url === undefined) {
-        res.status(500).send('URL param is not defined')
-        return
-      }
-
-      console.log('importing from', url)
-      console.log('cookie', cookie)
-
-      const options =
-        cookie !== undefined
-          ? {
-              headers: {
-                Cookie: cookie
-              }
-            }
-          : {}
-
-      https.get(url, options, (response) => {
-        console.log('status', response.statusCode)
-        if (response.statusCode !== 200) {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          res.status(500).send(`server returned ${response.statusCode}`)
-          return
-        }
-        const id = uuid()
-        const contentType = response.headers['content-type']
-        const data: Buffer[] = []
-        response
-          .on('data', function (chunk) {
-            data.push(chunk)
-          })
-          .on('end', function () {
-            const buffer = Buffer.concat(data)
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            config.storageAdapter
-              .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
-              .then(async () => {
-                res.status(200).send({
-                  id,
-                  contentType,
-                  size: buffer.length
-                })
-              })
-              .catch((err: any) => {
-                Analytics.handleError(err)
-                ctx.error('error', { err })
-                res.status(500).send(err)
-              })
-          })
-          .on('error', function (err) {
-            Analytics.handleError(err)
-            ctx.error('error', { err })
-            res.status(500).send(err)
-          })
-      })
-    } catch (error: any) {
-      Analytics.handleError(error)
-      ctx.error('error', { error })
-      res.status(500).send()
     }
-  })
+  )
 
   const filesPatterns = [
     '.js',
@@ -697,24 +712,25 @@ export function start (
     '.avif'
   ]
 
-  app.get('*', function (request, response) {
-    if (filesPatterns.some((it) => request.path.endsWith(it))) {
-      response.sendStatus(404)
+  app.setNotFoundHandler(async (req, res) => {
+    if (filesPatterns.some((it) => req.url.endsWith(it))) {
+      await res.status(404).send()
       return
     }
-    response.sendFile(join(dist, 'index.html'), {
+    await res.sendFile('index.html', {
       etag: true,
       lastModified: true,
       cacheControl: false,
-      headers: {
-        'Cache-Control': cacheControlNoCache
-      }
+      maxAge: 0
     })
   })
 
-  const server = app.listen(port)
+  app.listen({ port, host: '' }, (err: any) => {
+    if (err !== null) throw err
+    // Server is now listening on ${address}
+  })
   return () => {
-    server.close()
+    void app.close()
   }
 }
 

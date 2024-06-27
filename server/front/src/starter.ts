@@ -132,8 +132,11 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     void storageAdapter.close()
     console.trace('Exiting from server')
     console.log('Shutdown request accepted')
-    shutdown()
-    process.exit(0)
+    void shutdown
+      .then((sh) => {
+        sh()
+      })
+      .then(process.exit(0))
   }
 
   process.on('SIGINT', close)

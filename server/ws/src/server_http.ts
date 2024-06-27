@@ -18,12 +18,8 @@ import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineeri
 import { UNAUTHORIZED } from '@hcengineering/platform'
 import { serialize, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
-import compression from 'compression'
-import cors from 'cors'
-import express, { type Response as ExpressResponse } from 'express'
-import http, { type IncomingMessage } from 'http'
 import os from 'os'
-import { WebSocketServer, type RawData, type WebSocket } from 'ws'
+import { type RawData, type WebSocket } from 'ws'
 import { getStatistics, wipeStatistics } from './stats'
 import {
   LOGGING_ENABLED,
@@ -38,6 +34,12 @@ import 'bufferutil'
 import 'utf-8-validate'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+
+import cors from '@fastify/cors'
+import multipart from '@fastify/multipart'
+import fastifyWebSocket from '@fastify/websocket'
+import fastify, { type FastifyReply, type FastifyRequest } from 'fastify'
+import { Readable } from 'stream'
 
 /**
  * @public
@@ -66,213 +68,265 @@ export function startHttpServer (
     })
   }
 
-  const app = express()
-  app.use(cors())
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
+  const httpLogger = ctx.newChild('http', {}, {}, ctx.logger.childLogger?.('http', {}))
 
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 1,
-      memLevel: 9
-    })
+  const app = fastify({
+    logger: {
+      level: 'info',
+      stream: {
+        write (msg) {
+          const msgInfo = JSON.parse(msg)
+          delete msgInfo.hostname
+          delete msgInfo.hostname
+          httpLogger.info('http', msgInfo)
+        }
+      }
+    }
+  })
+
+  app.addContentTypeParser(
+    'application/octet-stream',
+    { parseAs: 'buffer', bodyLimit: 512 * 1024 * 1024 },
+    function (req, body, done) {
+      try {
+        done(null, body)
+      } catch (err: any) {
+        err.statusCode = 400
+        done(err, undefined)
+      }
+    }
   )
+  void app.register(fastifyWebSocket, {
+    options: {
+      maxPayload: 512 * 1024 * 1024,
+      perMessageDeflate: enableCompression
+        ? {
+            zlibDeflateOptions: {
+              // See zlib defaults.
+              chunkSize: 32 * 1024,
+              memLevel: 9,
+              level: 1
+            },
+            zlibInflateOptions: {
+              chunkSize: 32 * 1024,
+              level: 1,
+              memLevel: 9
+            },
+            serverNoContextTakeover: true,
+            clientNoContextTakeover: true,
+            // Below options specified as default values.
+            concurrencyLimit: Math.max(10, os.availableParallelism()), // Limits zlib concurrency for perf.
+            threshold: 1024 // Size (in bytes) below which messages
+            // should not be compressed if context takeover is disabled.
+          }
+        : false,
+      skipUTF8Validation: true
+    }
+  })
+
+  void app.register(multipart, {
+    limits: {
+      fileSize: 512 * 1024 * 1024,
+      files: 50
+    }
+  })
+
+  void app.register(cors, {
+    // put your options here
+    credentials: true
+  })
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 
-  app.get('/api/v1/version', (req, res) => {
-    res.writeHead(200, { 'Content-Type': 'application/json' })
-    res.end(
-      JSON.stringify({
-        version: process.env.MODEL_VERSION
+  void app.get('/api/v1/version', async (req, res) => {
+    await res
+      .status(200)
+      .headers({
+        'content-type': 'application/json',
+        'cache-control': 'no-cache'
       })
-    )
+      .send(
+        JSON.stringify({
+          version: process.env.MODEL_VERSION
+        })
+      )
   })
 
-  app.get('/api/v1/statistics', (req, res) => {
-    try {
-      const token = req.query.token as string
-      const payload = decodeToken(token)
-      const admin = payload.extra?.admin === 'true'
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      const json = JSON.stringify({
-        ...getStatistics(ctx, sessions, admin),
-        users: getUsers,
-        admin
-      })
-      res.end(json)
-    } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
-      res.writeHead(404, {})
-      res.end()
+  void app.get(
+    '/api/v1/statistics',
+    async (
+      req: FastifyRequest<{
+        Querystring: {
+          token: string
+        }
+      }>,
+      res
+    ) => {
+      try {
+        const token = req.query.token
+        const payload = decodeToken(token)
+        const admin = payload.extra?.admin === 'true'
+        const json = JSON.stringify({
+          ...getStatistics(ctx, sessions, admin),
+          users: getUsers,
+          admin
+        })
+        await res.status(200).type('application/json').send(json)
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('statistics', { err })
+        await res.status(404).send()
+      }
     }
-  })
-  app.put('/api/v1/manage', (req, res) => {
-    try {
-      const token = req.query.token as string
-      const payload = decodeToken(token)
-      if (payload.extra?.admin !== 'true') {
-        res.writeHead(404, {})
-        res.end()
-        return
+  )
+  void app.put(
+    '/api/v1/manage',
+    async (
+      req: FastifyRequest<{
+        Querystring: {
+          token: string
+          operation: string
+          timeout?: string
+          wsId?: string
+        }
+      }>,
+      res
+    ) => {
+      try {
+        const token = req.query.token
+        const payload = decodeToken(token)
+        if (payload.extra?.admin !== 'true') {
+          await res.status(404).send()
+          return
+        }
+
+        const operation = req.query.operation
+
+        switch (operation) {
+          case 'maintenance': {
+            const timeMinutes = parseInt(req.query.timeout ?? '5')
+            sessions.scheduleMaintenance(timeMinutes)
+
+            await res.status(200).send()
+            return
+          }
+          case 'wipe-statistics': {
+            wipeStatistics(ctx)
+
+            await res.status(200).send()
+            return
+          }
+          case 'force-close': {
+            const wsId = req.query.wsId as string
+            void sessions.forceClose(wsId)
+            await res.status(200).send()
+            return
+          }
+          case 'reboot': {
+            process.exit(0)
+          }
+        }
+
+        await res.status(404).send()
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('manager', { err })
+        await res.status(404).send()
       }
-
-      const operation = req.query.operation
-
-      switch (operation) {
-        case 'maintenance': {
-          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
-          sessions.scheduleMaintenance(timeMinutes)
-
-          res.writeHead(200)
-          res.end()
-          return
-        }
-        case 'wipe-statistics': {
-          wipeStatistics(ctx)
-
-          res.writeHead(200)
-          res.end()
-          return
-        }
-        case 'force-close': {
-          const wsId = req.query.wsId as string
-          void sessions.forceClose(wsId)
-          res.writeHead(200)
-          res.end()
-          return
-        }
-        case 'reboot': {
-          process.exit(0)
-        }
-      }
-
-      res.writeHead(404, {})
-      res.end()
-    } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
-      res.writeHead(404, {})
-      res.end()
     }
-  })
+  )
 
-  app.put('/api/v1/blob', (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send({ error: 'Unauthorized' })
-        return
-      }
+  void app.put(
+    '/api/v1/blob',
+    async (
+      req: FastifyRequest<{
+        Querystring: {
+          name: string
+          contentType: string
+          size?: string
+        }
+        Body: Buffer
+      }>,
+      res
+    ) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          await res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
 
-      const payload = decodeToken(authHeader.split(' ')[1])
+        const payload = decodeToken(authHeader.split(' ')[1])
 
-      const name = req.query.name as string
-      const contentType = req.query.contentType as string
-      const size = parseInt((req.query.size as string) ?? '-1')
+        const name = req.query.name
+        const contentType = req.query.contentType
+        const size = parseInt(req.query.size ?? '-1')
 
-      void ctx
-        .with(
+        await ctx.with(
           'storage upload',
           { workspace: payload.workspace.name },
           async (ctx) =>
-            await externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
+            await externalStorage.put(
+              ctx,
+              payload.workspace,
+              name,
+              req.body,
+              contentType,
+              size !== -1 ? size : undefined
+            ),
           { file: name, contentType }
         )
-        .then(() => {
-          res.writeHead(200, { 'Cache-Control': 'no-cache' })
-          res.end()
-        })
-        .catch((err) => {
-          Analytics.handleError(err)
-          ctx.error('/api/v1/blob put error', { err })
-          res.writeHead(404, {})
-          res.end()
-        })
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('/api/v1/blob put error', { err })
-      res.writeHead(404, {})
-      res.end()
-    }
-  })
-  app.get('/api/v1/blob', (req, res) => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send({ error: 'Unauthorized' })
-        return
+        await res.status(200).headers({ 'cache-control': 'no-cache' }).send()
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('/api/v1/blob put error', { err })
+        await res.status(404).send()
       }
+    }
+  )
+  void app.get(
+    '/api/v1/blob',
+    async (
+      req: FastifyRequest<{
+        Querystring: {
+          name: string
+        }
+      }>,
+      res
+    ) => {
+      try {
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          await res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
 
-      const payload = decodeToken(authHeader.split(' ')[1])
+        const payload = decodeToken(authHeader.split(' ')[1])
 
-      const name = req.query.name as string
+        const name = req.query.name
 
-      const range = req.headers.range
-      if (range !== undefined) {
-        void ctx
-          .with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+        const range = req.headers.range
+        if (range !== undefined) {
+          await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
             await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
           })
-          .catch((err) => {
-            Analytics.handleError(err)
-            ctx.error('/api/v1/blob get error', { err })
-            res.writeHead(404, {})
-            res.end()
+        } else {
+          await ctx.with('file', { workspace: payload.workspace.name }, async (ctx) => {
+            await getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res))
           })
-      } else {
-        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res)).catch((err) => {
-          Analytics.handleError(err)
-          ctx.error('/api/v1/blob get error', { err })
-          res.writeHead(404, {})
-          res.end()
-        })
-      }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('/api/v1/blob get error', { err })
-    }
-  })
-
-  const httpServer = http.createServer(app)
-
-  const wss = new WebSocketServer({
-    noServer: true,
-    perMessageDeflate: enableCompression
-      ? {
-          zlibDeflateOptions: {
-            // See zlib defaults.
-            chunkSize: 32 * 1024,
-            memLevel: 9,
-            level: 1
-          },
-          zlibInflateOptions: {
-            chunkSize: 32 * 1024,
-            level: 1,
-            memLevel: 9
-          },
-          serverNoContextTakeover: true,
-          clientNoContextTakeover: true,
-          // Below options specified as default values.
-          concurrencyLimit: Math.max(10, os.availableParallelism()), // Limits zlib concurrency for perf.
-          threshold: 1024 // Size (in bytes) below which messages
-          // should not be compressed if context takeover is disabled.
         }
-      : false,
-    skipUTF8Validation: true,
-    maxPayload: 250 * 1024 * 1024
-  })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('/api/v1/blob get error', { err })
+        await res.status(404).send()
+      }
+    }
+  )
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   const handleConnection = async (
     ws: WebSocket,
-    request: IncomingMessage,
+    request: FastifyRequest,
     token: Token,
     rawToken: string,
     sessionId?: string
@@ -327,7 +381,7 @@ export function startHttpServer (
       } catch (err: any) {
         Analytics.handleError(err)
         if (LOGGING_ENABLED) {
-          ctx.error('message error', err)
+          ctx.error('message error', { err })
         }
       }
     })
@@ -347,72 +401,67 @@ export function startHttpServer (
       })
     })
   }
-  wss.on('connection', handleConnection as any)
 
-  httpServer.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
-    const url = new URL('http://localhost' + (request.url ?? ''))
-    const token = url.pathname.substring(1)
-
-    try {
-      const payload = decodeToken(token ?? '')
-      const sessionId = url.searchParams.get('sessionId')
-
-      if (payload.workspace.productId !== productId) {
-        if (LOGGING_ENABLED) {
-          ctx.error('invalid product', { required: payload.workspace.productId, productId })
-        }
-        throw new Error('Invalid workspace product')
-      }
-
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        void handleConnection(ws, request, payload, token, sessionId ?? undefined)
-      })
-    } catch (err: any) {
-      Analytics.handleError(err)
-      if (LOGGING_ENABLED) {
-        ctx.error('invalid token', err)
-      }
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        const resp: Response<any> = {
-          id: -1,
-          error: UNAUTHORIZED,
-          result: 'hello'
-        }
-        ws.send(serialize(resp, false), { binary: false })
-        ws.onmessage = (msg) => {
-          const resp: Response<any> = {
-            error: UNAUTHORIZED
+  void app.register(async function (fastify) {
+    fastify.get(
+      '/*',
+      { websocket: true },
+      async (
+        socket: WebSocket,
+        req: FastifyRequest<{
+          Params: {
+            '*': string
           }
-          ws.send(serialize(resp, false), { binary: false })
+          Querystring: {
+            sessionId?: string
+          }
+        }>
+      ) => {
+        try {
+          const token = req.params['*']
+          const payload = decodeToken(token ?? '')
+          const sessionId = req.query.sessionId
+
+          if (payload.workspace.productId !== productId) {
+            if (LOGGING_ENABLED) {
+              ctx.error('invalid product', { required: payload.workspace.productId, productId })
+            }
+            throw new Error('Invalid workspace product')
+          }
+          await handleConnection(socket, req, payload, token, sessionId ?? undefined)
+        } catch (err: any) {
+          Analytics.handleError(err)
+          if (LOGGING_ENABLED) {
+            ctx.error('invalid token', err)
+          }
+
+          const resp: Response<any> = {
+            id: -1,
+            error: UNAUTHORIZED,
+            result: 'hello'
+          }
+          socket.send(serialize(resp, false), { binary: false })
+          socket.onmessage = (msg) => {
+            const resp: Response<any> = {
+              error: UNAUTHORIZED
+            }
+            socket.send(serialize(resp, false), { binary: false })
+          }
         }
-      })
-    }
+      }
+    )
   })
-  httpServer.on('error', (err) => {
-    if (LOGGING_ENABLED) {
-      ctx.error('server error', err)
+
+  app.listen({ port, host: '' }, (err: any) => {
+    if (err != null) {
+      ctx.error('server error', { err })
+      process.exit(1)
     }
   })
 
-  httpServer.listen(port)
   return async () => {
     await sessions.closeWorkspaces(ctx)
-    await new Promise<void>((resolve, reject) => {
-      wss.close((err) => {
-        if (err != null) {
-          reject(err)
-        }
-        resolve()
-      })
-    })
-    await new Promise<void>((resolve, reject) =>
-      httpServer.close((err) => {
-        if (err != null) {
-          reject(err)
-        }
-        resolve()
-      })
-    )
+    await app.close()
   }
 }
 function createWebsocketClientSocket (
@@ -460,15 +509,21 @@ function createWebsocketClientSocket (
   }
   return cs
 }
-function wrapRes (res: ExpressResponse): BlobResponse {
+function wrapRes (res: FastifyReply): BlobResponse {
   return {
     aborted: false,
     cork: (cb) => {
       cb()
     },
-    end: () => res.end(),
-    pipeFrom: (readable) => readable.pipe(res),
-    status: (code) => res.status(code),
-    writeHead: (code, header) => res.writeHead(code, header)
+    end: () => {},
+    pipeFrom: (readable) => {
+      void res.send(Readable.toWeb(readable))
+    },
+    status: (code) => {
+      void res.status(code)
+    },
+    writeHead: (code, header) => {
+      void res.status(code).headers(header)
+    }
   }
 }

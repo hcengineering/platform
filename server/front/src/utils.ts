@@ -1,4 +1,4 @@
-import { Request } from 'express'
+import type { IncomingMessage } from 'http'
 
 export const ETagSupport = {
   isWeak (etag: string): boolean {
@@ -30,7 +30,7 @@ function toList (value: string): string[] {
 }
 
 export const preConditions = {
-  IfMatch: (headers: Request['headers'], state: { etag: string }): 'fetch' | 'notModified' => {
+  IfMatch: (headers: IncomingMessage['headers'], state: { etag: string }): 'fetch' | 'notModified' => {
     const header = (headers as any)['if-match']
     if (header == null) {
       return 'fetch'
@@ -40,7 +40,7 @@ export const preConditions = {
     }
     return toList(header).some((etag) => ETagSupport.strongMatch(etag, state.etag)) ? 'notModified' : 'fetch'
   },
-  IfNoneMatch: (headers: Request['headers'], state: { etag: string }): 'fetch' | 'notModified' => {
+  IfNoneMatch: (headers: IncomingMessage['headers'], state: { etag: string }): 'fetch' | 'notModified' => {
     const header = (headers as any)['if-none-match']
     if (header == null) {
       return 'fetch'
@@ -52,7 +52,7 @@ export const preConditions = {
       return toList(header).some((etag) => ETagSupport.weakMatch(etag, state.etag)) ? 'notModified' : 'fetch'
     }
   },
-  IfModifiedSince: (headers: Request['headers'], state: { lastModified: Date }): 'fetch' | 'notModified' => {
+  IfModifiedSince: (headers: IncomingMessage['headers'], state: { lastModified: Date }): 'fetch' | 'notModified' => {
     if ((headers as any)['if-none-match'] != null) {
       return 'fetch'
     }
@@ -67,7 +67,7 @@ export const preConditions = {
     }
     return state.lastModified.getTime() <= date ? 'notModified' : 'fetch'
   },
-  IfUnmodifiedSince: (headers: Request['headers'], state: { lastModified: Date }): 'fetch' | 'failed' => {
+  IfUnmodifiedSince: (headers: IncomingMessage['headers'], state: { lastModified: Date }): 'fetch' | 'failed' => {
     if ((headers as any)['if-match'] != null) {
       return 'fetch'
     }
