@@ -1,22 +1,25 @@
 import { APIRequestContext } from '@playwright/test'
 
 export class GithubIntegration {
-    private readonly request: APIRequestContext;
-    private readonly baseUrl: string;
-    private readonly githubToken: string;
-    private readonly repoOwner: string;
-  
-    constructor(request: APIRequestContext) {
-      this.request = request;
-      this.baseUrl = 'https://api.github.com';
-  
-      this.githubToken = process.env.TESTING_GH_TOKEN as string;
-      this.repoOwner = process.env.TESTING_GH_OWNER as string;
-  
-      if (!this.githubToken || !this.repoOwner) {
-        throw new Error('Environment variables TESTING_GH_TOKEN or TESTING_GH_OWNER are not set.');
-      }
+  private readonly request: APIRequestContext
+  private readonly baseUrl: string
+  private readonly githubToken: string
+  private readonly repoOwner: string
+
+  constructor (request: APIRequestContext) {
+    this.request = request
+    this.baseUrl = 'https://api.github.com'
+
+    this.githubToken = process.env.TESTING_GH_TOKEN as string
+    this.repoOwner = process.env.TESTING_GH_OWNER as string
+
+    if (typeof this.githubToken !== 'string' || this.githubToken.trim() === '') {
+      throw new Error('Environment variable TESTING_GH_TOKEN is not set or empty.')
     }
+    if (typeof this.repoOwner !== 'string' || this.repoOwner.trim() === '') {
+      throw new Error('Environment variable TESTING_GH_OWNER is not set or empty.')
+    }
+  }
 
   async createGitHubRepository (repoName: string, description: string = '', isPrivate: boolean = false): Promise<any> {
     const githubToken = this.githubToken
