@@ -38,6 +38,9 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
         arr.push(val)
       }
     } else {
+      if (doc[key] == null) {
+        doc[key] = []
+      }
       doc[key].push(val)
     }
   }
@@ -53,7 +56,7 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
     if (typeof keyval[key] === 'object' && keyval[key] !== null) {
       const { $in } = keyval[key] as PullArray<PropertyType>
 
-      doc[key] = arr.filter((val) => {
+      doc[key] = (arr ?? []).filter((val) => {
         if ($in !== undefined) {
           return !$in.includes(val)
         } else {
@@ -67,7 +70,7 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
         }
       })
     } else {
-      doc[key] = arr.filter((val) => val !== keyval[key])
+      doc[key] = (arr ?? []).filter((val) => val !== keyval[key])
     }
   }
 }
@@ -119,7 +122,7 @@ function $move (document: Doc, keyval: Record<string, PropertyType>): void {
     }
     const arr = doc[key] as Array<any>
     const desc = keyval[key]
-    doc[key] = arr.filter((val) => val !== desc.$value)
+    doc[key] = (arr ?? []).filter((val) => val !== desc.$value)
     doc[key].splice(desc.$position, 0, desc.$value)
   }
 }
@@ -134,7 +137,7 @@ function $pushMixin (document: Doc, options: any): void {
   const keyval = options.values
   for (const key in keyval) {
     const arr = mixin[key]
-    if (arr === undefined) {
+    if (arr == null) {
       mixin[key] = [keyval[key]]
     } else {
       arr.push(keyval[key])

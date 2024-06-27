@@ -135,7 +135,7 @@
       await tick()
       index = participants.findIndex((p) => p._id === participant.identity)
       const el = participantElements[index]
-      if (el !== undefined) {
+      if (el != null) {
         el.appendChild(element)
         return
       }
@@ -180,7 +180,7 @@
         return
       }
       const index = participants.findIndex((p) => p._id === participant.identity)
-      if (index !== -1) {
+      if (index !== -1 && participantElements[index] != null) {
         participantElements[index].setTrackMuted(publication.isMuted)
       }
     } else {

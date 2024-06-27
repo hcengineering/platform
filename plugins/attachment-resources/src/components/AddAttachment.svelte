@@ -69,6 +69,7 @@
     name="file"
     id="file"
     style="display: none"
+    disabled={inputFile == null}
     on:change={fileSelected}
   />
 </div>
