@@ -29,6 +29,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-node-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+    
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+
       - name: Install Playwright
         run: |
           cd ./tests/sanity
@@ -42,9 +48,3 @@ jobs:
           TESTING_GH_TOKEN: ${{ secrets.TESTING_GH_TOKEN }}
           TESTING_GH_OWNER: ${{ secrets.TESTING_GH_OWNER }}
 
-      - name: Upload Playwright test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-results
-          path: ./tests/sanity/playwright-report/
