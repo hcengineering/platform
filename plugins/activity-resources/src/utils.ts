@@ -1,17 +1,16 @@
-import { get } from 'svelte/store'
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { type Doc, type Ref, type TxOperations, getCurrentAccount, isOtherHour } from '@hcengineering/core'
+import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type TxOperations } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
-  type Location,
-  getEventPositionElement,
-  closePopup,
-  showPopup,
   EmojiPopup,
-  getCurrentResolvedLocation
+  closePopup,
+  getCurrentResolvedLocation,
+  getEventPositionElement,
+  showPopup,
+  type Location
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
-import preference from '@hcengineering/preference'
+import { get } from 'svelte/store'
 
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
@@ -77,7 +76,7 @@ export async function saveForLater (message?: ActivityMessage): Promise<void> {
   closePopup()
   const client = getClient()
 
-  await client.createDoc(activity.class.SavedMessage, preference.space.Preference, {
+  await client.createDoc(activity.class.SavedMessage, core.space.Workspace, {
     attachedTo: message._id
   })
 }

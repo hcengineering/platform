@@ -2,6 +2,7 @@ import core, {
   Class,
   Client,
   DOMAIN_MIGRATION,
+  DOMAIN_TX,
   Data,
   Doc,
   DocumentQuery,
@@ -222,4 +223,19 @@ export async function createDefaultSpace<T extends Space> (
     }
     await tx.createDoc(_class, core.space.Space, data, _id)
   }
+}
+
+/**
+ * @public
+ */
+export async function migrateSpace (
+  client: MigrationClient,
+  from: Ref<Space>,
+  to: Ref<Space>,
+  domains: Domain[]
+): Promise<void> {
+  for (const domain of domains) {
+    await client.update(domain, { space: from }, { space: to })
+  }
+  await client.update(DOMAIN_TX, { objectSpace: from }, { objectSpace: to })
 }

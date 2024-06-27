@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref, type Class, type DocumentQuery, DOMAIN_TX } from '@hcengineering/core'
+import core, { DOMAIN_TX, type Class, type Doc, type DocumentQuery, type Ref, type Space } from '@hcengineering/core'
 import {
-  createDefaultSpace,
+  migrateSpace,
   tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -76,37 +75,29 @@ export const notificationOperation: MigrateOperation = {
         func: async (client) => {
           await removeNotifications(client, { hidden: true })
         }
-      }
-    ])
-    await tryMigrate(client, notificationId, [
+      },
       {
         state: 'delete-invalid-notifications',
         func: async (client) => {
           await removeNotifications(client, { attachedToClass: 'chunter:class:Comment' as Ref<Class<Doc>> })
         }
-      }
-    ])
-    await tryMigrate(client, notificationId, [
+      },
       {
         state: 'remove-old-classes',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
         }
-      }
-    ])
-  },
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, notificationId, [
+      },
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, notification.space.Notifications, {
-            name: 'Notifications',
-            description: 'Space for all notifications'
-          })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'notification:space:Notifications' as Ref<Space>, core.space.Workspace, [
+            DOMAIN_NOTIFICATION
+          ])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

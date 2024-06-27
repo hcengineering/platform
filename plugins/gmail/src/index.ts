@@ -14,10 +14,10 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
-import { NotificationType } from '@hcengineering/notification'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -105,10 +105,6 @@ export default plugin(gmailId, {
   },
   ids: {
     EmailNotification: '' as Ref<NotificationType>
-  },
-  space: {
-    // todo remove, should be in contact
-    Gmail: '' as Ref<Space>
   },
   metadata: {
     GmailURL: '' as Metadata<string>

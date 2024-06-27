@@ -75,7 +75,7 @@
     if (date === undefined) return
     if (type === undefined) return
     if (employee === null) return
-    await client.addCollection(hr.class.Request, hr.space.HR, employee, staff._class, 'requests', {
+    await client.addCollection(hr.class.Request, core.space.Workspace, employee, staff._class, 'requests', {
       type: type._id,
       tzDate: timeToTzDate(date),
       tzDueDate: timeToTzDate(dueDate),
@@ -146,7 +146,7 @@
     bind:this={descriptionBox}
     {objectId}
     _class={hr.class.Request}
-    space={hr.space.HR}
+    space={core.space.Workspace}
     alwaysEdit
     showButtons={false}
     maxHeight={'card'}

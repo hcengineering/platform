@@ -159,7 +159,8 @@ export default plugin(coreId, {
     DerivedTx: '' as Ref<Space>,
     Model: '' as Ref<Space>,
     Space: '' as Ref<TypedSpace>,
-    Configuration: '' as Ref<Space>
+    Configuration: '' as Ref<Space>,
+    Workspace: '' as Ref<Space>
   },
   account: {
     System: '' as Ref<Account>,

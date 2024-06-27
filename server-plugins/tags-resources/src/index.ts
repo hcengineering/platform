@@ -57,7 +57,7 @@ export async function onTagReference (tx: Tx, control: TriggerControl): Promise<
   if (!control.hierarchy.isDerived((actualTx as TxCUD<Doc>).objectClass, tags.class.TagReference)) return []
   if (isCreate) {
     const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<TagReference>)
-    const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
+    const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, core.space.Workspace, doc.tag, {
       $inc: { refCount: 1 }
     })
     return [res]
@@ -67,7 +67,7 @@ export async function onTagReference (tx: Tx, control: TriggerControl): Promise<
     const doc = control.removedMap.get(ctx.objectId) as TagReference
     if (doc !== undefined) {
       if (!control.removedMap.has(doc.tag)) {
-        const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, tags.space.Tags, doc.tag, {
+        const res = control.txFactory.createTxUpdateDoc(tags.class.TagElement, core.space.Workspace, doc.tag, {
           $inc: { refCount: -1 }
         })
         return [res]

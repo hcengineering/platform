@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IdMap, Ref, toIdMap } from '@hcengineering/core'
+  import core, { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import type {
     BaseNotificationType,
     NotificationGroup,
@@ -25,7 +25,6 @@
   import { getClient } from '@hcengineering/presentation'
   import { Grid, Label, ToggleWithLabel } from '@hcengineering/ui'
   import notification from '../plugin'
-  import { validateHeaderName } from 'http'
 
   export let group: Ref<NotificationGroup>
   export let settings: Map<Ref<BaseNotificationType>, NotificationSetting[]>
@@ -74,7 +73,7 @@
     }
     const current = getSetting(settings, typeId, providerId)
     if (current === undefined) {
-      await client.createDoc(notification.class.NotificationSetting, notification.space.Notifications, {
+      await client.createDoc(notification.class.NotificationSetting, core.space.Workspace, {
         attachedTo: providerId,
         type: typeId,
         enabled: value

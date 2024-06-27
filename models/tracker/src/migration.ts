@@ -126,7 +126,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
-    tags.space.Tags,
+    core.space.Workspace,
     {
       icon: tags.icon.Tags,
       label: 'Other',

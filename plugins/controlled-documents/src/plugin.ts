@@ -10,7 +10,7 @@ import {
 } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
-import type { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
+import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
 
 import type {

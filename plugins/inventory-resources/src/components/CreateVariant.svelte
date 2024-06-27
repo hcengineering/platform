@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, generateId, Ref } from '@hcengineering/core'
+  import core, { Account, generateId, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -29,7 +29,7 @@
     attachedTo: product,
     attachedToClass: inventory.class.Product,
     _class: inventory.class.Variant,
-    space: inventory.space.Products,
+    space: core.space.Workspace,
     _id: generateId(),
     collection: 'variants',
     modifiedOn: Date.now(),

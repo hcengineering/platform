@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount } from '@hcengineering/core'
+  import core, { getCurrentAccount } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
@@ -62,7 +62,7 @@
       return
     }
     if (integration === undefined) {
-      const id = await client.createDoc(setting.class.Integration, setting.space.Setting, {
+      const id = await client.createDoc(setting.class.Integration, core.space.Workspace, {
         type: integrationType._id,
         value: '',
         disabled: false

@@ -49,9 +49,6 @@ const preference = plugin(preferenceId, {
     Preference: '' as Ref<Class<Preference>>,
     SpacePreference: '' as Ref<Class<SpacePreference>>
   },
-  space: {
-    Preference: '' as Ref<Space>
-  },
   icon: {
     Star: '' as Asset
   },
