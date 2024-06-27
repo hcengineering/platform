@@ -35,6 +35,7 @@ import core, {
 } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { BlobClient, connect } from '@hcengineering/server-tool'
+import { mkdtemp, writeFile } from 'node:fs/promises'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
@@ -554,6 +555,8 @@ export async function backup (
   const blobClient = new BlobClient(transactorUrl, workspaceId)
   ctx.info('starting backup', { workspace: workspaceId.name })
 
+  let tmpDir: string | undefined
+
   try {
     const domains = [
       ...connection
@@ -867,45 +870,52 @@ export async function backup (
             }
 
             let blobFiled = false
-            if (blob.size !== 0 && !(await blobClient.checkFile(ctx, blob._id))) {
-              ctx.error('failed to download blob', { blob: blob._id, provider: blob.provider })
-              processChanges(d, true)
-              continue
-            }
-
             addedDocuments += descrJson.length
             addedDocuments += blob.size
 
-            _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
-              if (err != null) throw err
-            })
             printDownloaded(blob._id, descrJson.length)
             try {
-              const entry = _pack?.entry({ name: d._id, size: blob.size }, (err) => {
+              const buffers: Buffer[] = []
+              await blobClient.writeTo(ctx, blob._id, blob.size, {
+                write (buffer, cb) {
+                  buffers.push(buffer)
+                  cb()
+                },
+                end: (cb: () => void) => {
+                  cb()
+                }
+              })
+
+              const finalBuffer = Buffer.concat(buffers)
+              if (finalBuffer.length !== blob.size) {
+                tmpDir = tmpDir ?? (await mkdtemp('backup', {}))
+                const tmpFile = join(tmpDir, blob._id)
+                await writeFile(tmpFile, finalBuffer)
+                await writeFile(tmpFile + '.json', JSON.stringify(blob, undefined, 2))
+                ctx.error('download blob size mismatch', {
+                  _id: blob._id,
+                  contentType: blob.contentType,
+                  size: blob.size,
+                  provider: blob.provider,
+                  tempDir: tmpDir
+                })
+              }
+              _pack.entry({ name: d._id + '.json' }, descrJson, (err) => {
+                if (err != null) throw err
+              })
+              _pack?.entry({ name: d._id, size: finalBuffer.length }, finalBuffer, (err) => {
                 if (err != null) {
                   ctx.error('error packing file', { err })
                 }
               })
-              if (blob.size === 0) {
-                entry.end()
-              } else {
-                // if (blob.size > 1024 * 1024) {
-                ctx.info('download blob', {
-                  _id: blob._id,
-                  contentType: blob.contentType,
-                  size: blob.size,
-                  provider: blob.provider
-                })
-                // }
-                await blobClient.writeTo(ctx, blob._id, blob.size, {
-                  write (buffer, cb) {
-                    entry.write(buffer, cb)
-                  },
-                  end: (cb: () => void) => {
-                    entry.end(cb)
-                  }
-                })
-              }
+              // if (blob.size > 1024 * 1024) {
+              ctx.info('download blob', {
+                _id: blob._id,
+                contentType: blob.contentType,
+                size: blob.size,
+                provider: blob.provider,
+                pending: docs.length
+              })
 
               printDownloaded(blob._id, blob.size)
             } catch (err: any) {
@@ -916,6 +926,7 @@ export async function backup (
               }
               blobFiled = true
             }
+
             processChanges(d, blobFiled)
           } else {
             const data = JSON.stringify(d)
