@@ -66,7 +66,7 @@
     opacity: 0;
     animation-name: makeVisible;
     animation-duration: 0.25s;
-    animation-delay: 0.1s;
+    animation-delay: 0.25s;
     animation-fill-mode: forwards;
 
     &.labeled {

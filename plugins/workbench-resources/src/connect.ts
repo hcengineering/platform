@@ -90,12 +90,12 @@ export async function connect (title: string): Promise<Client | undefined> {
   setMetadata(presentation.metadata.Token, token)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)
-  let loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+  let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
   if (loginInfo?.creating === true) {
     while (true) {
       if (ws !== getCurrentLocation().path[1]) return
       workspaceCreating.set(loginInfo?.createProgress ?? 0)
-      loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+      loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
       workspaceCreating.set(loginInfo?.createProgress)
       if (loginInfo?.creating === false) {
         workspaceCreating.set(-1)

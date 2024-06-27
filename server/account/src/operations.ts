@@ -50,7 +50,7 @@ import { getModelVersion } from '@hcengineering/model-all'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initModel, upgradeModel, getStorageAdapter } from '@hcengineering/server-tool'
+import toolPlugin, { connect, getStorageAdapter, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
@@ -1297,7 +1297,7 @@ export async function getWorkspaceInfo (
     workspace: workspace.name
   }
   if (email !== systemAccountEmail && !guest) {
-    account = await getAccount(db, email)
+    account = await ctx.with('get-account', {}, async () => await getAccount(db, email))
     if (account === null) {
       ctx.error('no account', { email, productId, token })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1318,15 +1318,19 @@ export async function getWorkspaceInfo (
     query._id = { $in: account.workspaces }
   }
 
-  const [ws] = (
-    await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()
-  ).filter((it) => it.disabled !== true || account?.admin === true || it.creating === true)
+  const [ws] = await ctx.with('get-account', {}, async () =>
+    (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()).filter(
+      (it) => it.disabled !== true || account?.admin === true || it.creating === true
+    )
+  )
   if (ws == null) {
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (_updateLastVisit && isAccount(account)) {
-    await updateLastVisit(db, ws, account)
+    void ctx.with('update-last-visit', {}, async () => {
+      await updateLastVisit(db, ws, account as Account)
+    })
   }
   return mapToClientWorkspace(ws)
 }

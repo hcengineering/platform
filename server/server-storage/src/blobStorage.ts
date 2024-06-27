@@ -88,6 +88,8 @@ class StorageBlobAdapter implements DbAdapter {
             blob.contentType = blobStat.contentType
             blob.version = blobStat.version
             blob.size = blobStat.size
+            delete (blob as any).downloadUrl
+            delete (blob as any).downloadUrlExpire
 
             toUpload.push(blob)
           }
