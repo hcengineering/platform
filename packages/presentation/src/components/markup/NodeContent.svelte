@@ -104,7 +104,7 @@
     <!-- TODO not implemented -->
   {:else if node.type === MarkupNodeType.taskItem}
     <!-- TODO not implemented -->
-  {:else if node.type === MarkupNodeType.sub}
+  {:else if node.type === MarkupNodeType.subLink}
     <sub>
       <MarkupNodes {nodes} {preview} />
     </sub>

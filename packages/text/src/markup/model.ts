@@ -30,7 +30,7 @@ export enum MarkupNodeType {
   list_item = 'listItem',
   taskList = 'taskList',
   taskItem = 'taskItem',
-  sub = 'sub',
+  subLink = 'subLink',
   table = 'table',
   table_row = 'tableRow',
   table_cell = 'tableCell',
