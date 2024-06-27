@@ -304,7 +304,9 @@ export function getPlatformColors (darkTheme: boolean): readonly ColorDefinition
 }
 
 function hashCode (str: string): number {
-  return str.split('').reduce((prevHash, currVal) => ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0, 0)
+  return (str ?? '')
+    .split('')
+    .reduce((prevHash, currVal) => ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0, 0)
 }
 
 /**

@@ -168,7 +168,7 @@
         return
       }
       const index = participants.findIndex((p) => p._id === participant.identity)
-      if (index !== -1) {
+      if (index !== -1 && participantElements[index] != null) {
         participantElements[index].setTrackMuted(publication.isMuted)
       }
     } else {

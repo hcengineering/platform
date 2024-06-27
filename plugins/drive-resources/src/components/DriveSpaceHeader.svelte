@@ -107,6 +107,7 @@
 {:else}
   <input
     bind:this={inputFile}
+    disabled={inputFile == null}
     multiple
     type="file"
     name="file"

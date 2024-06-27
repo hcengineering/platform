@@ -223,7 +223,7 @@
 
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
     let locationResolver = currentApplication?.locationResolver
-    if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
+    if (loc.path[2] != null && loc.path[2].trim().length > 0) {
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         locationResolver = app?.locationResolver
@@ -391,7 +391,7 @@
     currentQuery = loc.query
     if (fragment !== currentFragment) {
       currentFragment = fragment
-      if (fragment !== undefined && fragment.trim().length > 0) {
+      if (fragment != null && fragment.trim().length > 0) {
         await setOpenPanelFocus(fragment)
       } else {
         closePanel()

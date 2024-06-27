@@ -41,6 +41,9 @@
 
   async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
     const item = objects[selection]
+    if (item == null) {
+      return
+    }
     if (multiselect && Array.isArray(selected)) {
       const index = selected.indexOf(item.id)
       if (index !== -1) {

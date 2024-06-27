@@ -613,6 +613,7 @@ export async function tryConnect (
     })
     requestsQuery.query(love.class.JoinRequest, { person: (me as PersonAccount).person, _id }, (res) => {
       const req = res[0]
+      if (req === undefined) return
       if (req.status === RequestStatus.Pending) return
       requestsQuery.unsubscribe()
       if (req.status === RequestStatus.Approved) {
