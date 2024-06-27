@@ -27,6 +27,7 @@
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let props: Record<string, any> = {}
+  export let fit: boolean = false
 
   let download: HTMLAnchorElement
   let parentWidth: number
@@ -44,6 +45,7 @@
     pT: FilePreviewExtension | undefined,
     mD: BlobMetadata | undefined
   ): void => {
+    if (fit) return
     if (pT === undefined || mD?.originalWidth === undefined || mD?.originalHeight === undefined) {
       minHeight = undefined
       return
@@ -72,13 +74,15 @@
     minHeight = scale === 1 ? fHeight : mHeight
   }
   $: updateHeight(parentWidth, parentHeight, previewType, metadata)
+  $: audio = previewType && Array.isArray(previewType) && previewType[0].contentType === 'audio/*'
   $: srcRef = getBlobSrcFor(file, name)
 </script>
 
 <div
   use:resizeObserver={(element) => (parentWidth = element.clientWidth)}
-  class="content flex-col items-center w-full h-full"
-  style:min-height={`${minHeight ?? 0}px`}
+  class="content w-full h-full"
+  class:flex-center={fit && !audio}
+  style:min-height={fit ? '100%' : `${minHeight ?? 0}px`}
 >
   {#await srcRef then src}
     {#if src === ''}
@@ -88,7 +92,7 @@
     {:else if previewType !== undefined}
       <Component
         is={previewType.component}
-        props={{ value: file, name, contentType: file.contentType, metadata, ...props }}
+        props={{ value: file, name, contentType: file.contentType, metadata, ...props, fit }}
       />
     {:else}
       <div class="centered flex-col flex-gap-3">

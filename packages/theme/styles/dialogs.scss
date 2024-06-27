@@ -338,6 +338,9 @@
     min-height: 0;
 
     &.rounded { border-radius: 0 0 .5rem .5rem; }
+    &:has(audio) {
+      flex-grow: 0;
+    }
   }
 
   .footer {
