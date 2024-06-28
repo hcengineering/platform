@@ -54,8 +54,9 @@
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
+  const { pendingCreatedDocs } = client
   const hierarchy = client.getHierarchy()
-
+  const STALE_TIMEOUT_MS = 5000
   const userQuery = createQuery()
   const currentAccount = getCurrentAccount()
 
@@ -102,6 +103,21 @@
     })
 
   $: links = showLinksPreview ? getLinks(value?.message) : []
+
+  let stale = false
+  let markStaleId: NodeJS.Timeout | undefined
+  $: pending = value?._id !== undefined && $pendingCreatedDocs[value._id]
+  $: if (pending) {
+    markStaleId = setTimeout(() => {
+      stale = true
+    }, STALE_TIMEOUT_MS)
+  } else {
+    if (markStaleId !== undefined) {
+      clearTimeout(markStaleId)
+      markStaleId = undefined
+    }
+    stale = false
+  }
 
   function getLinks (content?: string): HTMLLinkElement[] {
     if (!content) {
@@ -185,6 +201,8 @@
     {hoverable}
     {hoverStyles}
     {skipLabel}
+    {pending}
+    {stale}
     showDatePreposition={hideLink}
     {type}
     {onClick}

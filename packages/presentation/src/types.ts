@@ -1,4 +1,5 @@
 import {
+  type Tx,
   type Blob,
   type Class,
   type Client,
@@ -182,4 +183,11 @@ export interface FilePreviewExtension extends ComponentPointExtension {
   metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   // Extension is only available if this checker returns true
   availabilityChecker?: Resource<() => Promise<boolean>>
+}
+
+/**
+ * @public
+ */
+export interface InstantTransactions extends Class<Doc> {
+  txClasses: Array<Ref<Class<Tx>>>
 }

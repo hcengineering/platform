@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Class, type Ref } from '@hcengineering/core'
+import { type Mixin, type Class, type Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui'
@@ -24,7 +24,8 @@ import {
   type DocRules,
   type DocCreateExtension,
   type FilePreviewExtension,
-  type ObjectSearchCategory
+  type ObjectSearchCategory,
+  type InstantTransactions
 } from './types'
 import type { PreviewConfig } from './preview'
 
@@ -41,6 +42,9 @@ export default plugin(presentationId, {
     DocCreateExtension: '' as Ref<Class<DocCreateExtension>>,
     DocRules: '' as Ref<Class<DocRules>>,
     FilePreviewExtension: '' as Ref<Class<FilePreviewExtension>>
+  },
+  mixin: {
+    InstantTransactions: '' as Ref<Mixin<InstantTransactions>>
   },
   string: {
     Create: '' as IntlString,
