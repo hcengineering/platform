@@ -24,6 +24,7 @@ import {
   type ObjectChatPanel,
   type ThreadMessage
 } from '@hcengineering/chunter'
+import presentation from '@hcengineering/model-presentation'
 import contact from '@hcengineering/contact'
 import {
   type Class,
@@ -455,6 +456,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.ChatMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChatMessagePresenter
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, presentation.mixin.InstantTransactions, {
+    txClasses: [core.class.TxCreateDoc]
   })
 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.ObjectPresenter, {

@@ -100,8 +100,11 @@
   }
 
   async function onMessage (event: CustomEvent) {
-    loading = true
-    const doneOp = await getClient().measure(`chunter.create.${_class} ${object._class}`)
+    if (chatMessage) {
+      loading = true
+    } // for new messages we use instant txes
+
+    const doneOp = getClient().measure(`chunter.create.${_class} ${object._class}`)
     try {
       draftController.remove()
       inputRef.removeDraft(false)
@@ -116,11 +119,11 @@
       currentMessage = getDefault()
       _id = currentMessage._id
       const d1 = Date.now()
-      void doneOp().then((res) => {
+      void (await doneOp)().then((res) => {
         console.log(`create.${_class} measure`, res, Date.now() - d1)
       })
     } catch (err: any) {
-      void doneOp()
+      void (await doneOp)()
       Analytics.handleError(err)
       console.error(err)
     }
