@@ -132,7 +132,6 @@
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   class="container"
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
@@ -237,7 +236,6 @@
     <TermsAgreement />
   {/if}
   {#if bottomActions.length}
-    <!-- svelte-ignore missing-declaration -->
     <div class="footer">
       {#each bottomActions as action}
         <div>
