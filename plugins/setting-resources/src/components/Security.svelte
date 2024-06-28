@@ -15,14 +15,45 @@
 <script lang="ts">
   import { Breadcrumb, Button, Header, Scroller, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
-  import setting from '../plugin'
+  import setting, { type SecuritySettings } from "@hcengineering/setting"
   import AddDomain from './AddDomain.svelte'
+  import { createQuery, getClient } from '@hcengineering/presentation'
 
-  let allowMembersToInvite = false // TODO: Get from settings
+  let query = createQuery()
+  let client = getClient()
+  let allowMembersToInvite = false
+  let existingSecuritySettings: SecuritySettings[]
+
+  $: query.query(setting.class.Security, {}, (set) => {
+    existingSecuritySettings = set
+    if(existingSecuritySettings !== undefined && existingSecuritySettings.length > 0) {
+      allowMembersToInvite = existingSecuritySettings[0].allowMembersToSendInvite
+    }
+  })
 
   const showCreateDialog = async () => {
     showPopup(AddDomain, { targetElement: null }, 'top')
   }
+
+
+  async function setAllowMembersToInvite (): Promise<void> {
+    let newSecuritySettings = {
+      allowMembersToSendInvite: allowMembersToInvite
+    }
+
+    if(existingSecuritySettings.length === 0) {
+      client.createDoc(setting.class.Security, setting.space.Setting, newSecuritySettings)
+    } else {
+      client.updateDoc(
+        setting.class.Security,
+        setting.space.Setting,
+        existingSecuritySettings[0]._id,
+        newSecuritySettings
+      )
+    }
+  }
+
+
 </script>
 
 <div class="hulyComponent">
@@ -30,7 +61,7 @@
     <Breadcrumb icon={setting.icon.Security} label={setting.string.Security} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
-    <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+    <Scroller align={'start'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="hulyComponent-content">
         <div class="mb-1 text-normal font-medium caption-color">
           <Label label={setting.string.PermittedEmailDomains} />
@@ -39,16 +70,20 @@
           <Label label={setting.string.EmailDomainRegistrationMessage} />
           <Button label={setting.string.AddDomain} on:click={showCreateDialog} />
         </div>
-        <div class="flex-col flex-gap-2 items-start">
-          <ToggleWithLabel 
+        <div class="mt-4 fit-content">
+          <ToggleWithLabel
             label={setting.string.AllowMembersToInvite}
             bind:on={allowMembersToInvite}
-            on:change={(e) => {
-              // TODO: Save to settings
-            }}
+            on:change={() => setAllowMembersToInvite()}
           />
         </div>
       </div>
     </Scroller>
   </div>
 </div>
+
+<style>
+  .fit-content {
+    max-width: fit-content;
+  }
+</style>

@@ -18,7 +18,7 @@
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory } from '@hcengineering/setting'
+  import setting, { SecuritySettings, SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
     Label,
@@ -43,6 +43,7 @@
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
+  let securitySettings: SecuritySettings[] = []
 
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as PersonAccount
@@ -50,6 +51,7 @@
   let asideProps: object | null = null
 
   const settingsQuery = createQuery()
+  const securityQuery = createQuery()
   settingsQuery.query(
     setting.class.SettingsCategory,
     {},
@@ -59,6 +61,10 @@
     },
     { sort: { order: 1 } }
   )
+
+  securityQuery.query(setting.class.Security, {}, (set) => {
+    securitySettings = set
+  })
 
   onDestroy(() => {
     clearSettingsStore()
@@ -167,7 +173,8 @@
             label={setting.string.SelectWorkspace}
             on:click={selectWorkspace}
           />
-          {#if hasAccountRole(account, AccountRole.User)}
+          {#if (hasAccountRole(account, AccountRole.Owner) ||
+               (hasAccountRole(account, AccountRole.User) && securitySettings[0]?.allowMembersToSendInvite))}
             <NavItem
               icon={setting.icon.InviteWorkspace}
               label={setting.string.InviteWorkspace}

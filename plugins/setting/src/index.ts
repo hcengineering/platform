@@ -119,6 +119,13 @@ export interface DomainSetting extends Doc {
 /**
  * @public
  */
+export interface SecuritySettings extends Doc {
+  allowMembersToSendInvite: boolean
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {
@@ -154,6 +161,7 @@ export default plugin(settingId, {
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>,
     InviteSettings: '' as Ref<Class<InviteSettings>>,
+    Security: '' as Ref<Class<SecuritySettings>>,
     WorkspaceSetting: '' as Ref<Class<WorkspaceSetting>>
   },
   component: {
@@ -214,7 +222,14 @@ export default plugin(settingId, {
     Automations: '' as IntlString,
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
-    Roles: '' as IntlString
+    Roles: '' as IntlString,
+    PermittedEmailDomains: '' as IntlString,
+    EmailDomainRegistrationMessage: '' as IntlString,
+    AddDomain: '' as IntlString,
+    Domain: '' as IntlString,
+    EnterDomain: '' as IntlString,
+    SaveDomain: '' as IntlString,
+    AllowMembersToInvite: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

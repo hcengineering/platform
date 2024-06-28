@@ -32,6 +32,7 @@ import {
   type SpaceTypeCreator,
   type SpaceTypeEditor,
   type SpaceTypeEditorSection,
+  type SecuritySettings,
   type UserMixin,
   type WorkspaceSetting
 } from '@hcengineering/setting'
@@ -103,6 +104,12 @@ export class TInviteSettings extends TConfiguration implements InviteSettings {
   limit!: number
 }
 
+@Model(setting.class.Security, core.class.Class, DOMAIN_SETTING)
+@UX(setting.string.Security)
+export class TSecuritySettings extends TConfiguration implements SecuritySettings {
+  allowMembersToSendInvite!: boolean
+}
+
 @Model(setting.class.WorkspaceSetting, core.class.Doc, DOMAIN_SETTING)
 export class TWorkspaceSetting extends TDoc implements WorkspaceSetting {
   icon?: Ref<Blob>
@@ -128,6 +135,7 @@ export function createModel (builder: Builder): void {
     TEditable,
     TUserMixin,
     TInviteSettings,
+    TSecuritySettings,
     TWorkspaceSetting,
     TSpaceTypeEditor,
     TSpaceTypeCreator
