@@ -280,7 +280,6 @@ export async function connect (title: string): Promise<Client | undefined> {
         {},
         async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
       )
-      debugger
 
       console.log('Server version', serverVersion.version, version !== undefined ? versionToString(version) : '')
       if (

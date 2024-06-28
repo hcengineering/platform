@@ -38,8 +38,6 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
-  TxWorkspaceEvent,
-  WorkspaceEvent,
   generateId,
   toFindResult
 } from '@hcengineering/core'
