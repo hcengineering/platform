@@ -33,6 +33,7 @@
   import login from '../plugin'
   import { makeSequential } from '../mutex'
   import Providers from './Providers.svelte'
+  import TermsAgreement from './TermsAgreement.svelte'
 
   interface Field {
     id?: string
@@ -131,6 +132,7 @@
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   class="container"
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
@@ -231,7 +233,11 @@
   {#if withProviders}
     <Providers />
   {/if}
+  {#if caption === login.string.Join || caption === login.string.SignUp || caption === login.string.LogIn}
+    <TermsAgreement />
+  {/if}
   {#if bottomActions.length}
+    <!-- svelte-ignore missing-declaration -->
     <div class="footer">
       {#each bottomActions as action}
         <div>
@@ -320,8 +326,11 @@
       }
       a {
         font-weight: 500;
-        text-decoration: underline;
+        text-decoration: none;
         color: var(--theme-content-color);
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
   }
