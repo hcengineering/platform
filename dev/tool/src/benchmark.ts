@@ -38,6 +38,7 @@ import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
 
 interface StartMessage {
+  email: string
   workspaceId: WorkspaceId
   transactorUrl: string
   id: number
@@ -54,6 +55,7 @@ interface StartMessage {
     // If enabled, will perform write tx for same values and Derived format.
     write: boolean
     sleep: number
+    mode: 'find-all' | 'connect-only'
   }
   binary: boolean
   compression: boolean
@@ -75,8 +77,17 @@ interface PendingMsg extends Msg {
 
 export async function benchmark (
   workspaceId: WorkspaceId[],
+  users: Map<string, string[]>,
   transactorUrl: string,
-  cmd: { from: number, steps: number, sleep: number, binary: boolean, write: boolean, compression: boolean }
+  cmd: {
+    from: number
+    steps: number
+    sleep: number
+    binary: boolean
+    write: boolean
+    compression: boolean
+    mode: 'find-all' | 'connect-only'
+  }
 ): Promise<void> {
   const operating = new Set<string>()
   const workers: Worker[] = []
@@ -278,7 +289,9 @@ export async function benchmark (
             .map((it) => {
               const wsid = workspaceId[randNum(workspaceId.length)]
               const workId = 'w-' + i + '-' + it
+              const wsUsers = users.get(wsid.name) ?? []
               const msg: StartMessage = {
+                email: wsUsers[randNum(wsUsers.length)],
                 workspaceId: wsid,
                 transactorUrl,
                 id: i,
@@ -293,7 +306,8 @@ export async function benchmark (
                     rand: 512
                   },
                   sleep: cmd.sleep,
-                  write: cmd.write
+                  write: cmd.write,
+                  mode: cmd.mode
                 },
                 binary: cmd.binary,
                 compression: cmd.compression
@@ -339,81 +353,91 @@ export function benchmarkWorker (): void {
       setMetadata(client.metadata.UseProtocolCompression, msg.compression)
       console.log('connecting to', msg.workspaceId)
 
-      connection = await connect(msg.transactorUrl, msg.workspaceId, undefined)
-      const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
-      parentPort?.postMessage({
-        type: 'operate',
-        workId: msg.workId
-      })
+      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.email)
 
-      const rateLimiter = new RateLimiter(msg.options.rate)
-
-      let bigRunning = 0
-
-      while (msg.options.smallRequests + msg.options.bigRequests > 0) {
-        const variant = Math.random()
-        // console.log(`Thread ${msg.workId} ${msg.options.smallRequests} ${msg.options.bigRequests}`)
-        if (msg.options.bigRequests > 0 && variant < 0.5 && bigRunning === 0) {
-          await rateLimiter.add(async () => {
-            bigRunning = 1
-            await connection?.findAll(core.class.BenchmarkDoc, {
-              source: msg.workId,
-              request: {
-                documents: {
-                  from: 1024,
-                  to: 1000
-                },
-                size: {
-                  // 1kb to 5kb
-                  from: 1 * 1024,
-                  to: 4 * 1024
-                }
-              }
-            })
-          })
-          bigRunning = 0
-          msg.options.bigRequests--
-        }
-        if (msg.options.smallRequests > 0 && variant > 0.5) {
-          await rateLimiter.add(async () => {
-            await connection?.findAll(core.class.BenchmarkDoc, {
-              source: msg.workId,
-              request: {
-                documents: {
-                  from: msg.options.limit.min,
-                  to: msg.options.limit.min + msg.options.limit.rand
-                },
-                size: {
-                  from: 4,
-                  to: 16
-                }
-              }
-            })
-          })
-          msg.options.smallRequests--
-        }
-        if (msg.options.write) {
-          await opt.updateDoc(core.class.BenchmarkDoc, core.space.DerivedTx, '' as Ref<BenchmarkDoc>, {
-            response: 'qwe'
-          })
-        }
-        if (msg.options.sleep > 0) {
-          await new Promise((resolve) => setTimeout(resolve, randNum(msg.options.sleep)))
-        }
-      }
-
-      // clearInterval(infoInterval)
-      await rateLimiter.waitProcessing()
-      const to1 = setTimeout(() => {
+      if (msg.options.mode === 'find-all') {
+        const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
         parentPort?.postMessage({
-          type: 'log',
-          workId: msg.workId,
-          msg: `timeout waiting processing${msg.workId}`
+          type: 'operate',
+          workId: msg.workId
         })
-      }, 5000)
-      clearTimeout(to1)
-      //
-      // console.log(`${msg.idd} perform complete`)
+
+        const rateLimiter = new RateLimiter(msg.options.rate)
+
+        let bigRunning = 0
+
+        while (msg.options.smallRequests + msg.options.bigRequests > 0) {
+          const variant = Math.random()
+          // console.log(`Thread ${msg.workId} ${msg.options.smallRequests} ${msg.options.bigRequests}`)
+          if (msg.options.bigRequests > 0 && variant < 0.5 && bigRunning === 0) {
+            await rateLimiter.add(async () => {
+              bigRunning = 1
+              await connection?.findAll(core.class.BenchmarkDoc, {
+                source: msg.workId,
+                request: {
+                  documents: {
+                    from: 1024,
+                    to: 1000
+                  },
+                  size: {
+                    // 1kb to 5kb
+                    from: 1 * 1024,
+                    to: 4 * 1024
+                  }
+                }
+              })
+            })
+            bigRunning = 0
+            msg.options.bigRequests--
+          }
+          if (msg.options.smallRequests > 0 && variant > 0.5) {
+            await rateLimiter.add(async () => {
+              await connection?.findAll(core.class.BenchmarkDoc, {
+                source: msg.workId,
+                request: {
+                  documents: {
+                    from: msg.options.limit.min,
+                    to: msg.options.limit.min + msg.options.limit.rand
+                  },
+                  size: {
+                    from: 4,
+                    to: 16
+                  }
+                }
+              })
+            })
+            msg.options.smallRequests--
+          }
+          if (msg.options.write) {
+            await opt.updateDoc(core.class.BenchmarkDoc, core.space.DerivedTx, '' as Ref<BenchmarkDoc>, {
+              response: 'qwe'
+            })
+          }
+          if (msg.options.sleep > 0) {
+            await new Promise((resolve) => setTimeout(resolve, randNum(msg.options.sleep)))
+          }
+        }
+
+        // clearInterval(infoInterval)
+        await rateLimiter.waitProcessing()
+        const to1 = setTimeout(() => {
+          parentPort?.postMessage({
+            type: 'log',
+            workId: msg.workId,
+            msg: `timeout waiting processing${msg.workId}`
+          })
+        }, 5000)
+        clearTimeout(to1)
+        //
+        // console.log(`${msg.idd} perform complete`)
+      } else if (msg.options.mode === 'connect-only') {
+        parentPort?.postMessage({
+          type: 'operate',
+          workId: msg.workId
+        })
+        // Just a huge timeout
+        await new Promise<void>((resolve) => setTimeout(resolve, 50000000))
+      }
     } catch (err: any) {
       console.error(msg.workspaceId, err)
     } finally {
@@ -427,6 +451,7 @@ export function benchmarkWorker (): void {
       await connection?.close()
       clearTimeout(to)
     }
+
     parentPort?.postMessage({
       type: 'complete',
       workId: msg.workId

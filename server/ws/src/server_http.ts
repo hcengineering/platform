@@ -250,13 +250,13 @@ export function startHttpServer (
           zlibDeflateOptions: {
             // See zlib defaults.
             chunkSize: 32 * 1024,
-            memLevel: 9,
+            memLevel: 1,
             level: 1
           },
           zlibInflateOptions: {
             chunkSize: 32 * 1024,
             level: 1,
-            memLevel: 9
+            memLevel: 1
           },
           serverNoContextTakeover: true,
           clientNoContextTakeover: true,
@@ -327,7 +327,7 @@ export function startHttpServer (
       } catch (err: any) {
         Analytics.handleError(err)
         if (LOGGING_ENABLED) {
-          ctx.error('message error', err)
+          ctx.error('message error', { err })
         }
       }
     })
