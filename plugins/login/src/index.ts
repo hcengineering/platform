@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref, Doc, AccountRole } from '@hcengineering/core'
+import { AccountRole, Doc, Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -33,6 +33,8 @@ export interface Workspace {
 
   creating?: boolean
   createProgress?: number
+
+  verified?: boolean
 
   lastVisit: number
 }
@@ -84,7 +86,7 @@ export default plugin(loginId, {
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
     GetInviteLink: '' as Resource<
-    (expHours: number, mask: string, limit: number | undefined, role: AccountRole) => Promise<string>
+      (expHours: number, mask: string, limit: number | undefined, role: AccountRole) => Promise<string>
     >,
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,

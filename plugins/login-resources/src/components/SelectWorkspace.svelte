@@ -95,6 +95,11 @@
   $: isAdmin = isAdminUser()
 
   let search: string = ''
+
+  let haveVerifiedWorkspaces = false
+  $: if (workspaces.length > 0) {
+    haveVerifiedWorkspaces = workspaces.some((it) => it.verified === true)
+  }
 </script>
 
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
@@ -102,7 +107,7 @@
   <div class="fs-title">
     {account?.email}
   </div>
-  <div class="title"><Label label={login.string.SelectWorkspace} /></div>
+  <div class="title"><Label label={login.string.JoinWorkspace} /></div>
   <div class="status">
     <StatusControl {status} />
   </div>
@@ -155,7 +160,7 @@
     <div class="footer">
       {#if workspaces.length}
         <div>
-          <span><Label label={login.string.WantAnotherWorkspace} /></span>
+          <span><Label label={login.string.WantAWorkspace} /></span>
           <NavLink href={getHref('createWorkspace')}><Label label={login.string.CreateWorkspace} /></NavLink>
         </div>
       {/if}
