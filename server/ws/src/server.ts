@@ -23,12 +23,12 @@ import core, {
   versionToString,
   withContext,
   type BaseWorkspaceInfo,
+  type Branding,
+  type BrandingMap,
   type MeasureContext,
   type Tx,
   type TxWorkspaceEvent,
-  type WorkspaceId,
-  type Branding,
-  type BrandingMap
+  type WorkspaceId
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
@@ -260,8 +260,19 @@ class TSessionManager implements SessionManager {
     > {
     const wsString = toWorkspaceString(token.workspace, '@')
 
-    let workspaceInfo =
-      accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+    let workspaceInfo: WorkspaceLoginInfo | undefined
+    for (let i = 0; i < 5; i++) {
+      try {
+        workspaceInfo =
+          accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+        break
+      } catch (err: any) {
+        if (i === 4) {
+          throw err
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      }
+    }
 
     if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
       // No access to workspace for token.
@@ -302,7 +313,7 @@ class TSessionManager implements SessionManager {
     const workspaceName = workspaceInfo.workspaceName ?? workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId
     const branding =
       (workspaceInfo.branding !== undefined
-        ? Object.values(this.brandingMap).find((b) => b.key === workspaceInfo.branding)
+        ? Object.values(this.brandingMap).find((b) => b.key === (workspaceInfo as WorkspaceLoginInfo).branding)
         : null) ?? null
 
     if (workspace === undefined) {
@@ -1007,7 +1018,7 @@ export function start (
     opt.pipelineFactory,
     opt.port,
     opt.productId,
-    opt.enableCompression ?? true,
+    opt.enableCompression ?? false,
     opt.accountsUrl,
     opt.externalStorage
   )

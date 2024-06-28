@@ -1782,10 +1782,14 @@ export async function removeWorkspace (
   const { workspace, account } = await getWorkspaceAndAccount(ctx, db, productId, email, workspaceId)
 
   // Add account into workspace.
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
+  await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
 
   // Add account a workspace
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+  await db
+    .collection<Account>(ACCOUNT_COLLECTION)
+    .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
   ctx.info('Workspace removed', { email, workspace })
 }
 

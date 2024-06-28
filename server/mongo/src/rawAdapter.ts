@@ -42,7 +42,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
     workspace: WorkspaceId,
     domain: Domain,
     query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+    options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
   ): Promise<{
       cursor: FindCursor<T>
       total: number
@@ -54,7 +54,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       checkKeys: false
     })
 
-    let total: number = -1
+    const total: number = -1
     if (options != null) {
       if (options.sort !== undefined) {
         const sort = collectSort(options)
@@ -63,9 +63,6 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
         }
       }
       if (options.limit !== undefined || typeof query._id === 'string') {
-        if (options.total === true) {
-          total = await coll.countDocuments(query)
-        }
         cursor = cursor.limit(options.limit ?? 1)
       }
     }
@@ -78,9 +75,9 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       workspace: WorkspaceId,
       domain: Domain,
       query: DocumentQuery<T>,
-      options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+      options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
     ): Promise<FindResult<T>> {
-      let { cursor, total } = await ctx.with(
+      const { cursor, total } = await ctx.with(
         'get-cursor',
         {},
         async () => await getCursor(workspace, domain, query, options)
@@ -92,9 +89,6 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
           ...query,
           ...options
         })
-        if (options?.total === true && options?.limit === undefined) {
-          total = res.length
-        }
         return toFindResult(res, total)
       } catch (e) {
         console.error('error during executing cursor in findAll', cutObjectArray(query), options, e)
@@ -106,7 +100,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       workspace: WorkspaceId,
       domain: Domain,
       query: DocumentQuery<T>,
-      options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+      options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
     ): Promise<RawDBAdapterStream<T>> {
       const { cursor } = await getCursor(workspace, domain, query, options)
 

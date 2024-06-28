@@ -70,7 +70,7 @@
 
 <div class="p-6">
   <div class="flex-row-center">
-    Uniq users: {Object.keys(activeSessions).length}
+    Uniq users: {Object.keys(activeSessions).length} of {data?.statistics?.totalClients} connections
   </div>
   <div class="flex-row-center">
     <CheckBox bind:checked={realUsers} />

@@ -155,9 +155,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     try {
       const existingIndexes = await this.collection(domain).indexes()
       for (const existingIndex of existingIndexes) {
-        const name: string = existingIndex.name
-        if (deletePattern.test(name) && !keepPattern.test(name)) {
-          await this.collection(domain).dropIndex(existingIndex.name)
+        if (existingIndex.name !== undefined) {
+          const name: string = existingIndex.name
+          if (deletePattern.test(name) && !keepPattern.test(name)) {
+            await this.collection(domain).dropIndex(name)
+          }
         }
       }
     } catch (err: any) {
