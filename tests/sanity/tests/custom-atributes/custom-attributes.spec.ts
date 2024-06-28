@@ -52,7 +52,7 @@ test.describe('Custom attributes tests', () => {
     await customAttributesPage.checkIfClassesExists()
   })
 
-  test('create company add custom string attribute and check if it exists in member sections', async ({
+  test('create company add custom string attribute and check if it exists in member sectio', async ({
     browser,
     page
   }) => {
