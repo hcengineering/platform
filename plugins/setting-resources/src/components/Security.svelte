@@ -16,7 +16,7 @@
   import { Breadcrumb, Button, Header, Scroller, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
   import setting, { type SecuritySettings } from "@hcengineering/setting"
-  import AddDomain from './AddDomain.svelte'
+  import login from '@hcengineering/login'
   import { createQuery, getClient } from '@hcengineering/presentation'
 
   let query = createQuery()
@@ -32,7 +32,7 @@
   })
 
   const showCreateDialog = async () => {
-    showPopup(AddDomain, { targetElement: null }, 'top')
+    showPopup(login.component.AddDomain, { targetElement: null }, 'top')
   }
 
 

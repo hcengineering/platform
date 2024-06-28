@@ -39,6 +39,12 @@ import {
 import { workbenchId } from '@hcengineering/workbench'
 import { type Pages } from './index'
 
+export interface WorkspaceDomain {
+  name: string
+  txtRecord: string
+  verifiedOn: number | null
+}
+
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 
 /**
@@ -85,6 +91,91 @@ export async function doLogin (email: string, password: string): Promise<[Status
     console.error('login error', err)
     Analytics.handleError(err)
     return [unknownError(err), undefined]
+  }
+}
+
+export async function createWorkspaceDomain (
+  domainName: string
+): Promise<WorkspaceDomain | null> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  console.log(token)
+  console.log(domainName)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const params = [domainName]
+
+  const request = {
+    method: 'createWorkspaceDomain',
+    params
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // Do something with analitics
+    } else {
+      await handleStatusError('Domain ownership error', result.error)
+    }
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
+  }
+}
+
+export async function verifyWorkspaceDomain (
+  domainName: string
+): Promise<WorkspaceDomain | null> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'verifyWorkspaceDomain',
+    params: [domainName]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+    if (result.error == null) {
+      // TODO: handle analitics
+    } else {
+      await handleStatusError('Domain ownership error', result.error)
+    }
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
   }
 }
 
@@ -592,6 +683,7 @@ export async function getInviteLinkId (
     },
     body: JSON.stringify(request)
   })
+
   const result = await response.json()
   Analytics.handleEvent('Get invite link')
   return result.result

@@ -68,7 +68,9 @@ export default plugin(loginId, {
   },
   component: {
     LoginApp: '' as AnyComponent,
-    InviteLink: '' as AnyComponent
+    InviteLink: '' as AnyComponent,
+    AddDomain: '' as AnyComponent,
+    Domain: '' as AnyComponent
   },
   icon: {
     InviteWorkspace: '' as Asset
@@ -90,6 +92,8 @@ export default plugin(loginId, {
     FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
     GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,
-    GetEndpoint: '' as Resource<() => Promise<string>>
+    GetEndpoint: '' as Resource<() => Promise<string>>,
+    CreateWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>,
+    VerifyWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>
   }
 })

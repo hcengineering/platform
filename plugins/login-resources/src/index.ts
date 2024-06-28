@@ -26,8 +26,12 @@ import {
   getEnpoint,
   fetchWorkspace,
   createMissingEmployee,
-  getInviteLink
+  getInviteLink,
+  createWorkspaceDomain,
+  verifyWorkspaceDomain
 } from './utils'
+import AddDomain from './components/AddDomain.svelte'
+import Domain from './components/Domain.svelte'
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
@@ -38,7 +42,9 @@ import {
 export default async () => ({
   component: {
     LoginApp,
-    InviteLink
+    InviteLink,
+    AddDomain,
+    Domain
   },
   function: {
     LeaveWorkspace: leaveWorkspace,
@@ -49,7 +55,9 @@ export default async () => ({
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
     GetEndpoint: getEnpoint,
-    GetInviteLink: getInviteLink
+    GetInviteLink: getInviteLink,
+    CreateWorkspaceDomain: createWorkspaceDomain,
+    VerifyWorkspaceDomain: verifyWorkspaceDomain
   }
 })
 
