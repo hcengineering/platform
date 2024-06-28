@@ -23,7 +23,9 @@
   } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import DummyPopup from './DummyPopup.svelte'
+  import Fuse from 'fuse.js'
 
+  export let query: string = ''
   export let items: any[]
   export let clientRect: () => ClientRect
   export let command: (props: any) => void
@@ -32,6 +34,15 @@
   let popup: HTMLDivElement
   let dummyPopup: PopupResult
   let menuPopup: SelectPopup
+
+  let fuse: Fuse<any>
+  let sortedItems: any[] = []
+  $: fuse = new Fuse(items, { shouldSort: true, keys: ['id'] })
+  $: {
+    const searchResults = query ? fuse.search(query).map((item) => item.item) : items
+    // If search results are empty, show all items.
+    sortedItems = searchResults.length > 0 ? searchResults : items
+  }
 
   onMount(() => {
     dummyPopup = showPopup(
@@ -113,7 +124,7 @@
     updateStyle()
   }}
 >
-  <SelectPopup bind:this={menuPopup} value={items} onSelect={handleSelected} />
+  <SelectPopup bind:this={menuPopup} value={sortedItems} onSelect={handleSelected} />
 </div>
 
 <style lang="scss">
