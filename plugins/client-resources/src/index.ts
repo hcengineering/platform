@@ -94,11 +94,13 @@ export default async () => {
 
             const upgradeHandler: TxHandler = (...txes: Tx[]) => {
               for (const tx of txes) {
+                if (tx?._class === core.class.TxModelUpgrade) {
+                  onUpgrade?.()
+                  return
+                }
                 if (tx?._class === core.class.TxWorkspaceEvent) {
                   const event = tx as TxWorkspaceEvent
-                  if (event.event === WorkspaceEvent.Upgrade) {
-                    onUpgrade?.()
-                  } else if (event.event === WorkspaceEvent.MaintenanceNotification) {
+                  if (event.event === WorkspaceEvent.MaintenanceNotification) {
                     void setPlatformStatus(
                       new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
                         time: event.params.timeMinutes
