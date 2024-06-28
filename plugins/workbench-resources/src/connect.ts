@@ -196,7 +196,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
                 if (currentVersionStr !== reconnectVersionStr) {
                   // It seems upgrade happened
-                  // location.reload()
+                  location.reload()
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
                 const serverVersion: { version: string } = await ctx.with(
@@ -211,6 +211,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                   version !== undefined ? versionToString(version) : ''
                 )
                 if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
+                  location.reload()
                   versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
                 } else {
                   versionError.set(undefined)
@@ -279,6 +280,7 @@ export async function connect (title: string): Promise<Client | undefined> {
         {},
         async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
       )
+      debugger
 
       console.log('Server version', serverVersion.version, version !== undefined ? versionToString(version) : '')
       if (

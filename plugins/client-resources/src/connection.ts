@@ -356,10 +356,7 @@ class Connection implements ClientConnection {
       const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
 
       for (const tx of txArr) {
-        if (
-          (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
-          tx?._class === core.class.TxModelUpgrade
-        ) {
+        if (tx?._class === core.class.TxModelUpgrade) {
           console.log('Processing upgrade', this.workspace, this.email)
           this.onUpgrade?.()
           return

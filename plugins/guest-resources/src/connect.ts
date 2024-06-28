@@ -94,7 +94,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             if (currentVersionStr !== reconnectVersionStr) {
               // It seems upgrade happened
-              // location.reload()
+              location.reload()
               versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
             }
             const serverVersion: { version: string } = await (
@@ -103,6 +103,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             console.log('Server version', serverVersion.version)
             if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
+              location.reload()
               versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
             }
           }
