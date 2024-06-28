@@ -48,6 +48,7 @@
     "Height": "Alto",
     "Unset": "Anular",
     "Image": "Imagen",
-    "SeparatorLine": "Línea de separación"
+    "SeparatorLine": "Línea de separación",
+    "TodoList": "Tarea pendiente"
   }
 }
