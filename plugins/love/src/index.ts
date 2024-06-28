@@ -1,5 +1,5 @@
 import { Person } from '@hcengineering/contact'
-import { Class, Doc, Ref, Space } from '@hcengineering/core'
+import { Class, Doc, Ref } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
@@ -145,7 +145,6 @@ const love = plugin(loveId, {
     ServiceEnpdoint: '' as Metadata<string>
   },
   space: {
-    Rooms: '' as Ref<Space>,
     Drive: '' as Ref<Drive>
   },
   component: {

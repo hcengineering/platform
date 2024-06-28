@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   Branding,
   Doc,
   Hierarchy,
@@ -85,7 +85,7 @@ export async function getPublicLink (
   const fragment = getDocFragment(doc, client)
   await client.createDoc(
     guest.class.PublicLink,
-    guest.space.Links,
+    core.space.Workspace,
     {
       attachedTo: doc._id,
       location: {

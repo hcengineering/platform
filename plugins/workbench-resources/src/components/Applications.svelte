@@ -13,14 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, type Ref } from '@hcengineering/core'
+  import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
 
-  import preference from '@hcengineering/preference'
   import { isAppAllowed } from '../utils'
   import AppItem from './AppItem.svelte'
 
@@ -34,7 +33,7 @@
   hiddenAppsIdsQuery.query(
     workbench.class.HiddenApplication,
     {
-      space: preference.space.Preference
+      space: core.space.Workspace
     },
     (res) => {
       hiddenAppsIds = res.map((r) => r.attachedTo)

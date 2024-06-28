@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
+import { AttachedDoc, Class, Doc, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 
@@ -66,10 +66,6 @@ const inventory = plugin(inventoryId, {
   global: {
     // Global category root, if not attached to some other object.
     Category: '' as Ref<Category>
-  },
-  space: {
-    Category: '' as Ref<Space>,
-    Products: '' as Ref<Space>
   },
   app: {
     Inventory: '' as Ref<Doc>

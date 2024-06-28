@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { EmployeeBox } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -36,7 +36,7 @@
   const client = getClient()
 
   async function createDepartment () {
-    const id = await client.createDoc(hr.class.Department, hr.space.HR, {
+    const id = await client.createDoc(hr.class.Department, core.space.Workspace, {
       name,
       description: '',
       parent,

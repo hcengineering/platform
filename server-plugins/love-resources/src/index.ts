@@ -80,7 +80,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
 
   const person = (await control.findAll(contact.class.Person, { _id: personId }))[0]
   const room = (await control.findAll(love.class.Office, { person: personId }))[0]
-  const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, love.space.Rooms, {
+  const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, core.space.Workspace, {
     person: personId,
     name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
     room: room?._id ?? love.ids.Reception,
@@ -88,7 +88,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
     y: 0
   })
   const ptx = control.txFactory.createTxApplyIf(
-    love.space.Rooms,
+    core.space.Workspace,
     personId,
     [],
     [
@@ -149,7 +149,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
   if (roomInfo !== undefined) {
     roomInfo.persons.push(info.person)
     return [
-      control.txFactory.createTxUpdateDoc(love.class.RoomInfo, love.space.Rooms, roomInfo._id, {
+      control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, roomInfo._id, {
         persons: Array.from(new Set([...roomInfo.persons, info.person]))
       })
     ]
@@ -157,7 +157,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
     const room = (await control.findAll(love.class.Room, { _id: info.room }))[0]
     if (room === undefined) return []
     return [
-      control.txFactory.createTxCreateDoc(love.class.RoomInfo, love.space.Rooms, {
+      control.txFactory.createTxCreateDoc(love.class.RoomInfo, core.space.Workspace, {
         persons: [info.person],
         room: info.room,
         isOffice: isOffice(room)
@@ -182,7 +182,7 @@ async function rejectJoinRequests (
       })
       for (const request of requests) {
         res.push(
-          control.txFactory.createTxUpdateDoc(love.class.JoinRequest, love.space.Rooms, request._id, {
+          control.txFactory.createTxUpdateDoc(love.class.JoinRequest, core.space.Workspace, request._id, {
             status: RequestStatus.Rejected
           })
         )
@@ -198,14 +198,14 @@ function setDefaultRoomAccess (info: ParticipantInfo, roomInfos: RoomInfo[], con
   if (oldRoomInfo !== undefined) {
     oldRoomInfo.persons = oldRoomInfo.persons.filter((p) => p !== info.person)
     res.push(
-      control.txFactory.createTxUpdateDoc(love.class.RoomInfo, love.space.Rooms, oldRoomInfo._id, {
+      control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, oldRoomInfo._id, {
         persons: oldRoomInfo.persons
       })
     )
     if (oldRoomInfo.persons.length === 0) {
       const resetAccessTx = control.txFactory.createTxUpdateDoc(
         oldRoomInfo.isOffice ? love.class.Office : love.class.Room,
-        love.space.Rooms,
+        core.space.Workspace,
         oldRoomInfo.room,
         {
           access: oldRoomInfo.isOffice ? RoomAccess.Knock : RoomAccess.Open

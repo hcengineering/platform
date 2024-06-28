@@ -13,29 +13,27 @@
 // limitations under the License.
 //
 
+import core, { type Ref, type Space } from '@hcengineering/core'
 import { gmailId } from '@hcengineering/gmail'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import gmail from './plugin'
+import { DOMAIN_GMAIL } from '.'
 
 export const gmailOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
-    await tryUpgrade(state, client, gmailId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, gmailId, [
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, gmail.space.Gmail, {
-            name: 'Gmail',
-            description: 'Space for all gmail messages'
-          })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'gmail:space:Gmail' as Ref<Space>, core.space.Workspace, [DOMAIN_GMAIL])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

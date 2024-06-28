@@ -13,57 +13,56 @@
 // limitations under the License.
 //
 
-import attachment, { type Attachment } from '@hcengineering/attachment'
-import { type ObjQueryType, SortingOrder, type SortingQuery, type Markup } from '@hcengineering/core'
-import { type IntlString, type Resources } from '@hcengineering/platform'
-import preference from '@hcengineering/preference'
-import { PDFViewer, deleteFile, getClient, uploadFile } from '@hcengineering/presentation'
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
+import attachment, { type Attachment } from '@hcengineering/attachment'
+import core, { SortingOrder, type Markup, type ObjQueryType, type SortingQuery } from '@hcengineering/core'
+import { type IntlString, type Resources } from '@hcengineering/platform'
+import { PDFViewer, deleteFile, getClient, uploadFile } from '@hcengineering/presentation'
 
+import AccordionEditor from './components/AccordionEditor.svelte'
 import AddAttachment from './components/AddAttachment.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'
 import AttachmentDroppable from './components/AttachmentDroppable.svelte'
 import AttachmentGalleryPresenter from './components/AttachmentGalleryPresenter.svelte'
 import AttachmentList from './components/AttachmentList.svelte'
 import AttachmentPresenter from './components/AttachmentPresenter.svelte'
+import AttachmentPreview from './components/AttachmentPreview.svelte'
 import AttachmentRefInput from './components/AttachmentRefInput.svelte'
+import AttachmentStyleBoxCollabEditor from './components/AttachmentStyleBoxCollabEditor.svelte'
+import AttachmentStyleBoxEditor from './components/AttachmentStyleBoxEditor.svelte'
+import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
 import Attachments from './components/Attachments.svelte'
 import AttachmentsPresenter from './components/AttachmentsPresenter.svelte'
-import FileBrowser from './components/FileBrowser.svelte'
-import FileDownload from './components/icons/FileDownload.svelte'
-import Photos from './components/Photos.svelte'
-import AttachmentStyledBox from './components/AttachmentStyledBox.svelte'
-import AttachmentStyleBoxEditor from './components/AttachmentStyleBoxEditor.svelte'
-import AttachmentStyleBoxCollabEditor from './components/AttachmentStyleBoxCollabEditor.svelte'
-import AccordionEditor from './components/AccordionEditor.svelte'
-import IconUploadDuo from './components/icons/UploadDuo.svelte'
-import IconAttachment from './components/icons/Attachment.svelte'
-import AttachmentPreview from './components/AttachmentPreview.svelte'
-import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedMessage.svelte'
 import AttachmentsTooltip from './components/AttachmentsTooltip.svelte'
+import FileBrowser from './components/FileBrowser.svelte'
+import Photos from './components/Photos.svelte'
+import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedMessage.svelte'
+import IconAttachment from './components/icons/Attachment.svelte'
+import FileDownload from './components/icons/FileDownload.svelte'
+import IconUploadDuo from './components/icons/UploadDuo.svelte'
 
 export * from './types'
 
 export {
+  AccordionEditor,
   AddAttachment,
+  AttachmentDocList,
   AttachmentDroppable,
+  AttachmentGalleryPresenter,
+  AttachmentList,
+  AttachmentPresenter,
+  AttachmentPreview,
+  AttachmentRefInput,
+  AttachmentStyleBoxCollabEditor,
+  AttachmentStyleBoxEditor,
+  AttachmentStyledBox,
   Attachments,
   AttachmentsPresenter,
-  AttachmentPresenter,
-  AttachmentGalleryPresenter,
-  AttachmentRefInput,
-  AttachmentList,
-  AttachmentDocList,
-  FileDownload,
+  AttachmentsTooltip,
   FileBrowser,
-  AttachmentStyledBox,
-  AttachmentStyleBoxEditor,
-  AttachmentStyleBoxCollabEditor,
-  AccordionEditor,
-  IconUploadDuo,
+  FileDownload,
   IconAttachment,
-  AttachmentPreview,
-  AttachmentsTooltip
+  IconUploadDuo
 }
 
 export enum FileBrowserSortMode {
@@ -211,7 +210,7 @@ export const fileTypeFileBrowserFilters: TypeFilter[] = [
 export async function AddAttachmentToSaved (attach: Attachment): Promise<void> {
   const client = getClient()
 
-  await client.createDoc(attachment.class.SavedAttachments, preference.space.Preference, {
+  await client.createDoc(attachment.class.SavedAttachments, core.space.Workspace, {
     attachedTo: attach._id
   })
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   generateId,
   getCurrentAccount,
   type Class,
@@ -25,7 +25,6 @@ import {
 } from '@hcengineering/core'
 import { type Document, type Teamspace } from '@hcengineering/document'
 import { type Resources } from '@hcengineering/platform'
-import preference from '@hcengineering/preference'
 import { getClient, type ObjectSearchResult } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
@@ -117,7 +116,7 @@ async function editTeamspace (teamspace: Teamspace | undefined): Promise<void> {
 export async function starDocument (doc: Document): Promise<void> {
   const client = getClient()
 
-  await client.createDoc(document.class.SavedDocument, preference.space.Preference, {
+  await client.createDoc(document.class.SavedDocument, core.space.Workspace, {
     attachedTo: doc._id
   })
 }

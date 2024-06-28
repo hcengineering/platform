@@ -267,7 +267,7 @@
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
       collection: 'labels',
-      space: tags.space.Tags,
+      space: core.space.Workspace,
       modifiedOn: 0,
       modifiedBy: '' as Ref<Account>,
       title: tag.title,

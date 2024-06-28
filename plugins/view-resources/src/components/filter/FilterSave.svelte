@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
-  import preference from '@hcengineering/preference'
+  import core, { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, ToggleWithLabel, getCurrentResolvedLocation } from '@hcengineering/ui'
   import { ViewOptions } from '@hcengineering/view'
@@ -22,7 +21,7 @@
     const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     const filters = JSON.stringify($filterStore)
-    await client.createDoc(view.class.FilteredView, preference.space.Preference, {
+    await client.createDoc(view.class.FilteredView, core.space.Workspace, {
       name: filterName,
       location: loc,
       filterClass: _class,

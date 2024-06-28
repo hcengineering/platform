@@ -70,6 +70,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     core.space.DerivedTx,
     core.space.Model,
     core.space.Space,
+    core.space.Workspace,
     core.space.Tx
   ]
 

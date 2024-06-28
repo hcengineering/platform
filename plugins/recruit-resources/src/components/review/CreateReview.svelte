@@ -16,7 +16,7 @@
   import calendar from '@hcengineering/calendar'
   import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import {
+  import core, {
     Account,
     Class,
     Client,
@@ -68,7 +68,7 @@
     attachedTo: candidate,
     attachedToClass: recruit.mixin.Candidate,
     _class: recruit.class.Review,
-    space: recruit.space.Reviews,
+    space: core.space.Workspace,
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
@@ -129,7 +129,8 @@
       location,
       access: 'reader',
       allDay: false,
-      eventId: ''
+      eventId: '',
+      calendar: undefined
     })
   }
 

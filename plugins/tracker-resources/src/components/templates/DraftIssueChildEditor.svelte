@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import core, { Account, Doc, generateId, Ref } from '@hcengineering/core'
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType } from '@hcengineering/task'
@@ -135,7 +135,7 @@
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
       collection: 'labels',
-      space: tags.space.Tags,
+      space: core.space.Workspace,
       modifiedOn: 0,
       modifiedBy: '' as Ref<Account>,
       title: tag.title,

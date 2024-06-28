@@ -14,7 +14,7 @@
 //
 
 import type { Contact, Employee, PersonAccount } from '@hcengineering/contact'
-import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@hcengineering/core'
+import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Type } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -122,9 +122,6 @@ const hr = plugin(hrId, {
   },
   mixin: {
     Staff: '' as Ref<Mixin<Staff>>
-  },
-  space: {
-    HR: '' as Ref<Space>
   },
   icon: {
     HR: '' as Asset,
