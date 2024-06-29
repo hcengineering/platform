@@ -121,6 +121,10 @@
     "Domain": "域",
     "EnterDomain": "输入域",
     "SaveDomain": "保存域",
-    "AllowMembersToInvite": "允许成员邀请新用户加入工作区"
+    "AllowMembersToInvite": "允许成员邀请新用户加入工作区",
+    "Name": "名称",
+    "Copy": "复制",
+    "TXTRecordCopied": "TXT 记录已复制到剪贴板",
+    "Verify": "验证"
   }
 }

@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import login from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import setting, { type SecuritySettings } from "@hcengineering/setting"
   import { Breadcrumb, Button, Header, Scroller, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
-  import setting, { type SecuritySettings } from "@hcengineering/setting"
-  import login from '@hcengineering/login'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import Domain from './Domain.svelte'
-  import { getResource } from '@hcengineering/platform'
   import { onMount } from 'svelte'
+  import Domain from './Domain.svelte'
 
   interface WorkspaceDomain {
     name: string,
@@ -72,7 +72,6 @@
     }
   }
 
-
 </script>
 
 <div class="hulyComponent">
@@ -89,6 +88,17 @@
           <Label label={setting.string.EmailDomainRegistrationMessage} />
           <Button label={setting.string.AddDomain} on:click={showCreateDialog} />
         </div>
+        <div class="mb-1 flex-col flex-gap-2 items-start">
+          {#each domains as domain}
+          <Domain
+            workspaceDomain={{
+              name: domain.name,
+              txtRecord: domain.txtRecord,
+              verifiedOn: domain.verifiedOn,
+            }}
+          />
+          {/each}
+        </div>
         <div class="mt-4 fit-content">
           <ToggleWithLabel
             label={setting.string.AllowMembersToInvite}
@@ -96,23 +106,12 @@
             on:change={() => setAllowMembersToInvite()}
           />
         </div>
-        {#if domains.length > 0}
-        {#each domains as domain}
-        <Domain
-          workspaceDomain={{
-            name: domain.name,
-            txtRecord: domain.txtRecord,
-            verifiedOn: domain.verifiedOn,
-          }}
-        />
-        {/each}
-        {/if}
       </div>
     </Scroller>
   </div>
 </div>
 
-<style>
+<style lang="scss">
   .fit-content {
     max-width: fit-content;
   }

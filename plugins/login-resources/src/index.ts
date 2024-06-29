@@ -15,6 +15,8 @@
 //
 
 import { type IntlString } from '@hcengineering/platform'
+import AddDomain from './components/AddDomain.svelte'
+import Domain from './components/Domain.svelte'
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
 import {
@@ -32,8 +34,6 @@ import {
   verifyWorkspaceDomain,
   getRecommendedWorkspace
 } from './utils'
-import AddDomain from './components/AddDomain.svelte'
-import Domain from './components/Domain.svelte'
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
@@ -72,6 +72,7 @@ export const pages = [
   'password',
   'recovery',
   'selectWorkspace',
+  'joinWorkspace',
   'join',
   'confirm',
   'confirmationSend',
