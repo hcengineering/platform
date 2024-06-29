@@ -124,6 +124,7 @@
     "AllowMembersToInvite": "Autoriser les membres à inviter de nouveaux utilisateurs à l'espace de travail",
     "Name": "Nom",
     "Copy": "Copier",
-    "TXTRecordCopied": "Enregistrement TXT copié dans le presse-papiers"
+    "TXTRecordCopied": "Enregistrement TXT copié dans le presse-papiers",
+    "Verify": "Vérifier"
   }
 }

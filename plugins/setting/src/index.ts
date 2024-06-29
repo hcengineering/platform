@@ -233,7 +233,8 @@ export default plugin(settingId, {
     Name: '' as IntlString,
     Value: '' as IntlString,
     Copy: '' as IntlString,
-    TXTRecordCopied: '' as IntlString
+    TXTRecordCopied: '' as IntlString,
+    Verify: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

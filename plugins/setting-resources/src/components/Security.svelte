@@ -15,7 +15,7 @@
 <script lang="ts">
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type SecuritySettings } from "@hcengineering/setting"
   import { Breadcrumb, Button, Header, Scroller, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
@@ -33,17 +33,6 @@
   let allowMembersToInvite = false
   let existingSecuritySettings: SecuritySettings[]
   let domains: WorkspaceDomain[] = []
-
-  const TYPE = "TXT";
-  const HOST = "@";
-
-  // TODO: Replace with actual data
-  let dummyData = [
-    { 
-      name: "d-one.design", 
-      txtRecord: '1password-site-verification=HE47YLE6UVFZJLLDZUEHKO53DY',  
-    },
-  ]
 
   $: query.query(setting.class.Security, {}, (set) => {
     existingSecuritySettings = set
@@ -100,36 +89,14 @@
           <Button label={setting.string.AddDomain} on:click={showCreateDialog} />
         </div>
         <div class="mb-1 flex-col flex-gap-2 items-start">
-          {#each  dummyData as item}
-          <details>
-            <summary>
-              <span>{item.name}</span>
-              <span>▼</span>
-            </summary>
-            <div class="table">
-              <div>
-                <p>
-                  <Label label={setting.string.Type} />
-                </p>
-                <p>{TYPE}</p>
-              </div>
-              <div>
-                <p>
-                  <Label label={setting.string.Name} />
-                </p>
-                <p>{HOST}</p>
-              </div>
-              <div>
-                <p>
-                  <Label label={setting.string.Value} />
-                </p>
-                <p>
-                  <span>{item.txtRecord}</span>
-                  <Button label={setting.string.Copy} size={'x-small'} on:click={() => copyTextToClipboard(item.txtRecord)} />
-                </p>
-              </div>
-            </div>
-          </details>
+          {#each domains as domain}
+          <Domain
+            workspaceDomain={{
+              name: domain.name,
+              txtRecord: domain.txtRecord,
+              verifiedOn: domain.verifiedOn,
+            }}
+          />
           {/each}
         </div>
         <div class="mt-4 fit-content">
@@ -139,15 +106,6 @@
             on:change={() => setAllowMembersToInvite()}
           />
         </div>
-        {#each domains as domain}
-        <Domain
-          workspaceDomain={{
-            name: domain.name,
-            txtRecord: domain.txtRecord,
-            verifiedOn: domain.verifiedOn,
-          }}
-        />
-        {/each}
       </div>
     </Scroller>
   </div>
@@ -156,69 +114,5 @@
 <style lang="scss">
   .fit-content {
     max-width: fit-content;
-  }
-
-  details {
-    margin-top: 0.5rem;
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.25rem;
-    padding: 0.5rem;
-
-    @media screen and (min-width: 768px) {
-      min-width: 575px;
-    }
-
-    summary {
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 0.8125rem;
-      color: var(--theme-dark-color);
-      padding: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-
-      span:nth-child(1) {
-        color: var(--theme-caption-color);
-      }
-
-      span:nth-child(2) {
-        margin-left: auto;
-      }
-    }
-
-    .table {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 0.5rem;
-      padding-bottom: 0;
-
-      & > div {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        
-        p:nth-child(1) {
-          font-weight: 500;
-          font-size: 0.8125rem;
-          color: var(--theme-dark-color);
-          margin: 0;
-          text-align: left;
-        }
-
-        p:nth-child(2) {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          min-height: 3rem;
-          font-weight: 400;
-          font-size: 0.8125rem;
-          color: var(--theme-caption-color);
-          margin: 0;
-          text-align: left;
-        }
-      }
-    }
   }
 </style>

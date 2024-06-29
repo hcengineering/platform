@@ -124,6 +124,7 @@
     "AllowMembersToInvite": "Allow members to invite new users to the workspace",
     "Name": "Name",
     "Copy": "Copy",
-    "TXTRecordCopied": "TXT record copied to clipboard"
+    "TXTRecordCopied": "TXT record copied to clipboard",
+    "Verify": "Verify"
   }
 }

@@ -14,15 +14,20 @@
 -->
 
 <script lang="ts">
-    import { Button } from "@hcengineering/ui"
     import login from '@hcengineering/login'
     import { getResource } from "@hcengineering/platform"
+    import { copyTextToClipboard } from "@hcengineering/presentation"
+    import setting from "@hcengineering/setting"
+    import { Button, Label } from "@hcengineering/ui"
 
     interface WorkspaceDomain {
         name: string
         txtRecord: string
         verifiedOn: number | null
     }
+
+    const TYPE = "TXT";
+    const HOST = "@";
 
     export let workspaceDomain: WorkspaceDomain
 
@@ -36,11 +41,109 @@
 
 </script>
 
-<div>
+<details>
+    <summary>
+      <span>{workspaceDomain.name}</span>
+      {#if !workspaceDomain.verifiedOn}
+        <Button kind='primary' label={login.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
+      {/if}
+      <span>▼</span>
+    </summary>
+    <div class="table">
+      <div>
+        <p>
+          <Label label={setting.string.Type} />
+        </p>
+        <p>{TYPE}</p>
+      </div>
+      <div>
+        <p>
+          <Label label={setting.string.Name} />
+        </p>
+        <p>{HOST}</p>
+      </div>
+      <div>
+        <p>
+          <Label label={setting.string.Value} />
+        </p>
+        <p>
+          <span>{workspaceDomain.txtRecord}</span>
+          <Button label={setting.string.Copy} size={'x-small'} on:click={() => copyTextToClipboard(workspaceDomain.txtRecord)} />
+        </p>
+      </div>
+    </div>
+  </details>
+
+<!-- <div>
     <span>{workspaceDomain.name}</span>
     <span>{workspaceDomain.txtRecord}</span>
     {#if !workspaceDomain.verifiedOn}
-        <!-- Change login.string.GetLink to verify/refresh  -->
         <Button kind='primary' label={login.string.InviteLimit} on:click={() => verifyDomain(workspaceDomain.name)} />
     {/if}
-</div>
+</div> -->
+
+<style lang="scss">
+  details {
+    margin-top: 0.5rem;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+
+    @media screen and (min-width: 768px) {
+      min-width: 575px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.8125rem;
+      color: var(--theme-dark-color);
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      span:nth-child(1) {
+        color: var(--theme-caption-color);
+      }
+
+      span:nth-child(2) {
+        margin-left: auto;
+      }
+    }
+
+    .table {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 0.5rem;
+      padding-bottom: 0;
+
+      & > div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        p:nth-child(1) {
+          font-weight: 500;
+          font-size: 0.8125rem;
+          color: var(--theme-dark-color);
+          margin: 0;
+          text-align: left;
+        }
+
+        p:nth-child(2) {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          min-height: 3rem;
+          font-weight: 400;
+          font-size: 0.8125rem;
+          color: var(--theme-caption-color);
+          margin: 0;
+          text-align: left;
+        }
+      }
+    }
+  }
+</style>
