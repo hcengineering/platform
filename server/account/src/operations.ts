@@ -50,13 +50,13 @@ import { getModelVersion } from '@hcengineering/model-all'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initModel, upgradeModel, getStorageAdapter } from '@hcengineering/server-tool'
+import toolPlugin, { connect, getStorageAdapter, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes, randomUUID } from 'crypto'
 import { Binary, Db, Document, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import { type StorageAdapter } from '../../core/types'
-import { accountPlugin } from './plugin'
 import { ccTLDs, SECOND_LEVEL_DOMAINS } from './constants'
+import { accountPlugin } from './plugin'
 
 import dns from 'dns'
 
@@ -162,25 +162,25 @@ export interface WorkspaceDomain {
  */
 export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 
-function hashWithSalt (password: string, salt: Buffer): Buffer {
+function hashWithSalt(password: string, salt: Buffer): Buffer {
   return pbkdf2Sync(password, salt, 1000, 32, 'sha256')
 }
 
-function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean {
+function verifyPassword(password: string, hash: Buffer, salt: Buffer): boolean {
   return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
 }
 
-function cleanEmail (email: string): string {
+function cleanEmail(email: string): string {
   return email.toLowerCase().trim()
 }
 
-function isEmail (email: string): boolean {
+function isEmail(email: string): boolean {
   const EMAIL_REGEX =
     /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
   return EMAIL_REGEX.test(email)
 }
 
-export async function isValidDomain (domainName: string): Promise<boolean> {
+export async function isValidDomain(domainName: string): Promise<boolean> {
   return await new Promise((resolve) => {
     dns.resolve4(domainName, (err) => {
       if (err !== null) {
@@ -198,7 +198,7 @@ export async function isValidDomain (domainName: string): Promise<boolean> {
   })
 }
 
-export async function shouldVerifyDomain (domainName: string, txtRecord: string): Promise<boolean> {
+export async function shouldVerifyDomain(domainName: string, txtRecord: string): Promise<boolean> {
   return await new Promise((resolve, reject) => {
     dns.resolveTxt(domainName, (err, records) => {
       if (err !== null) {
@@ -211,11 +211,11 @@ export async function shouldVerifyDomain (domainName: string, txtRecord: string)
   })
 }
 
-export function generateTxtRecord (workspaceName: string): string {
+export function generateTxtRecord(workspaceName: string): string {
   return `huly-${workspaceName}-${randomUUID()}`
 }
 
-export function extractApexDomain (domainName: string): string {
+export function extractApexDomain(domainName: string): string {
   const parts = domainName.split('.')
   if (parts.length > 2) {
     if (SECOND_LEVEL_DOMAINS.has(parts[parts.length - 1]) && ccTLDs.has(parts[parts.length - 1])) {
@@ -229,25 +229,25 @@ export function extractApexDomain (domainName: string): string {
 /**
  * @public
  */
-export async function getWorkspaceDomain (db: Db, filter: Filter<Document>): Promise<WorkspaceDomain | null> {
+export async function getWorkspaceDomain(db: Db, filter: Filter<Document>): Promise<WorkspaceDomain | null> {
   return await db.collection(DOMAIN_COLLECTION).findOne<WorkspaceDomain>(filter)
 }
 
 /**
  * @public
  */
-export async function getAccount (db: Db, email: string): Promise<Account | null> {
+export async function getAccount(db: Db, email: string): Promise<Account | null> {
   return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email: cleanEmail(email) })
 }
 
-async function getAccountByQuery (db: Db, query: Record<string, string>): Promise<Account | null> {
+async function getAccountByQuery(db: Db, query: Record<string, string>): Promise<Account | null> {
   return await db.collection(ACCOUNT_COLLECTION).findOne<Account>(query)
 }
 
 /**
  * @public
  */
-export async function setAccountAdmin (db: Db, email: string, admin: boolean): Promise<void> {
+export async function setAccountAdmin(db: Db, email: string, admin: boolean): Promise<void> {
   const account = await getAccount(db, email)
   if (account === null) {
     return
@@ -256,7 +256,7 @@ export async function setAccountAdmin (db: Db, email: string, admin: boolean): P
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { admin } })
 }
 
-function withProductId (productId: string, query: Filter<Workspace>): Filter<Workspace> {
+function withProductId(productId: string, query: Filter<Workspace>): Filter<Workspace> {
   return productId === ''
     ? {
         $or: [
@@ -272,7 +272,7 @@ function withProductId (productId: string, query: Filter<Workspace>): Filter<Wor
  * @param workspaceUrl -
  * @returns
  */
-export async function getWorkspaceByUrl (db: Db, productId: string, workspaceUrl: string): Promise<Workspace | null> {
+export async function getWorkspaceByUrl(db: Db, productId: string, workspaceUrl: string): Promise<Workspace | null> {
   const res = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne(withProductId(productId, { workspaceUrl }))
   if (res != null) {
     return res
@@ -289,17 +289,17 @@ export async function getWorkspaceByUrl (db: Db, productId: string, workspaceUrl
  * @param workspace -
  * @returns
  */
-export async function getWorkspaceById (db: Db, productId: string, workspace: string): Promise<Workspace | null> {
+export async function getWorkspaceById(db: Db, productId: string, workspace: string): Promise<Workspace | null> {
   return await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne(withProductId(productId, { workspace }))
 }
 
-function toAccountInfo (account: Account): AccountInfo {
+function toAccountInfo(account: Account): AccountInfo {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { hash, salt, ...result } = account
   return result
 }
 
-async function getAccountInfo (
+async function getAccountInfo(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -320,7 +320,7 @@ async function getAccountInfo (
   return toAccountInfo(account)
 }
 
-async function getAccountInfoByToken (
+async function getAccountInfoByToken(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -357,7 +357,7 @@ async function getAccountInfoByToken (
  * @param workspace -
  * @returns
  */
-export async function login (
+export async function login(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -386,7 +386,7 @@ export async function login (
 /**
  * Will add extra props
  */
-function getExtra (info: Account | AccountInfo | null, rec?: Record<string, any>): Record<string, any> | undefined {
+function getExtra(info: Account | AccountInfo | null, rec?: Record<string, any>): Record<string, any> | undefined {
   const res = rec ?? {}
   if (info?.admin === true) {
     res.admin = 'true'
@@ -398,7 +398,7 @@ function getExtra (info: Account | AccountInfo | null, rec?: Record<string, any>
 /**
  * @public
  */
-export async function selectWorkspace (
+export async function selectWorkspace(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -461,14 +461,14 @@ export async function selectWorkspace (
 /**
  * @public
  */
-export async function getInvite (db: Db, inviteId: ObjectId): Promise<Invite | null> {
+export async function getInvite(db: Db, inviteId: ObjectId): Promise<Invite | null> {
   return await db.collection(INVITE_COLLECTION).findOne<Invite>({ _id: new ObjectId(inviteId) })
 }
 
 /**
  * @public
  */
-export async function checkInvite (ctx: MeasureContext, invite: Invite | null, email: string): Promise<WorkspaceId> {
+export async function checkInvite(ctx: MeasureContext, invite: Invite | null, email: string): Promise<WorkspaceId> {
   if (invite === null || invite.limit === 0) {
     ctx.error('invite', { email, state: 'no invite or limit exceed' })
     Analytics.handleError(new Error(`no invite or invite limit exceed ${email}`))
@@ -491,14 +491,14 @@ export async function checkInvite (ctx: MeasureContext, invite: Invite | null, e
 /**
  * @public
  */
-export async function useInvite (db: Db, inviteId: ObjectId): Promise<void> {
+export async function useInvite(db: Db, inviteId: ObjectId): Promise<void> {
   await db.collection(INVITE_COLLECTION).updateOne({ _id: inviteId }, { $inc: { limit: -1 } })
 }
 
 /**
  * @public
  */
-export async function join (
+export async function join(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -531,7 +531,7 @@ export async function join (
 /**
  * @public
  */
-export async function confirmEmail (db: Db, _email: string): Promise<Account> {
+export async function confirmEmail(db: Db, _email: string): Promise<Account> {
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
   console.log(`confirm email:${email}`)
@@ -551,7 +551,7 @@ export async function confirmEmail (db: Db, _email: string): Promise<Account> {
 /**
  * @public
  */
-export async function confirm (
+export async function confirm(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -576,7 +576,7 @@ export async function confirm (
   return result
 }
 
-async function sendConfirmation (productId: string, branding: Branding | null, account: Account): Promise<void> {
+async function sendConfirmation(productId: string, branding: Branding | null, account: Account): Promise<void> {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
     console.info('Please provide email service url to enable email confirmations.')
@@ -623,7 +623,7 @@ async function sendConfirmation (productId: string, branding: Branding | null, a
 /**
  * @public
  */
-export async function signUpJoin (
+export async function signUpJoin(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -670,7 +670,7 @@ export async function signUpJoin (
 /**
  * @public
  */
-export async function createWorkspaceDomain (
+export async function createWorkspaceDomain(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -681,20 +681,17 @@ export async function createWorkspaceDomain (
   const { workspace } = decodeToken(token)
 
   const newDomainName = extractApexDomain(domainName)
-  const domain = await getWorkspaceDomain(
-    db,
-    {
-      name: newDomainName,
-      $or: [
-        { verifiedOn: { $ne: null } },
-        { workspace }
-      ]
-    })
+  const domain = await getWorkspaceDomain(db, {
+    name: newDomainName,
+    $or: [{ verifiedOn: { $ne: null } }, { workspace }]
+  })
 
   const txtRecord = generateTxtRecord(workspace.name)
 
   if (domain !== null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
+    )
   }
 
   await db.collection(DOMAIN_COLLECTION).insertOne({
@@ -707,7 +704,9 @@ export async function createWorkspaceDomain (
   const newDomain = await getWorkspaceDomain(db, { name: newDomainName, workspace })
 
   if (newDomain === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
+    )
   }
 
   ctx.info('domain created', { domainName: newDomainName })
@@ -718,7 +717,7 @@ export async function createWorkspaceDomain (
 /**
  * @public
  */
-export async function verifyWorkspaceDomain (
+export async function verifyWorkspaceDomain(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -738,9 +737,10 @@ export async function verifyWorkspaceDomain (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyVerified, { domainName }))
   }
 
-  const verifiedOn = Date.now()
+  let verifiedOn: number | null = null
 
   if (await shouldVerifyDomain(domainName, workspaceDomain.txtRecord)) {
+    verifiedOn = Date.now()
     await db.collection(DOMAIN_COLLECTION).updateOne({ name: domainName, workspace }, { $set: { verifiedOn } })
     ctx.info('domain verified', { domainName })
   }
@@ -754,7 +754,7 @@ export async function verifyWorkspaceDomain (
 /**
  * @public
  */
-export async function getWorkspaceDomains (
+export async function getWorkspaceDomains(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -771,7 +771,7 @@ export async function getWorkspaceDomains (
 /**
  * @public
  */
-export async function createAcc (
+export async function createAcc(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -831,7 +831,7 @@ export async function createAcc (
 /**
  * @public
  */
-export async function createAccount (
+export async function createAccount(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -866,7 +866,7 @@ export async function createAccount (
 /**
  * @public
  */
-export async function listWorkspaces (
+export async function listWorkspaces(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -883,7 +883,7 @@ export async function listWorkspaces (
 /**
  * @public
  */
-export async function listWorkspacesByAccount (db: Db, productId: string, email: string): Promise<WorkspaceInfo[]> {
+export async function listWorkspacesByAccount(db: Db, productId: string, email: string): Promise<WorkspaceInfo[]> {
   const account = await getAccount(db, email)
   return (
     await db
@@ -899,7 +899,7 @@ export async function listWorkspacesByAccount (db: Db, productId: string, email:
 /**
  * @public
  */
-export async function listWorkspacesRaw (db: Db, productId: string): Promise<Workspace[]> {
+export async function listWorkspacesRaw(db: Db, productId: string): Promise<Workspace[]> {
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)
@@ -908,7 +908,7 @@ export async function listWorkspacesRaw (db: Db, productId: string): Promise<Wor
 /**
  * @public
  */
-export async function listWorkspacesPure (db: Db, productId: string): Promise<Workspace[]> {
+export async function listWorkspacesPure(db: Db, productId: string): Promise<Workspace[]> {
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()).map(
     (it) => ({ ...it, productId })
   )
@@ -916,11 +916,11 @@ export async function listWorkspacesPure (db: Db, productId: string): Promise<Wo
 /**
  * @public
  */
-export async function setWorkspaceDisabled (db: Db, workspaceId: Workspace['_id'], disabled: boolean): Promise<void> {
+export async function setWorkspaceDisabled(db: Db, workspaceId: Workspace['_id'], disabled: boolean): Promise<void> {
   await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $set: { disabled } })
 }
 
-export async function cleanInProgressWorkspaces (db: Db, productId: string): Promise<void> {
+export async function cleanInProgressWorkspaces(db: Db, productId: string): Promise<void> {
   const toDelete = (
     await db
       .collection<Workspace>(WORKSPACE_COLLECTION)
@@ -936,7 +936,7 @@ export async function cleanInProgressWorkspaces (db: Db, productId: string): Pro
 /**
  * @public
  */
-export async function updateWorkspace (
+export async function updateWorkspace(
   db: Db,
   productId: string,
   info: Workspace,
@@ -948,14 +948,14 @@ export async function updateWorkspace (
 /**
  * @public
  */
-export async function listAccounts (db: Db): Promise<Account[]> {
+export async function listAccounts(db: Db): Promise<Account[]> {
   return await db.collection<Account>(ACCOUNT_COLLECTION).find({}).toArray()
 }
 
 const workspaceReg = /[a-z0-9]/
 const workspaceRegDigit = /[0-9]/
 
-function stripId (name: string): string {
+function stripId(name: string): string {
   let workspaceId = ''
   for (const c of name.toLowerCase()) {
     if (workspaceReg.test(c) || c === '-') {
@@ -967,11 +967,11 @@ function stripId (name: string): string {
   return workspaceId
 }
 
-function getEmailName (email: string): string {
+function getEmailName(email: string): string {
   return email.split('@')[0]
 }
 
-async function generateWorkspaceRecord (
+async function generateWorkspaceRecord(
   db: Db,
   email: string,
   productId: string,
@@ -1065,7 +1065,7 @@ const rateLimiter = new RateLimiter(parseInt(process.env.RATELIMIT ?? '10'))
 /**
  * @public
  */
-export async function createWorkspace (
+export async function createWorkspace(
   ctx: MeasureContext,
   version: Data<Version>,
   txes: Tx[],
@@ -1078,7 +1078,7 @@ export async function createWorkspace (
   workspace?: string,
   notifyHandler?: (workspace: Workspace) => void,
   postInitHandler?: (workspace: Workspace, model: Tx[]) => Promise<void>
-): Promise<{ workspaceInfo: Workspace, err?: any, model?: Tx[] }> {
+): Promise<{ workspaceInfo: Workspace; err?: any; model?: Tx[] }> {
   // We need to search for duplicate workspaceUrl
   await searchPromise
 
@@ -1091,7 +1091,7 @@ export async function createWorkspace (
 
   const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
 
-  async function updateInfo (ops: Partial<Workspace>): Promise<void> {
+  async function updateInfo(ops: Partial<Workspace>): Promise<void> {
     await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
     console.log('update', ops)
   }
@@ -1193,7 +1193,7 @@ export async function createWorkspace (
 /**
  * @public
  */
-export async function upgradeWorkspace (
+export async function upgradeWorkspace(
   ctx: MeasureContext,
   version: Data<Version>,
   txes: Tx[],
@@ -1249,123 +1249,123 @@ export async function upgradeWorkspace (
  */
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
-    async (
-      ctx: MeasureContext,
-      db: Db,
-      productId: string,
-      branding: Branding | null,
-      token: string,
-      workspaceName: string
-    ): Promise<LoginInfo> => {
-      const { email } = decodeToken(token)
+  async (
+    ctx: MeasureContext,
+    db: Db,
+    productId: string,
+    branding: Branding | null,
+    token: string,
+    workspaceName: string
+  ): Promise<LoginInfo> => {
+    const { email } = decodeToken(token)
 
-      ctx.info('Creating workspace', { workspaceName, email })
+    ctx.info('Creating workspace', { workspaceName, email })
 
-      const info = await getAccount(db, email)
+    const info = await getAccount(db, email)
 
-      if (info === null) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
-      }
-      if (info.confirmed === false) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
-      }
-
-      if (info.lastWorkspace !== undefined && info.admin === false) {
-        if (Date.now() - info.lastWorkspace < 60 * 1000) {
-          throw new PlatformError(
-            new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
-          )
-        }
-      }
-
-      async function doCreate (info: Account, notifyHandler: (workspace: Workspace) => void): Promise<void> {
-        const { workspaceInfo, err } = await createWorkspace(
-          ctx,
-          version,
-          txes,
-          migrationOperation,
-          db,
-          productId,
-          branding,
-          email,
-          workspaceName,
-          undefined,
-          notifyHandler,
-          async (workspace, model) => {
-            const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-            const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
-            const client = await connect(
-              getTransactor(),
-              getWorkspaceId(workspace.workspace, productId),
-              undefined,
-              {
-                admin: 'true'
-              },
-              model
-            )
-            try {
-              await assignWorkspace(
-                ctx,
-                db,
-                productId,
-                branding,
-                email,
-                workspace.workspace,
-                AccountRole.Owner,
-                undefined,
-                shouldUpdateAccount,
-                client
-              )
-              ctx.info('Creating server side done', { workspaceName, email })
-            } catch (err: any) {
-              Analytics.handleError(err)
-            } finally {
-              await client.close()
-            }
-          }
-        )
-
-        if (err != null) {
-          ctx.error('failed to create workspace', { err, workspaceName, email })
-          // We need to drop workspace, to prevent wrong data usage.
-
-          await db.collection(WORKSPACE_COLLECTION).updateOne(
-            {
-              _id: workspaceInfo._id
-            },
-            { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
-          )
-          throw err
-        }
-        info.lastWorkspace = Date.now()
-
-        // Update last workspace time.
-        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
-      }
-
-      const workspaceInfo = await new Promise<Workspace>((resolve) => {
-        void doCreate(info, (info: Workspace) => {
-          resolve(info)
-        })
-      })
-
-      await assignWorkspaceRaw(db, { account: info, workspace: workspaceInfo })
-
-      const result = {
-        endpoint: getEndpoint(),
-        email,
-        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(info)),
-        productId,
-        workspace: workspaceInfo.workspaceUrl
-      }
-      ctx.info('Creating user side done', { workspaceName, email })
-      return result
+    if (info === null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
     }
+    if (info.confirmed === false) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
+    }
+
+    if (info.lastWorkspace !== undefined && info.admin === false) {
+      if (Date.now() - info.lastWorkspace < 60 * 1000) {
+        throw new PlatformError(
+          new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
+        )
+      }
+    }
+
+    async function doCreate(info: Account, notifyHandler: (workspace: Workspace) => void): Promise<void> {
+      const { workspaceInfo, err } = await createWorkspace(
+        ctx,
+        version,
+        txes,
+        migrationOperation,
+        db,
+        productId,
+        branding,
+        email,
+        workspaceName,
+        undefined,
+        notifyHandler,
+        async (workspace, model) => {
+          const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
+          const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
+          const client = await connect(
+            getTransactor(),
+            getWorkspaceId(workspace.workspace, productId),
+            undefined,
+            {
+              admin: 'true'
+            },
+            model
+          )
+          try {
+            await assignWorkspace(
+              ctx,
+              db,
+              productId,
+              branding,
+              email,
+              workspace.workspace,
+              AccountRole.Owner,
+              undefined,
+              shouldUpdateAccount,
+              client
+            )
+            ctx.info('Creating server side done', { workspaceName, email })
+          } catch (err: any) {
+            Analytics.handleError(err)
+          } finally {
+            await client.close()
+          }
+        }
+      )
+
+      if (err != null) {
+        ctx.error('failed to create workspace', { err, workspaceName, email })
+        // We need to drop workspace, to prevent wrong data usage.
+
+        await db.collection(WORKSPACE_COLLECTION).updateOne(
+          {
+            _id: workspaceInfo._id
+          },
+          { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
+        )
+        throw err
+      }
+      info.lastWorkspace = Date.now()
+
+      // Update last workspace time.
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+    }
+
+    const workspaceInfo = await new Promise<Workspace>((resolve) => {
+      void doCreate(info, (info: Workspace) => {
+        resolve(info)
+      })
+    })
+
+    await assignWorkspaceRaw(db, { account: info, workspace: workspaceInfo })
+
+    const result = {
+      endpoint: getEndpoint(),
+      email,
+      token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(info)),
+      productId,
+      workspace: workspaceInfo.workspaceUrl
+    }
+    ctx.info('Creating user side done', { workspaceName, email })
+    return result
+  }
 
 /**
  * @public
  */
-export async function getInviteLink (
+export async function getInviteLink(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1410,12 +1410,12 @@ export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspac
  */
 export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts'>
 
-function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
+function mapToClientWorkspace(ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
   return { ...data, workspace: ws.workspaceUrl ?? ws.workspace, workspaceId: ws.workspace }
 }
 
-function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {
+function trimWorkspaceInfo(ws: Workspace): WorkspaceInfo {
   const { _id, accounts, ...data } = ws
   return { ...data }
 }
@@ -1423,7 +1423,7 @@ function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {
 /**
  * @public
  */
-export async function getUserWorkspaces (
+export async function getUserWorkspaces(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1450,7 +1450,7 @@ export async function getUserWorkspaces (
 /**
  * @public
  */
-export async function getWorkspaceInfo (
+export async function getWorkspaceInfo(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1499,11 +1499,11 @@ export async function getWorkspaceInfo (
   return mapToClientWorkspace(ws)
 }
 
-function isAccount (data: Pick<Account, 'admin' | 'workspaces'> | Account | null): data is Account {
+function isAccount(data: Pick<Account, 'admin' | 'workspaces'> | Account | null): data is Account {
   return (data as Account)._id !== undefined
 }
 
-async function updateLastVisit (db: Db, ws: Workspace, account: Account): Promise<void> {
+async function updateLastVisit(db: Db, ws: Workspace, account: Account): Promise<void> {
   const now = Date.now()
   await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: ws._id }, { $set: { lastVisit: now } })
 
@@ -1511,13 +1511,13 @@ async function updateLastVisit (db: Db, ws: Workspace, account: Account): Promis
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { lastVisit: now } })
 }
 
-async function getWorkspaceAndAccount (
+async function getWorkspaceAndAccount(
   ctx: MeasureContext,
   db: Db,
   productId: string,
   _email: string,
   workspaceUrl: string
-): Promise<{ account: Account, workspace: Workspace }> {
+): Promise<{ account: Account; workspace: Workspace }> {
   const email = cleanEmail(_email)
   const wsPromise = await getWorkspaceById(db, productId, workspaceUrl)
   if (wsPromise === null) {
@@ -1533,7 +1533,7 @@ async function getWorkspaceAndAccount (
 /**
  * @public
  */
-export async function setRole (
+export async function setRole(
   _email: string,
   workspace: string,
   productId: string,
@@ -1563,7 +1563,7 @@ export async function setRole (
 /**
  * @public
  */
-export async function createMissingEmployee (
+export async function createMissingEmployee(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1584,7 +1584,7 @@ export async function createMissingEmployee (
 /**
  * @public
  */
-export async function assignWorkspace (
+export async function assignWorkspace(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1626,7 +1626,7 @@ export async function assignWorkspace (
   return workspaceInfo.workspace
 }
 
-async function assignWorkspaceRaw (db: Db, workspaceInfo: { account: Account, workspace: Workspace }): Promise<void> {
+async function assignWorkspaceRaw(db: Db, workspaceInfo: { account: Account; workspace: Workspace }): Promise<void> {
   await db
     .collection(WORKSPACE_COLLECTION)
     .updateOne({ _id: workspaceInfo.workspace._id }, { $addToSet: { accounts: workspaceInfo.account._id } })
@@ -1637,7 +1637,7 @@ async function assignWorkspaceRaw (db: Db, workspaceInfo: { account: Account, wo
     .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
 }
 
-async function createPerson (
+async function createPerson(
   ops: TxOperations,
   name: string,
   _email: string,
@@ -1678,7 +1678,7 @@ async function createPerson (
   return id
 }
 
-async function replaceCurrentAccount (
+async function replaceCurrentAccount(
   ops: TxOperations,
   account: Account,
   currentAccount: PersonAccount,
@@ -1727,7 +1727,7 @@ async function replaceCurrentAccount (
   }
 }
 
-async function createPersonAccount (
+async function createPersonAccount(
   account: Account,
   productId: string,
   workspace: string,
@@ -1799,7 +1799,7 @@ async function createPersonAccount (
 /**
  * @public
  */
-export async function changePassword (
+export async function changePassword(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1821,7 +1821,7 @@ export async function changePassword (
 /**
  * @public
  */
-export async function changeEmail (ctx: MeasureContext, db: Db, account: Account, newEmail: string): Promise<void> {
+export async function changeEmail(ctx: MeasureContext, db: Db, account: Account, newEmail: string): Promise<void> {
   await db.collection<Account>(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { email: newEmail } })
   ctx.info('change-email success', { email: newEmail })
 }
@@ -1829,7 +1829,7 @@ export async function changeEmail (ctx: MeasureContext, db: Db, account: Account
 /**
  * @public
  */
-export async function replacePassword (db: Db, productId: string, email: string, password: string): Promise<void> {
+export async function replacePassword(db: Db, productId: string, email: string, password: string): Promise<void> {
   const account = await getAccount(db, email)
 
   if (account === null) {
@@ -1844,7 +1844,7 @@ export async function replacePassword (db: Db, productId: string, email: string,
 /**
  * @public
  */
-export async function requestPassword (
+export async function requestPassword(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1901,7 +1901,7 @@ export async function requestPassword (
 /**
  * @public
  */
-export async function restorePassword (
+export async function restorePassword(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1925,7 +1925,7 @@ export async function restorePassword (
   return await login(ctx, db, productId, branding, email, password)
 }
 
-async function updatePassword (db: Db, account: Account, password: string | null): Promise<void> {
+async function updatePassword(db: Db, account: Account, password: string | null): Promise<void> {
   const salt = randomBytes(32)
   const hash = password !== null ? hashWithSalt(password, salt) : null
 
@@ -1935,7 +1935,7 @@ async function updatePassword (db: Db, account: Account, password: string | null
 /**
  * @public
  */
-export async function removeWorkspace (
+export async function removeWorkspace(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1956,7 +1956,7 @@ export async function removeWorkspace (
 /**
  * @public
  */
-export async function checkJoin (
+export async function checkJoin(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -1980,7 +1980,7 @@ export async function checkJoin (
 /**
  * @public
  */
-export async function dropWorkspace (
+export async function dropWorkspace(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -2003,7 +2003,7 @@ export async function dropWorkspace (
 /**
  * @public
  */
-export async function dropWorkspaceFull (
+export async function dropWorkspaceFull(
   ctx: MeasureContext,
   db: Db,
   client: MongoClient,
@@ -2026,7 +2026,7 @@ export async function dropWorkspaceFull (
 /**
  * @public
  */
-export async function dropAccount (
+export async function dropAccount(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -2059,7 +2059,7 @@ export async function dropAccount (
 /**
  * @public
  */
-export async function leaveWorkspace (
+export async function leaveWorkspace(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -2098,7 +2098,7 @@ export async function leaveWorkspace (
 /**
  * @public
  */
-export async function sendInvite (
+export async function sendInvite(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -2162,7 +2162,7 @@ export async function sendInvite (
   ctx.info('Invite sent', { email, workspace, link })
 }
 
-async function deactivatePersonAccount (
+async function deactivatePersonAccount(
   ctx: MeasureContext,
   email: string,
   workspace: string,
@@ -2200,7 +2200,7 @@ export type AccountMethod = (
   token?: string
 ) => Promise<any>
 
-function wrap (
+function wrap(
   accountMethod: (
     ctx: MeasureContext,
     db: Db,
@@ -2238,7 +2238,7 @@ function wrap (
   }
 }
 
-export async function joinWithProvider (
+export async function joinWithProvider(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -2325,7 +2325,7 @@ export async function joinWithProvider (
   }
 }
 
-export async function loginWithProvider (
+export async function loginWithProvider(
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -2374,7 +2374,7 @@ export async function loginWithProvider (
 /**
  * @public
  */
-export function getMethods (
+export function getMethods(
   version: Data<Version>,
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][]

@@ -89,6 +89,7 @@
           <Button label={setting.string.AddDomain} on:click={showCreateDialog} />
         </div>
         <div class="mb-1 flex-col flex-gap-2 items-start">
+          {#if domains.length > 0}
           {#each domains as domain}
           <Domain
             workspaceDomain={{
@@ -98,6 +99,7 @@
             }}
           />
           {/each}
+          {/if}
         </div>
         <div class="mt-4 fit-content">
           <ToggleWithLabel
