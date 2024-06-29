@@ -52,7 +52,7 @@ import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel, getStorageAdapter } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes, randomUUID } from 'crypto'
-import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
+import { Binary, Db, Document, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import { type StorageAdapter } from '../../core/types'
 import { accountPlugin } from './plugin'
@@ -229,8 +229,8 @@ export function extractApexDomain (domainName: string): string {
 /**
  * @public
  */
-export async function getWorkspaceDomain (db: Db, domainName: string): Promise<WorkspaceDomain | null> {
-  return await db.collection(DOMAIN_COLLECTION).findOne<WorkspaceDomain>({ name: domainName, verifiedOn: { $ne: null } })
+export async function getWorkspaceDomain (db: Db, filter: Filter<Document>): Promise<WorkspaceDomain | null> {
+  return await db.collection(DOMAIN_COLLECTION).findOne<WorkspaceDomain>(filter)
 }
 
 /**
@@ -678,9 +678,18 @@ export async function createWorkspaceDomain (
   token: string,
   domainName: string
 ): Promise<WorkspaceDomain> {
-  const newDomainName = extractApexDomain(domainName)
-  const domain = await getWorkspaceDomain(db, newDomainName)
   const { workspace } = decodeToken(token)
+
+  const newDomainName = extractApexDomain(domainName)
+  const domain = await getWorkspaceDomain(
+    db,
+    {
+      name: newDomainName,
+      $or: [
+        { verifiedOn: { $ne: null } },
+        { workspace }
+      ]
+    })
 
   const txtRecord = generateTxtRecord(workspace.name)
 
@@ -695,7 +704,7 @@ export async function createWorkspaceDomain (
     workspace
   })
 
-  const newDomain = await getWorkspaceDomain(db, newDomainName)
+  const newDomain = await getWorkspaceDomain(db, { name: newDomainName, workspace })
 
   if (newDomain === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName }))
@@ -717,7 +726,9 @@ export async function verifyWorkspaceDomain (
   token: string,
   domainName: string
 ): Promise<WorkspaceDomain> {
-  const workspaceDomain = await getWorkspaceDomain(db, domainName)
+  const { workspace } = decodeToken(token)
+
+  const workspaceDomain = await getWorkspaceDomain(db, { name: domainName, workspace })
 
   if (workspaceDomain == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceDomainNotFound, { domainName }))
@@ -727,12 +738,34 @@ export async function verifyWorkspaceDomain (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyVerified, { domainName }))
   }
 
+  const verifiedOn = Date.now()
+
   if (await shouldVerifyDomain(domainName, workspaceDomain.txtRecord)) {
-    await db.collection(DOMAIN_COLLECTION).updateOne({ name: domainName, verifiedOn: { $ne: null } }, { $set: { verifiedOn: Date.now() } })
+    await db.collection(DOMAIN_COLLECTION).updateOne({ name: domainName, workspace }, { $set: { verifiedOn } })
     ctx.info('domain verified', { domainName })
   }
 
-  return workspaceDomain
+  return {
+    ...workspaceDomain,
+    verifiedOn
+  }
+}
+
+/**
+ * @public
+ */
+export async function getWorkspaceDomains (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<WorkspaceDomain[]> {
+  const { workspace } = decodeToken(token)
+
+  const domains = await db.collection<WorkspaceDomain>(DOMAIN_COLLECTION).find({ workspace }, { limit: 100 }).toArray()
+
+  return domains
 }
 
 /**
@@ -2352,6 +2385,7 @@ export function getMethods (
     join: wrap(join),
     createWorkspaceDomain: wrap(createWorkspaceDomain),
     verifyWorkspaceDomain: wrap(verifyWorkspaceDomain),
+    getWorkspaceDomains: wrap(getWorkspaceDomains),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),

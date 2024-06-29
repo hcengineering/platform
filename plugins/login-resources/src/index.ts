@@ -28,6 +28,7 @@ import {
   createMissingEmployee,
   getInviteLink,
   createWorkspaceDomain,
+  getWorkspaceDomains,
   verifyWorkspaceDomain
 } from './utils'
 import AddDomain from './components/AddDomain.svelte'
@@ -57,6 +58,7 @@ export default async () => ({
     GetEndpoint: getEnpoint,
     GetInviteLink: getInviteLink,
     CreateWorkspaceDomain: createWorkspaceDomain,
+    GetWorkspaceDomains: getWorkspaceDomains,
     VerifyWorkspaceDomain: verifyWorkspaceDomain
   }
 })

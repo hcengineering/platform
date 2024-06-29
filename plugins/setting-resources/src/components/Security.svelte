@@ -18,17 +18,36 @@
   import setting, { type SecuritySettings } from "@hcengineering/setting"
   import login from '@hcengineering/login'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import Domain from './Domain.svelte'
+  import { getResource } from '@hcengineering/platform'
+  import { onMount } from 'svelte'
+
+  interface WorkspaceDomain {
+    name: string,
+    verifiedOn: number | null
+    txtRecord: string
+  }
 
   let query = createQuery()
   let client = getClient()
   let allowMembersToInvite = false
   let existingSecuritySettings: SecuritySettings[]
+  let domains: WorkspaceDomain[] = []
 
   $: query.query(setting.class.Security, {}, (set) => {
     existingSecuritySettings = set
     if(existingSecuritySettings !== undefined && existingSecuritySettings.length > 0) {
       allowMembersToInvite = existingSecuritySettings[0].allowMembersToSendInvite
     }
+  })
+
+  async function getWorkspaceDomains_(): Promise<WorkspaceDomain[]> {
+    let getWorkspaceDomainsFn = await getResource(login.function.GetWorkspaceDomains)
+    return await getWorkspaceDomainsFn()
+  }
+
+  onMount(async () => {
+    domains = await getWorkspaceDomains_()
   })
 
   const showCreateDialog = async () => {
@@ -77,6 +96,17 @@
             on:change={() => setAllowMembersToInvite()}
           />
         </div>
+        {#if domains.length > 0}
+        {#each domains as domain}
+        <Domain
+          workspaceDomain={{
+            name: domain.name,
+            txtRecord: domain.txtRecord,
+            verifiedOn: domain.verifiedOn,
+          }}
+        />
+        {/each}
+        {/if}
       </div>
     </Scroller>
   </div>
