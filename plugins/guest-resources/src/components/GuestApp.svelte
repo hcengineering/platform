@@ -15,6 +15,7 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import { Label, Loading, Notifications, location } from '@hcengineering/ui'
+  import { upgradeDownloadProgress } from '@hcengineering/presentation'
   import { connect, versionError } from '../connect'
 
   import { guestId } from '@hcengineering/guest'
@@ -31,6 +32,11 @@
         <div class="antiPopup version-popup">
           <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
           {$versionError}
+          {#if $upgradeDownloadProgress > 0}
+            <div class="mt-1">
+              <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
+            </div>
+          {/if}
         </div>
       </div>
     {:else if client}

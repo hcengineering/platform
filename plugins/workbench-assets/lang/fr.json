@@ -28,6 +28,7 @@
     "MobileNotSupported": "Désolé, le support pour les appareils mobiles arrive bientôt. En attendant, veuillez utiliser un ordinateur de bureau",
     "LogInAnyway": "Se connecter quand même",
     "WorkspaceCreating": "Création en cours...",
-    "AccessDenied": "L'objet n'existe pas ou vous n'êtes pas autorisé à y accéder."
+    "AccessDenied": "L'objet n'existe pas ou vous n'êtes pas autorisé à y accéder.",
+    "UpgradeDownloadProgress": "Téléchargement de la mise à jour: {percent}%"
   }
 }

@@ -704,3 +704,13 @@ export function setPresentationCookie (token: string, workspaceId: string): void
   }
   setToken('/files/' + workspaceId)
 }
+
+export const upgradeDownloadProgress = writable(0)
+
+export function setDownloadProgress (percent: number): void {
+  if (Number.isNaN(percent)) {
+    return
+  }
+
+  upgradeDownloadProgress.set(Math.round(percent))
+}
