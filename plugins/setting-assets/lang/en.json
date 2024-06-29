@@ -121,6 +121,9 @@
     "Domain": "Domain",
     "EnterDomain": "Enter domain",
     "SaveDomain": "Save domain",
-    "AllowMembersToInvite": "Allow members to invite new users to the workspace"
+    "AllowMembersToInvite": "Allow members to invite new users to the workspace",
+    "Name": "Name",
+    "Copy": "Copy",
+    "TXTRecordCopied": "TXT record copied to clipboard"
   }
 }

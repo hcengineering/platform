@@ -112,6 +112,9 @@
     "Domain": "Dominio",
     "EnterDomain": "Introduce el dominio",
     "SaveDomain": "Guardar dominio",
-    "AllowMembersToInvite": "Permitir a los miembros invitar a nuevos usuarios al espacio de trabajo"
+    "AllowMembersToInvite": "Permitir a los miembros invitar a nuevos usuarios al espacio de trabajo",
+    "Name": "Nombre",
+    "Copy": "Copiar",
+    "TXTRecordCopied": "Registro TXT copiado al portapapeles"
   }
 }

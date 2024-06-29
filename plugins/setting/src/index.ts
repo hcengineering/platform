@@ -229,7 +229,11 @@ export default plugin(settingId, {
     Domain: '' as IntlString,
     EnterDomain: '' as IntlString,
     SaveDomain: '' as IntlString,
-    AllowMembersToInvite: '' as IntlString
+    AllowMembersToInvite: '' as IntlString,
+    Name: '' as IntlString,
+    Value: '' as IntlString,
+    Copy: '' as IntlString,
+    TXTRecordCopied: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

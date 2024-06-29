@@ -112,6 +112,9 @@
     "Domain": "Domínio",
     "EnterDomain": "Digite o domínio",
     "SaveDomain": "Salvar domínio",
-    "AllowMembersToInvite": "Permitir que os membros convidem novos usuários para o espaço de trabalho"
+    "AllowMembersToInvite": "Permitir que os membros convidem novos usuários para o espaço de trabalho",
+    "Name": "Nome",
+    "Copy": "Copiar",
+    "TXTRecordCopied": "Registro TXT copiado para a área de transferência"
   }
 }

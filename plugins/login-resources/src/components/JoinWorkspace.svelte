@@ -107,7 +107,7 @@
   <div class="fs-title">
     {account?.email}
   </div>
-  <div class="title"><Label label={login.string.SelectWorkspace} /></div>
+  <div class="title"><Label label={login.string.JoinWorkspace} /></div>
   <div class="status">
     <StatusControl {status} />
   </div>
