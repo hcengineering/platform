@@ -536,6 +536,64 @@ export async function join (
 /**
  * @public
  */
+export async function joinWithDomain (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<WorkspaceLoginInfo> {
+  let { email } = decodeToken(token)
+  email = cleanEmail(email)
+
+  const accountInfo = await getAccount(db, email)
+
+  if (accountInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  const workspace = await getRecommendedWorkspace(ctx, db, productId, branding, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: 'workspace' }))
+  }
+
+  if (workspace !== null) {
+    if (workspace.disabled === true && workspace.creating !== true) {
+      ctx.error('workspace disabled', { email })
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: 'workspace' })
+      )
+    }
+
+    const ws = await assignWorkspace(
+      ctx,
+      db,
+      productId,
+      branding,
+      email,
+      workspace.workspace,
+      AccountRole.User
+    )
+
+    return {
+      endpoint: getEndpoint(),
+      email,
+      token: generateToken(email, getWorkspaceId(ws.workspace, productId), getExtra(accountInfo)),
+      workspace: ws.workspaceUrl ?? ws.workspace,
+      productId,
+      creating: ws.creating,
+      createProgress: ws.createProgress
+    }
+  }
+
+  ctx.error('workspace error', { email })
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+}
+
+/**
+ * @public
+ */
 export async function confirmEmail (db: Db, _email: string): Promise<Account> {
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
@@ -691,13 +749,13 @@ export async function createWorkspaceDomain (
     $or: [{ verifiedOn: { $ne: null } }, { workspace }]
   })
 
-  const txtRecord = generateTxtRecord(workspace.name)
-
   if (domain !== null) {
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
     )
   }
+
+  const txtRecord = generateTxtRecord(workspace.name)
 
   await db.collection(DOMAIN_COLLECTION).insertOne({
     name: newDomainName,
@@ -710,7 +768,7 @@ export async function createWorkspaceDomain (
 
   if (newDomain === null) {
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
+      new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: 'workspace domain' })
     )
   }
 
@@ -780,7 +838,9 @@ export async function getRecommendedWorkspace (
   branding: Branding | null,
   token: string
 ): Promise<Workspace | null> {
-  const { email } = decodeToken(token)
+  let { email } = decodeToken(token)
+  email = cleanEmail(email)
+
   const domain = await getWorkspaceDomain(db, { name: extractEmailDomain(email), verifiedOn: { $ne: null } })
 
   if (domain == null) {
@@ -2405,10 +2465,11 @@ export function getMethods (
     getEndpoint: wrap(async () => getEndpoint()),
     login: wrap(login),
     join: wrap(join),
+    joinWithDomain: wrap(joinWithDomain),
     createWorkspaceDomain: wrap(createWorkspaceDomain),
     verifyWorkspaceDomain: wrap(verifyWorkspaceDomain),
     getWorkspaceDomains: wrap(getWorkspaceDomains),
-    getRecommendedWorskpace: wrap(getRecommendedWorkspace),
+    getRecommendedWorkspace: wrap(getRecommendedWorkspace),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),

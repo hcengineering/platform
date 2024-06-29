@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
+import { AccountRole, concatLink, type Doc, type Ref } from '@hcengineering/core'
 import login, { loginId, type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
@@ -105,18 +105,13 @@ export async function createWorkspaceDomain (
 
   const token = getMetadata(presentation.metadata.Token)
 
-  console.log(token)
-  console.log(domainName)
-
   if (token === undefined) {
     return [unknownStatus('Please login'), undefined] as any
   }
 
-  const params = [domainName]
-
   const request = {
     method: 'createWorkspaceDomain',
-    params
+    params: [domainName]
   }
 
   try {
@@ -154,9 +149,6 @@ export async function verifyWorkspaceDomain (
 
   const token = getMetadata(presentation.metadata.Token)
 
-  console.log(token)
-  console.log(domainName)
-
   if (token === undefined) {
     return [unknownStatus('Please login'), undefined] as any
   }
@@ -176,11 +168,8 @@ export async function verifyWorkspaceDomain (
       body: JSON.stringify(request)
     })
 
-    console.log(response)
-
     const result = await response.json()
 
-    console.log(result)
     if (result.error == null) {
       // TODO: handle analitics
     } else {
@@ -835,6 +824,50 @@ export async function join (
   }
 }
 
+export async function joinWithDomain (
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'joinWithDomain',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // TODO: handle analytics
+    } else {
+      await handleStatusError('Join with domain error', result.error)
+    }
+
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
 export async function signUpJoin (
   email: string,
   password: string,
@@ -1126,7 +1159,11 @@ export function getHref (path: Pages): string {
 export async function afterConfirm (): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('createWorkspace')
+    if (await getRecommendedWorkspace() != null) {
+      goTo('joinWorkspace')
+    } else {
+      goTo('createWorkspace')
+    }
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace))[1]
     if (result !== undefined) {

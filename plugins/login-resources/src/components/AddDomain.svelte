@@ -15,10 +15,9 @@
 <script lang="ts">
   import { Data } from '@hcengineering/core'
   import { Card } from '@hcengineering/presentation'
-  import { DomainSetting } from '@hcengineering/setting'
+  import setting, { DomainSetting } from '@hcengineering/setting'
   import { EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import setting from '@hcengineering/setting'
   import { createWorkspaceDomain } from '../utils'
 
   let object: Data<DomainSetting> = {
@@ -38,11 +37,7 @@
       return
     }
 
-    const domain = await createWorkspaceDomain(object.domain)
-
-    console.log(domain)
-
-    // TODO: Create domain
+    await createWorkspaceDomain(object.domain)
   }
 </script>
 
