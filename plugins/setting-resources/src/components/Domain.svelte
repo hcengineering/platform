@@ -31,12 +31,16 @@
 
     export let workspaceDomain: WorkspaceDomain
 
+    let verifying = false
+
     async function verifyDomain (domainName: string) {
+        verifying = true
         let verifyWorkspaceDomainFn = await getResource(login.function.VerifyWorkspaceDomain)
         const wsDomain = await verifyWorkspaceDomainFn(domainName)
         if(wsDomain?.verifiedOn != null) {
             workspaceDomain.verifiedOn = wsDomain.verifiedOn
         }
+        verifying = false
     }
 
 </script>
@@ -45,7 +49,7 @@
   <summary>
     <span>{workspaceDomain.name}</span>
     {#if !workspaceDomain.verifiedOn}
-      <Button kind='primary' label={plugin.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
+      <Button loading={verifying} kind='primary' label={plugin.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
     {/if}
     <span>▼</span>
   </summary>
