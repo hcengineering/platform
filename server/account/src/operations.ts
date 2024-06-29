@@ -198,6 +198,11 @@ export async function isValidDomain (domainName: string): Promise<boolean> {
   })
 }
 
+export function extractEmailDomain (email: string): string {
+  const parts = email.split('@')
+  return parts[1] ?? ''
+}
+
 export async function shouldVerifyDomain (domainName: string, txtRecord: string): Promise<boolean> {
   return await new Promise((resolve, reject) => {
     dns.resolveTxt(domainName, (err, records) => {
@@ -766,6 +771,23 @@ export async function getWorkspaceDomains (
   const domains = await db.collection<WorkspaceDomain>(DOMAIN_COLLECTION).find({ workspace }, { limit: 100 }).toArray()
 
   return domains
+}
+
+export async function getRecommendedWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<Workspace | null> {
+  const { email } = decodeToken(token)
+  const domain = await getWorkspaceDomain(db, { name: extractEmailDomain(email), verifiedOn: { $ne: null } })
+
+  if (domain == null) {
+    return null
+  }
+
+  return await getWorkspaceById(db, domain.workspace.productId, domain.workspace.name)
 }
 
 /**
@@ -2386,6 +2408,7 @@ export function getMethods (
     createWorkspaceDomain: wrap(createWorkspaceDomain),
     verifyWorkspaceDomain: wrap(verifyWorkspaceDomain),
     getWorkspaceDomains: wrap(getWorkspaceDomains),
+    getRecommendedWorskpace: wrap(getRecommendedWorkspace),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),

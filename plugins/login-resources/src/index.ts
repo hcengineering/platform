@@ -29,7 +29,8 @@ import {
   getInviteLink,
   createWorkspaceDomain,
   getWorkspaceDomains,
-  verifyWorkspaceDomain
+  verifyWorkspaceDomain,
+  getRecommendedWorkspace
 } from './utils'
 import AddDomain from './components/AddDomain.svelte'
 import Domain from './components/Domain.svelte'
@@ -59,7 +60,8 @@ export default async () => ({
     GetInviteLink: getInviteLink,
     CreateWorkspaceDomain: createWorkspaceDomain,
     GetWorkspaceDomains: getWorkspaceDomains,
-    VerifyWorkspaceDomain: verifyWorkspaceDomain
+    VerifyWorkspaceDomain: verifyWorkspaceDomain,
+    GetRecommendedWorkspace: getRecommendedWorkspace
   }
 })
 

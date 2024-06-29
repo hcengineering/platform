@@ -97,6 +97,7 @@ export default plugin(loginId, {
     GetEndpoint: '' as Resource<() => Promise<string>>,
     CreateWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>,
     GetWorkspaceDomains: '' as Resource<() => Promise<any[]>>,
-    VerifyWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>
+    VerifyWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>,
+    GetRecommendedWorkspace: '' as Resource<() => Promise<Workspace>>
   }
 })
