@@ -65,9 +65,7 @@
       loading--
     }
 
-    if (inputFile) {
-      inputFile.value = ''
-    }
+    inputFile.value = ''
 
     dispatch('attached')
   }
@@ -103,6 +101,7 @@
 
   <input
     bind:this={inputFile}
+    disabled={inputFile == null}
     multiple
     type="file"
     name="file"

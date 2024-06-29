@@ -49,6 +49,8 @@
   export let hideFooter = false
   export let skipLabel = false
   export let hoverable = true
+  export let pending = false
+  export let stale = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
@@ -158,6 +160,7 @@
       class:actionsOpened={isActionsOpened}
       class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
+      class:stale
       on:click={onClick}
       on:contextmenu={handleContextMenu}
     >
@@ -226,7 +229,7 @@
       </div>
 
       {#if withActions && !readonly}
-        <div class="actions" class:opened={isActionsOpened}>
+        <div class="actions" class:pending class:opened={isActionsOpened}>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
@@ -282,13 +285,15 @@
       top: -0.75rem;
       right: 0.75rem;
 
-      &.opened {
+      &.opened:not(.pending) {
         visibility: visible;
       }
     }
 
     &:hover > .actions {
-      visibility: visible;
+      &:not(.pending) {
+        visibility: visible;
+      }
     }
 
     &:hover > .time {
@@ -323,6 +328,10 @@
           background-color: var(--global-ui-BackgroundColor);
         }
       }
+    }
+
+    &.stale {
+      opacity: 0.5;
     }
   }
 

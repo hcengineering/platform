@@ -308,6 +308,7 @@
 <div class="no-print" bind:this={refContainer}>
   <input
     bind:this={inputFile}
+    disabled={inputFile == null}
     multiple
     type="file"
     name="file"

@@ -216,9 +216,12 @@
 
   let currentProject: Project | undefined
 
+  let descriptionBox: AttachmentStyledBox | undefined
+
   $: updateIssueStatusId(object, currentProject)
   $: updateAssigneeId(object, currentProject)
   $: canSave =
+    descriptionBox != null &&
     getTitle(object.title ?? '').length > 0 &&
     object.status !== undefined &&
     kind !== undefined &&
@@ -264,7 +267,7 @@
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
       collection: 'labels',
-      space: tags.space.Tags,
+      space: core.space.Workspace,
       modifiedOn: 0,
       modifiedBy: '' as Ref<Account>,
       title: tag.title,
@@ -342,8 +345,6 @@
 
   const dispatch = createEventDispatcher()
   const spaceQuery = createQuery()
-
-  let descriptionBox: AttachmentStyledBox
 
   const key: KeyedAttribute = {
     key: 'labels',
@@ -513,7 +514,7 @@
       }
 
       await operations.commit()
-      await descriptionBox.createAttachments(_id)
+      await descriptionBox?.createAttachments(_id)
 
       const parents: IssueParentInfo[] =
         parentIssue != null
@@ -986,7 +987,7 @@
           showPreview
           removable
           on:remove={(result) => {
-            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+            if (result.detail !== undefined) descriptionBox?.removeAttachmentById(result.detail._id)
           }}
         />
       {/each}
@@ -1000,7 +1001,7 @@
       size={'large'}
       kind={'ghost'}
       on:click={() => {
-        descriptionBox.handleAttach()
+        descriptionBox?.handleAttach()
       }}
     />
     <DocCreateExtComponent manager={docCreateManager} kind={'footer'} space={currentProject} props={extraProps} />

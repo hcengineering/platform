@@ -1,6 +1,13 @@
 // Copyright © 2022 Hardcore Engineering Inc.
 
-import { type Class, type Data, type Doc, type DocumentQuery, type FindResult, type Ref } from '@hcengineering/core'
+import core, {
+  type Class,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type FindResult,
+  type Ref
+} from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { type InitialKnowledge, type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
@@ -81,5 +88,5 @@ export async function createTagElement (
   }
 
   const client = getClient()
-  return await client.createDoc<TagElement>(tags.class.TagElement, tags.space.Tags, tagElement)
+  return await client.createDoc<TagElement>(tags.class.TagElement, core.space.Workspace, tagElement)
 }

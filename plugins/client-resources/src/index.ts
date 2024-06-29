@@ -94,11 +94,13 @@ export default async () => {
 
             const upgradeHandler: TxHandler = (...txes: Tx[]) => {
               for (const tx of txes) {
+                if (tx?._class === core.class.TxModelUpgrade) {
+                  onUpgrade?.()
+                  return
+                }
                 if (tx?._class === core.class.TxWorkspaceEvent) {
                   const event = tx as TxWorkspaceEvent
-                  if (event.event === WorkspaceEvent.Upgrade) {
-                    onUpgrade?.()
-                  } else if (event.event === WorkspaceEvent.MaintenanceNotification) {
+                  if (event.event === WorkspaceEvent.MaintenanceNotification) {
                     void setPlatformStatus(
                       new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
                         time: event.params.timeMinutes
@@ -159,26 +161,30 @@ function createModelPersistence (workspace: string): TxPersistenceStore | undefi
     load: async () => {
       const db = await dbPromise
       if (db !== undefined) {
-        const transaction = db.transaction('model', 'readwrite') // (1)
-        const models = transaction.objectStore('model') // (2)
-        const model = await new Promise<{ id: string, model: LoadModelResponse } | undefined>((resolve) => {
-          const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(workspace)
-          storedValue.onsuccess = function () {
-            resolve(storedValue.result)
-          }
-          storedValue.onerror = function () {
-            resolve(undefined)
-          }
-        })
+        try {
+          const transaction = db.transaction('model', 'readwrite') // (1)
+          const models = transaction.objectStore('model') // (2)
+          const model = await new Promise<{ id: string, model: LoadModelResponse } | undefined>((resolve) => {
+            const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(workspace)
+            storedValue.onsuccess = function () {
+              resolve(storedValue.result)
+            }
+            storedValue.onerror = function () {
+              resolve(undefined)
+            }
+          })
 
-        if (model == null) {
-          return {
-            full: false,
-            transactions: [],
-            hash: ''
+          if (model == null) {
+            return {
+              full: false,
+              transactions: [],
+              hash: ''
+            }
           }
+          return model.model
+        } catch (err: any) {
+          // Assume no model is stored.
         }
-        return model.model
       }
       return {
         full: true,

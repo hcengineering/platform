@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AttachedDoc, Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -88,9 +88,6 @@ const tagsPlugin = plugin(tagsId, {
     TagElement: '' as Ref<Class<TagElement>>,
     TagReference: '' as Ref<Class<TagReference>>,
     TagCategory: '' as Ref<Class<TagCategory>>
-  },
-  space: {
-    Tags: '' as Ref<Space>
   },
   icon: {
     Tags: '' as Asset,

@@ -13,18 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import preferencePlugin from '@hcengineering/preference'
   import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { Loading, resizeObserver } from '@hcengineering/ui'
+  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { buildConfigLookup, getKeyLabel } from '../utils'
   import ViewletClassSettings from './ViewletClassSettings.svelte'
-  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
 
   export let viewlet: Viewlet
 
@@ -273,7 +272,7 @@
         config
       })
     } else {
-      await client.createDoc(view.class.ViewletPreference, preferencePlugin.space.Preference, {
+      await client.createDoc(view.class.ViewletPreference, core.space.Workspace, {
         attachedTo: viewletId,
         config
       })

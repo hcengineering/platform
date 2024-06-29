@@ -25,46 +25,52 @@
     location,
     setMetadataLocalStorage
   } from '@hcengineering/ui'
+  import { upgradeDownloadProgress } from '@hcengineering/presentation'
   import { connect, disconnect, versionError } from '../connect'
 
-  import { workbenchId } from '@hcengineering/workbench'
+  import workbench, { workbenchId } from '@hcengineering/workbench'
   import { onDestroy } from 'svelte'
-  import workbench from '../plugin'
+  import workbenchRes from '../plugin'
   import { workspaceCreating } from '../utils'
 
   const isNeedUpgrade = window.location.host === ''
 
-  let mobileAllowed = fetchMetadataLocalStorage(workbench.metadata.MobileAllowed)
+  let mobileAllowed = fetchMetadataLocalStorage(workbenchRes.metadata.MobileAllowed)
 
   function allowMobile () {
-    setMetadataLocalStorage(workbench.metadata.MobileAllowed, true)
+    setMetadataLocalStorage(workbenchRes.metadata.MobileAllowed, true)
     mobileAllowed = true
   }
 
   onDestroy(disconnect)
 </script>
 
-{#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
+{#if $location.path[0] === workbenchId || $location.path[0] === workbenchRes.component.WorkbenchApp}
   {#if $deviceOptionsStore.isMobile && mobileAllowed !== true}
     <div class="version-wrapper">
       <div class="antiPopup version-popup">
-        <h1><Label label={workbench.string.MobileNotSupported} /></h1>
-        <Button label={workbench.string.LogInAnyway} on:click={allowMobile} />
+        <h1><Label label={workbenchRes.string.MobileNotSupported} /></h1>
+        <Button label={workbenchRes.string.LogInAnyway} on:click={allowMobile} />
       </div>
     </div>
   {:else}
     {#key $location.path[1]}
-      {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
+      {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform')}
         <Loading>
           {#if ($workspaceCreating ?? -1) > 0}
             <div class="ml-1">
-              <Label label={workbench.string.WorkspaceCreating} />
+              <Label label={workbenchRes.string.WorkspaceCreating} />
               {$workspaceCreating} %
             </div>
           {/if}
           {#if $versionError}
-            <div class="ml-1">
+            <div class="ml-2">
               {$versionError}
+            </div>
+          {/if}
+          {#if $upgradeDownloadProgress > 0}
+            <div class="ml-2" class:mt-1={$versionError !== undefined}>
+              <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
             </div>
           {/if}
         </Loading>
@@ -73,17 +79,25 @@
           <div class="version-wrapper">
             <div class="antiPopup version-popup">
               {#if isNeedUpgrade}
-                <h1><Label label={workbench.string.NewVersionAvailable} /></h1>
-                <span class="please-update"><Label label={workbench.string.PleaseUpdate} /></span>
+                <h1><Label label={workbenchRes.string.NewVersionAvailable} /></h1>
+                <span class="please-update"><Label label={workbenchRes.string.PleaseUpdate} /></span>
               {:else}
-                <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
+                <h1><Label label={workbenchRes.string.ServerUnderMaintenance} /></h1>
               {/if}
               {$versionError}
+              {#if $upgradeDownloadProgress > 0}
+                <div class="mt-1">
+                  <Label
+                    label={workbench.string.UpgradeDownloadProgress}
+                    params={{ percent: $upgradeDownloadProgress }}
+                  />
+                </div>
+              {/if}
             </div>
           </div>
         {:else if client}
           <Notifications>
-            <Component is={workbench.component.Workbench} />
+            <Component is={workbenchRes.component.Workbench} />
           </Notifications>
         {/if}
       {:catch error}

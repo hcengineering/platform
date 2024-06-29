@@ -101,8 +101,8 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
 /**
  * @public
  */
-export function metricsAggregate (m: Metrics): Metrics {
-  const ms = aggregateMetrics(m.measurements)
+export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
+  const ms = aggregateMetrics(m.measurements, limit)
 
   // Use child overage, if there is no top level value specified.
   const me = Object.entries(ms)
@@ -115,6 +115,21 @@ export function metricsAggregate (m: Metrics): Metrics {
         return p + v.value
       }, 0)
 
+  if (limit !== -1) {
+    // We need to keep only top limit items in ms
+    if (Object.keys(ms).length > 0) {
+      const newMs: typeof ms = {}
+      let added = 0
+      for (const [k, v] of Object.entries(ms)) {
+        newMs[k] = v
+        added++
+        if (added >= limit) {
+          break
+        }
+      }
+    }
+  }
+
   return {
     operations: m.operations,
     measurements: ms,
@@ -124,10 +139,10 @@ export function metricsAggregate (m: Metrics): Metrics {
   }
 }
 
-function aggregateMetrics (m: Record<string, Metrics>): Record<string, Metrics> {
+function aggregateMetrics (m: Record<string, Metrics>, limit: number = -1): Record<string, Metrics> {
   const result: Record<string, Metrics> = {}
   for (const [k, v] of Object.entries(m).sort((a, b) => b[1].value - a[1].value)) {
-    result[k] = metricsAggregate(v)
+    result[k] = metricsAggregate(v, limit)
   }
   return result
 }
@@ -184,7 +199,7 @@ function toString (name: string, m: Metrics, offset: number, length: number): st
  * @public
  */
 export function metricsToString (metrics: Metrics, name = 'System', length: number): string {
-  return toString(name, metricsAggregate(metrics), 0, length)
+  return toString(name, metricsAggregate(metrics, 50), 0, length)
 }
 
 function printMetricsParamsRows (
@@ -234,5 +249,5 @@ function toStringRows (name: string, m: Metrics, offset: number): (number | stri
  * @public
  */
 export function metricsToRows (metrics: Metrics, name = 'System'): (number | string)[][] {
-  return toStringRows(name, metricsAggregate(metrics), 0)
+  return toStringRows(name, metricsAggregate(metrics, 50), 0)
 }

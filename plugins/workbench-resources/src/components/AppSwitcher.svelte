@@ -13,13 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, type Ref } from '@hcengineering/core'
+  import core, { getCurrentAccount, type Ref } from '@hcengineering/core'
   import type { Application } from '@hcengineering/workbench'
   import { createQuery } from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
   import { hideApplication, isAppAllowed, showApplication } from '../utils'
   import { Loading, IconCheck, Label, Icon } from '@hcengineering/ui'
-  import preference from '@hcengineering/preference'
   // import Drag from './icons/Drag.svelte'
 
   export let apps: Application[] = []
@@ -59,7 +58,7 @@
   hiddenAppsIdsQuery.query(
     workbench.class.HiddenApplication,
     {
-      space: preference.space.Preference
+      space: core.space.Workspace
     },
     (res) => {
       hiddenAppsIds = res.map((r) => r.attachedTo)

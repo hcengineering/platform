@@ -24,7 +24,6 @@ import {
   Markup,
   Mixin,
   Ref,
-  Space,
   Timestamp,
   Tx,
   TxOperations
@@ -379,9 +378,6 @@ const notification = plugin(notificationId, {
     Notifications: '' as Asset,
     Inbox: '' as Asset,
     BellCrossed: '' as Asset
-  },
-  space: {
-    Notifications: '' as Ref<Space>
   },
   string: {
     Notification: '' as IntlString,

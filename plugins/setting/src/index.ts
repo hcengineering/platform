@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
+import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, Resource, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
@@ -151,9 +151,6 @@ export default plugin(settingId, {
     UserMixin: '' as Ref<Mixin<UserMixin>>,
     SpaceTypeEditor: '' as Ref<Mixin<SpaceTypeEditor>>,
     SpaceTypeCreator: '' as Ref<Mixin<SpaceTypeCreator>>
-  },
-  space: {
-    Setting: '' as Ref<Space>
   },
   class: {
     SettingsCategory: '' as Ref<Class<SettingsCategory>>,

@@ -21,6 +21,7 @@ import core, {
 import { getResource, translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
 import view, { type IAggregationManager } from '@hcengineering/view'
+import notification from '@hcengineering/notification'
 
 /**
  * @public
@@ -105,7 +106,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     const updatedQuery: DocumentQuery<T> = h.clone(ret.query ?? query)
     const finalOptions = h.clone(ret.options ?? options ?? {})
 
-    await this.updateQueryOptions<T>(allAttrs, h, statusFields, updatedQuery, finalOptions)
+    await this.updateQueryOptions<T>(allAttrs, h, statusFields, updatedQuery, finalOptions, _class)
 
     if (statusFields.length > 0) {
       this.subscribers.set(id, s)
@@ -119,6 +120,31 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
       }
     }
     return { unsubscribe: ret.unsubscribe }
+  }
+
+  // TODO: rework notifications to avoid using Account and remove it
+  private shouldAggregate (attrClass: Ref<Class<Doc>>, _class: Ref<Class<Doc>>): boolean {
+    if (attrClass !== core.class.Account) {
+      return true
+    }
+
+    const h = this.client.getHierarchy()
+    const skipAccountAggregation = [
+      notification.class.BrowserNotification,
+      notification.class.InboxNotification,
+      notification.class.DocNotifyContext
+    ]
+
+    for (const skipClass of skipAccountAggregation) {
+      if (_class === skipClass) {
+        return false
+      }
+
+      if (h.isDerived(_class, skipClass)) {
+        return false
+      }
+    }
+    return true
   }
 
   private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<IAggregationManager<any> | undefined> {
@@ -164,7 +190,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
 
     const fquery = h.clone(query ?? {})
 
-    await this.updateQueryOptions<T>(allAttrs, h, docFields, fquery, finalOptions)
+    await this.updateQueryOptions<T>(allAttrs, h, docFields, fquery, finalOptions, _class)
 
     return await this.provideFindAll(_class, fquery, finalOptions)
   }
@@ -174,13 +200,19 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     h: Hierarchy,
     docFields: Array<Attribute<Doc>>,
     query: DocumentQuery<T>,
-    finalOptions: FindOptions<T>
+    finalOptions: FindOptions<T>,
+    _class: Ref<Class<T>>
   ): Promise<void> {
     for (const attr of allAttrs.values()) {
       try {
         if (attr.type._class !== core.class.RefTo) {
           continue
         }
+
+        if (!this.shouldAggregate((attr.type as RefTo<Doc>).to, _class)) {
+          continue
+        }
+
         const mgr = await this.getAggregationManager((attr.type as RefTo<Doc>).to)
         if (mgr === undefined) {
           continue

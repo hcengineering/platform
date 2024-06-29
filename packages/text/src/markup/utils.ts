@@ -99,7 +99,7 @@ const nonEmptyNodes = [
   MarkupNodeType.horizontal_rule,
   MarkupNodeType.image,
   MarkupNodeType.reference,
-  MarkupNodeType.sub,
+  MarkupNodeType.subLink,
   MarkupNodeType.table
 ]
 

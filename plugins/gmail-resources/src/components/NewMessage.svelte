@@ -17,7 +17,7 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Data, Markup, generateId } from '@hcengineering/core'
+  import core, { Data, Markup, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -68,7 +68,7 @@
   async function sendMsg (): Promise<void> {
     await client.createDoc(
       plugin.class.NewMessage,
-      plugin.space.Gmail,
+      core.space.Workspace,
       {
         ...obj,
         content: markupToHTML(content),
@@ -120,7 +120,7 @@
       const uuid = await uploadFile(file)
       await client.addCollection(
         attachmentP.class.Attachment,
-        plugin.space.Gmail,
+        core.space.Workspace,
         objectId,
         plugin.class.NewMessage,
         'attachments',
@@ -177,6 +177,7 @@
 
 <input
   bind:this={inputFile}
+  disabled={inputFile == null}
   multiple
   type="file"
   name="file"

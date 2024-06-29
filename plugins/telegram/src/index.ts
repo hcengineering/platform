@@ -14,7 +14,7 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
@@ -85,10 +85,6 @@ export default plugin(telegramId, {
     NewMessage: '' as Ref<Class<NewTelegramMessage>>,
     SharedMessage: '' as Ref<Class<SharedTelegramMessage>>,
     SharedMessages: '' as Ref<Class<SharedTelegramMessages>>
-  },
-  space: {
-    // todo should be removed
-    Telegram: '' as Ref<Space>
   },
   templateField: {
     CurrentEmployeeTelegram: '' as Ref<TemplateField>,

@@ -14,7 +14,7 @@ import { type SessionManager } from './types'
  */
 export function getStatistics (ctx: MeasureContext, sessions: SessionManager, admin: boolean): any {
   const data: Record<string, any> = {
-    metrics: metricsAggregate((ctx as any).metrics),
+    metrics: metricsAggregate((ctx as any).metrics, 50),
     statistics: {
       activeSessions: {}
     }
@@ -40,8 +40,9 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
     }
   }
 
-  data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100
-  data.statistics.memoryTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100
+  const memU = process.memoryUsage()
+  data.statistics.memoryUsed = Math.round(((memU.heapUsed + memU.rss) / 1024 / 1024) * 100) / 100
+  data.statistics.memoryTotal = Math.round((memU.heapTotal / 1024 / 1024) * 100) / 100
   data.statistics.cpuUsage = Math.round(os.loadavg()[0] * 100) / 100
   data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
   data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100

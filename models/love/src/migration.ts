@@ -14,11 +14,13 @@
 //
 
 import contact from '@hcengineering/contact'
-import { TxOperations, type Ref } from '@hcengineering/core'
+import { type Space, TxOperations, type Ref } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
 import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor } from '@hcengineering/love'
 import {
   createDefaultSpace,
+  migrateSpace,
+  tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
@@ -26,6 +28,7 @@ import {
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import love from './plugin'
+import { DOMAIN_LOVE } from '.'
 
 async function createDefaultFloor (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(love.class.Floor, {
@@ -34,7 +37,7 @@ async function createDefaultFloor (tx: TxOperations): Promise<void> {
   if (current === undefined) {
     await tx.createDoc(
       love.class.Floor,
-      love.space.Rooms,
+      core.space.Workspace,
       {
         name: 'Main'
       },
@@ -53,7 +56,7 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
   const data = createDefaultRooms(employees.map((p) => p._id))
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
-    await tx.createDoc(_class, love.space.Rooms, room)
+    await tx.createDoc(_class, core.space.Workspace, room)
   }
 }
 
@@ -65,7 +68,7 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
   if (current !== undefined) return
   await tx.createDoc(
     love.class.Room,
-    love.space.Rooms,
+    core.space.Workspace,
     {
       name: 'Reception',
       type: RoomType.Reception,
@@ -81,15 +84,18 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
 }
 
 export const loveOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, loveId, [
+      {
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'love:space:Rooms' as Ref<Space>, core.space.Workspace, [DOMAIN_LOVE])
+        }
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
     await tryUpgrade(state, client, loveId, [
-      {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, love.space.Rooms, { name: 'Rooms', description: 'Space for all rooms' })
-        }
-      },
       {
         state: 'initial-defaults',
         func: async (client) => {

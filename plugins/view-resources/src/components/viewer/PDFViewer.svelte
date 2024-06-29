@@ -19,17 +19,24 @@
   export let value: Blob | Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
+  export let fit: boolean = false
 </script>
 
 {#await getBlobSrcFor(value, name) then href}
-  <iframe src={href + '#view=FitH&navpanes=0'} title={name} />
+  <iframe class:fit src={href + '#view=FitH&navpanes=0'} title={name} />
 {/await}
 
 <style lang="scss">
   iframe {
     width: 100%;
-    height: 80vh;
-    min-height: 20rem;
     border: none;
+
+    &.fit {
+      min-height: 100%;
+    }
+    &:not(.fit) {
+      height: 80vh;
+      min-height: 20rem;
+    }
   }
 </style>

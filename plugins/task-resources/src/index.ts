@@ -85,7 +85,7 @@ export { StatePresenter, StateRefPresenter, TaskKindSelector, TypeStatesPopup }
 async function editStatuses (object: Project, ev: Event): Promise<void> {
   const loc = getCurrentLocation()
   loc.path[2] = 'setting'
-  loc.path[3] = 'statuses'
+  loc.path[3] = 'spaceTypes'
   loc.path[4] = object.type
   navigate(loc)
 }

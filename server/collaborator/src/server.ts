@@ -19,7 +19,6 @@ import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
-import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import { IncomingMessage, createServer } from 'http'
@@ -58,22 +57,6 @@ export async function start (
   const app = express()
   app.use(cors())
   app.use(bp.json())
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
-
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 1,
-      memLevel: 9
-    })
-  )
-
   const extensions = [
     ServerKit.configure({
       image: {
@@ -208,22 +191,7 @@ export async function start (
 
   const wss = new WebSocketServer({
     noServer: true,
-    perMessageDeflate: {
-      zlibDeflateOptions: {
-        chunkSize: 32 * 1024,
-        memLevel: 9,
-        level: 1
-      },
-      zlibInflateOptions: {
-        chunkSize: 32 * 1024,
-        memLevel: 9,
-        level: 1
-      },
-      // Below options specified as default values.
-      concurrencyLimit: 10, // Limits zlib concurrency for perf.
-      threshold: 1024 // Size (in bytes) below which messages
-      // should not be compressed if context takeover is disabled.
-    }
+    perMessageDeflate: false
   })
 
   wss.on('connection', (incoming: WebSocket, request: IncomingMessage) => {

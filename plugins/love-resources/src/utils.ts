@@ -1,6 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
-import { concatLink, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
+import core, { concatLink, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
 import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
@@ -483,7 +483,7 @@ async function moveToRoom (
       room: room._id
     })
   } else {
-    await client.createDoc(love.class.ParticipantInfo, love.space.Rooms, {
+    await client.createDoc(love.class.ParticipantInfo, core.space.Workspace, {
       x,
       y,
       room: room._id,
@@ -606,13 +606,14 @@ export async function tryConnect (
     await client.update(invite, { status: invite.room === room._id ? RequestStatus.Approved : RequestStatus.Rejected })
   }
   if (room.access === RoomAccess.Knock && (!isOffice(room) || room.person !== currentPerson._id)) {
-    const _id = await client.createDoc(love.class.JoinRequest, love.space.Rooms, {
+    const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
       person: currentPerson._id,
       room: room._id,
       status: RequestStatus.Pending
     })
     requestsQuery.query(love.class.JoinRequest, { person: (me as PersonAccount).person, _id }, (res) => {
       const req = res[0]
+      if (req === undefined) return
       if (req.status === RequestStatus.Pending) return
       requestsQuery.unsubscribe()
       if (req.status === RequestStatus.Approved) {
@@ -629,7 +630,7 @@ export async function invite (person: Ref<Person>, room: Ref<Room> | undefined):
   if (room === undefined || room === love.ids.Reception) return
   const client = getClient()
   const me = getCurrentAccount()
-  await client.createDoc(love.class.Invite, love.space.Rooms, {
+  await client.createDoc(love.class.Invite, core.space.Workspace, {
     target: person,
     room,
     status: RequestStatus.Pending,

@@ -24,7 +24,7 @@
     Person
   } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
-  import {
+  import core, {
     Account,
     AttachedData,
     Data,
@@ -418,7 +418,7 @@
           const category = findTagCategory(s, categories)
           const cinstance = categoriesMap.get(category)
           e = TxProcessor.createDoc2Doc(
-            client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
+            client.txFactory.createTxCreateDoc(tags.class.TagElement, core.space.Workspace, {
               title,
               description: `Imported skill ${s} of ${cinstance?.label ?? ''}`,
               color: getColorNumberByText(s),
@@ -433,7 +433,7 @@
         if (e !== undefined) {
           newSkills.push(
             TxProcessor.createDoc2Doc(
-              client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
+              client.txFactory.createTxCreateDoc(tags.class.TagReference, core.space.Workspace, {
                 title: e.title,
                 color: e.color,
                 tag: e._id,
@@ -507,7 +507,7 @@
         attachedTo: '' as Ref<Doc>,
         attachedToClass: recruit.mixin.Candidate,
         collection: 'skills',
-        space: tags.space.Tags,
+        space: core.space.Workspace,
         modifiedOn: 0,
         modifiedBy: '' as Ref<Account>,
         title: tag.title,

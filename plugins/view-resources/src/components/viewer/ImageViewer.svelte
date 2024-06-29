@@ -19,23 +19,20 @@
   export let value: Blob | Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
+  export let fit: boolean = false
 
   $: p = typeof value === 'string' ? getBlobRef(undefined, value, name) : getBlobRef(value, value._id)
-  $: maxWidth =
-    metadata?.originalWidth && metadata?.pixelRatio
-      ? `min(${metadata.originalWidth / metadata.pixelRatio}px, 100%)`
-      : undefined
-  $: maxHeight =
-    metadata?.originalHeight && metadata?.pixelRatio
-      ? `min(${metadata.originalHeight / metadata.pixelRatio}px, 80vh)`
-      : undefined
+  $: width = metadata?.originalWidth ? `min(${metadata.originalWidth / metadata?.pixelRatio ?? 1}px, 100%)` : '100%'
+  $: height = metadata?.originalHeight
+    ? `min(${metadata.originalHeight / metadata?.pixelRatio ?? 1}px, ${fit ? '100%' : '80vh'})`
+    : '100%'
 </script>
 
 {#await p then blobRef}
   <img
-    class="object-contain"
-    style:max-width={maxWidth}
-    style:max-height={maxHeight}
+    class="object-contain mx-auto"
+    style:max-width={width}
+    style:max-height={height}
     src={blobRef.src}
     srcset={blobRef.srcset}
     alt={name}

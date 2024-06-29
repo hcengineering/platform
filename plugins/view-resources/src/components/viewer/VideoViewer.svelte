@@ -19,13 +19,19 @@
   export let value: Blob | Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
+  export let fit: boolean = false
 
   $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
   $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
 </script>
 
 {#await getBlobSrcFor(value, name) then src}
-  <video style:max-width={maxWidth} style:max-height={maxHeight} controls preload={'auto'}>
+  <video
+    style:max-width={fit ? '100%' : maxWidth}
+    style:max-height={fit ? '100%' : maxHeight}
+    controls
+    preload={'auto'}
+  >
     <source {src} />
     <track kind="captions" label={name} />
   </video>

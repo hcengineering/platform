@@ -102,7 +102,7 @@
   </svelte:fragment>
 
   {#if blob !== undefined}
-    <FilePreview file={blob} {name} {metadata} {props} />
+    <FilePreview file={blob} {name} {metadata} {props} fit />
   {/if}
 </Dialog>
 

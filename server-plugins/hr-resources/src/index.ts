@@ -100,13 +100,13 @@ function getTxes (
   removed?: Ref<Department>[]
 ): Tx[] {
   const pushTxes = added.map((dep) =>
-    factory.createTxUpdateDoc(hr.class.Department, hr.space.HR, dep, {
+    factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
       $push: { members: account }
     })
   )
   if (removed === undefined) return pushTxes
   const pullTxes = removed.map((dep) =>
-    factory.createTxUpdateDoc(hr.class.Department, hr.space.HR, dep, {
+    factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
       $pull: { members: account }
     })
   )

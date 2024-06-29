@@ -1018,6 +1018,7 @@ export function devTool (
     .option('--compression <compression>', 'Use protocol compression', false)
     .option('--write <write>', 'Perform write operations', false)
     .option('--workspaces <workspaces>', 'Workspaces to test on, comma separated', '')
+    .option('--mode <mode>', 'A benchmark mode. Supported values: `find-all`, `connect-only` ', 'find-all')
     .action(
       async (cmd: {
         from: string
@@ -1027,20 +1028,50 @@ export function devTool (
         binary: string
         compression: string
         write: string
+        mode: 'find-all' | 'connect-only'
       }) => {
-        console.log(JSON.stringify(cmd))
-        await benchmark(
-          cmd.workspaces.split(',').map((it) => getWorkspaceId(it, productId)),
-          transactorUrl,
-          {
+        const { mongodbUri } = prepareTools()
+        await withDatabase(mongodbUri, async (db, client) => {
+          console.log(JSON.stringify(cmd))
+          if (!['find-all', 'connect-only'].includes(cmd.mode)) {
+            console.log('wrong mode')
+            return
+          }
+
+          const allWorkspacesPure = Array.from(await listWorkspacesPure(db, productId))
+          const allWorkspaces = new Map(allWorkspacesPure.map((it) => [it.workspace, it]))
+
+          let workspaces = cmd.workspaces
+            .split(',')
+            .map((it) => it.trim())
+            .filter((it) => it.length > 0)
+            .map((it) => getWorkspaceId(it, productId))
+
+          if (cmd.workspaces.length === 0) {
+            workspaces = allWorkspacesPure.map((it) => getWorkspaceId(it.workspace, productId))
+          }
+          const accounts = new Map(Array.from(await listAccounts(db)).map((it) => [it._id.toString(), it.email]))
+
+          const accountWorkspaces = new Map<string, string[]>()
+          for (const ws of workspaces) {
+            const wsInfo = allWorkspaces.get(ws.name)
+            if (wsInfo !== undefined) {
+              accountWorkspaces.set(
+                ws.name,
+                wsInfo.accounts.map((it) => accounts.get(it.toString()) as string)
+              )
+            }
+          }
+          await benchmark(workspaces, accountWorkspaces, transactorUrl, {
             steps: parseInt(cmd.steps),
             from: parseInt(cmd.from),
             sleep: parseInt(cmd.sleep),
             binary: cmd.binary === 'true',
             compression: cmd.compression === 'true',
-            write: cmd.write === 'true'
-          }
-        )
+            write: cmd.write === 'true',
+            mode: cmd.mode
+          })
+        })
       }
     )
   program

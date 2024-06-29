@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, AttachedDoc, Doc, Ref, generateId } from '@hcengineering/core'
+  import core, { AttachedData, AttachedDoc, Doc, Ref, generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import type { Category } from '@hcengineering/inventory'
@@ -43,7 +43,7 @@
 
     await client.addCollection(
       inventory.class.Category,
-      inventory.space.Category,
+      core.space.Workspace,
       attachedTo,
       inventory.class.Category,
       'categories',

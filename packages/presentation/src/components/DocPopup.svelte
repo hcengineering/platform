@@ -71,7 +71,10 @@
     created.length > 0 ||
     objects.map((it) => getObjectValue(groupBy, it)).filter((it, index, arr) => arr.indexOf(it) === index).length > 1
 
-  const checkSelected = (item: Doc): void => {
+  const checkSelected = (item?: Doc): void => {
+    if (item === undefined) {
+      return
+    }
     if (selectedElements.has(item._id)) {
       selectedElements.delete(item._id)
     } else {

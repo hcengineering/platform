@@ -575,7 +575,7 @@ export async function createPushFromInbox (
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
   await createPushNotification(control, targetUser, title, body, _id, senderPerson, path)
-  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, notification.space.Notifications, {
+  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, core.space.Workspace, {
     user: targetUser,
     status: NotificationStatus.New,
     title,

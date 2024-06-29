@@ -45,7 +45,7 @@
     "@types/passport-github2": "^1.2.9"
   },
   "dependencies": {
-    "mongodb": "^6.3.0",
+    "mongodb": "^6.8.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/account": "^0.6.0",
     "passport-google-oauth20": "~2.0.0",

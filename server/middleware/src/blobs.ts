@@ -98,7 +98,7 @@ export class BlobLookupMiddleware extends BaseMiddleware implements Middleware {
       for (const d of result) {
         if (d.$lookup !== undefined) {
           for (const [k, v] of Object.entries(d.$lookup)) {
-            if (!Array.isArray(v) && v._class === core.class.Blob) {
+            if (v !== undefined && !Array.isArray(v) && v._class === core.class.Blob) {
               toUpdate.push([d, v, k])
             }
           }

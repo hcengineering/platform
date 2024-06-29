@@ -76,7 +76,7 @@
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
-    if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
+    if (loc.path[2] != null && loc.path[2].trim().length > 0) {
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         const resolver = await getResource(app.locationResolver)
@@ -181,7 +181,7 @@
 
     if (fragment !== currentFragment) {
       currentFragment = fragment
-      if (fragment !== undefined && fragment.trim().length > 0) {
+      if (fragment != null && fragment.trim().length > 0) {
         await setOpenPanelFocus(fragment)
       } else {
         closePanel()

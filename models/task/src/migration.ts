@@ -30,8 +30,8 @@ import {
   type TxUpdateDoc
 } from '@hcengineering/core'
 import {
-  createDefaultSpace,
   createOrUpdate,
+  migrateSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -51,7 +51,7 @@ import {
   type TaskType
 } from '@hcengineering/task'
 
-import { DOMAIN_TASK } from '.'
+import { DOMAIN_KANBAN, DOMAIN_TASK } from '.'
 import task from './plugin'
 
 /**
@@ -59,16 +59,11 @@ import task from './plugin'
  */
 export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>): Promise<void> {
   if ((await tx.findOne(task.class.Sequence, { attachedTo: _class })) === undefined) {
-    await tx.createDoc(task.class.Sequence, task.space.Sequence, {
+    await tx.createDoc(task.class.Sequence, core.space.Workspace, {
       attachedTo: _class,
       sequence: 0
     })
   }
-}
-
-async function createDefaults (client: MigrationUpgradeClient): Promise<void> {
-  await createDefaultSpace(client, task.space.Sequence, { name: 'Sequences' })
-  await createDefaultSpace(client, task.space.Statuses, { name: 'Statuses' })
 }
 
 export async function migrateDefaultStatusesBase<T extends Task> (
@@ -583,15 +578,17 @@ export const taskOperation: MigrateOperation = {
             )
           }
         }
+      },
+      {
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, task.space.Sequence, core.space.Workspace, [DOMAIN_KANBAN])
+        }
       }
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
     await tryUpgrade(state, client, taskId, [
-      {
-        state: 'defaults-v2',
-        func: createDefaults
-      },
       {
         state: 'u-task-001',
         func: async (client) => {
@@ -600,7 +597,7 @@ export const taskOperation: MigrateOperation = {
           await createOrUpdate(
             tx,
             tags.class.TagCategory,
-            tags.space.Tags,
+            core.space.Workspace,
             {
               icon: tags.icon.Tags,
               label: 'Text Label',

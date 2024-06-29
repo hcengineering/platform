@@ -25,7 +25,7 @@ import {
   isReactionMessage,
   messageInFocus
 } from '@hcengineering/activity-resources'
-import {
+import core, {
   SortingOrder,
   getCurrentAccount,
   type Class,
@@ -713,7 +713,7 @@ export async function subscribePush (): Promise<boolean> {
           userVisibleOnly: true,
           applicationServerKey: publicKey
         })
-        await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+        await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
           user: getCurrentAccount()._id,
           endpoint: subscription.endpoint,
           keys: {
@@ -727,7 +727,7 @@ export async function subscribePush (): Promise<boolean> {
           endpoint: current.endpoint
         })
         if (exists === undefined) {
-          await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+          await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
             user: getCurrentAccount()._id,
             endpoint: current.endpoint,
             keys: {

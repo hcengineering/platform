@@ -184,6 +184,7 @@
 </div>
 <input
   bind:this={inputFile}
+  disabled={inputFile == null}
   multiple
   type="file"
   name="file"
@@ -238,6 +239,10 @@
               size={'small'}
               label={setting.string.EnterOptionTitle}
               on:keydown={handleKeydown}
+              on:blur={() => {
+                add()
+                newItem = false
+              }}
               bind:value={newValue}
               width={'100%'}
               autoFocus

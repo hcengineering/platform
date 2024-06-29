@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery } from '@hcengineering/core'
+  import core, { DocumentQuery } from '@hcengineering/core'
   import { Button, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
   import type { Category } from '@hcengineering/inventory'
   import inventory from '../plugin'
@@ -30,7 +30,7 @@
   }
 
   function showCreateDialog () {
-    showPopup(CreateCategory, { space: inventory.space.Category }, 'top')
+    showPopup(CreateCategory, { space: core.space.Workspace }, 'top')
   }
 
   // $: twoRows = $deviceInfo.twoRows

@@ -70,6 +70,8 @@ export const EditorKit = Extension.create<EditorKitOptions>({
   addExtensions () {
     const mode = this.options.mode ?? 'full'
     return [
+      // table extensions should go before list items
+      ...tableExtensions,
       DefaultKit.configure({
         ...this.options,
         code: false,
@@ -108,7 +110,6 @@ export const EditorKit = Extension.create<EditorKitOptions>({
         ]
       }),
       NodeUuidExtension,
-      ...tableExtensions,
       ...(this.options.file !== false
         ? [
             FileExtension.configure({

@@ -1547,7 +1547,7 @@ export async function getWorkspaceInfo (
     workspace: workspace.name
   }
   if (email !== systemAccountEmail && !guest) {
-    account = await getAccount(db, email)
+    account = await ctx.with('get-account', {}, async () => await getAccount(db, email))
     if (account === null) {
       ctx.error('no account', { email, productId, token })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1568,15 +1568,19 @@ export async function getWorkspaceInfo (
     query._id = { $in: account.workspaces }
   }
 
-  const [ws] = (
-    await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()
-  ).filter((it) => it.disabled !== true || account?.admin === true || it.creating === true)
+  const [ws] = await ctx.with('get-account', {}, async () =>
+    (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()).filter(
+      (it) => it.disabled !== true || account?.admin === true || it.creating === true
+    )
+  )
   if (ws == null) {
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (_updateLastVisit && isAccount(account)) {
-    await updateLastVisit(db, ws, account)
+    void ctx.with('update-last-visit', {}, async () => {
+      await updateLastVisit(db, ws, account as Account)
+    })
   }
   return mapToClientWorkspace(ws)
 }
@@ -2028,10 +2032,14 @@ export async function removeWorkspace (
   const { workspace, account } = await getWorkspaceAndAccount(ctx, db, productId, email, workspaceId)
 
   // Add account into workspace.
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
+  await db
+    .collection<Workspace>(WORKSPACE_COLLECTION)
+    .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
 
   // Add account a workspace
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+  await db
+    .collection<Account>(ACCOUNT_COLLECTION)
+    .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
   ctx.info('Workspace removed', { email, workspace })
 }
 

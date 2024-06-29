@@ -19,7 +19,6 @@ import core, { hasAccountRole } from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
 import login, { loginId } from '@hcengineering/login'
 import { getResource, setMetadata } from '@hcengineering/platform'
-import preference from '@hcengineering/preference'
 import { closeClient, getClient } from '@hcengineering/presentation'
 import presentation from '@hcengineering/presentation/src/plugin'
 import {
@@ -141,7 +140,7 @@ export function isAppAllowed (app: Application, acc: Account): boolean {
 export async function hideApplication (app: Application): Promise<void> {
   const client = getClient()
 
-  await client.createDoc(workbench.class.HiddenApplication, preference.space.Preference, {
+  await client.createDoc(workbench.class.HiddenApplication, core.space.Workspace, {
     attachedTo: app._id
   })
 }

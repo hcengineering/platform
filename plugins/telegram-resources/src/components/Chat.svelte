@@ -18,7 +18,7 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
   import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -117,7 +117,7 @@
     const { message, attachments } = event.detail
     await client.addCollection(
       telegram.class.NewMessage,
-      telegram.space.Telegram,
+      core.space.Workspace,
       channel._id,
       channel._class,
       'newMessages',
@@ -173,7 +173,7 @@
 
   async function onConnectClose (res: any): Promise<void> {
     if (res?.value) {
-      await client.createDoc(setting.class.Integration, setting.space.Setting, {
+      await client.createDoc(setting.class.Integration, core.space.Workspace, {
         type: telegram.integrationType.Telegram,
         value: res.value,
         disabled: false
@@ -295,7 +295,7 @@
         </div>
       {:else if integration !== undefined && !integration.disabled}
         <AttachmentRefInput
-          space={telegram.space.Telegram}
+          space={core.space.Workspace}
           _class={telegram.class.NewMessage}
           {objectId}
           on:message={onMessage}

@@ -14,8 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@hcengineering/core'
-  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import core, { Doc, Ref, Space, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
@@ -75,7 +74,7 @@
     label: preference.string.Star,
     icon: preference.icon.Star,
     action: async (_id: Ref<Space>): Promise<void> => {
-      await client.createDoc(preference.class.SpacePreference, preference.space.Preference, {
+      await client.createDoc(preference.class.SpacePreference, core.space.Workspace, {
         attachedTo: _id
       })
     }

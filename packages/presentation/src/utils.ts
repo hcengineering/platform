@@ -17,9 +17,11 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
+  TxProcessor,
   concatLink,
   getCurrentAccount,
   reduceCalls,
+  type TxApplyIf,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -46,7 +48,8 @@ import core, {
   type Tx,
   type TxResult,
   type TypeAny,
-  type WithLookup
+  type WithLookup,
+  type TxCUD
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -54,14 +57,14 @@ import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteCo
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { get } from 'svelte/store'
+import { type Writable, get, writable } from 'svelte/store'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
 export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
-let client: TxOperations & MeasureClient
+let client: TxOperations & MeasureClient & OptimisticTxes
 let pipeline: PresentationPipeline
 
 const txListeners: Array<(...tx: Tx[]) => void> = []
@@ -83,7 +86,11 @@ export function removeTxListener (l: (tx: Tx) => void): void {
   }
 }
 
-class UIClient extends TxOperations implements Client, MeasureClient {
+export interface OptimisticTxes {
+  pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
+}
+
+class UIClient extends TxOperations implements Client, MeasureClient, OptimisticTxes {
   constructor (
     client: MeasureClient,
     private readonly liveQuery: Client
@@ -93,23 +100,56 @@ class UIClient extends TxOperations implements Client, MeasureClient {
 
   afterMeasure: Tx[] = []
   measureOp?: MeasureDoneOperation
+  protected pendingTxes = new Set<Ref<Tx>>()
+  protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
+
+  get pendingCreatedDocs (): typeof this._pendingCreatedDocs {
+    return this._pendingCreatedDocs
+  }
 
   async doNotify (...tx: Tx[]): Promise<void> {
     if (this.measureOp !== undefined) {
       this.afterMeasure.push(...tx)
     } else {
-      try {
-        await pipeline.notifyTx(...tx)
+      const pending = get(this._pendingCreatedDocs)
+      let pendingUpdated = false
+      tx.forEach((t) => {
+        if (this.pendingTxes.has(t._id)) {
+          this.pendingTxes.delete(t._id)
 
-        await liveQuery.tx(...tx)
+          // Only CUD tx can be pending now
+          const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
 
-        txListeners.forEach((it) => {
-          it(...tx)
-        })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        console.log(err)
+          if (innerTx._class === core.class.TxCreateDoc) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete pending[innerTx.objectId]
+            pendingUpdated = true
+          }
+        }
+      })
+      if (pendingUpdated) {
+        this._pendingCreatedDocs.set(pending)
       }
+
+      // We still want to notify about all transactions because there might be queries created after
+      // the early applied transaction
+      // For old queries there's a check anyway that prevents the same document from being added twice
+      await this.provideNotify(...tx)
+    }
+  }
+
+  private async provideNotify (...tx: Tx[]): Promise<void> {
+    try {
+      await pipeline.notifyTx(...tx)
+
+      await liveQuery.tx(...tx)
+
+      txListeners.forEach((it) => {
+        it(...tx)
+      })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.log(err)
     }
   }
 
@@ -130,7 +170,47 @@ class UIClient extends TxOperations implements Client, MeasureClient {
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
+    void this.notifyEarly(tx)
+
     return await this.client.tx(tx)
+  }
+
+  private async notifyEarly (tx: Tx): Promise<void> {
+    if (tx._class === core.class.TxApplyIf) {
+      const applyTx = tx as TxApplyIf
+
+      if (applyTx.match.length !== 0 || applyTx.notMatch.length !== 0) {
+        // Cannot early apply conditional transactions
+        return
+      }
+
+      await Promise.all(
+        applyTx.txes.map(async (atx) => {
+          await this.notifyEarly(atx)
+        })
+      )
+      return
+    }
+
+    if (!this.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
+      return
+    }
+
+    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    // Can pre-build some configuration later from the model if this will be too slow.
+    const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
+    if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
+      return
+    }
+
+    if (innerTx._class === core.class.TxCreateDoc) {
+      const pending = get(this._pendingCreatedDocs)
+      pending[innerTx.objectId] = true
+      this._pendingCreatedDocs.set(pending)
+    }
+
+    this.pendingTxes.add(tx._id)
+    await this.provideNotify(tx)
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -159,7 +239,7 @@ class UIClient extends TxOperations implements Client, MeasureClient {
 /**
  * @public
  */
-export function getClient (): TxOperations & MeasureClient {
+export function getClient (): TxOperations & MeasureClient & OptimisticTxes {
   return client
 }
 
@@ -623,4 +703,14 @@ export function setPresentationCookie (token: string, workspaceId: string): void
       `; path=${path}`
   }
   setToken('/files/' + workspaceId)
+}
+
+export const upgradeDownloadProgress = writable(0)
+
+export function setDownloadProgress (percent: number): void {
+  if (Number.isNaN(percent)) {
+    return
+  }
+
+  upgradeDownloadProgress.set(Math.round(percent))
 }
