@@ -15,24 +15,32 @@
 
 <script lang="ts">
     import { Button } from "@hcengineering/ui"
-    import { verifyWorkspaceDomain } from "../utils"
-    import { type WorkspaceDomain } from "../utils";
-    import login from '../plugin'
+    import login from '@hcengineering/login'
+    import { getResource } from "@hcengineering/platform"
+
+    interface WorkspaceDomain {
+        name: string
+        txtRecord: string
+        verifiedOn: number | null
+    }
+
     export let workspaceDomain: WorkspaceDomain
 
     async function verifyDomain (domainName: string) {
-        const wsDomain = await verifyWorkspaceDomain(domainName)
+        let verifyWorkspaceDomainFn = await getResource(login.function.VerifyWorkspaceDomain)
+        const wsDomain = await verifyWorkspaceDomainFn(domainName)
         if(wsDomain?.verifiedOn != null) {
             workspaceDomain.verifiedOn = wsDomain.verifiedOn
         }
     }
+
 </script>
 
 <div>
     <span>{workspaceDomain.name}</span>
     <span>{workspaceDomain.txtRecord}</span>
-    {#if workspaceDomain.verifiedOn}
+    {#if !workspaceDomain.verifiedOn}
         <!-- Change login.string.GetLink to verify/refresh  -->
-        <Button kind='primary' label={login.string.GetLink} on:click={() => verifyDomain(workspaceDomain.name)} />
+        <Button kind='primary' label={login.string.InviteLimit} on:click={() => verifyDomain(workspaceDomain.name)} />
     {/if}
 </div>

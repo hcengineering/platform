@@ -26,6 +26,7 @@ import {
   fetchWorkspace,
   getEnpoint,
   getInviteLink,
+  getWorkspaceDomains,
   getWorkspaces,
   leaveWorkspace,
   selectWorkspace,
@@ -57,6 +58,7 @@ export default async () => ({
     GetEndpoint: getEnpoint,
     GetInviteLink: getInviteLink,
     CreateWorkspaceDomain: createWorkspaceDomain,
+    GetWorkspaceDomains: getWorkspaceDomains,
     VerifyWorkspaceDomain: verifyWorkspaceDomain
   }
 })

@@ -14,15 +14,25 @@
 -->
 <script lang="ts">
   import login from '@hcengineering/login'
+  import { getResource } from '@hcengineering/platform'
   import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type SecuritySettings } from "@hcengineering/setting"
   import { Breadcrumb, Button, Header, Scroller, showPopup, ToggleWithLabel } from '@hcengineering/ui'
   import Label from '@hcengineering/ui/src/components/Label.svelte'
+  import { onMount } from 'svelte'
+  import Domain from './Domain.svelte'
+
+  interface WorkspaceDomain {
+    name: string,
+    verifiedOn: number | null
+    txtRecord: string
+  }
 
   let query = createQuery()
   let client = getClient()
   let allowMembersToInvite = false
   let existingSecuritySettings: SecuritySettings[]
+  let domains: WorkspaceDomain[] = []
 
   const TYPE = "TXT";
   const HOST = "@";
@@ -40,6 +50,15 @@
     if(existingSecuritySettings !== undefined && existingSecuritySettings.length > 0) {
       allowMembersToInvite = existingSecuritySettings[0].allowMembersToSendInvite
     }
+  })
+
+  async function getWorkspaceDomains_(): Promise<WorkspaceDomain[]> {
+    let getWorkspaceDomainsFn = await getResource(login.function.GetWorkspaceDomains)
+    return await getWorkspaceDomainsFn()
+  }
+
+  onMount(async () => {
+    domains = await getWorkspaceDomains_()
   })
 
   const showCreateDialog = async () => {
@@ -120,6 +139,15 @@
             on:change={() => setAllowMembersToInvite()}
           />
         </div>
+        {#each domains as domain}
+        <Domain
+          workspaceDomain={{
+            name: domain.name,
+            txtRecord: domain.txtRecord,
+            verifiedOn: domain.verifiedOn,
+          }}
+        />
+        {/each}
       </div>
     </Scroller>
   </div>
