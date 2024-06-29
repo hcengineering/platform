@@ -17,8 +17,9 @@
     import login from '@hcengineering/login'
     import { getResource } from "@hcengineering/platform"
     import { copyTextToClipboard } from "@hcengineering/presentation"
+    import setting from "@hcengineering/setting"
     import { Button, Label } from "@hcengineering/ui"
-    import setting from "../plugin"
+    import plugin from "../plugin"
 
     interface WorkspaceDomain {
         name: string
@@ -45,20 +46,20 @@
   <summary>
     <span>{workspaceDomain.name}</span>
     {#if !workspaceDomain.verifiedOn}
-      <Button kind='primary' label={setting.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
+      <Button kind='primary' label={plugin.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
     {/if}
     <span>▼</span>
   </summary>
   <div class="table">
     <div>
       <p>
-        <Label label={setting.string.Type} />
+        <Label label={plugin.string.Type} />
       </p>
       <p>{TYPE}</p>
     </div>
     <div>
       <p>
-        <Label label={setting.string.Name} />
+        <Label label={plugin.string.Name} />
       </p>
       <p>{HOST}</p>
     </div>
@@ -68,7 +69,7 @@
       </p>
       <p>
         <span>{workspaceDomain.txtRecord}</span>
-        <Button label={setting.string.Copy} size={'x-small'} on:click={() => copyTextToClipboard(workspaceDomain.txtRecord)} />
+        <Button label={plugin.string.Copy} size={'x-small'} on:click={() => copyTextToClipboard(workspaceDomain.txtRecord)} />
       </p>
     </div>
   </div>

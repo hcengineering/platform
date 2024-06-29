@@ -102,7 +102,6 @@ export default mergeIds(settingId, setting, {
     Assignees: '' as IntlString,
     DeleteRole: '' as IntlString,
     DeleteRoleConfirmation: '' as IntlString,
-    Value: '' as IntlString,
     Name: '' as IntlString,
     Copy: '' as IntlString,
     TXTRecordCopied: '' as IntlString,
