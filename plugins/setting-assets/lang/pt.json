@@ -115,6 +115,7 @@
     "AllowMembersToInvite": "Permitir que os membros convidem novos usuários para o espaço de trabalho",
     "Name": "Nome",
     "Copy": "Copiar",
+    "TXTValue": "Valor",
     "TXTRecordCopied": "Registro TXT copiado para a área de transferência",
     "Verify": "Verificar"
   }

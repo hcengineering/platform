@@ -17,7 +17,6 @@
     import login from '@hcengineering/login'
     import { getResource } from "@hcengineering/platform"
     import { copyTextToClipboard } from "@hcengineering/presentation"
-    import setting from "@hcengineering/setting"
     import { Button, Label } from "@hcengineering/ui"
     import plugin from "../plugin"
 
@@ -65,7 +64,7 @@
     </div>
     <div>
       <p>
-        <Label label={setting.string.Value} />
+        <Label label={plugin.string.TXTValue} />
       </p>
       <p>
         <span>{workspaceDomain.txtRecord}</span>
