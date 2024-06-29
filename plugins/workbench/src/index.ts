@@ -154,7 +154,8 @@ export default plugin(workbenchId, {
   string: {
     Archive: '' as IntlString,
     View: '' as IntlString,
-    ServerUnderMaintenance: '' as IntlString
+    ServerUnderMaintenance: '' as IntlString,
+    UpgradeDownloadProgress: '' as IntlString
   },
   icon: {
     Search: '' as Asset
