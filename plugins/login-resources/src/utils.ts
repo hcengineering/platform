@@ -236,6 +236,49 @@ export async function getWorkspaceDomains (): Promise<WorkspaceDomain[]> {
   }
 }
 
+export async function getRecommendedWorkspace (): Promise<Workspace | null> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'getRecommendedWorkspace',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // TODO: handle analitics
+    } else {
+      await handleStatusError('Failed to find recommended wrokspace', result.error)
+    }
+
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
+  }
+}
+
 export async function signUp (
   email: string,
   password: string,
