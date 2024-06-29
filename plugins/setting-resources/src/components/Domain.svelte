@@ -17,8 +17,8 @@
     import login from '@hcengineering/login'
     import { getResource } from "@hcengineering/platform"
     import { copyTextToClipboard } from "@hcengineering/presentation"
-    import setting from "@hcengineering/setting"
     import { Button, Label } from "@hcengineering/ui"
+    import setting from "../plugin"
 
     interface WorkspaceDomain {
         name: string
@@ -42,56 +42,45 @@
 </script>
 
 <details>
-    <summary>
-      <span>{workspaceDomain.name}</span>
-      {#if !workspaceDomain.verifiedOn}
-        <Button kind='primary' label={login.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
-      {/if}
-      <span>▼</span>
-    </summary>
-    <div class="table">
-      <div>
-        <p>
-          <Label label={setting.string.Type} />
-        </p>
-        <p>{TYPE}</p>
-      </div>
-      <div>
-        <p>
-          <Label label={setting.string.Name} />
-        </p>
-        <p>{HOST}</p>
-      </div>
-      <div>
-        <p>
-          <Label label={setting.string.Value} />
-        </p>
-        <p>
-          <span>{workspaceDomain.txtRecord}</span>
-          <Button label={setting.string.Copy} size={'x-small'} on:click={() => copyTextToClipboard(workspaceDomain.txtRecord)} />
-        </p>
-      </div>
-    </div>
-  </details>
-
-<!-- <div>
+  <summary>
     <span>{workspaceDomain.name}</span>
-    <span>{workspaceDomain.txtRecord}</span>
     {#if !workspaceDomain.verifiedOn}
-        <Button kind='primary' label={login.string.InviteLimit} on:click={() => verifyDomain(workspaceDomain.name)} />
+      <Button kind='primary' label={setting.string.Verify} on:click={() => verifyDomain(workspaceDomain.name)} />
     {/if}
-</div> -->
+    <span>▼</span>
+  </summary>
+  <div class="table">
+    <div>
+      <p>
+        <Label label={setting.string.Type} />
+      </p>
+      <p>{TYPE}</p>
+    </div>
+    <div>
+      <p>
+        <Label label={setting.string.Name} />
+      </p>
+      <p>{HOST}</p>
+    </div>
+    <div>
+      <p>
+        <Label label={setting.string.Value} />
+      </p>
+      <p>
+        <span>{workspaceDomain.txtRecord}</span>
+        <Button label={setting.string.Copy} size={'x-small'} on:click={() => copyTextToClipboard(workspaceDomain.txtRecord)} />
+      </p>
+    </div>
+  </div>
+</details>
 
 <style lang="scss">
   details {
+    width: 100%;
     margin-top: 0.5rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.25rem;
     padding: 0.5rem;
-
-    @media screen and (min-width: 768px) {
-      min-width: 575px;
-    }
 
     summary {
       cursor: pointer;
@@ -103,11 +92,11 @@
       align-items: center;
       gap: 1rem;
 
-      span:nth-child(1) {
+      span:first-child {
         color: var(--theme-caption-color);
       }
 
-      span:nth-child(2) {
+      span:last-child {
         margin-left: auto;
       }
     }

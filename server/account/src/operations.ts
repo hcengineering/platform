@@ -50,13 +50,13 @@ import { getModelVersion } from '@hcengineering/model-all'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initModel, upgradeModel, getStorageAdapter } from '@hcengineering/server-tool'
+import toolPlugin, { connect, getStorageAdapter, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes, randomUUID } from 'crypto'
 import { Binary, Db, Document, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import { type StorageAdapter } from '../../core/types'
-import { accountPlugin } from './plugin'
 import { ccTLDs, SECOND_LEVEL_DOMAINS } from './constants'
+import { accountPlugin } from './plugin'
 
 import dns from 'dns'
 
@@ -686,20 +686,17 @@ export async function createWorkspaceDomain (
   const { workspace } = decodeToken(token)
 
   const newDomainName = extractApexDomain(domainName)
-  const domain = await getWorkspaceDomain(
-    db,
-    {
-      name: newDomainName,
-      $or: [
-        { verifiedOn: { $ne: null } },
-        { workspace }
-      ]
-    })
+  const domain = await getWorkspaceDomain(db, {
+    name: newDomainName,
+    $or: [{ verifiedOn: { $ne: null } }, { workspace }]
+  })
 
   const txtRecord = generateTxtRecord(workspace.name)
 
   if (domain !== null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
+    )
   }
 
   await db.collection(DOMAIN_COLLECTION).insertOne({
@@ -712,7 +709,9 @@ export async function createWorkspaceDomain (
   const newDomain = await getWorkspaceDomain(db, { name: newDomainName, workspace })
 
   if (newDomain === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
+    )
   }
 
   ctx.info('domain created', { domainName: newDomainName })
@@ -743,9 +742,10 @@ export async function verifyWorkspaceDomain (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyVerified, { domainName }))
   }
 
-  const verifiedOn = Date.now()
+  let verifiedOn: number | null = null
 
   if (await shouldVerifyDomain(domainName, workspaceDomain.txtRecord)) {
+    verifiedOn = Date.now()
     await db.collection(DOMAIN_COLLECTION).updateOne({ name: domainName, workspace }, { $set: { verifiedOn } })
     ctx.info('domain verified', { domainName })
   }

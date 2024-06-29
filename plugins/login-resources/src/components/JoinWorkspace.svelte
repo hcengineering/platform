@@ -116,6 +116,7 @@
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
   {/if}
+  <!-- TODO: Pull workspaces with same domain -->
   {#await _getWorkspaces() then}
     <Scroller padding={'.125rem 0'}>
       <div class="form">
