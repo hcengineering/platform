@@ -52,15 +52,17 @@
 
     await client.update(type, { [field]: value })
   }
+  let queueIndex = 0
+  let promise: Promise<void> | undefined
 
-  async function changeMembers (members: Ref<Account>[]): Promise<void> {
+  async function updateMembers (members: Ref<Account>[]): Promise<void> {
     if (disabled || type === undefined) {
       return
     }
 
     const push = new Set<Ref<Account>>(members)
     const pull = new Set<Ref<Account>>()
-    for (const member of type.members ?? []) {
+    for (const member of (type.members ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)) {
       if (!push.has(member)) {
         pull.add(member)
       } else {
@@ -78,6 +80,17 @@
       ops.update(type, { $pull: { members: pullMem } })
     }
     await ops.commit()
+  }
+
+  async function changeMembers (members: Ref<Account>[]): Promise<void> {
+    const qIndex = ++queueIndex
+    if (promise !== undefined) {
+      await promise
+    }
+    if (qIndex !== queueIndex) {
+      return
+    }
+    promise = updateMembers(members)
   }
 </script>
 
