@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ActionIcon, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
+  import { ActionIcon, IconAdd, showPopup, ModernEditbox, Spinner } from '@hcengineering/ui'
   import { SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
   import { ToDoPriority } from '@hcengineering/time'
@@ -10,6 +10,7 @@
 
   export let fullSize: boolean = false
   let value: string = ''
+  let disabled: boolean = false
 
   const client = getClient()
   const acc = getCurrentAccount() as PersonAccount
@@ -58,16 +59,22 @@
     width={fullSize ? '100%' : ''}
     size={'medium'}
     autoAction={false}
+    {disabled}
     bind:value
     on:keydown={(e) => {
       if (e.key === 'Enter') {
-        save()
+        disabled = true
+        save().finally(() => (disabled = false))
         e.preventDefault()
         e.stopPropagation()
       }
     }}
   >
-    <ActionIcon icon={IconAdd} action={openPopup} size={'small'} />
+    {#if disabled}
+      <Spinner size={'small'} />
+    {:else}
+      <ActionIcon icon={IconAdd} action={openPopup} size={'small'} />
+    {/if}
   </ModernEditbox>
 </div>
 
