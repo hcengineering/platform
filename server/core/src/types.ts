@@ -213,7 +213,7 @@ export interface EmbeddingSearchOption {
 export interface IndexedDoc {
   id: Ref<Doc>
   _class: Ref<Class<Doc>>[]
-  space: Ref<Space>
+  space: Ref<Space>[]
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>

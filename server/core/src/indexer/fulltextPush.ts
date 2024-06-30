@@ -239,7 +239,7 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
     _class: [upd.objectClass, ...(upd.mixins ?? [])],
     modifiedBy: upd.modifiedBy,
     modifiedOn: upd.modifiedOn,
-    space: upd.space,
+    space: [upd.space],
     attachedTo: upd.attachedTo,
     attachedToClass: upd.attachedToClass
   }
@@ -321,6 +321,8 @@ function updateDoc2Elastic (
 
   const spaceKey = docKey('space', { _class: core.class.Doc })
   if (doc[spaceKey] !== undefined) {
-    doc.space = doc[spaceKey]
+    const existsingSpace = Array.isArray(doc.space) ? doc.space : [doc.space]
+    const newSpaces = Array.isArray(doc[spaceKey]) ? doc[spaceKey] : [doc[spaceKey]]
+    doc.space = [...existsingSpace, ...newSpaces].filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 }
