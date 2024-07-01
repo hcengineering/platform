@@ -193,6 +193,7 @@ export function createModel (builder: Builder): void {
       icon: calendarPlugin.icon.Calendar,
       alias: timeId,
       hidden: false,
+      position: 'top',
       modern: true,
       component: time.component.Me
     },
