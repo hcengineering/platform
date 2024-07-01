@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Restore workspace contents in mongo/elastic
 ./tool.sh backup-restore ./sanity-ws sanity-ws

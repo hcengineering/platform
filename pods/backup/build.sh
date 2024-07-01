@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #  Copyright © 2022 Hardcore Engineering Inc.
 #  

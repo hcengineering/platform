@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 roots='./server/server ./server/front ./pods/account ./pods/backup'
 # ./products/tracker is temporary disabled

@@ -28,6 +28,7 @@
     "MobileNotSupported": "抱歉，移动设备支持即将推出。在此期间，请使用桌面设备",
     "LogInAnyway": "仍然登录",
     "WorkspaceCreating": "创建进行中...",
-    "AccessDenied": "对象不存在或您无权访问"
+    "AccessDenied": "对象不存在或您无权访问",
+    "UpgradeDownloadProgress": "正在下载更新：{percent}%"
   }
 }
