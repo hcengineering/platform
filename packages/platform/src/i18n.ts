@@ -91,9 +91,18 @@ async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString 
     if (messages instanceof Status) {
       return messages
     }
-    return id.kind !== undefined
-      ? (messages[id.kind] as Record<string, IntlString>)?.[id.name]
-      : (messages[id.name] as IntlString)
+    if (id.kind !== undefined) {
+      if ((messages[id.kind] as Record<string, IntlString>)?.[id.name] !== undefined) {
+        return (messages[id.kind] as Record<string, IntlString>)?.[id.name]
+      } else {
+        const englishMessages = await loadTranslationsForComponent(id.component, ENGLISH_LOCALE)
+        if (!(englishMessages instanceof Status)) {
+          return (englishMessages[id.kind] as Record<string, IntlString>)?.[id.name]
+        }
+      }
+    } else {
+      return messages[id.name] as IntlString
+    }
   } catch (err) {
     const status = unknownError(err)
     await setPlatformStatus(status)
