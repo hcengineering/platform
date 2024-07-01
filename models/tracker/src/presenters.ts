@@ -163,4 +163,11 @@ export function definePresenters (builder: Builder): void {
     tracker.component.TimePresenter,
     tracker.component.EstimationValueEditor
   )
+
+  classPresenter(
+    builder,
+    tracker.class.TypeBreakpoint,
+    tracker.component.TimePresenter,
+    tracker.component.BreakpointValueEditor
+  )
 }

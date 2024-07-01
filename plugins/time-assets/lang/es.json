@@ -32,6 +32,8 @@
     "Unplanned": "No planificado",
     "Planned": "Planificado",
     "AddSlot": "Agregar intervalo",
+    "SetBreakpoint": "Establecer breakpoint",
+    "Breakpoint": "Breakpoint",
     "SetPriority": "Establecer prioridad",
     "NoPriority": "Sin prioridad",
     "LowPriority": "Prioridad baja",

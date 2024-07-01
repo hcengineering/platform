@@ -111,6 +111,7 @@ import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPre
 import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
+import BreakpointEditor from './components/issues/BreakpointEditor.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
 import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEditor.svelte'
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
@@ -165,6 +166,7 @@ import { get } from 'svelte/store'
 import { settingId } from '@hcengineering/setting'
 import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
+import BreakpointValueEditor from './components/issues/BreakpointValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
 import { personAccountByIdStore, personAccountPersonByIdStore, personByIdStore } from '@hcengineering/contact-resources'
 import contact, { AvatarType } from '@hcengineering/contact'
@@ -652,6 +654,7 @@ export default async (): Promise<Resources> => ({
     ReportedTimeEditor,
     TimeSpendReport,
     EstimationEditor,
+    BreakpointEditor,
     SubIssuesSelector,
     RelatedIssues,
     RelatedIssueTemplates,
@@ -681,6 +684,7 @@ export default async (): Promise<Resources> => ({
     SettingsRelatedTargets,
     TimePresenter,
     EstimationValueEditor,
+    BreakpointValueEditor,
     IssueStatusIcon,
     MilestoneStatusIcon,
     PriorityIconPresenter,

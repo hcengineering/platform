@@ -30,6 +30,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import BreakpointEditor from '../BreakpointEditor.svelte'
 
   export let issue: Issue
   export let showAllMixins: boolean = false
@@ -176,6 +177,11 @@
     <Label label={tracker.string.Assignee} />
   </span>
   <AssigneeEditor object={issue} size={'medium'} avatarSize={'card'} width="100%" {readonly} />
+
+  <span class="labelOnPanel">
+    <Label label={'Breakpoint'} />
+  </span>
+  <BreakpointEditor value={issue} size={'medium'} isEditable={!readonly} />
 
   <span class="labelTop">
     <Label label={tracker.string.Labels} />

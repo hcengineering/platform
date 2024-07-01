@@ -38,6 +38,7 @@
     title: '',
     description: '',
     priority: ToDoPriority.NoPriority,
+    breakpoint: 1,
     attachedSpace: object?.space,
     visibility: 'private',
     user: acc.person,
@@ -77,6 +78,7 @@
         title: todo.title,
         description: todo.description,
         priority: todo.priority,
+        breakpoint: todo.breakpoint,
         visibility: todo.visibility,
         user: acc.person,
         dueDate: todo.dueDate,
@@ -155,7 +157,7 @@
     slots = slots
   }
 
-  function changeSlot (e: CustomEvent<{ startDate: number, dueDate: number, slot: Ref<WorkSlot> }>): void {
+  function changeSlot (e: CustomEvent<{ startDate: number, dueDate: number; slot: Ref<WorkSlot> }>): void {
     const { startDate, dueDate, slot } = e.detail
     const workslot = slots.find((s) => s._id === slot)
     if (workslot !== undefined) {

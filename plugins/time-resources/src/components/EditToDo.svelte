@@ -24,7 +24,6 @@
     ModernEditbox,
     CheckBox,
     Component,
-    EditBox,
     IconClose,
     Label,
     Modal,

@@ -62,6 +62,7 @@ export async function migrateWorkSlots (client: TxOperations): Promise<void> {
             doneOn: oldWorkSlot.dueDate > now ? null : oldWorkSlot.dueDate,
             workslots: 0,
             priority: ToDoPriority.NoPriority,
+            breakpoint: 0,
             user: account.person,
             visibility: 'public',
             rank

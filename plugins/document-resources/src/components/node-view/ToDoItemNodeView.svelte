@@ -97,6 +97,7 @@
       user,
       workslots: 0,
       priority: ToDoPriority.NoPriority,
+      breakpoint: 0,
       visibility: 'public',
       doneOn,
       rank

@@ -34,6 +34,7 @@
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import StatusEditor from '../issues/StatusEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
+  import BreakpointEditor from '../issues/BreakpointEditor.svelte'
 
   export let parendIssueId: Ref<Issue>
   export let project: Project
@@ -78,7 +79,8 @@
       component,
       priority: IssuePriority.NoPriority,
       milestone,
-      estimation: 0
+      estimation: 0,
+      breakpoint: 1
     }
   }
 
@@ -234,6 +236,26 @@
           bind:value={object}
           on:change={(evt) => {
             object.estimation = evt.detail
+          }}
+        />
+      </div>
+      <div id="sub-issue-estimation-editor">
+        <BreakpointEditor
+          kind={'no-border'}
+          size={'small'}
+          bind:value={object}
+          on:change={(evt) => {
+            object.breakpoint = evt.detail
+          }}
+        />
+      </div>
+      <div id="sub-issue-estimation-editor">
+        <BreakpointEditor
+          kind={'no-border'}
+          size={'small'}
+          bind:value={object}
+          on:change={(evt) => {
+            object.breakpoint = evt.detail
           }}
         />
       </div>

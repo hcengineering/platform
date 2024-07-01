@@ -195,7 +195,7 @@ function defineFilters (builder: Builder): void {
         showNested: false
       }
     ],
-    ignoreKeys: ['number', 'estimation', 'attachedTo'],
+    ignoreKeys: ['number', 'estimation', 'attachedTo', 'breakpoint'],
     getVisibleFilters: tracker.function.GetVisibleFilters
   })
 
@@ -567,6 +567,9 @@ export function createModel (builder: Builder): void {
         },
         estimation: {
           icon: tracker.icon.Estimation
+        },
+        breakpoint: {
+          icon: tracker.icon.Breakpoint
         }
       }
     },
@@ -715,6 +718,7 @@ export function createModel (builder: Builder): void {
       { status: 1 },
       { project: 1 },
       { priority: 1 },
+      { breakpoint: 1 },
       { assignee: 1 },
       { sprint: 1 },
       { component: 1 },

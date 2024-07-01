@@ -33,6 +33,8 @@
     "Planned": "Запланировано",
     "AddSlot": "Добавить слот",
     "SetPriority": "Установить приоритет",
+    "SetBreakpoint": "Установить breakpoint",
+    "Breakpoint": "Breakpoint",
     "NoPriority": "Без приоритета",
     "LowPriority": "Низкий приоритет",
     "MediumPriority": "Средний приоритет",

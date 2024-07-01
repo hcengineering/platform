@@ -94,6 +94,7 @@ export function TypeIssuePriority (): Type<IssuePriority> {
 
 @Model(tracker.class.TypeIssuePriority, core.class.Type, DOMAIN_MODEL)
 export class TTypeIssuePriority extends TType {}
+
 /**
  * @public
  */
@@ -170,6 +171,14 @@ export function TypeEstimation (): Type<number> {
 /**
  * @public
  */
+
+export function TypeBreakpoint (): Type<number> {
+  return { _class: tracker.class.TypeBreakpoint, label: tracker.string.Breakpoint }
+}
+
+/**
+ * @public
+ */
 @Model(tracker.class.Issue, task.class.Task)
 @UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title', undefined, tracker.string.Issues)
 export class TIssue extends TTask implements Issue {
@@ -240,6 +249,9 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeEstimation(), tracker.string.Estimation)
     estimation!: number
 
+  @Prop(TypeBreakpoint(), tracker.string.Breakpoint)
+    breakpoint!: number
+
   @Prop(TypeReportedTime(), tracker.string.ReportedTime)
     reportedTime!: number
 
@@ -299,6 +311,9 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 
   @Prop(TypeEstimation(), tracker.string.Estimation)
     estimation!: number
+
+  @Prop(TypeIssueBreakpoint(), tracker.string.Breakpoint)
+    breakpoint!: number
 
   @Prop(ArrOf(TypeRef(tracker.class.IssueTemplate)), tracker.string.IssueTemplate)
     children!: IssueTemplateChild[]
@@ -396,6 +411,8 @@ export class TTypeReportedTime extends TType {}
 @UX(core.string.Number)
 @Model(tracker.class.TypeEstimation, core.class.Type)
 export class TTypeEstimation extends TType {}
+@Model(tracker.class.TypeBreakpoint, core.class.Type)
+export class TTypeBreakpoint extends TType {}
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeRemainingTime, core.class.Type)

@@ -190,6 +190,7 @@
       reportedTime: 0,
       remainingTime: 0,
       estimation: template.estimation,
+      breakpoint: template.breakpoint,
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
       childInfo: [],

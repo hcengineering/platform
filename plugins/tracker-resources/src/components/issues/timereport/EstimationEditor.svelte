@@ -83,7 +83,7 @@
       {focusIndex}
       showTooltip={isEditable ? { label: tracker.string.Estimation } : undefined}
       notSelected={value.estimation === 0}
-      icon={tracker.icon.DueDate}
+      icon={tracker.icon.Estimation}
       {justify}
       {width}
       {size}

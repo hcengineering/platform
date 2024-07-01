@@ -87,6 +87,7 @@
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
+  import BreakpointEditor from './issues/BreakpointEditor.svelte'
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
 
@@ -179,6 +180,7 @@
       dueDate: null,
       attachments: 0,
       estimation: 0,
+      breakpoint: 0,
       milestone: milestone ?? $activeMilestone ?? null,
       status,
       assignee,
@@ -196,6 +198,7 @@
         dueDate: originalIssue.dueDate,
         assignee: originalIssue.assignee,
         estimation: originalIssue.estimation,
+        breakpoint: originalIssue.breakpoint,
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
@@ -474,6 +477,7 @@
         reportedTime: 0,
         remainingTime: 0,
         estimation: object.estimation,
+        breakpoint: object.breakpoint,
         reports: 0,
         relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
         childInfo: [],
@@ -944,6 +948,9 @@
     />
     <div id="estimation-editor" class="new-line">
       <EstimationEditor focusIndex={8} kind={'regular'} size={'large'} value={object} />
+    </div>
+    <div id="breakpoint-editor" class="new-line">
+      <BreakpointEditor focusIndex={8} kind={'regular'} size={'large'} value={object} />
     </div>
     <div id="milestone-editor" class="new-line">
       <MilestoneSelector

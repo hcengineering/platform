@@ -107,7 +107,7 @@ test.describe('tracker layout tests', () => {
   // const orders = ['Status', 'Modified', 'Priority'] as const
   const orders = ['Modified', 'Priority'] as const
   const groups = ['Status', 'Assignee', 'Priority', 'Component', 'Milestone', 'No grouping'] as const
-  const groupsLabels: { [key in (typeof groups)[number]]?: string[] } = {
+  const groupsLabels: { [key in (typeof groups)[number]]?: any[] } = {
     Status: DEFAULT_STATUSES,
     Assignee: [DEFAULT_USER, 'Chen Rosamund'],
     Priority: PRIORITIES,
@@ -156,7 +156,7 @@ test.describe('tracker layout tests', () => {
               return 0
             } else if (
               PRIORITIES.findIndex((p) => p === propsLeft.priority) -
-                PRIORITIES.findIndex((p) => p === propsRight.priority) >
+              PRIORITIES.findIndex((p) => p === propsRight.priority) >
               0
             ) {
               return 1

@@ -34,6 +34,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     'createdBy',
     'modifiedBy',
     'estimation',
+    'breakpoint',
     'remainingTime',
     'reportedTime'
   ],
@@ -46,6 +47,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     ['dueDate', SortingOrder.Ascending],
     ['rank', SortingOrder.Ascending],
     ['estimation', SortingOrder.Descending],
+    ['breakpoint', SortingOrder.Descending],
     ['remainingTime', SortingOrder.Descending],
     ['reportedTime', SortingOrder.Descending]
   ],
@@ -186,6 +188,13 @@ export function issueConfig (
       displayProps: { key: key + 'estimation', fixed: 'left', dividerBefore: true, optional: true }
     },
     {
+      key: '',
+      label: tracker.string.Breakpoint,
+      presenter: tracker.component.BreakpointEditor,
+      props: { type: 'breakpoint', kind: 'list', size: 'small' },
+      displayProps: { key: key + 'breakpoint', fixed: 'left', dividerBefore: true, optional: true }
+    },
+    {
       key: 'modifiedOn',
       presenter: tracker.component.ModificationDatePresenter,
       displayProps: { key: key + 'modified', fixed: 'left', dividerBefore: true }
@@ -232,6 +241,7 @@ export function defineViewlets (builder: Builder): void {
           'component',
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'status',
           'dueDate',
@@ -278,6 +288,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'createdBy',
           'modifiedBy'
@@ -320,6 +331,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'createdBy',
           'modifiedBy'
@@ -362,6 +374,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'component',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'createdBy',
           'modifiedBy'
@@ -393,6 +406,7 @@ export function defineViewlets (builder: Builder): void {
         hiddenKeys: [
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'reportedTime',
           'component',
@@ -442,6 +456,16 @@ export function defineViewlets (builder: Builder): void {
           },
           displayProps: { key: 'estimation', compression: true }
         },
+        {
+          key: '',
+          label: tracker.string.Breakpoint,
+          presenter: tracker.component.TemplateBreakpointEditor,
+          props: {
+            kind: 'list',
+            size: 'small'
+          },
+          displayProps: { key: 'breakpoint', compression: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: 'modifiedOn',
@@ -471,7 +495,7 @@ export function defineViewlets (builder: Builder): void {
       configOptions: {
         strict: true
       },
-      config: ['subIssues', 'priority', 'component', 'dueDate', 'labels', 'estimation', 'attachments', 'comments']
+      config: ['subIssues', 'priority', 'component', 'dueDate', 'labels', 'estimation', 'breakpoint', 'attachments', 'comments']
     },
     tracker.viewlet.IssueKanban
   )

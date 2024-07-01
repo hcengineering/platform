@@ -154,7 +154,7 @@
 
   function getEditorFooter (
     _class?: Ref<Class<Doc>>
-  ): { footer: AnyComponent, props?: Record<string, any> } | undefined {
+  ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
     if (_class === undefined) {
       return
     }
@@ -315,7 +315,6 @@
       {/if}
 
       <div class="popupPanel-body__aside-grid">
-        <div class="divider" />
         <IssueStatusActivity {issue} />
       </div>
     </svelte:fragment>

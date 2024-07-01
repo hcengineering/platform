@@ -608,7 +608,8 @@ export function createModel (builder: Builder): void {
       { component: 1 },
       { milestone: 1 },
       { relations: 1 },
-      { priority: 1 }
+      { priority: 1 },
+      { breakpoint: 1 }
     ]
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

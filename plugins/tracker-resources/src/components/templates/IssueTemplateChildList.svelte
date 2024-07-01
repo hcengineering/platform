@@ -24,6 +24,7 @@
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
+  import BreakpointEditor from '../issues/BreakpointEditor.svelte'
   import IssueTemplateChildEditor from './IssueTemplateChildEditor.svelte'
 
   export let issues: IssueTemplateChild[]
@@ -183,6 +184,15 @@
         on:change={(evt) => {
           dispatch('update-issue', { id: issue.id, estimation: evt.detail })
           issue.estimation = evt.detail
+        }}
+      />
+      <BreakpointEditor
+        kind={'link'}
+        size={'large'}
+        bind:value={issue}
+        on:change={(evt) => {
+          dispatch('update-issue', { id: issue.id, breakpoint: evt.detail })
+          issue.breakpoint = evt.detail
         }}
       />
       <AssigneeEditor

@@ -31,6 +31,7 @@
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
+  import BreakpointEditor from '../issues/BreakpointEditor.svelte'
 
   export let projectId: Ref<Project>
   export let milestone: Ref<Milestone> | null = null
@@ -68,7 +69,8 @@
       component: null,
       priority: IssuePriority.NoPriority,
       milestone,
-      estimation: 0
+      estimation: 0,
+      breakpoint: 0
     }
   }
 
@@ -181,6 +183,14 @@
         bind:value={newIssue}
         on:change={(evt) => {
           newIssue.estimation = evt.detail
+        }}
+      />
+      <BreakpointEditor
+        kind={'no-border'}
+        size={'small'}
+        bind:value={newIssue}
+        on:change={(evt) => {
+          newIssue.breakpoint = evt.detail
         }}
       />
       <Component

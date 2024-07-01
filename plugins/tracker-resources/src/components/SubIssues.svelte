@@ -86,6 +86,7 @@
         reportedTime: 0,
         remainingTime: 0,
         estimation: subIssue.estimation,
+        breakpoint: subIssue.breakpoint,
         reports: 0,
         relations: [],
         childInfo: [],

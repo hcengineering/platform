@@ -48,6 +48,7 @@
     "PersonAlreadyExists": "El contacto ya existe...",
     "Status": "Estado",
     "SetStatus": "Establecer estado",
+    "SetBreakpoint": "Establecer punto de interrupción",
     "ClearStatus": "Borrar estado",
     "SaveStatus": "Guardar",
     "Cancel": "Cancelar",

@@ -36,6 +36,7 @@
       user: acc.person,
       workslots: 0,
       priority: ToDoPriority.NoPriority,
+      breakpoint: 1,
       visibility: 'private',
       rank: makeRank(undefined, latestTodo?.rank)
     })

@@ -15,7 +15,7 @@
 
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Application } from '@hcengineering/model-workbench'
-import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type IntlString, IntlNumber, mergeIds, type Resource } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 import { type Action, type ActionCategory } from '@hcengineering/view'
 import { timeId } from '@hcengineering/time'
