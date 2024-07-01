@@ -16,7 +16,7 @@ import { type Asset, type IntlString } from '@hcengineering/platform'
 import { type Account, type Doc, type DocumentQuery, type IdMap, type Ref, type UserStatus } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
 import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
-import { type PersonAccount } from '@hcengineering/contact'
+import { type PersonAccount, type Contact } from '@hcengineering/contact'
 
 export type ChatGroup = 'activity' | 'direct' | 'channels' | 'starred'
 
@@ -50,4 +50,9 @@ export interface ChatNavItemModel {
 
 export interface SelectChannelEvent {
   object: Doc
+}
+
+export interface SelectDirectUsersResult {
+  selected: Array<Ref<Contact>>
+  isExternal: boolean
 }

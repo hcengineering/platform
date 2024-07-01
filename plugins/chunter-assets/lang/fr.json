@@ -108,6 +108,7 @@
     "UnstarChannel": "Retirer le canal des favoris",
     "UnstarConversation": "Retirer la conversation des favoris",
     "JoinChannelHeader": "Cliquez sur \"Rejoindre\" pour commencer.",
-    "JoinChannelText": "Une fois que vous avez rejoint, vous pourrez lire tous les messages et participer à la discussion."
+    "JoinChannelText": "Une fois que vous avez rejoint, vous pourrez lire tous les messages et participer à la discussion.",
+    "External": "Externe"
   }
 }

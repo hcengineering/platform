@@ -24,6 +24,7 @@ import notification from '@hcengineering/notification'
 import serverNotification from '@hcengineering/server-notification'
 import serverTemplates from '@hcengineering/server-templates'
 import templates from '@hcengineering/templates'
+import chunter from '@hcengineering/model-chunter'
 
 export { serverTelegramId } from '@hcengineering/server-telegram'
 
@@ -38,20 +39,33 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTelegram.trigger.OnMessageCreate,
+    trigger: serverTelegram.trigger.OnChannelMessageRemove,
     txMatch: {
       _class: core.class.TxCollectionCUD,
-      'tx.objectClass': telegram.class.Message,
-      'tx._class': core.class.TxCreateDoc
+      'tx._class': core.class.TxRemoveDoc,
+      'tx.objectClass': telegram.class.TelegramChannelMessage
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTelegram.trigger.OnChannelMessageCreate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': telegram.class.TelegramChannelMessage
+    }
+  })
+
+  builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
+    func: serverTelegram.function.IsNewMessage
+  })
+
   builder.mixin(
-    telegram.ids.NewMessageNotification,
+    chunter.ids.ChannelNotification,
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverTelegram.function.IsIncomingMessage
+      func: serverTelegram.function.IsNewMessage
     }
   )
 

@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { ButtonSize } from '../types'
 
-  export let size: ButtonSize = 'medium'
+  export let size: ButtonSize | 'xx-small' = 'medium'
 </script>
 
 <div class="spinner spinner-{size}">
@@ -48,6 +48,10 @@
 
 <style lang="scss">
   .spinner {
+    &-xx-small {
+      width: 0.5rem;
+      height: 0.5rem;
+    }
     &-inline {
       width: 0.75rem;
       height: 0.75rem;

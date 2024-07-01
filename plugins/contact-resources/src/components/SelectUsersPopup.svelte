@@ -18,27 +18,32 @@
   import { deviceOptionsStore, EditWithIcon, IconSearch, Modal, Scroller } from '@hcengineering/ui'
   import { IntlString } from '@hcengineering/platform'
   import { Class, Ref } from '@hcengineering/core'
-  import { Employee } from '@hcengineering/contact'
+  import { ChannelProvider, Contact } from '@hcengineering/contact'
 
   import contact from '../plugin'
   import UsersList from './UsersList.svelte'
 
-  export let _class: Ref<Class<Employee>> = contact.mixin.Employee
+  export let _class: Ref<Class<Contact>> = contact.mixin.Employee
   export let searchField: string = 'name'
   export let searchMode: 'field' | 'fulltext' | 'disabled' = 'field'
   export let groupBy = '_class'
   export let okLabel: IntlString = presentation.string.Ok
   export let placeholder: IntlString = presentation.string.Search
-  export let selected: Ref<Employee>[] = []
+  export let selected: Ref<Contact>[] = []
   export let skipCurrentAccount = false
-  export let disableDeselectFor: Ref<Employee>[] = []
+  export let disableDeselectFor: Ref<Contact>[] = []
   export let showStatus = true
   export let skipInactive = false
+  export let multiselect = true
+  export let channelProviders: ChannelProvider[] = []
+  export let skipWithoutChannels = false
 
   const dispatch = createEventDispatcher()
 
   let search: string = ''
-  let selectedIds: Ref<Employee>[] = selected
+  let selectedIds: Ref<Contact>[] = []
+
+  $: selectedIds = selected
 
   function handleCancel (): void {
     dispatch('close')
@@ -79,6 +84,8 @@
 
     <div class="line" />
 
+    <slot />
+
     <div class="users">
       <Scroller padding="0.75rem 0">
         <UsersList
@@ -86,12 +93,15 @@
           {searchField}
           {searchMode}
           {search}
+          {multiselect}
           {groupBy}
           selected={selectedIds}
           {showStatus}
           {disableDeselectFor}
           {skipCurrentAccount}
           {skipInactive}
+          {channelProviders}
+          {skipWithoutChannels}
           on:select={handleSelectionChanged}
         />
       </Scroller>

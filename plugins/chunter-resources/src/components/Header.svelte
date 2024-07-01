@@ -80,7 +80,7 @@
             icon,
             iconProps,
             title: label,
-            label: label ? undefined : intlLabel
+            label: label !== undefined ? undefined : intlLabel
           }
         ]}
       />
@@ -102,6 +102,7 @@
   {#if description}
     <div class="ac-header__description over-underline" style="flex: 1" title={description}>{description}</div>
   {/if}
+  <slot name="content" />
 </div>
 {#if withFilters}
   <ChannelMessagesFilter bind:selectedFilters={filters} />
@@ -112,8 +113,8 @@
     iconProps={{ size: 'small' }}
     kind={'icon'}
     on:click={() => {
-      if (object) {
-        openDoc(client.getHierarchy(), object)
+      if (object !== undefined) {
+        void openDoc(client.getHierarchy(), object)
       }
     }}
   />

@@ -117,10 +117,15 @@
     return !phone.match(/^\+\d{9,15}$/)
   }
 
-  function click () {
-    if (secondFactor) return sendPassword()
-    if (requested) return sendCode()
-    return requestCode()
+  async function click () {
+    try {
+      if (secondFactor) { await sendPassword(); return }
+      if (requested) { await sendCode(); return }
+
+      await requestCode()
+    } catch (e) {
+      console.error(e)
+    }
   }
 </script>
 

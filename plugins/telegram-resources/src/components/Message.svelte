@@ -18,8 +18,8 @@
   import { AttachmentList } from '@hcengineering/attachment-resources'
   import { formatName } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
-  import { HTMLViewer } from '@hcengineering/presentation'
-  import type { SharedTelegramMessage } from '@hcengineering/telegram'
+  import { MessageViewer } from '@hcengineering/presentation'
+  import { SharedTelegramMessage, TelegramMessageStatus } from '@hcengineering/telegram'
   import { CheckBox, getPlatformColorForText, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -32,7 +32,12 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<div class="message-row-bg" class:selectable class:selected-row={selected} data-type={message.incoming ? 'in' : 'out'}>
+<div
+  class="message-row-bg"
+  class:selectable
+  class:selected-row={selected}
+  data-type={message.status === TelegramMessageStatus.Incoming ? 'in' : 'out'}
+>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
@@ -46,8 +51,8 @@
     <div class="check-box">
       {#if selectable}<CheckBox circle kind={'primary'} bind:checked={selected} />{/if}
     </div>
-    <div class="message-container" class:out={!message.incoming}>
-      <div class="message" class:outcoming={!message.incoming} class:selected>
+    <div class="message-container" class:out={message.status !== TelegramMessageStatus.Incoming}>
+      <div class="message" class:outcoming={message.status !== TelegramMessageStatus.Incoming} class:selected>
         {#if showName}
           <div class="name" style="color: {getPlatformColorForText(message.sender, $themeStore.dark)}">
             {formatName(message.sender)}
@@ -57,9 +62,12 @@
           <AttachmentList {attachments} />
         {/if}
         <div class="flex">
-          <div class="caption-color mr-4"><HTMLViewer value={message.content} /></div>
+          <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>
           <div class="time">
-            {new Date(message.sendOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
+            {new Date(message.createdOn ?? message.modifiedOn).toLocaleString('default', {
+              hour: 'numeric',
+              minute: 'numeric'
+            })}
           </div>
         </div>
       </div>

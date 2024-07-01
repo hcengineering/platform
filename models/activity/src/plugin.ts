@@ -45,11 +45,8 @@ export default mergeIds(activityId, activity, {
     ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     ActivityNotificationGroup: '' as Ref<NotificationGroup>,
     AddReactionNotification: '' as Ref<NotificationType>,
-    AddReactionAction: '' as Ref<Action>,
     SaveForLaterAction: '' as Ref<Action>,
-    RemoveFromLaterAction: '' as Ref<Action>,
-    PinMessageAction: '' as Ref<Action>,
-    UnpinMessageAction: '' as Ref<Action>
+    RemoveFromLaterAction: '' as Ref<Action>
   },
   function: {
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

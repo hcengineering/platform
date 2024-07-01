@@ -60,12 +60,6 @@
       members: [accountId],
       topic: description
     })
-    await client.createDoc(notification.class.DocNotifyContext, channelId, {
-      user: accountId,
-      attachedTo: channelId,
-      attachedToClass: chunter.class.Channel,
-      hidden: false
-    })
 
     openChannel(channelId, chunter.class.Channel)
   }

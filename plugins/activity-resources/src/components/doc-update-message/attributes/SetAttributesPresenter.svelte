@@ -18,8 +18,8 @@
   import activity, { DocAttributeUpdates, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
   import ChangeAttributesTemplate from './ChangeAttributesTemplate.svelte'
-  import { getIsTextType } from '../../../utils'
   import { Ref, Space } from '@hcengineering/core'
+  import { isTextAttributeModel } from '@hcengineering/view-resources'
 
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeModel: AttributeModel
@@ -32,7 +32,7 @@
   $: attributeIcon = attrViewletConfig?.icon ?? attributeModel.icon ?? IconEdit
   $: isUnset = values.length > 0 && !values.some((value) => value !== null && value !== '')
 
-  $: isTextType = getIsTextType(attributeModel)
+  $: isTextType = isTextAttributeModel(attributeModel)
 
   let isDiffShown = false
 

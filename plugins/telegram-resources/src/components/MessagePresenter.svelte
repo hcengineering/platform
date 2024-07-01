@@ -13,39 +13,106 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, HTMLViewer } from '@hcengineering/presentation'
-  import { TelegramMessage } from '@hcengineering/telegram'
-  import { Ref } from '@hcengineering/core'
+  import { TelegramChatMessage, TelegramChannelMessage, TelegramMessageStatus } from '@hcengineering/telegram'
+  import { Doc, getCurrentAccount, WithLookup } from '@hcengineering/core'
+  import { Action, Icon, IconCheckmark, Label, Spinner } from '@hcengineering/ui'
+  import { AttachmentImageSize } from '@hcengineering/attachment-resources'
+  import { ActivityMessageViewType } from '@hcengineering/activity'
+  import { ChatMessageContent, ChatMessagePresenter } from '@hcengineering/chunter-resources'
+  import notification from '@hcengineering/notification'
+  import { Attachment } from '@hcengineering/attachment'
 
-  import telegram from '../plugin'
+  import TelegramIcon from './icons/Telegram.svelte'
 
-  export let _id: Ref<TelegramMessage> | undefined = undefined
-  export let value: TelegramMessage | undefined = undefined
+  export let value: WithLookup<TelegramChatMessage> | undefined
+  export let doc: Doc | undefined = undefined
+  export let isHighlighted: boolean = false
+  export let isSelected: boolean = false
+  export let shouldScroll: boolean = false
+  export let actions: Action[] = []
+  export let attachmentImageSize: AttachmentImageSize = 'x-large'
+  export let showLinksPreview = true
+  export let type: ActivityMessageViewType = 'default'
+  export let shortTime = false
+  export let embedded = false
+  export let onClick: (() => void) | undefined = undefined
 
-  const query = createQuery()
+  const me = getCurrentAccount()
 
-  let doc: TelegramMessage | undefined = undefined
+  let channelMessage: WithLookup<TelegramChannelMessage> | undefined = undefined
 
-  $: if (value === undefined && _id !== undefined) {
-    query.query(telegram.class.Message, { _id }, (res) => {
-      doc = res[0]
-    })
-  } else {
-    doc = value
-    query.unsubscribe()
-  }
+  $: channelMessage = value?.$lookup?.channelMessage as WithLookup<TelegramChannelMessage>
+
+  let attachments: Attachment[] = []
+  $: attachments = (channelMessage?.$lookup?.attachments ?? []) as Attachment[]
 </script>
 
-{#if doc}
-  <div class="content lines-limit-2">
-    <HTMLViewer value={doc.content} />
-  </div>
+{#if value && channelMessage}
+  <ChatMessagePresenter
+    {value}
+    {doc}
+    {isHighlighted}
+    {isSelected}
+    {shouldScroll}
+    {actions}
+    hoverable
+    hoverStyles="filledHover"
+    {attachmentImageSize}
+    {showLinksPreview}
+    {embedded}
+    {type}
+    withShowMore={false}
+    {shortTime}
+    skipLabel={false}
+    typeIcon={TelegramIcon}
+    {onClick}
+  >
+    <svelte:fragment slot="header">
+      {#if me._id === value.createdBy && !embedded}
+        {@const status = channelMessage.status}
+        {#if status === TelegramMessageStatus.Sent}
+          <span class="status">
+            <Icon icon={IconCheckmark} size="x-small" />
+          </span>
+        {:else if status === TelegramMessageStatus.New}
+          <span class="status">
+            <Spinner size="xx-small" />
+          </span>
+        {/if}
+      {/if}
+
+      {#if channelMessage?.editedOn}
+        <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
+      {/if}
+    </svelte:fragment>
+
+    <svelte:fragment slot="content" let:object let:isEditing let:onSubmit let:onCancel>
+      <ChatMessageContent
+        {value}
+        attachmentsDoc={channelMessage}
+        message={channelMessage?.content ?? ''}
+        {object}
+        {isEditing}
+        {attachments}
+        externalChannel={value.channelId}
+        on:submit={onSubmit}
+        on:cancel={onCancel}
+      />
+    </svelte:fragment>
+  </ChatMessagePresenter>
 {/if}
 
 <style lang="scss">
-  .content {
-    min-width: 0;
-    min-height: 1rem;
-    max-height: 2.125rem;
+  .status {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-left: 0.25rem;
+  }
+
+  span {
+    margin-left: 0.25rem;
+    font-weight: 400;
+    line-height: 1.25rem;
   }
 </style>

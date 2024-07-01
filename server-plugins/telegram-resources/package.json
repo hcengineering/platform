@@ -41,8 +41,10 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/chunter": "^0.6.0",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/telegram": "^0.6.21",
-    "@hcengineering/setting": "^0.6.17"
+    "@hcengineering/setting": "^0.6.17",
+    "fast-equals": "^5.0.1"
   }
 }

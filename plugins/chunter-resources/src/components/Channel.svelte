@@ -19,6 +19,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
+  import { ChatExtension, ExternalChannel } from '@hcengineering/chunter'
 
   import chunter from '../plugin'
   import ChannelScrollView from './ChannelScrollView.svelte'
@@ -29,6 +30,7 @@
   export let context: DocNotifyContext | undefined
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let isAsideOpened = false
+  export let selectedChannelId: Ref<ExternalChannel> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -59,35 +61,55 @@
   $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId)
+  $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId, selectedChannelId)
 
   function updateDataProvider (
     attachedTo: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
     lastViewedTimestamp?: Timestamp,
-    selectedMessageId?: Ref<ActivityMessage>
+    selectedMessageId?: Ref<ActivityMessage>,
+    channelId?: Ref<ExternalChannel>
   ): void {
+    const loadAll = isDocChannel
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
-      const loadAll = isDocChannel
-      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp ?? 0, selectedMessageId, loadAll)
+      dataProvider = new ChannelDataProvider(
+        attachedTo,
+        _class,
+        lastViewedTimestamp ?? 0,
+        selectedMessageId,
+        loadAll,
+        channelId
+      )
+    } else if (channelId !== dataProvider.externalChannel) {
+      dataProvider.destroy()
+      dataProvider = new ChannelDataProvider(
+        attachedTo,
+        _class,
+        lastViewedTimestamp ?? 0,
+        selectedMessageId,
+        loadAll,
+        channelId
+      )
     }
   }
 </script>
 
 {#if dataProvider}
-  <ChannelScrollView
-    objectId={object._id}
-    objectClass={object._class}
-    {object}
-    skipLabels={!isDocChannel}
-    selectedFilters={filters}
-    startFromBottom
-    {selectedMessageId}
-    {collection}
-    provider={dataProvider}
-    {isAsideOpened}
-    loadMoreAllowed={!isDocChannel}
-  />
+  {#key `${object._id}${dataProvider.externalChannel}`}
+    <ChannelScrollView
+      objectId={object._id}
+      objectClass={object._class}
+      {object}
+      skipLabels={!isDocChannel}
+      selectedFilters={filters}
+      startFromBottom
+      {selectedMessageId}
+      {collection}
+      provider={dataProvider}
+      {isAsideOpened}
+      loadMoreAllowed={!isDocChannel}
+    />
+  {/key}
 {/if}

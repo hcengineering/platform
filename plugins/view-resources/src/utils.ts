@@ -1602,3 +1602,15 @@ export async function parseLinkId<T extends Doc> (
 
   return (_id ?? id) as Ref<T>
 }
+
+export function isTextAttributeModel (attributeModel?: AttributeModel): boolean {
+  if (attributeModel === undefined) {
+    return false
+  }
+
+  return (
+    attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
+    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup ||
+    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeDoc
+  )
+}

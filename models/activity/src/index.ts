@@ -32,7 +32,9 @@ import {
   type IgnoreActivity,
   type Reaction,
   type SavedMessage,
-  type ReplyProvider
+  type ReplyProvider,
+  type ActivityMessageGroupProvider,
+  type CanGroupMessagesFn
 } from '@hcengineering/activity'
 import contact, { type Person } from '@hcengineering/contact'
 import core, {
@@ -238,6 +240,11 @@ export class TActivityMessagePreview extends TClass implements ActivityMessagePr
   presenter!: AnyComponent
 }
 
+@Mixin(activity.mixin.ActivityMessageGroupProvider, core.class.Class)
+export class TActivityMessageGroupProvider extends TClass implements ActivityMessageGroupProvider {
+  fn!: Resource<CanGroupMessagesFn>
+}
+
 @Model(activity.class.ReplyProvider, core.class.Doc, DOMAIN_MODEL)
 export class TReplyProvider extends TDoc implements ReplyProvider {
   function!: Resource<(message: ActivityMessage) => Promise<void>>
@@ -266,7 +273,8 @@ export function createModel (builder: Builder): void {
     TActivityReference,
     TActivityMessagePreview,
     TReplyProvider,
-    TUserMentionInfo
+    TUserMentionInfo,
+    TActivityMessageGroupProvider
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {

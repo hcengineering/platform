@@ -28,7 +28,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, ShowMore, Action } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
-  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
+  import { buildRemovedDoc, checkIsObjectRemoved, isTextAttributeModel } from '@hcengineering/view-resources'
 
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
@@ -36,7 +36,6 @@
   import DocUpdateMessageHeader from './DocUpdateMessageHeader.svelte'
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
-  import { getIsTextType } from '../../utils'
 
   export let value: DisplayDocUpdateMessage
   export let doc: Doc | undefined = undefined
@@ -190,8 +189,8 @@
   {skipLabel}
   {hoverable}
   {hoverStyles}
-  type={viewlet?.label || getIsTextType(attributeModel) ? 'default' : type}
-  showDatePreposition={hideLink}
+  type={viewlet?.label || isTextAttributeModel(attributeModel) ? 'default' : type}
+  showDatePreposition={viewlet?.label !== undefined}
   {onClick}
 >
   <svelte:fragment slot="header">

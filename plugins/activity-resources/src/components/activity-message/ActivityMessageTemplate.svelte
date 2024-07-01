@@ -24,6 +24,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -54,6 +55,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
+  export let shortTime = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -65,7 +67,7 @@
 
   let isSaved = false
 
-  savedMessagesStore.subscribe((saved) => {
+  const unsubscribe = savedMessagesStore.subscribe((saved) => {
     isSaved = saved.some((savedMessage) => savedMessage.attachedTo === message._id)
   })
 
@@ -134,6 +136,9 @@
   }
 
   function handleContextMenu (event: MouseEvent): void {
+    if (readonly) {
+      return
+    }
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
       showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
@@ -142,6 +147,10 @@
       isActionsOpened = true
     }
   }
+
+  onDestroy(() => {
+    unsubscribe()
+  })
 </script>
 
 {#if !isHidden}
@@ -174,7 +183,7 @@
           <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
         </span>
       {:else}
-        <div class="min-w-6 mt-1 relative">
+        <div class="min-w-6 mt-1 relative w-10 h-10">
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
@@ -187,6 +196,8 @@
               <Icon icon={activity.icon.BookmarkFilled} size="xx-small" />
             </div>
           {/if}
+
+          <slot name="avatar" />
         </div>
       {/if}
       <div class="flex-col ml-2 w-full clear-mins message-content">
@@ -211,24 +222,26 @@
             {/if}
 
             <span class="text-sm lower">
-              <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
+              <MessageTimestamp date={message.createdOn ?? message.modifiedOn} {shortTime} />
             </span>
           </div>
         {/if}
 
         <slot name="content" />
 
-        {#if !hideFooter}
+        {#if !hideFooter && !embedded}
           <Replies {embedded} object={message} />
         {/if}
-        <ReactionsPresenter object={message} {readonly} />
+        {#if !embedded}
+          <ReactionsPresenter object={message} {readonly} />
+        {/if}
         {#if parentMessage && showEmbedded}
           <div class="mt-2" />
           <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
         {/if}
       </div>
 
-      {#if withActions && !readonly}
+      {#if withActions && !readonly && !embedded}
         <div class="actions" class:pending class:opened={isActionsOpened}>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}

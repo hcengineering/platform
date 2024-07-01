@@ -14,12 +14,14 @@
 //
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
-import type { Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import { Class, Doc, Markup, Mixin, Ref, Space, Timestamp, TxOperations } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
+import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
+import { Channel as ContactChannel, ChannelMessage } from '@hcengineering/contact'
 
 /**
  * @public
@@ -72,6 +74,56 @@ export interface ChatMessageViewlet extends ActivityMessageViewlet {
   label?: IntlString
 }
 
+export type ExternalChannel = ContactChannel
+
+export interface CreateMessageData {
+  _id: Ref<ChatMessage>
+  _class: Ref<Class<ChatMessage>>
+  message: string
+  attachments: number
+  collection: string
+}
+
+export interface EditMessageData {
+  message: string
+  attachments: number
+}
+
+export type CreateExternalMessageFn = (
+  op: TxOperations,
+  object: Doc,
+  channel: ExternalChannel,
+  data: CreateMessageData
+) => Promise<void>
+
+export type EditExternalMessageFn = (
+  op: TxOperations,
+  message: ChatMessage,
+  channel: ExternalChannel,
+  data: EditMessageData
+) => Promise<void>
+
+export interface ExternalChatMessage extends ChatMessage {
+  channelId: Ref<ExternalChannel>
+  channelClass: Ref<Class<ExternalChannel>>
+  channelMessage: Ref<ChannelMessage>
+  channelMessageClass: Ref<Class<ChannelMessage>>
+}
+
+export interface ChatExtension extends Doc {
+  type: Ref<IntegrationType>
+  messageClass: Ref<Class<ExternalChannel>>
+  threadMessageClass: Ref<Class<ExternalChatMessage>>
+  allowedChannelsTypes: Ref<Class<Doc>>[]
+  createMessageFn: Resource<CreateExternalMessageFn>
+  editMessageFn: Resource<EditExternalMessageFn>
+  options: {
+    editable: boolean
+    removable: boolean
+    attachmentsEditable: boolean
+  }
+}
+
 /**
  * @public
  */
@@ -107,7 +159,9 @@ export default plugin(chunterId, {
     Channel: '' as Ref<Class<Channel>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
-    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>
+    ExternalChatMessage: '' as Ref<Class<ExternalChatMessage>>,
+    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
+    ChatExtension: '' as Ref<Class<ChatExtension>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
@@ -153,7 +207,8 @@ export default plugin(chunterId, {
     StarChannel: '' as IntlString,
     StarConversation: '' as IntlString,
     UnstarChannel: '' as IntlString,
-    UnstarConversation: '' as IntlString
+    UnstarConversation: '' as IntlString,
+    External: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
@@ -168,6 +223,7 @@ export default plugin(chunterId, {
     DeleteChatMessage: '' as Ref<Action>,
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
-    CloseConversation: '' as Ref<Action>
+    CloseConversation: '' as Ref<Action>,
+    ReplyToThreadAction: '' as Ref<Action>
   }
 })

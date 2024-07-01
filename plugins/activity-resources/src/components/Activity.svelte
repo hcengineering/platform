@@ -13,7 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
+  import activity, {
+    ActivityExtension,
+    ActivityMessage,
+    DisplayActivityMessage,
+    GroupMessagesResources
+  } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Grid, Label, Spinner, location, Lazy } from '@hcengineering/ui'
@@ -22,7 +27,7 @@
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages } from '../activityMessagesUtils'
-  import { canGroupMessages, getMessageFromLoc } from '../utils'
+  import { canGroupMessages, getGroupMessagesResources, getMessageFromLoc } from '../utils'
   import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
   import { messageInFocus } from '../activity'
 
@@ -193,6 +198,11 @@
     void scrollToMessage(selectedMessageId)
   }
 
+  let groupResources: GroupMessagesResources = new Map()
+
+  $: void getGroupMessagesResources(client).then((res) => {
+    groupResources = res
+  })
   $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
 </script>
 
@@ -228,7 +238,7 @@
   {#if filteredMessages.length}
     <Grid column={1} rowGap={0}>
       {#each filteredMessages as message, index}
-        {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
+        {@const canGroup = canGroupMessages(message, filteredMessages[index - 1], groupResources)}
         {#if selectedMessageId}
           <ActivityMessagePresenter
             value={message}

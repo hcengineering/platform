@@ -14,20 +14,22 @@
 -->
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import core, { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
-  import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
-  import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
+  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { AttachmentImageSize } from '@hcengineering/attachment-resources'
+  import { getDocLinkTitle } from '@hcengineering/view-resources'
+  import { Action, AnySvelteComponent, Icon, IconEdit } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import activity, { ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
-  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
+  import chunter, { ChatExtension, ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
+  import { Asset } from '@hcengineering/platform'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
-  import ChatMessageInput from './ChatMessageInput.svelte'
+  import { getMessageExtension, hulyChannelId } from '../../utils'
+  import ChatMessageContent from './ChatMessageContent.svelte'
 
   export let value: WithLookup<ChatMessage> | undefined
   export let doc: Doc | undefined = undefined
@@ -48,16 +50,16 @@
   export let attachmentImageSize: AttachmentImageSize = 'auto'
   export let showLinksPreview = true
   export let videoPreload = true
-  export let hideLink = false
-  export let compact = false
   export let type: ActivityMessageViewType = 'default'
+  export let typeIcon: Asset | AnySvelteComponent | undefined = undefined
+  export let shortTime = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
   const { pendingCreatedDocs } = client
   const hierarchy = client.getHierarchy()
   const STALE_TIMEOUT_MS = 5000
-  const userQuery = createQuery()
+
   const currentAccount = getCurrentAccount()
 
   let user: PersonAccount | undefined = undefined
@@ -67,8 +69,6 @@
   let parentObject: Doc | undefined
   let object: Doc | undefined
 
-  let refInput: ChatMessageInput
-
   let viewlet: ChatMessageViewlet | undefined
   ;[viewlet] = value
     ? client.getModel().findAllSync(chunter.class.ChatMessageViewlet, {
@@ -77,12 +77,8 @@
     })
     : []
 
-  $: value &&
-    userQuery.query(core.class.Account, { _id: value.createdBy }, (res: Account[]) => {
-      user = res[0] as PersonAccount
-    })
-
-  $: person = user?.person && $personByIdStore.get(user.person)
+  $: user = $personAccountByIdStore.get(value?.createdBy ?? (value?.modifiedBy as any))
+  $: person = user ? $personByIdStore.get(user.person) : undefined
 
   $: value &&
     getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
@@ -154,24 +150,37 @@
   let isEditing = false
   let additionalActions: Action[] = []
 
+  let extension: ChatExtension | undefined = undefined
+
+  $: getMessageExtension(value).then((res) => {
+    extension = res
+  })
+
   $: isOwn = user !== undefined && user._id === currentAccount._id
+  $: isEditable = isOwn && (extension === undefined || extension.options.editable)
 
-  $: additionalActions = [
-    ...(isOwn
-      ? [
-          {
-            label: activity.string.Edit,
-            icon: IconEdit,
-            group: 'edit',
-            action: handleEditAction
-          }
-        ]
-      : []),
-    ...actions
-  ]
+  $: additionalActions = isEditable
+    ? [
+        {
+          label: activity.string.Edit,
+          icon: IconEdit,
+          group: 'edit',
+          action: handleEditAction
+        },
+        ...actions
+      ]
+    : actions
 
-  let attachments: Attachment[] | undefined = undefined
-  $: attachments = value?.$lookup?.attachments as Attachment[] | undefined
+  let attachments: Attachment[] = []
+  $: attachments = (value?.$lookup?.attachments ?? []) as Attachment[]
+
+  function handleSubmit () {
+    isEditing = false
+  }
+
+  function handleEditCancel () {
+    isEditing = false
+  }
 </script>
 
 {#if inline && object}
@@ -203,56 +212,62 @@
     {skipLabel}
     {pending}
     {stale}
-    showDatePreposition={hideLink}
+    showDatePreposition={viewlet?.label !== undefined}
+    {shortTime}
     {type}
     {onClick}
   >
+    <svelte:fragment slot="avatar">
+      {#if typeIcon !== undefined}
+        <div class="typeMarker">
+          <Icon icon={typeIcon} size="xx-small" />
+        </div>
+      {/if}
+    </svelte:fragment>
     <svelte:fragment slot="header">
-      <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} {skipLabel} {hideLink} />
+      {#if $$slots.header}
+        <slot name="header" {object} />
+      {:else}
+        <ChatMessageHeader message={value} {viewlet} {skipLabel} />
+      {/if}
     </svelte:fragment>
     <svelte:fragment slot="content">
-      {#if !isEditing}
-        {#if withShowMore}
-          <ShowMore limit={compact ? 80 : undefined}>
-            <div class="clear-mins">
-              <MessageViewer message={value.message} />
-              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
-              {#each links as link}
-                <LinkPresenter {link} />
-              {/each}
-            </div>
-          </ShowMore>
-        {:else}
-          <div class="clear-mins">
-            <MessageViewer message={value.message} />
-            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
-            {#each links as link}
-              <LinkPresenter {link} />
-            {/each}
-          </div>
-        {/if}
-      {:else if object}
-        <ChatMessageInput
-          bind:this={refInput}
-          chatMessage={value}
-          shouldSaveDraft={false}
-          focusIndex={1000}
-          autofocus
+      {#if $$slots.content}
+        <slot name="content" {object} {isEditing} onSubmit={handleSubmit} onCancel={handleEditCancel} />
+      {:else}
+        <ChatMessageContent
+          {value}
+          message={value.message}
           {object}
-          on:submit={() => {
-            isEditing = false
-          }}
+          {isEditing}
+          {videoPreload}
+          {attachmentImageSize}
+          {attachments}
+          {links}
+          {withShowMore}
+          externalChannel={hulyChannelId}
+          on:submit={handleSubmit}
+          on:cancel={handleEditCancel}
         />
-        <div class="flex-row-center gap-2 justify-end mt-2">
-          <Button
-            label={view.string.Cancel}
-            on:click={() => {
-              isEditing = false
-            }}
-          />
-          <Button label={activity.string.Update} accent on:click={() => refInput.submit()} />
-        </div>
       {/if}
     </svelte:fragment>
   </ActivityMessageTemplate>
 {/if}
+
+<style lang="scss">
+  .typeMarker {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: var(--spacing-1);
+    border-radius: 50%;
+    background: var(--theme-bg-color);
+    border: 1px solid var(--global-ui-BorderColor);
+    bottom: -0.375rem;
+    right: -0.625rem;
+    color: var(--content-color);
+  }
+</style>

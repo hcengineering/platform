@@ -16,24 +16,24 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import contact, { Channel, Contact, Person, PersonAccount, getName as getContactName } from '@hcengineering/contact'
-  import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import core, { IdMap, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import contact, { Channel, Contact, getName as getContactName, Person, PersonAccount } from '@hcengineering/contact'
+  import { Avatar, personAccountByIdStore, personByIdStore, personStore } from '@hcengineering/contact-resources'
+  import core, { generateId, getCurrentAccount, IdMap, Ref, SortingOrder } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
-  import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@hcengineering/telegram'
+  import { SharedTelegramMessage, TelegramChannelMessage, TelegramMessageStatus } from '@hcengineering/telegram'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { markupToHTML } from '@hcengineering/text'
   import {
     Button,
+    Dialog,
+    eventToHTMLElement,
     Icon,
     IconShare,
     Label,
-    Dialog,
     Scroller,
-    eventToHTMLElement,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
@@ -48,7 +48,7 @@
   export let embedded = false
 
   let object: Contact
-  let objectId: Ref<NewTelegramMessage> = generateId()
+  let newId: Ref<TelegramChannelMessage> = generateId()
 
   const dispatch = createEventDispatcher()
 
@@ -73,7 +73,7 @@
     object = result[0] as Contact
   })
 
-  let messages: TelegramMessage[] = []
+  let messages: TelegramChannelMessage[] = []
   let integration: Integration | undefined
   let selected: Set<Ref<SharedTelegramMessage>> = new Set<Ref<SharedTelegramMessage>>()
   let selectable = false
@@ -84,7 +84,7 @@
 
   function updateMessagesQuery (channelId: Ref<Channel>): void {
     messagesQuery.query(
-      telegram.class.Message,
+      telegram.class.TelegramChannelMessage,
       { attachedTo: channelId },
       (res) => {
         messages = res.reverse()
@@ -93,7 +93,7 @@
         }
       },
       {
-        sort: { sendOn: SortingOrder.Descending },
+        sort: { createdOn: SortingOrder.Descending },
         limit: 500,
         lookup: {
           _id: { attachments: attachment.class.Attachment }
@@ -116,25 +116,38 @@
     if (channel === undefined) return
     const { message, attachments } = event.detail
     await client.addCollection(
-      telegram.class.NewMessage,
+      telegram.class.TelegramChannelMessage,
       core.space.Workspace,
       channel._id,
       channel._class,
-      'newMessages',
+      'items',
       {
         content: markupToHTML(message),
-        status: 'new',
+        status: TelegramMessageStatus.New,
+        history: false,
         attachments
       },
-      objectId
+      newId
     )
 
-    objectId = generateId()
+    newId = generateId()
     loading = false
   }
 
-  function getName (message: TelegramMessage, accounts: IdMap<PersonAccount>): string {
-    return message.incoming ? object.name : accounts.get(message.modifiedBy as Ref<PersonAccount>)?.name ?? ''
+  function getName (message: TelegramChannelMessage, accounts: IdMap<PersonAccount>): string {
+    if (message.status === TelegramMessageStatus.Incoming) {
+      return object.name
+    }
+
+    const account = accounts.get(message.modifiedBy as Ref<PersonAccount>)
+
+    if (account === undefined) {
+      return ''
+    }
+
+    const persons = Array.from($personByIdStore.values())
+
+    return persons.find((it) => it._id === account.person)?.name ?? ''
   }
 
   async function share (): Promise<void> {
@@ -161,7 +174,10 @@
     selected = selected
   }
 
-  function convertMessages (messages: TelegramMessage[], accounts: IdMap<PersonAccount>): SharedTelegramMessage[] {
+  function convertMessages (
+    messages: TelegramChannelMessage[],
+    accounts: IdMap<PersonAccount>
+  ): SharedTelegramMessage[] {
     return messages.map((m) => {
       return {
         ...m,
@@ -191,7 +207,7 @@
   let loading = false
 
   function getParticipants (
-    messages: TelegramMessage[],
+    messages: TelegramChannelMessage[],
     accounts: IdMap<PersonAccount>,
     object: Contact | undefined,
     employees: IdMap<Person>
@@ -296,8 +312,8 @@
       {:else if integration !== undefined && !integration.disabled}
         <AttachmentRefInput
           space={core.space.Workspace}
-          _class={telegram.class.NewMessage}
-          {objectId}
+          _class={telegram.class.TelegramChannelMessage}
+          objectId={newId}
           on:message={onMessage}
           bind:loading
         />

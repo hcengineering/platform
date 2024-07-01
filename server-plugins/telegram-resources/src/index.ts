@@ -14,7 +14,7 @@
 //
 
 import contact, { Channel, ChannelProvider, Contact, Employee, PersonAccount } from '@hcengineering/contact'
-import {
+import core, {
   Account,
   Class,
   Doc,
@@ -24,13 +24,17 @@ import {
   Hierarchy,
   Ref,
   Tx,
+  TxCollectionCUD,
   TxCreateDoc,
-  TxProcessor
+  TxProcessor,
+  TxRemoveDoc
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import telegram, { TelegramMessage } from '@hcengineering/telegram'
-import notification, { NotificationType } from '@hcengineering/notification'
+import telegram, { TelegramChannelMessage, TelegramChatMessage, TelegramMessageStatus } from '@hcengineering/telegram'
 import setting, { Integration } from '@hcengineering/setting'
+import chunter, { DirectMessage } from '@hcengineering/chunter'
+import { deepEqual } from 'fast-equals'
+import type { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -48,86 +52,25 @@ export async function FindMessages (
   if (channel.provider !== contact.channelProvider.Telegram) {
     return []
   }
-  const messages = await findAll(telegram.class.Message, { attachedTo: channel._id })
-  const newMessages = await findAll(telegram.class.NewMessage, { attachedTo: channel._id })
-  return [...messages, ...newMessages]
+  return await findAll(telegram.class.TelegramChannelMessage, { channelId: channel._id })
 }
 
 /**
  * @public
  */
-export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const res: Tx[] = []
-
-  const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
-  const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
-  if (channel !== undefined) {
-    if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
-      const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
-        lastMessage: message.sendOn
-      })
-      res.push(tx)
-    }
-
-    if (message.incoming) {
-      const docs = await control.findAll(notification.class.DocNotifyContext, {
-        attachedTo: channel._id,
-        user: message.modifiedBy
-      })
-      for (const doc of docs) {
-        // TODO: push inbox notifications
-        // res.push(
-        //   control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-        //     $push: {
-        //       txes: {
-        //         _id: tx._id as Ref<TxCUD<Doc>>,
-        //         modifiedOn: tx.modifiedOn,
-        //         modifiedBy: tx.modifiedBy,
-        //         isNew: true
-        //       }
-        //     }
-        //   })
-        // )
-        res.push(
-          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastUpdateTimestamp: tx.modifiedOn,
-            hidden: false
-          })
-        )
-      }
-      if (docs.length === 0) {
-        res.push(
-          control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
-            user: tx.modifiedBy,
-            attachedTo: channel._id,
-            attachedToClass: channel._class,
-            hidden: false,
-            lastUpdateTimestamp: tx.modifiedOn
-            // TODO: push inbox notifications
-            // txes: [
-            //   { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
-            // ]
-          })
-        )
-      }
-    }
-  }
-
-  return res
-}
-
-/**
- * @public
- */
-export async function IsIncomingMessage (
+export async function IsNewMessage (
   tx: Tx,
   doc: Doc,
   user: Ref<Account>,
   type: NotificationType,
   control: TriggerControl
 ): Promise<boolean> {
-  const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
-  return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
+  const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramChatMessage>)
+  const channelMessage = (await control.findAll(message.channelMessageClass, { _id: message.channelMessage }))[0] as
+    | TelegramChannelMessage
+    | undefined
+
+  return channelMessage !== undefined && !channelMessage.history
 }
 
 export async function GetCurrentEmployeeTG (
@@ -175,13 +118,106 @@ async function getContactChannel (
   return res?.value ?? ''
 }
 
+async function OnChannelMessageRemove (
+  originTx: TxCollectionCUD<Channel, TelegramChannelMessage>,
+  control: TriggerControl
+): Promise<Tx[]> {
+  const tx = TxProcessor.extractTx(originTx) as TxRemoveDoc<TelegramChannelMessage>
+
+  if (tx._class !== core.class.TxRemoveDoc || tx.objectClass !== telegram.class.TelegramChannelMessage) {
+    return []
+  }
+
+  const chatMessages = await control.findAll(telegram.class.TelegramChatMessage, { channelMessage: tx.objectId })
+
+  return chatMessages.map((it) => control.txFactory.createTxRemoveDoc(it._class, it.space, it._id))
+}
+
+async function OnChannelMessageCreate (
+  originTx: TxCollectionCUD<Channel, TelegramChannelMessage>,
+  control: TriggerControl
+): Promise<Tx[]> {
+  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<TelegramChannelMessage>
+
+  if (tx._class !== core.class.TxCreateDoc || tx.objectClass !== telegram.class.TelegramChannelMessage) {
+    return []
+  }
+
+  const message = TxProcessor.createDoc2Doc(tx)
+
+  if (message.status === TelegramMessageStatus.New) {
+    return []
+  }
+
+  const res: Tx[] = []
+  const sender = tx.modifiedBy as Ref<PersonAccount>
+  const receiver = message.receiver as Ref<PersonAccount>
+
+  if (receiver === undefined) {
+    return []
+  }
+
+  const accIds = [sender, receiver].sort()
+  const allDirects = await control.findAll(chunter.class.DirectMessage, {})
+
+  let direct: Ref<DirectMessage> | undefined
+  for (const dm of allDirects) {
+    const members: Ref<Account>[] = dm.members.sort()
+    if (deepEqual(members, accIds)) {
+      direct = dm._id
+      break
+    }
+  }
+
+  if (direct === undefined) {
+    const directTx = control.txFactory.createTxCreateDoc(chunter.class.DirectMessage, core.space.Space, {
+      name: '',
+      description: '',
+      private: true,
+      archived: false,
+      members: accIds
+    })
+
+    direct = directTx.objectId
+  }
+
+  const createTx = control.txFactory.createTxCreateDoc<TelegramChatMessage>(
+    telegram.class.TelegramChatMessage,
+    direct,
+    {
+      attachedTo: direct,
+      attachedToClass: chunter.class.DirectMessage,
+      channelId: message.attachedTo,
+      channelClass: message.attachedToClass,
+      collection: 'messages',
+      message: '',
+      channelMessage: message._id,
+      channelMessageClass: message._class
+    },
+    undefined,
+    message.modifiedOn
+  )
+
+  res.push(
+    control.txFactory.createTxCollectionCUD<DirectMessage, TelegramChatMessage>(
+      chunter.class.DirectMessage,
+      direct,
+      core.space.Space,
+      'messages',
+      createTx
+    )
+  )
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnMessageCreate
+    OnChannelMessageRemove,
+    OnChannelMessageCreate
   },
   function: {
-    IsIncomingMessage,
+    IsNewMessage,
     FindMessages,
     GetCurrentEmployeeTG,
     GetIntegrationOwnerTG

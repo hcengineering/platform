@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type Ref, type Space } from '@hcengineering/core'
+import core, { type Class, type Doc, type Domain, DOMAIN_TX, type Ref, type Space } from '@hcengineering/core'
 import {
   migrateSpace,
   tryMigrate,
@@ -22,7 +22,28 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { telegramId } from '@hcengineering/telegram'
+import { DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
+
 import { DOMAIN_TELEGRAM } from '.'
+
+const DOMAIN_ACTIVITY = 'activity' as Domain
+
+async function removeDeprecatedClasses (client: MigrationClient): Promise<void> {
+  await client.deleteMany(DOMAIN_TELEGRAM, { _class: 'telegram:class:Message' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_TELEGRAM, { _class: 'telegram:class:NewMessage' as Ref<Class<Doc>> })
+
+  await client.deleteMany(DOMAIN_NOTIFICATION, { attachedToClass: 'telegram:class:Message' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_NOTIFICATION, { attachedToClass: 'telegram:class:NewMessage' as Ref<Class<Doc>> })
+
+  await client.deleteMany(DOMAIN_TX, { objectClass: 'telegram:class:Message' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_TX, { objectClass: 'telegram:class:NewMessage' as Ref<Class<Doc>> })
+
+  await client.deleteMany(DOMAIN_TX, { 'tx.objectClass': 'telegram:class:Message' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_TX, { 'tx.objectClass': 'telegram:class:NewMessage' as Ref<Class<Doc>> })
+
+  await client.deleteMany(DOMAIN_ACTIVITY, { objectClass: 'telegram:class:Message' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_ACTIVITY, { objectClass: 'telegram:class:NewMessage' as Ref<Class<Doc>> })
+}
 
 export const telegramOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -31,6 +52,12 @@ export const telegramOperation: MigrateOperation = {
         state: 'removeDeprecatedSpace',
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'telegram:space:Telegram' as Ref<Space>, core.space.Workspace, [DOMAIN_TELEGRAM])
+        }
+      },
+      {
+        state: 'removeDeprecatedClasses',
+        func: async (client: MigrationClient) => {
+          await removeDeprecatedClasses(client)
         }
       }
     ])

@@ -70,6 +70,8 @@ import {
   getMessageLocation
 } from './navigation'
 
+export { default as ChatMessagePresenter } from './components/chat-message/ChatMessagePresenter.svelte'
+export { default as ChatMessageContent } from './components/chat-message/ChatMessageContent.svelte'
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'

@@ -16,12 +16,13 @@
 <script lang="ts">
   import { Contact, Employee, Organization } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
+  import { IconSize } from '@hcengineering/ui'
+
   import contact from '../plugin'
   import EmployeePresenter from './EmployeePresenter.svelte'
-
   import OrganizationPresenter from './OrganizationPresenter.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
-  import { IconSize } from '@hcengineering/ui'
+  import { isEmployee } from '../utils'
 
   export let value: Contact
   export let inline: boolean = false
@@ -34,11 +35,6 @@
     const client = getClient()
     const hierarchy = client.getHierarchy()
     return hierarchy.isDerived(value._class, contact.class.Person)
-  }
-  function isEmployee (value: Contact): boolean {
-    const client = getClient()
-    const hierarchy = client.getHierarchy()
-    return hierarchy.isDerived(value._class, contact.mixin.Employee)
   }
   const toOrg = (contact: Contact) => contact as Organization
   const toEmployee = (contact: Contact) => contact as Employee
