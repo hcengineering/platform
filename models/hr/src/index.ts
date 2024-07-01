@@ -341,7 +341,7 @@ export function createModel (builder: Builder): void {
         component: hr.component.CreateDepartment,
         element: 'top',
         fillProps: {
-          _id: 'space'
+          _id: 'parent'
         }
       },
       label: hr.string.CreateDepartment,
@@ -357,9 +357,9 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.Archive,
-      label: view.string.Archive,
-      icon: view.icon.Archive,
+      action: view.actionImpl.Delete,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
       input: 'any',
       category: hr.category.HR,
       keyBinding: ['Meta + Backspace'],
@@ -369,7 +369,7 @@ export function createModel (builder: Builder): void {
       },
       target: hr.class.Department,
       context: { mode: ['context', 'browser'], group: 'tools' },
-      override: [view.action.Archive, view.action.Delete]
+      override: [view.action.Delete]
     },
     hr.action.ArchiveDepartment
   )
