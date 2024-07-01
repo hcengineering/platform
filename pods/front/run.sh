@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export ACCOUNTS_URL=http://localhost:3333
 export UPLOAD_URL=http://localhost:3333/files
