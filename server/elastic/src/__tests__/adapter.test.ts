@@ -44,7 +44,7 @@ describe('Elastic Adapter', () => {
       _class: ['class1' as Ref<Class<Doc>>],
       modifiedBy: 'andrey' as Ref<Account>,
       modifiedOn: 0,
-      space: 'space1' as Ref<Space>,
+      space: ['space1' as Ref<Space>],
       content0: 'hey there!'
     }
     await adapter.index(doc)
