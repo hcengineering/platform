@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
+  import core, { Account, reduceCalls, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonIcon, IconSquareExpand, Label, ModernButton, ModernEditbox, TextArea, Toggle } from '@hcengineering/ui'
 
@@ -52,10 +52,8 @@
 
     await client.update(type, { [field]: value })
   }
-  let queueIndex = 0
-  let promise: Promise<void> | undefined
 
-  async function updateMembers (members: Ref<Account>[]): Promise<void> {
+  const changeMembers = reduceCalls(async function changeMembers (members: Ref<Account>[]): Promise<void> {
     if (disabled || type === undefined) {
       return
     }
@@ -80,18 +78,7 @@
       ops.update(type, { $pull: { members: pullMem } })
     }
     await ops.commit()
-  }
-
-  async function changeMembers (members: Ref<Account>[]): Promise<void> {
-    const qIndex = ++queueIndex
-    if (promise !== undefined) {
-      await promise
-    }
-    if (qIndex !== queueIndex) {
-      return
-    }
-    promise = updateMembers(members)
-  }
+  })
 </script>
 
 {#if descriptor !== undefined}
