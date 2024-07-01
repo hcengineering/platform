@@ -13,7 +13,7 @@ import core, {
   type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
-import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import { broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
   getCurrentWorkspaceUrl,
@@ -27,7 +27,6 @@ import {
   getCurrentLocation,
   locationStorageKeyId,
   navigate,
-  networkStatus,
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -35,14 +34,11 @@ import plugin from './plugin'
 import { workspaceCreating } from './utils'
 
 export const versionError = writable<string | undefined>(undefined)
+const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
 let _client: AccountClient | undefined
 let _clientSet: boolean = false
-
-addEventListener(client.event.NetworkRequests, async (event: string, val: number) => {
-  networkStatus.set(val)
-})
 
 export async function disconnect (): Promise<void> {
   if (_client !== undefined) {
@@ -211,7 +207,14 @@ export async function connect (title: string): Promise<Client | undefined> {
                   version !== undefined ? versionToString(version) : ''
                 )
                 if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-                  location.reload()
+                  if (typeof sessionStorage !== 'undefined') {
+                    if (sessionStorage.getItem(versionStorageKey) !== serverVersion.version) {
+                      sessionStorage.setItem(versionStorageKey, serverVersion.version)
+                      location.reload()
+                    }
+                  } else {
+                    location.reload()
+                  }
                   versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
                 } else {
                   versionError.set(undefined)
