@@ -24,6 +24,8 @@
   export let id: string | undefined = undefined
   export let name: string | undefined = undefined
   export let disabled: boolean = false
+  export let maxlength: string | undefined = undefined
+
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
@@ -50,6 +52,7 @@
       class:nolabel={!label}
       {id}
       {name}
+      {maxlength}
       bind:value
       on:blur
       on:change

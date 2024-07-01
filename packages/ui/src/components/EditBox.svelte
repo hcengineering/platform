@@ -40,6 +40,8 @@
   export let required: boolean = false
   export let uppercase: boolean = false
   export let propagateClick: boolean = false
+  export let maxlength: string | undefined = undefined
+
 
   const dispatch = createEventDispatcher()
 
@@ -138,6 +140,7 @@
     {#if format === 'password'}
       <input
         {disabled}
+        {maxlength}
         style:width={maxWidth}
         id="userPassword"
         bind:this={input}
@@ -154,7 +157,8 @@
       />
     {:else if format === 'number'}
       <input
-        {disabled}
+        {disabled}     
+        {maxlength}
         style:width={maxWidth}
         bind:this={input}
         type="number"
@@ -172,6 +176,7 @@
     {:else}
       <input
         {disabled}
+        {maxlength}
         style:width={maxWidth}
         bind:this={input}
         type="text"

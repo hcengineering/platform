@@ -102,12 +102,14 @@
         kind={'large-style'}
         autoFocus
         focusIndex={1}
+        maxlength="50"
       />
       <EditBox
         placeholder={contact.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         kind={'large-style'}
         focusIndex={2}
+        maxlength="50"
       />
       <div class="mt-1">
         <EditBox
@@ -115,6 +117,7 @@
           bind:value={object.city}
           kind={'small-style'}
           focusIndex={3}
+          maxlength="50"
         />
       </div>
     </div>

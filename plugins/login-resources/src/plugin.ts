@@ -22,7 +22,7 @@ import login, { loginId } from '@hcengineering/login'
 export default mergeIds(loginId, login, {
   status: {
     RequiredField: '' as StatusCode<{ field: string }>,
-    FieldsDoNotMatch: '' as StatusCode<{ field: string, field2: string }>,
+    FieldsDoNotMatch: '' as StatusCode<{ field: string; field2: string }>,
     ConnectingToServer: '' as StatusCode,
     IncorrectValue: '' as StatusCode<{ field: string }>
   },
@@ -59,6 +59,7 @@ export default mergeIds(loginId, login, {
     ConfirmationSent: '' as IntlString,
     ConfirmationSent2: '' as IntlString,
     Slogan: '' as IntlString,
-    ContinueWith: '' as IntlString
+    ContinueWith: '' as IntlString,
+    InvalidEmail: '' as IntlString
   }
 })

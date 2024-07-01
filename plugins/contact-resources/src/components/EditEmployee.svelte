@@ -127,6 +127,7 @@
             disabled={!editable}
             on:change={firstNameChange}
             focusIndex={1}
+            maxlength="50"
           />
         {:else}
           {firstName}
@@ -140,6 +141,7 @@
             on:change={lastNameChange}
             disabled={!editable}
             focusIndex={2}
+            maxlength="50"
           />
         {:else}
           {lastName}
