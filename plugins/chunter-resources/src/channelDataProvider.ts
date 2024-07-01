@@ -20,19 +20,21 @@ import {
   type DocumentQuery,
   getCurrentAccount,
   isOtherDay,
+  type Lookup,
   type Ref,
   SortingOrder,
   type Timestamp
 } from '@hcengineering/core'
-
 import { derived, get, type Readable, writable } from 'svelte/store'
 import { onDestroy } from 'svelte'
 import { type ActivityMessage } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages } from '@hcengineering/activity-resources'
+import contact from '@hcengineering/contact'
+import { type ChatMessage, type ExternalChannel, type ExternalChatMessage } from '@hcengineering/chunter'
 
 import chunter from './plugin'
-import { type ChatMessage } from '@hcengineering/chunter'
+import { allChannelId, hulyChannelId } from './utils'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -72,8 +74,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly tailQuery = createQuery(true)
 
   private chatId: Ref<Doc> | undefined = undefined
+
+  readonly externalChannel: Ref<ExternalChannel> | undefined = undefined
+
   private readonly lastViewedTimestamp: Timestamp | undefined = undefined
-  private readonly msgClass: Ref<Class<ActivityMessage>>
+  readonly msgClass: Ref<Class<ActivityMessage>>
   private selectedMsgId: Ref<ActivityMessage> | undefined = undefined
   private tailStart: Timestamp | undefined = undefined
 
@@ -104,17 +109,35 @@ export class ChannelDataProvider implements IChannelDataProvider {
     _class: Ref<Class<ActivityMessage>>,
     lastViewedTimestamp?: Timestamp,
     selectedMsgId?: Ref<ActivityMessage>,
-    loadAll = false
+    loadAll = false,
+    externalChannel?: Ref<ExternalChannel>
   ) {
     this.chatId = chatId
     this.lastViewedTimestamp = lastViewedTimestamp
-    this.msgClass = _class
     this.selectedMsgId = selectedMsgId
+    this.externalChannel = externalChannel
+    this.msgClass = this.getMessageClass(_class, externalChannel)
+
     this.loadData(loadAll)
 
     onDestroy(() => {
       this.destroy()
     })
+  }
+
+  private getMessageClass (
+    baseClass: Ref<Class<ActivityMessage>>,
+    externalChannel?: Ref<ExternalChannel>
+  ): Ref<Class<ActivityMessage>> {
+    if (externalChannel === undefined) {
+      return baseClass
+    }
+
+    if ([allChannelId, hulyChannelId].includes(externalChannel)) {
+      return baseClass
+    }
+
+    return chunter.class.ExternalChatMessage
   }
 
   public destroy (): void {
@@ -164,7 +187,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     this.metadataQuery.query(
       this.msgClass,
-      { attachedTo: this.chatId },
+      this.getBaseQuery(),
       (res) => {
         this.updatesDates(res)
         this.metadataStore.set(res)
@@ -215,6 +238,39 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(true)
   }
 
+  private getBaseQuery (): DocumentQuery<ActivityMessage> {
+    const base: DocumentQuery<ActivityMessage> = { attachedTo: this.chatId }
+
+    if (this.externalChannel === undefined || this.externalChannel === allChannelId) {
+      return base
+    }
+
+    if (this.externalChannel === hulyChannelId) {
+      return { ...base, channelId: { $exists: false } }
+    }
+
+    return { ...base, channelId: this.externalChannel }
+  }
+
+  private getLookup (): Lookup<ActivityMessage> {
+    if (this.externalChannel !== hulyChannelId) {
+      const lookup: Lookup<ExternalChatMessage> = {
+        _id: { attachments: attachment.class.Attachment },
+        channelMessage: [
+          contact.class.ChannelMessage,
+          {
+            _id: { attachments: attachment.class.Attachment }
+          }
+        ]
+      }
+
+      return lookup
+    }
+    return {
+      _id: { attachments: attachment.class.Attachment }
+    }
+  }
+
   private loadTail (
     start?: Timestamp,
     afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>,
@@ -232,7 +288,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.tailQuery.query(
       this.msgClass,
       {
-        attachedTo: this.chatId,
+        ...this.getBaseQuery(),
         ...query,
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
@@ -248,9 +304,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       },
       {
         sort: { createdOn: SortingOrder.Descending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment }
-        }
+        lookup: this.getLookup()
       }
     )
   }
@@ -291,18 +345,16 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     const client = getClient()
     const messages = await client.findAll(
-      chunter.class.ChatMessage,
+      this.msgClass,
       {
-        attachedTo: this.chatId,
+        ...this.getBaseQuery(),
         _id: { $nin: skipIds },
         createdOn: isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
       },
       {
         limit: limit ?? this.limit,
         sort: { createdOn: isBackward ? SortingOrder.Descending : SortingOrder.Ascending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment }
-        }
+        lookup: this.getLookup()
       }
     )
 

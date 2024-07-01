@@ -43,6 +43,8 @@
   export let loading: boolean = false
   export let focusIndex: number | undefined = undefined
   export let hasDropdown: boolean = true
+  export let fullWidth = true
+  export let mainButtonDisabled: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -53,14 +55,14 @@
   }
 </script>
 
-<div class="w-full flex-row-center">
+<div class="flex-row-center" class:w-full={fullWidth}>
   <Button
     {focusIndex}
     width="100%"
     {icon}
     {size}
     {kind}
-    disabled={disabled || loading}
+    disabled={disabled || loading || mainButtonDisabled}
     shape={hasDropdown ? 'rectangle-right' : undefined}
     {justify}
     shrink={1}

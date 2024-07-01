@@ -14,22 +14,24 @@
 -->
 <script lang="ts">
   import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, {
     ActivityExtension,
     ActivityMessage,
     ActivityMessagesFilter,
-    DisplayActivityMessage
+    DisplayActivityMessage,
+    GroupMessagesResources
   } from '@hcengineering/activity'
   import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import {
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
-    canGroupMessages
+    canGroupMessages,
+    getGroupMessagesResources
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
-  import { tick, beforeUpdate, afterUpdate } from 'svelte'
+  import { tick, beforeUpdate, afterUpdate, onDestroy } from 'svelte'
   import { getResource } from '@hcengineering/platform'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
@@ -43,7 +45,7 @@
   export let objectClass: Ref<Class<Doc>>
   export let objectId: Ref<Doc>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
-  export let scrollElement: HTMLDivElement | undefined = undefined
+  export let scrollElement: HTMLDivElement | null | undefined = undefined
   export let startFromBottom = false
   export let selectedFilters: Ref<ActivityMessagesFilter>[] = []
   export let withDates: boolean = true
@@ -73,6 +75,11 @@
   const newTimestampStore = provider.newTimestampStore
   const datesStore = provider.datesStore
   const metadataStore = provider.metadataStore
+
+  const previousMessageQuery = createQuery()
+
+  let groupResources: GroupMessagesResources = new Map()
+  let previousMessage: ActivityMessage | undefined = undefined
 
   let messages: ActivityMessage[] = []
   let displayMessages: DisplayActivityMessage[] = []
@@ -113,12 +120,51 @@
 
   $: displayMessages = filterChatMessages(messages, filters, filterResources, objectClass, selectedFilters)
 
-  inboxClient.inboxNotificationsByContext.subscribe(() => {
+  const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
     readViewportMessages()
   })
 
+  onDestroy(() => {
+    unsubscribe()
+  })
+
+  $: newTimestamp = $newTimestampStore
+  $: separatorIndex =
+    newTimestamp !== undefined
+      ? displayMessages.findIndex((message) => (message.createdOn ?? 0) >= (newTimestamp ?? 0))
+      : -1
+  $: void initializeScroll(isLoading, separatorElement, separatorIndex)
+
+  $: void getGroupMessagesResources(client).then((res) => {
+    groupResources = res
+  })
+
+  $: previosMessageId = getPreviousMessageId(displayMessages, $metadataStore)
+
+  $: if (previosMessageId !== undefined) {
+    previousMessageQuery.query(provider.msgClass, { _id: previosMessageId }, (res) => {
+      previousMessage = res[0]
+    })
+  } else {
+    previousMessage = undefined
+    previousMessageQuery.unsubscribe()
+  }
+
+  function getPreviousMessageId (
+    displayMessages: DisplayActivityMessage[],
+    metadata: MessageMetadata[]
+  ): Ref<ActivityMessage> | undefined {
+    const lastLoaded = displayMessages[0]
+
+    if (lastLoaded === undefined) {
+      return undefined
+    }
+
+    return metadata.find((_, index) => metadata[index + 1]?._id === lastLoaded._id)?._id
+  }
+
   function scrollToBottom (afterScrollFn?: () => void): void {
-    if (scroller !== undefined && scrollElement !== undefined) {
+    if (scroller !== undefined && scrollElement != null) {
       scroller.scrollBy(scrollElement.scrollHeight)
       updateSelectedDate()
       afterScrollFn?.()
@@ -126,7 +172,7 @@
   }
 
   function scrollToSeparator (): void {
-    if (separatorElement && scrollElement) {
+    if (separatorElement !== undefined && scrollElement != null) {
       const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
       const messagesHeight = displayMessages
         .slice(separatorIndex)
@@ -143,19 +189,19 @@
     }
   }
 
-  function scrollToMessage () {
-    if (!selectedMessageId) {
+  function scrollToMessage (): void {
+    if (selectedMessageId === undefined) {
       return
     }
 
-    if (!scrollElement || !scrollContentBox) {
+    if (scrollElement == null || scrollContentBox == null) {
       setTimeout(scrollToMessage, 50)
     }
 
     const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
     const msgElement = messagesElements?.[selectedMessageId as any]
 
-    if (!msgElement) {
+    if (msgElement == null) {
       if (displayMessages.some(({ _id }) => _id === selectedMessageId)) {
         setTimeout(scrollToMessage, 50)
       }
@@ -175,7 +221,7 @@
   function jumpToDate (e: CustomEvent): void {
     const date = e.detail.date
 
-    if (!date || !scrollElement) {
+    if (date == null || scrollElement == null) {
       return
     }
 
@@ -203,7 +249,7 @@
 
     let offset = element?.offsetTop
 
-    if (!offset || !scroller) {
+    if (offset === undefined || scroller == null) {
       return
     }
 
@@ -213,7 +259,7 @@
   }
 
   function updateShouldScrollToNew (): void {
-    if (scrollElement) {
+    if (scrollElement != null) {
       const { offsetHeight, scrollHeight, scrollTop } = scrollElement
       const offset = 100
 
@@ -222,7 +268,7 @@
   }
 
   function shouldLoadMoreUp (): boolean {
-    if (!scrollElement) {
+    if (scrollElement == null) {
       return false
     }
 
@@ -230,7 +276,7 @@
   }
 
   function shouldLoadMoreDown (): boolean {
-    if (!scrollElement) {
+    if (scrollElement == null) {
       return false
     }
 
@@ -277,7 +323,7 @@
   }
 
   function isLastMessageViewed (): boolean {
-    if (!scrollElement) {
+    if (scrollElement == null) {
       return false
     }
 
@@ -291,7 +337,7 @@
     const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
     const msgElement = messagesElements?.[last._id as any]
 
-    if (!msgElement) {
+    if (msgElement === undefined) {
       return false
     }
 
@@ -394,15 +440,13 @@
     }
   }
 
-  $: newTimestamp = $newTimestampStore
-  $: separatorIndex =
-    newTimestamp !== undefined
-      ? displayMessages.findIndex((message) => (message.createdOn ?? 0) >= (newTimestamp ?? 0))
-      : -1
-  $: void initializeScroll(isLoading, separatorElement, separatorIndex)
-
   let isInitialScrolling = true
-  async function initializeScroll (isLoading: boolean, separatorElement?: HTMLDivElement, separatorIndex?: number) {
+
+  async function initializeScroll (
+    isLoading: boolean,
+    separatorElement?: HTMLDivElement,
+    separatorIndex?: number
+  ): Promise<void> {
     if (isLoading || isScrollInitialized) {
       return
     }
@@ -447,7 +491,7 @@
       if (isReload) {
         reinitializeScroll()
       }
-    } else {
+    } else if (selectedMessageId === undefined) {
       provider.jumpToEnd()
       reinitializeScroll()
     }
@@ -455,7 +499,7 @@
 
   $: adjustScrollPosition(selectedMessageId)
 
-  function waitLastMessageRenderAndRead (onComplete?: () => void) {
+  function waitLastMessageRenderAndRead (onComplete?: () => void): void {
     if (isLastMessageViewed()) {
       readViewportMessages()
       shouldScrollToNew = true
@@ -488,7 +532,7 @@
     await tick() // wait until the DOM is updated
   }
 
-  async function restoreScroll () {
+  async function restoreScroll (): Promise<void> {
     if (!scrollElement || !scroller) {
       scrollToRestore = 0
       return
@@ -568,7 +612,7 @@
     }
   })
 
-  async function compensateAside (isOpened: boolean) {
+  async function compensateAside (isOpened: boolean): Promise<void> {
     if (!isInitialScrolling && isScrollAtBottom && !wasAsideOpened && isOpened) {
       await wait()
       scrollToBottom()
@@ -578,17 +622,6 @@
   }
 
   $: void compensateAside(isAsideOpened)
-
-  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage) {
-    let prevMetadata: MessageMetadata | undefined = undefined
-
-    if (prevMessage === undefined) {
-      const metadata = $metadataStore
-      prevMetadata = metadata.find((_, index) => metadata[index + 1]?._id === message._id)
-    }
-
-    return canGroupMessages(message, prevMessage ?? prevMetadata)
-  }
 </script>
 
 {#if isLoading}
@@ -625,7 +658,11 @@
 
       {#each displayMessages as message, index (message._id)}
         {@const isSelected = message._id === selectedMessageId}
-        {@const canGroup = canGroupChatMessages(message, displayMessages[index - 1])}
+        {@const canGroup = canGroupMessages(
+          message,
+          index === 0 ? previousMessage : displayMessages[index - 1],
+          groupResources
+        )}
 
         {#if separatorIndex === index}
           <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
@@ -663,7 +700,13 @@
       <ActivityExtensionComponent
         kind="input"
         {extensions}
-        props={{ object, boundary: scrollElement, collection, autofocus: true }}
+        props={{
+          object,
+          boundary: scrollElement,
+          collection,
+          autofocus: true,
+          externalChannel: provider.externalChannel
+        }}
       />
     </div>
   {/if}

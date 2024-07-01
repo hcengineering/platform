@@ -29,7 +29,8 @@ import {
   type Organization,
   type Person,
   type PersonAccount,
-  type Status
+  type Status,
+  type ChannelMessage
 } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -155,6 +156,20 @@ export class TChannel extends TAttachedDoc implements Channel {
     lastMessage?: Timestamp
 }
 
+@Model(contact.class.ChannelMessage, core.class.AttachedDoc, DOMAIN_CHANNEL)
+export class TChannelMessage extends TAttachedDoc implements ChannelMessage {
+  declare attachedTo: Ref<Channel>
+  declare attachedToClass: Ref<Class<Channel>>
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: number
+
+  @Prop(TypeString(), core.string.String)
+  @Index(IndexKind.FullText)
+    content!: string
+
+  editedOn?: Timestamp
+}
+
 @Model(contact.class.Person, contact.class.Contact)
 @UX(contact.string.Person, contact.icon.Person, 'PRSN', 'name', undefined, contact.string.Persons)
 export class TPerson extends TContact implements Person {
@@ -230,7 +245,8 @@ export function createModel (builder: Builder): void {
     TChannel,
     TStatus,
     TMember,
-    TContactsTab
+    TContactsTab,
+    TChannelMessage
   )
 
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})

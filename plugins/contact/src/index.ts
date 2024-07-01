@@ -60,6 +60,14 @@ export interface Channel extends AttachedDoc {
   lastMessage?: Timestamp
 }
 
+export interface ChannelMessage extends AttachedDoc {
+  attachedTo: Ref<Channel>
+  attachedToClass: Ref<Class<Channel>>
+  attachments?: number
+  content: string
+  editedOn?: Timestamp
+}
+
 /**
  * @public
  */
@@ -193,7 +201,8 @@ export const contactPlugin = plugin(contactId, {
     Organization: '' as Ref<Class<Organization>>,
     PersonAccount: '' as Ref<Class<PersonAccount>>,
     Status: '' as Ref<Class<Status>>,
-    ContactsTab: '' as Ref<Class<ContactsTab>>
+    ContactsTab: '' as Ref<Class<ContactsTab>>,
+    ChannelMessage: '' as Ref<Class<ChannelMessage>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>

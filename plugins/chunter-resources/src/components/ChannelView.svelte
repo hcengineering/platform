@@ -25,7 +25,7 @@
   import { DocNotifyContext } from '@hcengineering/notification'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
-  import { Channel } from '@hcengineering/chunter'
+  import { Channel, ExternalChannel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
 
   import ChannelComponent from './Channel.svelte'
@@ -47,6 +47,7 @@
   let isAsideShown = false
 
   let filters: Ref<ActivityMessagesFilter>[] = []
+  let selectedChannelId: Ref<ExternalChannel> | undefined = undefined
 
   locationStore.subscribe((newLocation) => {
     isThreadOpened = newLocation.path[4] != null
@@ -80,8 +81,7 @@
 
 <div class="popupPanel panel" class:embedded>
   <ChannelHeader
-    _id={object._id}
-    _class={object._class}
+    bind:selectedChannelId
     {object}
     {allowClose}
     {withAside}
@@ -115,6 +115,7 @@
             {context}
             {object}
             {filters}
+            {selectedChannelId}
             isAsideOpened={(withAside && isAsideShown) || isThreadOpened}
           />
         {/if}

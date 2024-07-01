@@ -55,6 +55,7 @@
   export let autofocus: FocusPosition = false
   export let canEmbedFiles = true
   export let canEmbedImages = true
+  export let disableSubmit = false
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -69,7 +70,7 @@
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
   $: isEmptyContent = isEmpty || isEmptyMarkup(content)
-  $: canSubmit = (haveAttachment || !isEmptyContent) && !loading
+  $: canSubmit = (haveAttachment || !isEmptyContent) && !loading && !disableSubmit
 
   function setContent (content: Markup): void {
     textEditor?.setContent(content)
@@ -102,10 +103,12 @@
     }
   }
 
-  let actions: RefAction[] = defaultRefActions.concat(...extraActions).sort((a, b) => a.order - b.order)
+  $: modelActions = [] as RefAction[]
+  $: actions = defaultRefActions.concat(...extraActions).sort((a, b) => a.order - b.order)
+  $: allActions = actions.concat(...modelActions).sort((a, b) => a.order - b.order)
 
-  void getModelRefActions().then((modelActions) => {
-    actions = actions.concat(...modelActions).sort((a, b) => a.order - b.order)
+  void getModelRefActions().then((res) => {
+    modelActions = res
   })
 
   export function submit (): void {
@@ -194,7 +197,7 @@
     <div class="buttons-panel flex-between clear-mins">
       <div class="buttons-group {shrinkButtons ? 'xxsmall-gap' : 'xsmall-gap'}">
         {#if showActions}
-          {#each actions as a}
+          {#each allActions as a}
             <Button
               disabled={a.disabled}
               icon={a.icon}
@@ -216,18 +219,22 @@
       </div>
 
       {#if showSend}
-        <Button
-          {loading}
-          disabled={!canSubmit}
-          icon={iconSend ?? Send}
-          iconProps={{ size: buttonSize }}
-          kind={kindSend}
-          size={buttonSize}
-          showTooltip={{
-            label: labelSend ?? textEditorPlugin.string.Send
-          }}
-          on:click={submit}
-        />
+        {#if $$slots.submit}
+          <slot name="submit" {loading} {canSubmit} />
+        {:else}
+          <Button
+            {loading}
+            disabled={!canSubmit}
+            icon={iconSend ?? Send}
+            iconProps={{ size: buttonSize }}
+            kind={kindSend}
+            size={buttonSize}
+            showTooltip={{
+              label: labelSend ?? textEditorPlugin.string.Send
+            }}
+            on:click={submit}
+          />
+        {/if}
       {/if}
     </div>
   {/if}

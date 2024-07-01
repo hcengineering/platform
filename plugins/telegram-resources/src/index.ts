@@ -22,11 +22,10 @@ import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
 import Reconnect from './components/Reconnect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
-import TelegramMessageCreated from './components/activity/TelegramMessageCreated.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
 
 import telegram from './plugin'
-import { getCurrentEmployeeTG, getIntegrationOwnerTG } from './utils'
+import { getCurrentEmployeeTG, getIntegrationOwnerTG, createMessage, editMessage, canGroupMessages } from './utils'
 import SharedMessages from './components/SharedMessages.svelte'
 
 export default async (): Promise<Resources> => ({
@@ -38,12 +37,12 @@ export default async (): Promise<Resources> => ({
     SharedMessages,
     MessagePresenter
   },
-  activity: {
-    TelegramMessageCreated
-  },
   function: {
     GetCurrentEmployeeTG: getCurrentEmployeeTG,
-    GetIntegrationOwnerTG: getIntegrationOwnerTG
+    GetIntegrationOwnerTG: getIntegrationOwnerTG,
+    CreateMessage: createMessage,
+    EditMessage: editMessage,
+    CanGroupMessages: canGroupMessages
   },
   handler: {
     DisconnectHandler: async () => {

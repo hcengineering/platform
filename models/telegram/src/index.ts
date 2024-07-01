@@ -15,34 +15,23 @@
 //
 
 import activity from '@hcengineering/activity'
-import { type Channel } from '@hcengineering/contact'
-import { type Class, type Domain, IndexKind, type Ref, type Timestamp, type Type } from '@hcengineering/core'
-import {
-  ArrOf,
-  type Builder,
-  Collection,
-  Index,
-  Model,
-  Prop,
-  TypeBoolean,
-  TypeString,
-  TypeTimestamp,
-  UX
-} from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
-import contact from '@hcengineering/model-contact'
+import { type Account, type Class, type Domain, type Ref, type Type } from '@hcengineering/core'
+import { ArrOf, type Builder, Model, Prop, TypeBoolean, TypeString, UX } from '@hcengineering/model'
+import contact, { TChannelMessage } from '@hcengineering/model-contact'
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import setting from '@hcengineering/setting'
 import type {
-  NewTelegramMessage,
   SharedTelegramMessage,
   SharedTelegramMessages,
-  TelegramMessage
+  TelegramChannelMessage,
+  TelegramChatMessage,
+  TelegramMessageStatus
 } from '@hcengineering/telegram'
 import templates from '@hcengineering/templates'
 import view from '@hcengineering/view'
+import chunter, { TExternalChatMessage } from '@hcengineering/model-chunter'
+
 import telegram from './plugin'
-import notification from '@hcengineering/model-notification'
 
 export { telegramId } from '@hcengineering/telegram'
 export { telegramOperation } from './migration'
@@ -54,37 +43,23 @@ function TypeSharedMessage (): Type<SharedTelegramMessage> {
   return { _class: telegram.class.SharedMessage, label: telegram.string.SharedMessage }
 }
 
-@Model(telegram.class.Message, core.class.AttachedDoc, DOMAIN_TELEGRAM)
-export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
-  declare attachedTo: Ref<Channel>
-  declare attachedToClass: Ref<Class<Channel>>
-
-  @Prop(TypeString(), telegram.string.Content)
-  @Index(IndexKind.FullText)
-    content!: string
-
-  @Prop(TypeBoolean(), telegram.string.Incoming)
-    incoming!: boolean
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(TypeTimestamp(), core.string.Modified)
-    sendOn!: Timestamp
+@Model(telegram.class.TelegramChatMessage, chunter.class.ExternalChatMessage)
+export class TTelegramChatMessage extends TExternalChatMessage implements TelegramChatMessage {
+  declare channelMessage: Ref<TelegramChannelMessage>
+  declare channelMessageClass: Ref<Class<TelegramChannelMessage>>
 }
 
-@Model(telegram.class.NewMessage, core.class.AttachedDoc, DOMAIN_TELEGRAM)
-@UX(telegram.string.NewMessage)
-export class TNewTelegramMessage extends TAttachedDoc implements NewTelegramMessage {
-  @Prop(TypeString(), telegram.string.Content)
-  @Index(IndexKind.FullText)
-    content!: string
-
+@Model(telegram.class.TelegramChannelMessage, contact.class.ChannelMessage)
+export class TTelegramChannelMessage extends TChannelMessage implements TelegramChannelMessage {
   @Prop(TypeString(), telegram.string.Status)
-    status!: 'new' | 'sent'
+    status!: TelegramMessageStatus
 
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
+  @Prop(TypeBoolean(), core.string.Boolean)
+    history!: boolean
+
+  receiver?: Ref<Account>
+
+  telegramId?: number
 }
 
 @Model(telegram.class.SharedMessages, core.class.AttachedDoc, DOMAIN_TELEGRAM)
@@ -95,9 +70,9 @@ export class TSharedTelegramMessages extends TAttachedDoc implements SharedTeleg
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TTelegramMessage, TSharedTelegramMessages, TNewTelegramMessage)
+  builder.createModel(TTelegramChatMessage, TTelegramChannelMessage, TSharedTelegramMessages)
 
-  builder.mixin(telegram.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
+  builder.mixin(telegram.class.TelegramChatMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: telegram.component.MessagePresenter
   })
 
@@ -121,19 +96,6 @@ export function createModel (builder: Builder): void {
       func: telegram.function.GetIntegrationOwnerTG
     },
     telegram.templateField.IntegrationOwnerTG
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: telegram.class.Message,
-      action: 'create',
-      icon: contact.icon.Telegram,
-      component: telegram.activity.TelegramMessageCreated,
-      label: telegram.string.SharedMessage
-    },
-    telegram.ids.TelegramMessageCreatedActivityViewlet
   )
 
   builder.createDoc(
@@ -178,35 +140,7 @@ export function createModel (builder: Builder): void {
     telegram.ids.TelegramMessageSharedActivityViewlet
   )
 
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: telegram.string.Telegram,
-      icon: contact.icon.Telegram
-    },
-    telegram.ids.NotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: telegram.string.NewMessage,
-      generated: false,
-      allowedForAuthor: true,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: telegram.class.Message,
-      group: telegram.ids.NotificationGroup,
-      providers: {
-        [notification.providers.PlatformNotification]: true
-      }
-    },
-    telegram.ids.NewMessageNotification
-  )
-
-  builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.mixin(telegram.class.TelegramChannelMessage, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false,
     childProcessingAllowed: true
   })
@@ -221,6 +155,33 @@ export function createModel (builder: Builder): void {
       { createdBy: 1 },
       { createdOn: 1 },
       { createdOn: -1 }
+    ]
+  })
+
+  builder.createDoc(chunter.class.ChatExtension, core.space.Model, {
+    type: telegram.integrationType.Telegram,
+    messageClass: telegram.class.TelegramChatMessage,
+    threadMessageClass: telegram.class.TelegramChatMessage,
+    allowedChannelsTypes: [chunter.class.DirectMessage],
+    createMessageFn: telegram.function.CreateMessage,
+    editMessageFn: telegram.function.EditMessage,
+    options: {
+      editable: true,
+      removable: true,
+      attachmentsEditable: false
+    }
+  })
+
+  builder.mixin(telegram.class.TelegramChatMessage, core.class.Class, activity.mixin.ActivityMessageGroupProvider, {
+    fn: telegram.function.CanGroupMessages
+  })
+
+  builder.mixin(telegram.class.TelegramChatMessage, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [
+      activity.ids.AddReactionAction,
+      activity.ids.PinMessageAction,
+      activity.ids.UnpinMessageAction,
+      chunter.action.ReplyToThreadAction
     ]
   })
 }

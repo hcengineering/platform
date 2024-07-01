@@ -17,46 +17,88 @@
   import { deepEqual } from 'fast-equals'
 
   import { DirectMessage } from '@hcengineering/chunter'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { SelectUsersPopup } from '@hcengineering/contact-resources'
+  import contactPlugin, { Contact, Person, PersonAccount } from '@hcengineering/contact'
+  import core, { AccountRole, getCurrentAccount, IdMap, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
+  import { personByIdStore } from '@hcengineering/contact-resources'
 
   import chunter from '../../../plugin'
-  import { buildDmName } from '../../../utils'
+  import { getDmNameByContacts } from '../../../utils'
   import ChannelMembers from '../../ChannelMembers.svelte'
   import { openChannel } from '../../../navigation'
+  import SelectDirectUsersPopup from './SelectDirectUsersPopup.svelte'
+  import { SelectDirectUsersResult } from '../types'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const myAccId = getCurrentAccount()._id
-  const query = createQuery()
 
-  let employeeIds: Ref<Employee>[] = []
+  let contactIds: Ref<Contact>[] = []
+  let persons: Contact[] = []
   let dmName = ''
-  let accounts: PersonAccount[] = []
   let hidden = true
+  let isExternal = false
 
-  $: void loadDmName(accounts).then((r) => {
-    dmName = r
-  })
-  $: query.query(contact.class.PersonAccount, { person: { $in: employeeIds } }, (res) => {
-    accounts = res
-  })
+  $: void loadContacts(contactIds, $personByIdStore, isExternal)
 
-  async function loadDmName (employeeAccounts: PersonAccount[]): Promise<string> {
-    return await buildDmName(client, employeeAccounts)
+  async function loadContacts (ids: Ref<Contact>[], personById: IdMap<Person>, isExternal: boolean): Promise<void> {
+    const result = []
+
+    for (const _id of ids) {
+      const person = personById.get(_id)
+
+      if (person !== undefined) {
+        result.push(person)
+      } else if (isExternal) {
+        const contact = await client.findOne(contactPlugin.class.Contact, { _id })
+        if (contact !== undefined) {
+          result.push(contact)
+        }
+      }
+    }
+
+    persons = result
+    dmName = getDmNameByContacts(persons)
+  }
+
+  async function getAccounts (): Promise<PersonAccount[]> {
+    const employeeAccounts = await client.findAll(contactPlugin.class.PersonAccount, { person: { $in: contactIds } })
+
+    if (!isExternal) {
+      return employeeAccounts
+    }
+
+    const accountsPersons = new Set(employeeAccounts.map(({ person }) => person))
+
+    for (const _id of contactIds) {
+      if (accountsPersons.has(_id)) {
+        continue
+      }
+
+      const id = await client.createDoc(contactPlugin.class.PersonAccount, core.space.Model, {
+        email: `contact:${_id}`,
+        person: _id,
+        role: AccountRole.User
+      })
+      const acc = await client.findOne(contactPlugin.class.PersonAccount, { _id: id })
+      if (acc !== undefined) {
+        employeeAccounts.push(acc)
+      }
+    }
+
+    return employeeAccounts
   }
 
   async function createDirectMessage (): Promise<void> {
-    const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
-    const accIds = [myAccId, ...employeeAccounts.filter(({ _id }) => _id !== myAccId).map(({ _id }) => _id)].sort()
+    const accounts = await getAccounts()
+    const accIds = [myAccId, ...accounts.filter(({ _id }) => _id !== myAccId).map(({ _id }) => _id)].sort()
 
     const existingDms = await client.findAll(chunter.class.DirectMessage, {})
 
     let direct: DirectMessage | undefined
+
     for (const dm of existingDms) {
       if (deepEqual(dm.members.sort(), accIds)) {
         direct = dm
@@ -64,37 +106,31 @@
       }
     }
 
-    const dmId =
-      direct?._id ??
-      (await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-        name: '',
-        description: '',
-        private: true,
-        archived: false,
-        members: accIds
-      }))
+    if (direct !== undefined) {
+      const context = await client.findOne(notification.class.DocNotifyContext, {
+        user: myAccId,
+        attachedTo: direct._id,
+        attachedToClass: chunter.class.DirectMessage
+      })
 
-    const context = await client.findOne(notification.class.DocNotifyContext, {
-      user: myAccId,
-      attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage
-    })
-
-    if (context !== undefined) {
-      await client.diffUpdate(context, { hidden: false })
-      openChannel(dmId, chunter.class.DirectMessage)
-
+      if (context !== undefined) {
+        await client.diffUpdate(context, { hidden: false })
+      }
+      openChannel(direct._id, chunter.class.DirectMessage)
+      dispatch('close')
       return
     }
 
-    await client.createDoc(notification.class.DocNotifyContext, dmId, {
-      user: myAccId,
-      attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage,
-      hidden: false
+    const dmId = await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
+      name: '',
+      description: '',
+      private: true,
+      archived: false,
+      members: accIds
     })
 
     openChannel(dmId, chunter.class.DirectMessage)
+    dispatch('close')
   }
 
   function handleCancel (): void {
@@ -111,19 +147,21 @@
 
   function openSelectUsersPopup (closeOnClose: boolean): void {
     showPopup(
-      SelectUsersPopup,
+      SelectDirectUsersPopup,
       {
         okLabel: presentation.string.Next,
         skipCurrentAccount: false,
         skipInactive: true,
-        selected: employeeIds,
+        selected: contactIds,
         showStatus: true
       },
       'top',
-      (result?: Ref<Employee>[]) => {
-        if (result != null) {
-          employeeIds = result
+      (result?: SelectDirectUsersResult) => {
+        const selected = result?.selected ?? []
+        if (selected.length > 0) {
+          contactIds = selected
           hidden = false
+          isExternal = result?.isExternal ?? false
         } else if (closeOnClose) {
           dispatch('close')
         }
@@ -139,7 +177,7 @@
   {hidden}
   okLabel={presentation.string.Create}
   okAction={createDirectMessage}
-  canSave={employeeIds.length > 0}
+  canSave={contactIds.length > 0}
   onCancel={handleCancel}
   on:close
 >
@@ -149,10 +187,11 @@
     </div>
 
     <ChannelMembers
-      ids={employeeIds}
+      ids={contactIds}
+      contacts={persons}
       on:add={addMembersClicked}
       on:remove={(ev) => {
-        employeeIds = employeeIds.filter((id) => id !== ev.detail)
+        contactIds = contactIds.filter((id) => id !== ev.detail)
       }}
     />
   </div>

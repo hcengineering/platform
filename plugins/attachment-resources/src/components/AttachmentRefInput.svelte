@@ -44,6 +44,9 @@
   export let loading = false
   export let focusIndex: number = -1
   export let autofocus = false
+  export let disableSubmit = false
+  export let disableAttach = false
+
   export function submit (): void {
     refInput.submit()
   }
@@ -180,6 +183,9 @@
   }
 
   async function fileDrop (e: DragEvent): Promise<void> {
+    if (disableAttach) {
+      return
+    }
     progress = true
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
@@ -281,6 +287,9 @@
   }
 
   function pasteAction (_: any, evt: ClipboardEvent): boolean {
+    if (disableAttach) {
+      return true
+    }
     let target: HTMLElement | null = evt.target as HTMLElement
     let allowed = false
 
@@ -303,6 +312,21 @@
     void loadFiles(evt)
     return true
   }
+
+  $: allExtraActions = disableAttach
+    ? extraActions
+    : [
+        ...extraActions,
+        {
+          label: textEditor.string.Attach,
+          icon: AttachIcon,
+          action: () => {
+            dispatch('focus')
+            inputFile.click()
+          },
+          order: 1001
+        }
+      ]
 </script>
 
 <div class="no-print" bind:this={refContainer}>
@@ -334,20 +358,10 @@
       autofocus={autofocus ? 'end' : false}
       loading={loading || progress}
       {boundary}
+      {disableSubmit}
       canEmbedFiles={false}
       canEmbedImages={false}
-      extraActions={[
-        ...extraActions,
-        {
-          label: textEditor.string.Attach,
-          icon: AttachIcon,
-          action: () => {
-            dispatch('focus')
-            inputFile.click()
-          },
-          order: 1001
-        }
-      ]}
+      extraActions={allExtraActions}
       showHeader={attachments.size > 0 || progress}
       haveAttachment={attachments.size > 0}
       on:focus
@@ -369,7 +383,7 @@
               <div class="item flex">
                 <AttachmentPresenter
                   value={attachment}
-                  removable
+                  removable={!disableAttach}
                   on:remove={(result) => {
                     if (result !== undefined) removeAttachment(attachment)
                   }}
@@ -379,6 +393,11 @@
           </div>
         {/if}
       </div>
+      <svelte:fragment slot="submit" let:loading let:canSubmit>
+        {#if $$slots.submit}
+          <slot name="submit" {loading} {canSubmit} />
+        {/if}
+      </svelte:fragment>
     </ReferenceInput>
   </div>
 </div>

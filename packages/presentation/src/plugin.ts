@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Mixin, type Class, type Ref } from '@hcengineering/core'
+import { type Branding, type Mixin, type Class, type Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui'
@@ -95,7 +95,8 @@ export default plugin(presentationId, {
     CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     FrontUrl: '' as Asset,
-    PreviewConfig: '' as Metadata<PreviewConfig | undefined>
+    PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
+    Branding: '' as Metadata<Branding>
   },
   status: {
     FileTooLarge: '' as StatusCode

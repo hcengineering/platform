@@ -19,10 +19,10 @@
   import { AttributeModel } from '@hcengineering/view'
   import activity, { DisplayDocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
+  import { isTextAttributeModel } from '@hcengineering/view-resources'
 
   import { LinkData, getLinkData } from '../../activityMessagesUtils'
   import ActivityDocLink from '../ActivityDocLink.svelte'
-  import { getIsTextType } from '../../utils'
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
@@ -42,7 +42,7 @@
     })
 
   function getTitle (attributeModel: AttributeModel): IntlString | undefined {
-    const isTextType = getIsTextType(attributeModel)
+    const isTextType = isTextAttributeModel(attributeModel)
 
     if (!isTextType) {
       return undefined

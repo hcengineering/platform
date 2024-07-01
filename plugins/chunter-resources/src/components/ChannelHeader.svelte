@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getDocTitle } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
-  import { Channel } from '@hcengineering/chunter'
+  import { Channel, ExternalChannel } from '@hcengineering/chunter'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
 
@@ -24,15 +24,15 @@
   import chunter from '../plugin'
   import { getObjectIcon, getChannelName } from '../utils'
   import PinnedMessages from './PinnedMessages.svelte'
+  import ChatChannelsTabs from './ChatChannelsTabs.svelte'
 
-  export let _id: Ref<Doc>
-  export let _class: Ref<Class<Doc>>
-  export let object: Doc | undefined
+  export let object: Doc
   export let allowClose = false
   export let canOpen = false
   export let withAside = false
   export let isAsideShown = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
+  export let selectedChannelId: Ref<ExternalChannel> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -40,9 +40,8 @@
   let title: string | undefined = undefined
   let description: string | undefined = undefined
 
-  $: void updateDescription(_id, _class, object)
-
-  $: void getChannelName(_id, _class, object).then((res) => {
+  $: void updateDescription(object._id, object._class, object)
+  $: void getChannelName(object._id, object._class, object).then((res) => {
     title = res
   })
 
@@ -57,20 +56,21 @@
   }
 
   $: isPerson =
-    hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)
+    hierarchy.isDerived(object._class, chunter.class.DirectMessage) ||
+    hierarchy.isDerived(object._class, contact.class.Person)
 </script>
 
 <div class="ac-header divide full caption-height">
   <Header
     bind:filters
     {object}
-    icon={getObjectIcon(_class)}
+    icon={getObjectIcon(object._class)}
     iconProps={{ value: object, showStatus: true }}
     label={title}
     intlLabel={chunter.string.Channel}
     {description}
     titleKind={isPerson ? 'default' : 'breadcrumbs'}
-    withFilters={!hierarchy.isDerived(_class, chunter.class.ChunterSpace)}
+    withFilters={!hierarchy.isDerived(object._class, chunter.class.ChunterSpace)}
     {allowClose}
     {canOpen}
     {withAside}
@@ -78,7 +78,12 @@
     on:aside-toggled
     on:close
   >
-    <PinnedMessages {_id} {_class} />
+    <PinnedMessages _id={object._id} _class={object._class} />
+    <svelte:fragment slot="content">
+      {#if hierarchy.isDerived(object._class, chunter.class.DirectMessage)}
+        <ChatChannelsTabs {object} bind:selectedChannelId />
+      {/if}
+    </svelte:fragment>
   </Header>
 </div>
 
