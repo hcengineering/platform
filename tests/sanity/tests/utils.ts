@@ -14,6 +14,8 @@ export const DefaultWorkspace = 'SanityTest'
 export const LocalUrl = process.env.LOCAL_URL as string
 export const DevUrl = process.env.DEV_URL as string
 export const StagingUrl = process.env.STAGING_URL as string
+export const StagingUser = process.env.STAGING_USER as string
+export const StagingPass = process.env.STAGING_PASS as string
 
 export function generateTestData (): TestData {
   const generateWordStartingWithA = (): string => {
