@@ -149,11 +149,6 @@ export function tableToCSV (tableId: string, separator = ','): string {
   return csv.join('\n')
 }
 
-/**
- * @public
- */
-export const networkStatus = writable<number>(0)
-
 let attractorMx: number | undefined
 let attractorMy: number | undefined
 

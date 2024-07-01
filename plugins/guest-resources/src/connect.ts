@@ -16,6 +16,7 @@ import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLoc
 import { writable } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
+const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
 let _client: AccountClient | undefined
@@ -103,7 +104,14 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             console.log('Server version', serverVersion.version)
             if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-              location.reload()
+              if (typeof sessionStorage !== 'undefined') {
+                if (sessionStorage.getItem(versionStorageKey) !== serverVersion.version) {
+                  sessionStorage.setItem(versionStorageKey, serverVersion.version)
+                  location.reload()
+                }
+              } else {
+                location.reload()
+              }
               versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
             }
           }
