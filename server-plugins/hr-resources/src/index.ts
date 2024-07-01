@@ -164,6 +164,11 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
 
   const department = control.removedMap.get(ctx.objectId) as Department
   if (department === undefined) return []
+  const res: Tx[] = []
+  const nested = await control.findAll(hr.class.Department, { parent: department._id })
+  for (const dep of nested) {
+    res.push(control.txFactory.createTxRemoveDoc(dep._class, dep.space, dep._id))
+  }
   const targetAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
     _id: { $in: department.members }
   })
@@ -173,7 +178,6 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
     _id: { $in: employeeIds }
   })
   const removed = await buildHierarchy(department._id, control)
-  const res: Tx[] = []
   employee.forEach((em) => {
     res.push(control.txFactory.createTxMixin(em._id, em._class, em.space, hr.mixin.Staff, { department: undefined }))
   })
