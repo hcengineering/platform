@@ -26,10 +26,10 @@
   export let disabled: boolean = false
 
   let input: HTMLElement
-  let phTraslate: string = ''
+  let phTranslate: string = ''
 
   $: translate(placeholder, placeholderParam ?? {}).then((res) => {
-    phTraslate = res
+    phTranslate = res
   })
 
   afterUpdate(() => {
@@ -50,7 +50,7 @@
     rows="1"
     bind:value
     bind:this={input}
-    placeholder={phTraslate}
+    placeholder={phTranslate}
     {disabled}
     on:keydown
     on:change

@@ -46,11 +46,11 @@
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
-  let phTraslate: string
-  $: translate(placeholder, {}, $themeStore.language).then((tr) => (phTraslate = tr))
+  let phTranslate: string
+  $: translate(placeholder, {}, $themeStore.language).then((tr) => (phTranslate = tr))
   let label: IntlString = plugin.string.CopyToClipboard
-  let lTraslate: string
-  $: translate(label, {}, $themeStore.language).then((tr) => (lTraslate = tr))
+  let lTranslate: string
+  $: translate(label, {}, $themeStore.language).then((tr) => (lTranslate = tr))
   let show: boolean = false
 
   const copyChannel = (): void => {
@@ -98,13 +98,13 @@
 <FocusHandler manager={mgr} />
 {#if editable}
   <div class="editor-container {dir} buttons-group xsmall-gap">
-    <div class="cover-channel" class:show class:copied={label === view.string.Copied} data-tooltip={lTraslate}>
+    <div class="cover-channel" class:show class:copied={label === view.string.Copied} data-tooltip={lTranslate}>
       <input
         bind:this={input}
         class="search"
         type="text"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         style="width: 100%;"
         on:keypress={(ev) => {
           if (ev.key === 'Enter') {
@@ -181,7 +181,7 @@
       class:show
       class:copied={label === view.string.Copied}
       class:cursor-pointer={openable}
-      data-tooltip={lTraslate}
+      data-tooltip={lTranslate}
       on:click={() => {
         if (openable) {
           dispatch('update', 'open')
