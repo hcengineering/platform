@@ -19379,7 +19379,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-qCzlKX3W11R7GEpG6tcgu+HJl2jj3bEUu5XR1or7UwBpTuBP5pYOPHuse0qO4wTLzgoDo3irhOFQPA4HyCD97g==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-gTZl6oSrza49C3mbq7LLxbgWdaWDD+t6oipIRZcIEmRbOW5BOrM1VUqn/T1O6ouBcincggu7tiQQlJgp0jbLNQ==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -19427,7 +19427,7 @@ packages:
     dev: false
 
   file:projects/chunter.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-7CCSMrDbX8Mb8drPtpIVbQbvx1fsXW6YAqceu/rhsE7b9+i3LRaNGlyggJ1V1Kg32FTEHK2Q4jkKrn34aLL+3A==, tarball: file:projects/chunter.tgz}
+    resolution: {integrity: sha512-hoiTB6WNbEFQcL0MsD4fkoQtI+75S7WT61YpUk/XlYJXMz4++CBgRtiSLSa1PC/049fKieq8lxu0uRjUgNtdfg==, tarball: file:projects/chunter.tgz}
     id: file:projects/chunter.tgz
     name: '@rush-temp/chunter'
     version: 0.0.0
@@ -21355,7 +21355,7 @@ packages:
     dev: false
 
   file:projects/model-chunter.tgz:
-    resolution: {integrity: sha512-s99PJII281vT3N2c/Z82EDGmjU1xLi1CXolixGNHtP2OaOKDFIL3z7TGABOz/RrNtT8yTIoEy1LBSy/qCiuNYQ==, tarball: file:projects/model-chunter.tgz}
+    resolution: {integrity: sha512-S6JoTFxRD9UPC4ZelccOYLu+dJ/NfFK4E6ZKxPspqABzjwjSxUxa2dGZKmTaTjxj1KvQz6DTHD+m+AOXO8O38w==, tarball: file:projects/model-chunter.tgz}
     name: '@rush-temp/model-chunter'
     version: 0.0.0
     dependencies:
@@ -22205,7 +22205,7 @@ packages:
     dev: false
 
   file:projects/model-server-telegram.tgz:
-    resolution: {integrity: sha512-f+q9jHZV+L29PVKcz61sb25JkpuVTEfh4BOpndpaMeEoiSGnl0UpZji9i1jVhjyqlRRYYEDznBP4su35GZaaXQ==, tarball: file:projects/model-server-telegram.tgz}
+    resolution: {integrity: sha512-nAzw72x+dtmWlTg5NmlkdqulaBJcAokOPFWJyNjmoFo6l020LJvy+GLpq/A1eGQOD/YFYt4UWlcP9vYLPb8v4w==, tarball: file:projects/model-server-telegram.tgz}
     name: '@rush-temp/model-server-telegram'
     version: 0.0.0
     dependencies:
@@ -22414,7 +22414,7 @@ packages:
     dev: false
 
   file:projects/model-telegram.tgz:
-    resolution: {integrity: sha512-WjCLxLQvcXBwLNQQnCbClBIum033r+fwS3nwB7RmCTgERzxT7lqedPlCwsd1TUs7PF6C0Y6cp5O/Lrnn+7Z46g==, tarball: file:projects/model-telegram.tgz}
+    resolution: {integrity: sha512-rPk3hnaOupTkMLliCdhQqNJcCVkAjl7wImA8YCiZfbU7GoImDwRpq/Qvv6GydnUy4lCcVYeyuYfwmzJvN2nx4w==, tarball: file:projects/model-telegram.tgz}
     name: '@rush-temp/model-telegram'
     version: 0.0.0
     dependencies:
@@ -25407,7 +25407,7 @@ packages:
     dev: false
 
   file:projects/server-telegram-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-jlZjP4X1pBtvaMNdCcrjmyAOJeVk/AQbQUwa0f28Oc4VU6OaktCMmG+0+GvnvMVAcpjUmb2fL3rnLxI2ckB2yQ==, tarball: file:projects/server-telegram-resources.tgz}
+    resolution: {integrity: sha512-Nuf7jFro/P2brHe/au0RO/GlhkF2o6FOJ5niGADPBbNYOkAr6QVacPop0G5knBb+wajdvJVpEhztWsbzpYP2zQ==, tarball: file:projects/server-telegram-resources.tgz}
     id: file:projects/server-telegram-resources.tgz
     name: '@rush-temp/server-telegram-resources'
     version: 0.0.0
@@ -25420,6 +25420,7 @@ packages:
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
@@ -26480,7 +26481,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-jFtk3yrGpxY605M2XEGqcpNDwb2ilC8E8TTnA+izQ/pUmYSpvGvJ0zHTLzszH1QQTbEVkAbSWPZp1p/p+Opz2Q==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-eE76h6om3RB3jXLTD4Tr5lkNdxyHEV7CZJ6XfR32jbqENCeXV4M+Um/RjFjtFGX7JOFmZv43pv7c5HBNMtHX8A==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -26525,7 +26526,7 @@ packages:
     dev: false
 
   file:projects/telegram.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-e+PHTbBJ8rRCfiVXlZhoP/ZEQMabsxRySsXUYs+AEMTve0J/p/GiVp85veIxitGNOInRyfGkUakfAPsN7YxrxA==, tarball: file:projects/telegram.tgz}
+    resolution: {integrity: sha512-EOieqnQdxGVp6d45qPHHo7WIe5IY1HHhu/Z3UOJbjU5zg9dmDiPoUtONN426w7kKtbha0vb2siulY1D1qCpvNA==, tarball: file:projects/telegram.tgz}
     id: file:projects/telegram.tgz
     name: '@rush-temp/telegram'
     version: 0.0.0
