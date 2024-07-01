@@ -72,8 +72,8 @@
                 embedded
                 on:close={(evt) => {
                   _color = evt.detail
-                  dispatch(icons.length === 0 ? 'close' : 'update', {
-                    icon: icons.length === 0 ? null : _icon,
+                  dispatch('close', {
+                    icon: icons.length === 0 ? icons[0] : _icon,
                     color: _color
                   })
                 }}
