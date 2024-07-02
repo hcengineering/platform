@@ -24,7 +24,11 @@ export default mergeIds(loginId, login, {
     RequiredField: '' as StatusCode<{ field: string }>,
     FieldsDoNotMatch: '' as StatusCode<{ field: string, field2: string }>,
     ConnectingToServer: '' as StatusCode,
-    IncorrectValue: '' as StatusCode<{ field: string }>
+    IncorrectValue: '' as StatusCode<{ field: string }>,
+    PasswordLength: '' as StatusCode,
+    PasswordNumber: '' as StatusCode,
+    PasswordLowercase: '' as StatusCode,
+    PasswordUppercase: '' as StatusCode
   },
   string: {
     CreateWorkspace: '' as IntlString,
