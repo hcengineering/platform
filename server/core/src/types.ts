@@ -69,7 +69,7 @@ export interface ServerStorage extends LowLevelStorage {
   close: () => Promise<void>
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   workspaceId: WorkspaceIdWithUrl
-  branding?: string
+  branding: Branding | null
   storageAdapter: StorageAdapter
 }
 
