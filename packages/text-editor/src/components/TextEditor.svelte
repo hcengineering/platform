@@ -55,6 +55,15 @@
   let placeHolderStr: string = ''
 
   $: ph = translate(placeholder, {}, $themeStore.language).then((r) => {
+    if (editor !== undefined && placeHolderStr !== r) {
+      const placeholderIndex = editor.extensionManager.extensions.findIndex(
+        (extension) => extension.name === 'placeholder'
+      )
+      if (placeholderIndex !== -1) {
+        editor.extensionManager.extensions[placeholderIndex].options.placeholder = r
+        editor.view.dispatch(editor.state.tr)
+      }
+    }
     placeHolderStr = r
   })
 
