@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import activity from '@hcengineering/activity'
 import {
   SortingOrder,
   generateId,
@@ -216,29 +216,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     })
   }
 
-  async readMessages (client: TxOperations, ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    const alreadyReadIds = get(this.activityInboxNotifications)
-      .filter(({ attachedTo, isViewed }) => ids.includes(attachedTo) && isViewed)
-      .map(({ attachedTo }) => attachedTo)
-
-    const toReadIds = ids.filter((id) => !alreadyReadIds.includes(id))
-
-    if (toReadIds.length === 0) {
-      return
-    }
-
-    const notificationsToRead = get(this.activityInboxNotifications).filter(({ attachedTo }) =>
-      toReadIds.includes(attachedTo)
-    )
-
-    for (const notification of notificationsToRead) {
-      notification.isViewed = true
-      await client.update(notification, { isViewed: true })
-    }
-  }
-
   async readNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
-    const notificationsToRead = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
+    const notificationsToRead = (get(this.inboxNotifications) ?? []).filter(
+      ({ _id, isViewed }) => ids.includes(_id) && !isViewed
+    )
 
     for (const notification of notificationsToRead) {
       await client.update(notification, { isViewed: true })

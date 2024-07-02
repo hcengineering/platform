@@ -960,6 +960,10 @@ export class LiveQuery implements WithTx, Client {
     result: LookupData<T>
   ): Promise<void> {
     for (const key in lookup._id) {
+      if ((doc as any)[key] === undefined || (doc as any)[key] === 0) {
+        continue
+      }
+
       const value = lookup._id[key]
 
       let _class: Ref<Class<Doc>>
