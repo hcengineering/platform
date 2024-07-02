@@ -33,6 +33,7 @@
   import login from '../plugin'
   import { makeSequential } from '../mutex'
   import Providers from './Providers.svelte'
+  import TermsAgreement from './TermsAgreement.svelte'
 
   interface Field {
     id?: string
@@ -231,6 +232,9 @@
   {#if withProviders}
     <Providers />
   {/if}
+  {#if caption === login.string.Join || caption === login.string.SignUp || caption === login.string.LogIn}
+    <TermsAgreement />
+  {/if}
   {#if bottomActions.length}
     <div class="footer">
       {#each bottomActions as action}
@@ -320,8 +324,11 @@
       }
       a {
         font-weight: 500;
-        text-decoration: underline;
+        text-decoration: none;
         color: var(--theme-content-color);
+        &:hover {
+          text-decoration: underline;
+        }
       }
     }
   }

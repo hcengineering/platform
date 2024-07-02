@@ -59,6 +59,8 @@ export interface LoginInfo {
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
+    TermsOfServiceUrl: '' as Metadata<string>,
+    PrivacyPolicyUrl: '' as Metadata<string>,
     LoginTokens: '' as Metadata<Record<string, string>>,
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,

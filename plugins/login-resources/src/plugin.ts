@@ -59,6 +59,9 @@ export default mergeIds(loginId, login, {
     ConfirmationSent: '' as IntlString,
     ConfirmationSent2: '' as IntlString,
     Slogan: '' as IntlString,
-    ContinueWith: '' as IntlString
+    ContinueWith: '' as IntlString,
+    TermsAgreement: '' as IntlString,
+    TermsOfService: '' as IntlString,
+    PrivacyPolicy: '' as IntlString
   }
 })
