@@ -15,7 +15,7 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
+  import core, { Account, reduceCalls, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonIcon, IconSquareExpand, Label, ModernButton, ModernEditbox, TextArea, Toggle } from '@hcengineering/ui'
 
@@ -53,14 +53,14 @@
     await client.update(type, { [field]: value })
   }
 
-  async function changeMembers (members: Ref<Account>[]): Promise<void> {
+  const changeMembers = reduceCalls(async function changeMembers (members: Ref<Account>[]): Promise<void> {
     if (disabled || type === undefined) {
       return
     }
 
     const push = new Set<Ref<Account>>(members)
     const pull = new Set<Ref<Account>>()
-    for (const member of type.members ?? []) {
+    for (const member of (type.members ?? []).filter((it, idx, arr) => arr.indexOf(it) === idx)) {
       if (!push.has(member)) {
         pull.add(member)
       } else {
@@ -78,7 +78,7 @@
       ops.update(type, { $pull: { members: pullMem } })
     }
     await ops.commit()
-  }
+  })
 </script>
 
 {#if descriptor !== undefined}
