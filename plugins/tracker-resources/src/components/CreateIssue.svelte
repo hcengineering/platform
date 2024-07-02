@@ -406,7 +406,27 @@
   $: projectPreferences.query(tracker.class.ProjectTargetPreference, {}, (res) => {
     preferences = res
   })
-  $: spacePreferences = preferences.find((it) => it.attachedTo === _space)
+
+  async function updateCurrentProjectPref (currentProject: Ref<Project>): Promise<void> {
+    const spacePreferences = await client.findOne(tracker.class.ProjectTargetPreference, { attachedTo: currentProject })
+    if (spacePreferences === undefined) {
+      await client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
+        attachedTo: currentProject,
+        props: [],
+        usedOn: Date.now()
+      })
+    } else {
+      if (spacePreferences.usedOn + 60 * 1000 < Date.now()) {
+        await client.update(spacePreferences, {
+          usedOn: Date.now()
+        })
+      }
+    }
+  }
+
+  $: if (_space !== undefined) {
+    void updateCurrentProjectPref(_space)
+  }
 
   async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
@@ -712,24 +732,6 @@
     parentIssue,
     originalIssue,
     preferences
-  }
-
-  function updateCurrentProjectPref (currentProject: Ref<Project>): void {
-    if (spacePreferences === undefined) {
-      void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
-        attachedTo: currentProject,
-        props: [],
-        usedOn: Date.now()
-      })
-    } else {
-      void client.update(spacePreferences, {
-        usedOn: Date.now()
-      })
-    }
-  }
-
-  $: if (_space !== undefined) {
-    updateCurrentProjectPref(_space)
   }
 </script>
 

@@ -1279,8 +1279,9 @@ export class LiveQuery implements WithTx, Client {
     const docCache = new Map<string, Doc>()
     for (const tx of txes) {
       if (tx._class === core.class.TxWorkspaceEvent) {
-        await this.checkUpdateEvents(tx as TxWorkspaceEvent)
-        await this.changePrivateHandler(tx as TxWorkspaceEvent)
+        const evt = tx as TxWorkspaceEvent
+        await this.checkUpdateEvents(evt)
+        await this.changePrivateHandler(evt)
       }
       result.push(await this._tx(tx, docCache))
     }
