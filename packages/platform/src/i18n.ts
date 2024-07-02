@@ -33,6 +33,7 @@ type Messages = Record<string, IntlString | Record<string, IntlString>>
 const loaders = new Map<Plugin, Loader>()
 const translations = new Map<Plugin, Messages | Status>()
 const cache = new Map<IntlString, IntlMessageFormat | Status>()
+const ENGLISH_LOCALE = 'en'
 
 /**
  * @public
