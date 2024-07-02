@@ -54,11 +54,7 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
       Highlight.configure({
         multicolor: false
       }),
-      Typography.configure({}),
-      Link.configure({
-        openOnClick: true,
-        HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
-      })
+      Typography.configure({})
     ]
   }
 })

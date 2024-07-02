@@ -40,6 +40,57 @@
   function toNumber (value: string | number | undefined): number | undefined {
     return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
   }
+
+
+  function getIndicesOf(searchStr: string, str: string): [string] {
+    const searchStrLen = searchStr.length
+    if (searchStrLen == 0) {
+      return []
+    }
+    let startIndex = 0, index, indices = []
+    while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+      const endIndex = index + searchStrLen
+      indices.push(`${index.toString()}_${endIndex.toString()}`)
+      startIndex = index + searchStrLen
+    }
+    return indices
+  }
+
+  function stringListToIndexRangeWithAddedLinkIndex(evadeSet: typeof Set[string]): typeof Array[[number]]{
+    let evadeList = [...evadeSet].map(indexStrings => indexStrings.split('_').map(stringSplit => parseInt(stringSplit)))
+    let addedIndex = 0
+    return evadeList.map(function(indexRange) {
+      const startIndex = indexRange[0] + addedIndex
+      let urlSize = indexRange[1] - indexRange[0]
+      // This is conditional of how url link is created: "<a href=\"" + url + "\">" + url + "</a>"
+      const endIndex = urlSize * 2 + startIndex + 15
+      addedIndex = endIndex - startIndex - urlSize + addedIndex
+      return [startIndex, endIndex]
+    })
+  }
+
+  function urlify(text: string): string {
+    const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g
+    let evadeSet = new Set()
+    let replacedText = text.replaceAll(urlRegex, function(url) {
+      let indices = getIndicesOf(url, text)
+      indices.map(index => evadeSet.add(index))
+      return "<a href=\"" + url + "\">" + url + "</a>"
+    })
+    let evadeList = stringListToIndexRangeWithAddedLinkIndex(evadeSet)
+    let evadeListsIndex = 0
+    return replacedText.replace(/[\u00A0-\u9999<>\&]/g, function(i: string, index: number) {
+      const indexRange = evadeList[evadeListsIndex]
+      if (indexRange[0] <= index && index < indexRange[1]) {
+        if (index >= indexRange[1]-1 && evadeListsIndex < evadeList.length - 1) {
+          evadeListsIndex += 1
+        }
+        return i
+      }
+      return "&#" + i.charCodeAt(0) + ";"
+    })
+  }
+
 </script>
 
 {#if node}
@@ -49,7 +100,9 @@
   {#if node.type === MarkupNodeType.doc}
     <MarkupNodes {nodes} {preview} />
   {:else if node.type === MarkupNodeType.text}
-    {node.text}
+    <p>
+      {@html urlify(node.text)}
+    </p>
   {:else if node.type === MarkupNodeType.paragraph}
     <p class="p-inline contrast" class:overflow-label={preview}>
       <MarkupNodes {nodes} {preview} />
