@@ -192,7 +192,8 @@ export function loadBrandingMap (brandingPath?: string): BrandingMap {
     brandings = JSON.parse(fs.readFileSync(brandingPath, 'utf8'))
 
     for (const [host, value] of Object.entries(brandings)) {
-      value.front = `https://${host}/`
+      const protocol = value.protocol ?? 'https'
+      value.front = `${protocol}://${host}/`
     }
   }
 

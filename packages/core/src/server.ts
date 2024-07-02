@@ -75,6 +75,7 @@ export interface Branding {
   language?: string
   initWorkspace?: string
   lastNameFirst?: string
+  protocol?: string
 }
 
 export type BrandingMap = Record<string, Branding>
