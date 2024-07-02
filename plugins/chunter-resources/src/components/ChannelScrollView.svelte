@@ -557,7 +557,7 @@
     const { offsetHeight, scrollHeight, scrollTop } = scrollElement
 
     prevScrollHeight = scrollHeight
-    isScrollAtBottom = scrollHeight === scrollTop + offsetHeight
+    isScrollAtBottom = scrollHeight <= Math.ceil(scrollTop + offsetHeight)
   }
 
   beforeUpdate(() => {

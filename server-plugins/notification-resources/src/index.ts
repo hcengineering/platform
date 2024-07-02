@@ -461,6 +461,12 @@ async function activityInboxNotificationToText (doc: Data<ActivityInboxNotificat
   if (doc.body != null) {
     body = await translate(doc.body, params)
   }
+
+  // TODO: temporary log to understand problem. Remove it later.
+  if (doc.body === 'chunter:string:MessageNotificationBody') {
+      console.error('Cannot translate chunter notification: ', {doc, params})
+  }
+
   return [title, body]
 }
 
