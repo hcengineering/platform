@@ -34,6 +34,7 @@
   import ConfirmationSend from './ConfirmationSend.svelte'
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
   import Join from './Join.svelte'
+  import JoinWorkspace from './JoinWorkspace.svelte'
   import LoginForm from './LoginForm.svelte'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
@@ -141,6 +142,8 @@
             <PasswordRestore />
           {:else if page === 'selectWorkspace'}
             <SelectWorkspace {navigateUrl} />
+          {:else if page === 'joinWorkspace'}
+            <JoinWorkspace {navigateUrl} />
           {:else if page === 'join'}
             <Join />
           {:else if page === 'confirm'}

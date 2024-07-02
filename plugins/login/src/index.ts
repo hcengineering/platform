@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref, Doc, AccountRole } from '@hcengineering/core'
+import { AccountRole, Doc, Ref } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -33,6 +33,8 @@ export interface Workspace {
 
   creating?: boolean
   createProgress?: number
+
+  verified?: boolean
 
   lastVisit: number
 }
@@ -68,7 +70,9 @@ export default plugin(loginId, {
   },
   component: {
     LoginApp: '' as AnyComponent,
-    InviteLink: '' as AnyComponent
+    InviteLink: '' as AnyComponent,
+    AddDomain: '' as AnyComponent,
+    Domain: '' as AnyComponent
   },
   icon: {
     InviteWorkspace: '' as Asset
@@ -90,6 +94,10 @@ export default plugin(loginId, {
     FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
     GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,
-    GetEndpoint: '' as Resource<() => Promise<string>>
+    GetEndpoint: '' as Resource<() => Promise<string>>,
+    CreateWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>,
+    GetWorkspaceDomains: '' as Resource<() => Promise<any[]>>,
+    VerifyWorkspaceDomain: '' as Resource<(domainName: string) => Promise<any>>,
+    GetRecommendedWorkspace: '' as Resource<() => Promise<Workspace>>
   }
 })

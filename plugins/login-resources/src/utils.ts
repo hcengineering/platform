@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
+import { AccountRole, concatLink, type Doc, type Ref } from '@hcengineering/core'
 import login, { loginId, type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
@@ -38,6 +38,12 @@ import {
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { type Pages } from './index'
+
+export interface WorkspaceDomain {
+  name: string
+  txtRecord: string
+  verifiedOn: number | null
+}
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 
@@ -85,6 +91,180 @@ export async function doLogin (email: string, password: string): Promise<[Status
     console.error('login error', err)
     Analytics.handleError(err)
     return [unknownError(err), undefined]
+  }
+}
+
+export async function createWorkspaceDomain (
+  domainName: string
+): Promise<WorkspaceDomain | null> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'createWorkspaceDomain',
+    params: [domainName]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // Do something with analitics
+    } else {
+      await handleStatusError('Domain ownership error', result.error)
+    }
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
+  }
+}
+
+export async function verifyWorkspaceDomain (
+  domainName: string
+): Promise<WorkspaceDomain | null> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'verifyWorkspaceDomain',
+    params: [domainName]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // TODO: handle analitics
+    } else {
+      await handleStatusError('Domain ownership error', result.error)
+    }
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
+  }
+}
+
+export async function getWorkspaceDomains (): Promise<WorkspaceDomain[]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'getWorkspaceDomains',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // TODO: handle analitics
+    } else {
+      await handleStatusError('Failed to fetch workspace domains', result.error)
+    }
+
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
+  }
+}
+
+export async function getRecommendedWorkspace (): Promise<Workspace | null> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'getRecommendedWorkspace',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // TODO: handle analitics
+    } else {
+      await handleStatusError('Failed to find recommended wrokspace', result.error)
+    }
+
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return err // Handle error here
   }
 }
 
@@ -592,6 +772,7 @@ export async function getInviteLinkId (
     },
     body: JSON.stringify(request)
   })
+
   const result = await response.json()
   Analytics.handleEvent('Get invite link')
   return result.result
@@ -636,6 +817,50 @@ export async function join (
     } else {
       await handleStatusError('Join error', result.error)
     }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function joinWithDomain (
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined] as any
+  }
+
+  const request = {
+    method: 'joinWithDomain',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+
+    const result = await response.json()
+
+    if (result.error == null) {
+      // TODO: handle analytics
+    } else {
+      await handleStatusError('Join with domain error', result.error)
+    }
+
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     Analytics.handleError(err)
@@ -934,7 +1159,11 @@ export function getHref (path: Pages): string {
 export async function afterConfirm (): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('createWorkspace')
+    if (await getRecommendedWorkspace() != null) {
+      goTo('joinWorkspace')
+    } else {
+      goTo('createWorkspace')
+    }
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace))[1]
     if (result !== undefined) {

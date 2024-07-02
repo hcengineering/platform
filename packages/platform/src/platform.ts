@@ -151,6 +151,9 @@ export default plugin(platformId, {
     InvalidPassword: '' as StatusCode<{ account: string }>,
     AccountAlreadyExists: '' as StatusCode<{ account: string }>,
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
+    DomainAlreadyExists: '' as StatusCode<{ domainName: string }>,
+    DomainAlreadyVerified: '' as StatusCode<{ domainName: string }>,
+    WorkspaceDomainNotFound: '' as StatusCode<{ domainName: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
     ProductIdMismatch: '' as StatusCode<{ productId: string }>
