@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   AttachedDoc,
   BulkUpdateEvent,
@@ -53,12 +54,12 @@ import core, {
   generateId,
   getObjectValue,
   matchQuery,
+  reduceCalls,
   resultSort,
   toFindResult
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
-import { Analytics } from '@hcengineering/analytics'
 
 const CACHE_SIZE = 100
 
@@ -75,7 +76,7 @@ interface Query {
   total: number
   callbacks: Map<string, Callback>
 
-  requested?: Promise<void>
+  refresh: () => Promise<void>
 }
 
 interface DocumentRef {
@@ -392,7 +393,8 @@ export class LiveQuery implements WithTx, Client {
       result,
       total: 0,
       options: options as FindOptions<Doc>,
-      callbacks: new Map()
+      callbacks: new Map(),
+      refresh: reduceCalls(() => this.doRefresh(q))
     }
     q.callbacks.set(callback.callbackId, callback.callback as unknown as Callback)
     queries.push(q)
@@ -836,18 +838,8 @@ export class LiveQuery implements WithTx, Client {
     return this.getHierarchy().clone(results) as T[]
   }
 
-  private async refresh (q: Query, reRequest: boolean = false): Promise<void> {
-    if (q.requested !== undefined && !reRequest) {
-      // we already asked for refresh, just wait.
-      await q.requested
-      return
-    }
-    if (reRequest && q.requested !== undefined) {
-      await q.requested
-    }
-    q.requested = this.doRefresh(q)
-    await q.requested
-    q.requested = undefined
+  private async refresh (q: Query): Promise<void> {
+    await q.refresh()
   }
 
   private async doRefresh (q: Query): Promise<void> {
@@ -1279,6 +1271,8 @@ export class LiveQuery implements WithTx, Client {
     const docCache = new Map<string, Doc>()
     for (const tx of txes) {
       if (tx._class === core.class.TxWorkspaceEvent) {
+        const evt = tx as TxWorkspaceEvent
+        console.info('checking workspace event', evt._id, evt.params)
         await this.checkUpdateEvents(tx as TxWorkspaceEvent)
         await this.changePrivateHandler(tx as TxWorkspaceEvent)
       }
@@ -1304,7 +1298,7 @@ export class LiveQuery implements WithTx, Client {
           if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
             if (!this.removeFromQueue(q)) {
               try {
-                await this.refresh(q, true)
+                await this.refresh(q)
               } catch (err: any) {
                 Analytics.handleError(err)
                 console.error(err)
@@ -1325,7 +1319,7 @@ export class LiveQuery implements WithTx, Client {
           for (const q of v) {
             if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
               try {
-                await this.refresh(q, true)
+                await this.refresh(q)
               } catch (err: any) {
                 Analytics.handleError(err)
                 console.error(err)
@@ -1340,7 +1334,7 @@ export class LiveQuery implements WithTx, Client {
           if (hasClass(q, params._class)) {
             if (!this.removeFromQueue(q)) {
               try {
-                await this.refresh(q, true)
+                await this.refresh(q)
               } catch (err: any) {
                 Analytics.handleError(err)
                 console.error(err)
@@ -1352,7 +1346,7 @@ export class LiveQuery implements WithTx, Client {
           for (const q of v) {
             if (hasClass(q, params._class)) {
               try {
-                await this.refresh(q, true)
+                await this.refresh(q)
               } catch (err: any) {
                 Analytics.handleError(err)
                 console.error(err)
