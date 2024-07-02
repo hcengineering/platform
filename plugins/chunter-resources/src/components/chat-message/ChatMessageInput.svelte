@@ -75,7 +75,7 @@
     inputRef.removeDraft(false)
   }
 
-  function objectChange (draft: MessageDraft, empty: Partial<MessageDraft>) {
+  function objectChange (draft: MessageDraft, empty: Partial<MessageDraft>): void {
     if (shouldSaveDraft) {
       draftController.save(draft, empty)
     }
@@ -90,7 +90,7 @@
     }
   }
 
-  async function onUpdate (event: CustomEvent) {
+  function onUpdate (event: CustomEvent): void {
     if (!shouldSaveDraft) {
       return
     }
@@ -99,25 +99,11 @@
     currentMessage.attachments = attachments
   }
 
-  async function onMessage (event: CustomEvent) {
-    if (chatMessage) {
-      loading = true
-    } // for new messages we use instant txes
-
+  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
     const doneOp = getClient().measure(`chunter.create.${_class} ${object._class}`)
     try {
-      draftController.remove()
-      inputRef.removeDraft(false)
+      await createMessage(event, _id)
 
-      if (chatMessage) {
-        await editMessage(event)
-      } else {
-        await createMessage(event)
-      }
-
-      // Remove draft from Local Storage
-      currentMessage = getDefault()
-      _id = currentMessage._id
       const d1 = Date.now()
       void (await doneOp)().then((res) => {
         console.log(`create.${_class} measure`, res, Date.now() - d1)
@@ -127,11 +113,44 @@
       Analytics.handleError(err)
       console.error(err)
     }
-    dispatch('submit', false)
-    loading = false
   }
 
-  async function createMessage (event: CustomEvent) {
+  async function handleEdit (event: CustomEvent): Promise<void> {
+    const doneOp = getClient().measure(`chunter.edit.${_class} ${object._class}`)
+    try {
+      await editMessage(event)
+
+      const d1 = Date.now()
+      void (await doneOp)().then((res) => {
+        console.log(`edit.${_class} measure`, res, Date.now() - d1)
+      })
+    } catch (err: any) {
+      void (await doneOp)()
+      Analytics.handleError(err)
+      console.error(err)
+    }
+  }
+
+  async function onMessage (event: CustomEvent): Promise<void> {
+    draftController.remove()
+    inputRef.removeDraft(false)
+
+    if (chatMessage !== undefined) {
+      loading = true
+      await handleEdit(event)
+    } else {
+      void handleCreate(event, _id)
+    }
+
+    // Remove draft from Local Storage
+    clear()
+    currentMessage = getDefault()
+    _id = currentMessage._id
+    loading = false
+    dispatch('submit', false)
+  }
+
+  async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
     const { message, attachments } = event.detail
     const operations = client.apply(_id)
 
@@ -153,8 +172,6 @@
         _id as Ref<ThreadMessage>
       )
 
-      clear()
-
       await operations.update(parentMessage, { lastReply: Date.now() })
 
       const hasPerson = !!parentMessage.repliedPersons?.includes(account.person)
@@ -172,12 +189,11 @@
         { message, attachments },
         _id
       )
-      clear()
     }
     await operations.commit()
   }
 
-  async function editMessage (event: CustomEvent) {
+  async function editMessage (event: CustomEvent): Promise<void> {
     if (chatMessage === undefined) {
       return
     }
@@ -194,7 +210,8 @@
   bind:this={inputRef}
   bind:content={inputContent}
   {_class}
-  space={object.space}
+  space={isSpace(object) ? object._id : object.space}
+  skipAttachmentsPreload={(currentMessage.attachments ?? 0) === 0}
   bind:objectId={_id}
   {shouldSaveDraft}
   {boundary}

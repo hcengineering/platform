@@ -29,11 +29,17 @@
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
-  import { tick, beforeUpdate, afterUpdate } from 'svelte'
+  import { tick, beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte'
   import { getResource } from '@hcengineering/platform'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
-  import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
+  import {
+    filterChatMessages,
+    getClosestDate,
+    readChannelMessages,
+    chatReadMessagesStore,
+    recheckNotifications
+  } from '../utils'
   import HistoryLoading from './LoadingHistory.svelte'
   import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
@@ -113,8 +119,11 @@
 
   $: displayMessages = filterChatMessages(messages, filters, filterResources, objectClass, selectedFilters)
 
-  inboxClient.inboxNotificationsByContext.subscribe(() => {
-    readViewportMessages()
+  const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
+    if (notifyContext !== undefined) {
+      recheckNotifications(notifyContext)
+      readViewportMessages()
+    }
   })
 
   function scrollToBottom (afterScrollFn?: () => void): void {
@@ -589,6 +598,14 @@
 
     return canGroupMessages(message, prevMessage ?? prevMetadata)
   }
+
+  onMount(() => {
+    chatReadMessagesStore.update(() => new Set())
+  })
+
+  onDestroy(() => {
+    unsubscribe()
+  })
 </script>
 
 {#if isLoading}
@@ -635,22 +652,20 @@
           <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={jumpToDate} />
         {/if}
 
-        <div class="msg">
-          <ActivityMessagePresenter
-            doc={object}
-            value={message}
-            skipLabel={skipLabels}
-            {showEmbedded}
-            hoverStyles="filledHover"
-            isHighlighted={isSelected}
-            shouldScroll={isSelected}
-            withShowMore={false}
-            attachmentImageSize="x-large"
-            showLinksPreview={false}
-            type={canGroup ? 'short' : 'default'}
-            hideLink
-          />
-        </div>
+        <ActivityMessagePresenter
+          doc={object}
+          value={message}
+          skipLabel={skipLabels}
+          {showEmbedded}
+          hoverStyles="filledHover"
+          isHighlighted={isSelected}
+          shouldScroll={isSelected}
+          withShowMore={false}
+          attachmentImageSize="x-large"
+          showLinksPreview={false}
+          type={canGroup ? 'short' : 'default'}
+          hideLink
+        />
       {/each}
 
       {#if loadMoreAllowed && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)}
@@ -670,14 +685,6 @@
 {/if}
 
 <style lang="scss">
-  .msg {
-    margin: 0;
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-  }
-
   .grower {
     flex-grow: 10;
     flex-shrink: 5;

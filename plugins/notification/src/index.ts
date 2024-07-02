@@ -286,7 +286,6 @@ export interface InboxNotificationsClient {
 
   readDoc: (client: TxOperations, _id: Ref<Doc>) => Promise<void>
   forceReadDoc: (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
-  readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>

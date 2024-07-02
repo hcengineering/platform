@@ -20,7 +20,6 @@ import {
   type Class,
   type Client,
   type Doc,
-  generateId,
   getCurrentAccount,
   type IdMap,
   type Ref,
@@ -41,10 +40,11 @@ import activity, {
 import {
   archiveContextNotifications,
   InboxNotificationsClientImpl,
+  isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import { get, type Unsubscriber } from 'svelte/store'
+import { get, type Unsubscriber, writable } from 'svelte/store'
 
 import chunter from './plugin'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -348,6 +348,57 @@ export async function leaveChannel (channel: Channel, value: Ref<Account> | Arra
   }
 }
 
+// NOTE: Store timestamp updates to avoid unnecessary updates when if the server takes a long time to respond
+const contextsTimestampStore = writable<Map<Ref<DocNotifyContext>, number>>(new Map())
+// NOTE: Sometimes user can read message before notification is created and we should mark it as viewed when notification is received
+export const chatReadMessagesStore = writable<Set<Ref<ActivityMessage>>>(new Set())
+
+function getAllIds (messages: DisplayActivityMessage[]): Array<Ref<ActivityMessage>> {
+  return messages
+    .map((message) => {
+      const combined =
+        message._class === activity.class.DocUpdateMessage
+          ? (message as DisplayDocUpdateMessage)?.combinedMessagesIds
+          : undefined
+
+      return [message._id, ...(combined ?? [])]
+    })
+    .flat()
+}
+
+export function recheckNotifications (context: DocNotifyContext): void {
+  const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
+  const messages = get(chatReadMessagesStore)
+
+  if (messages.size === 0) {
+    return
+  }
+
+  const notifications = get(inboxClient.inboxNotificationsByContext).get(context._id) ?? []
+
+  const toRead = notifications
+    .filter((it) => {
+      if (it.isViewed) {
+        return false
+      }
+
+      if (isMentionNotification(it)) {
+        return messages.has(it.mentionedIn as Ref<ActivityMessage>)
+      }
+
+      if (isActivityNotification(it)) {
+        return messages.has(it.attachedTo)
+      }
+
+      return false
+    })
+    .map((n) => n._id)
+
+  void inboxClient.readNotifications(client, toRead)
+}
+
 export async function readChannelMessages (
   messages: DisplayActivityMessage[],
   context: DocNotifyContext | undefined
@@ -359,40 +410,36 @@ export async function readChannelMessages (
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const client = getClient()
 
-  const allIds = messages
-    .map((message) => {
-      const combined =
-        message._class === activity.class.DocUpdateMessage
-          ? (message as DisplayDocUpdateMessage)?.combinedMessagesIds
-          : undefined
+  const readMessages = get(chatReadMessagesStore)
+  const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
 
-      return [message._id, ...(combined ?? [])]
-    })
-    .flat()
-  const relatedMentions = get(inboxClient.otherInboxNotifications).filter(
-    (n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>)
-  )
+  const notifications = get(inboxClient.activityInboxNotifications)
+    .filter(({ _id, attachedTo }) => allIds.includes(attachedTo))
+    .map((n) => n._id)
 
-  const ops = getClient().apply(generateId())
+  const relatedMentions = get(inboxClient.otherInboxNotifications)
+    .filter((n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>))
+    .map((n) => n._id)
 
-  void inboxClient.readMessages(ops, allIds).then(() => {
-    void ops.commit()
-  })
+  chatReadMessagesStore.update((store) => new Set([...store, ...allIds]))
 
-  void inboxClient.readNotifications(
-    client,
-    relatedMentions.map((n) => n._id)
-  )
+  void inboxClient.readNotifications(client, [...notifications, ...relatedMentions])
 
   if (context === undefined) {
     return
   }
 
-  const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
+  const storedTimestampUpdates = get(contextsTimestampStore).get(context._id)
+  const newTimestamp = messages[messages.length - 1].createdOn ?? 0
+  const prevTimestamp = Math.max(storedTimestampUpdates ?? 0, context.lastViewedTimestamp ?? 0)
 
-  if ((context.lastViewedTimestamp ?? 0) < lastTimestamp) {
-    context.lastViewedTimestamp = lastTimestamp
-    void client.update(context, { lastViewedTimestamp: lastTimestamp })
+  if (prevTimestamp < newTimestamp) {
+    context.lastViewedTimestamp = newTimestamp
+    contextsTimestampStore.update((store) => {
+      store.set(context._id, newTimestamp)
+      return store
+    })
+    void client.update(context, { lastViewedTimestamp: newTimestamp })
   }
 }
 
