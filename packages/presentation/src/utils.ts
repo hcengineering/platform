@@ -21,7 +21,6 @@ import core, {
   concatLink,
   getCurrentAccount,
   reduceCalls,
-  type TxApplyIf,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -46,10 +45,11 @@ import core, {
   type SearchResult,
   type Space,
   type Tx,
+  type TxApplyIf,
+  type TxCUD,
   type TxResult,
   type TypeAny,
-  type WithLookup,
-  type TxCUD
+  type WithLookup
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -57,13 +57,14 @@ import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteCo
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { type Writable, get, writable } from 'svelte/store'
+import { get, writable, type Writable } from 'svelte/store'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
 export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
+let rawLiveQuery: LQ
 let client: TxOperations & MeasureClient & OptimisticTxes
 let pipeline: PresentationPipeline
 
@@ -74,6 +75,10 @@ const txListeners: Array<(...tx: Tx[]) => void> = []
  */
 export function addTxListener (l: (tx: Tx) => void): void {
   txListeners.push(l)
+}
+
+export function getRawLiveQuery (): LQ {
+  return rawLiveQuery
 }
 
 /**
@@ -143,6 +148,8 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
       await pipeline.notifyTx(...tx)
 
       await liveQuery.tx(...tx)
+
+      await rawLiveQuery.tx(...tx)
 
       txListeners.forEach((it) => {
         it(...tx)
@@ -250,17 +257,24 @@ export async function setClient (_client: MeasureClient): Promise<void> {
   if (liveQuery !== undefined) {
     await liveQuery.close()
   }
+  if (rawLiveQuery !== undefined) {
+    await rawLiveQuery.close()
+  }
   if (pipeline !== undefined) {
     await pipeline.close()
   }
+
+  const needRefresh = liveQuery !== undefined
+  rawLiveQuery = new LQ(_client)
+
   const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
   const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
   const creators = await Promise.all(promises)
   // eslint-disable-next-line @typescript-eslint/unbound-method
   pipeline = PresentationPipelineImpl.create(_client, [OptimizeQueryMiddleware.create, ...creators])
 
-  const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(pipeline)
+
   const uiClient = new UIClient(pipeline, liveQuery)
   client = uiClient
 

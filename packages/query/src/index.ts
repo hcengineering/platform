@@ -975,7 +975,7 @@ export class LiveQuery implements WithTx, Client {
       } else {
         _class = value
       }
-      ;(result as any)[key] = await this.findAll(_class, { [attr]: doc._id })
+      ;(result as any)[key] = await this.findAll(_class, { [attr]: doc._id }, { limit: 1 })
     }
   }
 
