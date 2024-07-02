@@ -41,7 +41,7 @@
   let text: HTMLElement
   let input: HTMLInputElement
   let style: string
-  let phTraslate: string = ''
+  let phTranslate: string = ''
   let parentWidth: number | undefined
 
   $: {
@@ -59,7 +59,7 @@
   }
   $: style = `max-width: ${maxWidth || (parentWidth ? `${parentWidth}px` : 'max-content')};`
   $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+    phTranslate = res
   })
 
   function computeSize (t: HTMLInputElement | EventTarget | null) {
@@ -68,7 +68,7 @@
     }
     const target = t as HTMLInputElement
     const value = target.value
-    text.innerHTML = (value === '' ? phTraslate : value)
+    text.innerHTML = (value === '' ? phTranslate : value)
       .replaceAll(' ', '&nbsp;')
       .replaceAll('<', '&lt;')
       .replaceAll('>', '&gt;')
@@ -139,7 +139,7 @@
       type="number"
       class="number"
       bind:value
-      placeholder={phTraslate}
+      placeholder={phTranslate}
       {style}
       on:input={(ev) => {
         if (ev.target) {

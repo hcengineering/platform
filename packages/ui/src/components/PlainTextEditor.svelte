@@ -27,10 +27,10 @@
   export let disabled: boolean = false
 
   let input: HTMLTextAreaElement
-  let phTraslate: string = ''
+  let phTranslate: string = ''
 
   $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+    phTranslate = res
   })
 
   onMount(() => {
@@ -62,7 +62,7 @@
   bind:value
   bind:this={input}
   {disabled}
-  placeholder={phTraslate}
+  placeholder={phTranslate}
   on:keydown
   on:change
   on:keydown
