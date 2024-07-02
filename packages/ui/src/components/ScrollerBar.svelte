@@ -129,13 +129,6 @@
     <slot />
   </div>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="bar"
-    class:hovered={isScrolling}
-    bind:this={divBar}
-    on:mousedown={onScrollStart}
-    on:mouseleave={checkMask}
-  />
   <div class="track" class:hovered={isScrolling} />
 </div>
 
