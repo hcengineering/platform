@@ -318,8 +318,7 @@ async function getFallbackNotificationFullfillment (
   const tx = TxProcessor.extractTx(originTx)
   const account = control.modelDb.getObject(tx.modifiedBy) as PersonAccount
   if (account !== undefined) {
-    const person =
-      (cache.get(account.person) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+    const person = (cache.get(account.person) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
     if (person !== undefined) {
       intlParams.senderName = formatName(person.name, control.branding?.lastNameFirst)
       cache.set(person._id, person)
