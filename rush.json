@@ -532,6 +532,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-pipeline",
+      "projectFolder": "server/server-pipeline",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/login",
       "projectFolder": "plugins/login",
       "shouldPublish": true
