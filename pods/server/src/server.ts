@@ -404,9 +404,9 @@ export function start (
 
   const sessionFactory = (token: Token, pipeline: Pipeline): Session => {
     if (token.extra?.mode === 'backup') {
-      return new BackupClientSession(token, pipeline, opt.brandingMap)
+      return new BackupClientSession(token, pipeline)
     }
-    return new ClientSession(token, pipeline, opt.brandingMap)
+    return new ClientSession(token, pipeline)
   }
 
   const onClose = startJsonRpc(getMetricsContext(), {

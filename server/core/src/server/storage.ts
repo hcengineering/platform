@@ -24,6 +24,7 @@ import core, {
   TxProcessor,
   cutObjectArray,
   toFindResult,
+  type Branding,
   type Account,
   type AttachedDoc,
   type Class,
@@ -87,6 +88,7 @@ export class TServerStorage implements ServerStorage {
   triggerData = new Map<Metadata<any>, any>()
 
   liveQuery: LQ
+  branding: Branding | null
 
   domainInfo = new Map<
   Domain,
@@ -119,6 +121,7 @@ export class TServerStorage implements ServerStorage {
     this.liveQuery = new LQ(this.newCastClient(hierarchy, modelDb, metrics))
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
+    this.branding = options.branding
 
     this.setModel(model)
   }
