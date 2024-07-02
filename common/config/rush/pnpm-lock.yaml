@@ -11728,6 +11728,11 @@ packages:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
     dev: false
 
+  /fuse.js@7.0.0:
+    resolution: {integrity: sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q==}
+    engines: {node: '>=10'}
+    dev: false
+
   /gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -26734,6 +26739,7 @@ packages:
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.12)(ts-node@10.9.2)
       fast-equals: 5.0.1
       filesize: 8.0.7
+      fuse.js: 7.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       lib0: 0.2.89
       prettier: 3.2.5
@@ -26765,6 +26771,7 @@ packages:
       - node-notifier
       - postcss
       - postcss-load-config
+      - prosemirror-inputrules
       - prosemirror-inputrules
       - prosemirror-model
       - prosemirror-state
