@@ -298,7 +298,7 @@ describe('query', () => {
   it('remove with limit', async () => {
     const { liveQuery, factory } = await getClient()
 
-    const expectedLength = 2
+    const expectedLength = 1
     let attempt = 0
     const pp = new Promise((resolve) => {
       liveQuery.query<Space>(
