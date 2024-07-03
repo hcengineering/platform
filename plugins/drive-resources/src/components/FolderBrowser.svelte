@@ -69,11 +69,11 @@
       <FilterBar {_class} {space} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
       <div class="popupPanel rowContent" on:contextmenu>
         {#if viewlet}
-          <Scroller horizontal={true}>
-            <FileDropArea {space} {parent} canDrop={() => !readonly}>
+          <FileDropArea {space} {parent} canDrop={() => !readonly}>
+            <Scroller horizontal={true}>
               <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />
-            </FileDropArea>
-          </Scroller>
+            </Scroller>
+          </FileDropArea>
         {/if}
       </div>
     {/if}

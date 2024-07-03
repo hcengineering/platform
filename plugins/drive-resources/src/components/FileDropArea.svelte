@@ -71,34 +71,29 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="dropzone h-full"
+  class="dropzone flex-col w-full h-full"
+  class:dragover
   on:dragenter={handleDragEnter}
   on:dragleave={handleDragLeave}
   on:dragover|preventDefault={handleDragOver}
   on:drop={handleDrop}
 >
-  {#if dragover}
-    <div class="dropzone-overlay" />
-  {/if}
-
   <slot />
 </div>
 
 <style lang="scss">
   .dropzone {
     position: relative;
-  }
 
-  .dropzone-overlay {
-    pointer-events: none;
-
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary-button-transparent);
-    border: 2px dashed var(--primary-button-outline);
+    &::after {
+      position: absolute;
+      inset: 0;
+      background-color: var(--primary-button-transparent);
+      border: 2px dashed var(--primary-button-outline);
+      pointer-events: none;
+    }
+    &.dragover::after {
+      content: '';
+    }
   }
 </style>
