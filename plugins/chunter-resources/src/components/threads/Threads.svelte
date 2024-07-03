@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { Scroller } from '@hcengineering/ui'
+  import { Icon, Label, Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { PersonAccount } from '@hcengineering/contact'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
@@ -50,14 +50,41 @@
 
 <div class="body h-full w-full">
   <Scroller padding="0.75rem 0.5rem">
-    {#each threads as thread}
-      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
-    {/each}
+    {#if threads.length > 0}
+      {#each threads as thread}
+        <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
+      {/each}
+    {:else}
+      <div class="empty">
+        <Icon icon={chunter.icon.Thread} size="large" />
+        <div class="an-element__label header">
+          <Label label={chunter.string.EmptyThreadHeader} />
+        </div>
+        <span class="an-element__label">
+          <Label label={chunter.string.EmpyThreadText} />
+        </span>
+      </div>
+    {/if}
   </Scroller>
 </div>
 
 <style lang="scss">
   .body {
     background-color: var(--theme-panel-color);
+  }
+  .empty {
+    display: flex;
+    align-self: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: inherit;
+    width: 30rem;
+  }
+
+  .header {
+    font-weight: 600;
+    margin: 1rem;
   }
 </style>

@@ -32,6 +32,8 @@
     "Topic": "Tema",
     "Thread": "Hilo",
     "Threads": "Hilos",
+    "EmptyThreadHeader": "No hay hilos activos",
+    "EmpyThreadText": "Iniciar un hilo en un canal. Podrás ver todos los hilos aquí.",
     "New": "Nuevo",
     "MarkUnread": "Marcar como no leído",
     "GetNewReplies": "Recibir notificaciones de nuevas respuestas",

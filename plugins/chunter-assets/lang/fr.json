@@ -32,6 +32,8 @@
     "Topic": "Sujet",
     "Thread": "Fil de discussion",
     "Threads": "Fils de discussion",
+    "EmptyThreadHeader": "Aucun fil de discussion actif",
+    "EmpyThreadText": "Démarrez un fil de discussion dans une chaîne. Vous pourrez consulter tous les sujets ici.",
     "New": "Nouveau",
     "MarkUnread": "Marquer comme non lu",
     "GetNewReplies": "Recevoir des notifications pour les nouvelles réponses",

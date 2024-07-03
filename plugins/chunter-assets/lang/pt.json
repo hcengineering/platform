@@ -32,6 +32,8 @@
     "Topic": "Tópico",
     "Thread": "Conversa em cadeia",
     "Threads": "Conversas em cadeia",
+    "EmptyThreadHeader": "Nenhuma conversa em cadeia ativa",
+    "EmpyThreadText": "Inicie uma cobertura em cadeia em um canal. Você poderá ver todos os tópicos aqui.",
     "New": "Novo(a)",
     "MarkUnread": "Marcar como não lido",
     "GetNewReplies": "Ser notificado sobre novas respostas",
