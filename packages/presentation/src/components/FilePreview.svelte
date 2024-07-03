@@ -86,7 +86,7 @@
 >
   {#await srcRef then src}
     {#if src === ''}
-      <div class="centered">
+      <div class="flex-col items-center">
         <Label label={presentation.string.FailedToPreview} />
       </div>
     {:else if previewType !== undefined}
@@ -95,7 +95,7 @@
         props={{ value: file, name, contentType: file.contentType, metadata, ...props, fit }}
       />
     {:else}
-      <div class="centered flex-col flex-gap-3">
+      <div class="flex-col items-center flex-gap-3">
         <Label label={presentation.string.ContentTypeNotSupported} />
         <a class="no-line" href={src} download={name} bind:this={download}>
           <Button
