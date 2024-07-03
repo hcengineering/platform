@@ -41,7 +41,7 @@ import serverNotification, {
   NotificationPresenter,
   TextPresenter
 } from '@hcengineering/server-notification'
-import { getResource, IntlString } from '@hcengineering/platform'
+import { getResource, IntlString, translate } from '@hcengineering/platform'
 import contact, { formatName, Person, PersonAccount } from '@hcengineering/contact'
 import { DocUpdateMessage } from '@hcengineering/activity'
 import { NotifyResult } from './types'
@@ -96,14 +96,6 @@ export function replaceAll (str: string, find: string, replace: string): string 
 
 function escapeRegExp (str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-async function findPersonForAccount (control: TriggerControl, personId: Ref<Person>): Promise<Person | undefined> {
-  const persons = await control.findAll(contact.class.Person, { _id: personId })
-  if (persons !== undefined && persons.length > 0) {
-    return persons[0]
-  }
-  return undefined
 }
 
 export async function shouldNotifyCommon (
@@ -323,18 +315,27 @@ async function getFallbackNotificationFullfillment (
     intlParams.title = await textPresenterFunc(object, control)
   }
 
-  const account = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
+  const tx = TxProcessor.extractTx(originTx)
+  const account = control.modelDb.getObject(tx.modifiedBy) as PersonAccount
   if (account !== undefined) {
-    const senderPerson = (cache.get(account.person) as Person) ?? (await findPersonForAccount(control, account.person))
-    if (senderPerson !== undefined) {
-      intlParams.senderName = formatName(senderPerson.name, control.branding?.lastNameFirst)
-      cache.set(senderPerson._id, senderPerson)
+    const person =
+      (cache.get(account.person) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+    if (person !== undefined) {
+      intlParams.senderName = formatName(person.name, control.branding?.lastNameFirst)
+      cache.set(person._id, person)
+    } else {
+      console.error('Cannot find person: ', { accountId: account._id, person: account.person })
     }
+  } else if (tx.modifiedBy === core.account.System) {
+    intlParams.senderName = await translate(core.string.System, {})
+  } else {
+    console.error('Cannot find person account by _id: ', tx.modifiedBy)
   }
 
-  const actualTx = TxProcessor.extractTx(originTx)
-  if (actualTx._class === core.class.TxUpdateDoc) {
-    const updateTx = actualTx as TxUpdateDoc<Doc>
+  intlParams.senderName = intlParams.senderName ?? ''
+
+  if (tx._class === core.class.TxUpdateDoc) {
+    const updateTx = tx as TxUpdateDoc<Doc>
     const attributes = control.hierarchy.getAllAttributes(object._class)
     for (const attrName in updateTx.operations) {
       if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
