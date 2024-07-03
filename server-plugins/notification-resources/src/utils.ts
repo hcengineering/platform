@@ -44,6 +44,8 @@ import serverNotification, {
 import { getResource, IntlString, translate } from '@hcengineering/platform'
 import contact, { formatName, Person, PersonAccount } from '@hcengineering/contact'
 import { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
+
 import { NotifyResult } from './types'
 
 /**
@@ -298,6 +300,36 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
 }
 
+async function getSenderName (
+  accountId: Ref<PersonAccount>,
+  control: TriggerControl,
+  cache: Map<Ref<Doc>, Doc>
+): Promise<string> {
+  if (accountId === core.account.System) {
+    return await translate(core.string.System, {})
+  }
+
+  const account = await getPersonAccountById(accountId, control)
+
+  if (account === undefined) {
+    console.error('Cannot find person account: ', accountId)
+    Analytics.handleError(new Error(`Cannot find person account ${accountId}`))
+    return ''
+  }
+
+  const person =
+    (cache.get(accountId) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+
+  if (person === undefined) {
+    console.error('Cannot find person', { accountId: account._id, person: account.person })
+    Analytics.handleError(new Error(`Cannot find person ${account.person}`))
+
+    return ''
+  }
+
+  return formatName(person.name, control.branding?.lastNameFirst)
+}
+
 async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
@@ -316,23 +348,8 @@ async function getFallbackNotificationFullfillment (
   }
 
   const tx = TxProcessor.extractTx(originTx)
-  const account = control.modelDb.getObject(tx.modifiedBy) as PersonAccount
-  if (account !== undefined) {
-    const person =
-      (cache.get(account.person) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
-    if (person !== undefined) {
-      intlParams.senderName = formatName(person.name, control.branding?.lastNameFirst)
-      cache.set(person._id, person)
-    } else {
-      console.error('Cannot find person: ', { accountId: account._id, person: account.person })
-    }
-  } else if (tx.modifiedBy === core.account.System) {
-    intlParams.senderName = await translate(core.string.System, {})
-  } else {
-    console.error('Cannot find person account by _id: ', tx.modifiedBy)
-  }
 
-  intlParams.senderName = intlParams.senderName ?? ''
+  intlParams.senderName = await getSenderName(tx.modifiedBy as Ref<PersonAccount>, control, cache)
 
   if (tx._class === core.class.TxUpdateDoc) {
     const updateTx = tx as TxUpdateDoc<Doc>
