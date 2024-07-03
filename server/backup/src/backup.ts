@@ -43,6 +43,7 @@ import { Writable } from 'stream'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
+import { Analytics } from '@hcengineering/analytics'
 export * from './storage'
 
 const dataBlobSize = 50 * 1024 * 1024
@@ -231,7 +232,7 @@ export async function cloneWorkspace (
   clearTime: boolean = true,
   progress: (value: number) => Promise<void>,
   skipFullText: boolean,
-  storageAdapter?: StorageAdapter
+  storageAdapter: StorageAdapter
 ): Promise<void> {
   await ctx.with(
     'clone-workspace',
@@ -255,10 +256,6 @@ export async function cloneWorkspace (
             admin: 'true'
           })) as unknown as CoreClient & BackupClient
       )
-
-      const blobClientSource = new BlobClient(transactorUrl, sourceWorkspaceId)
-      const blobClientTarget = new BlobClient(transactorUrl, targetWorkspaceId)
-
       try {
         const domains = sourceConnection
           .getHierarchy()
@@ -290,6 +287,7 @@ export async function cloneWorkspace (
           const needRetrieveChunks: Ref<Doc>[][] = []
 
           let processed = 0
+          let domainProgress = 0
           let st = Date.now()
           // Load all digest from collection.
           await ctx.with('retrieve-domain-info', { domain: c }, async (ctx) => {
@@ -351,12 +349,12 @@ export async function cloneWorkspace (
                 if (clearTime) {
                   docs = prepareClonedDocuments(docs, sourceConnection, skipFullText)
                 }
+                const executor = new RateLimiter(10)
                 for (const d of docs) {
                   if (d._class === core.class.Blob) {
                     const blob = d as Blob
-                    const blobs: Buffer[] = []
-                    try {
-                      if (storageAdapter !== undefined) {
+                    await executor.exec(async () => {
+                      try {
                         ctx.info('clone blob', { name: blob._id, contentType: blob.contentType })
                         const readable = await storageAdapter.get(ctx, sourceWorkspaceId, blob._id)
                         const passThrue = new PassThrough()
@@ -369,29 +367,18 @@ export async function cloneWorkspace (
                           blob.contentType,
                           blob.size
                         )
-                      } else {
-                        ctx.info('clone blob', { name: blob._id, contentType: blob.contentType })
-                        await ctx.with('download-blob', { contentType: blob.contentType }, async (ctx) => {
-                          await blobClientSource.writeTo(ctx, blob._id, blob.size, {
-                            write: (b, cb) => {
-                              blobs.push(b)
-                              cb()
-                            },
-                            end: (cb) => {
-                              cb()
-                            }
-                          })
-                        })
-                        await ctx.with('upload-blob', { contentType: blob.contentType }, async (ctx) => {
-                          const buffer = Buffer.concat(blobs)
-                          await blobClientTarget.upload(ctx, blob._id, buffer.length, blob.contentType, buffer)
-                        })
+                      } catch (err: any) {
+                        Analytics.handleError(err)
+                        console.error(err)
                       }
-                    } catch (err: any) {
-                      console.error(err)
-                    }
+                      domainProgress++
+                      await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
+                    })
+                  } else {
+                    domainProgress++
                   }
                 }
+                await executor.waitProcessing()
                 await ctx.with(
                   'upload-docs',
                   {},
@@ -400,8 +387,10 @@ export async function cloneWorkspace (
                   },
                   { length: docs.length }
                 )
+                await progress((100 / domains.length) * i + (100 / domains.length / processed) * domainProgress)
               } catch (err: any) {
                 console.log(err)
+                Analytics.handleError(err)
                 // Put back.
                 needRetrieveChunks.push(needRetrieve)
                 continue
@@ -414,6 +403,7 @@ export async function cloneWorkspace (
         }
       } catch (err: any) {
         console.error(err)
+        Analytics.handleError(err)
       } finally {
         ctx.info('end clone')
         await ctx.with('close-source', {}, async (ctx) => {

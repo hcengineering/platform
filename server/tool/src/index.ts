@@ -155,9 +155,16 @@ export async function initModel (
       await progress(30)
 
       // Create update indexes
-      await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
-        await progress(30 + (Math.min(value, 100) / 100) * 70)
-      })
+      await createUpdateIndexes(
+        ctx,
+        connection,
+        db,
+        logger,
+        async (value) => {
+          await progress(30 + (Math.min(value, 100) / 100) * 70)
+        },
+        workspaceId
+      )
       await progress(100)
     } catch (e: any) {
       logger.error('error', { error: e })
@@ -403,9 +410,10 @@ async function createUpdateIndexes (
   connection: CoreClient,
   db: Db,
   logger: ModelLogger,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  workspaceId: WorkspaceId
 ): Promise<void> {
-  const domainHelper = new DomainIndexHelperImpl(connection.getHierarchy(), connection.getModel())
+  const domainHelper = new DomainIndexHelperImpl(ctx, connection.getHierarchy(), connection.getModel(), workspaceId)
   const dbHelper = new DBCollectionHelper(db)
   await dbHelper.init()
   let completed = 0
