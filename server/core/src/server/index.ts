@@ -163,7 +163,7 @@ export async function createServerStorage (
     )
   }
 
-  const domainHelper = new DomainIndexHelperImpl(hierarchy, modelDb)
+  const domainHelper = new DomainIndexHelperImpl(metrics, hierarchy, modelDb, conf.workspace)
 
   return new TServerStorage(
     conf.domains,

@@ -1,3 +1,4 @@
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   Class,
   Client,
@@ -154,7 +155,13 @@ export async function tryMigrate (client: MigrationClient, plugin: string, migra
   const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
-    await migration.func(client)
+    try {
+      await migration.func(client)
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+      continue
+    }
     const st: MigrationState = {
       plugin,
       state: migration.state,
@@ -181,7 +188,13 @@ export async function tryUpgrade (
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
     const _client = await client()
-    await migration.func(_client)
+    try {
+      await migration.func(_client)
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+      continue
+    }
     const st: Data<MigrationState> = {
       plugin,
       state: migration.state
