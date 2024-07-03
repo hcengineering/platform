@@ -81,6 +81,7 @@ import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
 import { encodeObjectURI } from '@hcengineering/view'
 import serverView from '@hcengineering/server-view'
+import { Analytics } from '@hcengineering/analytics'
 
 import { Content, NotifyResult, NotifyParams } from './types'
 import {
@@ -463,8 +464,9 @@ async function activityInboxNotificationToText (doc: Data<ActivityInboxNotificat
   }
 
   // TODO: temporary log to understand problem. Remove it later.
-  if (doc.body === 'chunter:string:MessageNotificationBody') {
+  if (body === 'chunter:string:MessageNotificationBody') {
     console.error('Cannot translate chunter notification: ', { doc, params })
+    Analytics.handleError(new Error('Cannot translate chunter notification'))
   }
 
   return [title, body]
