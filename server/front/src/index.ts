@@ -15,7 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate } from '@hcengineering/core'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate, type Ref } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -798,8 +798,22 @@ async function getGeneratePreview (
       pipeline.destroy()
 
       // Add support of avif as well.
-      await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
-      return (await config.storageAdapter.stat(ctx, payload.workspace, sizeId)) ?? blob
+      const upload = await config.storageAdapter.put(
+        ctx,
+        payload.workspace,
+        sizeId,
+        dataBuff,
+        contentType,
+        dataBuff.length
+      )
+      return {
+        ...blob,
+        _id: sizeId as Ref<PlatformBlob>,
+        size: dataBuff.length,
+        contentType,
+        etag: upload.etag,
+        storageId: sizeId
+      }
     } catch (err: any) {
       Analytics.handleError(err)
       ctx.error('failed to resize image', {
