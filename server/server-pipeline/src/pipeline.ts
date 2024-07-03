@@ -81,10 +81,11 @@ export function createServerPipeline (
         [DOMAIN_BLOB]: 'StorageData',
         [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
         [DOMAIN_MODEL]: 'Null',
-        [DOMAIN_BENCHMARK]: 'Benchmark'
+        [DOMAIN_BENCHMARK]: 'Benchmark',
+        ...extensions?.domains
       },
       metrics: wsMetrics,
-      defaultAdapter: 'Mongo',
+      defaultAdapter: extensions?.defaultAdapter ?? 'Mongo',
       adapters: {
         MongoTx: {
           factory: createMongoTxAdapter,
@@ -113,9 +114,10 @@ export function createServerPipeline (
         Benchmark: {
           factory: createBenchmarkAdapter,
           url: ''
-        }
+        },
+        ...extensions?.adapters
       },
-      fulltextAdapter: {
+      fulltextAdapter: extensions?.fulltextAdapter ?? {
         factory: createElasticAdapter,
         url: opt.fullTextUrl,
         stages: (adapter, storage, storageAdapter, contentAdapter) =>
@@ -131,7 +133,7 @@ export function createServerPipeline (
             opt.indexProcessing
           )
       },
-      serviceAdapters: {},
+      serviceAdapters: extensions?.serviceAdapters ?? {},
       contentAdapters: {
         Rekoni: {
           factory: createRekoniAdapter,
@@ -142,9 +144,10 @@ export function createServerPipeline (
           factory: createYDocAdapter,
           contentType: 'application/ydoc',
           url: ''
-        }
+        },
+        ...extensions?.contentAdapters
       },
-      defaultContentAdapter: 'Rekoni',
+      defaultContentAdapter: extensions?.defaultContentAdapter ?? 'Rekoni',
       storageFactory: opt.externalStorage,
       workspace
     }
