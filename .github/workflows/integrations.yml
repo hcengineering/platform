@@ -1,0 +1,43 @@
+name: GithubIntegrations
+on:
+  schedule:
+    # Runs at 5 AM UTC every day. We can change this to whatever we need or want
+    - cron: '0 5 * * *'
+jobs:
+  setup-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Install Playwright
+        run: |
+          cd ./tests/sanity
+          node ../../common/scripts/install-run-rushx.js ci
+      - name: Run UI tests
+        run: |
+          cd ./tests/sanity
+          node ../../common/scripts/install-run-rushx.js staging-uitest
+        env:
+          TESTING_GH_TOKEN: ${{ secrets.TESTING_GH_TOKEN }}
+          TESTING_GH_OWNER: ${{ secrets.TESTING_GH_OWNER }}

@@ -13,6 +13,7 @@ export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 export const DefaultWorkspace = 'SanityTest'
 export const LocalUrl = process.env.LOCAL_URL as string
 export const DevUrl = process.env.DEV_URL as string
+export const StagingUrl = process.env.STAGING_URL as string
 
 export function generateTestData (): TestData {
   const generateWordStartingWithA = (): string => {

@@ -16,9 +16,9 @@
   import { createEventDispatcher } from 'svelte'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { Class, Doc, generateId, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
   import chunter, { ChatMessage, ExternalChannel, ExternalChatMessage } from '@hcengineering/chunter'
-  import contactPlugin, { ChannelMessage, ChannelProvider, Contact } from '@hcengineering/contact'
+  import contactPlugin, { ChannelProvider, Contact } from '@hcengineering/contact'
   import activity from '@hcengineering/activity'
   import { EmptyMarkup } from '@hcengineering/text-editor'
   import { isHulyUser, personAccountByIdStore } from '@hcengineering/contact-resources'
@@ -83,17 +83,17 @@
   let _id = messageDraft._id
   let inputContent = messageDraft.message
 
-  function getInitialDraft () {
+  function getInitialDraft (): MessageDraft {
     if (chatMessage === undefined) {
       return currentDraft ?? getDefault()
     }
 
     if (hierarchy.isDerived(chatMessage._class, chunter.class.ExternalChatMessage)) {
       const externalMessage = chatMessage as WithLookup<ExternalChatMessage>
-      const channelMessage = externalMessage.$lookup?.channelMessage as WithLookup<ChannelMessage> | undefined
+      const channelMessage = externalMessage.$lookup?.channelMessage
       return {
         _id: externalMessage._id,
-        message: channelMessage?.content,
+        message: channelMessage?.content ?? EmptyMarkup,
         attachments: channelMessage?.attachments
       }
     }
@@ -148,7 +148,7 @@
     messageDraft.attachments = attachments
   }
 
-  async function connectIntegration (integration: Integration | undefined, typeRef: Ref<IntegrationType>) {
+  async function connectIntegration (integration: Integration | undefined, typeRef: Ref<IntegrationType>): Promise<void> {
     const type = client.getModel().findAllSync(setting.class.IntegrationType, { _id: typeRef })[0]
 
     if (type === undefined) {
@@ -178,30 +178,24 @@
       return
     }
 
-    loading = true
     draftController.remove()
     inputRef.removeDraft(false)
 
-    const doneOp = await getClient().measure(`chunter.create.${_class} ${object._class}`)
-
     if (chatMessage !== undefined) {
+      loading = true
       await editChatMessage(
         chatMessage,
         { message: event.detail.message, attachments: event.detail.attachments },
         selectedChannel
       )
     } else {
-      await createChatMessage(
+      void createChatMessage(
         object,
         { _id, _class, message: event.detail.message, attachments: event.detail.attachments, collection },
         selectedChannel
       )
     }
 
-    const d1 = Date.now()
-    void doneOp().then((res) => {
-      console.log(`create.${_class} measure`, res, Date.now() - d1)
-    })
     // Remove draft from Local Storage
     clear()
     dispatch('submit', false)
@@ -309,7 +303,8 @@
   bind:this={inputRef}
   bind:content={inputContent}
   {_class}
-  space={object.space}
+  space={isSpace(object) ? object._id : object.space}
+  skipAttachmentsPreload={(messageDraft.attachments ?? 0) === 0}
   bind:objectId={_id}
   {shouldSaveDraft}
   {boundary}

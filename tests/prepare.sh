@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 docker compose -p sanity kill
 docker compose -p sanity down --volumes
@@ -20,6 +20,8 @@ fi
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
 ./tool.sh assign-workspace user1 sanity-ws
 ./tool.sh assign-workspace user2 sanity-ws
+./tool.sh set-user-role user1 sanity-ws OWNER
+./tool.sh set-user-role user2 sanity-ws OWNER
 # Make user the workspace maintainer
 ./tool.sh confirm-email user1
 ./tool.sh confirm-email user2

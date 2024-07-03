@@ -53,6 +53,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
+  export let skipAttachmentsPreload = false
 
   let refInput: ReferenceInput
 
@@ -75,9 +76,30 @@
 
   let refContainer: HTMLElement
 
+  const existingAttachmentsQuery = createQuery()
+  let existingAttachments: Ref<Attachment>[] = []
+
+  $: if (Array.from(attachments.keys()).length > 0) {
+    existingAttachmentsQuery.query(
+      attachment.class.Attachment,
+      {
+        space,
+        attachedTo: objectId,
+        attachedToClass: _class,
+        _id: { $in: Array.from(attachments.keys()) }
+      },
+      (res) => {
+        existingAttachments = res.map((p) => p._id)
+      }
+    )
+  } else {
+    existingAttachments = []
+    existingAttachmentsQuery.unsubscribe()
+  }
+
   $: objectId && updateAttachments(objectId)
 
-  async function updateAttachments (objectId: Ref<Doc>) {
+  async function updateAttachments (objectId: Ref<Doc>): Promise<void> {
     draftAttachments = $draftsStore[draftKey]
     if (draftAttachments && shouldSaveDraft) {
       attachments.clear()
@@ -90,7 +112,8 @@
       })
       originalAttachments.clear()
       removedAttachments.clear()
-    } else {
+      query.unsubscribe()
+    } else if (!skipAttachmentsPreload) {
       query.query(
         attachment.class.Attachment,
         {
@@ -106,17 +129,23 @@
           }
         }
       )
+    } else {
+      attachments.clear()
+      newAttachments.clear()
+      originalAttachments.clear()
+      removedAttachments.clear()
+      query.unsubscribe()
     }
   }
 
-  async function saveDraft () {
+  function saveDraft (): void {
     if (shouldSaveDraft) {
       draftAttachments = Object.fromEntries(attachments)
       draftController.save(draftAttachments)
     }
   }
 
-  async function createAttachment (file: File) {
+  async function createAttachment (file: File): Promise<void> {
     try {
       const uuid = await uploadFile(file)
       const metadata = await getFileMetadata(file, uuid)
@@ -140,26 +169,12 @@
       })
       newAttachments.add(_id)
       attachments = attachments
+      dispatch('update', { message: content, attachments: attachments.size })
       saveDraft()
     } catch (err: any) {
-      setPlatformStatus(unknownError(err))
+      void setPlatformStatus(unknownError(err))
     }
   }
-
-  const existingAttachmentsQuery = createQuery()
-  let existingAttachments: Ref<Attachment>[] = []
-  $: existingAttachmentsQuery.query(
-    attachment.class.Attachment,
-    {
-      space,
-      attachedTo: objectId,
-      attachedToClass: _class,
-      _id: { $in: Array.from(attachments.keys()) }
-    },
-    (res) => {
-      existingAttachments = res.map((p) => p._id)
-    }
-  )
 
   async function saveAttachment (doc: Attachment): Promise<void> {
     if (!existingAttachments.includes(doc._id)) {
@@ -205,6 +220,7 @@
       await createAttachments()
     }
     attachments = attachments
+    dispatch('update', { message: content, attachments: attachments.size })
     saveDraft()
   }
 
@@ -237,7 +253,7 @@
     }
   })
 
-  export function removeDraft (removeFiles: boolean) {
+  export function removeDraft (removeFiles: boolean): void {
     draftController.remove()
     if (removeFiles) {
       newAttachments.forEach((p) => {
@@ -264,14 +280,14 @@
     return Promise.all(promises).then()
   }
 
-  async function onMessage (event: CustomEvent) {
+  async function onMessage (event: CustomEvent): Promise<void> {
     loading = true
     await createAttachments()
     loading = false
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
-  async function onUpdate (event: CustomEvent) {
+  function onUpdate (event: CustomEvent): void {
     dispatch('update', { message: event.detail, attachments: attachments.size })
   }
 
@@ -350,7 +366,7 @@
     <ReferenceInput
       {focusIndex}
       bind:this={refInput}
-      {content}
+      bind:content
       {iconSend}
       {labelSend}
       {showSend}
@@ -372,7 +388,7 @@
       {placeholder}
     >
       <div slot="header">
-        {#if attachments.size || progress}
+        {#if attachments.size > 0 || progress}
           <div class="flex-row-center list scroll-divider-color">
             {#if progress}
               <div class="flex p-3">
@@ -385,7 +401,7 @@
                   value={attachment}
                   removable={!disableAttach}
                   on:remove={(result) => {
-                    if (result !== undefined) removeAttachment(attachment)
+                    if (result !== undefined) void removeAttachment(attachment)
                   }}
                 />
               </div>

@@ -41,9 +41,11 @@ import serverNotification, {
   NotificationPresenter,
   TextPresenter
 } from '@hcengineering/server-notification'
-import { getResource, IntlString } from '@hcengineering/platform'
+import { getResource, IntlString, translate } from '@hcengineering/platform'
 import contact, { formatName, Person, PersonAccount } from '@hcengineering/contact'
 import { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
+
 import { NotifyResult } from './types'
 
 /**
@@ -96,14 +98,6 @@ export function replaceAll (str: string, find: string, replace: string): string 
 
 function escapeRegExp (str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-async function findPersonForAccount (control: TriggerControl, personId: Ref<Person>): Promise<Person | undefined> {
-  const persons = await control.findAll(contact.class.Person, { _id: personId })
-  if (persons !== undefined && persons.length > 0) {
-    return persons[0]
-  }
-  return undefined
 }
 
 export async function shouldNotifyCommon (
@@ -306,6 +300,36 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
 }
 
+async function getSenderName (
+  accountId: Ref<PersonAccount>,
+  control: TriggerControl,
+  cache: Map<Ref<Doc>, Doc>
+): Promise<string> {
+  if (accountId === core.account.System) {
+    return await translate(core.string.System, {})
+  }
+
+  const account = await getPersonAccountById(accountId, control)
+
+  if (account === undefined) {
+    console.error('Cannot find person account: ', accountId)
+    Analytics.handleError(new Error(`Cannot find person account ${accountId}`))
+    return ''
+  }
+
+  const person =
+    (cache.get(accountId) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+
+  if (person === undefined) {
+    console.error('Cannot find person', { accountId: account._id, person: account.person })
+    Analytics.handleError(new Error(`Cannot find person ${account.person}`))
+
+    return ''
+  }
+
+  return formatName(person.name, control.branding?.lastNameFirst)
+}
+
 async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
@@ -323,18 +347,12 @@ async function getFallbackNotificationFullfillment (
     intlParams.title = await textPresenterFunc(object, control)
   }
 
-  const account = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
-  if (account !== undefined) {
-    const senderPerson = (cache.get(account.person) as Person) ?? (await findPersonForAccount(control, account.person))
-    if (senderPerson !== undefined) {
-      intlParams.senderName = formatName(senderPerson.name, control.branding?.lastNameFirst)
-      cache.set(senderPerson._id, senderPerson)
-    }
-  }
+  const tx = TxProcessor.extractTx(originTx)
 
-  const actualTx = TxProcessor.extractTx(originTx)
-  if (actualTx._class === core.class.TxUpdateDoc) {
-    const updateTx = actualTx as TxUpdateDoc<Doc>
+  intlParams.senderName = await getSenderName(tx.modifiedBy as Ref<PersonAccount>, control, cache)
+
+  if (tx._class === core.class.TxUpdateDoc) {
+    const updateTx = tx as TxUpdateDoc<Doc>
     const attributes = control.hierarchy.getAllAttributes(object._class)
     for (const attrName in updateTx.operations) {
       if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {

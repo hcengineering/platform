@@ -968,13 +968,13 @@ export async function createWorkspace (
           getWorkspaceId(workspaceInfo.workspace, productId),
           true,
           async (value) => {
-            await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 30) })
+            await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 70) })
           },
           true,
           getStorageAdapter()
         )
         const modelVersion = getModelVersion()
-        await updateInfo({ createProgress: 50 })
+        await updateInfo({ createProgress: 90 })
 
         // Skip tx update if version of init workspace are proper one.
         const skipTxUpdate =
@@ -992,11 +992,11 @@ export async function createWorkspace (
               ctxModellogger,
               skipTxUpdate,
               async (value) => {
-                await updateInfo({ createProgress: Math.round(50 + (Math.min(value, 100) / 100) * 40) })
+                await updateInfo({ createProgress: Math.round(90 + (Math.min(value, 100) / 100) * 10) })
               }
             )
         )
-        await updateInfo({ createProgress: 90 })
+        await updateInfo({ createProgress: 99 })
       } else {
         await childLogger.withLog('init-workspace', {}, async (ctx) => {
           await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger, async (value) => {

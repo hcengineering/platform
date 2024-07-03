@@ -82,7 +82,7 @@ describe('server', () => {
         return { docs: [] }
       }
     }),
-    sessionFactory: (token, pipeline) => new ClientSession(token, pipeline, {}),
+    sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
     port: 3335,
     productId: '',
     brandingMap: {},
@@ -183,7 +183,7 @@ describe('server', () => {
           return { docs: [] }
         }
       }),
-      sessionFactory: (token, pipeline) => new ClientSession(token, pipeline, {}),
+      sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
       port: 3336,
       productId: '',
       brandingMap: {},

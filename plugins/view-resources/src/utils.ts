@@ -18,12 +18,15 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
   ClassifierKind,
+  DocManager,
   Hierarchy,
+  SortingOrder,
   TxProcessor,
   getCurrentAccount,
   getObjectValue,
   type Account,
   type AggregateValue,
+  type AnyAttribute,
   type AttachedDoc,
   type CategoryType,
   type Class,
@@ -42,6 +45,7 @@ import core, {
   type ReverseLookup,
   type ReverseLookups,
   type Space,
+  type Tx,
   type TxCUD,
   type TxCollectionCUD,
   type TxCreateDoc,
@@ -50,11 +54,7 @@ import core, {
   type TxUpdateDoc,
   type TypeAny,
   type TypedSpace,
-  type WithLookup,
-  type AnyAttribute,
-  DocManager,
-  SortingOrder,
-  type Tx
+  type WithLookup
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
@@ -64,11 +64,11 @@ import {
   getAttributePresenterClass,
   getClient,
   getFiltredKeys,
+  getRawLiveQuery,
   hasResource,
   isAdminUser,
   type KeyedAttribute
 } from '@hcengineering/presentation'
-import { LiveQuery } from '@hcengineering/query'
 import { type CollaborationUser } from '@hcengineering/text-editor'
 import {
   ErrorPresenter,
@@ -85,7 +85,6 @@ import {
   type Location
 } from '@hcengineering/ui'
 import view, {
-  type IAggregationManager,
   AttributeCategoryOrder,
   type AttributeCategory,
   type AttributeModel,
@@ -93,9 +92,10 @@ import view, {
   type BuildModelKey,
   type BuildModelOptions,
   type CollectionPresenter,
+  type IAggregationManager,
+  type LinkIdProvider,
   type Viewlet,
-  type ViewletDescriptor,
-  type LinkIdProvider
+  type ViewletDescriptor
 } from '@hcengineering/view'
 
 import contact, { getName, type Contact, type PersonAccount } from '@hcengineering/contact'
@@ -119,7 +119,6 @@ export class AggregationManager<T extends Doc> implements IAggregationManager<T>
   docs: T[] | undefined
   mgr: DocManager<T> | Promise<DocManager<T>> | undefined
   query: (() => void) | undefined
-  lq: LiveQuery
   lqCallback: () => void
   private readonly setStore: (manager: DocManager<T>) => void
   private readonly filter: (doc: T, target: T) => boolean
@@ -132,7 +131,6 @@ export class AggregationManager<T extends Doc> implements IAggregationManager<T>
     categorizingFunc: (doc: T, target: T) => boolean,
     _class: Ref<Class<T>>
   ) {
-    this.lq = new LiveQuery(client)
     this.lqCallback = lqCallback ?? (() => {})
     this.setStore = setStore
     this.filter = categorizingFunc
@@ -158,7 +156,7 @@ export class AggregationManager<T extends Doc> implements IAggregationManager<T>
       return this.mgr
     }
     this.mgr = new Promise<DocManager<T>>((resolve) => {
-      this.query = this.lq.query(
+      this.query = getRawLiveQuery().query(
         this._class,
         {},
         (res) => {
@@ -187,7 +185,7 @@ export class AggregationManager<T extends Doc> implements IAggregationManager<T>
   }
 
   async notifyTx (...tx: Tx[]): Promise<void> {
-    await this.lq.tx(...tx)
+    // This is intentional
   }
 
   getAttrClass (): Ref<Class<T>> {

@@ -1,3 +1,4 @@
+import { Analytics } from '@hcengineering/analytics'
 import type {
   Doc,
   Domain,
@@ -5,24 +6,32 @@ import type {
   FieldIndex,
   Hierarchy,
   MeasureContext,
-  ModelDb
+  ModelDb,
+  WorkspaceId
 } from '@hcengineering/core'
 import core, { DOMAIN_MODEL, IndexKind, IndexOrder } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import type { DomainHelper, DomainHelperOperations } from '../adapter'
-import { Analytics } from '@hcengineering/analytics'
 
 export class DomainIndexHelperImpl implements DomainHelper {
   domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
   domainConfigurations: DomainIndexConfiguration[] = []
   constructor (
+    readonly ctx: MeasureContext,
     readonly hierarchy: Hierarchy,
-    readonly model: ModelDb
+    readonly model: ModelDb,
+    readonly workspaceId: WorkspaceId
   ) {
     const classes = model.findAllSync(core.class.Class, {})
 
-    this.domainConfigurations =
-      model.findAllSync<DomainIndexConfiguration>(core.class.DomainIndexConfiguration, {}) ?? []
+    try {
+      this.domainConfigurations =
+        model.findAllSync<DomainIndexConfiguration>(core.class.DomainIndexConfiguration, {}) ?? []
+    } catch (err: any) {
+      this.domainConfigurations = []
+      Analytics.handleError(err)
+      ctx.error('failed to find domain index configuration', { err })
+    }
 
     this.domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
     // Find all domains and indexed fields inside
@@ -81,7 +90,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
 
     if (forceCreate && !exists) {
       await operations.create(domain)
-      console.log('collection will be created', domain)
+      ctx.info('collection will be created', domain)
       exists = true
     }
     if (!exists) {

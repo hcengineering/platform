@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Usage
 # ./install-elastic-plugin-setup.sh sanity_elastic_1

@@ -69,7 +69,7 @@ export interface ServerStorage extends LowLevelStorage {
   close: () => Promise<void>
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   workspaceId: WorkspaceIdWithUrl
-  branding?: string
+  branding: Branding | null
   storageAdapter: StorageAdapter
 }
 
@@ -213,7 +213,7 @@ export interface EmbeddingSearchOption {
 export interface IndexedDoc {
   id: Ref<Doc>
   _class: Ref<Class<Doc>>[]
-  space: Ref<Space>
+  space: Ref<Space>[]
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
   attachedTo?: Ref<Doc>

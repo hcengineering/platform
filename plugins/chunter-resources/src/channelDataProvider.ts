@@ -154,8 +154,10 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const metadata = get(this.metadataStore)
 
     if (mode === 'forward') {
+      const isTailLoading = get(this.isTailLoading)
+      const tail = get(this.tailStore)
       const last = metadata[metadata.length - 1]?.createdOn ?? 0
-      return last > timestamp
+      return last > timestamp && !isTailLoading && tail.length === 0
     } else {
       const first = metadata[0]?.createdOn ?? 0
       return first < timestamp

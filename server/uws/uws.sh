@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 mkdir -p ./.build
 cd ./.build
 if ! test -f ./v20.43.0.zip; then

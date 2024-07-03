@@ -1,4 +1,4 @@
-import { type BrandingMap, Doc, DocInfo, Domain, Ref, StorageIterator } from '@hcengineering/core'
+import { Doc, DocInfo, Domain, Ref, StorageIterator } from '@hcengineering/core'
 import { Pipeline, estimateDocSize } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
 import { ClientSession, Session, type ClientSessionCtx } from '@hcengineering/server-ws'
@@ -30,10 +30,9 @@ export interface BackupSession extends Session {
 export class BackupClientSession extends ClientSession implements BackupSession {
   constructor (
     protected readonly token: Token,
-    protected readonly _pipeline: Pipeline,
-    protected readonly brandingMap: BrandingMap
+    protected readonly _pipeline: Pipeline
   ) {
-    super(token, _pipeline, brandingMap)
+    super(token, _pipeline)
   }
 
   idIndex = 0

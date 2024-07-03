@@ -135,6 +135,7 @@ export async function createServerStorage (
       metrics.newChild('fulltext', {}),
       modelDb,
       (classes: Ref<Class<Doc>>[]) => {
+        ctx.info('broadcast indexing update', { classes, workspace: conf.workspace })
         const evt: IndexingUpdateEvent = {
           _class: classes
         }
@@ -162,7 +163,7 @@ export async function createServerStorage (
     )
   }
 
-  const domainHelper = new DomainIndexHelperImpl(hierarchy, modelDb)
+  const domainHelper = new DomainIndexHelperImpl(metrics, hierarchy, modelDb, conf.workspace)
 
   return new TServerStorage(
     conf.domains,

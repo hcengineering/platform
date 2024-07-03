@@ -45,10 +45,10 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
-  let phTraslate: string = ''
+  let phTranslate: string = ''
   $: if (placeholder) {
     translate(placeholder, {}, $themeStore.language).then((res) => {
-      phTraslate = res
+      phTranslate = res
     })
   }
 
@@ -116,7 +116,7 @@
           bind:this={searchElement}
           type="text"
           bind:value={search}
-          placeholder={phTraslate}
+          placeholder={phTranslate}
           style="width: 100%;"
           on:change
         />
