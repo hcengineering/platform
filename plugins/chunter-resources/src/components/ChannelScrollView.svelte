@@ -632,17 +632,6 @@
 
   $: void compensateAside(isAsideOpened)
 
-  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage) {
-    let prevMetadata: MessageMetadata | undefined = undefined
-
-    if (prevMessage === undefined) {
-      const metadata = $metadataStore
-      prevMetadata = metadata.find((_, index) => metadata[index + 1]?._id === message._id)
-    }
-
-    return canGroupMessages(message, prevMessage ?? prevMetadata)
-  }
-
   onMount(() => {
     chatReadMessagesStore.update(() => new Set())
   })

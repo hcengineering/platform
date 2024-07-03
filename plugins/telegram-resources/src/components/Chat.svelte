@@ -114,6 +114,7 @@
 
   async function onMessage (event: CustomEvent) {
     if (channel === undefined) return
+    loading = true
     const { message, attachments } = event.detail
     await client.addCollection(
       telegram.class.TelegramChannelMessage,

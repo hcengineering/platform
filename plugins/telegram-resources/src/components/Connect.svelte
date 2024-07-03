@@ -119,8 +119,14 @@
 
   async function click () {
     try {
-      if (secondFactor) { await sendPassword(); return }
-      if (requested) { await sendCode(); return }
+      if (secondFactor) {
+        await sendPassword()
+        return
+      }
+      if (requested) {
+        await sendCode()
+        return
+      }
 
       await requestCode()
     } catch (e) {

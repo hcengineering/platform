@@ -148,7 +148,10 @@
     messageDraft.attachments = attachments
   }
 
-  async function connectIntegration (integration: Integration | undefined, typeRef: Ref<IntegrationType>): Promise<void> {
+  async function connectIntegration (
+    integration: Integration | undefined,
+    typeRef: Ref<IntegrationType>
+  ): Promise<void> {
     const type = client.getModel().findAllSync(setting.class.IntegrationType, { _id: typeRef })[0]
 
     if (type === undefined) {
