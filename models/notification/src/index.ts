@@ -238,11 +238,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
 @Model(notification.class.ActivityInboxNotification, notification.class.InboxNotification)
 export class TActivityInboxNotification extends TInboxNotification implements ActivityInboxNotification {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
     attachedTo!: Ref<ActivityMessage>
 
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
     attachedToClass!: Ref<Class<ActivityMessage>>
 }
 
@@ -640,6 +638,15 @@ export function createModel (builder: Builder): void {
 
   builder.mixin<Class<DocNotifyContext>, IndexingConfiguration<DocNotifyContext>>(
     notification.class.DocNotifyContext,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
+  builder.mixin<Class<DocNotifyContext>, IndexingConfiguration<DocNotifyContext>>(
+    notification.class.ActivityInboxNotification,
     core.class.Class,
     core.mixin.IndexConfiguration,
     {
