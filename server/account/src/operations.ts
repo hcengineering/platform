@@ -46,11 +46,9 @@ import core, {
   type Branding
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
-import { getModelVersion } from '@hcengineering/model-all'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, getStorageAdapter, initModel, upgradeModel } from '@hcengineering/server-tool'
+import toolPlugin, { connect, initializeWorkspace, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
@@ -940,69 +938,19 @@ export async function createWorkspace (
         childLogger.error(msg, data)
       }
     }
-    let model: Tx[] = []
+    const model: Tx[] = []
     try {
-      const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
 
-      // We should not try to clone INIT_WS into INIT_WS during it's creation.
-      let initWSInfo: Workspace | undefined
-      if (initWS !== undefined) {
-        initWSInfo = (await getWorkspaceById(db, productId, initWS)) ?? undefined
-      }
-      if (initWS !== undefined && initWSInfo !== undefined && initWS !== workspaceInfo.workspace) {
-        // Just any valid model for transactor to be able to function
-        await childLogger.with('init-model', {}, async (ctx) => {
-          await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, async (value) => {
-            await updateInfo({ createProgress: Math.round((Math.min(value, 100) / 100) * 20) })
-          })
+      await childLogger.withLog('init-workspace', {}, async (ctx) => {
+        await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 20) })
         })
+      })
 
-        await updateInfo({ createProgress: 20 })
-
-        // Clone init workspace.
-        await cloneWorkspace(
-          childLogger,
-          getTransactor(),
-          getWorkspaceId(initWS, productId),
-          getWorkspaceId(workspaceInfo.workspace, productId),
-          true,
-          async (value) => {
-            await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 70) })
-          },
-          getStorageAdapter()
-        )
-        const modelVersion = getModelVersion()
-        await updateInfo({ createProgress: 90 })
-
-        // Skip tx update if version of init workspace are proper one.
-        const skipTxUpdate =
-          versionToString(modelVersion) === versionToString(initWSInfo.version ?? { major: 0, minor: 0, patch: 0 })
-        model = await childLogger.withLog(
-          'upgrade-model',
-          {},
-          async (ctx) =>
-            await upgradeModel(
-              ctx,
-              getTransactor(),
-              wsId,
-              txes,
-              migrationOperation,
-              ctxModellogger,
-              skipTxUpdate,
-              async (value) => {
-                await updateInfo({ createProgress: Math.round(90 + (Math.min(value, 100) / 100) * 10) })
-              }
-            )
-        )
-        await updateInfo({ createProgress: 99 })
-      } else {
-        await childLogger.withLog('init-workspace', {}, async (ctx) => {
-          await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger, async (value) => {
-            await updateInfo({ createProgress: Math.round(Math.min(value, 100)) })
-          })
-        })
-      }
+      await initializeWorkspace(ctx, branding, getTransactor(), wsId, ctxModellogger, async (value) => {
+        await updateInfo({ createProgress: 30 + Math.round((Math.min(value, 100) / 100) * 65) })
+      })
     } catch (err: any) {
       Analytics.handleError(err)
       return { workspaceInfo, err, client: null as any }
@@ -1124,7 +1072,7 @@ export const createUserWorkspace =
           notifyHandler,
           async (workspace, model) => {
             const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-            const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
+            const shouldUpdateAccount = initWS !== undefined
             const client = await connect(
               getTransactor(),
               getWorkspaceId(workspace.workspace, productId),
