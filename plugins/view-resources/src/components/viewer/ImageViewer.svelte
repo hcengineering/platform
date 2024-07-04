@@ -15,6 +15,7 @@
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
   import { getBlobRef, type BlobMetadata } from '@hcengineering/presentation'
+  import { Loading } from '@hcengineering/ui'
 
   export let value: Blob | Ref<Blob>
   export let name: string
@@ -26,15 +27,25 @@
   $: height = metadata?.originalHeight
     ? `min(${metadata.originalHeight / metadata?.pixelRatio ?? 1}px, ${fit ? '100%' : '80vh'})`
     : '100%'
+  let loading = true
 </script>
 
 {#await p then blobRef}
+  {#if loading}
+    <div class="flex justify-center">
+      <Loading />
+    </div>
+  {/if}
   <img
+    on:load={(evt) => {
+      loading = false
+    }}
     class="object-contain mx-auto"
     style:max-width={width}
     style:max-height={height}
     src={blobRef.src}
     srcset={blobRef.srcset}
     alt={name}
+    style:height={loading ? '0' : ''}
   />
 {/await}

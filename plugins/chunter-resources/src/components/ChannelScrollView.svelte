@@ -22,7 +22,6 @@
     DisplayActivityMessage,
     GroupMessagesResources
   } from '@hcengineering/activity'
-  import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import {
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
@@ -30,21 +29,22 @@
     getGroupMessagesResources
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { get } from 'svelte/store'
-  import { tick, beforeUpdate, afterUpdate, onMount, onDestroy } from 'svelte'
   import { getResource } from '@hcengineering/platform'
+  import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
+  import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
+  import { get } from 'svelte/store'
 
-  import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
+  import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
   import {
+    chatReadMessagesStore,
     filterChatMessages,
     getClosestDate,
     readChannelMessages,
-    chatReadMessagesStore,
     recheckNotifications
   } from '../utils'
-  import HistoryLoading from './LoadingHistory.svelte'
-  import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
+  import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
+  import HistoryLoading from './LoadingHistory.svelte'
 
   export let provider: ChannelDataProvider
   export let object: Doc | undefined
@@ -359,6 +359,9 @@
     return messageRect.top >= containerRect.top && messageRect.bottom - messageRect.height / 2 <= containerRect.bottom
   }
 
+  const messagesToReadAccumulator: DisplayActivityMessage[] = []
+  let messagesToReadAccumulatorTimer: any
+
   function readViewportMessages (): void {
     if (!scrollElement || !scrollContentBox) {
       return
@@ -366,7 +369,6 @@
 
     const containerRect = scrollElement.getBoundingClientRect()
 
-    const messagesToRead: DisplayActivityMessage[] = []
     const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
 
     for (const message of displayMessages) {
@@ -377,11 +379,15 @@
       }
 
       if (messageInView(msgElement, containerRect)) {
-        messagesToRead.push(message)
+        messagesToReadAccumulator.push(message)
       }
     }
 
-    void readChannelMessages(messagesToRead, notifyContext)
+    clearTimeout(messagesToReadAccumulatorTimer)
+    messagesToReadAccumulatorTimer = setTimeout(() => {
+      const messagesToRead = [...messagesToReadAccumulator]
+      void readChannelMessages(messagesToRead, notifyContext)
+    }, 500)
   }
 
   function updateSelectedDate (): void {

@@ -31,22 +31,8 @@ import contact, {
   type PersonAccount
 } from '@hcengineering/contact'
 import { personByIdStore, PersonIcon } from '@hcengineering/contact-resources'
-import {
-  type Account,
-  type Class,
-  type Client,
-  type Doc,
-  getCurrentAccount,
-  type IdMap,
-  type Ref,
-  type Space,
-  type Timestamp,
-  type TxOperations
-} from '@hcengineering/core'
 import { getClient, isSpace } from '@hcengineering/presentation'
-import { type AnySvelteComponent } from '@hcengineering/ui'
 import { type Asset, getResource, translate } from '@hcengineering/platform'
-import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import activity, {
   type ActivityMessage,
   type ActivityMessagesFilter,
@@ -55,23 +41,37 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import {
-  archiveContextNotifications,
+  generateId,
+  getCurrentAccount,
+  type Account,
+  type Class,
+  type Client,
+  type Doc,
+  type IdMap,
+  type Ref,
+  type Space,
+  type Timestamp,
+  type TxOperations
+} from '@hcengineering/core'
+import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
+import {
   InboxNotificationsClientImpl,
+  archiveContextNotifications,
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import { get, type Unsubscriber } from 'svelte/store'
 import contactPlugin from '@hcengineering/contact'
 import { Analytics } from '@hcengineering/analytics'
 import { type IntegrationType } from '@hcengineering/setting'
-import { writable } from 'svelte/store'
+import { type AnySvelteComponent } from '@hcengineering/ui'
+import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
+import { get, writable, type Unsubscriber } from 'svelte/store'
 
-import chunter from './plugin'
-import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
+import DirectIcon from './components/DirectIcon.svelte'
 import { resetChunterLocIfEqual } from './navigation'
 import { getDirectCompanion } from './components/chat/utils'
+import chunter from './plugin'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -413,6 +413,9 @@ function getAllIds (messages: DisplayActivityMessage[]): Array<Ref<ActivityMessa
     .flat()
 }
 
+let toReadTimer: any
+const toRead = new Set<Ref<InboxNotification>>()
+
 export function recheckNotifications (context: DocNotifyContext): void {
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -425,7 +428,7 @@ export function recheckNotifications (context: DocNotifyContext): void {
 
   const notifications = get(inboxClient.inboxNotificationsByContext).get(context._id) ?? []
 
-  const toRead = notifications
+  notifications
     .filter((it) => {
       if (it.isViewed) {
         return false
@@ -441,9 +444,18 @@ export function recheckNotifications (context: DocNotifyContext): void {
 
       return false
     })
-    .map((n) => n._id)
+    .forEach((n) => toRead.add(n._id))
 
-  void inboxClient.readNotifications(client, toRead)
+  clearTimeout(toReadTimer)
+  toReadTimer = setTimeout(() => {
+    const toReadData = Array.from(toRead)
+    toRead.clear()
+    void (async () => {
+      const _client = client.apply(generateId())
+      await inboxClient.readNotifications(_client, toReadData)
+      await _client.commit()
+    })()
+  }, 500)
 }
 
 export async function readChannelMessages (
@@ -455,38 +467,42 @@ export async function readChannelMessages (
   }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const client = getClient()
 
-  const readMessages = get(chatReadMessagesStore)
-  const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
+  const client = getClient().apply(generateId())
+  try {
+    const readMessages = get(chatReadMessagesStore)
+    const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
 
-  const notifications = get(inboxClient.activityInboxNotifications)
-    .filter(({ _id, attachedTo }) => allIds.includes(attachedTo))
-    .map((n) => n._id)
+    const notifications = get(inboxClient.activityInboxNotifications)
+      .filter(({ _id, attachedTo }) => allIds.includes(attachedTo))
+      .map((n) => n._id)
 
-  const relatedMentions = get(inboxClient.otherInboxNotifications)
-    .filter((n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>))
-    .map((n) => n._id)
+    const relatedMentions = get(inboxClient.otherInboxNotifications)
+      .filter((n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>))
+      .map((n) => n._id)
 
-  chatReadMessagesStore.update((store) => new Set([...store, ...allIds]))
+    chatReadMessagesStore.update((store) => new Set([...store, ...allIds]))
 
-  void inboxClient.readNotifications(client, [...notifications, ...relatedMentions])
+    await inboxClient.readNotifications(client, [...notifications, ...relatedMentions])
 
-  if (context === undefined) {
-    return
-  }
+    if (context === undefined) {
+      return
+    }
 
-  const storedTimestampUpdates = get(contextsTimestampStore).get(context._id)
-  const newTimestamp = messages[messages.length - 1].createdOn ?? 0
-  const prevTimestamp = Math.max(storedTimestampUpdates ?? 0, context.lastViewedTimestamp ?? 0)
+    const storedTimestampUpdates = get(contextsTimestampStore).get(context._id)
+    const newTimestamp = messages[messages.length - 1].createdOn ?? 0
+    const prevTimestamp = Math.max(storedTimestampUpdates ?? 0, context.lastViewedTimestamp ?? 0)
 
-  if (prevTimestamp < newTimestamp) {
-    context.lastViewedTimestamp = newTimestamp
-    contextsTimestampStore.update((store) => {
-      store.set(context._id, newTimestamp)
-      return store
-    })
-    void client.update(context, { lastViewedTimestamp: newTimestamp })
+    if (prevTimestamp < newTimestamp) {
+      context.lastViewedTimestamp = newTimestamp
+      contextsTimestampStore.update((store) => {
+        store.set(context._id, newTimestamp)
+        return store
+      })
+      await client.update(context, { lastViewedTimestamp: newTimestamp })
+    }
+  } finally {
+    await client.commit()
   }
 }
 
