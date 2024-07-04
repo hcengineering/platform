@@ -147,14 +147,12 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
     attachedTo: doc._id
   })
   const usersInfo = await getUsersInfo([...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
-  const senderInfo = usersInfo.find((info) => info.account._id === tx.modifiedBy)
-
-  if (senderInfo === undefined) {
-    return res
+  const senderInfo = usersInfo.find(({ _id }) => _id === tx.modifiedBy) ?? {
+    _id: tx.modifiedBy
   }
 
   for (const target of collaborators) {
-    const targetInfo = usersInfo.find((info) => info.account._id === target)
+    const targetInfo = usersInfo.find(({ _id }) => _id === target)
     if (targetInfo === undefined) continue
 
     const txes = await getNotificationTxes(

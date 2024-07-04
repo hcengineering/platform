@@ -185,18 +185,20 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     return []
   }
 
-  const senderAccount = await control.modelDb.findOne(contact.class.PersonAccount, {
-    _id: tx.modifiedBy as Ref<PersonAccount>
-  })
-  if (senderAccount === undefined) return []
-
   const object = (await control.findAll(todo.attachedToClass, { _id: todo.attachedTo }))[0]
 
   if (object === undefined) return []
 
-  const senderPerson = (await control.findAll(contact.class.Person, { _id: senderAccount.person }))[0]
+  const senderAccount = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: tx.modifiedBy as Ref<PersonAccount>
+  })
+  const senderPerson =
+    senderAccount !== undefined
+      ? (await control.findAll(contact.class.Person, { _id: senderAccount.person }))[0]
+      : undefined
 
   const senderInfo: UserInfo = {
+    _id: tx.modifiedBy,
     account: senderAccount,
     person: senderPerson
   }
@@ -216,6 +218,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   const person = (await control.modelDb.findAll(contact.class.Person, { _id: account.person }))[0]
 
   const receiverInfo: UserInfo = {
+    _id: account._id,
     account,
     person
   }

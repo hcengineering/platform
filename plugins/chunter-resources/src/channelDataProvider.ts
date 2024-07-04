@@ -66,7 +66,7 @@ interface IChannelDataProvider {
 }
 
 export class ChannelDataProvider implements IChannelDataProvider {
-  public readonly limit = 30
+  public readonly limit = 50
 
   private readonly metadataQuery = createQuery(true)
   private readonly tailQuery = createQuery(true)

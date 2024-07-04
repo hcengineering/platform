@@ -269,12 +269,7 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
             const body = await translate(love.string.IsKnocking, {
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
-            const person = (await control.findAll(contact.class.Person, { _id: userAcc.person }))[0]
-            const info = {
-              account: userAcc,
-              person
-            }
-            await createPushNotification(control, info, title, body, request._id, from, path)
+            await createPushNotification(control, userAcc._id, title, body, request._id, from, path)
           }
         }
         return res
@@ -305,11 +300,7 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
             : await translate(love.string.InivitingLabel, {})
-        const info = {
-          account: userAcc,
-          person: target
-        }
-        await createPushNotification(control, info, title, body, invite._id, from, path)
+        await createPushNotification(control, userAcc._id, title, body, invite._id, from, path)
       }
     }
   }

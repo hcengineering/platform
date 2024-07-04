@@ -42,7 +42,7 @@ import serverNotification, {
   TextPresenter
 } from '@hcengineering/server-notification'
 import { getResource, IntlString, translate } from '@hcengineering/platform'
-import contact, { formatName, Person, PersonAccount } from '@hcengineering/contact'
+import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import { DocUpdateMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 
@@ -299,18 +299,16 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
 }
 
-async function getSenderName (
-  control: TriggerControl,
-  account: PersonAccount,
-  person: Person | undefined
-): Promise<string> {
-  if (account._id === core.account.System) {
+async function getSenderName (control: TriggerControl, sender: UserInfo): Promise<string> {
+  if (sender._id === core.account.System) {
     return await translate(core.string.System, {})
   }
 
+  const { person } = sender
+
   if (person === undefined) {
-    console.error('Cannot find person', { accountId: account._id, person: account.person })
-    Analytics.handleError(new Error(`Cannot find person ${account.person}`))
+    console.error('Cannot find person', { accountId: sender._id, person: sender.account?.person })
+    Analytics.handleError(new Error(`Cannot find person ${sender.account?.person}`))
 
     return ''
   }
@@ -337,7 +335,7 @@ async function getFallbackNotificationFullfillment (
 
   const tx = TxProcessor.extractTx(originTx)
 
-  intlParams.senderName = await getSenderName(control, sender.account, sender.person)
+  intlParams.senderName = await getSenderName(control, sender)
 
   if (tx._class === core.class.TxUpdateDoc) {
     const updateTx = tx as TxUpdateDoc<Doc>
@@ -419,6 +417,7 @@ export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerC
   const persons = await control.findAll(contact.class.Person, { _id: { $in: accounts.map(({ person }) => person) } })
 
   return accounts.map((account) => ({
+    _id: account._id,
     account,
     person: persons.find(({ _id }) => _id === account.person)
   }))

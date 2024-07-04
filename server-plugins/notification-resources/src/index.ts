@@ -220,13 +220,19 @@ async function notifyByEmail (
   receiver: UserInfo,
   data: string = ''
 ): Promise<void> {
+  const account = receiver.account
+
+  if (account === undefined) {
+    return
+  }
+
   const senderPerson = sender.person
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
 
   const content = await getContent(doc, senderName, type, control, data)
 
   if (content !== undefined) {
-    await sendEmailNotification(content.text, content.html, content.subject, receiver.account.email)
+    await sendEmailNotification(content.text, content.html, content.subject, account.email)
   }
 }
 
@@ -371,6 +377,10 @@ export async function pushInboxNotifications (
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<void> {
   const account = target.account
+
+  if (account === undefined) {
+    return
+  }
   const context = getDocNotifyContext(contexts, account._id, attachedTo, res)
 
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -400,7 +410,7 @@ export async function pushInboxNotifications (
 
   if (!isHidden) {
     const notificationData = {
-      user: target.account._id,
+      user: account._id,
       isViewed: false,
       docNotifyContext: docNotifyContextId,
       ...data
@@ -554,13 +564,13 @@ export async function createPushFromInbox (
   }
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
-  await createPushNotification(control, target, title, body, _id, senderPerson, path)
+  await createPushNotification(control, target._id as Ref<PersonAccount>, title, body, _id, senderPerson, path)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, core.space.Workspace, {
-    user: target.account._id,
+    user: target._id,
     status: NotificationStatus.New,
     title,
     body,
-    senderId: sender.account._id,
+    senderId: sender._id,
     tag: _id,
     onClickLocation: {
       path
@@ -570,7 +580,7 @@ export async function createPushFromInbox (
 
 export async function createPushNotification (
   control: TriggerControl,
-  target: UserInfo,
+  target: Ref<PersonAccount>,
   title: string,
   body: string,
   _id: string,
@@ -582,7 +592,7 @@ export async function createPushNotification (
   const subject = getMetadata(serverNotification.metadata.PushSubject) ?? 'mailto:hey@huly.io'
   if (privateKey === undefined || publicKey === undefined) return
   const subscriptions = (await control.queryFind(notification.class.PushSubscription, {})).filter(
-    (p) => p.user === target.account._id
+    (p) => p.user === target
   )
   const data: PushData = {
     title,
@@ -610,7 +620,7 @@ export async function createPushNotification (
   webpush.setVapidDetails(subject, publicKey, privateKey)
 
   for (const subscription of subscriptions) {
-    void sendPushToSubscription(control, target.account._id, subscription, data)
+    void sendPushToSubscription(control, target, subscription, data)
   }
 }
 
@@ -647,6 +657,10 @@ export async function pushActivityInboxNotifications (
   shouldPush: boolean,
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<void> {
+  if (target.account === undefined) {
+    return
+  }
+
   for (const activityMessage of activityMessages) {
     const content = await getNotificationContent(originTx, target.account, sender, object, control)
     const data: Partial<Data<ActivityInboxNotification>> = {
@@ -686,7 +700,12 @@ export async function getNotificationTxes (
   activityMessages: ActivityMessage[],
   cache: Map<Ref<Doc>, Doc>
 ): Promise<Tx[]> {
+  if (target.account === undefined) {
+    return []
+  }
+
   const res: Tx[] = []
+
   for (const message of activityMessages) {
     const docMessage = message._class === activity.class.DocUpdateMessage ? (message as DocUpdateMessage) : undefined
     const notifyResult = await isShouldNotifyTx(
@@ -770,16 +789,12 @@ export async function createCollabDocInfo (
   })
 
   const usersInfo = await getUsersInfo([...Array.from(targets), originTx.modifiedBy as Ref<PersonAccount>], control)
-  const sender = usersInfo.find(({ account }) => account._id === originTx.modifiedBy)
-
-  if (sender === undefined) {
-    console.error('Cannot find sender account', originTx.modifiedBy)
-    Analytics.handleError(new Error(`Cannot find sender account ${originTx.modifiedBy}`))
-    return res
+  const sender = usersInfo.find(({ _id }) => _id === originTx.modifiedBy) ?? {
+    _id: originTx.modifiedBy
   }
 
   for (const target of targets) {
-    const info = usersInfo.find(({ account }) => account._id === target)
+    const info = usersInfo.find(({ _id }) => _id === target)
 
     if (info === undefined) continue
 
@@ -951,16 +966,10 @@ async function updateCollaboratorsMixin (
       })
 
       const infos = await getUsersInfo([...newCollabs, originTx.modifiedBy] as Ref<PersonAccount>[], control)
-      const sender = infos.find(({ account }) => account._id === originTx.modifiedBy)
-
-      if (sender === undefined) {
-        console.error('Cannot find sender account', originTx.modifiedBy)
-        Analytics.handleError(new Error(`Cannot find sender account ${originTx.modifiedBy}`))
-        return res
-      }
+      const sender = infos.find(({ _id }) => _id === originTx.modifiedBy) ?? { _id: originTx.modifiedBy }
 
       for (const collab of newCollabs) {
-        const target = infos.find(({ account }) => account._id === collab)
+        const target = infos.find(({ _id }) => _id === collab)
 
         if (target === undefined) continue
 

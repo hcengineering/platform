@@ -14,6 +14,7 @@
 //
 import { BaseNotificationType } from '@hcengineering/notification'
 import { Person, PersonAccount } from '@hcengineering/contact'
+import { Account, Ref } from '@hcengineering/core'
 
 /**
  * @public
@@ -40,6 +41,7 @@ export interface NotifyParams {
 }
 
 export interface UserInfo {
-  account: PersonAccount
+  _id: Ref<Account>
+  account?: PersonAccount
   person?: Person
 }

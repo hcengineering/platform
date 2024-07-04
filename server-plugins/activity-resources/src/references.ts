@@ -52,8 +52,7 @@ import {
   shouldNotifyCommon,
   isShouldNotifyTx,
   NotifyResult,
-  createPushFromInbox,
-  UserInfo
+  createPushFromInbox
 } from '@hcengineering/server-notification-resources'
 
 async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
@@ -99,11 +98,8 @@ export async function getPersonNotificationTxes (
 ): Promise<Tx[]> {
   const receiverPersonId = reference.attachedTo as Ref<Person>
   const receiver = await getPersonAccount(receiverPersonId, control)
-  const sender = (
-    await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId as Ref<PersonAccount> }, { limit: 1 })
-  )[0]
 
-  if (receiver === undefined || sender === undefined) {
+  if (receiver === undefined) {
     return []
   }
 
@@ -162,21 +158,29 @@ export async function getPersonNotificationTxes (
     isViewed: false
   }
 
+  const sender = (
+    await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId as Ref<PersonAccount> }, { limit: 1 })
+  )[0]
   const receiverPerson = (await control.findAll(contact.class.Person, { _id: receiver.person }, { limit: 1 }))[0]
-  const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }, { limit: 1 }))[0]
+  const senderPerson =
+    sender !== undefined
+      ? (await control.findAll(contact.class.Person, { _id: sender.person }, { limit: 1 }))[0]
+      : undefined
 
   const receiverInfo = {
+    _id: receiver._id,
     account: receiver,
     person: receiverPerson
   }
 
   const senderInfo = {
+    _id: senderId,
     account: sender,
     person: senderPerson
   }
 
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
-  const messageNotifyResult = await getMessageNotifyResult(reference, receiverInfo, control, originTx, doc)
+  const messageNotifyResult = await getMessageNotifyResult(reference, receiver, control, originTx, doc)
 
   if (messageNotifyResult.allowed) {
     notifyResult.allowed = false
@@ -305,7 +309,7 @@ async function getCollaboratorsTxes (
 
 async function getMessageNotifyResult (
   reference: Data<ActivityReference>,
-  receiver: UserInfo,
+  account: PersonAccount,
   control: TriggerControl,
   originTx: TxCUD<Doc>,
   doc: Doc
@@ -323,7 +327,7 @@ async function getMessageNotifyResult (
 
   const mixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
 
-  if (mixin === undefined || !mixin.collaborators.includes(receiver.account._id)) {
+  if (mixin === undefined || !mixin.collaborators.includes(account._id)) {
     return { allowed: false, emails: [], push: false }
   }
 
@@ -331,7 +335,7 @@ async function getMessageNotifyResult (
     return { allowed: false, emails: [], push: false }
   }
 
-  return await isShouldNotifyTx(control, tx, originTx, doc, receiver.account, false, false, undefined)
+  return await isShouldNotifyTx(control, tx, originTx, doc, account, false, false, undefined)
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
