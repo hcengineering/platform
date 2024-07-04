@@ -12,6 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import {
+  type Channel,
+  type ChatExtension,
+  type ChatMessage,
+  type DirectMessage,
+  type ThreadMessage,
+  type ExternalChannel,
+  type CreateMessageData,
+  type EditMessageData,
+  type ExternalChatMessage
+} from '@hcengineering/chunter'
+import contact, {
+  type ChannelProvider,
+  type Contact,
+  getName,
+  type Person,
+  type PersonAccount
+} from '@hcengineering/contact'
+import { personByIdStore, PersonIcon } from '@hcengineering/contact-resources'
+import { getClient, isSpace } from '@hcengineering/presentation'
+import { type Asset, getResource, translate } from '@hcengineering/platform'
 import activity, {
   type ActivityMessage,
   type ActivityMessagesFilter,
@@ -19,9 +40,6 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
-import { PersonIcon, employeeByIdStore } from '@hcengineering/contact-resources'
 import {
   generateId,
   getCurrentAccount,
@@ -32,7 +50,8 @@ import {
   type IdMap,
   type Ref,
   type Space,
-  type Timestamp
+  type Timestamp,
+  type TxOperations
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
@@ -41,8 +60,9 @@ import {
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import { translate, type Asset } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import contactPlugin from '@hcengineering/contact'
+import { Analytics } from '@hcengineering/analytics'
+import { type IntegrationType } from '@hcengineering/setting'
 import { type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
@@ -50,6 +70,7 @@ import { get, writable, type Unsubscriber } from 'svelte/store'
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import { resetChunterLocIfEqual } from './navigation'
+import { getDirectCompanion } from './components/chat/utils'
 import chunter from './plugin'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
@@ -57,19 +78,19 @@ export async function getDmName (client: Client, space?: Space): Promise<string>
     return ''
   }
 
-  const employeeAccounts: PersonAccount[] = await getDmAccounts(client, space)
+  const accounts: PersonAccount[] = await getDmAccounts(client, space)
 
-  return await buildDmName(client, employeeAccounts)
+  return await buildDmName(client, accounts)
 }
 
-export async function buildDmName (client: Client, employeeAccounts: PersonAccount[]): Promise<string> {
-  if (employeeAccounts.length === 0) {
+export async function buildDmName (client: Client, personAccounts: PersonAccount[]): Promise<string> {
+  if (personAccounts.length === 0) {
     return ''
   }
 
   let unsub: Unsubscriber | undefined
-  const promise = new Promise<IdMap<Employee>>((resolve) => {
-    unsub = employeeByIdStore.subscribe((p) => {
+  const promise = new Promise<IdMap<Person>>((resolve) => {
+    unsub = personByIdStore.subscribe((p) => {
       if (p.size !== 0) {
         resolve(p)
       }
@@ -86,26 +107,45 @@ export async function buildDmName (client: Client, employeeAccounts: PersonAccou
 
   let myName = ''
 
-  for (const acc of employeeAccounts) {
+  for (const acc of personAccounts) {
     if (processedPersons.includes(acc.person)) {
       continue
     }
 
-    const employee = map.get(acc.person as unknown as Ref<Employee>)
+    const person = map.get(acc.person)
 
-    if (employee === undefined) {
+    if (person === undefined) {
       continue
     }
 
-    if (me.person === employee._id) {
-      myName = getName(client.getHierarchy(), employee)
+    if (me.person === person._id) {
+      myName = getName(client.getHierarchy(), person)
       processedPersons.push(acc.person)
       continue
     }
 
-    names.push(getName(client.getHierarchy(), employee))
+    names.push(getName(client.getHierarchy(), person))
     processedPersons.push(acc.person)
   }
+  return names.length > 0 ? names.join(', ') : myName
+}
+
+export function getDmNameByContacts (contacts: Contact[]): string {
+  const names: string[] = []
+  const me = getCurrentAccount() as PersonAccount
+  const client = getClient()
+
+  let myName = ''
+
+  for (const c of contacts) {
+    if (me.person === c._id) {
+      myName = getName(client.getHierarchy(), c)
+      continue
+    }
+
+    names.push(getName(client.getHierarchy(), c))
+  }
+
   return names.length > 0 ? names.join(', ') : myName
 }
 
@@ -120,7 +160,13 @@ export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
 
   const me = getCurrentAccount()
 
-  return doc.createdBy === me._id
+  if (doc.createdBy !== me._id) {
+    return false
+  }
+
+  const extension = await getMessageExtension(doc)
+
+  return extension?.options.removable ?? true
 }
 
 export function canReplyToThread (doc?: ActivityMessage): boolean {
@@ -499,4 +545,231 @@ export async function removeChannelAction (
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {
   return message._class === chunter.class.ThreadMessage
+}
+
+export function getChannelContacts (
+  object: Doc | undefined,
+  personAccountById: IdMap<PersonAccount>
+): Array<Ref<Contact>> {
+  if (object === undefined) {
+    return []
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount() as PersonAccount
+
+  if (!hierarchy.isDerived(object._class, chunter.class.DirectMessage)) {
+    return []
+  }
+
+  const direct = object as DirectMessage
+  const account = getDirectCompanion(direct, me, personAccountById)
+
+  if (account === undefined) {
+    return []
+  }
+
+  const contact = personAccountById.get(account as Ref<PersonAccount>)?.person
+  return contact != null ? [contact] : []
+}
+
+export async function getAvailableChannelProviders (_class: Ref<Class<Doc>>): Promise<ChannelProvider[]> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const integrationResources = client.getModel().findAllSync(chunter.class.ChatExtension, {})
+
+  const allowedIntegrationTypes = integrationResources
+    .filter(({ allowedChannelsTypes }) => {
+      const isAllowed: boolean = allowedChannelsTypes.includes(_class)
+      if (isAllowed) return true
+      return allowedChannelsTypes.some((it) => hierarchy.isDerived(_class, it))
+    })
+    .map(({ type }) => type)
+
+  if (allowedIntegrationTypes.length === 0) {
+    return []
+  }
+
+  return await client.findAll(contactPlugin.class.ChannelProvider, {
+    integrationType: { $in: allowedIntegrationTypes }
+  })
+}
+
+async function getChatExtension (channel: ExternalChannel): Promise<ChatExtension | undefined> {
+  const client = getClient()
+  const provider = await client.findOne(contact.class.ChannelProvider, { _id: channel.provider })
+  const type = provider?.integrationType as Ref<IntegrationType> | undefined
+
+  if (type === undefined) {
+    return
+  }
+
+  return await client.findOne(chunter.class.ChatExtension, { type })
+}
+
+async function editInternalMessage (client: TxOperations, message: ChatMessage, data: EditMessageData): Promise<void> {
+  await client.update(message, { message: data.message, attachments: data.attachments, editedOn: Date.now() })
+}
+
+async function createInternalMessage (client: TxOperations, object: Doc, data: CreateMessageData): Promise<void> {
+  const { _id, _class, message, attachments, collection } = data
+  if (client.getHierarchy().isDerived(data._class, chunter.class.ThreadMessage)) {
+    await createInternalThreadMessage(client, object, data)
+    return
+  }
+
+  await client.addCollection<Doc, ChatMessage>(
+    _class,
+    isSpace(object) ? object._id : object.space,
+    object._id,
+    object._class,
+    collection,
+    { message, attachments },
+    _id
+  )
+}
+
+async function createInternalThreadMessage (client: TxOperations, object: Doc, data: CreateMessageData): Promise<void> {
+  const { _id, _class, message, attachments } = data
+  const parentMessage = object as ActivityMessage
+
+  await client.addCollection<ActivityMessage, ThreadMessage>(
+    _class,
+    parentMessage.space,
+    parentMessage._id,
+    parentMessage._class,
+    'replies',
+    {
+      message,
+      attachments,
+      objectClass: parentMessage.attachedToClass,
+      objectId: parentMessage.attachedTo
+    },
+    _id as Ref<ThreadMessage>
+  )
+}
+
+async function editExternalMessage (
+  client: TxOperations,
+  message: ChatMessage,
+  channel: ExternalChannel,
+  data: EditMessageData
+): Promise<void> {
+  const extension = await getChatExtension(channel)
+
+  if (extension === undefined) {
+    return
+  }
+
+  const editFn = await getResource(extension.editMessageFn)
+
+  await editFn(client, message, channel, data)
+}
+
+async function createExternalMessage (
+  client: TxOperations,
+  object: Doc,
+  channel: ExternalChannel,
+  data: CreateMessageData
+): Promise<void> {
+  const extension = await getChatExtension(channel)
+
+  if (extension === undefined) {
+    return
+  }
+
+  const createFn = await getResource(extension.createMessageFn)
+
+  await createFn(client, object, channel, data)
+}
+
+export async function editChatMessage (
+  message: ChatMessage,
+  data: EditMessageData,
+  channel?: ExternalChannel
+): Promise<void> {
+  const client = getClient()
+  const op = client.apply(message._id)
+  const doneOp = await client.measure(`chunter.edit.${message._class} ${message.attachedToClass}`)
+
+  try {
+    if (channel !== undefined) {
+      await editExternalMessage(op, message, channel, data)
+    } else {
+      await editInternalMessage(op, message, data)
+    }
+    await op.commit()
+    const d1 = Date.now()
+    void doneOp().then((res) => {
+      console.log(`edit.${message._class} measure`, res, Date.now() - d1)
+    })
+  } catch (err: any) {
+    void doneOp()
+    Analytics.handleError(err)
+    console.error(err)
+  }
+}
+
+export async function createChatMessage (
+  object: Doc,
+  data: CreateMessageData,
+  channel?: ExternalChannel
+): Promise<void> {
+  const client = getClient()
+  const op = client.apply(data._id)
+  const doneOp = await client.measure(`chunter.create.${data._class} ${object._class}`)
+
+  try {
+    if (channel !== undefined) {
+      await createExternalMessage(op, object, channel, data)
+    } else {
+      await createInternalMessage(op, object, data)
+    }
+    await op.commit()
+    const d1 = Date.now()
+    void doneOp().then((res) => {
+      console.log(`create.${data._class} measure`, res, Date.now() - d1)
+    })
+  } catch (err: any) {
+    void doneOp()
+    Analytics.handleError(err)
+    console.error(err)
+  }
+}
+
+export const hulyChannelId = 'huly' as Ref<ExternalChannel>
+export const allChannelId = 'all' as Ref<ExternalChannel>
+
+export async function getMessageExtension (value: ChatMessage | undefined): Promise<ChatExtension | undefined> {
+  if (value === undefined) {
+    return
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  if (!hierarchy.isDerived(value._class, chunter.class.ExternalChatMessage)) {
+    return
+  }
+
+  const externalMessage = value as ExternalChatMessage
+  const channel = await client.findOne(
+    externalMessage.channelClass,
+    { _id: externalMessage.channelId },
+    {
+      lookup: {
+        provider: contact.class.ChannelProvider
+      }
+    }
+  )
+  const provider = channel?.$lookup?.provider
+
+  if (provider?.integrationType === undefined) {
+    return
+  }
+
+  return client
+    .getModel()
+    .findAllSync(chunter.class.ChatExtension, { type: provider.integrationType as Ref<IntegrationType> })[0]
 }

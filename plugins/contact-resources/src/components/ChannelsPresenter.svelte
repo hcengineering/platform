@@ -28,6 +28,7 @@
   export let size: ButtonSize = 'small'
   export let length: 'tiny' | 'short' | 'full' = 'short'
   export let shape: 'circle' | undefined = 'circle'
+  export let disabled = false
 
   async function _open (ev: CustomEvent): Promise<void> {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
@@ -44,5 +45,5 @@
 </script>
 
 {#if value}
-  <ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:open={_open} />
+  <ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} {disabled} on:open={_open} />
 {/if}

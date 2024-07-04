@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
-  import { Avatar, CombineAvatars, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { Avatar, CombineAvatars, isHulyUser, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Icon, IconSize } from '@hcengineering/ui'
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { classIcon } from '@hcengineering/view-resources'
@@ -58,7 +58,7 @@
     person={persons[0]}
     size={avatarSize}
     name={persons[0].name}
-    {showStatus}
+    showStatus={showStatus && isHulyUser(persons[0]._id)}
     account={getAccountByPerson($personAccountByIdStore, persons[0])?._id}
   />
 {/if}

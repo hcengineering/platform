@@ -13,36 +13,53 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
   import { createEventDispatcher } from 'svelte'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { Class, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, Doc, generateId, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
-  import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import chunter, { ChatMessage, ExternalChannel, ExternalChatMessage } from '@hcengineering/chunter'
+  import contactPlugin, { ChannelProvider, Contact } from '@hcengineering/contact'
+  import activity from '@hcengineering/activity'
   import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { isHulyUser, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import setting, { Integration, IntegrationType } from '@hcengineering/setting'
+  import { showPopup } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
+
+  import {
+    allChannelId,
+    createChatMessage,
+    editChatMessage,
+    getAvailableChannelProviders,
+    getChannelContacts,
+    hulyChannelId
+  } from '../../utils'
+  import ChatSubmitButton from './ChatSubmitButton.svelte'
 
   export let object: Doc
-  export let chatMessage: ChatMessage | undefined = undefined
+  export let chatMessage: WithLookup<ChatMessage> | undefined = undefined
   export let shouldSaveDraft: boolean = true
   export let focusIndex: number = -1
   export let boundary: HTMLElement | undefined = undefined
   export let loading = false
   export let collection: string = 'comments'
   export let autofocus = false
+  export let externalChannel: Ref<ExternalChannel> | undefined = undefined
 
   type MessageDraft = Pick<ChatMessage, '_id' | 'message' | 'attachments'>
 
   const dispatch = createEventDispatcher()
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const _class: Ref<Class<ChatMessage>> = hierarchy.isDerived(object._class, activity.class.ActivityMessage)
-    ? chunter.class.ThreadMessage
-    : chunter.class.ChatMessage
+
+  const extensions = client.getModel().findAllSync(chunter.class.ChatExtension, {})
+
   const createdMessageQuery = createQuery()
-  const account = getCurrentAccount() as PersonAccount
+  const channelsQuery = createQuery()
+  const integrationQuery = createQuery()
+
+  let isThreadMessage = false
+  let _class: Ref<Class<ChatMessage>> = isThreadMessage ? chunter.class.ThreadMessage : chunter.class.ChatMessage
 
   const draftKey = `${object._id}_${_class}`
   const draftController = new DraftController<MessageDraft>(draftKey)
@@ -53,35 +70,67 @@
     attachments: 0
   }
 
+  let contacts: Ref<Contact>[] = []
+  let allowedProviders: ChannelProvider[] = []
+  let allowedChannels: ExternalChannel[] = []
+
+  let selectedChannelId: Ref<ExternalChannel> | undefined = undefined
+  let selectedChannel: ExternalChannel | undefined = undefined
+  let integration: Integration | undefined = undefined
+
   let inputRef: AttachmentRefInput
-  let currentMessage: MessageDraft = chatMessage ?? currentDraft ?? getDefault()
-  let _id = currentMessage._id
-  let inputContent = currentMessage.message
+  let messageDraft: MessageDraft = getInitialDraft()
+  let _id = messageDraft._id
+  let inputContent = messageDraft.message
+
+  function getInitialDraft (): MessageDraft {
+    if (chatMessage === undefined) {
+      return currentDraft ?? getDefault()
+    }
+
+    if (hierarchy.isDerived(chatMessage._class, chunter.class.ExternalChatMessage)) {
+      const externalMessage = chatMessage as WithLookup<ExternalChatMessage>
+      const channelMessage = externalMessage.$lookup?.channelMessage
+      return {
+        _id: externalMessage._id,
+        message: channelMessage?.content ?? EmptyMarkup,
+        attachments: channelMessage?.attachments
+      }
+    }
+
+    return chatMessage
+  }
+
+  $: isThreadMessage = hierarchy.isDerived(object._class, activity.class.ActivityMessage)
 
   $: if (currentDraft != null) {
-    createdMessageQuery.query(_class, { _id }, (result: ChatMessage[]) => {
-      if (result.length > 0 && _id !== chatMessage?._id) {
-        // Ouch we have got comment with same id created already.
-        clear()
-      }
-    })
+    createdMessageQuery.query(
+      _class,
+      { _id },
+      (result: ChatMessage[]) => {
+        if (result.length > 0 && _id !== chatMessage?._id) {
+          clear()
+        }
+      },
+      { limit: 1, projection: { _id: 1 } }
+    )
   } else {
     createdMessageQuery.unsubscribe()
   }
 
   function clear (): void {
-    currentMessage = getDefault()
-    _id = currentMessage._id
+    messageDraft = getDefault()
+    _id = messageDraft._id
     inputRef.removeDraft(false)
   }
 
-  function objectChange (draft: MessageDraft, empty: Partial<MessageDraft>): void {
+  $: objectChange(messageDraft)
+
+  function objectChange (draft: MessageDraft): void {
     if (shouldSaveDraft) {
-      draftController.save(draft, empty)
+      draftController.save(draft, emptyMessage)
     }
   }
-
-  $: objectChange(currentMessage, emptyMessage)
 
   function getDefault (): MessageDraft {
     return {
@@ -95,51 +144,59 @@
       return
     }
     const { message, attachments } = event.detail
-    currentMessage.message = message
-    currentMessage.attachments = attachments
+    messageDraft.message = message
+    messageDraft.attachments = attachments
   }
 
-  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
-    const doneOp = getClient().measure(`chunter.create.${_class} ${object._class}`)
-    try {
-      await createMessage(event, _id)
+  async function connectIntegration (
+    integration: Integration | undefined,
+    typeRef: Ref<IntegrationType>
+  ): Promise<void> {
+    const type = client.getModel().findAllSync(setting.class.IntegrationType, { _id: typeRef })[0]
 
-      const d1 = Date.now()
-      void (await doneOp)().then((res) => {
-        console.log(`create.${_class} measure`, res, Date.now() - d1)
-      })
-    } catch (err: any) {
-      void (await doneOp)()
-      Analytics.handleError(err)
-      console.error(err)
+    if (type === undefined) {
+      return
+    }
+
+    if (integration === undefined) {
+      if (type.createComponent === undefined) {
+        return
+      }
+      const res = await getResource(type.createComponent)
+      showPopup(res, {}, 'centered')
+      return
+    }
+
+    if (integration.disabled) {
+      if (type.reconnectComponent === undefined) {
+        return
+      }
+      const res = await getResource(type.reconnectComponent)
+      showPopup(res, {}, 'centered')
     }
   }
-
-  async function handleEdit (event: CustomEvent): Promise<void> {
-    const doneOp = getClient().measure(`chunter.edit.${_class} ${object._class}`)
-    try {
-      await editMessage(event)
-
-      const d1 = Date.now()
-      void (await doneOp)().then((res) => {
-        console.log(`edit.${_class} measure`, res, Date.now() - d1)
-      })
-    } catch (err: any) {
-      void (await doneOp)()
-      Analytics.handleError(err)
-      console.error(err)
-    }
-  }
-
   async function onMessage (event: CustomEvent): Promise<void> {
+    if (integrationType !== undefined && (integration === undefined || integration.disabled)) {
+      await connectIntegration(integration, integrationType)
+      return
+    }
+
     draftController.remove()
     inputRef.removeDraft(false)
 
     if (chatMessage !== undefined) {
       loading = true
-      await handleEdit(event)
+      await editChatMessage(
+        chatMessage,
+        { message: event.detail.message, attachments: event.detail.attachments },
+        selectedChannel
+      )
     } else {
-      void handleCreate(event, _id)
+      void createChatMessage(
+        object,
+        { _id, _class, message: event.detail.message, attachments: event.detail.attachments, collection },
+        selectedChannel
+      )
     }
 
     // Remove draft from Local Storage
@@ -148,58 +205,99 @@
     loading = false
   }
 
-  async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
-    const { message, attachments } = event.detail
-    const operations = client.apply(_id)
-
-    if (_class === chunter.class.ThreadMessage) {
-      const parentMessage = object as ActivityMessage
-
-      await operations.addCollection<ActivityMessage, ThreadMessage>(
-        chunter.class.ThreadMessage,
-        parentMessage.space,
-        parentMessage._id,
-        parentMessage._class,
-        'replies',
-        {
-          message,
-          attachments,
-          objectClass: parentMessage.attachedToClass,
-          objectId: parentMessage.attachedTo
-        },
-        _id as Ref<ThreadMessage>
-      )
-
-      await operations.update(parentMessage, { lastReply: Date.now() })
-
-      const hasPerson = !!parentMessage.repliedPersons?.includes(account.person)
-
-      if (!hasPerson) {
-        await operations.update(parentMessage, { $push: { repliedPersons: account.person } })
-      }
-    } else {
-      await operations.addCollection<Doc, ChatMessage>(
-        _class,
-        isSpace(object) ? object._id : object.space,
-        object._id,
-        object._class,
-        collection,
-        { message, attachments },
-        _id
-      )
-    }
-    await operations.commit()
-  }
-
-  async function editMessage (event: CustomEvent): Promise<void> {
-    if (chatMessage === undefined) {
-      return
-    }
-    const { message, attachments } = event.detail
-    await client.update(chatMessage, { message, attachments, editedOn: Date.now() })
-  }
   export function submit (): void {
     inputRef.submit()
+  }
+
+  $: selectedChannel = allowedChannels.find((it) => it._id === selectedChannelId)
+
+  $: void getAvailableChannelProviders(object._class).then((res) => {
+    allowedProviders = res
+  })
+
+  $: if (allowedProviders.length === 0 || contacts.length === 0 || externalChannel === hulyChannelId) {
+    allowedChannels = []
+    channelsQuery.unsubscribe()
+  } else {
+    channelsQuery.query(
+      contactPlugin.class.Channel,
+      {
+        attachedTo: { $in: contacts },
+        provider: { $in: allowedProviders.map((it) => it._id) },
+        ...(externalChannel !== undefined && externalChannel !== allChannelId ? { _id: externalChannel } : {})
+      },
+      (res) => {
+        allowedChannels = res
+      }
+    )
+  }
+
+  $: integrationType = allowedProviders.find((it) => it._id === selectedChannel?.provider)?.integrationType as
+    | Ref<IntegrationType>
+    | undefined
+
+  $: if (integrationType !== undefined) {
+    integrationQuery.query(
+      setting.class.Integration,
+      { type: integrationType, createdBy: getCurrentAccount()._id },
+      (res) => {
+        integration = res[0]
+      },
+      { limit: 1 }
+    )
+  } else {
+    integration = undefined
+    integrationQuery.unsubscribe()
+  }
+
+  $: contacts = getChannelContacts(object, $personAccountByIdStore)
+  $: updateMessageClass(selectedChannel)
+
+  function updateMessageClass (selectedChannel?: ExternalChannel): void {
+    if (selectedChannel === undefined) {
+      _class = isThreadMessage ? chunter.class.ThreadMessage : chunter.class.ChatMessage
+    } else {
+      const provider = allowedProviders.find((it) => it._id === selectedChannel?.provider)
+      const resource = extensions.find(({ type }) => type === provider?.integrationType)
+
+      if (resource === undefined) {
+        _class = isThreadMessage ? chunter.class.ThreadMessage : chunter.class.ChatMessage
+        return
+      }
+
+      _class = contactPlugin.class.ChannelMessage
+    }
+  }
+
+  function isHulyChatAllowed (contacts: Ref<Contact>[]): boolean {
+    if (contacts.length === 0) {
+      return true
+    }
+
+    return contacts.every(isHulyUser)
+  }
+
+  $: disableSubmit = allowedChannels.length === 0 && !isHulyChatAllowed(contacts)
+
+  function canEditAttachments (channels: ExternalChannel[], chatMessage?: ChatMessage): boolean {
+    if (chatMessage === undefined) {
+      return true
+    }
+
+    if (!hierarchy.isDerived(chatMessage._class, chunter.class.ExternalChatMessage)) {
+      return true
+    }
+    const externalMessage = chatMessage as ExternalChatMessage
+
+    const channel = channels.find((it) => it._id === externalMessage.channelId)
+    const provider = allowedProviders.find((it) => it._id === channel?.provider)
+    const resource = extensions.find(({ type }) => type === provider?.integrationType)
+
+    if (resource === undefined) {
+      return true
+    }
+
+    return resource.options.attachmentsEditable
   }
 </script>
 
@@ -209,14 +307,30 @@
   bind:content={inputContent}
   {_class}
   space={isSpace(object) ? object._id : object.space}
-  skipAttachmentsPreload={(currentMessage.attachments ?? 0) === 0}
+  skipAttachmentsPreload={(messageDraft.attachments ?? 0) === 0}
   bind:objectId={_id}
   {shouldSaveDraft}
   {boundary}
   {autofocus}
+  {disableSubmit}
+  disableAttach={!canEditAttachments(allowedChannels, chatMessage)}
   on:message={onMessage}
   on:update={onUpdate}
   on:focus
   on:blur
   bind:loading
-/>
+>
+  <svelte:fragment slot="submit" let:loading let:canSubmit>
+    <ChatSubmitButton
+      bind:selectedChannelId
+      {loading}
+      {canSubmit}
+      showLabel={chatMessage === undefined}
+      providers={allowedProviders}
+      channels={allowedChannels}
+      allowHulyChat={(externalChannel === undefined || [hulyChannelId, allChannelId].includes(externalChannel)) &&
+        isHulyChatAllowed(contacts)}
+      on:submit={submit}
+    />
+  </svelte:fragment>
+</AttachmentRefInput>

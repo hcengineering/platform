@@ -22,10 +22,15 @@ import {
   type ChatMessageViewlet,
   type ChunterSpace,
   type ObjectChatPanel,
-  type ThreadMessage
+  type ThreadMessage,
+  type ChatExtension,
+  type CreateExternalMessageFn,
+  type EditExternalMessageFn,
+  type ExternalChannel,
+  type ExternalChatMessage
 } from '@hcengineering/chunter'
+import contact, { type ChannelMessage } from '@hcengineering/contact'
 import presentation from '@hcengineering/model-presentation'
-import contact from '@hcengineering/contact'
 import {
   type Class,
   type Doc,
@@ -53,8 +58,9 @@ import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import notification, { notificationActionTemplates } from '@hcengineering/model-notification'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import type { IntlString } from '@hcengineering/platform'
+import type { IntlString, Resource } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
+import setting, { type IntegrationType } from '@hcengineering/setting'
 
 import chunter from './plugin'
 
@@ -92,6 +98,22 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
     shortLabel: attachment.string.Files
   })
     attachments?: number
+}
+
+@Model(chunter.class.ExternalChatMessage, chunter.class.ChatMessage)
+@UX(chunter.string.Message, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
+export class TExternalChatMessage extends TChatMessage implements ExternalChatMessage {
+  @Prop(TypeRef(contact.class.Channel), core.string.Object)
+    channelId!: Ref<ExternalChannel>
+
+  @Prop(TypeRef(contact.class.Channel), core.string.Class)
+    channelClass!: Ref<Class<ExternalChannel>>
+
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+    channelMessage!: Ref<ChannelMessage>
+
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+    channelMessageClass!: Ref<Class<ChannelMessage>>
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
@@ -133,6 +155,27 @@ export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
 }
 
+@Model(chunter.class.ChatExtension, core.class.Doc, DOMAIN_MODEL)
+export class TChatExtension extends TDoc implements ChatExtension {
+  @Prop(TypeRef(setting.class.IntegrationType), core.string.Class)
+    type!: Ref<IntegrationType>
+
+  @Prop(TypeRef(chunter.class.ChatMessage), core.string.Class)
+    messageClass!: Ref<Class<ChatMessage>>
+
+  @Prop(TypeRef(chunter.class.ChatMessage), core.string.Class)
+    threadMessageClass!: Ref<Class<ChatMessage>>
+
+  allowedChannelsTypes!: Ref<Class<Doc>>[]
+  createMessageFn!: Resource<CreateExternalMessageFn>
+  editMessageFn!: Resource<EditExternalMessageFn>
+  options!: {
+    editable: boolean
+    removable: boolean
+    attachmentsEditable: boolean
+  }
+}
+
 const actionTemplates = template({
   removeChannel: {
     action: chunter.actionImpl.RemoveChannel,
@@ -154,7 +197,9 @@ export function createModel (builder: Builder): void {
     TChatMessage,
     TThreadMessage,
     TChatMessageViewlet,
-    TObjectChatPanel
+    TObjectChatPanel,
+    TChatExtension,
+    TExternalChatMessage
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

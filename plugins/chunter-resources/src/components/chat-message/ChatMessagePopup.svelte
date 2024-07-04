@@ -88,7 +88,7 @@
         {@const canGroup = canGroupMessages(message, messages[index - 1])}
         <div class="item">
           <Lazy>
-            <ChatMessagePresenter value={message} hideLink type={canGroup ? 'short' : 'default'} />
+            <ChatMessagePresenter value={message} type={canGroup ? 'short' : 'default'} />
           </Lazy>
         </div>
       {/each}

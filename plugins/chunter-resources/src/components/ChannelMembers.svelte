@@ -13,30 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
+  import contact, { Contact, Person } from '@hcengineering/contact'
   import { ButtonIcon, IconDelete, ModernButton, Scroller } from '@hcengineering/ui'
   import { IconAddMember, personByIdStore, UserDetails } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   import chunter from '../plugin'
 
-  export let ids: Ref<Person>[] = []
-  export let disableRemoveFor: Ref<Person>[] = []
+  export let ids: Ref<Contact>[] = []
+  export let contacts: Contact[] = []
+  export let disableRemoveFor: Ref<Contact>[] = []
 
   const dispatch = createEventDispatcher()
 
-  let persons: Person[] = []
+  let members: Contact[] = []
 
-  $: updatePersons(ids)
+  $: void updateMembers(ids, contacts)
 
-  function updatePersons (ids: Ref<Person>[]): void {
-    persons = ids.map((_id) => $personByIdStore.get(_id)).filter((person): person is Person => !!person)
+  async function updateMembers (ids: Ref<Contact>[], contacts: Contact[]): Promise<void> {
+    members = ids
+      .map((_id) => $personByIdStore.get(_id) ?? contacts.find((it) => it._id === _id))
+      .filter((person): person is Person => !!person)
   }
 </script>
 
 <div class="root">
-  <div class="item" style:padding="var(--spacing-1_5)" class:withoutBorder={persons.length === 0}>
+  <div class="item" style:padding="var(--spacing-1_5)" class:withoutBorder={members.length === 0}>
     <ModernButton
       label={chunter.string.AddMembers}
       icon={IconAddMember}
@@ -47,8 +51,8 @@
     />
   </div>
   <Scroller>
-    {#each persons as person, index}
-      <div class="item" class:withoutBorder={index === persons.length - 1}>
+    {#each members as person, index}
+      <div class="item" class:withoutBorder={index === members.length - 1}>
         <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
           <UserDetails {person} showStatus />
           {#if !disableRemoveFor.includes(person._id)}

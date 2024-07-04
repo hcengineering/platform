@@ -13,42 +13,46 @@
 // limitations under the License.
 //
 
-import { ChannelItem } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import type { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
 import type { AnyComponent } from '@hcengineering/ui'
+import { ExternalChatMessage } from '@hcengineering/chunter'
+import { ChannelMessage, Channel } from '@hcengineering/contact'
+
+export enum TelegramMessageStatus {
+  New = 'new',
+  Sent = 'sent',
+  Incoming = 'incoming'
+}
+
+export interface TelegramChatMessage extends ExternalChatMessage {}
+
+export interface TelegramChannelMessage extends ChannelMessage {
+  status: TelegramMessageStatus
+  history: boolean
+  receiver?: Ref<Account>
+  telegramId?: number
+}
 
 /**
  * @public
  */
-export interface BaseTelegramMessage extends Doc {
-  content: string
+export interface SharedTelegramMessage extends Doc {
+  attachedTo: Ref<Channel>
+  attachedToClass: Ref<Class<Channel>>
+
   attachments?: number
-}
+  content: string
+  editedOn?: Timestamp
 
-/**
- * @public
- */
-export interface TelegramMessage extends BaseTelegramMessage, ChannelItem {}
-
-/**
- * @public
- */
-export interface NewTelegramMessage extends BaseTelegramMessage, AttachedDoc {
-  status: 'new' | 'sent'
-}
-
-/**
- * @public
- */
-export interface SharedTelegramMessage extends BaseTelegramMessage {
-  incoming: boolean
+  status: TelegramMessageStatus
+  history: boolean
+  telegramId?: number
   sender: string
-  sendOn: Timestamp
 }
 
 /**
@@ -81,8 +85,8 @@ export default plugin(telegramId, {
     NewMessageNotification: '' as Ref<NotificationType>
   },
   class: {
-    Message: '' as Ref<Class<TelegramMessage>>,
-    NewMessage: '' as Ref<Class<NewTelegramMessage>>,
+    TelegramChatMessage: '' as Ref<Class<TelegramChatMessage>>,
+    TelegramChannelMessage: '' as Ref<Class<TelegramChannelMessage>>,
     SharedMessage: '' as Ref<Class<SharedTelegramMessage>>,
     SharedMessages: '' as Ref<Class<SharedTelegramMessages>>
   },

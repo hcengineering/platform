@@ -183,7 +183,7 @@ function sortAlphabetically (items: ChatNavItemModel[]): ChatNavItemModel[] {
   return items.sort((i1, i2) => i1.title.localeCompare(i2.title))
 }
 
-function getDirectCompanion (
+export function getDirectCompanion (
   direct: DirectMessage,
   me: PersonAccount,
   personAccountById: IdMap<PersonAccount>

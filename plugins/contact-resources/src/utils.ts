@@ -47,7 +47,8 @@ import core, {
   type Hierarchy,
   type DocumentQuery,
   AggregateValueData,
-  matchQuery
+  matchQuery,
+  AccountRole
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
@@ -299,6 +300,7 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
 export const employeeByIdStore = writable<IdMap<WithLookup<Employee>>>(new Map())
 export const employeesStore = writable<Array<WithLookup<Employee>>>([])
 
+export const personAccountsStore = writable<PersonAccount[]>([])
 export const personAccountByIdStore = writable<IdMap<PersonAccount>>(new Map())
 
 export const channelProviders = writable<ChannelProvider[]>([])
@@ -336,6 +338,7 @@ function fillStores (): void {
 
     const accountQ = createQuery(true)
     accountQ.query(contact.class.PersonAccount, {}, (res) => {
+      personAccountsStore.set(res)
       personAccountByIdStore.set(toIdMap(res))
 
       const persons = res.map((it) => it.person)
@@ -543,4 +546,20 @@ export function groupPersonAccountValuesWithEmpty (
     >
   }
   return personAccountList.map((it) => it._id)
+}
+
+export function isEmployee (value: Contact): boolean {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  return hierarchy.hasMixin(value, contact.mixin.Employee)
+}
+
+export function isHulyUser (contact: Ref<Contact>): boolean {
+  const employee = get(employeeByIdStore).get(contact as Ref<Employee>)
+
+  if (employee !== undefined) {
+    return true
+  }
+
+  return get(personAccountsStore).some(({ role, person }) => person === contact && role === AccountRole.Guest)
 }

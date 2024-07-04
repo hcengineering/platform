@@ -31,6 +31,7 @@ import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platfor
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import type { AnyComponent } from '@hcengineering/ui'
+import { Action } from '@hcengineering/view'
 
 /**
  * @public
@@ -196,6 +197,13 @@ export interface ActivityMessagePreview extends Class<Doc> {
   presenter: AnyComponent
 }
 
+export type CanGroupMessagesFn = (message1: ActivityMessage, message2: ActivityMessage) => boolean
+export type GroupMessagesResources = Map<Ref<Class<ActivityMessage>>, CanGroupMessagesFn>
+
+export interface ActivityMessageGroupProvider extends Class<Doc> {
+  fn: Resource<CanGroupMessagesFn>
+}
+
 /**
  * @public
  */
@@ -248,7 +256,8 @@ export default plugin(activityId, {
     ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,
     ActivityAttributeUpdatesPresenter: '' as Ref<Mixin<ActivityAttributeUpdatesPresenter>>,
     ActivityMessagePreview: '' as Ref<Mixin<ActivityMessagePreview>>,
-    IgnoreActivity: '' as Ref<Mixin<IgnoreActivity>>
+    IgnoreActivity: '' as Ref<Mixin<IgnoreActivity>>,
+    ActivityMessageGroupProvider: '' as Ref<Mixin<ActivityMessageGroupProvider>>
   },
   class: {
     DocUpdateMessage: '' as Ref<Class<DocUpdateMessage>>,
@@ -318,7 +327,10 @@ export default plugin(activityId, {
   },
   ids: {
     AllFilter: '' as Ref<ActivityMessagesFilter>,
-    MentionNotification: '' as Ref<Doc>
+    MentionNotification: '' as Ref<Doc>,
+    AddReactionAction: '' as Ref<Action>,
+    PinMessageAction: '' as Ref<Action>,
+    UnpinMessageAction: '' as Ref<Action>
   },
   function: {
     ShouldScrollToActivity: '' as Resource<() => boolean>

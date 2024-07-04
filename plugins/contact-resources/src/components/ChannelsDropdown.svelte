@@ -51,6 +51,7 @@
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
   export let focusIndex = -1
   export let restricted: Ref<ChannelProvider>[] = []
+  export let disabled = false
 
   let contextByDocStore: Writable<Map<Ref<Doc>, DocNotifyContext>> = writable(new Map())
   let inboxNotificationsByContextStore: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>> = readable(new Map())
@@ -299,6 +300,9 @@
         {shape}
         highlight={item.integration || item.notification}
         on:click={(ev) => {
+          if (disabled) {
+            return
+          }
           if (editable && !restricted.includes(item.provider)) {
             closeTooltip()
             editChannel(eventToHTMLElement(ev), i, item)
@@ -340,6 +344,9 @@
         {shape}
         highlight={item.integration || item.notification}
         on:click={(ev) => {
+          if (disabled) {
+            return
+          }
           if (editable && !restricted.includes(item.provider)) {
             closeTooltip()
             editChannel(eventToHTMLElement(ev), i, item)
@@ -353,7 +360,7 @@
             value: item.value,
             placeholder: item.placeholder,
             editable: editable !== undefined ? false : undefined,
-            openable: item.presenter ?? item.action ?? false
+            openable: disabled ? false : item.presenter ?? item.action ?? false
           },
           onUpdate: (result) => {
             updateTooltip(result, item, i)
@@ -361,7 +368,7 @@
         }}
       />
     {/each}
-    {#if actions.length > 0 && editable}
+    {#if actions.length > 0 && editable && !disabled}
       <Button
         focusIndex={focusIndex === -1 ? focusIndex : focusIndex + 2 + displayItems.length}
         id={presentation.string.AddSocialLinks}

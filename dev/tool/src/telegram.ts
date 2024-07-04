@@ -22,6 +22,7 @@ import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import telegram, { type SharedTelegramMessage, type SharedTelegramMessages } from '@hcengineering/telegram'
 import { type Document, MongoClient, type UpdateFilter } from 'mongodb'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 const LastMessages = 'last-msgs'
 
@@ -57,7 +58,7 @@ export async function clearTelegramHistory (
       .collection(DOMAIN_ATTACHMENT)
       .find(
         {
-          attachedToClass: telegram.class.Message,
+          attachedToClass: telegram.class.TelegramChannelMessage,
           attachedTo: { $nin: sharedIds }
         },
         {
@@ -70,13 +71,28 @@ export async function clearTelegramHistory (
 
     const attachments = files.map((file) => file.file)
 
-    console.log('clearing txes and messages...')
+    console.log('clearing txes...')
     await Promise.all([
       workspaceDB.collection(DOMAIN_TX).deleteMany({
-        objectClass: telegram.class.Message
+        objectClass: telegram.class.TelegramChannelMessage
       }),
-      workspaceDB.collection(DOMAIN_TELEGRAM).deleteMany({
-        _class: telegram.class.Message
+      workspaceDB.collection(DOMAIN_TX).deleteMany({
+        'tx.objectClass': telegram.class.TelegramChannelMessage
+      }),
+      workspaceDB.collection(DOMAIN_TX).deleteMany({
+        objectClass: telegram.class.TelegramChatMessage
+      }),
+      workspaceDB.collection(DOMAIN_TX).deleteMany({
+        'tx.objectClass': telegram.class.TelegramChatMessage
+      })
+    ])
+    console.log('clearing messages...')
+    await Promise.all([
+      workspaceDB.collection(DOMAIN_CHANNEL).deleteMany({
+        _class: telegram.class.TelegramChannelMessage
+      }),
+      workspaceDB.collection(DOMAIN_ACTIVITY).deleteMany({
+        _class: telegram.class.TelegramChatMessage
       }),
       workspaceDB.collection(DOMAIN_CHANNEL).updateMany(
         {
@@ -89,7 +105,7 @@ export async function clearTelegramHistory (
         } as unknown as UpdateFilter<Document>
       ),
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
-        attachedToClass: telegram.class.Message
+        attachedToClass: telegram.class.TelegramChannelMessage
       }),
       storageAdapter.remove(ctx, workspaceId, Array.from(attachments))
     ])

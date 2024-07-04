@@ -14,14 +14,15 @@
 // limitations under the License.
 //
 
+import type { AnyComponent } from '@hcengineering/ui'
 import { type Ref } from '@hcengineering/core'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { telegramId } from '@hcengineering/telegram'
 import telegram from '@hcengineering/telegram-resources/src/plugin'
-import type { AnyComponent } from '@hcengineering/ui/src/types'
-import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
+import type { CanGroupMessagesFn, DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
 import { type NotificationGroup } from '@hcengineering/notification'
+import { type CreateExternalMessageFn, type EditExternalMessageFn } from '@hcengineering/chunter'
 
 export default mergeIds(telegramId, telegram, {
   string: {
@@ -38,16 +39,18 @@ export default mergeIds(telegramId, telegram, {
     NewMessage: '' as IntlString,
     NewIncomingMessage: '' as IntlString
   },
+  component: {
+    TelegramMessagePreview: '' as AnyComponent
+  },
   ids: {
     NotificationGroup: '' as Ref<NotificationGroup>,
-    TelegramMessageSharedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    TelegramMessageCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
+    TelegramMessageSharedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
   },
   function: {
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldFunc>,
-    GetIntegrationOwnerTG: '' as Resource<TemplateFieldFunc>
-  },
-  activity: {
-    TelegramMessageCreated: '' as AnyComponent
+    GetIntegrationOwnerTG: '' as Resource<TemplateFieldFunc>,
+    CreateMessage: '' as Resource<CreateExternalMessageFn>,
+    EditMessage: '' as Resource<EditExternalMessageFn>,
+    CanGroupMessages: '' as Resource<CanGroupMessagesFn>
   }
 })

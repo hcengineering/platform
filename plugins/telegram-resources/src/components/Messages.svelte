@@ -15,8 +15,9 @@
 -->
 <script lang="ts">
   import type { SharedTelegramMessage } from '@hcengineering/telegram'
+  import { isOtherDay, Ref } from '@hcengineering/core'
+
   import Message from './Message.svelte'
-  import { Ref } from '@hcengineering/core'
   import DateView from './Date.svelte'
 
   export let messages: SharedTelegramMessage[] = []
@@ -25,16 +26,14 @@
 
   function isNewDate (messages: SharedTelegramMessage[], i: number): boolean {
     if (i === 0) return true
-    const current = new Date(messages[i].sendOn).toLocaleDateString()
-    const prev = new Date(messages[i - 1].sendOn).toLocaleDateString()
-    return current !== prev
+    return isOtherDay(messages[i].createdOn ?? 0, messages[i - 1].createdOn ?? 0)
   }
 
   function needName (messages: SharedTelegramMessage[], i: number): boolean {
     if (i === 0) return true
     const current = messages[i]
     const prev = messages[i - 1]
-    return current.incoming !== prev.incoming || current.modifiedBy !== prev.modifiedBy
+    return current.status !== prev.status || current.createdBy !== prev.createdBy
   }
 
   function select (id: Ref<SharedTelegramMessage>): void {

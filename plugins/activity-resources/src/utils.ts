@@ -1,5 +1,12 @@
-import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type TxOperations } from '@hcengineering/core'
+import core, {
+  getCurrentAccount,
+  isOtherHour,
+  type Doc,
+  type Ref,
+  type TxOperations,
+  type Client
+} from '@hcengineering/core'
+import type { ActivityMessage, Reaction, GroupMessagesResources } from '@hcengineering/activity'
 import { getClient } from '@hcengineering/presentation'
 import {
   EmojiPopup,
@@ -9,8 +16,8 @@ import {
   showPopup,
   type Location
 } from '@hcengineering/ui'
-import { type AttributeModel } from '@hcengineering/view'
 import { get } from 'svelte/store'
+import { getResource } from '@hcengineering/platform'
 
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
@@ -130,31 +137,9 @@ export async function unpinMessage (message?: ActivityMessage): Promise<void> {
   await client.update(message, { isPinned: false })
 }
 
-export function getIsTextType (attributeModel?: AttributeModel): boolean {
-  if (attributeModel === undefined) {
-    return false
-  }
-
-  return (
-    attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
-    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup ||
-    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeDoc
-  )
-}
-
 const groupMessagesThresholdMs = 15 * 60 * 1000
 
-type MessageData = Pick<ActivityMessage, '_class' | 'createdBy' | 'createdOn' | 'modifiedOn'>
-
-export function canGroupMessages (message: MessageData, prevMessage?: MessageData): boolean {
-  if (prevMessage === undefined) {
-    return false
-  }
-
-  if (message.createdBy !== prevMessage.createdBy || message._class !== prevMessage._class) {
-    return false
-  }
-
+function canGroupActivityMessages (message: ActivityMessage, prevMessage: ActivityMessage): boolean {
   const time1 = message.createdOn ?? message.modifiedOn
   const time2 = prevMessage.createdOn ?? prevMessage.modifiedOn
 
@@ -163,6 +148,44 @@ export function canGroupMessages (message: MessageData, prevMessage?: MessageDat
   }
 
   return time1 - time2 < groupMessagesThresholdMs
+}
+
+export async function getGroupMessagesResources (client: Client): Promise<GroupMessagesResources> {
+  const providers = client.getModel().findAllSync(activity.mixin.ActivityMessageGroupProvider, {})
+  const result: GroupMessagesResources = new Map()
+
+  for (const provider of providers) {
+    const fn = await getResource(provider.fn)
+
+    result.set(provider._id, fn)
+  }
+
+  return result
+}
+
+export function canGroupMessages (
+  message: ActivityMessage,
+  prevMessage: ActivityMessage | undefined,
+  resources: GroupMessagesResources = new Map()
+): boolean {
+  if (prevMessage === undefined) {
+    return false
+  }
+
+  if (message.createdBy !== prevMessage.createdBy || message._class !== prevMessage._class) {
+    return false
+  }
+
+  const canGroup = canGroupActivityMessages(message, prevMessage)
+
+  if (!canGroup) return false
+
+  const { _class } = message
+  const fn = resources.get(_class)
+
+  if (fn === undefined) return canGroup
+
+  return fn(message, prevMessage)
 }
 
 export function shouldScrollToActivity (): boolean {

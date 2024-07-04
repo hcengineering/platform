@@ -30,10 +30,11 @@ export const serverTelegramId = 'server-telegram' as Plugin
  */
 export default plugin(serverTelegramId, {
   trigger: {
-    OnMessageCreate: '' as Resource<TriggerFunc>
+    OnChannelMessageRemove: '' as Resource<TriggerFunc>,
+    OnChannelMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
-    IsIncomingMessage: '' as TypeMatchFunc,
+    IsNewMessage: '' as TypeMatchFunc,
     FindMessages: '' as Resource<ObjectDDParticipantFunc>,
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldServerFunc>,
     GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>

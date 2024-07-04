@@ -13,23 +13,41 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { IconSize } from '@hcengineering/ui'
-  import { Person, getName, PersonAccount } from '@hcengineering/contact'
+  import contact, { getName, PersonAccount, Contact, Channel, ChannelProvider } from '@hcengineering/contact'
   import { Account, IdMap } from '@hcengineering/core'
 
   import Avatar from './Avatar.svelte'
-  import { personAccountByIdStore } from '../utils'
+  import { isEmployee, personAccountByIdStore } from '../utils'
+  import ChannelsPresenter from './ChannelsPresenter.svelte'
 
-  export let person: Person
+  export let person: Contact
   export let avatarSize: IconSize = 'x-small'
   export let showStatus = true
+  export let channelProviders: ChannelProvider[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const query = createQuery()
 
-  function getAccountByPerson (accountById: IdMap<PersonAccount>, person: Person): Account | undefined {
-    return Array.from(accountById.values()).find((account) => account.person === person._id)
+  let channels: Channel[] = []
+
+  $: if (channelProviders.length > 0) {
+    query.query(
+      contact.class.Channel,
+      { attachedTo: person._id, provider: { $in: channelProviders.map((it) => it._id) } },
+      (res) => {
+        channels = res
+      }
+    )
+  } else {
+    channels = []
+    query.unsubscribe()
+  }
+
+  function getAccount (accountById: IdMap<PersonAccount>, contact: Contact): Account | undefined {
+    return Array.from(accountById.values()).find((account) => account.person === contact._id)
   }
 </script>
 
@@ -41,12 +59,17 @@
     size={avatarSize}
     name={person.name}
     on:accent-color
-    {showStatus}
-    account={getAccountByPerson($personAccountByIdStore, person)?._id}
+    showStatus={showStatus && isEmployee(person)}
+    account={getAccount($personAccountByIdStore, person)?._id}
   />
   <div class="flex-col min-w-0 {avatarSize === 'tiny' || avatarSize === 'inline' ? 'ml-1' : 'ml-3'}">
     <div class="label overflow-label text-left">{getName(hierarchy, person)}</div>
   </div>
+  {#if channels.length}
+    <div class="ml-2">
+      <ChannelsPresenter value={channels} editable={false} disabled />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
