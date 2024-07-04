@@ -108,6 +108,8 @@
     "UnstarChannel": "Remover destaque do canal",
     "UnstarConversation": "Remover destaque da conversa",
     "JoinChannelHeader": "Clique em \"Participar\" para começar.",
-    "JoinChannelText": "Depois de entrar, você poderá ler todas as mensagens e contribuir na discussão."
+    "JoinChannelText": "Depois de entrar, você poderá ler todas as mensagens e contribuir na discussão.",
+    "NoMessagesInChannel": "Ainda não existem mensagens neste canal.",
+    "SendMessagesInChannel": "Envie a sua primeira mensagem!"
   }
 }

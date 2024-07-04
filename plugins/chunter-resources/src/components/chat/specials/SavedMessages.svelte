@@ -27,6 +27,7 @@
   import { savedAttachmentsStore } from '../utils'
   import Header from '../../Header.svelte'
   import { openMessageFromSpecial } from '../../../navigation'
+  import BlankView from '../../BlankView.svelte'
 
   const client = getClient()
 
@@ -108,15 +109,11 @@
         {/if}
       {/each}
     {:else}
-      <div class="empty">
-        <Icon icon={activity.icon.Bookmark} size="large" />
-        <div class="an-element__label header">
-          <Label label={chunter.string.EmptySavedHeader} />
-        </div>
-        <span class="an-element__label">
-          <Label label={chunter.string.EmptySavedText} />
-        </span>
-      </div>
+      <BlankView
+        icon={activity.icon.Bookmark}
+        header={chunter.string.EmptySavedHeader}
+        label={chunter.string.EmptySavedText}
+      />
     {/if}
   </Scroller>
 </div>
@@ -124,21 +121,6 @@
 <style lang="scss">
   .body {
     background-color: var(--theme-panel-color);
-  }
-  .empty {
-    display: flex;
-    align-self: center;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    height: inherit;
-    width: 30rem;
-  }
-
-  .header {
-    font-weight: 600;
-    margin: 1rem;
   }
 
   .attachmentContainer {
