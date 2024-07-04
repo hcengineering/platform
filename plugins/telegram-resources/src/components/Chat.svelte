@@ -116,6 +116,8 @@
     if (channel === undefined) return
     loading = true
     const { message, attachments } = event.detail
+    const receiver = Array.from($personAccountByIdStore.values()).find((it) => it.person === object._id)?._id
+
     await client.addCollection(
       telegram.class.TelegramChannelMessage,
       core.space.Workspace,
@@ -126,6 +128,7 @@
         content: markupToHTML(message),
         status: TelegramMessageStatus.New,
         history: false,
+        receiver,
         attachments
       },
       newId

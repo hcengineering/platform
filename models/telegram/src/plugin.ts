@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AnyComponent } from '@hcengineering/ui'
 import { type Ref } from '@hcengineering/core'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
@@ -39,6 +38,9 @@ export default mergeIds(telegramId, telegram, {
     ConfigDescription: '' as IntlString,
     NewMessage: '' as IntlString,
     NewIncomingMessage: '' as IntlString
+  },
+  component: {
+    TelegramMessagePreview: '' as AnyComponent
   },
   ids: {
     NotificationGroup: '' as Ref<NotificationGroup>,

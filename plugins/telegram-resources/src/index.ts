@@ -23,6 +23,7 @@ import Connect from './components/Connect.svelte'
 import Reconnect from './components/Reconnect.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
+import TelegramMessagePreview from './components/TelegramMessagePreview.svelte'
 
 import telegram from './plugin'
 import { getCurrentEmployeeTG, getIntegrationOwnerTG, createMessage, editMessage, canGroupMessages } from './utils'
@@ -35,7 +36,8 @@ export default async (): Promise<Resources> => ({
     Reconnect,
     IconTelegram,
     SharedMessages,
-    MessagePresenter
+    MessagePresenter,
+    TelegramMessagePreview
   },
   function: {
     GetCurrentEmployeeTG: getCurrentEmployeeTG,

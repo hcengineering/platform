@@ -271,8 +271,6 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  builder.mixin(contact.class.Channel, core.class.Class, activity.mixin.ActivityDoc, {})
-
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectIcon, {
     component: contact.component.PersonIcon
   })

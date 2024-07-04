@@ -30,7 +30,7 @@ import core, {
   TxRemoveDoc
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import telegram, { TelegramChannelMessage, TelegramChatMessage, TelegramMessageStatus } from '@hcengineering/telegram'
+import telegram, { TelegramChannelMessage, TelegramChatMessage } from '@hcengineering/telegram'
 import setting, { Integration } from '@hcengineering/setting'
 import chunter, { DirectMessage } from '@hcengineering/chunter'
 import { deepEqual } from 'fast-equals'
@@ -59,13 +59,20 @@ export async function FindMessages (
  * @public
  */
 export async function IsNewMessage (
-  tx: Tx,
+  originTx: Tx,
   doc: Doc,
   user: Ref<Account>,
   type: NotificationType,
   control: TriggerControl
 ): Promise<boolean> {
-  const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramChatMessage>)
+  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<TelegramChatMessage>
+
+  if (!control.hierarchy.isDerived(tx.objectClass, telegram.class.TelegramChatMessage)) {
+    return true
+  }
+
+  const message = TxProcessor.createDoc2Doc(tx)
+
   const channelMessage = (await control.findAll(message.channelMessageClass, { _id: message.channelMessage }))[0] as
     | TelegramChannelMessage
     | undefined
@@ -144,11 +151,6 @@ async function OnChannelMessageCreate (
   }
 
   const message = TxProcessor.createDoc2Doc(tx)
-
-  if (message.status === TelegramMessageStatus.New) {
-    return []
-  }
-
   const res: Tx[] = []
   const sender = tx.modifiedBy as Ref<PersonAccount>
   const receiver = message.receiver as Ref<PersonAccount>
@@ -198,15 +200,20 @@ async function OnChannelMessageCreate (
     message.modifiedOn
   )
 
-  res.push(
-    control.txFactory.createTxCollectionCUD<DirectMessage, TelegramChatMessage>(
-      chunter.class.DirectMessage,
-      direct,
-      core.space.Space,
-      'messages',
-      createTx
-    )
+  createTx.space = core.space.Tx
+
+  const collectionTx = control.txFactory.createTxCollectionCUD<DirectMessage, TelegramChatMessage>(
+    chunter.class.DirectMessage,
+    direct,
+    core.space.Space,
+    'messages',
+    createTx
   )
+
+  collectionTx.space = core.space.Tx
+
+  res.push(collectionTx)
+
   return res
 }
 

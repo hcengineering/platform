@@ -14,15 +14,17 @@
 -->
 <script lang="ts">
   import { TelegramChatMessage, TelegramChannelMessage, TelegramMessageStatus } from '@hcengineering/telegram'
-  import { Doc, getCurrentAccount, WithLookup } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { Action, Icon, IconCheckmark, Label, Spinner } from '@hcengineering/ui'
   import { AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { ActivityMessageViewType } from '@hcengineering/activity'
   import { ChatMessageContent, ChatMessagePresenter } from '@hcengineering/chunter-resources'
   import notification from '@hcengineering/notification'
-  import { Attachment } from '@hcengineering/attachment'
+  import { createQuery } from '@hcengineering/presentation'
+  import attachment, { Attachment } from '@hcengineering/attachment'
 
   import TelegramIcon from './icons/Telegram.svelte'
+  import telegram from '../plugin'
 
   export let value: WithLookup<TelegramChatMessage> | undefined
   export let doc: Doc | undefined = undefined
@@ -33,15 +35,27 @@
   export let attachmentImageSize: AttachmentImageSize = 'x-large'
   export let showLinksPreview = true
   export let type: ActivityMessageViewType = 'default'
-  export let shortTime = false
   export let embedded = false
   export let onClick: (() => void) | undefined = undefined
 
   const me = getCurrentAccount()
+  const channelMessageQuery = createQuery()
 
   let channelMessage: WithLookup<TelegramChannelMessage> | undefined = undefined
 
-  $: channelMessage = value?.$lookup?.channelMessage as WithLookup<TelegramChannelMessage>
+  $: if (value && value?.$lookup?.channelMessage === undefined) {
+    channelMessageQuery.query(
+      telegram.class.TelegramChannelMessage,
+      { _id: value.channelMessage as Ref<TelegramChannelMessage> },
+      (res) => {
+        channelMessage = res[0]
+      },
+      { lookup: { _id: { attachments: attachment.class.Attachment } } }
+    )
+  } else {
+    channelMessage = value?.$lookup?.channelMessage as WithLookup<TelegramChannelMessage>
+    channelMessageQuery.unsubscribe()
+  }
 
   let attachments: Attachment[] = []
   $: attachments = (channelMessage?.$lookup?.attachments ?? []) as Attachment[]
@@ -62,7 +76,6 @@
     {embedded}
     {type}
     withShowMore={false}
-    {shortTime}
     skipLabel={false}
     typeIcon={TelegramIcon}
     {onClick}

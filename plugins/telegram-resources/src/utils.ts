@@ -49,9 +49,10 @@ export async function getIntegrationOwnerTG (provider: TemplateDataProvider): Pr
   }
 }
 
-export const createMessage: CreateExternalMessageFn = async (client, object: Doc, channel, data) => {
+export const createMessage: CreateExternalMessageFn = async (_, object: Doc, channel, data) => {
   const { _id, message, attachments, collection } = data
   const direct = object as DirectMessage
+  const client = getClient()
 
   const channelMessageId = await client.addCollection<Doc, TelegramChannelMessage>(
     telegram.class.TelegramChannelMessage,
@@ -83,7 +84,7 @@ export const createMessage: CreateExternalMessageFn = async (client, object: Doc
       channelClass: channel._class,
       channelMessage: channelMessageId,
       channelMessageClass: telegram.class.TelegramChannelMessage,
-      message: ''
+      message
     }
   )
 }

@@ -184,4 +184,8 @@ export function createModel (builder: Builder): void {
       chunter.action.ReplyToThreadAction
     ]
   })
+
+  builder.mixin(telegram.class.TelegramChatMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: telegram.component.TelegramMessagePreview
+  })
 }
