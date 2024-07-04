@@ -26,7 +26,7 @@
   } from '@hcengineering/activity-resources'
   import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { getResource } from '@hcengineering/platform'
+  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
@@ -43,6 +43,8 @@
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import HistoryLoading from './LoadingHistory.svelte'
+  import BlankView from './BlankView.svelte'
+  import chunter from '../plugin'
 
   export let provider: ChannelDataProvider
   export let object: Doc | undefined
@@ -646,6 +648,13 @@
       {/if}
       <slot name="header" />
 
+      {#if displayMessages.length === 0}
+        <BlankView
+          icon={chunter.icon.Thread}
+          header={chunter.string.NoMessagesInChannel}
+          label={chunter.string.SendMessagesInChannel}
+        />
+      {/if}
       {#each displayMessages as message, index (message._id)}
         {@const isSelected = message._id === selectedMessageId}
         {@const canGroup = canGroupChatMessages(message, displayMessages[index - 1])}
