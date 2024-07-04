@@ -144,10 +144,8 @@
 
     // Remove draft from Local Storage
     clear()
-    currentMessage = getDefault()
-    _id = currentMessage._id
-    loading = false
     dispatch('submit', false)
+    loading = false
   }
 
   async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {

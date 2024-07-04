@@ -99,7 +99,7 @@
   async function updateAttachments (objectId: Ref<Doc>): Promise<void> {
     draftAttachments = $draftsStore[draftKey]
     if (draftAttachments && shouldSaveDraft) {
-      attachments.clear()
+      attachments = new Map()
       newAttachments.clear()
       Object.entries(draftAttachments).map((file) => {
         return attachments.set(file[0] as Ref<Attachment>, file[1])
@@ -127,7 +127,7 @@
         }
       )
     } else {
-      attachments.clear()
+      attachments = new Map()
       newAttachments.clear()
       originalAttachments.clear()
       removedAttachments.clear()
