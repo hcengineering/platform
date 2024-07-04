@@ -1198,6 +1198,10 @@ export async function restore (
     async function sendChunk (doc: Doc | undefined, len: number): Promise<void> {
       if (doc !== undefined) {
         docsToAdd.delete(doc._id)
+        if (opt.recheck === true) {
+          // We need to clear %hash% in case our is wrong.
+          delete (doc as any)['%hash%']
+        }
         docs.push(doc)
       }
       sendSize = sendSize + len
