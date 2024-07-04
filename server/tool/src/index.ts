@@ -226,7 +226,7 @@ export async function initializeWorkspace (
         model: 'upgrade',
         admin: 'true'
       })) as unknown as CoreClient & BackupClient
-      await createWorkspaceData(ctx, connection, storageAdapter, workspaceId, script, progress)
+      await createWorkspaceData(ctx, connection, storageAdapter, workspaceId, script, logger, progress)
     } catch (e: any) {
       logger.error('error', { error: e })
       throw e

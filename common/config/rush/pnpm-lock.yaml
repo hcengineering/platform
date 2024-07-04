@@ -22580,7 +22580,7 @@ packages:
     dev: false
 
   file:projects/model.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-st7Z7xVdtaQf3+WTi8BcUYBwuZzi+2iWF+gyYIFi6AI1beJh4Mdjtlu6NYfEGRkHONpL/czV4laJly2Dxkc1Ew==, tarball: file:projects/model.tgz}
+    resolution: {integrity: sha512-8Rge/rE550GSKnZADVxI1ykybyTMnaYeRp872Miu2IVHPknVie3N2ZZaLlH0T6M2tQBxqlnAE8VOr1ey9KNWIQ==, tarball: file:projects/model.tgz}
     id: file:projects/model.tgz
     name: '@rush-temp/model'
     version: 0.0.0
@@ -23062,7 +23062,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-GjJqgPc/ux0jjGydLB1tmiwo9f4tTZL4KECyHmiLemLahnZojN8AIIFQTsqUkiFh0dwULxPvJkRWnYdGLA0iZg==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-e3S57PlJ3ME1jMupiLtYmdZFewiWjjAeY/uyOZ1yENsAf6WnET/uLgDpgRqHy/Kw/rLPvyAfWQR69mTFXpAOZA==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -24091,7 +24091,7 @@ packages:
     dev: false
 
   file:projects/server-backup.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-Zpr44q67hLKNSbFvWVJEITtDNValbilYERD5KeWImI44rVHVotGtAISj0GqAtGr0mzGLuosOyP6dhqs/+bfOgw==, tarball: file:projects/server-backup.tgz}
+    resolution: {integrity: sha512-LuaW1naKF+DcYgzDYKohAfO1mMtqzpnglsAfNyAl0hNYUWA/F7M5+/qcy0LpHuwRTltol+RWBBLVeLMzMX9A/Q==, tarball: file:projects/server-backup.tgz}
     id: file:projects/server-backup.tgz
     name: '@rush-temp/server-backup'
     version: 0.0.0
@@ -24969,7 +24969,7 @@ packages:
     dev: false
 
   file:projects/server-notification-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-nQJkxhWMtbfdsgmIvt3/qQ/Dz2dsVx6JI5MbNyrJmixplMRt+cNGb08lAVJLsZkFF2UReTss6jNyKLx8WSki/w==, tarball: file:projects/server-notification-resources.tgz}
+    resolution: {integrity: sha512-DhxiRHwKgwqkX4WP2ZmqGL7fHs0Ev3rtxHT/uylk5SPCPbKmBe20xyEzheSahP0Vm6kIS9XerGQuxGrI31eVBw==, tarball: file:projects/server-notification-resources.tgz}
     id: file:projects/server-notification-resources.tgz
     name: '@rush-temp/server-notification-resources'
     version: 0.0.0
@@ -25631,12 +25631,13 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-ErBexvPUdBHDpLANxgrqNef832SQXZicJp7U+UDiqr9EsTjKjJ71ZgTYlGtj7unI6XfBEoUlH19cAu7ExV3veA==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-7THPdPOTi6rdVo4B0AUJz4mx3urr/lNWZ88ZzgUjPXTl7T2w2PyplAEoCFvxN8A184+6KM9Wb0trUlnftH72fA==, tarball: file:projects/server-tool.tgz}
     id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
+      '@types/uuid': 8.3.4
       '@types/ws': 8.5.10
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -25651,6 +25652,7 @@ packages:
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
+      uuid: 8.3.2
       ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'

@@ -11,8 +11,10 @@ import core, {
   TxOperations,
   WorkspaceId
 } from '@hcengineering/core'
+import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import { AggregatorStorageAdapter } from '@hcengineering/server-core'
+import { v4 as uuid } from 'uuid'
 
 const fieldRegexp = /\${\S+?}/
 
@@ -23,7 +25,7 @@ export interface InitScript {
   steps: InitStep<Doc>[]
 }
 
-export type InitStep<T extends Doc> = CreateStep<T> | MixinStep<T, T> | UpdateStep<T> | FindStep<T>
+export type InitStep<T extends Doc> = CreateStep<T> | MixinStep<T, T> | UpdateStep<T> | FindStep<T> | UploadStep
 
 export interface CreateStep<T extends Doc> {
   type: 'create'
@@ -52,9 +54,18 @@ export interface FindStep<T extends Doc> {
   resultVariable?: string
 }
 
+export interface UploadStep {
+  type: 'upload'
+  fromUrl: string
+  contentType: string
+  size?: number
+  resultVariable?: string
+}
+
 export type Props<T extends Doc> = Data<T> & Partial<Doc> & { space: Ref<Space> }
 
 const nextRank = '#nextRank'
+const now = '#now'
 
 export async function createWorkspaceData (
   ctx: MeasureContext,
@@ -62,6 +73,7 @@ export async function createWorkspaceData (
   storageAdapter: AggregatorStorageAdapter,
   workspaceId: WorkspaceId,
   script: InitScript,
+  logger: ModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
   const client = new TxOperations(connection, core.account.System)
@@ -76,9 +88,32 @@ export async function createWorkspaceData (
       await processMixin(client, step, vars)
     } else if (step.type === 'find') {
       await processFind(client, step, vars)
+    } else if (step.type === 'upload') {
+      await processUpload(ctx, storageAdapter, workspaceId, step, vars, logger)
     }
 
     await progress(Math.round(((index + 1) * 100) / script.steps.length))
+  }
+}
+
+async function processUpload (
+  ctx: MeasureContext,
+  storageAdapter: AggregatorStorageAdapter,
+  workspaceId: WorkspaceId,
+  step: UploadStep,
+  vars: Record<string, any>,
+  logger: ModelLogger
+): Promise<void> {
+  try {
+    const id = uuid()
+    const resp = await fetch(step.fromUrl)
+    const buffer = Buffer.from(await resp.arrayBuffer())
+    await storageAdapter.put(ctx, workspaceId, id, buffer, step.contentType, step.size)
+    if (step.resultVariable !== undefined) {
+      vars[step.resultVariable] = id
+    }
+  } catch (error) {
+    logger.error('Upload failed', error)
   }
 }
 
@@ -169,6 +204,8 @@ function fillProps<T extends Doc, P extends Partial<T> | Props<T>> (data: P, var
         const rank = makeRank(vars[nextRank], undefined)
         ;(data as any)[key] = rank
         vars[nextRank] = rank
+      } else if (value === now) {
+        ;(data as any)[key] = new Date().getTime()
       } else {
         while (true) {
           const matched = fieldRegexp.exec(value)
