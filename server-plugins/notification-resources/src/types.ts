@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 import { BaseNotificationType } from '@hcengineering/notification'
+import { Person, PersonAccount } from '@hcengineering/contact'
 
 /**
  * @public
@@ -36,4 +37,9 @@ export interface NotifyParams {
   isOwn: boolean
   isSpace: boolean
   shouldUpdateTimestamp: boolean
+}
+
+export interface UserInfo {
+  account: PersonAccount
+  person?: Person
 }

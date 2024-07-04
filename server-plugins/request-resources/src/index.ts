@@ -13,14 +13,20 @@
 // limitations under the License.
 //
 
-import core, { Doc, Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, TxProcessor } from '@hcengineering/core'
+import core, { Doc, Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, TxProcessor, Ref } from '@hcengineering/core'
 import request, { Request, RequestStatus } from '@hcengineering/request'
 import { getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
 import { DocUpdateMessage } from '@hcengineering/activity'
 import notification from '@hcengineering/notification'
-import { getNotificationTxes, getCollaborators, getTextPresenter } from '@hcengineering/server-notification-resources'
+import {
+  getNotificationTxes,
+  getCollaborators,
+  getTextPresenter,
+  getUsersInfo
+} from '@hcengineering/server-notification-resources'
+import { PersonAccount } from '@hcengineering/contact'
 
 /**
  * @public
@@ -140,14 +146,24 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
     attachedTo: doc._id
   })
+  const usersInfo = await getUsersInfo([...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
+  const senderInfo = usersInfo.find((info) => info.account._id === tx.modifiedBy)
+
+  if (senderInfo === undefined) {
+    return res
+  }
 
   for (const target of collaborators) {
+    const targetInfo = usersInfo.find((info) => info.account._id === target)
+    if (targetInfo === undefined) continue
+
     const txes = await getNotificationTxes(
       control,
       request,
       tx.tx,
       tx,
-      target,
+      targetInfo,
+      senderInfo,
       { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
       notifyContexts,
       messages,

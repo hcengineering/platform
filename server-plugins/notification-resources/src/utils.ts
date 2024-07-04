@@ -46,7 +46,7 @@ import contact, { formatName, Person, PersonAccount } from '@hcengineering/conta
 import { DocUpdateMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 
-import { NotifyResult } from './types'
+import { UserInfo, NotifyResult } from './types'
 
 /**
  * @public
@@ -153,7 +153,7 @@ export async function isShouldNotifyTx (
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
   object: Doc,
-  user: Ref<Account>,
+  user: PersonAccount,
   isOwn: boolean,
   isSpace: boolean,
   docUpdateMessage?: DocUpdateMessage
@@ -171,15 +171,14 @@ export async function isShouldNotifyTx (
     docUpdateMessage?.attributeUpdates?.attrKey
   )
 
-  const personAccount = await getPersonAccountById(user, control)
   const modifiedAccount = await getPersonAccountById(tx.modifiedBy, control)
 
   for (const type of types) {
     if (
       type.allowedForAuthor !== true &&
-      (tx.modifiedBy === user ||
+      (tx.modifiedBy === user._id ||
         // Also check if we have different account for same user.
-        (personAccount?.person !== undefined && personAccount?.person === modifiedAccount?.person))
+        (user?.person !== undefined && user?.person === modifiedAccount?.person))
     ) {
       continue
     }
@@ -187,17 +186,17 @@ export async function isShouldNotifyTx (
       const mixin = control.hierarchy.as(type, serverNotification.mixin.TypeMatch)
       if (mixin.func !== undefined) {
         const f = await getResource(mixin.func)
-        const res = await f(tx, object, user, type, control)
+        const res = await f(tx, object, user._id, type, control)
         if (!res) continue
       }
     }
-    if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.PlatformNotification)) {
+    if (await isAllowed(control, user._id, type._id, notification.providers.PlatformNotification)) {
       allowed = true
     }
-    if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.BrowserNotification)) {
+    if (await isAllowed(control, user._id, type._id, notification.providers.BrowserNotification)) {
       push = true
     }
-    if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.EmailNotification)) {
+    if (await isAllowed(control, user._id, type._id, notification.providers.EmailNotification)) {
       emailTypes.push(type)
     }
   }
@@ -301,24 +300,13 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
 }
 
 async function getSenderName (
-  accountId: Ref<PersonAccount>,
   control: TriggerControl,
-  cache: Map<Ref<Doc>, Doc>
+  account: PersonAccount,
+  person: Person | undefined
 ): Promise<string> {
-  if (accountId === core.account.System) {
+  if (account._id === core.account.System) {
     return await translate(core.string.System, {})
   }
-
-  const account = await getPersonAccountById(accountId, control)
-
-  if (account === undefined) {
-    console.error('Cannot find person account: ', accountId)
-    Analytics.handleError(new Error(`Cannot find person account ${accountId}`))
-    return ''
-  }
-
-  const person =
-    (cache.get(accountId) as Person) ?? (await control.findAll(contact.class.Person, { _id: account.person }))[0]
 
   if (person === undefined) {
     console.error('Cannot find person', { accountId: account._id, person: account.person })
@@ -334,7 +322,7 @@ async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
   control: TriggerControl,
-  cache: Map<Ref<Doc>, Doc>
+  sender: UserInfo
 ): Promise<NotificationContent> {
   const title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = notification.string.CommonNotificationBody
@@ -349,7 +337,7 @@ async function getFallbackNotificationFullfillment (
 
   const tx = TxProcessor.extractTx(originTx)
 
-  intlParams.senderName = await getSenderName(tx.modifiedBy as Ref<PersonAccount>, control, cache)
+  intlParams.senderName = await getSenderName(control, sender.account, sender.person)
 
   if (tx._class === core.class.TxUpdateDoc) {
     const updateTx = tx as TxUpdateDoc<Doc>
@@ -382,23 +370,23 @@ function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy
 
 export async function getNotificationContent (
   originTx: TxCUD<Doc>,
-  targetUser: Ref<Account>,
+  targetUser: PersonAccount,
+  sender: UserInfo,
   object: Doc,
-  control: TriggerControl,
-  cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
+  control: TriggerControl
 ): Promise<NotificationContent> {
   let { title, body, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
     object,
     originTx,
     control,
-    cache
+    sender
   )
 
   const actualTx = TxProcessor.extractTx(originTx)
   const notificationPresenter = getNotificationPresenter((actualTx as TxCUD<Doc>).objectClass, control.hierarchy)
   if (notificationPresenter !== undefined) {
     const getFuillfillmentParams = await getResource(notificationPresenter.presenter)
-    const updateIntlParams = await getFuillfillmentParams(object, originTx, targetUser, control)
+    const updateIntlParams = await getFuillfillmentParams(object, originTx, targetUser._id, control)
     title = updateIntlParams.title
     body = updateIntlParams.body
     intlParams = {
@@ -424,4 +412,14 @@ export async function getNotificationContent (
   }
 
   return content
+}
+
+export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerControl): Promise<UserInfo[]> {
+  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
+  const persons = await control.findAll(contact.class.Person, { _id: { $in: accounts.map(({ person }) => person) } })
+
+  return accounts.map((account) => ({
+    account,
+    person: persons.find(({ _id }) => _id === account.person)
+  }))
 }

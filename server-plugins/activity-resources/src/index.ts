@@ -38,6 +38,7 @@ import {
   createCollaboratorNotifications,
   removeDocInboxNotifications
 } from '@hcengineering/server-notification-resources'
+import { PersonAccount } from '@hcengineering/contact'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 import { ReferenceTrigger } from './references'
@@ -127,7 +128,7 @@ export async function createReactionNotifications (
 
   res = res.concat(
     await createCollabDocInfo(
-      [user],
+      [user] as Ref<PersonAccount>[],
       control,
       tx.tx,
       tx,

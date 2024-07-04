@@ -17,13 +17,13 @@
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
+  type AvatarInfo,
   Employee,
   formatName,
   getAvatarProviderId,
   getGravatarUrl,
   Person,
-  PersonAccount,
-  type AvatarInfo
+  PersonAccount
 } from '@hcengineering/contact'
 import core, {
   Account,
@@ -54,6 +54,7 @@ import core, {
 import notification, {
   ActivityInboxNotification,
   BaseNotificationType,
+  BrowserNotification,
   ClassCollaborators,
   Collaborators,
   CommonInboxNotification,
@@ -62,16 +63,14 @@ import notification, {
   MentionInboxNotification,
   notificationId,
   NotificationStatus,
-  PushSubscription,
   NotificationType,
   PushData,
-  BrowserNotification
+  PushSubscription
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 import serverNotification, {
-  getEmployee,
   getPersonAccount,
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE
@@ -83,11 +82,12 @@ import { encodeObjectURI } from '@hcengineering/view'
 import serverView from '@hcengineering/server-view'
 import { Analytics } from '@hcengineering/analytics'
 
-import { Content, NotifyResult, NotifyParams } from './types'
+import { Content, NotifyParams, NotifyResult, UserInfo } from './types'
 import {
   getHTMLPresenter,
   getNotificationContent,
   getTextPresenter,
+  getUsersInfo,
   isAllowed,
   isMixinTx,
   isShouldNotifyTx,
@@ -119,8 +119,8 @@ export async function getCommonNotificationTxes (
   control: TriggerControl,
   doc: Doc,
   data: Partial<Data<CommonInboxNotification>>,
-  receiver: Ref<Account>,
-  sender: Ref<Account>,
+  receiver: UserInfo,
+  sender: UserInfo,
   attachedTo: Ref<Doc>,
   attachedToClass: Ref<Class<Doc>>,
   space: Ref<Space>,
@@ -144,7 +144,7 @@ export async function getCommonNotificationTxes (
       data,
       _class,
       modifiedOn,
-      sender as Ref<PersonAccount>,
+      sender,
       notifyResult.push
     )
   }
@@ -153,14 +153,12 @@ export async function getCommonNotificationTxes (
     return res
   }
 
-  const receiverAccount = await getPersonAccountById(receiver, control)
-  if (receiverAccount === undefined) {
-    return res
-  }
-  const emp = await getEmployee(receiverAccount.person as Ref<Employee>, control)
-  if (emp?.active === true) {
-    for (const type of notifyResult.emails) {
-      await notifyByEmail(control, type._id, doc, sender as Ref<PersonAccount>, receiverAccount._id)
+  if (receiver.person !== undefined && control.hierarchy.isDerived(receiver.person._class, contact.mixin.Employee)) {
+    const emp = receiver.person as Employee
+    if (emp?.active) {
+      for (const type of notifyResult.emails) {
+        await notifyByEmail(control, type._id, doc, sender, receiver)
+      }
     }
   }
 
@@ -218,25 +216,17 @@ async function notifyByEmail (
   control: TriggerControl,
   type: Ref<BaseNotificationType>,
   doc: Doc | undefined,
-  senderId: Ref<PersonAccount>,
-  receiverId: Ref<PersonAccount>,
+  sender: UserInfo,
+  receiver: UserInfo,
   data: string = ''
 ): Promise<void> {
-  const sender = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId }))[0]
-
-  const receiver = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: receiverId }))[0]
-  if (receiver === undefined) return
-  let senderName = ''
-
-  if (sender !== undefined) {
-    const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
-    senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
-  }
+  const senderPerson = sender.person
+  const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
 
   const content = await getContent(doc, senderName, type, control, data)
 
   if (content !== undefined) {
-    await sendEmailNotification(content.text, content.html, content.subject, receiver.email)
+    await sendEmailNotification(content.text, content.html, content.subject, receiver.account.email)
   }
 }
 
@@ -367,7 +357,7 @@ function getDocNotifyContext (
 export async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
-  targetUser: Ref<Account>,
+  target: UserInfo,
   attachedTo: Ref<Doc>,
   attachedToClass: Ref<Class<Doc>>,
   space: Ref<Space>,
@@ -375,20 +365,13 @@ export async function pushInboxNotifications (
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
-  senderId: Ref<PersonAccount>,
+  sender: UserInfo,
   shouldPush: boolean,
   shouldUpdateTimestamp = true,
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<void> {
-  const account = (cache.get(targetUser) as PersonAccount) ?? (await getPersonAccountById(targetUser, control))
-
-  if (account === undefined) {
-    return
-  }
-
-  cache.set(account._id, account)
-
-  const context = getDocNotifyContext(contexts, targetUser, attachedTo, res)
+  const account = target.account
+  const context = getDocNotifyContext(contexts, account._id, attachedTo, res)
 
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   const isHidden = !!context?.hidden
@@ -397,7 +380,7 @@ export async function pushInboxNotifications (
 
   if (context === undefined) {
     const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space, {
-      user: targetUser,
+      user: account._id,
       attachedTo,
       attachedToClass,
       hidden: false,
@@ -417,7 +400,7 @@ export async function pushInboxNotifications (
 
   if (!isHidden) {
     const notificationData = {
-      user: targetUser,
+      user: target.account._id,
       isViewed: false,
       docNotifyContext: docNotifyContextId,
       ...data
@@ -428,12 +411,12 @@ export async function pushInboxNotifications (
       // const now = Date.now()
       const pushTx = await createPushFromInbox(
         control,
-        targetUser,
+        target,
         attachedTo,
         attachedToClass,
         notificationData,
         _class,
-        senderId,
+        sender,
         notificationTx.objectId,
         cache
       )
@@ -530,12 +513,12 @@ async function mentionInboxNotificationToText (
 
 export async function createPushFromInbox (
   control: TriggerControl,
-  targetUser: Ref<Account>,
+  target: UserInfo,
   attachedTo: Ref<Doc>,
   attachedToClass: Ref<Class<Doc>>,
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
-  senderId: Ref<PersonAccount>,
+  sender: UserInfo,
   _id: Ref<Doc>,
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx | undefined> {
@@ -551,19 +534,8 @@ export async function createPushFromInbox (
   if (title === '' || body === '') {
     return
   }
-  const sender = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId }))[0]
 
-  let senderPerson: Person | undefined
-
-  if (sender !== undefined) {
-    senderPerson =
-      (cache.get(sender.person) as Person) ?? (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
-  }
-
-  if (senderPerson !== undefined) {
-    cache.set(senderPerson._id, senderPerson)
-  }
-
+  const senderPerson = sender.person
   const linkProviders = control.modelDb.findAllSync(serverView.mixin.ServerLinkIdProvider, {})
   const provider = linkProviders.find(({ _id }) => _id === attachedToClass)
 
@@ -582,13 +554,13 @@ export async function createPushFromInbox (
   }
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
-  await createPushNotification(control, targetUser, title, body, _id, senderPerson, path)
+  await createPushNotification(control, target, title, body, _id, senderPerson, path)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, core.space.Workspace, {
-    user: targetUser,
+    user: target.account._id,
     status: NotificationStatus.New,
     title,
     body,
-    senderId,
+    senderId: sender.account._id,
     tag: _id,
     onClickLocation: {
       path
@@ -598,7 +570,7 @@ export async function createPushFromInbox (
 
 export async function createPushNotification (
   control: TriggerControl,
-  targetUser: Ref<Account>,
+  target: UserInfo,
   title: string,
   body: string,
   _id: string,
@@ -610,7 +582,7 @@ export async function createPushNotification (
   const subject = getMetadata(serverNotification.metadata.PushSubject) ?? 'mailto:hey@huly.io'
   if (privateKey === undefined || publicKey === undefined) return
   const subscriptions = (await control.queryFind(notification.class.PushSubscription, {})).filter(
-    (p) => p.user === targetUser
+    (p) => p.user === target.account._id
   )
   const data: PushData = {
     title,
@@ -622,11 +594,9 @@ export async function createPushNotification (
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const uploadUrl = getMetadata(serverCore.metadata.UploadURL) ?? ''
   const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
-  const domain = concatLink(front, domainPath)
-  data.domain = domain
+  data.domain = concatLink(front, domainPath)
   if (path !== undefined) {
-    const url = concatLink(front, path.join('/'))
-    data.url = url
+    data.url = concatLink(front, path.join('/'))
   }
   if (senderAvatar != null) {
     const provider = getAvatarProviderId(senderAvatar.avatarType)
@@ -640,7 +610,7 @@ export async function createPushNotification (
   webpush.setVapidDetails(subject, publicKey, privateKey)
 
   for (const subscription of subscriptions) {
-    void sendPushToSubscription(control, targetUser, subscription, data)
+    void sendPushToSubscription(control, target.account._id, subscription, data)
   }
 }
 
@@ -668,7 +638,8 @@ export async function pushActivityInboxNotifications (
   originTx: TxCUD<Doc>,
   control: TriggerControl,
   res: Tx[],
-  targetUser: Ref<Account>,
+  target: UserInfo,
+  sender: UserInfo,
   object: Doc,
   docNotifyContexts: DocNotifyContext[],
   activityMessages: ActivityMessage[],
@@ -677,7 +648,7 @@ export async function pushActivityInboxNotifications (
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<void> {
   for (const activityMessage of activityMessages) {
-    const content = await getNotificationContent(originTx, targetUser, object, control, cache)
+    const content = await getNotificationContent(originTx, target.account, sender, object, control)
     const data: Partial<Data<ActivityInboxNotification>> = {
       ...content,
       attachedTo: activityMessage._id,
@@ -687,7 +658,7 @@ export async function pushActivityInboxNotifications (
     await pushInboxNotifications(
       control,
       res,
-      targetUser,
+      target,
       activityMessage.attachedTo,
       activityMessage.attachedToClass,
       activityMessage.space,
@@ -695,7 +666,7 @@ export async function pushActivityInboxNotifications (
       data,
       notification.class.ActivityInboxNotification,
       activityMessage.modifiedOn,
-      originTx.modifiedBy as Ref<PersonAccount>,
+      sender,
       shouldPush,
       shouldUpdateTimestamp,
       cache
@@ -708,7 +679,8 @@ export async function getNotificationTxes (
   object: Doc,
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
-  target: Ref<Account>,
+  target: UserInfo,
+  sender: UserInfo,
   params: NotifyParams,
   docNotifyContexts: DocNotifyContext[],
   activityMessages: ActivityMessage[],
@@ -722,7 +694,7 @@ export async function getNotificationTxes (
       tx,
       originTx,
       object,
-      target,
+      target.account,
       params.isOwn,
       params.isSpace,
       docMessage
@@ -734,6 +706,7 @@ export async function getNotificationTxes (
         control,
         res,
         target,
+        sender,
         object,
         docNotifyContexts,
         [message],
@@ -746,20 +719,14 @@ export async function getNotificationTxes (
     if (notifyResult.emails.length === 0) {
       continue
     }
-    const acc = await getPersonAccountById(target, control)
-    if (acc === undefined) {
-      continue
-    }
-    const emp = await getEmployee(acc.person as Ref<Employee>, control)
-    if (emp?.active === true) {
-      for (const type of notifyResult.emails) {
-        await notifyByEmail(
-          control,
-          type._id,
-          object,
-          originTx.modifiedBy as Ref<PersonAccount>,
-          target as Ref<PersonAccount>
-        )
+
+    if (target.person !== undefined && control.hierarchy.isDerived(target.person._class, contact.mixin.Employee)) {
+      const emp = target.person as Employee
+
+      if (emp?.active) {
+        for (const type of notifyResult.emails) {
+          await notifyByEmail(control, type._id, object, sender, target)
+        }
       }
     }
   }
@@ -767,7 +734,7 @@ export async function getNotificationTxes (
 }
 
 export async function createCollabDocInfo (
-  collaborators: Ref<Account>[],
+  collaborators: Ref<PersonAccount>[],
   control: TriggerControl,
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
@@ -802,9 +769,22 @@ export async function createCollabDocInfo (
     attachedTo: object._id
   })
 
+  const usersInfo = await getUsersInfo([...Array.from(targets), originTx.modifiedBy as Ref<PersonAccount>], control)
+  const sender = usersInfo.find(({ account }) => account._id === originTx.modifiedBy)
+
+  if (sender === undefined) {
+    console.error('Cannot find sender account', originTx.modifiedBy)
+    Analytics.handleError(new Error(`Cannot find sender account ${originTx.modifiedBy}`))
+    return res
+  }
+
   for (const target of targets) {
+    const info = usersInfo.find(({ account }) => account._id === target)
+
+    if (info === undefined) continue
+
     res = res.concat(
-      await getNotificationTxes(control, object, tx, originTx, target, params, notifyContexts, docMessages, cache)
+      await getNotificationTxes(control, object, tx, originTx, info, sender, params, notifyContexts, docMessages, cache)
     )
   }
   return res
@@ -841,8 +821,11 @@ async function getSpaceCollabTxes (
     return []
   }
 
-  const space = (await control.findAll(core.class.Space, { _id: doc.space }))[0]
+  const space = cache.get(doc.space) ?? (await control.findAll(core.class.Space, { _id: doc.space }))[0]
   if (space === undefined) return []
+
+  cache.set(space._id, space)
+
   const mixin = control.hierarchy.classHierarchyMixin<Doc, ClassCollaborators>(
     space._class,
     notification.mixin.ClassCollaborators
@@ -851,7 +834,7 @@ async function getSpaceCollabTxes (
     const collabs = control.hierarchy.as<Doc, Collaborators>(space, notification.mixin.Collaborators)
     if (collabs.collaborators !== undefined) {
       return await createCollabDocInfo(
-        collabs.collaborators,
+        collabs.collaborators as Ref<PersonAccount>[],
         control,
         tx,
         originTx,
@@ -885,7 +868,7 @@ async function createCollaboratorDoc (
   const mixinTx = getMixinTx(tx, control, collaborators)
 
   const notificationTxes = await createCollabDocInfo(
-    collaborators,
+    collaborators as Ref<PersonAccount>[],
     control,
     tx,
     originTx,
@@ -966,12 +949,27 @@ async function updateCollaboratorsMixin (
         user: { $in: newCollabs },
         attachedTo: tx.objectId
       })
+
+      const infos = await getUsersInfo([...newCollabs, originTx.modifiedBy] as Ref<PersonAccount>[], control)
+      const sender = infos.find(({ account }) => account._id === originTx.modifiedBy)
+
+      if (sender === undefined) {
+        console.error('Cannot find sender account', originTx.modifiedBy)
+        Analytics.handleError(new Error(`Cannot find sender account ${originTx.modifiedBy}`))
+        return res
+      }
+
       for (const collab of newCollabs) {
+        const target = infos.find(({ account }) => account._id === collab)
+
+        if (target === undefined) continue
+
         await pushActivityInboxNotifications(
           originTx,
           control,
           res,
-          collab,
+          target,
+          sender,
           prevDoc,
           docNotifyContexts,
           activityMessages,
@@ -1016,7 +1014,7 @@ async function collectionCollabDoc (
 
   res = res.concat(
     await createCollabDocInfo(
-      collaborators,
+      collaborators as Ref<PersonAccount>[],
       control,
       actualTx,
       tx,
@@ -1154,7 +1152,7 @@ async function updateCollaboratorDoc (
     }
     res = res.concat(
       await createCollabDocInfo(
-        [...collabMixin.collaborators, ...newCollaborators],
+        [...collabMixin.collaborators, ...newCollaborators] as Ref<PersonAccount>[],
         control,
         tx,
         originTx,
@@ -1168,7 +1166,16 @@ async function updateCollaboratorDoc (
     const collaborators = await getDocCollaborators(doc, mixin, control)
     res.push(getMixinTx(tx, control, collaborators))
     res = res.concat(
-      await createCollabDocInfo(collaborators, control, tx, originTx, doc, activityMessages, params, cache)
+      await createCollabDocInfo(
+        collaborators as Ref<PersonAccount>[],
+        control,
+        tx,
+        originTx,
+        doc,
+        activityMessages,
+        params,
+        cache
+      )
     )
   }
 
