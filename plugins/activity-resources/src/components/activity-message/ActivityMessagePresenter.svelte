@@ -39,7 +39,6 @@
   export let showLinksPreview = true
   export let videoPreload = true
   export let hideLink = false
-  export let shortTime = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -73,7 +72,6 @@
       videoPreload,
       hideLink,
       type,
-      shortTime,
       onClick
     }}
   />

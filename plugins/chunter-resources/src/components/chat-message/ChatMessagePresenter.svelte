@@ -52,7 +52,6 @@
   export let videoPreload = true
   export let type: ActivityMessageViewType = 'default'
   export let typeIcon: Asset | AnySvelteComponent | undefined = undefined
-  export let shortTime = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -213,7 +212,6 @@
     {pending}
     {stale}
     showDatePreposition={viewlet?.label !== undefined}
-    {shortTime}
     {type}
     {onClick}
   >
