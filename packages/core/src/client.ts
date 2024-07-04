@@ -96,6 +96,7 @@ class ClientImpl implements AccountClient, BackupClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
+  private readonly appliedModelTransactions = new Set<Ref<Tx>>()
   constructor (private readonly conn: ClientConnection) {}
 
   setModel (hierarchy: Hierarchy, model: ModelDb): void {
@@ -147,6 +148,7 @@ class ClientImpl implements AccountClient, BackupClient {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
+      this.appliedModelTransactions.add(tx._id)
     }
     // We need to handle it on server, before performing local live query updates.
     return await this.conn.tx(tx)
@@ -156,8 +158,13 @@ class ClientImpl implements AccountClient, BackupClient {
     for (const t of tx) {
       try {
         if (t.objectSpace === core.space.Model) {
-          this.hierarchy.tx(t)
-          await this.model.tx(t)
+          const hasTx = this.appliedModelTransactions.has(t._id)
+          if (!hasTx) {
+            this.hierarchy.tx(t)
+            await this.model.tx(t)
+          } else {
+            this.appliedModelTransactions.delete(t._id)
+          }
         }
       } catch (err) {
         console.error('failed to apply model transaction, skipping', t)
