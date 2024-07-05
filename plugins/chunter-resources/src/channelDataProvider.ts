@@ -111,10 +111,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.msgClass = _class
     this.selectedMsgId = selectedMsgId
     this.loadData(loadAll)
-
-    onDestroy(() => {
-      this.destroy()
-    })
   }
 
   public destroy (): void {
