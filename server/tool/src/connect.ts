@@ -278,7 +278,7 @@ export class BlobClient {
               method: 'PUT',
               headers: {
                 Authorization: 'Bearer ' + this.token,
-                'Content-Type': contentType
+                'Content-Type': 'application/octet-stream'
               },
               body: buffer
             }
