@@ -98,6 +98,38 @@ export async function renameResource (resource: Resource): Promise<void> {
   })
 }
 
+export async function moveResources (resources: Resource[], space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const client = getClient()
+
+  const folder = parent !== drive.ids.Root ? await client.findOne(drive.class.Folder, { _id: parent }) : undefined
+
+  const path = folder !== undefined ? [folder._id, ...folder.path] : []
+
+  const folders = resources.filter((p) => p._class === drive.class.Folder).map((p) => p._id)
+  const children = await client.findAll(drive.class.Resource, { path: { $in: folders } })
+  const byParent = new Map<Ref<Resource>, Resource[]>()
+  for (const child of children) {
+    const group = byParent.get(child.parent) ?? []
+    group.push(child)
+    byParent.set(child.parent, group)
+  }
+
+  const ops = client.apply(parent)
+
+  for (const resource of resources) {
+    await ops.update(resource, { space, parent, path })
+
+    const children = byParent.get(resource._id) ?? []
+    for (const child of children) {
+      // remove old path and add new path
+      const childPath = [...child.path.filter((p) => !resource.path.includes(p)), ...path]
+      await ops.update(child, { space, path: childPath })
+    }
+  }
+
+  await ops.commit()
+}
+
 const fileTypesMap: Record<string, AnySvelteComponent> = {
   'application/pdf': FileTypePdf,
   audio: FileTypeAudio,

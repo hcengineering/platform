@@ -43,6 +43,7 @@ export default mergeIds(driveId, drive, {
     FolderPresenter: '' as AnyComponent,
     FilePresenter: '' as AnyComponent,
     FileSizePresenter: '' as AnyComponent,
+    MoveResource: '' as AnyComponent,
     ResourcePresenter: '' as AnyComponent
   },
   function: {
