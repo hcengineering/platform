@@ -26,7 +26,6 @@ import {
 } from '@hcengineering/core'
 
 import { derived, get, type Readable, writable } from 'svelte/store'
-import { onDestroy } from 'svelte'
 import { type ActivityMessage } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages } from '@hcengineering/activity-resources'
