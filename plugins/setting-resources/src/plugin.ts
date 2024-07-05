@@ -101,6 +101,11 @@ export default mergeIds(settingId, setting, {
     Permissions: '' as IntlString,
     Assignees: '' as IntlString,
     DeleteRole: '' as IntlString,
-    DeleteRoleConfirmation: '' as IntlString
+    DeleteRoleConfirmation: '' as IntlString,
+    Name: '' as IntlString,
+    Copy: '' as IntlString,
+    TXTValue: '' as IntlString,
+    TXTRecordCopied: '' as IntlString,
+    Verify: '' as IntlString
   }
 })

@@ -18,7 +18,7 @@
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
+  import setting, { SecuritySettings, SettingsCategory, settingId } from '@hcengineering/setting'
   import {
     Action,
     Component,
@@ -36,7 +36,9 @@
   import HelpAndSupport from './HelpAndSupport.svelte'
 
   let items: SettingsCategory[] = []
+  let securitySettings: SecuritySettings[] = []
 
+  const securityQuery = createQuery()
   const settingsQuery = createQuery()
   settingsQuery.query(
     setting.class.SettingsCategory,
@@ -46,6 +48,10 @@
     },
     { sort: { order: 1 } }
   )
+
+  securityQuery.query(setting.class.Security, {}, (set) => {
+    securitySettings = set
+  })
 
   const account = getCurrentAccount() as PersonAccount
   $: person = $personByIdStore.get(account.person)
@@ -120,7 +126,9 @@
       }
     })
     actions.push(...getMenu(items, ['main']))
-    if (hasAccountRole(account, AccountRole.User)) {
+    if (hasAccountRole(account, AccountRole.Owner) ||
+       (hasAccountRole(account, AccountRole.User) && securitySettings[0]?.allowMembersToSendInvite))
+    {
       actions.push({
         icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,

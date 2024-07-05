@@ -27,13 +27,13 @@
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { getAccount, getHref, getRecommendedWorkspace, goTo, joinWithDomain, navigateToWorkspace } from '../utils'
   import StatusControl from './StatusControl.svelte'
 
   const CHECK_INTERVAL = 1000
 
   export let navigateUrl: string | undefined = undefined
-  let workspaces: Workspace[] = []
+  let workspace: Workspace | null = null
   let flagToUpdateWorkspaces = false
 
   let status = OK
@@ -46,7 +46,7 @@
 
   async function updateWorkspaces (): Promise<void> {
     try {
-      workspaces = await getWorkspaces()
+      workspace = await getRecommendedWorkspace()
     } catch (e) {
       // we should be able to continue from this state
     }
@@ -63,24 +63,24 @@
     }
   })
 
-  async function select (workspace: string): Promise<void> {
+  async function join (workspaceUrl: string): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-    const [loginStatus, result] = await selectWorkspace(workspace)
+    const [loginStatus, result] = await joinWithDomain()
     status = loginStatus
 
-    navigateToWorkspace(workspace, result, navigateUrl)
+    navigateToWorkspace(workspaceUrl, result, navigateUrl)
   }
 
-  async function _getWorkspaces (): Promise<void> {
+  async function _getRecommendedWorkspace (): Promise<void> {
     try {
-      const res = await getWorkspaces()
+      const res = await getRecommendedWorkspace()
 
-      if (res.length === 0 && account?.confirmed === false) {
+      if (res == null && account?.confirmed === false) {
         goTo('confirmationSend')
       }
 
-      workspaces = res
+      workspace = res
       flagToUpdateWorkspaces = true
       await updateWorkspaces()
     } catch (err: any) {
@@ -95,11 +95,6 @@
   $: isAdmin = isAdminUser()
 
   let search: string = ''
-
-  let haveVerifiedWorkspaces = false
-  $: if (workspaces.length > 0) {
-    haveVerifiedWorkspaces = workspaces.some((it) => it.verified === true)
-  }
 </script>
 
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
@@ -107,7 +102,7 @@
   <div class="fs-title">
     {account?.email}
   </div>
-  <div class="title"><Label label={login.string.SelectWorkspace} /></div>
+  <div class="title"><Label label={login.string.JoinWorkspace} /></div>
   <div class="status">
     <StatusControl {status} />
   </div>
@@ -116,16 +111,16 @@
       <SearchEdit bind:value={search} width={'100%'} />
     </div>
   {/if}
-  {#await _getWorkspaces() then}
+  {#await _getRecommendedWorkspace() then}
     <Scroller padding={'.125rem 0'}>
       <div class="form">
-        {#each workspaces.filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as workspace}
+        {#if workspace != null}
           {@const wsName = workspace.workspaceName ?? workspace.workspace}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
-            on:click={() => select(workspace.workspace)}
+            on:click={() => workspace != null && join(workspace.workspace)}
           >
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
@@ -141,8 +136,8 @@
               {/if}
             </div>
           </div>
-        {/each}
-        {#if workspaces.length === 0 && account?.confirmed === true}
+        {/if}
+        {#if workspace == null && account?.confirmed === true}
           <div class="form-row send">
             <Button
               label={login.string.CreateWorkspace}
@@ -158,7 +153,7 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
-      {#if workspaces.length}
+      {#if workspace != null}
         <div>
           <span><Label label={login.string.WantAWorkspace} /></span>
           <NavLink href={getHref('createWorkspace')}><Label label={login.string.CreateWorkspace} /></NavLink>

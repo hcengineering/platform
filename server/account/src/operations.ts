@@ -51,15 +51,19 @@ import platform, { getMetadata, PlatformError, Severity, Status, translate } fro
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, getStorageAdapter, initModel, upgradeModel } from '@hcengineering/server-tool'
-import { pbkdf2Sync, randomBytes } from 'crypto'
-import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
+import { pbkdf2Sync, randomBytes, randomUUID } from 'crypto'
+import { Binary, Db, Document, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import { type StorageAdapter } from '../../core/types'
+import { ccTLDs, SECOND_LEVEL_DOMAINS } from './constants'
 import { accountPlugin } from './plugin'
+
+import dns from 'dns'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
 const INVITE_COLLECTION = 'invite'
+const DOMAIN_COLLECTION = 'domain'
 
 /**
  * @public
@@ -146,6 +150,16 @@ export interface Invite {
 /**
  * @public
  */
+export interface WorkspaceDomain {
+  _id: ObjectId
+  workspace: WorkspaceId
+  txtRecord: string
+  verifiedOn: number | null
+}
+
+/**
+ * @public
+ */
 export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 
 function hashWithSalt (password: string, salt: Buffer): Buffer {
@@ -164,6 +178,64 @@ function isEmail (email: string): boolean {
   const EMAIL_REGEX =
     /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
   return EMAIL_REGEX.test(email)
+}
+
+export async function isValidDomain (domainName: string): Promise<boolean> {
+  return await new Promise((resolve) => {
+    dns.resolve4(domainName, (err) => {
+      if (err !== null) {
+        dns.resolve6(domainName, (err) => {
+          if (err !== null) {
+            resolve(false)
+          } else {
+            resolve(true)
+          }
+        })
+      } else {
+        resolve(true)
+      }
+    })
+  })
+}
+
+export function extractEmailDomain (email: string): string {
+  const parts = email.split('@')
+  return parts[1] ?? ''
+}
+
+export async function shouldVerifyDomain (domainName: string, txtRecord: string): Promise<boolean> {
+  return await new Promise((resolve, reject) => {
+    dns.resolveTxt(domainName, (err, records) => {
+      if (err !== null) {
+        reject(err)
+      } else {
+        const flattenedRecords = records.flatMap((record) => record)
+        resolve(flattenedRecords.includes(txtRecord))
+      }
+    })
+  })
+}
+
+export function generateTxtRecord (workspaceName: string): string {
+  return `huly-${workspaceName}-${randomUUID()}`
+}
+
+export function extractApexDomain (domainName: string): string {
+  const parts = domainName.split('.')
+  if (parts.length > 2) {
+    if (SECOND_LEVEL_DOMAINS.has(parts[parts.length - 1]) && ccTLDs.has(parts[parts.length - 1])) {
+      return parts.slice(-3).join('.')
+    }
+    return parts.slice(-2).join('.')
+  }
+  return domainName
+}
+
+/**
+ * @public
+ */
+export async function getWorkspaceDomain (db: Db, filter: Filter<Document>): Promise<WorkspaceDomain | null> {
+  return await db.collection(DOMAIN_COLLECTION).findOne<WorkspaceDomain>(filter)
 }
 
 /**
@@ -464,6 +536,64 @@ export async function join (
 /**
  * @public
  */
+export async function joinWithDomain (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<WorkspaceLoginInfo> {
+  let { email } = decodeToken(token)
+  email = cleanEmail(email)
+
+  const accountInfo = await getAccount(db, email)
+
+  if (accountInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  const workspace = await getRecommendedWorkspace(ctx, db, productId, branding, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: 'workspace' }))
+  }
+
+  if (workspace !== null) {
+    if (workspace.disabled === true && workspace.creating !== true) {
+      ctx.error('workspace disabled', { email })
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: 'workspace' })
+      )
+    }
+
+    const ws = await assignWorkspace(
+      ctx,
+      db,
+      productId,
+      branding,
+      email,
+      workspace.workspace,
+      AccountRole.User
+    )
+
+    return {
+      endpoint: getEndpoint(),
+      email,
+      token: generateToken(email, getWorkspaceId(ws.workspace, productId), getExtra(accountInfo)),
+      workspace: ws.workspaceUrl ?? ws.workspace,
+      productId,
+      creating: ws.creating,
+      createProgress: ws.createProgress
+    }
+  }
+
+  ctx.error('workspace error', { email })
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+}
+
+/**
+ * @public
+ */
 export async function confirmEmail (db: Db, _email: string): Promise<Account> {
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
@@ -598,6 +728,126 @@ export async function signUpJoin (
   const result = await selectWorkspace(ctx, db, productId, branding, token, ws.workspaceUrl ?? ws.workspace)
   await useInvite(db, inviteId)
   return result
+}
+
+/**
+ * @public
+ */
+export async function createWorkspaceDomain (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  domainName: string
+): Promise<WorkspaceDomain> {
+  const { workspace } = decodeToken(token)
+
+  const newDomainName = extractApexDomain(domainName)
+  const domain = await getWorkspaceDomain(db, {
+    name: newDomainName,
+    $or: [{ verifiedOn: { $ne: null } }, { workspace }]
+  })
+
+  if (domain !== null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.DomainAlreadyExists, { domainName: newDomainName })
+    )
+  }
+
+  const txtRecord = generateTxtRecord(workspace.name)
+
+  await db.collection(DOMAIN_COLLECTION).insertOne({
+    name: newDomainName,
+    txtRecord,
+    verifiedOn: null,
+    workspace
+  })
+
+  const newDomain = await getWorkspaceDomain(db, { name: newDomainName, workspace })
+
+  if (newDomain === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource: 'workspace domain' })
+    )
+  }
+
+  ctx.info('domain created', { domainName: newDomainName })
+
+  return newDomain
+}
+
+/**
+ * @public
+ */
+export async function verifyWorkspaceDomain (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  domainName: string
+): Promise<WorkspaceDomain> {
+  const { workspace } = decodeToken(token)
+
+  const workspaceDomain = await getWorkspaceDomain(db, { name: domainName, workspace })
+
+  if (workspaceDomain == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceDomainNotFound, { domainName }))
+  }
+
+  if (workspaceDomain.verifiedOn != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.DomainAlreadyVerified, { domainName }))
+  }
+
+  let verifiedOn: number | null = null
+
+  if (await shouldVerifyDomain(domainName, workspaceDomain.txtRecord)) {
+    verifiedOn = Date.now()
+    await db.collection(DOMAIN_COLLECTION).updateOne({ name: domainName, workspace }, { $set: { verifiedOn } })
+    ctx.info('domain verified', { domainName })
+  }
+
+  return {
+    ...workspaceDomain,
+    verifiedOn
+  }
+}
+
+/**
+ * @public
+ */
+export async function getWorkspaceDomains (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<WorkspaceDomain[]> {
+  const { workspace } = decodeToken(token)
+
+  const domains = await db.collection<WorkspaceDomain>(DOMAIN_COLLECTION).find({ workspace }, { limit: 100 }).toArray()
+
+  return domains
+}
+
+export async function getRecommendedWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<Workspace | null> {
+  let { email } = decodeToken(token)
+  email = cleanEmail(email)
+
+  const domain = await getWorkspaceDomain(db, { name: extractEmailDomain(email), verifiedOn: { $ne: null } })
+
+  if (domain == null) {
+    return null
+  }
+
+  return await getWorkspaceById(db, domain.workspace.productId, domain.workspace.name)
 }
 
 /**
@@ -2222,6 +2472,11 @@ export function getMethods (
     getEndpoint: wrap(async () => getEndpoint()),
     login: wrap(login),
     join: wrap(join),
+    joinWithDomain: wrap(joinWithDomain),
+    createWorkspaceDomain: wrap(createWorkspaceDomain),
+    verifyWorkspaceDomain: wrap(verifyWorkspaceDomain),
+    getWorkspaceDomains: wrap(getWorkspaceDomains),
+    getRecommendedWorkspace: wrap(getRecommendedWorkspace),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),

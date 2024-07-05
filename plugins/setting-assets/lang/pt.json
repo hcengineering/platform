@@ -64,6 +64,7 @@
     "Leave": "Sair do espaço de trabalho",
     "LeaveDescr": "Tem certeza de que deseja sair do espaço de trabalho? Esta ação não pode ser desfeita.",
     "Owners": "Proprietários",
+    "Security": "Segurança",
     "WorkspaceSettings": "Configurações do espaço de trabalho",
     "Select": "Selecionar",
     "AddOwner": "Adicionar proprietário",
@@ -104,6 +105,18 @@
     "Branding": "Marca",
     "Assignees": "Atribuídos",
     "DeleteRole": "Eliminar função",
-    "DeleteRoleConfirmation": "Tem a certeza de que pretende eliminar esta função? Todos os utilizadores com esta função perderão as suas permissões."
+    "DeleteRoleConfirmation": "Tem a certeza de que pretende eliminar esta função? Todos os utilizadores com esta função perderão as suas permissões.",
+    "PermittedEmailDomains": "Domínios de e-mail permitidos",
+    "EmailDomainRegistrationMessage": "Somente as pessoas com um e-mail da lista de domínios podem se registrar para este espaço de trabalho.",
+    "AddDomain": "Adicionar domínio",
+    "Domain": "Domínio",
+    "EnterDomain": "Digite o domínio",
+    "SaveDomain": "Salvar domínio",
+    "AllowMembersToInvite": "Permitir que os membros convidem novos usuários para o espaço de trabalho",
+    "Name": "Nome",
+    "Copy": "Copiar",
+    "TXTValue": "Valor",
+    "TXTRecordCopied": "Registro TXT copiado para a área de transferência",
+    "Verify": "Verificar"
   }
 }

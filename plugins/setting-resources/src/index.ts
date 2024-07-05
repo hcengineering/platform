@@ -15,7 +15,7 @@
 
 import { type Class, type Doc, type Mixin } from '@hcengineering/core'
 import { type Resources } from '@hcengineering/platform'
-import { getClient, MessageBox } from '@hcengineering/presentation'
+import { MessageBox, getClient } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
 import ClassSetting from './components/ClassSetting.svelte'
@@ -27,41 +27,42 @@ import Owners from './components/Owners.svelte'
 import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
 import Profile from './components/Profile.svelte'
+import Security from './components/Security.svelte'
 import Settings from './components/Settings.svelte'
 
+import ClassAttributes from './components/ClassAttributes.svelte'
+import ClassAttributesList from './components/ClassAttributesList.svelte'
+import Configure from './components/Configure.svelte'
+import IntegrationPanel from './components/IntegrationPanel.svelte'
+import InviteSetting from './components/InviteSetting.svelte'
+import Spaces from './components/Spaces.svelte'
 import Support from './components/Support.svelte'
 import Terms from './components/Terms.svelte'
+import WorkspaceSetting from './components/WorkspaceSetting.svelte'
+import WorkspaceSettings from './components/WorkspaceSettings.svelte'
+import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
+import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
+import ManageSpaceTypeContent from './components/spaceTypes/ManageSpaceTypeContent.svelte'
+import ManageSpaceTypes from './components/spaceTypes/ManageSpaceTypes.svelte'
+import ManageSpaceTypesTools from './components/spaceTypes/ManageSpaceTypesTools.svelte'
+import RoleEditor from './components/spaceTypes/RoleEditor.svelte'
+import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
+import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
+import SpaceTypeRolesSectionEditor from './components/spaceTypes/editor/SpaceTypeRolesSectionEditor.svelte'
+import ArrayEditor from './components/typeEditors/ArrayEditor.svelte'
 import BooleanTypeEditor from './components/typeEditors/BooleanTypeEditor.svelte'
 import DateTypeEditor from './components/typeEditors/DateTypeEditor.svelte'
 import EnumTypeEditor from './components/typeEditors/EnumTypeEditor.svelte'
 import HyperlinkTypeEditor from './components/typeEditors/HyperlinkTypeEditor.svelte'
 import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
-import ArrayEditor from './components/typeEditors/ArrayEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
-import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
-import WorkspaceSetting from './components/WorkspaceSetting.svelte'
-import WorkspaceSettings from './components/WorkspaceSettings.svelte'
-import InviteSetting from './components/InviteSetting.svelte'
-import Configure from './components/Configure.svelte'
-import Spaces from './components/Spaces.svelte'
-import setting from './plugin'
-import IntegrationPanel from './components/IntegrationPanel.svelte'
-import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue, filterDescendants } from './utils'
-import ClassAttributes from './components/ClassAttributes.svelte'
-import ClassAttributesList from './components/ClassAttributesList.svelte'
-import ManageSpaceTypes from './components/spaceTypes/ManageSpaceTypes.svelte'
-import ManageSpaceTypesTools from './components/spaceTypes/ManageSpaceTypesTools.svelte'
-import ManageSpaceTypeContent from './components/spaceTypes/ManageSpaceTypeContent.svelte'
-import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
-import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
-import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
-import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
-import SpaceTypeRolesSectionEditor from './components/spaceTypes/editor/SpaceTypeRolesSectionEditor.svelte'
-import RoleEditor from './components/spaceTypes/RoleEditor.svelte'
 import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
+import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import setting from './plugin'
+import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
-export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList, SpaceTypeGeneralSectionEditor }
 export * from './store'
+export { ClassAttributes, ClassAttributesList, ClassSetting, SpaceTypeGeneralSectionEditor, filterDescendants }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })
@@ -111,6 +112,7 @@ export default async (): Promise<Resources> => ({
     EditEnum,
     EnumSetting,
     Owners,
+    Security,
     CreateMixin,
     InviteSetting,
     IntegrationPanel,

@@ -31,7 +31,9 @@ import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
+import dns from 'dns'
 import fs from 'fs'
+import { SECOND_LEVEL_DOMAINS, ccTLDs, validDomainRegex } from './constants'
 
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
@@ -704,6 +706,86 @@ export function start (
     '.png',
     '.avif'
   ]
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/domain/validate', async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    const domainName = req.query.domain ? extractApexDomain(String(req.query.domain)) : undefined
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!domainName) return res.status(400).send({ error: 'Missing "domain" query parameter.' })
+    if (!validDomainRegex.test(domainName)) return res.status(400).send({ error: 'Provided "domain" is not valid.' })
+
+    const valid = await isValidDomain(domainName)
+
+    res.set('Cache-Control', cacheControlNoCache)
+    res.status(200).send({ valid })
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.get('/domain/verify', async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    const domainName = req.query.domain ? extractApexDomain(String(req.query.domain)) : undefined
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    const txtRecord = req.query.record ? String(req.query.record) : undefined
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!domainName) return res.status(400).send({ error: 'Missing "domain" query parameter.' })
+    if (!validDomainRegex.test(domainName)) return res.status(400).send({ error: 'Provided "domain" is not valid.' })
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!txtRecord) return res.status(400).send({ error: 'Missing "record" query parameter.' })
+
+    const verified = await verifyTxtRecord(domainName, txtRecord)
+
+    res.set('Cache-Control', cacheControlNoCache)
+    res.status(200).send({ verified })
+  })
+
+  async function isValidDomain (domainName: string): Promise<boolean> {
+    return await new Promise((resolve) => {
+      dns.resolve4(domainName, (err) => {
+        if (err !== null) {
+          dns.resolve6(domainName, (err) => {
+            if (err !== null) {
+              resolve(false)
+            } else {
+              resolve(true)
+            }
+          })
+        } else {
+          resolve(true)
+        }
+      })
+    })
+  }
+
+  async function verifyTxtRecord (domainName: string, txtRecord: string): Promise<boolean> {
+    return await new Promise((resolve, reject) => {
+      dns.resolveTxt(domainName, (err, records) => {
+        if (err !== null) {
+          reject(err)
+        } else {
+          const flattenedRecords = records.flatMap((record) => record)
+          resolve(flattenedRecords.includes(txtRecord))
+        }
+      })
+    })
+  }
+
+  function extractApexDomain (domainName: string): string {
+    const parts = domainName.split('.')
+
+    if (parts.length > 2) {
+      if (SECOND_LEVEL_DOMAINS.has(parts[parts.length - 1]) && ccTLDs.has(parts[parts.length - 1])) {
+        return parts.slice(-3).join('.')
+      }
+
+      return parts.slice(-2).join('.')
+    }
+
+    return domainName
+  }
 
   app.get('*', function (request, response) {
     if (filesPatterns.some((it) => request.path.endsWith(it))) {

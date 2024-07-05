@@ -112,6 +112,20 @@ export interface WorkspaceSetting extends Doc {
 /**
  * @public
  */
+export interface DomainSetting extends Doc {
+  domain: string
+}
+
+/**
+ * @public
+ */
+export interface SecuritySettings extends Doc {
+  allowMembersToSendInvite: boolean
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {
@@ -126,6 +140,7 @@ export default plugin(settingId, {
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
     Owners: '' as Ref<Doc>,
+    Security: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
@@ -143,6 +158,7 @@ export default plugin(settingId, {
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>,
     InviteSettings: '' as Ref<Class<InviteSettings>>,
+    Security: '' as Ref<Class<SecuritySettings>>,
     WorkspaceSetting: '' as Ref<Class<WorkspaceSetting>>
   },
   component: {
@@ -194,6 +210,7 @@ export default plugin(settingId, {
     ClassSetting: '' as IntlString,
     Classes: '' as IntlString,
     Owners: '' as IntlString,
+    Security: '' as IntlString,
     Configure: '' as IntlString,
     InviteSettings: '' as IntlString,
     General: '' as IntlString,
@@ -202,11 +219,19 @@ export default plugin(settingId, {
     Automations: '' as IntlString,
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
-    Roles: '' as IntlString
+    Roles: '' as IntlString,
+    PermittedEmailDomains: '' as IntlString,
+    EmailDomainRegistrationMessage: '' as IntlString,
+    AddDomain: '' as IntlString,
+    Domain: '' as IntlString,
+    EnterDomain: '' as IntlString,
+    SaveDomain: '' as IntlString,
+    AllowMembersToInvite: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
     Owners: '' as Asset,
+    Security: '' as Asset,
     Password: '' as Asset,
     Setting: '' as Asset,
     Integrations: '' as Asset,
