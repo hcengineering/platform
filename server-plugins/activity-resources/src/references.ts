@@ -96,8 +96,8 @@ export async function getPersonNotificationTxes (
   space: Ref<Space>,
   originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
-  const receiverPerson = reference.attachedTo as Ref<Person>
-  const receiver = await getPersonAccount(receiverPerson, control)
+  const receiverPersonId = reference.attachedTo as Ref<Person>
+  const receiver = await getPersonAccount(receiverPersonId, control)
 
   if (receiver === undefined) {
     return []
@@ -126,7 +126,7 @@ export async function getPersonNotificationTxes (
 
   const info = (
     await control.findAll<UserMentionInfo>(activity.class.UserMentionInfo, {
-      user: receiverPerson,
+      user: receiverPersonId,
       attachedTo: reference.attachedDocId
     })
   )[0]
@@ -136,7 +136,7 @@ export async function getPersonNotificationTxes (
       control.txFactory.createTxCreateDoc(activity.class.UserMentionInfo, space, {
         attachedTo: reference.attachedDocId ?? reference.srcDocId,
         attachedToClass: reference.attachedDocClass ?? reference.srcDocClass,
-        user: receiverPerson,
+        user: receiverPersonId,
         content: reference.message,
         collection: 'mentions'
       })
@@ -158,8 +158,29 @@ export async function getPersonNotificationTxes (
     isViewed: false
   }
 
+  const sender = (
+    await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId as Ref<PersonAccount> }, { limit: 1 })
+  )[0]
+  const receiverPerson = (await control.findAll(contact.class.Person, { _id: receiver.person }, { limit: 1 }))[0]
+  const senderPerson =
+    sender !== undefined
+      ? (await control.findAll(contact.class.Person, { _id: sender.person }, { limit: 1 }))[0]
+      : undefined
+
+  const receiverInfo = {
+    _id: receiver._id,
+    account: receiver,
+    person: receiverPerson
+  }
+
+  const senderInfo = {
+    _id: senderId,
+    account: sender,
+    person: senderPerson
+  }
+
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
-  const messageNotifyResult = await getMessageNotifyResult(reference, receiver._id, control, originTx, doc)
+  const messageNotifyResult = await getMessageNotifyResult(reference, receiver, control, originTx, doc)
 
   if (messageNotifyResult.allowed) {
     notifyResult.allowed = false
@@ -175,8 +196,8 @@ export async function getPersonNotificationTxes (
     control,
     doc,
     data,
-    receiver._id,
-    senderId,
+    receiverInfo,
+    senderInfo,
     reference.srcDocId,
     reference.srcDocClass,
     space,
@@ -197,12 +218,12 @@ export async function getPersonNotificationTxes (
     if (exists !== undefined) {
       const pushTx = await createPushFromInbox(
         control,
-        receiver._id,
+        receiverInfo,
         reference.srcDocId,
         reference.srcDocClass,
         { ...data, docNotifyContext: exists.docNotifyContext },
         notification.class.MentionInboxNotification,
-        senderId as Ref<PersonAccount>,
+        senderInfo,
         exists._id,
         new Map()
       )
@@ -288,7 +309,7 @@ async function getCollaboratorsTxes (
 
 async function getMessageNotifyResult (
   reference: Data<ActivityReference>,
-  receiver: Ref<Account>,
+  account: PersonAccount,
   control: TriggerControl,
   originTx: TxCUD<Doc>,
   doc: Doc
@@ -306,7 +327,7 @@ async function getMessageNotifyResult (
 
   const mixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
 
-  if (mixin === undefined || !mixin.collaborators.includes(receiver)) {
+  if (mixin === undefined || !mixin.collaborators.includes(account._id)) {
     return { allowed: false, emails: [], push: false }
   }
 
@@ -314,7 +335,7 @@ async function getMessageNotifyResult (
     return { allowed: false, emails: [], push: false }
   }
 
-  return await isShouldNotifyTx(control, tx, originTx, doc, receiver, false, false, undefined)
+  return await isShouldNotifyTx(control, tx, originTx, doc, account, false, false, undefined)
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {

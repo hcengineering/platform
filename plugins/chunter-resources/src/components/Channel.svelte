@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-  import { DocNotifyContext } from '@hcengineering/notification'
+  import { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
@@ -53,6 +53,8 @@
   onDestroy(() => {
     unsubscribe()
     unsubscribeLocation()
+    dataProvider?.destroy()
+    dataProvider = undefined
   })
 
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
@@ -61,17 +63,27 @@
 
   $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId)
 
-  function updateDataProvider (
+  async function updateDataProvider (
     attachedTo: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
     lastViewedTimestamp?: Timestamp,
     selectedMessageId?: Ref<ActivityMessage>
-  ): void {
+  ): Promise<void> {
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
       const loadAll = isDocChannel
-      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp ?? 0, selectedMessageId, loadAll)
+      const timestamp =
+        lastViewedTimestamp ??
+        (
+          await client.findOne(
+            notification.class.DocNotifyContext,
+            { attachedTo: object._id, user: getCurrentAccount()._id },
+            { projection: { lastViewedTimestamp: 1 } }
+          )
+        )?.lastViewedTimestamp
+
+      dataProvider = new ChannelDataProvider(attachedTo, _class, timestamp, selectedMessageId, loadAll)
     }
   }
 </script>

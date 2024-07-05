@@ -37,7 +37,8 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import {
   getCommonNotificationTxes,
   getNotificationContent,
-  isShouldNotifyTx
+  isShouldNotifyTx,
+  UserInfo
 } from '@hcengineering/server-notification-resources'
 import task, { makeRank } from '@hcengineering/task'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text'
@@ -188,9 +189,23 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
 
   if (object === undefined) return []
 
+  const senderAccount = await control.modelDb.findOne(contact.class.PersonAccount, {
+    _id: tx.modifiedBy as Ref<PersonAccount>
+  })
+  const senderPerson =
+    senderAccount !== undefined
+      ? (await control.findAll(contact.class.Person, { _id: senderAccount.person }))[0]
+      : undefined
+
+  const senderInfo: UserInfo = {
+    _id: tx.modifiedBy,
+    account: senderAccount,
+    person: senderPerson
+  }
+
   const res: Tx[] = []
-  const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account._id, true, false)
-  const content = await getNotificationContent(tx, account._id, todo, control)
+  const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false)
+  const content = await getNotificationContent(tx, account, senderInfo, todo, control)
   const data: Partial<Data<CommonInboxNotification>> = {
     ...content,
     header: time.string.ToDo,
@@ -200,13 +215,21 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title))))
   }
 
+  const person = (await control.modelDb.findAll(contact.class.Person, { _id: account.person }))[0]
+
+  const receiverInfo: UserInfo = {
+    _id: account._id,
+    account,
+    person
+  }
+
   res.push(
     ...(await getCommonNotificationTxes(
       control,
       object,
       data,
-      account._id,
-      tx.modifiedBy,
+      receiverInfo,
+      senderInfo,
       object._id,
       object._class,
       object.space,
