@@ -16,6 +16,7 @@
 import contact from '@hcengineering/contact'
 import core, {
   BackupClient,
+  Branding,
   Client as CoreClient,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
@@ -37,15 +38,20 @@ import { DomainIndexHelperImpl, StorageAdapter, StorageConfiguration } from '@hc
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { Db, Document } from 'mongodb'
 import { connect } from './connect'
+import { createWorkspaceData, InitScript } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
+import { getMetadata } from '@hcengineering/platform'
 import fs from 'fs'
 import path from 'path'
 
 export * from './connect'
 export * from './plugin'
 export { toolPlugin as default }
+
+export const CONFIG_DB = '%config'
+const scriptsCol = 'initScripts'
 
 export class FileModelLogger implements ModelLogger {
   handle: fs.WriteStream
@@ -166,6 +172,61 @@ export async function initModel (
         workspaceId
       )
       await progress(100)
+    } catch (e: any) {
+      logger.error('error', { error: e })
+      throw e
+    }
+  } catch (err: any) {
+    ctx.error('Failed to create workspace', { error: err })
+    throw err
+  } finally {
+    await storageAdapter.close()
+    await connection?.sendForceClose()
+    await connection?.close()
+    _client.close()
+  }
+}
+
+/**
+ * @public
+ */
+export async function initializeWorkspace (
+  ctx: MeasureContext,
+  branding: Branding | null,
+  transactorUrl: string,
+  workspaceId: WorkspaceId,
+  logger: ModelLogger = consoleModelLogger,
+  progress: (value: number) => Promise<void>
+): Promise<void> {
+  const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
+  if (initWS === undefined) return
+
+  const { mongodbUri } = prepareTools([])
+
+  const _client = getMongoClient(mongodbUri)
+  const client = await _client.getClient()
+  let connection: (CoreClient & BackupClient) | undefined
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+  try {
+    const db = client.db(CONFIG_DB)
+    const scripts = await db.collection<InitScript>(scriptsCol).find({}).toArray()
+    let script: InitScript | undefined
+    if (initWS !== undefined) {
+      script = scripts.find((it) => it.name === initWS)
+    }
+    if (script === undefined) {
+      script = scripts.find((it) => it.default)
+    }
+    if (script === undefined) {
+      return
+    }
+    try {
+      connection = (await connect(transactorUrl, workspaceId, undefined, {
+        model: 'upgrade',
+        admin: 'true'
+      })) as unknown as CoreClient & BackupClient
+      await createWorkspaceData(ctx, connection, storageAdapter, workspaceId, script, logger, progress)
     } catch (e: any) {
       logger.error('error', { error: e })
       throw e
