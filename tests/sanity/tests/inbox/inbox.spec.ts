@@ -125,6 +125,7 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPageSecond.clickTracker()
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
+    await page2.close()
   })
 
   test('User is able to assign someone else and he should be able to open the task', async ({ page, browser }) => {
@@ -158,6 +159,7 @@ test.describe('Inbox tests', () => {
       milestone: 'Milestone',
       estimation: '2h'
     })
+    await page2.close()
   })
   test.skip('User is able to create a task, assign a other user and close it from inbox', async ({ page, browser }) => {
     await leftSideMenuPage.openProfileMenu()
@@ -192,6 +194,7 @@ test.describe('Inbox tests', () => {
     })
     await inboxPage.clickCloseLeftSidePanel()
     // ADD ASSERT ONCE THE ISSUE IS FIXED
+    await page2.close()
   })
 
   test('User is able to send message to other user and he should see it in inbox', async ({ page, browser }) => {
@@ -221,6 +224,7 @@ test.describe('Inbox tests', () => {
     await inboxPageSecond.checkIfInboxChatExists('Channel general', true)
     await inboxPageSecond.clickOnInboxChat('Channel general')
     await inboxPageSecond.checkIfTextInChatIsPresent('Test message')
+    await page2.close()
   })
 
   test('User is able to turn off notification and he should not receive messages to inbox', async ({
@@ -254,6 +258,7 @@ test.describe('Inbox tests', () => {
     await channelPage.checkMessageExist('Test message', true, 'Test message')
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
+    await page2.close()
   })
 
   test('User is able to change filter in inbox', async ({ page, browser }) => {
@@ -290,5 +295,6 @@ test.describe('Inbox tests', () => {
     await inboxPageSecond.clickOnInboxFilter('Issues')
     await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
     await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
+    await page2.close()
   })
 })

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   type Class,
   DOMAIN_DOC_INDEX_STATE,
@@ -37,7 +38,6 @@ import { type DbAdapter } from '../adapter'
 import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
 import { type FullTextPipeline, type FullTextPipelineStage } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 export * from './content'
 export * from './field'
@@ -383,8 +383,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           // We need to send index update event
           clearTimeout(this.updateBroadcast)
           this.updateBroadcast = setTimeout(() => {
-            this.broadcastUpdate(Array.from(this.broadcastClasses.values()))
-            this.broadcastClasses.clear()
+            this.broadcastClasses.delete(core.class.DocIndexState)
+            if (this.broadcastClasses.size > 0) {
+              const toSend = Array.from(this.broadcastClasses.values())
+              this.broadcastClasses.clear()
+              this.broadcastUpdate(toSend)
+            }
           }, 5000)
 
           await new Promise((resolve) => {

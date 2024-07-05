@@ -18,7 +18,6 @@ import {
   Class,
   Doc,
   DocumentQuery,
-  FullTextData,
   IndexingConfiguration,
   MeasureContext,
   Ref,
@@ -54,8 +53,8 @@ function getIndexVersion (): string {
 
 class ElasticAdapter implements FullTextAdapter {
   private readonly workspaceString: string
-  private readonly getFulltextDocId: (doc: Ref<Doc>) => Ref<FullTextData>
-  private readonly getDocId: (fulltext: Ref<FullTextData>) => Ref<Doc>
+  private readonly getFulltextDocId: (doc: Ref<Doc>) => Ref<Doc>
+  private readonly getDocId: (fulltext: Ref<Doc>) => Ref<Doc>
   private readonly indexName: string
 
   constructor (
@@ -67,7 +66,7 @@ class ElasticAdapter implements FullTextAdapter {
   ) {
     this.indexName = `${indexBaseName}_${indexVersion}`
     this.workspaceString = toWorkspaceString(workspaceId)
-    this.getFulltextDocId = (doc) => `${doc}@${this.workspaceString}` as Ref<FullTextData>
+    this.getFulltextDocId = (doc) => `${doc}@${this.workspaceString}` as Ref<Doc>
     this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
   }
 

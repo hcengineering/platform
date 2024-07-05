@@ -28,7 +28,6 @@ import {
   DocIndexState,
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   FullTextSearchContext,
@@ -713,7 +712,6 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
-    domain === DOMAIN_FULLTEXT_BLOB ||
     domain === DOMAIN_TRANSIENT
   ) {
     hierarchy.setClassifierProp(c, 'class_indexed', false)

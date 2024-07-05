@@ -970,7 +970,6 @@ export async function createWorkspace (
           async (value) => {
             await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 70) })
           },
-          true,
           getStorageAdapter()
         )
         const modelVersion = getModelVersion()

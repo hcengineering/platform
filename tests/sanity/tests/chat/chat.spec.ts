@@ -95,6 +95,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, false)
+    await page2.close()
   })
 
   test('create new public channel tests and check if the new user have access to it by default', async ({
@@ -124,6 +125,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
+    await page2.close()
   })
 
   test('create new private channel and test if the user can exchange the messages', async ({ browser, page }) => {
@@ -158,6 +160,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
     await channelPage.clickOnClosePopupButton()
     await channelPage.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
+    await page2.close()
   })
 
   test('create new private channel add user to it', async ({ browser, page }) => {
@@ -195,6 +198,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist('One two', true, 'One two')
     await channelPage.clickChooseChannel(data.channelName)
     await channelPage.checkMessageExist('One two', true, 'One two')
+    await page2.close()
   })
 
   test('go to general channel add user to it', async ({ browser, page }) => {
@@ -225,6 +229,7 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('general')
     await channelPage.checkMessageExist('One two', true, 'One two')
+    await page2.close()
   })
 
   test('go to random channel add user to it', async ({ browser, page }) => {
@@ -255,6 +260,7 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('random')
     await channelPage.checkMessageExist('One two', true, 'One two')
+    await page2.close()
   })
 
   test('check if user can add emoji', async () => {
@@ -374,6 +380,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.clickOnOpenChannelDetails()
     await channelPageSecond.checkIfUserIsAdded(data.lastName + ' ' + data.firstName, false)
+    await page2.close()
   })
 
   test('Check if we can create new public channel tests and check if the new user have can be added through preview', async ({
@@ -400,5 +407,6 @@ test.describe('channel tests', () => {
     await channelPage.clickChannel(data.channelName)
     await channelPage.clickOnOpenChannelDetails()
     await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
+    await page2.close()
   })
 })
