@@ -17,7 +17,6 @@ import {
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   IndexKind,
@@ -38,7 +37,6 @@ import {
   type Enum,
   type EnumOf,
   type FieldIndex,
-  type FullTextData,
   type FullTextSearchContext,
   type IndexStageState,
   type IndexingConfiguration,
@@ -308,10 +306,6 @@ export class TPluginConfiguration extends TDoc implements PluginConfiguration {
   label!: IntlString
   enabled!: boolean
   beta!: boolean
-}
-@Model(core.class.FulltextData, core.class.Doc, DOMAIN_FULLTEXT_BLOB)
-export class TFulltextData extends TDoc implements FullTextData {
-  data!: any
 }
 
 @Model(core.class.DocIndexState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)

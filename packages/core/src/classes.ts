@@ -495,14 +495,6 @@ export function versionToString (version: Version | Data<Version>): string {
 }
 
 /**
- * Blob data from s3 storage
- * @public
- */
-export interface FullTextData extends Doc {
-  data: any
-}
-
-/**
  * @public
  *
  * Define status for full text indexing
