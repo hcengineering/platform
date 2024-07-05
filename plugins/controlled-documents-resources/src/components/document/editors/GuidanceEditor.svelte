@@ -17,7 +17,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { DocumentSection } from '@hcengineering/controlled-documents'
   import { ModernDialog, IconClose } from '@hcengineering/ui'
-  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { MessageViewer, getClient } from '@hcengineering/presentation'
 
   import documentsRes from '../../../plugin'

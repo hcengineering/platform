@@ -82,7 +82,6 @@ export async function configurePlatform() {
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
-  addLocation(textEditorId, async () => ({ default: async () => ({}) }))
 
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@hcengineering/login-resources'))
@@ -102,6 +101,7 @@ export async function configurePlatform() {
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
+  addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   setMetadata(uiPlugin.metadata.PlatformTitle, 'Tracker')
   setMetadata(workbench.metadata.PlatformTitle, 'Tracker')
 

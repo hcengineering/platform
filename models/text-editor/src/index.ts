@@ -18,12 +18,12 @@ import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
-import { type RefInputAction, type RefInputActionItem } from '@hcengineering/text-editor/src/types'
+import { type RefInputAction, type RefInputActionItem } from '@hcengineering/text-editor'
 import textEditor from './plugin'
 
 export { textEditorOperation } from './migration'
-export { textEditorId } from '@hcengineering/text-editor/src/plugin'
 export { default } from './plugin'
+export { textEditorId } from '@hcengineering/text-editor'
 export type { RefInputAction, RefInputActionItem }
 
 @Model(textEditor.class.RefInputActionItem, core.class.Doc, DOMAIN_MODEL)

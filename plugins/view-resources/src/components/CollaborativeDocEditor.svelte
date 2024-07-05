@@ -17,7 +17,7 @@
   import { Doc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { KeyedAttribute } from '@hcengineering/presentation'
-  import { CollaborativeAttributeSectionBox } from '@hcengineering/text-editor'
+  import { CollaborativeAttributeSectionBox } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getCollaborationUser } from '../utils'
 

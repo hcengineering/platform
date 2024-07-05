@@ -678,7 +678,17 @@
     },
     {
       "packageName": "@hcengineering/text-editor",
-      "projectFolder": "packages/text-editor",
+      "projectFolder": "plugins/text-editor",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/text-editor-assets",
+      "projectFolder": "plugins/text-editor-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/text-editor-resources",
+      "projectFolder": "plugins/text-editor-resources",
       "shouldPublish": false
     },
     {

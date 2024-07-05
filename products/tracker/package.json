@@ -123,7 +123,7 @@
     "@hcengineering/tracker-assets": "^0.6.0",
     "@hcengineering/tracker-resources": "^0.6.0",
     "@hcengineering/prod": "^1.0.1",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/devmodel": "^0.6.0",
     "@hcengineering/devmodel-resources": "^0.6.0",
     "@hcengineering/front": "^0.6.0",

@@ -91,6 +91,7 @@ import '@hcengineering/questions-assets'
 import '@hcengineering/training-assets'
 import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
+import '@hcengineering/text-editor-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
@@ -148,7 +149,7 @@ function configureI18n(): void {
    addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
    addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))
    addStringsLoader(presentationId, async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`))
-   addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor/lang/${lang}.json`))
+   addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`))
    addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
    addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
    addStringsLoader(attachmentId, async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`))
@@ -281,7 +282,6 @@ export async function configurePlatform() {
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
-  addLocation(textEditorId, async () => ({ default: async () => ({}) }))
 
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@hcengineering/login-resources'))
@@ -320,6 +320,7 @@ export async function configurePlatform() {
   addLocation(documentsId, () => import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
+  addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

@@ -59,7 +59,7 @@
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
     "fast-equals": "^5.0.1",
     "@hcengineering/activity": "^0.6.0",

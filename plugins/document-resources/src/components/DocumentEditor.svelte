@@ -25,7 +25,7 @@
     SvelteNodeViewRenderer,
     TodoItemExtension,
     TodoListExtension
-  } from '@hcengineering/text-editor'
+  } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
   import { Extensions, FocusPosition } from '@tiptap/core'

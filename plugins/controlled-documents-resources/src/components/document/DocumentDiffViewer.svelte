@@ -1,15 +1,15 @@
 <script lang="ts">
   import { getContext, onDestroy } from 'svelte'
-  import { Doc as Ydoc } from 'yjs'
+  import type { Doc as Ydoc } from 'yjs'
   import { getClient } from '@hcengineering/presentation'
   import { type Doc } from '@hcengineering/core'
+  import { CollaborationIds } from '@hcengineering/text-editor'
   import {
-    CollaborationIds,
     StringDiffViewer,
     TiptapCollabProvider,
     createTiptapCollaborationData,
     formatCollaborativeDocumentId
-  } from '@hcengineering/text-editor'
+  } from '@hcengineering/text-editor-resources'
   import { Dropdown, Label, ListItem, Loading, Scroller, themeStore } from '@hcengineering/ui'
   import documents, {
     ControlledDocument,

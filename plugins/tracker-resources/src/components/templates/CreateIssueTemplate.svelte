@@ -17,7 +17,7 @@
   import { Data, Doc, Ref, generateId } from '@hcengineering/core'
   import { Card, KeyedAttribute, SpaceSelector, getClient } from '@hcengineering/presentation'
   import tags, { TagElement } from '@hcengineering/tags'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { Component as ComponentType, IssuePriority, IssueTemplate, Milestone, Project } from '@hcengineering/tracker'
   import { Component, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'

@@ -3,7 +3,7 @@
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
   import { Doc, Ref, SortingOrder, generateId } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
-  import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor'
+  import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor-resources'
   import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import time, { ToDo, ToDoPriority } from '@hcengineering/time'
   import { makeRank } from '@hcengineering/rank'

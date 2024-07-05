@@ -16,7 +16,7 @@
   import type { DocumentUpdate, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Opinion } from '@hcengineering/recruit'
-  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'

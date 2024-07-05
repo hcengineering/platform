@@ -17,7 +17,7 @@
   import { Person } from '@hcengineering/contact'
   import { DocumentUpdate, Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
     EditBox,

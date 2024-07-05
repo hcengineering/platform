@@ -3,7 +3,7 @@
 
   import chunter, { type ChatMessage } from '@hcengineering/chunter'
   import { Ref, generateId } from '@hcengineering/core'
-  import { ReferenceInput } from '@hcengineering/text-editor'
+  import { ReferenceInput } from '@hcengineering/text-editor-resources'
 
   import {
     addDocumentCommentFx,

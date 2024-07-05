@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Doc as Ydoc } from 'yjs'
   import { getClient } from '@hcengineering/presentation'
-  import { CollaborationDiffViewer, StringDiffViewer } from '@hcengineering/text-editor'
+  import { CollaborationDiffViewer, StringDiffViewer } from '@hcengineering/text-editor-resources'
   import documents, { DocumentSection, CollaborativeDocumentSection } from '@hcengineering/controlled-documents'
   import plugin from '../../plugin'
   import { ComparisonSectionPair } from '../../stores/editors/document'

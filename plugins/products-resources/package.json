@@ -49,7 +49,7 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/panel": "^0.6.23",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/workbench-resources": "^0.6.1",
     "@hcengineering/tags": "^0.6.16",

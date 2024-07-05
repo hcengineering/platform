@@ -39,7 +39,7 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/theme": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",

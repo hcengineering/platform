@@ -16,6 +16,6 @@
 
 import { mergeIds } from '@hcengineering/platform'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
-import textEditor, { textEditorId } from '@hcengineering/text-editor/src/plugin'
+import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 export default mergeIds(textEditorId, textEditor, {})

@@ -156,6 +156,8 @@
     "@hcengineering/tracker-assets": "^0.6.0",
     "@hcengineering/tracker-resources": "^0.6.0",
     "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-assets": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/board": "^0.6.19",
     "@hcengineering/board-assets": "^0.6.19",
     "@hcengineering/board-resources": "^0.6.0",

@@ -17,7 +17,8 @@
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Markup, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
     EditBox,

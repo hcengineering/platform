@@ -19,7 +19,8 @@
   import { AttachedData, getCurrentAccount, Markup, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { type RefAction, EmptyMarkup, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { type RefAction } from '@hcengineering/text-editor'
   import { Button } from '@hcengineering/ui'
 
   import request from '../plugin'
