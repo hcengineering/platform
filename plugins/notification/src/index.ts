@@ -352,7 +352,8 @@ const notification = plugin(notificationId, {
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,
     BrowserNotification: '' as Ref<NotificationProvider>,
-    EmailNotification: '' as Ref<NotificationProvider>
+    EmailNotification: '' as Ref<NotificationProvider>,
+    SoundNotification: '' as Ref<NotificationProvider>
   },
   integrationType: {
     MobileApp: '' as Ref<IntegrationType>

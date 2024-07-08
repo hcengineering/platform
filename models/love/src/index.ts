@@ -207,7 +207,8 @@ export function createModel (builder: Builder): void {
       objectClass: love.class.JoinRequest,
       providers: {
         [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
+        [notification.providers.BrowserNotification]: true,
+        [notification.providers.SoundNotification]: true
       }
     },
     love.ids.KnockNotification

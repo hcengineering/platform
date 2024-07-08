@@ -20,8 +20,7 @@
   import { Invite, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
   import { infos, myInfo, rooms } from '../stores'
-  import { connectRoom, getFreePlace, playSound, stopSound } from '../utils'
-  import { onDestroy, onMount } from 'svelte'
+  import { connectRoom, getFreePlace } from '../utils'
 
   export let invite: Invite
 
@@ -42,12 +41,6 @@
     )
     await connectRoom(place.x, place.y, $myInfo, myPerson, room)
   }
-  onMount(() => {
-    playSound()
-  })
-  onDestroy(() => {
-    stopSound()
-  })
   async function decline (): Promise<void> {
     await client.update(invite, { status: RequestStatus.Rejected })
   }

@@ -109,36 +109,6 @@ async function prepare (): Promise<void> {
 
 void prepare()
 
-let knockAudio: AudioBufferSourceNode | undefined
-
-async function prepareSound (): Promise<void> {
-  const context = new AudioContext()
-  try {
-    const audioBuffer = await fetch('/call-invite.ogg')
-      .then(async (res) => await res.arrayBuffer())
-      .then(async (ArrayBuffer) => await context.decodeAudioData(ArrayBuffer))
-    knockAudio = context.createBufferSource()
-    knockAudio.buffer = audioBuffer
-    knockAudio.loop = true
-    knockAudio.connect(context.destination)
-  } catch (err) {
-    console.error('Knock sound not found')
-  }
-}
-void prepareSound()
-
-export function playSound (): void {
-  if (knockAudio !== undefined) {
-    knockAudio.start()
-  }
-}
-
-export function stopSound (): void {
-  if (knockAudio !== undefined) {
-    knockAudio.stop()
-  }
-}
-
 export const isConnected = writable<boolean>(false)
 export const isCurrentInstanceConnected = writable<boolean>(false)
 export let $isCurrentInstanceConnected: boolean = false

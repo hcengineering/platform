@@ -77,7 +77,7 @@ import {
   type PushSubscription,
   type PushSubscriptionKeys
 } from '@hcengineering/notification'
-import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -348,6 +348,15 @@ export function createModel (builder: Builder): void {
       depends: notification.providers.PlatformNotification
     },
     notification.providers.BrowserNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      label: getEmbeddedLabel('Sound')
+    },
+    notification.providers.SoundNotification
   )
 
   builder.createDoc(
