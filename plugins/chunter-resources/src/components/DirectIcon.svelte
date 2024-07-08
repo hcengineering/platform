@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { DirectMessage } from '@hcengineering/chunter'
-  import { Avatar, CombineAvatars, personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { Icon, IconSize } from '@hcengineering/ui'
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { classIcon } from '@hcengineering/view-resources'
-  import { getClient } from '@hcengineering/presentation'
+  import { Avatar, CombineAvatars, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Account, IdMap } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Icon, IconSize } from '@hcengineering/ui'
+  import { classIcon } from '@hcengineering/view-resources'
 
   import chunter from '../plugin'
   import { getDmPersons } from '../utils'
@@ -33,10 +33,11 @@
 
   let persons: Person[] = []
 
-  $: value &&
-    getDmPersons(client, value).then((res) => {
+  $: if (value !== undefined) {
+    void getDmPersons(client, value, $personByIdStore).then((res) => {
       persons = res
     })
+  }
 
   let avatarSize = size
 

@@ -67,13 +67,17 @@ export class PresentationClientHook implements ClientHook {
   stackLine (): string {
     const stack = (new Error().stack ?? '').split('\n')
 
+    let candidate = ''
     for (let l of stack) {
       l = l.trim()
       if (l.includes('.svelte')) {
         return l
       }
+      if (l.includes('plugins/') && !l.includes('devmodel-resources/') && l.includes('.ts') && candidate === '') {
+        candidate = l
+      }
     }
-    return ''
+    return candidate
   }
 
   async findOne<T extends Doc>(

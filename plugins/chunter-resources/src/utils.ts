@@ -32,7 +32,8 @@ import {
   type IdMap,
   type Ref,
   type Space,
-  type Timestamp
+  type Timestamp,
+  type WithLookup
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
@@ -163,7 +164,11 @@ async function getDmAccounts (client: Client, space?: Space): Promise<PersonAcco
   })
 }
 
-export async function getDmPersons (client: Client, space: Space): Promise<Person[]> {
+export async function getDmPersons (
+  client: Client,
+  space: Space,
+  personsMap: Map<Ref<WithLookup<Person>>, WithLookup<Person>>
+): Promise<Person[]> {
   const personAccounts: PersonAccount[] = await getDmAccounts(client, space)
   const me = getCurrentAccount() as PersonAccount
   const persons: Person[] = []
@@ -172,7 +177,7 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   let myPerson: Person | undefined
 
   for (const personRef of personRefs) {
-    const person = await client.findOne(contact.class.Person, { _id: personRef })
+    const person = personsMap.get(personRef) ?? (await client.findOne(contact.class.Person, { _id: personRef }))
     if (person === undefined) {
       continue
     }
