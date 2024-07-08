@@ -1,4 +1,6 @@
 import { test } from '@playwright/test'
+import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
+import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { PlatformSetting, fillSearch } from '../utils'
 import {
@@ -6,13 +8,11 @@ import {
   ViewletSelectors,
   checkIssueDraft,
   createIssue,
+  getIssueName,
   navigate,
   openIssue,
-  performPanelTest,
-  getIssueName
+  performPanelTest
 } from './tracker.utils'
-import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 test.use({
   storageState: PlatformSetting
 })
@@ -35,19 +35,20 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('save-view-options', async ({ page }) => {
+  test('save-view-options-board', async ({ page }) => {
     const panels = ['Issues', 'Active', 'Backlog']
     const commonTrackerPage = new CommonTrackerPage(page)
     await navigate(page)
-    for (const viewletSelector of [ViewletSelectors.Board, ViewletSelectors.Table]) {
-      for (const panel of panels) {
-        await commonTrackerPage.selectPanelAndViewlet(panel, viewletSelector)
-        await commonTrackerPage.openViewOptionsAndSelectAssignee()
-      }
-      for (const panel of panels) {
-        await commonTrackerPage.verifyViewOption(panel, viewletSelector)
-      }
-    }
+
+    await doSaveViewTest(panels, commonTrackerPage, ViewletSelectors.Board)
+  })
+
+  test('save-view-options-table', async ({ page }) => {
+    const panels = ['Issues', 'Active', 'Backlog']
+    const commonTrackerPage = new CommonTrackerPage(page)
+    await navigate(page)
+
+    await doSaveViewTest(panels, commonTrackerPage, ViewletSelectors.Table)
   })
 
   test('my-issues', async ({ page }) => {
@@ -169,3 +170,16 @@ test.describe('Tracker tests', () => {
     })
   })
 })
+async function doSaveViewTest (
+  panels: string[],
+  commonTrackerPage: CommonTrackerPage,
+  viewletSelector: ViewletSelectors
+): Promise<void> {
+  for (const panel of panels) {
+    await commonTrackerPage.selectPanelAndViewlet(panel, viewletSelector)
+    await commonTrackerPage.openViewOptionsAndSelectAssignee()
+  }
+  for (const panel of panels) {
+    await commonTrackerPage.verifyViewOption(panel, viewletSelector)
+  }
+}
