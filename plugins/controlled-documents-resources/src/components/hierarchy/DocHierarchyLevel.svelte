@@ -123,6 +123,7 @@
       actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
       {level}
       {collapsedPrefix}
+      shouldTooltip
       on:click={() => {
         dispatch('selected', prjdoc)
       }}
