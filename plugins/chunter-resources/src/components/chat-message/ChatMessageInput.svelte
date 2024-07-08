@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Analytics } from '@hcengineering/analytics'
-  import { createEventDispatcher } from 'svelte'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import { Class, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
   import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
+  import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { createEventDispatcher } from 'svelte'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
@@ -100,32 +100,20 @@
   }
 
   async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
-    const doneOp = getClient().measure(`chunter.create.${_class} ${object._class}`)
     try {
-      await createMessage(event, _id)
+      const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
-      const d1 = Date.now()
-      void (await doneOp)().then((res) => {
-        console.log(`create.${_class} measure`, res, Date.now() - d1)
-      })
+      console.log(`create.${_class} measure`, res.serverTime, res.time)
     } catch (err: any) {
-      void (await doneOp)()
       Analytics.handleError(err)
       console.error(err)
     }
   }
 
   async function handleEdit (event: CustomEvent): Promise<void> {
-    const doneOp = getClient().measure(`chunter.edit.${_class} ${object._class}`)
     try {
       await editMessage(event)
-
-      const d1 = Date.now()
-      void (await doneOp)().then((res) => {
-        console.log(`edit.${_class} measure`, res, Date.now() - d1)
-      })
     } catch (err: any) {
-      void (await doneOp)()
       Analytics.handleError(err)
       console.error(err)
     }
@@ -148,9 +136,9 @@
     loading = false
   }
 
-  async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
+  async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>, msg: string): Promise<CommitResult> {
     const { message, attachments } = event.detail
-    const operations = client.apply(_id)
+    const operations = client.apply(_id, msg)
 
     if (_class === chunter.class.ThreadMessage) {
       const parentMessage = object as ActivityMessage
@@ -188,7 +176,7 @@
         _id
       )
     }
-    await operations.commit()
+    return await operations.commit()
   }
 
   async function editMessage (event: CustomEvent): Promise<void> {

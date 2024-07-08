@@ -33,8 +33,6 @@ import core, {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type MeasureClient,
-  type MeasureDoneOperation,
   type Mixin,
   type Obj,
   type Blob as PlatformBlob,
@@ -65,7 +63,7 @@ export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
 let rawLiveQuery: LQ
-let client: TxOperations & MeasureClient & OptimisticTxes
+let client: TxOperations & Client & OptimisticTxes
 let pipeline: PresentationPipeline
 
 const txListeners: Array<(...tx: Tx[]) => void> = []
@@ -95,16 +93,15 @@ export interface OptimisticTxes {
   pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
 }
 
-class UIClient extends TxOperations implements Client, MeasureClient, OptimisticTxes {
+class UIClient extends TxOperations implements Client, OptimisticTxes {
+  hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
-    client: MeasureClient,
+    client: Client,
     private readonly liveQuery: Client
   ) {
     super(client, getCurrentAccount()._id)
   }
 
-  afterMeasure: Tx[] = []
-  measureOp?: MeasureDoneOperation
   protected pendingTxes = new Set<Ref<Tx>>()
   protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
 
@@ -113,34 +110,30 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
   }
 
   async doNotify (...tx: Tx[]): Promise<void> {
-    if (this.measureOp !== undefined) {
-      this.afterMeasure.push(...tx)
-    } else {
-      const pending = get(this._pendingCreatedDocs)
-      let pendingUpdated = false
-      tx.forEach((t) => {
-        if (this.pendingTxes.has(t._id)) {
-          this.pendingTxes.delete(t._id)
+    const pending = get(this._pendingCreatedDocs)
+    let pendingUpdated = false
+    tx.forEach((t) => {
+      if (this.pendingTxes.has(t._id)) {
+        this.pendingTxes.delete(t._id)
 
-          // Only CUD tx can be pending now
-          const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
+        // Only CUD tx can be pending now
+        const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
 
-          if (innerTx._class === core.class.TxCreateDoc) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete pending[innerTx.objectId]
-            pendingUpdated = true
-          }
+        if (innerTx._class === core.class.TxCreateDoc) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete pending[innerTx.objectId]
+          pendingUpdated = true
         }
-      })
-      if (pendingUpdated) {
-        this._pendingCreatedDocs.set(pending)
       }
-
-      // We still want to notify about all transactions because there might be queries created after
-      // the early applied transaction
-      // For old queries there's a check anyway that prevents the same document from being added twice
-      await this.provideNotify(...tx)
+    })
+    if (pendingUpdated) {
+      this._pendingCreatedDocs.set(pending)
     }
+
+    // We still want to notify about all transactions because there might be queries created after
+    // the early applied transaction
+    // For old queries there's a check anyway that prevents the same document from being added twice
+    await this.provideNotify(...tx)
   }
 
   private async provideNotify (...tx: Tx[]): Promise<void> {
@@ -165,6 +158,9 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.findAll(this.liveQuery, _class, query, options)
+    }
     return await this.liveQuery.findAll(_class, query, options)
   }
 
@@ -173,12 +169,17 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
+    if (this.hook !== undefined) {
+      return await this.hook.findOne(this.liveQuery, _class, query, options)
+    }
     return await this.liveQuery.findOne(_class, query, options)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
     void this.notifyEarly(tx)
-
+    if (this.hook !== undefined) {
+      return await this.hook.tx(this.client, tx)
+    }
     return await this.client.tx(tx)
   }
 
@@ -221,39 +222,24 @@ class UIClient extends TxOperations implements Client, MeasureClient, Optimistic
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return await this.client.searchFulltext(query, options)
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    // return await (this.client as MeasureClient).measure(operationName)
-    const mop = await (this.client as MeasureClient).measure(operationName)
-    this.measureOp = mop
-    return async () => {
-      const result = await mop()
-      this.measureOp = undefined
-      if (this.afterMeasure.length > 0) {
-        const txes = this.afterMeasure
-        this.afterMeasure = []
-        for (const tx of txes) {
-          await this.doNotify(tx)
-        }
-      }
-      return result
+    if (this.hook !== undefined) {
+      return await this.hook.searchFulltext(this.client, query, options)
     }
+    return await this.client.searchFulltext(query, options)
   }
 }
 
 /**
  * @public
  */
-export function getClient (): TxOperations & MeasureClient & OptimisticTxes {
+export function getClient (): TxOperations & Client & OptimisticTxes {
   return client
 }
 
 /**
  * @public
  */
-export async function setClient (_client: MeasureClient): Promise<void> {
+export async function setClient (_client: Client): Promise<void> {
   if (liveQuery !== undefined) {
     await liveQuery.close()
   }
@@ -276,6 +262,7 @@ export async function setClient (_client: MeasureClient): Promise<void> {
   liveQuery = new LQ(pipeline)
 
   const uiClient = new UIClient(pipeline, liveQuery)
+
   client = uiClient
 
   _client.notify = (...tx: Tx[]) => {
@@ -285,7 +272,6 @@ export async function setClient (_client: MeasureClient): Promise<void> {
     await refreshClient(true)
   }
 }
-
 /**
  * @public
  */

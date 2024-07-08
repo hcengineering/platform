@@ -46,7 +46,7 @@ import core, {
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
-import { getUser, isOwner, isSystem, mergeTargets } from './utils'
+import { getUser, isOwner, isSystem } from './utils'
 
 type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class'>
 
@@ -246,10 +246,13 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       space: core.space.DerivedTx,
       params: null
     }
-    ctx.derived.push({
-      derived: [tx],
-      target: targets
-    })
+    ctx.derived.txes.push(tx)
+    ctx.derived.targets.security = (it) => {
+      // TODO: I'm not sure it is called
+      if (it._id === tx._id) {
+        return targets
+      }
+    }
   }
 
   private async broadcastNonMembers (ctx: SessionContext, space: SpaceWithMembers): Promise<void> {
@@ -413,17 +416,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
     await this.processTx(ctx, tx)
-    const targets = await this.getTxTargets(ctx, tx)
     const res = await this.provideTx(ctx, tx)
-    for (const txd of ctx.derived) {
-      for (const tx of txd.derived) {
-        await this.processTx(ctx, tx)
-      }
+    for (const txd of ctx.derived.txes) {
+      await this.processTx(ctx, txd)
     }
-    ctx.derived.forEach((it) => {
-      it.target = mergeTargets(targets, it.target)
-    })
-
     return res
   }
 
@@ -435,6 +431,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     for (const tx of txes) {
       const h = this.storage.hierarchy
       if (h.isDerived(tx._class, core.class.TxCUD)) {
+        // TODO: Do we need security check here?
         const cudTx = tx as TxCUD<Doc>
         await this.processTxSpaceDomain(cudTx)
       } else if (tx._class === core.class.TxWorkspaceEvent) {

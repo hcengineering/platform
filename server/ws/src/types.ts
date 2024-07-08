@@ -77,8 +77,6 @@ export interface Session {
   current: StatisticsElement
   mins5: StatisticsElement
 
-  measureCtx?: { ctx: MeasureContext, time: number }
-
   lastRequest: number
 
   isUpgradeClient: () => boolean

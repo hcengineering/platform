@@ -122,9 +122,6 @@ describe('client', () => {
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async (last: Timestamp) => clone(txes),
         getAccount: async () => null as unknown as Account,
-        measure: async () => {
-          return async () => ({ time: 0, serverTime: 0 })
-        },
         sendForceClose: async () => {}
       }
     }

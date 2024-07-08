@@ -13,37 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import chunter from '@hcengineering/chunter'
+  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import view, { decodeObjectURI } from '@hcengineering/view'
   import {
     AnyComponent,
     Component,
     defineSeparators,
+    deviceOptionsStore as deviceInfo,
     Label,
-    location as locationStore,
     Location,
+    location as locationStore,
     restoreLocation,
     Scroller,
     Separator,
     TabItem,
-    TabList,
-    deviceOptionsStore as deviceInfo
+    TabList
   } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { get } from 'svelte/store'
-  import { translate } from '@hcengineering/platform'
-  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
+  import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId } from '@hcengineering/view-resources'
+  import { get } from 'svelte/store'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
-  import SettingsButton from './SettingsButton.svelte'
-  import { getDisplayInboxData, resetInboxContext, resolveLocation, selectInboxContext } from '../../utils'
-  import { InboxData, InboxNotificationsFilter } from '../../types'
-  import InboxGroupedListView from './InboxGroupedListView.svelte'
   import notification from '../../plugin'
+  import { InboxData, InboxNotificationsFilter } from '../../types'
+  import { getDisplayInboxData, resetInboxContext, resolveLocation, selectInboxContext } from '../../utils'
+  import InboxGroupedListView from './InboxGroupedListView.svelte'
   import InboxMenuButton from './InboxMenuButton.svelte'
+  import SettingsButton from './SettingsButton.svelte'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -248,8 +247,7 @@
 
     const contextNotifications = $notificationsByContextStore.get(selectedContext._id) ?? []
 
-    const doneOp = await getClient().measure('readNotifications')
-    const ops = getClient().apply(selectedContext._id)
+    const ops = getClient().apply(selectedContext._id, 'readNotifications')
     try {
       await inboxClient.readNotifications(
         ops,
@@ -261,7 +259,6 @@
       )
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 

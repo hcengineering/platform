@@ -335,10 +335,8 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     await this.processPermissionsUpdatesFromTx(ctx, tx)
     await this.checkPermissions(ctx, tx)
     const res = await this.provideTx(ctx, tx)
-    for (const txd of ctx.derived) {
-      for (const tx of txd.derived) {
-        await this.processPermissionsUpdatesFromTx(ctx, tx)
-      }
+    for (const txd of ctx.derived.txes) {
+      await this.processPermissionsUpdatesFromTx(ctx, txd)
     }
     return res
   }
@@ -347,7 +345,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
-      await Promise.all(applyTx.txes.map((t) => this.checkPermissions(ctx, t)))
+      for (const t of applyTx.txes) {
+        await this.checkPermissions(ctx, t)
+      }
       return
     }
 

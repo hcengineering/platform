@@ -235,7 +235,7 @@
       await ops.createDoc(tracker.class.Project, core.space.Space, { ...projectData, type: typeId }, projectId)
       const succeeded = await ops.commit()
 
-      if (succeeded) {
+      if (succeeded.result) {
         // Add space type's mixin with roles assignments
         await client.createMixin(
           projectId,

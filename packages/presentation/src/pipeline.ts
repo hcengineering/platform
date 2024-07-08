@@ -8,8 +8,6 @@ import {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type MeasureClient,
-  type MeasureDoneOperation,
   type ModelDb,
   type Ref,
   type SearchOptions,
@@ -65,7 +63,7 @@ export type PresentationMiddlewareCreator = (client: Client, next?: Presentation
 /**
  * @public
  */
-export interface PresentationPipeline extends MeasureClient, Exclude<PresentationMiddleware, 'next'> {
+export interface PresentationPipeline extends Client, Exclude<PresentationMiddleware, 'next'> {
   close: () => Promise<void>
 }
 
@@ -75,7 +73,7 @@ export interface PresentationPipeline extends MeasureClient, Exclude<Presentatio
 export class PresentationPipelineImpl implements PresentationPipeline {
   private head: PresentationMiddleware | undefined
 
-  private constructor (readonly client: MeasureClient) {}
+  private constructor (readonly client: Client) {}
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
@@ -89,11 +87,7 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     await this.head?.notifyTx(...tx)
   }
 
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    return await this.client.measure(operationName)
-  }
-
-  static create (client: MeasureClient, constructors: PresentationMiddlewareCreator[]): PresentationPipeline {
+  static create (client: Client, constructors: PresentationMiddlewareCreator[]): PresentationPipeline {
     const pipeline = new PresentationPipelineImpl(client)
     pipeline.head = pipeline.buildChain(constructors)
     return pipeline

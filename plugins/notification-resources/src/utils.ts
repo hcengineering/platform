@@ -49,21 +49,21 @@ import { MessageBox, getClient } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
+  locationStorageKeyId,
   navigate,
   parseLocation,
   showPopup,
   type Location,
-  type ResolvedLocation,
-  locationStorageKeyId
+  type ResolvedLocation
 } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
 
+import chunter, { type ThreadMessage } from '@hcengineering/chunter'
+import { getMetadata } from '@hcengineering/platform'
+import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
+import { getObjectLinkId } from '@hcengineering/view-resources'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
-import { getMetadata } from '@hcengineering/platform'
-import { getObjectLinkId } from '@hcengineering/view-resources'
-import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
-import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
   if (docNotifyContext.hidden) {
@@ -107,8 +107,7 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
 
-  const doneOp = await getClient().measure('readNotifyContext')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'readNotifyContext')
   try {
     await inboxClient.readNotifications(
       ops,
@@ -117,7 +116,6 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -133,8 +131,7 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
     return
   }
 
-  const doneOp = await getClient().measure('unReadNotifyContext')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'unReadNotifyContext')
 
   try {
     await inboxClient.unreadNotifications(
@@ -154,7 +151,6 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -166,8 +162,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     return
   }
 
-  const doneOp = await getClient().measure('archiveContextNotifications')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'archiveContextNotifications')
 
   try {
     const notifications = await ops.findAll(
@@ -182,7 +177,6 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -194,8 +188,7 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     return
   }
 
-  const doneOp = await getClient().measure('unarchiveContextNotifications')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'unarchiveContextNotifications')
 
   try {
     const notifications = await ops.findAll(
@@ -209,7 +202,6 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 

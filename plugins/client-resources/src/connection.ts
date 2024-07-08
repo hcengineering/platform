@@ -28,7 +28,6 @@ import core, {
   FindOptions,
   FindResult,
   LoadModelResponse,
-  MeasureDoneOperation,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -522,26 +521,6 @@ class Connection implements ClientConnection {
     void sendData()
     void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    const dateNow = Date.now()
-
-    // Send measure-start
-    const mid = await this.sendRequest({
-      method: 'measure',
-      params: [operationName]
-    })
-    return async () => {
-      const serverTime: number = await this.sendRequest({
-        method: 'measure-done',
-        params: [operationName, mid]
-      })
-      return {
-        time: Date.now() - dateNow,
-        serverTime
-      }
-    }
   }
 
   async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {

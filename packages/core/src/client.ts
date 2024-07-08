@@ -47,17 +47,10 @@ export interface Client extends Storage, FulltextStorage {
   close: () => Promise<void>
 }
 
-export type MeasureDoneOperation = () => Promise<{ time: number, serverTime: number }>
-
-export interface MeasureClient extends Client {
-  // Will perform on server operation measure and will return a local client time and on server time
-  measure: (operationName: string) => Promise<MeasureDoneOperation>
-}
-
 /**
  * @public
  */
-export interface AccountClient extends MeasureClient {
+export interface AccountClient extends Client {
   getAccount: () => Promise<Account>
 }
 
@@ -97,11 +90,9 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   getAccount: () => Promise<Account>
-
-  measure: (operationName: string) => Promise<MeasureDoneOperation>
 }
 
-class ClientImpl implements AccountClient, BackupClient, MeasureClient {
+class ClientImpl implements AccountClient, BackupClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
@@ -161,10 +152,6 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
     // We need to handle it on server, before performing local live query updates.
     const result = await this.conn.tx(tx)
     return result
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    return await this.conn.measure(operationName)
   }
 
   async updateFromRemote (...tx: Tx[]): Promise<void> {

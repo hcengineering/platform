@@ -242,8 +242,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async archiveAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('archiveAllNotifications')
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply(generateId(), 'archiveAllNotifications')
 
     try {
       const inboxNotifications = await ops.findAll(
@@ -264,13 +263,11 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 
   async readAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('readAllNotifications')
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply(generateId(), 'readAllNotifications')
 
     try {
       const inboxNotifications = await ops.findAll(
@@ -291,13 +288,11 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 
   async unreadAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('unreadAllNotifications')
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply(generateId(), 'unreadAllNotifications')
 
     try {
       const inboxNotifications = await ops.findAll(
@@ -332,7 +327,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 }

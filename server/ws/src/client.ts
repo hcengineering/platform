@@ -114,9 +114,13 @@ export class ClientSession implements Session {
           this.token.email,
           this.sessionId,
           this.token.extra?.admin === 'true',
-          [],
+          {
+            txes: [],
+            targets: {}
+          },
           this._pipeline.storage.workspaceId,
-          this._pipeline.storage.branding
+          this._pipeline.storage.branding,
+          false
         )
         await this._pipeline.tx(context, createTx)
         const acc = TxProcessor.createDoc2Doc(createTx)
@@ -144,9 +148,13 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      [],
+      {
+        txes: [],
+        targets: {}
+      },
       this._pipeline.storage.workspaceId,
-      this._pipeline.storage.branding
+      this._pipeline.storage.branding,
+      false
     )
     return await this._pipeline.findAll(context, _class, query, options)
   }
@@ -167,9 +175,13 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      [],
+      {
+        txes: [],
+        targets: {}
+      },
       this._pipeline.storage.workspaceId,
-      this._pipeline.storage.branding
+      this._pipeline.storage.branding,
+      false
     )
     await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
   }
@@ -183,9 +195,13 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      [],
+      {
+        txes: [],
+        targets: {}
+      },
       this._pipeline.storage.workspaceId,
-      this._pipeline.storage.branding
+      this._pipeline.storage.branding,
+      false
     )
 
     const result = await this._pipeline.tx(context, tx)
@@ -209,18 +225,24 @@ export class ClientSession implements Session {
     }
 
     // Put current user as send target
-    toSendTarget.set(this.getUser(), [])
-    for (const txd of context.derived) {
-      if (txd.target === undefined) {
-        getTxes('') // be sure we have empty one
+    for (const txd of context.derived.txes) {
+      let target: string[] | undefined
+      for (const tt of Object.values(context.derived.targets ?? {})) {
+        target = tt(txd)
+        if (target !== undefined) {
+          break
+        }
+      }
+      if (target === undefined) {
+        getTxes('') // Be sure we have empty one
 
         // Also add to all other targeted sends
         for (const v of toSendTarget.values()) {
-          v.push(...txd.derived)
+          v.push(txd)
         }
       } else {
-        for (const t of txd.target) {
-          getTxes(t).push(...txd.derived)
+        for (const t of target) {
+          getTxes(t).push(txd)
         }
       }
     }

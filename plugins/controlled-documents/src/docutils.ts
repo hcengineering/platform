@@ -194,7 +194,7 @@ async function createControlledDoc (
 
   const success = await ops.commit()
 
-  return { seqNumber, success }
+  return { seqNumber, success: success.result }
 }
 
 export async function createDocumentTemplate (
@@ -327,7 +327,7 @@ export async function createDocumentTemplate (
 
   const success = await ops.commit()
 
-  return { seqNumber, success }
+  return { seqNumber, success: success.result }
 }
 
 export function getCollaborativeDocForDocument (

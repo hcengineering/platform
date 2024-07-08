@@ -25,8 +25,8 @@ export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Is
   return object.identifier
 }
 
-export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
-  const object = await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> })
+export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>, doc?: Issue): Promise<string> {
+  const object = doc ?? (await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> }))
 
   if (object === undefined) {
     return ''

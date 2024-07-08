@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, groupByArray, Ref, SortingOrder } from '@hcengineering/core'
-  import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
   import activity from '@hcengineering/activity'
-  import { IntlString } from '@hcengineering/platform'
-  import { Action } from '@hcengineering/ui'
+  import { Class, Doc, getCurrentAccount, groupByArray, reduceCalls, Ref, SortingOrder } from '@hcengineering/core'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { IntlString } from '@hcengineering/platform'
+  import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
+  import { Action } from '@hcengineering/ui'
 
+  import chunter from '../../../plugin'
   import { ChatGroup, ChatNavGroupModel } from '../types'
   import ChatNavSection from './ChatNavSection.svelte'
-  import chunter from '../../../plugin'
 
   export let object: Doc | undefined
   export let model: ChatNavGroupModel
@@ -68,7 +68,11 @@
 
   $: loadObjects(contexts)
 
-  $: void getSections(objectsByClass, model, shouldPushObject ? object : undefined).then((res) => {
+  $: pushObj = shouldPushObject ? object : undefined
+
+  const getPushObj = () => pushObj as Doc
+
+  $: void getSections(objectsByClass, model, pushObj, getPushObj, (res) => {
     sections = res
   })
 
@@ -112,63 +116,68 @@
     return 'activity'
   }
 
-  async function getSections (
-    objectsByClass: Map<Ref<Class<Doc>>, Doc[]>,
-    model: ChatNavGroupModel,
-    object: Doc | undefined
-  ): Promise<Section[]> {
-    const result: Section[] = []
+  const getSections = reduceCalls(
+    async (
+      objectsByClass: Map<Ref<Class<Doc>>, Doc[]>,
+      model: ChatNavGroupModel,
+      object: { _id: Doc['_id'], _class: Doc['_class'] } | undefined,
+      getPushObj: () => Doc,
+      handler: (result: Section[]) => void
+    ): Promise<void> => {
+      const result: Section[] = []
 
-    if (!model.wrap) {
-      result.push({
-        id: model.id,
-        objects: Array.from(objectsByClass.values()).flat(),
-        label: model.label ?? chunter.string.Channels
-      })
+      if (!model.wrap) {
+        result.push({
+          id: model.id,
+          objects: Array.from(objectsByClass.values()).flat(),
+          label: model.label ?? chunter.string.Channels
+        })
 
-      return result
-    }
-
-    let isObjectPushed = false
-
-    if (
-      Array.from(objectsByClass.values())
-        .flat()
-        .some((o) => o._id === object?._id)
-    ) {
-      isObjectPushed = true
-    }
-
-    for (const [_class, objects] of objectsByClass.entries()) {
-      const clazz = hierarchy.getClass(_class)
-      const sectionObjects = [...objects]
-
-      if (object && _class === object._class && !objects.some(({ _id }) => _id === object._id)) {
-        isObjectPushed = true
-        sectionObjects.push(object)
+        handler(result)
+        return
       }
 
-      result.push({
-        id: _class,
-        _class,
-        objects: sectionObjects,
-        label: clazz.pluralLabel ?? clazz.label
-      })
+      let isObjectPushed = false
+
+      if (
+        Array.from(objectsByClass.values())
+          .flat()
+          .some((o) => o._id === object?._id)
+      ) {
+        isObjectPushed = true
+      }
+
+      for (const [_class, objects] of objectsByClass.entries()) {
+        const clazz = hierarchy.getClass(_class)
+        const sectionObjects = [...objects]
+
+        if (object !== undefined && _class === object._class && !objects.some(({ _id }) => _id === object._id)) {
+          isObjectPushed = true
+          sectionObjects.push(getPushObj())
+        }
+
+        result.push({
+          id: _class,
+          _class,
+          objects: sectionObjects,
+          label: clazz.pluralLabel ?? clazz.label
+        })
+      }
+
+      if (!isObjectPushed && object !== undefined) {
+        const clazz = hierarchy.getClass(object._class)
+
+        result.push({
+          id: object._id,
+          _class: object._class,
+          objects: [getPushObj()],
+          label: clazz.pluralLabel ?? clazz.label
+        })
+      }
+
+      handler(result.sort((s1, s2) => s1.label.localeCompare(s2.label)))
     }
-
-    if (!isObjectPushed && object) {
-      const clazz = hierarchy.getClass(object._class)
-
-      result.push({
-        id: object._id,
-        _class: object._class,
-        objects: [object],
-        label: clazz.pluralLabel ?? clazz.label
-      })
-    }
-
-    return result.sort((s1, s2) => s1.label.localeCompare(s2.label))
-  }
+  )
 
   function getSectionActions (section: Section, contexts: DocNotifyContext[]): Action[] {
     if (model.getActionsFn === undefined) {

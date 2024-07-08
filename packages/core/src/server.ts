@@ -33,14 +33,15 @@ export interface StorageIterator {
   close: (ctx: MeasureContext) => Promise<void>
 }
 
+export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
+
 export interface SessionOperationContext {
   ctx: MeasureContext
   // A parts of derived data to deal with after operation will be complete
   derived: {
-    derived: Tx[]
-    target?: string[]
-  }[]
-
+    txes: Tx[]
+    targets: BroadcastTargets // A set of broadcast filters if required
+  }
   with: <T>(
     name: string,
     params: ParamsType,

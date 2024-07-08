@@ -32,7 +32,7 @@ import platform, { PlatformError, Severity, Status } from '@hcengineering/platfo
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
-import { getUser, mergeTargets } from './utils'
+import { getUser } from './utils'
 
 /**
  * @public
@@ -65,12 +65,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         }
       }
     }
-    const res = await this.provideTx(ctx, tx)
-    // Add target to all broadcasts
-    ctx.derived.forEach((it) => {
-      it.target = mergeTargets(target, it.target)
-    })
-    return res
+    return await this.provideTx(ctx, tx)
   }
 
   override async findAll<T extends Doc>(

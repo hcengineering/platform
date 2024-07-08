@@ -99,7 +99,7 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
   }
 
   if (applyTxes.length > 0) {
-    await control.apply(applyTxes, true)
+    await control.apply(applyTxes)
   }
 
   return []

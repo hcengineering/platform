@@ -97,9 +97,10 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
         query: { person }
       }
     ],
-    [tx]
+    [tx],
+    'createUserInfo'
   )
-  await control.apply([ptx], true)
+  await control.apply([ptx])
   return []
 }
 
@@ -114,7 +115,7 @@ async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   const person = account.person
   const infos = await control.findAll(love.class.ParticipantInfo, { person })
   for (const info of infos) {
-    await control.apply([control.txFactory.createTxRemoveDoc(info._class, info.space, info._id)], true)
+    await control.apply([control.txFactory.createTxRemoveDoc(info._class, info.space, info._id)])
   }
 }
 

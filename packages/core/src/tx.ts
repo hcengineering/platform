@@ -28,13 +28,13 @@ import type {
   Space,
   Timestamp
 } from './classes'
+import { clone } from './clone'
 import core from './component'
 import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
 import { generateId } from './utils'
-import { clone } from './clone'
 
 /**
  * @public
@@ -137,10 +137,14 @@ export interface TxApplyIf extends Tx {
 
   // If passed, will send WorkspaceEvent.BulkUpdate event with list of classes to update
   extraNotify?: Ref<Class<Doc>>[]
+
+  // If defined will go into a separate measure section
+  measureName?: string
 }
 
 export interface TxApplyResult {
   success: boolean
+  serverTime: number
 }
 
 /**
@@ -618,6 +622,7 @@ export class TxFactory {
     match: DocumentClassQuery<Doc>[],
     notMatch: DocumentClassQuery<Doc>[],
     txes: TxCUD<Doc>[],
+    measureName: string | undefined,
     notify: boolean = true,
     extraNotify: Ref<Class<Doc>>[] = [],
     modifiedOn?: Timestamp,
@@ -634,6 +639,7 @@ export class TxFactory {
       match,
       notMatch,
       txes,
+      measureName,
       notify,
       extraNotify
     }
