@@ -26,7 +26,7 @@
   } from '@hcengineering/activity-resources'
   import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
@@ -60,6 +60,8 @@
   export let skipLabels = false
   export let loadMoreAllowed = true
   export let isAsideOpened = false
+
+  const doc = object
 
   const dateSelectorHeight = 30
   const headerHeight = 52
@@ -668,7 +670,7 @@
         {/if}
 
         <ActivityMessagePresenter
-          doc={object}
+          {doc}
           value={message}
           skipLabel={skipLabels}
           {showEmbedded}
@@ -677,7 +679,6 @@
           shouldScroll={isSelected}
           withShowMore={false}
           attachmentImageSize="x-large"
-          showLinksPreview={false}
           type={canGroup ? 'short' : 'default'}
           hideLink
         />

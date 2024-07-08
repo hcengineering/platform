@@ -36,7 +36,6 @@
   export let withShowMore: boolean = true
   export let attachmentImageSize: 'x-large' | undefined = undefined
   export let type: ActivityMessageViewType = 'default'
-  export let showLinksPreview = true
   export let videoPreload = true
   export let hideLink = false
   export let compact = false
@@ -69,7 +68,6 @@
       hoverStyles,
       withShowMore,
       attachmentImageSize,
-      showLinksPreview,
       videoPreload,
       hideLink,
       type,
