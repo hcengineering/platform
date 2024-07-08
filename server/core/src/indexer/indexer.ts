@@ -79,6 +79,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   indexId = indexCounter++
 
+  updateTriggerTimer: any
+  updateOps = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
+  uploadOps: DocIndexState[] = []
+
   constructor (
     private readonly storage: DbAdapter,
     private readonly stages: FullTextPipelineStage[],
@@ -96,6 +100,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     this.cancelling = true
     clearTimeout(this.updateBroadcast)
     clearTimeout(this.skippedReiterationTimeout)
+    clearInterval(this.updateTriggerTimer)
+    // We need to upload all bulk changes.
+    await this.processUpload(this.metrics)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
@@ -168,6 +175,26 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     return doc
   }
 
+  async processUpload (ctx: MeasureContext): Promise<void> {
+    const ops = this.updateOps
+    this.updateOps = new Map()
+    const toUpload = this.uploadOps
+    this.uploadOps = []
+    if (toUpload.length > 0) {
+      await ctx.with('upload', {}, async () => {
+        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, toUpload)
+      })
+    }
+    if (ops.size > 0) {
+      await ctx.with('update', {}, async () => {
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
+      })
+    }
+    if (toUpload.length > 0 || ops.size > 0) {
+      this.triggerIndexing()
+    }
+  }
+
   async queue (
     ctx: MeasureContext,
     updates: Map<Ref<DocIndexState>, { create?: DocIndexState, updated: boolean, removed: boolean }>
@@ -175,27 +202,20 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const entries = Array.from(updates.entries())
     const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
     if (uploads.length > 0) {
-      await ctx.with('upload', {}, async () => {
-        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, uploads)
-      })
+      this.uploadOps.push(...uploads)
     }
 
     const onlyUpdates = entries.filter((it) => it[1].create === undefined)
 
     if (onlyUpdates.length > 0) {
-      const ops = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
       for (const u of onlyUpdates) {
         const upd: DocumentUpdate<DocIndexState> = { removed: u[1].removed }
 
         // We need to clear only first state, to prevent multiple index operations to happen.
         ;(upd as any)['stages.' + this.stages[0].stageId] = false
-        ops.set(u[0], upd)
+        this.updateOps.set(u[0], upd)
       }
-      await ctx.with('upload', {}, async () => {
-        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
-      })
     }
-    this.triggerIndexing()
   }
 
   add (doc: DocIndexState): void {
@@ -288,6 +308,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async startIndexing (): Promise<void> {
     this.indexing = this.doIndexing()
+
+    clearTimeout(this.updateTriggerTimer)
+    this.updateTriggerTimer = setInterval(() => {
+      void this.processUpload(this.metrics)
+    }, 250)
   }
 
   async initializeStages (): Promise<void> {

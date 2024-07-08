@@ -52,10 +52,13 @@ test.describe('Tracker duplicate issue tests', () => {
     await trackerNavigationMenuPage.openTemplateForProject('Default')
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.searchIssueByName(secondIssue.title)
+
+    await issuesPage.checkIssuesCount(secondIssue.title, 2, 30)
+
     const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 0)
 
     expect(firstIssueId).not.toEqual(secondIssueId)
-    await issuesPage.checkIssuesCount(firstIssue.title, 2)
+    await issuesPage.checkIssuesCount(firstIssue.title, 2, 30)
 
     await test.step('Update the first issue title', async () => {
       const newIssueTitle = `Duplicate Update issue-${generateId()}`

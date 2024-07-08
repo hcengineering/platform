@@ -61,7 +61,6 @@ export class IssuesPage extends CommonTrackerPage {
   textPopupAddAttachmentsFile = (): Locator => this.page.locator('div.popup-tooltip div.item div.name')
   buttonCollapsedCategories = (): Locator => this.page.locator('div.categoryHeader.collapsed')
   pupupTagsPopup = (): Locator => this.page.locator('.popup#TagsPopup')
-  issupeByName = (issueName: string): Locator => this.page.locator('a', { hasText: issueName })
   issueNotExist = (issueName: string): Locator => this.page.locator('tr', { hasText: issueName })
   filterRowExists = (issueName: string): Locator => this.page.locator('div.row span', { hasText: issueName })
   issueListGrid = (): Locator => this.page.locator('div.listGrid')
@@ -491,7 +490,7 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async openIssueByName (issueName: string): Promise<void> {
-    await this.issupeByName(issueName).click()
+    await this.issueByName(issueName).click()
   }
 
   async checkIssueNotExist (issueName: string): Promise<void> {
@@ -519,7 +518,7 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async doActionOnIssue (issueName: string, action: string): Promise<void> {
-    await this.issupeByName(issueName).click({ button: 'right' })
+    await this.issueByName(issueName).click({ button: 'right' })
     await this.selectFromDropdown(this.page, action)
   }
 
@@ -543,8 +542,10 @@ export class IssuesPage extends CommonTrackerPage {
     await this.issueAnchorById(issueId).click()
   }
 
-  async checkIssuesCount (issueName: string, count: number): Promise<void> {
-    await expect(this.issueAnchorByName(issueName)).toHaveCount(count)
+  async checkIssuesCount (issueName: string, count: number, timeout?: number): Promise<void> {
+    await expect(this.issueAnchorByName(issueName)).toHaveCount(count, {
+      timeout: timeout !== undefined ? timeout * 1000 : undefined
+    })
   }
 
   async selectTemplate (templateName: string): Promise<void> {
