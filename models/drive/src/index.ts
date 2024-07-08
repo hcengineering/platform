@@ -45,7 +45,7 @@ import {
 import { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, { type Viewlet, createAction } from '@hcengineering/model-view'
+import view, { type Viewlet, actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
@@ -410,6 +410,23 @@ function defineFolder (builder: Builder): void {
     },
     drive.action.RenameFolder
   )
+
+  createAction(builder, {
+    ...actionTemplates.move,
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: drive.component.MoveResource,
+      element: 'top',
+      fillProps: {
+        _object: 'value'
+      }
+    },
+    target: drive.class.Folder,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'tools'
+    }
+  })
 }
 
 function defineFile (builder: Builder): void {
@@ -488,6 +505,23 @@ function defineFile (builder: Builder): void {
     },
     drive.action.RenameFile
   )
+
+  createAction(builder, {
+    ...actionTemplates.move,
+    action: view.actionImpl.ShowPopup,
+    actionProps: {
+      component: drive.component.MoveResource,
+      element: 'top',
+      fillProps: {
+        _object: 'value'
+      }
+    },
+    target: drive.class.File,
+    context: {
+      mode: ['browser', 'context'],
+      group: 'tools'
+    }
+  })
 }
 
 function defineApplication (builder: Builder): void {

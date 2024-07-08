@@ -113,9 +113,6 @@
       allowDeselect
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}
-      on:object={(evt) => {
-        console.log('selected', evt)
-      }}
     />
   </svelte:fragment>
 

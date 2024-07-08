@@ -32,6 +32,7 @@ import FileSizePresenter from './components/FileSizePresenter.svelte'
 import FolderPanel from './components/FolderPanel.svelte'
 import FolderPresenter from './components/FolderPresenter.svelte'
 import GridView from './components/GridView.svelte'
+import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
@@ -109,6 +110,7 @@ export default async (): Promise<Resources> => ({
     FolderPanel,
     FolderPresenter,
     GridView,
+    MoveResource,
     ResourcePresenter
   },
   actionImpl: {
