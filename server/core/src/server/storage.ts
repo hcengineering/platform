@@ -24,9 +24,10 @@ import core, {
   TxProcessor,
   cutObjectArray,
   toFindResult,
-  type Branding,
   type Account,
   type AttachedDoc,
+  type Branding,
+  type BroadcastTargets,
   type Class,
   type Client,
   type Collection,
@@ -50,6 +51,7 @@ import core, {
   type Timestamp,
   type Tx,
   type TxApplyIf,
+  type TxApplyResult,
   type TxCUD,
   type TxCollectionCUD,
   type TxRemoveDoc,
@@ -612,7 +614,7 @@ export class TServerStorage implements ServerStorage {
     return result
   }
 
-  private async broadcastCtx (derived: SessionOperationContext['derived']): Promise<void> {
+  private async broadcastCtx (derived: Tx[], targets?: BroadcastTargets): Promise<void> {
     const toSendTarget = new Map<string, Tx[]>()
 
     const getTxes = (key: string): Tx[] => {
@@ -626,16 +628,23 @@ export class TServerStorage implements ServerStorage {
 
     // Put current user as send target
     for (const txd of derived) {
-      if (txd.target === undefined) {
+      let target: string[] | undefined
+      for (const tt of Object.values(targets ?? {})) {
+        target = tt(txd)
+        if (target !== undefined) {
+          break
+        }
+      }
+      if (target === undefined) {
         getTxes('') // Be sure we have empty one
 
         // Also add to all other targeted sends
         for (const v of toSendTarget.values()) {
-          v.push(...txd.derived)
+          v.push(txd)
         }
       } else {
-        for (const t of txd.target) {
-          getTxes(t).push(...txd.derived)
+        for (const t of target) {
+          getTxes(t).push(txd)
         }
       }
     }
@@ -708,7 +717,9 @@ export class TServerStorage implements ServerStorage {
     )
     const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
 
-    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
+    const applyTxes: Tx[] = []
+
+    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result' | 'apply'> = {
       operationContext: ctx,
       removedMap,
       workspace: this.workspaceId,
@@ -719,52 +730,73 @@ export class TServerStorage implements ServerStorage {
       findAllCtx: findAll,
       modelDb: this.modelDb,
       hierarchy: this.hierarchy,
-      apply: async (tx, broadcast, target) => {
-        return await this.apply(ctx, tx, broadcast, target)
-      },
-      applyCtx: async (ctx, tx, broadcast, target) => {
-        return await this.apply(ctx, tx, broadcast, target)
+      applyCtx: async (ctx, tx, needResult) => {
+        if (needResult === true) {
+          return await this.apply(ctx, tx)
+        } else {
+          applyTxes.push(...tx)
+        }
+        return {}
       },
       // Will create a live query if missing and return values immediately if already asked.
       queryFind: async (_class, query, options) => {
         return await this.liveQuery.queryFind(_class, query, options)
       }
     }
-    const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
-      const result: Tx[] = []
-      const { transactions, performAsync } = await this.triggers.apply(ctx, txes, {
-        ...triggerControl,
-        ctx: ctx.ctx,
-        findAll: fAll(ctx.ctx),
-        result
-      })
-      result.push(...transactions)
+    const triggers = await ctx.with(
+      'process-triggers',
+      {},
+      async (ctx) => {
+        const result: Tx[] = []
+        const { transactions, performAsync } = await this.triggers.apply(ctx, txes, {
+          ...triggerControl,
+          ctx: ctx.ctx,
+          findAll: fAll(ctx.ctx),
+          result
+        })
+        result.push(...transactions)
 
-      if (performAsync !== undefined) {
-        const asyncTriggerProcessor = async (): Promise<void> => {
-          await ctx.with('process-async-triggers', {}, async (ctx) => {
-            const sctx = ctx as SessionContext
-            const applyCtx: SessionContextImpl = new SessionContextImpl(
-              ctx.ctx,
-              sctx.userEmail,
-              sctx.sessionId,
-              sctx.admin,
-              [],
-              this.workspaceId,
-              this.options.branding
+        if (applyTxes.length > 0) {
+          await this.apply(ctx, applyTxes)
+        }
+
+        if (performAsync !== undefined) {
+          const asyncTriggerProcessor = async (): Promise<void> => {
+            await ctx.with(
+              'process-async-triggers',
+              {},
+              async (ctx) => {
+                const sctx = ctx as SessionContext
+                const applyCtx: SessionContextImpl = new SessionContextImpl(
+                  ctx.ctx,
+                  sctx.userEmail,
+                  sctx.sessionId,
+                  sctx.admin,
+                  { txes: [], targets: {} },
+                  this.workspaceId,
+                  this.options.branding,
+                  true
+                )
+                const result = await performAsync(applyCtx)
+
+                if (applyTxes.length > 0) {
+                  await this.apply(applyCtx, applyTxes)
+                }
+                // We need to broadcast changes
+                await this.broadcastCtx(applyCtx.derived.txes.concat(result), applyCtx.derived.targets)
+              },
+              { count: txes.length }
             )
-            const result = await performAsync(applyCtx)
-            // We need to broadcast changes
-            await this.broadcastCtx([{ derived: result }, ...applyCtx.derived])
+          }
+          setTimeout(() => {
+            void asyncTriggerProcessor()
           })
         }
-        setTimeout(() => {
-          void asyncTriggerProcessor()
-        })
-      }
 
-      return result
-    })
+        return result
+      },
+      { count: txes.length }
+    )
 
     const derived = [...removed, ...collections, ...moves, ...triggers]
 
@@ -835,8 +867,8 @@ export class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: SessionOperationContext, txes: Tx[], broadcast: boolean, target?: string[]): Promise<TxResult> {
-    return await this.processTxes(ctx, txes, broadcast, target)
+  async apply (ctx: SessionOperationContext, txes: Tx[]): Promise<TxResult> {
+    return await this.processTxes(ctx, txes)
   }
 
   fillTxes (txes: Tx[], txToStore: Tx[], modelTx: Tx[], txToProcess: Tx[], applyTxes: Tx[]): void {
@@ -861,12 +893,7 @@ export class TServerStorage implements ServerStorage {
     }
   }
 
-  async processTxes (
-    ctx: SessionOperationContext,
-    txes: Tx[],
-    broadcast: boolean,
-    target?: string[]
-  ): Promise<TxResult> {
+  async processTxes (ctx: SessionOperationContext, txes: Tx[]): Promise<TxResult> {
     // store tx
     const _findAll: ServerStorage['findAll'] = async <T extends Doc>(
       ctx: MeasureContext,
@@ -914,16 +941,25 @@ export class TServerStorage implements ServerStorage {
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
       }
-      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore))
-      result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))))
+      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore), {
+        count: txToStore.length
+      })
+      result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))), {
+        count: txToProcess.length
+      })
 
       // invoke triggers and store derived objects
       derived.push(...(await this.processDerived(ctx, txToProcess, _findAll, removedMap)))
 
       // index object
-      await ctx.with('fulltext-tx', {}, async (ctx) => {
-        await this.fulltext.tx(ctx.ctx, [...txToProcess, ...derived])
-      })
+      await ctx.with(
+        'fulltext-tx',
+        {},
+        async (ctx) => {
+          await this.fulltext.tx(ctx.ctx, [...txToProcess, ...derived])
+        },
+        { count: txToProcess.length + derived.length }
+      )
     } catch (err: any) {
       ctx.ctx.error('error process tx', { error: err })
       Analytics.handleError(err)
@@ -933,16 +969,33 @@ export class TServerStorage implements ServerStorage {
         p()
       })
     }
-    if (derived.length > 0 && broadcast) {
-      ctx.derived.push({ derived, target })
+    if (derived.length > 0) {
+      ctx.derived.txes.push(...derived)
     }
     return result[0]
   }
 
   async tx (ctx: SessionOperationContext, tx: Tx): Promise<TxResult> {
-    return await ctx.with('client-tx', { _class: tx._class }, async (ctx) => {
-      return await this.processTxes(ctx, [tx], true)
-    })
+    let measureName: string | undefined
+    let st: number | undefined
+    if (tx._class === core.class.TxApplyIf && (tx as TxApplyIf).measureName !== undefined) {
+      measureName = (tx as TxApplyIf).measureName
+      st = Date.now()
+    }
+
+    const result = await ctx.with(
+      measureName !== undefined ? `📶 ${measureName}` : 'client-tx',
+      { _class: tx._class },
+      async (ctx) => {
+        return await this.processTxes(ctx, [tx])
+      }
+    )
+
+    if (measureName !== undefined && st !== undefined) {
+      ;(result as TxApplyResult).serverTime = Date.now() - st
+    }
+
+    return result
   }
 
   find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {

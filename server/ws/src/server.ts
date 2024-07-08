@@ -912,10 +912,6 @@ class TSessionManager implements SessionManager {
           }
         })
 
-        if (request.method === 'measure' || request.method === 'measure-done') {
-          await this.handleMeasure<S>(service, request, opContext(ctx))
-          return
-        }
         service.requests.set(reqId, {
           id: reqId,
           params: request,
@@ -930,9 +926,7 @@ class TSessionManager implements SessionManager {
         try {
           const params = [...request.params]
 
-          service.measureCtx?.ctx !== undefined
-            ? await f.apply(service, [opContext(service.measureCtx?.ctx), ...params])
-            : await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [opContext(callTx), ...params]))
+          await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [opContext(callTx), ...params]))
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
@@ -955,34 +949,7 @@ class TSessionManager implements SessionManager {
       service.requests.delete(reqId)
     }
   }
-
-  private async handleMeasure<S extends Session>(
-    service: S,
-    request: Request<any[]>,
-    ctx: ClientSessionCtx
-  ): Promise<void> {
-    let serverTime = 0
-    if (request.method === 'measure') {
-      service.measureCtx = { ctx: ctx.ctx.newChild('📶 ' + request.params[0], {}), time: Date.now() }
-    } else {
-      if (service.measureCtx !== undefined) {
-        serverTime = Date.now() - service.measureCtx.time
-        service.measureCtx.ctx.end(serverTime)
-        service.measureCtx = undefined
-      }
-    }
-    try {
-      await ctx.sendResponse(request.method === 'measure' ? 'started' : serverTime)
-    } catch (err: any) {
-      Analytics.handleError(err)
-      if (LOGGING_ENABLED) {
-        ctx.ctx.error('error handle measure', { error: err, request })
-      }
-      await ctx.sendError(JSON.parse(JSON.stringify(err?.stack)), unknownError(err))
-    }
-  }
 }
-
 /**
  * @public
  */

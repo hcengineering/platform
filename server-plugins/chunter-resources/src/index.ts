@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
+import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
+import { Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   AttachedDoc,
@@ -38,14 +40,12 @@ import notification, { Collaborators, NotificationContent } from '@hcengineering
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
+  createCollaboratorNotifications,
   getDocCollaborators,
-  getMixinTx,
-  createCollaboratorNotifications
+  getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
-import { Person, PersonAccount } from '@hcengineering/contact'
-import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
+import { workbenchId } from '@hcengineering/workbench'
 
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
@@ -258,13 +258,24 @@ async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise
  * @public
  */
 export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const res = await Promise.all([
-    OnThreadMessageCreated(tx, control),
-    OnThreadMessageDeleted(tx, control),
-    OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control),
-    OnChatMessageCreated(tx, control)
-  ])
-  return res.flat()
+  const res: Tx[] = []
+  res.push(
+    ...(await control.ctx.with('OnThreadMessageCreated', {}, async (ctx) => await OnThreadMessageCreated(tx, control)))
+  )
+  res.push(
+    ...(await control.ctx.with('OnThreadMessageDeleted', {}, async (ctx) => await OnThreadMessageDeleted(tx, control)))
+  )
+  res.push(
+    ...(await control.ctx.with(
+      'OnCollaboratorsChanged',
+      {},
+      async (ctx) => await OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control)
+    ))
+  )
+  res.push(
+    ...(await control.ctx.with('OnChatMessageCreated', {}, async (ctx) => await OnChatMessageCreated(tx, control)))
+  )
+  return res
 }
 
 /**
@@ -393,7 +404,7 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
         lastViewedTimestamp: tx.modifiedOn
       })
 
-      await control.apply([createTx], true)
+      await control.apply([createTx])
     } else {
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
         hidden: false,

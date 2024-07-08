@@ -25,11 +25,6 @@ export const clientId = 'client' as Plugin
 /**
  * @public
  */
-export type ClientHook = (client: AccountClient) => Promise<AccountClient>
-
-/**
- * @public
- */
 export type ClientSocketFactory = (url: string) => ClientSocket
 
 /**
@@ -74,7 +69,6 @@ export type ClientFactory = (
 
 export default plugin(clientId, {
   metadata: {
-    ClientHook: '' as Metadata<Resource<ClientHook>>,
     ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
     FilterModel: '' as Metadata<boolean>,
     ExtraPlugins: '' as Metadata<Plugin[]>,

@@ -652,7 +652,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   )
 
   if (txes.length !== 0) {
-    await control.apply(txes, true)
+    await control.apply(txes)
   }
 
   return []
@@ -699,7 +699,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
   )
 
   if (txes.length !== 0) {
-    await control.apply(txes, true)
+    await control.apply(txes)
   }
 
   return []
@@ -723,7 +723,7 @@ async function ActivityReferenceRemove (tx: Tx, control: TriggerControl): Promis
 
     const txes: Tx[] = await getRemoveActivityReferenceTxes(control, txFactory, ctx.objectId)
     if (txes.length !== 0) {
-      await control.apply(txes, true)
+      await control.apply(txes)
     }
   }
 

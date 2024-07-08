@@ -107,7 +107,7 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
             issue.collection,
             innerTx
           )
-          await control.apply([outerTx], true)
+          await control.apply([outerTx])
           return []
         }
       }
@@ -153,7 +153,7 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
             issue.collection,
             innerTx
           )
-          await control.apply([outerTx], true)
+          await control.apply([outerTx])
           return []
         }
       }
@@ -304,7 +304,7 @@ export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx
     if (funcs !== undefined) {
       const func = await getResource(funcs.onDone)
       const todoRes = await func(control, resEvents, todo)
-      await control.apply(todoRes, true)
+      await control.apply(todoRes)
     }
     return res
   }
@@ -447,7 +447,7 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
       const tx = await getCreateToDoTx(issue, issue.assignee, control)
       if (tx !== undefined) {
-        await control.apply([tx], true)
+        await control.apply([tx])
       }
     }
   }
@@ -561,7 +561,7 @@ async function changeIssueStatusHandler (
       if (todos.length === 0) {
         const tx = await getCreateToDoTx(issue, issue.assignee, control)
         if (tx !== undefined) {
-          await control.apply([tx], true)
+          await control.apply([tx])
         }
       }
     }

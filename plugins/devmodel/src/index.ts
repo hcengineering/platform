@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import { ClientHook } from '@hcengineering/client'
-import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
 
@@ -31,9 +30,6 @@ export default plugin(devModelId, {
     ModelView: '' as AnyComponent,
     TransactionView: '' as AnyComponent,
     NotificationsView: '' as AnyComponent
-  },
-  hook: {
-    Hook: '' as Resource<ClientHook>
   },
   metadata: {
     DevModel: '' as Metadata<any>

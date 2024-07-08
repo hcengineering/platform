@@ -312,8 +312,8 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.removeDoc(doc._class, doc.space, doc._id)
   }
 
-  apply (scope: string): ApplyOperations {
-    return new ApplyOperations(this, scope)
+  apply (scope: string, measure?: string): ApplyOperations {
+    return new ApplyOperations(this, scope, measure)
   }
 
   async diffUpdate<T extends Doc = Doc>(
@@ -423,6 +423,12 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 }
 
+export interface CommitResult {
+  result: boolean
+  time: number
+  serverTime: number
+}
+
 /**
  * @public
  *
@@ -436,7 +442,8 @@ export class ApplyOperations extends TxOperations {
   notMatches: DocumentClassQuery<Doc>[] = []
   constructor (
     readonly ops: TxOperations,
-    readonly scope: string
+    readonly scope: string,
+    readonly measureName?: string
   ) {
     const txClient: Client = {
       getHierarchy: () => ops.client.getHierarchy(),
@@ -465,23 +472,28 @@ export class ApplyOperations extends TxOperations {
     return this
   }
 
-  async commit (notify: boolean = true, extraNotify: Ref<Class<Doc>>[] = []): Promise<boolean> {
+  async commit (notify: boolean = true, extraNotify: Ref<Class<Doc>>[] = []): Promise<CommitResult> {
     if (this.txes.length > 0) {
-      return (
-        await ((await this.ops.tx(
-          this.ops.txFactory.createTxApplyIf(
-            core.space.Tx,
-            this.scope,
-            this.matches,
-            this.notMatches,
-            this.txes,
-            notify,
-            extraNotify
-          )
-        )) as Promise<TxApplyResult>)
-      ).success
+      const st = Date.now()
+      const result = await ((await this.ops.tx(
+        this.ops.txFactory.createTxApplyIf(
+          core.space.Tx,
+          this.scope,
+          this.matches,
+          this.notMatches,
+          this.txes,
+          this.measureName,
+          notify,
+          extraNotify
+        )
+      )) as Promise<TxApplyResult>)
+      return {
+        result: result.success,
+        time: Date.now() - st,
+        serverTime: result.serverTime
+      }
     }
-    return true
+    return { result: true, time: 0, serverTime: 0 }
   }
 }
 

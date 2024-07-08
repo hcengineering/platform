@@ -28,14 +28,7 @@ import core, {
   createClient,
   type ClientConnection
 } from '@hcengineering/core'
-import platform, {
-  Severity,
-  Status,
-  getMetadata,
-  getPlugins,
-  getResource,
-  setPlatformStatus
-} from '@hcengineering/platform'
+import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
 
 export { connect }
@@ -88,7 +81,7 @@ export default async () => {
       ): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
-        let client = createClient(
+        const client = createClient(
           (handler: TxHandler) => {
             const url = concatLink(endpoint, `/${token}`)
 
@@ -144,8 +137,6 @@ export default async () => {
           createModelPersistence(getWSFromToken(token)),
           ctx
         )
-        // Check if we had dev hook for client.
-        client = hookClient(client)
         return await client
       }
     }
@@ -201,24 +192,6 @@ function createModelPersistence (workspace: string): TxPersistenceStore | undefi
       }
     }
   }
-}
-
-async function hookClient (client: Promise<AccountClient>): Promise<AccountClient> {
-  const hook = getMetadata(clientPlugin.metadata.ClientHook)
-  if (hook !== undefined) {
-    const hookProc = await getResource(hook)
-    const _client = client
-    client = new Promise((resolve, reject) => {
-      _client
-        .then((res) => {
-          resolve(hookProc(res))
-        })
-        .catch((err) => {
-          reject(err)
-        })
-    })
-  }
-  return await client
 }
 
 function getWSFromToken (token: string): string {

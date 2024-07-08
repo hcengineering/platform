@@ -284,7 +284,7 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   // Force space to make transaction persistent and raise notifications
   resTx.space = core.space.Tx
 
-  await control.apply([resTx], true)
+  await control.apply([resTx])
 
   return []
 }
@@ -368,7 +368,7 @@ export async function OnDocPlannedEffectiveDateChanged (
   if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
     // Create with not derived tx factory in order for notifications to work
     const factory = new TxFactory(control.txFactory.account)
-    await control.apply([makeDocEffective(doc, factory)], true)
+    await control.apply([makeDocEffective(doc, factory)])
   }
 
   return []
@@ -385,7 +385,7 @@ export async function OnDocApprovalRequestApproved (
 
   // Create with not derived tx factory in order for notifications to work
   const factory = new TxFactory(control.txFactory.account)
-  await control.apply([makeDocEffective(doc, factory)], true)
+  await control.apply([makeDocEffective(doc, factory)])
 
   // make doc effective immediately
   return []

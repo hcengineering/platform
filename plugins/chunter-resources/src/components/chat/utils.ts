@@ -304,8 +304,7 @@ function getPinnedActions (contexts: DocNotifyContext[]): Action[] {
 }
 
 async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const doneOp = await getClient().measure('unpinAllChannels')
-  const ops = getClient().apply(generateId())
+  const ops = getClient().apply(generateId(), 'unpinAllChannels')
 
   try {
     for (const context of contexts) {
@@ -313,7 +312,6 @@ async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -404,8 +402,7 @@ export function loadSavedAttachments (): void {
 export async function removeActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const doneOp = await getClient().measure('removeActivityChannels')
-  const ops = getClient().apply(generateId())
+  const ops = getClient().apply(generateId(), 'removeActivityChannels')
 
   try {
     for (const context of contexts) {
@@ -418,15 +415,13 @@ export async function removeActivityChannels (contexts: DocNotifyContext[]): Pro
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
 export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const doneOp = await getClient().measure('readActivityChannels')
-  const ops = getClient().apply(generateId())
+  const ops = getClient().apply(generateId(), 'readActivityChannels')
 
   try {
     for (const context of contexts) {
@@ -441,6 +436,5 @@ export async function readActivityChannels (contexts: DocNotifyContext[]): Promi
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }

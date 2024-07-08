@@ -16,6 +16,7 @@
 import {
   MeasureMetricsContext,
   type Account,
+  type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -40,8 +41,7 @@ import {
   type TxFactory,
   type TxResult,
   type WorkspaceId,
-  type WorkspaceIdWithUrl,
-  type Branding
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
 import { type Readable } from 'stream'
@@ -162,8 +162,8 @@ export interface TriggerControl {
   storageAdapter: StorageAdapter
   serviceAdaptersManager: ServiceAdaptersManager
   // Bulk operations in case trigger require some
-  apply: (tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
-  applyCtx: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
+  apply: (tx: Tx[], needResult?: boolean) => Promise<TxResult>
+  applyCtx: (ctx: SessionOperationContext, tx: Tx[], needResult?: boolean) => Promise<TxResult>
 
   // Will create a live query if missing and return values immediately if already asked.
   queryFind: <T extends Doc>(
@@ -179,7 +179,7 @@ export interface TriggerControl {
 /**
  * @public
  */
-export type TriggerFunc = (tx: Tx, ctrl: TriggerControl) => Promise<Tx[]>
+export type TriggerFunc = (tx: Tx | Tx[], ctrl: TriggerControl) => Promise<Tx[]>
 
 /**
  * @public
@@ -192,6 +192,9 @@ export interface Trigger extends Doc {
 
   // We should match transaction
   txMatch?: DocumentQuery<Tx>
+
+  // If set trigger will handle Tx[] instead of Tx
+  arrays?: boolean
 }
 
 /**

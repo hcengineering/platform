@@ -110,7 +110,7 @@
   />
 </div>
 <Scroller shrink>
-  {#each chatNavGroupModels as model}
+  {#each chatNavGroupModels as model (model.id)}
     <ChatNavGroup {object} {model} on:select />
   {/each}
 </Scroller>

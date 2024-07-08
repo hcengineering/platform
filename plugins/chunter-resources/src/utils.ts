@@ -192,8 +192,12 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   return myPerson !== undefined ? [myPerson] : []
 }
 
-export async function DirectTitleProvider (client: Client, id: Ref<DirectMessage>): Promise<string> {
-  const direct = await client.findOne(chunter.class.DirectMessage, { _id: id })
+export async function DirectTitleProvider (
+  client: Client,
+  id: Ref<DirectMessage>,
+  doc?: DirectMessage
+): Promise<string> {
+  const direct = doc ?? (await client.findOne(chunter.class.DirectMessage, { _id: id }))
 
   if (direct === undefined) {
     return ''
@@ -202,8 +206,8 @@ export async function DirectTitleProvider (client: Client, id: Ref<DirectMessage
   return await getDmName(client, direct)
 }
 
-export async function ChannelTitleProvider (client: Client, id: Ref<Channel>): Promise<string> {
-  const channel = await client.findOne(chunter.class.Channel, { _id: id })
+export async function ChannelTitleProvider (client: Client, id: Ref<Channel>, doc?: Channel): Promise<string> {
+  const channel = doc ?? (await client.findOne(chunter.class.Channel, { _id: id }))
 
   if (channel === undefined) {
     return ''

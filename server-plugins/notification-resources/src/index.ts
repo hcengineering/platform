@@ -15,6 +15,7 @@
 //
 
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
   type AvatarInfo,
@@ -42,6 +43,7 @@ import core, {
   RefTo,
   Space,
   Timestamp,
+  toIdMap,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -75,12 +77,11 @@ import serverNotification, {
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE
 } from '@hcengineering/server-notification'
+import serverView from '@hcengineering/server-view'
 import { stripTags } from '@hcengineering/text'
+import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
-import { encodeObjectURI } from '@hcengineering/view'
-import serverView from '@hcengineering/server-view'
-import { Analytics } from '@hcengineering/analytics'
 
 import { Content, NotifyParams, NotifyResult, UserInfo } from './types'
 import {
@@ -396,14 +397,24 @@ export async function pushInboxNotifications (
       hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
-    await control.apply([createContextTx], true, [account.email])
+    await control.apply([createContextTx])
+    control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
+      if (it._id === createContextTx._id) {
+        return [account.email]
+      }
+    }
     docNotifyContextId = createContextTx.objectId
   } else {
     if (shouldUpdateTimestamp && context.lastUpdateTimestamp !== modifiedOn) {
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
         lastUpdateTimestamp: modifiedOn
       })
-      await control.apply([updateTx], true, [account.email])
+      await control.apply([updateTx])
+      control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
+        if (it._id === updateTx._id) {
+          return [account.email]
+        }
+      }
     }
     docNotifyContextId = context._id
   }
@@ -636,7 +647,7 @@ async function sendPushToSubscription (
     console.log('Cannot send push notification to', targetUser, err)
     if (err instanceof WebPushError && err.body.includes('expired')) {
       const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
-      await control.apply([tx], true)
+      await control.apply([tx])
     }
   }
 }
@@ -1286,7 +1297,14 @@ async function applyUserTxes (
 
     if (account !== undefined) {
       cache.set(account._id, account)
-      await control.apply(txs, true, [account.email])
+      await control.apply(txs)
+
+      const m1 = toIdMap(txes)
+      control.operationContext.derived.targets.docNotifyContext = (it) => {
+        if (m1.has(it._id)) {
+          return [account.email]
+        }
+      }
     }
   }
 

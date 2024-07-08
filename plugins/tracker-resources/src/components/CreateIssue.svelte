@@ -442,10 +442,8 @@
 
     // TODO: We need a measure client and mark all operations with it as measure under one root,
     // to prevent other operations to infer our measurement.
-    const doneOp = await getClient().measure('tracker.createIssue')
-
     try {
-      const operations = client.apply(_id)
+      const operations = client.apply(_id, 'tracker.createIssue')
 
       const lastOne = await client.findOne<Issue>(
         tracker.class.Issue,
@@ -533,7 +531,7 @@
         }
       }
 
-      await operations.commit()
+      const result = await operations.commit()
       await descriptionBox?.createAttachments(_id)
 
       const parents: IssueParentInfo[] =
@@ -565,15 +563,12 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
-      void doneOp().then((res) => {
-        console.log('createIssue measure', res, Date.now() - d1)
-      })
+      console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {
       resetObject()
       draftController.remove()
       descriptionBox?.removeDraft(false)
       console.error(err)
-      await doneOp() // Complete in case of error
       Analytics.handleError(err)
     }
   }
