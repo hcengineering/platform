@@ -13,9 +13,16 @@ export const MultipleChoiceAssessmentAssess: AnswerDataAssessFunction<
 MultipleChoiceAssessment,
 MultipleChoiceAssessmentAnswer
 > = async (answerData, assessmentData) => {
+
+  const adataIndexes = [...answerData.selectedIndices]
+  adataIndexes.sort()
+
+  const assembleData = assessmentData.correctIndices
+  assembleData.sort()
+
   return {
     score:
       // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
-      answerData.selectedIndices.toSorted().join('~') === assessmentData.correctIndices.toSorted().join('~') ? 100 : 0
+      adataIndexes.join('~') === assembleData.join('~') ? 100 : 0
   }
 }

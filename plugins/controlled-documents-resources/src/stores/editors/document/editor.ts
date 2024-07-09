@@ -78,9 +78,12 @@ const $documentAllVersions = createStore<ControlledDocument[]>([])
   .on(documentAllVersionsUpdated, (_, payload) => payload)
   .reset(controlledDocumentClosed)
 
-export const $documentAllVersionsDescSorted = $documentAllVersions.map((docs) =>
-  docs.toSorted((a, b) => documentCompareFn(a, b) * -1)
-)
+const sortFunction = (a: ControlledDocument, b: ControlledDocument) => documentCompareFn(a, b) * -1
+export const $documentAllVersionsDescSorted = $documentAllVersions.map((docs) => {
+  const result = [...docs]
+  result.sort(sortFunction)
+  return result
+})
 
 export const $documentSnapshots = createStore<ControlledDocumentSnapshot[]>([])
   .on(documentSnapshotsUpdated, (_, payload) => payload)

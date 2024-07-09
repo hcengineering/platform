@@ -9,7 +9,7 @@ export async function trainingAttemptStateSort (
   _: TxOperations,
   states: TrainingAttemptState[]
 ): Promise<TrainingAttemptState[]> {
-  return states.toSorted(
-    (state1, state2) => trainingAttemptStateOrder.indexOf(state2) - trainingAttemptStateOrder.indexOf(state1)
-  )
+  const result = [...states]
+  result.sort((state1: TrainingAttemptState, state2: TrainingAttemptState) => trainingAttemptStateOrder.indexOf(state2) - trainingAttemptStateOrder.indexOf(state1))
+  return result
 }

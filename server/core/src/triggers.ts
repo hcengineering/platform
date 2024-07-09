@@ -186,9 +186,9 @@ export class Triggers {
       return
     }
     if (typeof q[key] === 'string') {
-      const descendants = this.hierarchy.getDescendants(q[key])
+      const descendants = this.hierarchy.getDescendants(q[key] as Ref<Class<Doc>>)
       q[key] = {
-        $in: [...(q[key].$in ?? []), ...descendants]
+        $in: [q[key] as Ref<Class<Doc>>, ...descendants]
       }
     } else {
       if (Array.isArray(q[key].$in)) {
