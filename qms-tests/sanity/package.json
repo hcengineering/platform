@@ -1,0 +1,43 @@
+{
+  "name": "@uberflow/qms-tests-qms-sanity",
+  "version": "0.1.0",
+  "author": "Hardcore Engineering Inc",
+  "template": "@hcengineering/default-package",
+  "scripts": {
+    "build": "",
+    "build:watch": "",
+    "lint:fix": "eslint --fix tests",
+    "lint": "eslint tests",
+    "format": "format tests",
+    "ci": "playwright install --with-deps chromium",
+    "test": "",
+    "uitest": "playwright test -c ./tests/playwright.config.ts",
+    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts",
+    "debug": "playwright test -c ./tests/playwright.config.ts --debug --headed",
+    "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts --debug --headed",
+    "codegen": "playwright codegen --load-storage storage.json http://localhost:8083/workbench",
+    "dev-codegen": "cross-env playwright codegen --load-storage storage-dev.json http://localhost:8080/workbench"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "^0.6.0",
+    "@types/jest": "^29.5.5",
+    "@types/node": "~20.11.16",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.3",
+    "@playwright/test": "^1.41.2",
+    "allure-playwright": "^2.9.2"
+  },
+  "dependencies": {
+    "dotenv": "~16.0.0",
+    "cross-env": "~7.0.3",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/client-resources": "^0.6.27"
+  }
+}
