@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, getMarkRange } from '@tiptap/core'
@@ -32,6 +32,7 @@
 
   export let objectClass: Ref<Class<Doc>> | undefined = undefined
   export let objectId: Ref<Doc> | undefined = undefined
+  export let objectSpace: Ref<Space> | undefined = undefined
   export let objectAttr: string | undefined = undefined
 
   export let user: CollaborationUser
@@ -162,6 +163,7 @@
     {field}
     {objectClass}
     {objectId}
+    {objectSpace}
     {objectAttr}
     {user}
     {userComponent}

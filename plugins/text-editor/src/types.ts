@@ -2,9 +2,10 @@ import { type Asset, type IntlString, type Resource } from '@hcengineering/platf
 import { type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui/src/types'
 import { type RelativePosition } from 'yjs'
-import { type Content, type Editor, type SingleCommands } from '@tiptap/core'
+import { type AnyExtension, type Content, type Editor, type SingleCommands } from '@tiptap/core'
 import { type ParseOptions } from '@tiptap/pm/model'
 
+export type { AnyExtension } from '@tiptap/core'
 /**
  * @public
  */
@@ -131,4 +132,16 @@ export interface CollaborationUserState {
 /** @public */
 export interface AwarenessChangeEvent {
   states: CollaborationUserState[]
+}
+
+export type TextEditorMode = 'full' | 'compact'
+export type ExtensionCreator = (mode: TextEditorMode, ctx: any) => AnyExtension
+
+/**
+ * Extension to tiptap document editor
+ * @public
+ */
+export interface TextEditorExtensionFactory extends Doc {
+  index: number
+  create: Resource<ExtensionCreator>
 }

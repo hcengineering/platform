@@ -1,10 +1,17 @@
 import type { WorkSlot, ToDo } from '@hcengineering/time'
 import type { DefSeparators } from '@hcengineering/ui'
-import type { Client, Ref } from '@hcengineering/core'
+import core, { type Class, type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { DAY, HOUR, MINUTE } from '@hcengineering/ui'
 import { translate } from '@hcengineering/platform'
-import timePlugin from './plugin'
 import time from '@hcengineering/time'
+import { type TextEditorMode, type AnyExtension } from '@hcengineering/text-editor'
+import { SvelteNodeViewRenderer } from '@hcengineering/text-editor-resources'
+import { getClient } from '@hcengineering/presentation'
+
+import ToDoItemNodeView from './components/text-editor/node-view/ToDoItemNodeView.svelte'
+import ToDoListNodeView from './components/text-editor/node-view/ToDoListNodeView.svelte'
+import { TodoItemExtension, TodoListExtension } from './text-editor-extensions'
+import timePlugin from './plugin'
 
 export * from './types'
 
@@ -38,6 +45,61 @@ export async function ToDoTitleProvider (client: Client, ref: Ref<ToDo>, doc?: T
   if (object === undefined) return ''
 
   return object.title
+}
+
+function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
+  const hierarchy = getClient().getHierarchy()
+
+  try {
+    const todosCollection = hierarchy.getAttribute(objectClass, 'todos')
+
+    return todosCollection !== undefined && todosCollection.type._class === core.class.Collection
+  } catch (e) {
+    return false
+  }
+}
+
+function isTodoable (mode: TextEditorMode, objectId?: Ref<Doc>, objectClass?: Ref<Class<Doc>>, objectSpace?: Ref<Space>): boolean {
+  return mode === 'full' && objectId !== undefined && objectClass !== undefined && objectSpace !== undefined && isTodoableClass(objectClass)
+}
+
+export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
+  if (!isTodoable(mode, ctx.objectId, ctx.objectClass, ctx.objectSpace)) {
+    return
+  }
+
+  const { objectId, objectClass, objectSpace } = ctx
+
+  return TodoItemExtension.extend({
+    addNodeView () {
+      return SvelteNodeViewRenderer(ToDoItemNodeView, {
+        contentAs: 'li',
+        contentClass: 'todo-item',
+        componentProps: { objectId, objectClass, objectSpace },
+        ignoreMutation: () => true
+      })
+    }
+  }).configure({
+    HTMLAttributes: {
+      class: 'todo-item'
+    }
+  })
+}
+
+export function createTodoListExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
+  if (!isTodoable(mode, ctx.objectId, ctx.objectClass, ctx.objectSpace)) {
+    return
+  }
+
+  return TodoListExtension.extend({
+    addNodeView () {
+      return SvelteNodeViewRenderer(ToDoListNodeView, { ignoreMutation: () => true })
+    }
+  }).configure({
+    HTMLAttributes: {
+      class: 'todo-list'
+    }
+  })
 }
 
 export function calculateEventsDuration (events: WorkSlot[]): number {

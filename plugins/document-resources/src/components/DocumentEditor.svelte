@@ -21,18 +21,12 @@
   import {
     CollaboratorEditor,
     HeadingsExtension,
-    ImageUploadOptions,
-    SvelteNodeViewRenderer,
-    TodoItemExtension,
-    TodoListExtension
+    ImageUploadOptions
   } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
   import { Extensions, FocusPosition } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
-
-  import ToDoItemNodeView from './node-view/ToDoItemNodeView.svelte'
-  import ToDoListNodeView from './node-view/ToDoListNodeView.svelte'
 
   export let object: Document
   export let readonly = false
@@ -61,29 +55,6 @@
       onChange: (headings) => {
         dispatch('headings', headings)
       }
-    }),
-    TodoItemExtension.extend({
-      addNodeView () {
-        return SvelteNodeViewRenderer(ToDoItemNodeView, {
-          contentAs: 'li',
-          contentClass: 'todo-item',
-          componentProps: { object },
-          ignoreMutation: () => true
-        })
-      }
-    }).configure({
-      HTMLAttributes: {
-        class: 'todo-item'
-      }
-    }),
-    TodoListExtension.extend({
-      addNodeView () {
-        return SvelteNodeViewRenderer(ToDoListNodeView, { ignoreMutation: () => true })
-      }
-    }).configure({
-      HTMLAttributes: {
-        class: 'todo-list'
-      }
     })
   ]
 </script>
@@ -92,6 +63,7 @@
   collaborativeDoc={object.content}
   objectClass={object._class}
   objectId={object._id}
+  objectSpace={object.space}
   objectAttr="content"
   field="content"
   {user}

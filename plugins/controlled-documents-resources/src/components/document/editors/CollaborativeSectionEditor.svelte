@@ -274,6 +274,9 @@
   {#key value._id}
     <CollaboratorEditor
       bind:this={textEditor}
+      objectId={value.attachedTo}
+      objectClass={value.attachedToClass}
+      objectSpace={value.space}
       {collaborativeDoc}
       {initialCollaborativeDoc}
       {user}

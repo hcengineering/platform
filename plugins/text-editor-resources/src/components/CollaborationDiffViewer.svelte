@@ -26,7 +26,7 @@
 
   import { calculateDecorations, createYdocDocument } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { EditorKit } from '../../src/kits/editor-kit'
+  import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let ydoc: Ydoc
   export let field: string | undefined = undefined
@@ -75,12 +75,12 @@
     updateEditor(editor, comparedYdoc, comparedField)
   }
 
-  onMount(() => {
+  onMount(async () => {
     editor = new Editor({
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       editable: false,
-      extensions: [EditorKit, DecorationExtension, Collaboration.configure({ document: ydoc, field })]
+      extensions: [await getEditorKit(), DecorationExtension, Collaboration.configure({ document: ydoc, field })]
     })
   })
 

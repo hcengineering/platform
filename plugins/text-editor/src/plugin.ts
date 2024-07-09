@@ -16,7 +16,7 @@
 
 import { type Class, type Ref } from '@hcengineering/core'
 import { type IntlString, type Metadata, type Plugin, plugin } from '@hcengineering/platform'
-import { type RefInputActionItem } from './types'
+import { type TextEditorExtensionFactory, type RefInputActionItem } from './types'
 
 /**
  * @public
@@ -25,7 +25,8 @@ export const textEditorId = 'text-editor' as Plugin
 
 export default plugin(textEditorId, {
   class: {
-    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>
+    RefInputActionItem: '' as Ref<Class<RefInputActionItem>>,
+    TextEditorExtensionFactory: '' as Ref<Class<TextEditorExtensionFactory>>
   },
   metadata: {
     CollaboratorUrl: '' as Metadata<string>

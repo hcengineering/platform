@@ -31,7 +31,7 @@
   import { defaultEditorAttributes } from './editor/editorProps'
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
-  import { EditorKit } from '../../src/kits/editor-kit'
+  import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
@@ -167,7 +167,7 @@
   }
 
   onMount(() => {
-    void ph.then(() => {
+    void ph.then(async () => {
       editor = new Editor({
         element,
         editorProps: {
@@ -177,7 +177,7 @@
         content: markupToJSON(content),
         autofocus,
         extensions: [
-          EditorKit.configure({
+          (await getEditorKit()).configure({
             mode: 'compact',
             file: canEmbedFiles ? {} : false,
             image: canEmbedImages ? {} : false,

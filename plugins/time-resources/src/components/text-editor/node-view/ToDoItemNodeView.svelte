@@ -1,20 +1,22 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { Doc, Ref, SortingOrder, generateId } from '@hcengineering/core'
+  import { type Class, type Doc, type Ref, type Space, SortingOrder, generateId } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor-resources'
   import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import time, { ToDo, ToDoPriority } from '@hcengineering/time'
   import { makeRank } from '@hcengineering/rank'
 
-  import document from '../../plugin'
+  import timeRes from '../../../plugin'
 
   export let node: NodeViewProps['node']
   export let editor: NodeViewProps['editor']
   export let updateAttributes: NodeViewProps['updateAttributes']
 
-  export let object: Doc | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
+  export let objectSpace: Ref<Space> | undefined = undefined
 
   const client = getClient()
   const query = createQuery()
@@ -22,7 +24,7 @@
   $: todoId = node.attrs.todoid as Ref<ToDo>
   $: userId = node.attrs.userid as Ref<Person>
   $: checked = node.attrs.checked ?? false
-  $: readonly = !editor.isEditable || object === undefined
+  $: readonly = !editor.isEditable || objectId === undefined
 
   let todo: ToDo | undefined = undefined
   $: query.query(
@@ -66,7 +68,7 @@
 
   async function assignTodo (user: Ref<Person>): Promise<void> {
     if (todo !== undefined && todo.user === user) return
-    if (object === undefined) return
+    if (objectId === undefined || objectClass === undefined || objectSpace === undefined) return
 
     const title = node.textBetween(0, node.content.size, undefined, ' ')
 
@@ -90,8 +92,8 @@
     )
     const rank = makeRank(undefined, latestTodoItem?.rank)
 
-    const id = await ops.addCollection(time.class.ProjectToDo, time.space.ToDos, object._id, object._class, 'todos', {
-      attachedSpace: object.space,
+    const id = await ops.addCollection(time.class.ProjectToDo, time.space.ToDos, objectId, objectClass, 'todos', {
+      attachedSpace: objectSpace,
       title,
       description: '',
       user,
@@ -125,8 +127,8 @@
     showPopup(
       MessageBox,
       {
-        label: document.string.ReassignToDo,
-        message: document.string.ReassignToDoConfirm
+        label: timeRes.string.ReassignToDo,
+        message: timeRes.string.ReassignToDoConfirm
       },
       'top',
       async (result?: boolean) => {
@@ -141,8 +143,8 @@
     showPopup(
       MessageBox,
       {
-        label: document.string.UnassignToDo,
-        message: document.string.UnassignToDoConfirm
+        label: timeRes.string.UnassignToDo,
+        message: timeRes.string.UnassignToDoConfirm
       },
       'top',
       async (result?: boolean) => {

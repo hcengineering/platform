@@ -63,7 +63,6 @@ export { InlinePopupExtension } from './components/extension/inlinePopup'
 export { InlineStyleToolbarExtension, type InlineStyleToolbarOptions } from './components/extension/inlineStyleToolbar'
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { ImageUploadExtension, type ImageUploadOptions } from './components/extension/imageUploadExt'
-export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 
 export * from './command/deleteAttachment'
 export {

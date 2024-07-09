@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
-  import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
   import presentation, { getFileUrl, getImageSize } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
@@ -42,7 +42,7 @@
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
-  import { EditorKit } from '../../src/kits/editor-kit'
+  import { getEditorKit } from '../../src/kits/editor-kit'
   import { DirectStorageProvider } from '../provider/storage'
   import { TiptapCollabProvider } from '../provider/tiptap'
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
@@ -78,6 +78,7 @@
 
   export let objectClass: Ref<Class<Doc>> | undefined
   export let objectId: Ref<Doc> | undefined
+  export let objectSpace: Ref<Space> | undefined = undefined
   export let objectAttr: string | undefined
 
   export let user: CollaborationUser
@@ -432,7 +433,13 @@
       element,
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
       extensions: [
-        EditorKit.configure({ history: false, submit: false }),
+        (await getEditorKit()).configure({
+          objectId,
+          objectClass,
+          objectSpace,
+          history: false,
+          submit: false
+        }),
         ...optionalExtensions,
         Placeholder.configure({ placeholder: placeHolderStr }),
         InlineStyleToolbarExtension.configure({

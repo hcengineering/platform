@@ -107,6 +107,7 @@
   {collaborativeDoc}
   objectClass={object._class}
   objectId={object._id}
+  objectSpace={object.space}
   objectAttr={key.key}
   {user}
   {userComponent}

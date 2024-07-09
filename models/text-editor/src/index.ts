@@ -17,8 +17,7 @@ import { DOMAIN_MODEL } from '@hcengineering/core'
 import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
-// Import types to prevent .svelte components to being exposed to type typescript.
-import { type RefInputAction, type RefInputActionItem } from '@hcengineering/text-editor'
+import { type ExtensionCreator, type TextEditorExtensionFactory, type RefInputAction, type RefInputActionItem } from '@hcengineering/text-editor'
 import textEditor from './plugin'
 
 export { textEditorOperation } from './migration'
@@ -35,6 +34,15 @@ export class TRefInputActionItem extends TDoc implements RefInputActionItem {
   action!: Resource<RefInputAction>
 }
 
+@Model(textEditor.class.TextEditorExtensionFactory, core.class.Doc, DOMAIN_MODEL)
+export class TTextEditorExtensionFactory extends TDoc implements TextEditorExtensionFactory {
+  index!: number
+  create!: Resource<ExtensionCreator>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TRefInputActionItem)
+  builder.createModel(
+    TRefInputActionItem,
+    TTextEditorExtensionFactory
+  )
 }

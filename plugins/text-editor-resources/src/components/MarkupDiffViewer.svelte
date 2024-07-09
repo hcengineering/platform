@@ -23,7 +23,7 @@
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { EditorKit } from '../../src/kits/editor-kit'
+  import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let content: MarkupNode
   export let comparedVersion: MarkupNode | undefined = undefined
@@ -73,13 +73,13 @@
     updateEditor(editor, comparedVersion)
   }
 
-  onMount(() => {
+  onMount(async () => {
     editor = new Editor({
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
       element,
       content,
       editable: false,
-      extensions: [EditorKit, ReferenceNode, DecorationExtension],
+      extensions: [await getEditorKit(), ReferenceNode, DecorationExtension],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor
