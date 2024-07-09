@@ -27,6 +27,7 @@ import {
   type Type,
   type RolesAssignment,
   type Role,
+  type CollectionSize,
   Account
 } from '@hcengineering/core'
 import {
@@ -52,6 +53,7 @@ import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-c
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
+import time, { ToDo } from '@hcengineering/time'
 import {
   type ProjectTargetPreference,
   type Component,
@@ -251,6 +253,9 @@ export class TIssue extends TTask implements Issue {
     reports!: number
 
   declare childInfo: IssueChildInfo[]
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 /**
  * @public
