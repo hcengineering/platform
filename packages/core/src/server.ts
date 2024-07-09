@@ -42,6 +42,9 @@ export interface SessionOperationContext {
     txes: Tx[]
     targets: BroadcastTargets // A set of broadcast filters if required
   }
+  apply: {
+    txes: Tx[]
+  }
   with: <T>(
     name: string,
     params: ParamsType,

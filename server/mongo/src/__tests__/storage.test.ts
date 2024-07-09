@@ -186,6 +186,9 @@ describe('mongo operations', () => {
         txes: [],
         targets: {}
       },
+      apply: {
+        txes: []
+      },
       with: async <T>(
         name: string,
         params: ParamsType,
