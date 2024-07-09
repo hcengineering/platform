@@ -14,23 +14,16 @@
 -->
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
-  import {
-    AnySvelteComponent,
-    Icon,
-    IconFolder,
-    IconSize,
-    IconWithEmoji,
-    getPlatformColorDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconSize, IconWithEmoji, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import view, { IconProps } from '@hcengineering/view'
+  import document from '@hcengineering/document'
 
   import { ComponentType } from 'svelte'
 
   export let value: IconProps
   export let size: IconSize
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
-  export let defaultIcon: AnySvelteComponent | Asset | ComponentType = IconFolder
+  export let defaultIcon: AnySvelteComponent | Asset | ComponentType = document.icon.Document
 </script>
 
 <Icon

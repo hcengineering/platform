@@ -197,6 +197,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const isLoadingLatest = startPosition === undefined || startPosition === -1 || count - startPosition <= this.limit
 
     if (loadAll) {
+      this.isTailLoading.set(true)
       this.loadTail(undefined, combineActivityMessages)
     } else if (isLoadingLatest) {
       const startIndex = Math.max(0, count - this.limit)

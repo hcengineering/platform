@@ -68,6 +68,7 @@
   const minMsgHeightRem = 2
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
 
@@ -650,7 +651,7 @@
       {/if}
       <slot name="header" />
 
-      {#if displayMessages.length === 0}
+      {#if displayMessages.length === 0 && !hierarchy.isDerived(objectClass, activity.class.ActivityMessage)}
         <BlankView
           icon={chunter.icon.Thread}
           header={chunter.string.NoMessagesInChannel}
