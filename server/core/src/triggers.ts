@@ -84,6 +84,7 @@ export class Triggers {
       performAsync?: (ctx: SessionOperationContext) => Promise<Tx[]>
     }> {
     const result: Tx[] = []
+    const apply: Tx[] = []
 
     const suppressAsync = (ctx as SessionContextImpl).isAsyncContext ?? false
 
@@ -97,7 +98,8 @@ export class Triggers {
       ctx: SessionOperationContext,
       matches: Tx[],
       { trigger, arrays }: TriggerRecord,
-      result: Tx[]
+      result: Tx[],
+      apply: Tx[]
     ): Promise<void> => {
       const group = groupByArray(matches, (it) => it.modifiedBy)
 
@@ -108,9 +110,13 @@ export class Triggers {
         txFactory: new TxFactory(core.account.System, true),
         findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
         apply: async (tx, needResult) => {
+          apply.push(...tx)
           return await ctrl.applyCtx(ctx, tx, needResult)
         },
-        result
+        txes: {
+          apply,
+          result
+        }
       }
       for (const [k, v] of group.entries()) {
         const m = arrays ? [v] : v
@@ -146,8 +152,10 @@ export class Triggers {
             {},
             async (ctx) => {
               const tresult: Tx[] = []
-              await applyTrigger(ctx, matches, { trigger, arrays }, tresult)
+              const tapply: Tx[] = []
+              await applyTrigger(ctx, matches, { trigger, arrays }, tresult, tapply)
               result.push(...tresult)
+              apply.push(...tapply)
             },
             { count: matches.length, arrays }
           )
@@ -161,10 +169,11 @@ export class Triggers {
           ? async (ctx) => {
             // If we have async triggers let's sheculed them after IO phase.
             const result: Tx[] = []
+            const apply: Tx[] = []
             for (const request of asyncRequest) {
               try {
                 await ctx.with(request.trigger.resource, {}, async (ctx) => {
-                  await applyTrigger(ctx, request.matches, request, result)
+                  await applyTrigger(ctx, request.matches, request, result, apply)
                 })
               } catch (err: any) {
                 ctx.ctx.error('failed to process trigger', {
