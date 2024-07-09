@@ -37,6 +37,7 @@
     "NewIncomingMessage": "给您发送了一封新邮件",
     "ConfigLabel": "电子邮件",
     "ConfigDescription": "Gmail 邮件集成扩展",
-    "GooglePrivacy": "Huly 从 Google API 接收的信息的使用和传输将遵守 <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API 服务用户数据政策</a>，包括有限使用要求。"
+    "GooglePrivacy": "Huly 从 Google API 接收的信息的使用和传输将遵守 <a href=\"https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes\" target=\"_blank\">Google API 服务用户数据政策</a>，包括有限使用要求。",
+    "EmailNotificationsDescription": "透過電子郵件接收個人通知。"
   }
 }

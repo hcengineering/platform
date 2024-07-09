@@ -187,10 +187,7 @@ export function createModel (builder: Builder): void {
       group: love.ids.LoveNotificationGroup,
       txClasses: [core.class.TxCreateDoc],
       objectClass: love.class.Invite,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      }
+      defaultEnabled: true
     },
     love.ids.InviteNotification
   )
@@ -205,10 +202,7 @@ export function createModel (builder: Builder): void {
       group: love.ids.LoveNotificationGroup,
       txClasses: [],
       objectClass: love.class.JoinRequest,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      }
+      defaultEnabled: true
     },
     love.ids.KnockNotification
   )

@@ -372,6 +372,16 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: activity.string.Activity,
+      icon: activity.icon.Activity
+    },
+    activity.ids.ActivityNotificationGroup
+  )
+
+  builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
     {
@@ -381,13 +391,16 @@ export function createModel (builder: Builder): void {
       group: activity.ids.ActivityNotificationGroup,
       txClasses: [core.class.TxCreateDoc],
       objectClass: activity.class.Reaction,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
-      }
+      defaultEnabled: false
     },
     activity.ids.AddReactionNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [activity.ids.AddReactionNotification]
+  })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_ACTIVITY,

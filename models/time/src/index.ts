@@ -366,12 +366,16 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: time.class.ProjectToDo,
       onlyOwn: true,
-      providers: {
-        [notification.providers.PlatformNotification]: true
-      }
+      defaultEnabled: false
     },
     time.ids.ToDoCreated
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [time.ids.ToDoCreated]
+  })
 
   builder.mixin(time.class.ToDo, core.class.Class, notification.mixin.ClassCollaborators, {
     fields: ['user']

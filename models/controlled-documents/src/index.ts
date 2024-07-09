@@ -902,10 +902,7 @@ export function defineNotifications (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
-      }
+      defaultEnabled: false
     },
     documents.notification.ContentNotification
   )
@@ -922,11 +919,7 @@ export function defineNotifications (builder: Builder): void {
       field: 'state',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false,
-        [notification.providers.EmailNotification]: false
-      },
+      defaultEnabled: false,
       templates: {
         textTemplate: '{sender} changed {doc} status',
         htmlTemplate: '<p>{sender} changed {doc} status</p>',
@@ -948,11 +941,7 @@ export function defineNotifications (builder: Builder): void {
       field: 'coAuthors',
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.EmailNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: '{sender} assigned you as a co-author of {doc}',
         htmlTemplate: '<p>{sender} assigned you as a co-author of {doc}</p>',
@@ -961,6 +950,12 @@ export function defineNotifications (builder: Builder): void {
     },
     documents.notification.CoAuthorsNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [documents.notification.StateNotification, documents.notification.ContentNotification]
+  })
 
   generateClassNotificationTypes(
     builder,

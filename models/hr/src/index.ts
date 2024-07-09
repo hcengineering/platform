@@ -483,11 +483,7 @@ export function createModel (builder: Builder): void {
       // will be created with different trigger
       txClasses: [],
       objectClass: hr.class.Request,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.BrowserNotification]: false,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: 'New request: {doc}',
         htmlTemplate: 'New request: {doc}',
@@ -508,11 +504,7 @@ export function createModel (builder: Builder): void {
       // will be created with different trigger
       txClasses: [],
       objectClass: hr.class.Request,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: 'Request updated: {doc}',
         htmlTemplate: 'Request updated: {doc}',
@@ -533,11 +525,7 @@ export function createModel (builder: Builder): void {
       // will be created with different trigger
       txClasses: [],
       objectClass: hr.class.Request,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: 'Request removed: {doc}',
         htmlTemplate: 'Request removed: {doc}',
@@ -558,11 +546,7 @@ export function createModel (builder: Builder): void {
       // will be created with different trigger
       txClasses: [],
       objectClass: hr.class.PublicHoliday,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: 'New public holiday: {doc}',
         htmlTemplate: 'New public holiday: {doc}',

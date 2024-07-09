@@ -19,40 +19,52 @@
     BaseNotificationType,
     NotificationGroup,
     NotificationPreferencesGroup,
-    NotificationSetting
+    NotificationProviderSetting,
+    NotificationTypeSetting
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
-    Location,
-    Scroller,
-    getCurrentResolvedLocation,
-    navigate,
-    resolvedLocationStore,
-    Header,
     Breadcrumb,
     defineSeparators,
-    settingsSeparators,
-    Separator,
+    getCurrentResolvedLocation,
+    Header,
+    Loading,
+    Location,
+    navigate,
     NavItem,
-    Loading
+    resolvedLocationStore,
+    Scroller,
+    Separator,
+    settingsSeparators
   } from '@hcengineering/ui'
-  import notification from '../plugin'
+
+  import notification from '../../plugin'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
 
   const client = getClient()
+  const query = createQuery()
+  const providersSettingQuery = createQuery()
+
   const groups: NotificationGroup[] = client.getModel().findAllSync(notification.class.NotificationGroup, {})
   const preferencesGroups: NotificationPreferencesGroup[] = client
     .getModel()
     .findAllSync(notification.class.NotificationPreferencesGroup, {})
 
-  let settings = new Map<Ref<BaseNotificationType>, NotificationSetting[]>()
+  let settings = new Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>()
+  let providerSettings: NotificationProviderSetting[] = []
 
-  const query = createQuery()
+  let isProviderSettingLoading = true
+  let isTypeSettingLoading = true
 
-  let loading = true
+  $: loading = isProviderSettingLoading || isTypeSettingLoading
 
-  query.query(notification.class.NotificationSetting, {}, (res) => {
+  providersSettingQuery.query(notification.class.NotificationProviderSetting, {}, (res) => {
+    providerSettings = res
+    isProviderSettingLoading = false
+  })
+
+  query.query(notification.class.NotificationTypeSetting, {}, (res) => {
     settings = new Map()
     for (const value of res) {
       const arr = settings.get(value.type) ?? []
@@ -60,7 +72,7 @@
       settings.set(value.type, arr)
     }
     settings = settings
-    loading = false
+    isTypeSettingLoading = false
   })
 
   let group: Ref<NotificationGroup> | undefined = undefined
@@ -132,7 +144,7 @@
         <div class="antiNav-space" />
       </Scroller>
     </div>
-    <Separator name={'notificationSettings'} index={0} color={'var(--theme-divider-color)'} />
+    <Separator name="notificationSettings" index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
@@ -140,11 +152,11 @@
             <Loading />
           {:else}
             {#if group}
-              <NotificationGroupSetting {group} {settings} />
+              <NotificationGroupSetting {group} {settings} {providerSettings} />
             {/if}
             {#if currentPreferenceGroup}
               {#await getResource(currentPreferenceGroup.presenter) then presenter}
-                <svelte:component this={presenter} />
+                <svelte:component this={presenter} {providerSettings} />
               {/await}
             {/if}
           {/if}

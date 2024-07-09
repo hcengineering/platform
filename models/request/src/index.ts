@@ -134,11 +134,7 @@ export function createModel (builder: Builder): void {
       group: request.ids.RequestNotificationGroup,
       label: request.string.Request,
       allowedForAuthor: true,
-      providers: {
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: '{sender} sent you a {doc}',
         htmlTemplate: '<p><b>{sender}</b> sent you a {doc}</p>',

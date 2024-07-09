@@ -69,15 +69,17 @@ import {
   type NotificationObjectPresenter,
   type NotificationPreferencesGroup,
   type NotificationPreview,
-  type NotificationProvider,
-  type NotificationSetting,
   type NotificationStatus,
   type NotificationTemplate,
   type NotificationType,
   type PushSubscription,
-  type PushSubscriptionKeys
+  type PushSubscriptionKeys,
+  type NotificationProvider,
+  type NotificationProviderSetting,
+  type NotificationTypeSetting,
+  type NotificationProviderDefaults
 } from '@hcengineering/notification'
-import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -112,7 +114,7 @@ export class TBaseNotificationType extends TDoc implements BaseNotificationType 
   generated!: boolean
   label!: IntlString
   group!: Ref<NotificationGroup>
-  providers!: Record<Ref<NotificationProvider>, boolean>
+  defaultEnabled!: boolean
   hidden!: boolean
   templates?: NotificationTemplate
 }
@@ -142,17 +144,16 @@ export class TNotificationPreferencesGroup extends TDoc implements NotificationP
   presenter!: AnyComponent
 }
 
-@Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
-export class TNotificationProvider extends TDoc implements NotificationProvider {
-  label!: IntlString
-  depends?: Ref<NotificationProvider>
-  onChange?: Resource<(value: boolean) => Promise<boolean>>
-}
-
-@Model(notification.class.NotificationSetting, preference.class.Preference)
-export class TNotificationSetting extends TPreference implements NotificationSetting {
+@Model(notification.class.NotificationTypeSetting, preference.class.Preference)
+export class TNotificationTypeSetting extends TPreference implements NotificationTypeSetting {
   declare attachedTo: Ref<TNotificationProvider>
   type!: Ref<BaseNotificationType>
+  enabled!: boolean
+}
+
+@Model(notification.class.NotificationProviderSetting, preference.class.Preference)
+export class TNotificationProviderSetting extends TPreference implements NotificationProviderSetting {
+  declare attachedTo: Ref<TNotificationProvider>
   enabled!: boolean
 }
 
@@ -284,6 +285,23 @@ export class TActivityNotificationViewlet extends TDoc implements ActivityNotifi
   presenter!: AnyComponent
 }
 
+@Model(notification.class.NotificationProvider, core.class.Doc)
+export class TNotificationProvider extends TDoc implements NotificationProvider {
+  icon!: Asset
+  label!: IntlString
+  description!: IntlString
+  defaultEnabled!: boolean
+  order!: number
+  depends?: Ref<NotificationProvider>
+}
+
+@Model(notification.class.NotificationProviderDefaults, core.class.Doc)
+export class TNotificationProviderDefaults extends TDoc implements NotificationProviderDefaults {
+  provider!: Ref<NotificationProvider>
+  ignoredTypes!: Ref<BaseNotificationType>[]
+  enabledTypes!: Ref<BaseNotificationType>[]
+}
+
 export const notificationActionTemplates = template({
   pinContext: {
     action: notification.actionImpl.PinDocNotifyContext,
@@ -311,8 +329,6 @@ export function createModel (builder: Builder): void {
   builder.createModel(
     TBrowserNotification,
     TNotificationType,
-    TNotificationProvider,
-    TNotificationSetting,
     TNotificationGroup,
     TNotificationPreferencesGroup,
     TClassCollaborators,
@@ -328,35 +344,11 @@ export function createModel (builder: Builder): void {
     TBaseNotificationType,
     TCommonNotificationType,
     TMentionInboxNotification,
-    TPushSubscription
-  )
-
-  builder.createDoc(
-    notification.class.NotificationProvider,
-    core.space.Model,
-    {
-      label: notification.string.Inbox
-    },
-    notification.providers.PlatformNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationProvider,
-    core.space.Model,
-    {
-      label: notification.string.Push,
-      depends: notification.providers.PlatformNotification
-    },
-    notification.providers.BrowserNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationProvider,
-    core.space.Model,
-    {
-      label: notification.string.EmailNotification
-    },
-    notification.providers.EmailNotification
+    TPushSubscription,
+    TNotificationProvider,
+    TNotificationProviderSetting,
+    TNotificationTypeSetting,
+    TNotificationProviderDefaults
   )
 
   builder.createDoc(
@@ -425,9 +417,7 @@ export function createModel (builder: Builder): void {
       group: notification.ids.NotificationGroup,
       txClasses: [],
       objectClass: notification.mixin.Collaborators,
-      providers: {
-        [notification.providers.PlatformNotification]: true
-      }
+      defaultEnabled: true
     },
     notification.ids.CollaboratoAddNotification
   )
@@ -551,11 +541,7 @@ export function createModel (builder: Builder): void {
       generated: false,
       hidden: false,
       group: notification.ids.NotificationGroup,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: '{sender} mentioned you in {doc} {data}',
         htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
@@ -645,8 +631,9 @@ export function createModel (builder: Builder): void {
       indexes: []
     }
   )
-  builder.mixin<Class<DocNotifyContext>, IndexingConfiguration<DocNotifyContext>>(
-    notification.class.ActivityInboxNotification,
+
+  builder.mixin<Class<InboxNotification>, IndexingConfiguration<InboxNotification>>(
+    notification.class.InboxNotification,
     core.class.Class,
     core.mixin.IndexConfiguration,
     {
@@ -654,6 +641,55 @@ export function createModel (builder: Builder): void {
       indexes: []
     }
   )
+
+  builder.mixin<Class<BrowserNotification>, IndexingConfiguration<BrowserNotification>>(
+    notification.class.BrowserNotification,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
+
+  builder.createDoc(notification.class.NotificationPreferencesGroup, core.space.Model, {
+    label: notification.string.General,
+    icon: notification.icon.Notifications,
+    presenter: notification.component.GeneralPreferencesGroup
+  })
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      icon: notification.icon.Inbox,
+      label: notification.string.Inbox,
+      description: notification.string.InboxNotificationsDescription,
+      defaultEnabled: true,
+      order: 10
+    },
+    notification.providers.InboxNotificationProvider
+  )
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      icon: notification.icon.Notifications,
+      label: notification.string.Push,
+      description: notification.string.PushNotificationsDescription,
+      depends: notification.providers.InboxNotificationProvider,
+      defaultEnabled: true,
+      order: 20
+    },
+    notification.providers.PushNotificationProvider
+  )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [notification.ids.CollaboratoAddNotification],
+    enabledTypes: []
+  })
 }
 
 export function generateClassNotificationTypes (
@@ -669,6 +705,8 @@ export function generateClassNotificationTypes (
     hierarchy.isDerived(_class, core.class.AttachedDoc) ? core.class.AttachedDoc : core.class.Doc
   )
   const filtered = Array.from(attributes.values()).filter((p) => p.hidden !== true && p.readonly !== true)
+  const enabledInboxTypes: Ref<BaseNotificationType>[] = []
+
   for (const attribute of filtered) {
     if (ignoreKeys.includes(attribute.name)) continue
     const isCollection: boolean = core.class.Collection === attribute.type._class
@@ -686,10 +724,7 @@ export function generateClassNotificationTypes (
       objectClass,
       txClasses,
       hidden: false,
-      providers: {
-        [notification.providers.PlatformNotification]: defaultEnabled.includes(attribute.name),
-        [notification.providers.BrowserNotification]: false
-      },
+      defaultEnabled: false,
       label: attribute.label
     }
     if (isCollection) {
@@ -697,5 +732,17 @@ export function generateClassNotificationTypes (
     }
     const id = `${notification.class.NotificationType}_${_class}_${attribute.name}` as Ref<NotificationType>
     builder.createDoc(notification.class.NotificationType, core.space.Model, data, id)
+
+    if (defaultEnabled.includes(attribute.name)) {
+      enabledInboxTypes.push(id)
+    }
+  }
+
+  if (enabledInboxTypes.length > 0) {
+    builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+      provider: notification.providers.InboxNotificationProvider,
+      ignoredTypes: [],
+      enabledTypes: enabledInboxTypes
+    })
   }
 }

@@ -1314,11 +1314,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
         subjectTemplate: '{doc} was assigned to you'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     recruit.ids.AssigneeNotification
   )
@@ -1354,10 +1350,7 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: recruit.class.Applicant,
       spaceSubscribe: true,
-      providers: {
-        [notification.providers.PlatformNotification]: false,
-        [notification.providers.BrowserNotification]: false
-      }
+      defaultEnabled: false
     },
     recruit.ids.ApplicationCreateNotification
   )

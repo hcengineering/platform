@@ -35,6 +35,8 @@ import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import notification from '@hcengineering/model-notification'
 import view, { createAction } from '@hcengineering/model-view'
 import setting from '@hcengineering/setting'
+import love from '@hcengineering/model-love'
+
 import gmail from './plugin'
 
 export { gmailId } from '@hcengineering/gmail'
@@ -234,10 +236,7 @@ export function createModel (builder: Builder): void {
       objectClass: gmail.class.Message,
       group: gmail.ids.EmailNotificationGroup,
       allowedForAuthor: true,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
-      }
+      defaultEnabled: false
     },
     gmail.ids.EmailNotification
   )
@@ -257,5 +256,35 @@ export function createModel (builder: Builder): void {
       { attachedToClass: 1 },
       { createdOn: -1 }
     ]
+  })
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      icon: contact.icon.Email,
+      label: gmail.string.Email,
+      description: gmail.string.EmailNotificationsDescription,
+      defaultEnabled: true,
+      order: 30
+    },
+    gmail.providers.EmailNotificationProvider
+  )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [gmail.ids.EmailNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: gmail.providers.EmailNotificationProvider,
+    ignoredTypes: [
+      gmail.ids.EmailNotification,
+      notification.ids.CollaboratoAddNotification,
+      love.ids.InviteNotification,
+      love.ids.KnockNotification
+    ],
+    enabledTypes: []
   })
 }

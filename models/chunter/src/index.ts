@@ -376,11 +376,7 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
       attachedToClass: chunter.class.DirectMessage,
-      providers: {
-        [notification.providers.EmailNotification]: false,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: false,
       group: chunter.ids.ChunterNotificationGroup,
       templates: {
         textTemplate: '{sender} has send you a message: {doc} {data}',
@@ -400,10 +396,7 @@ export function createModel (builder: Builder): void {
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      },
+      defaultEnabled: false,
       group: chunter.ids.ChunterNotificationGroup
     },
     chunter.ids.ChannelNotification
@@ -418,10 +411,7 @@ export function createModel (builder: Builder): void {
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ThreadMessage,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      },
+      defaultEnabled: false,
       group: chunter.ids.ChunterNotificationGroup
     },
     chunter.ids.ThreadNotification
@@ -648,6 +638,18 @@ export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: ['name', 'topic', 'private', 'archived', 'members'],
     strict: true
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
   })
 }
 

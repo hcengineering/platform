@@ -135,9 +135,7 @@ export function createReviewModel (builder: Builder): void {
       group: recruit.ids.ReviewNotificationGroup,
       txClasses: [core.class.TxCreateDoc],
       objectClass: recruit.class.Review,
-      providers: {
-        [notification.providers.PlatformNotification]: true
-      }
+      defaultEnabled: true
     },
     recruit.ids.ReviewCreateNotification
   )

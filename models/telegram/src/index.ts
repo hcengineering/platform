@@ -199,12 +199,16 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: telegram.class.Message,
       group: telegram.ids.NotificationGroup,
-      providers: {
-        [notification.providers.PlatformNotification]: true
-      }
+      defaultEnabled: false
     },
     telegram.ids.NewMessageNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [telegram.ids.NewMessageNotification]
+  })
 
   builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false,
