@@ -31,7 +31,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest":"^29.5.5",
     "@types/node": "~20.11.16",
-    "typescript":"^5.3.3"
+    "typescript":"^5.5.3"
   },
   "#replaces": [
     ".eslintrc.js",
