@@ -14,14 +14,7 @@
 -->
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
-  import {
-    AnySvelteComponent,
-    Icon,
-    IconSize,
-    IconWithEmoji,
-    getPlatformColorDef,
-    themeStore
-  } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconSize, IconWithEmoji, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import view, { IconProps } from '@hcengineering/view'
   import document from '@hcengineering/document'
 
