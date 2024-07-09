@@ -173,7 +173,10 @@ export interface TriggerControl {
   ) => Promise<FindResult<T>>
 
   // Current set of transactions to being processed for apply/bulks
-  result: Tx[]
+  txes: {
+    apply: Tx[]
+    result: Tx[]
+  }
 }
 
 /**

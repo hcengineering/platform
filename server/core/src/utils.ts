@@ -141,7 +141,6 @@ export class SessionContextImpl implements SessionContext {
     readonly sessionId: string,
     readonly admin: boolean | undefined,
     readonly derived: SessionContext['derived'],
-    readonly apply: SessionContext['apply'],
     readonly workspace: WorkspaceIdWithUrl,
     readonly branding: Branding | null,
     readonly isAsyncContext: boolean
@@ -164,7 +163,6 @@ export class SessionContextImpl implements SessionContext {
             this.sessionId,
             this.admin,
             this.derived,
-            this.apply,
             this.workspace,
             this.branding,
             this.isAsyncContext

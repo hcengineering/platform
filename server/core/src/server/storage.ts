@@ -719,7 +719,7 @@ export class TServerStorage implements ServerStorage {
 
     const applyTxes: Tx[] = []
 
-    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result' | 'apply'> = {
+    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'txes' | 'apply'> = {
       operationContext: ctx,
       removedMap,
       workspace: this.workspaceId,
@@ -734,7 +734,6 @@ export class TServerStorage implements ServerStorage {
         if (needResult === true) {
           return await this.apply(ctx, tx)
         } else {
-          ctx.apply.txes.push(...tx)
           applyTxes.push(...tx)
         }
         return {}
@@ -753,7 +752,10 @@ export class TServerStorage implements ServerStorage {
           ...triggerControl,
           ctx: ctx.ctx,
           findAll: fAll(ctx.ctx),
-          result
+          txes: {
+            apply: applyTxes,
+            result
+          }
         })
         result.push(...transactions)
 
@@ -774,7 +776,6 @@ export class TServerStorage implements ServerStorage {
                   sctx.sessionId,
                   sctx.admin,
                   { txes: [], targets: {} },
-                  { txes: [] },
                   this.workspaceId,
                   this.options.branding,
                   true

@@ -118,7 +118,6 @@ export class ClientSession implements Session {
             txes: [],
             targets: {}
           },
-          { txes: [] },
           this._pipeline.storage.workspaceId,
           this._pipeline.storage.branding,
           false
@@ -153,7 +152,6 @@ export class ClientSession implements Session {
         txes: [],
         targets: {}
       },
-      { txes: [] },
       this._pipeline.storage.workspaceId,
       this._pipeline.storage.branding,
       false
@@ -181,7 +179,6 @@ export class ClientSession implements Session {
         txes: [],
         targets: {}
       },
-      { txes: [] },
       this._pipeline.storage.workspaceId,
       this._pipeline.storage.branding,
       false
@@ -202,7 +199,6 @@ export class ClientSession implements Session {
         txes: [],
         targets: {}
       },
-      { txes: [] },
       this._pipeline.storage.workspaceId,
       this._pipeline.storage.branding,
       false
