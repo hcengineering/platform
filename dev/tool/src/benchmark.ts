@@ -227,7 +227,7 @@ export async function benchmark (
 
                 requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
 
-                const tr = extract(json.metrics as Metrics, '🧲 session', 'client', 'handleRequest', '#send-data')
+                const tr = extract(json.metrics as Metrics, '🧲 session', '#send-data')
                 transfer = (tr?.value ?? 0) - oldTransfer
                 oldTransfer = tr?.value ?? 0
               })

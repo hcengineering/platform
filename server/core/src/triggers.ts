@@ -107,7 +107,7 @@ export class Triggers {
         ...ctrl,
         operationContext: ctx,
         ctx: ctx.ctx,
-        txFactory: new TxFactory(core.account.System, true),
+        txFactory: null as any, // Will be set later
         findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
         apply: async (tx, needResult) => {
           apply.push(...tx)
@@ -195,9 +195,9 @@ export class Triggers {
       return
     }
     if (typeof q[key] === 'string') {
-      const descendants = this.hierarchy.getDescendants(q[key])
+      const descendants = this.hierarchy.getDescendants(q[key] as Ref<Class<Doc>>)
       q[key] = {
-        $in: [...(q[key].$in ?? []), ...descendants]
+        $in: [q[key] as Ref<Class<Doc>>, ...descendants]
       }
     } else {
       if (Array.isArray(q[key].$in)) {

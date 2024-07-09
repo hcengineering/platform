@@ -148,10 +148,8 @@ class ClientImpl implements AccountClient, BackupClient {
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
     }
-
     // We need to handle it on server, before performing local live query updates.
-    const result = await this.conn.tx(tx)
-    return result
+    return await this.conn.tx(tx)
   }
 
   async updateFromRemote (...tx: Tx[]): Promise<void> {

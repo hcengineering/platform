@@ -128,7 +128,6 @@ export class FullTextIndex implements WithFind {
     await ctx.with('queue', {}, async (ctx) => {
       await this.indexer.queue(ctx, stDocs)
     })
-    this.indexer.triggerIndexing()
     return {}
   }
 

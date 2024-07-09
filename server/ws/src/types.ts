@@ -104,6 +104,8 @@ export interface ConnectionSocket {
   close: () => void
   send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<number>
   data: () => Record<string, any>
+
+  readRequest: (buffer: Buffer, binary: boolean) => Request<any>
 }
 
 /**

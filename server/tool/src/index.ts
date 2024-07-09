@@ -18,6 +18,7 @@ import core, {
   BackupClient,
   Branding,
   Client as CoreClient,
+  DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
@@ -480,7 +481,7 @@ async function createUpdateIndexes (
   let completed = 0
   const allDomains = connection.getHierarchy().domains()
   for (const domain of allDomains) {
-    if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT) {
+    if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT || domain === DOMAIN_BENCHMARK) {
       continue
     }
     const result = await domainHelper.checkDomain(ctx, domain, false, dbHelper)

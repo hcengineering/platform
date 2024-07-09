@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   DOMAIN_MODEL,
   cutObjectArray,
   type Class,
@@ -56,10 +56,13 @@ export class PresentationClientHook implements ClientHook {
 
     addTxListener((...tx) => {
       if (this.notifyEnabled) {
-        console.debug(
-          'devmodel# notify=>',
-          testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx.length === 1 ? tx[0] : tx
-        )
+        const rtx = tx.filter((tx) => (tx as any).objectClass !== core.class.BenchmarkDoc)
+        if (rtx.length > 0) {
+          console.debug(
+            'devmodel# notify=>',
+            testing ? JSON.stringify(cutObjectArray(rtx)).slice(0, 160) : rtx.length === 1 ? rtx[0] : tx
+          )
+        }
       }
     })
   }
@@ -152,7 +155,7 @@ export class PresentationClientHook implements ClientHook {
   async tx (client: Client, tx: Tx): Promise<TxResult> {
     const startTime = Date.now()
     const result = await client.tx(tx)
-    if (this.notifyEnabled) {
+    if (this.notifyEnabled && (tx as any).objectClass !== core.class.BenchmarkDoc) {
       console.debug(
         'devmodel# tx=>',
         testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx,

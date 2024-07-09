@@ -46,6 +46,7 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
+import { DOMAIN_BENCHMARK } from './benchmark'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -712,7 +713,8 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
-    domain === DOMAIN_TRANSIENT
+    domain === DOMAIN_TRANSIENT ||
+    domain === DOMAIN_BENCHMARK
   ) {
     hierarchy.setClassifierProp(c, 'class_indexed', false)
     return false

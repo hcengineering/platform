@@ -16,8 +16,6 @@
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Packr } from 'msgpackr'
 
-const packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: true })
-
 /**
  * @public
  */
@@ -49,79 +47,6 @@ export interface HelloResponse extends Response<any> {
   reconnect?: boolean
 }
 
-/**
- * Response object define a server response on transaction request.
- * Also used to inform other clients about operations being performed by server.
- *
- * @public
- */
-export interface Response<R> {
-  result?: R
-  id?: ReqId
-  error?: Status
-  chunk?: {
-    index: number
-    final: boolean
-  }
-  time?: number // Server time to perform operation
-  bfst?: number // Server time to perform operation
-  queue?: number
-}
-
-/**
- * @public
- * @param object -
- * @returns
- */
-export function protoSerialize (object: object, binary: boolean): any {
-  if (!binary) {
-    return JSON.stringify(object, replacer)
-  }
-  return new Uint8Array(packr.pack(object))
-}
-
-/**
- * @public
- * @param data -
- * @returns
- */
-export function protoDeserialize (data: any, binary: boolean): any {
-  if (!binary) {
-    let _data = data
-    if (_data instanceof ArrayBuffer) {
-      const decoder = new TextDecoder()
-      _data = decoder.decode(_data)
-    }
-    return JSON.parse(_data.toString(), receiver)
-  }
-  return packr.unpack(new Uint8Array(data))
-}
-
-/**
- * @public
- * @param object -
- * @returns
- */
-export function serialize (object: Request<any> | Response<any>, binary: boolean): any {
-  if ((object as any).result !== undefined) {
-    ;(object as any).result = replacer('result', (object as any).result)
-  }
-  return protoSerialize(object, binary)
-}
-
-/**
- * @public
- * @param response -
- * @returns
- */
-export function readResponse<D> (response: any, binary: boolean): Response<D> {
-  const data = protoDeserialize(response, binary)
-  if (data.result !== undefined) {
-    data.result = receiver('result', data.result)
-  }
-  return data
-}
-
 function replacer (key: string, value: any): any {
   if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)) {
     return {
@@ -145,16 +70,82 @@ function receiver (key: string, value: any): any {
 }
 
 /**
+ * Response object define a server response on transaction request.
+ * Also used to inform other clients about operations being performed by server.
+ *
  * @public
- * @param request -
- * @returns
  */
-export function readRequest<P extends any[]> (request: any, binary: boolean): Request<P> {
-  const result: Request<P> = protoDeserialize(request, binary)
-  if (typeof result.method !== 'string') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+export interface Response<R> {
+  result?: R
+  id?: ReqId
+  error?: Status
+  chunk?: {
+    index: number
+    final: boolean
   }
-  return result
+  time?: number // Server time to perform operation
+  bfst?: number // Server time to perform operation
+  queue?: number
+}
+
+export class RPCHandler {
+  packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: true })
+  protoSerialize (object: object, binary: boolean): any {
+    if (!binary) {
+      return JSON.stringify(object, replacer)
+    }
+    return new Uint8Array(this.packr.pack(object))
+  }
+
+  protoDeserialize (data: any, binary: boolean): any {
+    if (!binary) {
+      let _data = data
+      if (_data instanceof ArrayBuffer) {
+        const decoder = new TextDecoder()
+        _data = decoder.decode(_data)
+      }
+      return JSON.parse(_data.toString(), receiver)
+    }
+    return this.packr.unpack(new Uint8Array(data))
+  }
+
+  /**
+   * @public
+   * @param object -
+   * @returns
+   */
+  serialize (object: Request<any> | Response<any>, binary: boolean): any {
+    if ((object as any).result !== undefined) {
+      ;(object as any).result = replacer('result', (object as any).result)
+    }
+    return this.protoSerialize(object, binary)
+  }
+
+  /**
+   * @public
+   * @param response -
+   * @returns
+   */
+  readResponse<D>(response: any, binary: boolean): Response<D> {
+    const data = this.protoDeserialize(response, binary)
+    if (data.result !== undefined) {
+      data.result = receiver('result', data.result)
+    }
+    return data
+  }
+
+  /**
+   * @public
+   * @param request -
+   * @returns
+   */
+  readRequest<P extends any[]>(request: any, binary: boolean): Request<P> {
+    const result: Request<P> = this.protoDeserialize(request, binary)
+    if (typeof result.method !== 'string') {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+    return result
+  }
 }
 
 /**

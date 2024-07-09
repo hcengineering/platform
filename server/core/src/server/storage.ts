@@ -174,7 +174,7 @@ export class TServerStorage implements ServerStorage {
     await this.fulltext.close()
     for (const [domain, info] of this.domainInfo.entries()) {
       if (info.checkPromise !== undefined) {
-        console.log('wait for check domain', domain)
+        this.metrics.info('wait for check domain', { domain })
         // We need to be sure we wait for check to be complete
         await info.checkPromise
       }
@@ -218,21 +218,22 @@ export class TServerStorage implements ServerStorage {
   }
 
   private async routeTx (ctx: MeasureContext, removedDocs: Map<Ref<Doc>, Doc>, ...txes: Tx[]): Promise<TxResult[]> {
-    let part: TxCUD<Doc>[] = []
-    let lastDomain: Domain | undefined
     const result: TxResult[] = []
-    const processPart = async (): Promise<void> => {
-      if (part.length > 0) {
+
+    const domainGroups = new Map<Domain, TxCUD<Doc>[]>()
+
+    const processPart = async (domain: Domain, txes: TxCUD<Doc>[]): Promise<void> => {
+      if (txes.length > 0) {
         // Find all deleted documents
 
-        const adapter = this.getAdapter(lastDomain as Domain, true)
-        const toDelete = part.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
+        const adapter = this.getAdapter(domain, true)
+        const toDelete = txes.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
 
         if (toDelete.length > 0) {
           const toDeleteDocs = await ctx.with(
             'adapter-load',
-            { domain: lastDomain },
-            async () => await adapter.load(ctx, lastDomain as Domain, toDelete)
+            { domain },
+            async () => await adapter.load(ctx, domain, toDelete)
           )
 
           for (const ddoc of toDeleteDocs) {
@@ -240,18 +241,18 @@ export class TServerStorage implements ServerStorage {
           }
         }
 
-        const r = await ctx.with('adapter-tx', { domain: lastDomain }, async (ctx) => await adapter.tx(ctx, ...part))
+        const r = await ctx.with('adapter-tx', { domain }, async (ctx) => await adapter.tx(ctx, ...txes))
 
         // Update server live queries.
-        await this.liveQuery.tx(...part)
+        await this.liveQuery.tx(...txes)
         if (Array.isArray(r)) {
           result.push(...r)
         } else {
           result.push(r)
         }
-        part = []
       }
     }
+
     for (const tx of txes) {
       const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
       if (!this.hierarchy.isDerived(txCUD._class, core.class.TxCUD)) {
@@ -260,18 +261,17 @@ export class TServerStorage implements ServerStorage {
         continue
       }
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
-      if (part.length > 0) {
-        if (lastDomain !== domain) {
-          await processPart()
-        }
-        lastDomain = domain
-        part.push(txCUD)
-      } else {
-        lastDomain = domain
-        part.push(txCUD)
+
+      let group = domainGroups.get(domain)
+      if (group === undefined) {
+        group = []
+        domainGroups.set(domain, group)
       }
+      group.push(txCUD)
     }
-    await processPart()
+    for (const [domain, txes] of domainGroups.entries()) {
+      await processPart(domain, txes)
+    }
     return result
   }
 
@@ -664,7 +664,6 @@ export class TServerStorage implements ServerStorage {
           classes.add((etx as TxCUD<Doc>).objectClass)
         }
       }
-      console.log('Broadcasting compact bulk', derived.length)
       const bevent = createBroadcastEvent(Array.from(classes))
       this.options.broadcast([bevent], target, exclude)
     }
@@ -678,7 +677,6 @@ export class TServerStorage implements ServerStorage {
         await sendWithPart(derived, target, exclude)
       } else {
         // Let's send after our response will go out
-        console.log('Broadcasting', derived.length, derived.length)
         this.options.broadcast(derived, target, exclude)
       }
     }
@@ -879,7 +877,11 @@ export class TServerStorage implements ServerStorage {
       if (!this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
         if (tx.space !== core.space.DerivedTx) {
           if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
-            if (this.hierarchy.findDomain((tx as TxCUD<Doc>).objectClass) !== DOMAIN_TRANSIENT) {
+            const objectClass = (tx as TxCUD<Doc>).objectClass
+            if (
+              objectClass !== core.class.BenchmarkDoc &&
+              this.hierarchy.findDomain(objectClass) !== DOMAIN_TRANSIENT
+            ) {
               txToStore.push(tx)
             }
           } else {
@@ -944,10 +946,17 @@ export class TServerStorage implements ServerStorage {
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
       }
-      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore), {
-        count: txToStore.length
-      })
-      result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))), {
+      if (txToStore.length > 0) {
+        await ctx.with(
+          'domain-tx',
+          {},
+          async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore),
+          {
+            count: txToStore.length
+          }
+        )
+      }
+      result.push(...(await ctx.with('routeTx', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))), {
         count: txToProcess.length
       })
 
@@ -955,14 +964,17 @@ export class TServerStorage implements ServerStorage {
       derived.push(...(await this.processDerived(ctx, txToProcess, _findAll, removedMap)))
 
       // index object
-      await ctx.with(
-        'fulltext-tx',
-        {},
-        async (ctx) => {
-          await this.fulltext.tx(ctx.ctx, [...txToProcess, ...derived])
-        },
-        { count: txToProcess.length + derived.length }
-      )
+      const ftx = [...txToProcess, ...derived]
+      if (ftx.length > 0) {
+        await ctx.with(
+          'fulltext-tx',
+          {},
+          async (ctx) => {
+            await this.fulltext.tx(ctx.ctx, ftx)
+          },
+          { count: txToProcess.length + derived.length }
+        )
+      }
     } catch (err: any) {
       ctx.ctx.error('error process tx', { error: err })
       Analytics.handleError(err)

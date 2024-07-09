@@ -156,7 +156,7 @@ export function matchQuery<T extends Doc> (
   hierarchy: Hierarchy,
   skipLookup: boolean = false
 ): Doc[] {
-  let result = [...docs]
+  let result = docs
   for (const key in query) {
     if (skipLookup && key.startsWith('$lookup.')) {
       continue

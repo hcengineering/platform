@@ -42,7 +42,8 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
-import { HelloRequest, HelloResponse, ReqId, readResponse, serialize, type Response } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, ReqId, type Response } from '@hcengineering/rpc'
+import { RPCHandler } from '@hcengineering/rpc'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -90,6 +91,8 @@ class Connection implements ClientConnection {
   private upgrading: boolean = false
 
   private pingResponse: number = Date.now()
+
+  rpcHandler = new RPCHandler()
 
   constructor (
     private readonly url: string,
@@ -408,11 +411,11 @@ class Connection implements ClientConnection {
       }
       if (event.data instanceof Blob) {
         void event.data.arrayBuffer().then((data) => {
-          const resp = readResponse<any>(data, this.binaryMode)
+          const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
           this.handleMsg(socketId, resp)
         })
       } else {
-        const resp = readResponse<any>(event.data, this.binaryMode)
+        const resp = this.rpcHandler.readResponse<any>(event.data, this.binaryMode)
         this.handleMsg(socketId, resp)
       }
     }
@@ -441,7 +444,7 @@ class Connection implements ClientConnection {
         binary: useBinary,
         compression: useCompression
       }
-      this.websocket?.send(serialize(helloRequest, false))
+      this.websocket?.send(this.rpcHandler.serialize(helloRequest, false))
     }
 
     wsocket.onerror = (event: any) => {
@@ -475,8 +478,9 @@ class Connection implements ClientConnection {
 
     if (data.once === true) {
       // Check if has same request already then skip
+      const dparams = JSON.stringify(data.params)
       for (const [, v] of this.requests) {
-        if (v.method === data.method && JSON.stringify(v.params) === JSON.stringify(data.params)) {
+        if (v.method === data.method && JSON.stringify(v.params) === dparams) {
           // We have same unanswered, do not add one more.
           return
         }
@@ -495,8 +499,9 @@ class Connection implements ClientConnection {
     const sendData = async (): Promise<void> => {
       if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
         promise.startTime = Date.now()
+
         this.websocket?.send(
-          serialize(
+          this.rpcHandler.serialize(
             {
               method: data.method,
               params: data.params,
