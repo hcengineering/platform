@@ -757,7 +757,7 @@ export class TServerStorage implements ServerStorage {
         })
         result.push(...transactions)
 
-        if (applyTxes.length > 0) {
+        if (performAsync === undefined && applyTxes.length > 0) {
           await this.apply(ctx, applyTxes)
         }
 
