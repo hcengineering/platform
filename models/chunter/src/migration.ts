@@ -34,6 +34,7 @@ import {
 import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
 import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
+import { DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 
 import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
@@ -187,6 +188,9 @@ async function removeOldClasses (client: MigrationClient): Promise<void> {
 
   for (const _class of classes) {
     await client.deleteMany(DOMAIN_CHUNTER, { _class })
+    await client.deleteMany(DOMAIN_ACTIVITY, { attachedToClass: _class })
+    await client.deleteMany(DOMAIN_ACTIVITY, { objectClass: _class })
+    await client.deleteMany(DOMAIN_NOTIFICATION, { attachedToClass: _class })
     await client.deleteMany(DOMAIN_TX, { objectClass: _class })
     await client.deleteMany(DOMAIN_TX, { 'tx.objectClass': _class })
   }
@@ -226,7 +230,7 @@ export const chunterOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-old-classes',
+        state: 'remove-old-classes-v1',
         func: async (client) => {
           await removeOldClasses(client)
         }
