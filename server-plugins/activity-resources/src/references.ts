@@ -628,8 +628,8 @@ function guessReferenceTx (hierarchy: Hierarchy, tx: TxCUD<Doc>): TxCUD<Doc> {
   return tx
 }
 
-async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
+async function ActivityReferenceCreate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = etx as TxCreateDoc<Doc>
 
   if (ctx._class !== core.class.TxCreateDoc) return []
   if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
@@ -658,8 +658,8 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   return []
 }
 
-async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
+async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = etx as TxUpdateDoc<Doc>
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
 
   let hasUpdates = false
@@ -705,8 +705,8 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
   return []
 }
 
-async function ActivityReferenceRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
+async function ActivityReferenceRemove (tx: Tx, etx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = etx as TxRemoveDoc<Doc>
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
 
   let hasMarkdown = false
@@ -741,13 +741,13 @@ export async function ReferenceTrigger (tx: TxCUD<Doc>, control: TriggerControl)
   if (control.hierarchy.isDerived(etx.objectClass, notification.class.InboxNotification)) return []
 
   if (etx._class === core.class.TxCreateDoc) {
-    result.push(...(await ActivityReferenceCreate(tx, control)))
+    result.push(...(await ActivityReferenceCreate(tx, etx, control)))
   }
   if (etx._class === core.class.TxUpdateDoc) {
-    result.push(...(await ActivityReferenceUpdate(tx, control)))
+    result.push(...(await ActivityReferenceUpdate(tx, etx, control)))
   }
   if (etx._class === core.class.TxRemoveDoc) {
-    result.push(...(await ActivityReferenceRemove(tx, control)))
+    result.push(...(await ActivityReferenceRemove(tx, etx, control)))
   }
   return result
 }

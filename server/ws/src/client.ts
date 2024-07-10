@@ -37,11 +37,13 @@ import core, {
 import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { type ClientSessionCtx, type Session, type SessionRequest, type StatisticsElement } from './types'
+import { RPCHandler } from '@hcengineering/rpc'
 
 /**
  * @public
  */
 export class ClientSession implements Session {
+  handler = new RPCHandler()
   createTime = Date.now()
   requests = new Map<string, SessionRequest>()
   binaryMode: boolean = false
@@ -256,7 +258,6 @@ export class ClientSession implements Session {
         await this.sendWithPart(derived, ctx, target, exclude)
       } else {
         // Let's send after our response will go out
-        console.log('Broadcasting', derived.length, derived.length)
         await ctx.send(derived, target, exclude)
       }
     }
@@ -315,7 +316,6 @@ export class ClientSession implements Session {
         classes.add((etx as TxCUD<Doc>).objectClass)
       }
     }
-    console.log('Broadcasting compact bulk', derived.length)
     const bevent = createBroadcastEvent(Array.from(classes))
     await ctx.send([bevent], target, exclude)
   }

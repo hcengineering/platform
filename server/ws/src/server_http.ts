@@ -16,7 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineering/core'
 import { UNAUTHORIZED } from '@hcengineering/platform'
-import { serialize, type Response } from '@hcengineering/rpc'
+import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import compression from 'compression'
 import cors from 'cors'
@@ -109,7 +109,7 @@ export function startHttpServer (
       res.end(json)
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
+      ctx.error('error', { err })
       res.writeHead(404, {})
       res.end()
     }
@@ -158,7 +158,7 @@ export function startHttpServer (
       res.end()
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
+      ctx.error('error', { err })
       res.writeHead(404, {})
       res.end()
     }
@@ -313,16 +313,21 @@ export function startHttpServer (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
       try {
-        let buff: any | undefined
+        let buff: Buffer | undefined
         if (msg instanceof Buffer) {
-          buff = Buffer.copyBytesFrom(msg)
+          buff = msg
         } else if (Array.isArray(msg)) {
-          buff = Buffer.copyBytesFrom(Buffer.concat(msg))
+          buff = Buffer.concat(msg)
         }
         if (buff !== undefined) {
-          doSessionOp(webSocketData, (s) => {
-            processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
-          })
+          doSessionOp(
+            webSocketData,
+            (s, buff) => {
+              s.context.measure('receive-data', buff?.length ?? 0)
+              processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
+            },
+            buff
+          )
         }
       } catch (err: any) {
         Analytics.handleError(err)
@@ -333,18 +338,26 @@ export function startHttpServer (
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', async (code: number, reason: Buffer) => {
-      doSessionOp(webSocketData, (s) => {
-        if (!(s.session.workspaceClosed ?? false)) {
-          // remove session after 1seconds, give a time to reconnect.
-          void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
-        }
-      })
+      doSessionOp(
+        webSocketData,
+        (s) => {
+          if (!(s.session.workspaceClosed ?? false)) {
+            // remove session after 1seconds, give a time to reconnect.
+            void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
+          }
+        },
+        Buffer.from('')
+      )
     })
 
     ws.on('error', (err) => {
-      doSessionOp(webSocketData, (s) => {
-        console.error(s.session.getUser(), 'error', err)
-      })
+      doSessionOp(
+        webSocketData,
+        (s) => {
+          ctx.error('error', { err, user: s.session.getUser() })
+        },
+        Buffer.from('')
+      )
     })
   }
   wss.on('connection', handleConnection as any)
@@ -372,18 +385,19 @@ export function startHttpServer (
       if (LOGGING_ENABLED) {
         ctx.error('invalid token', err)
       }
+      const handler = new RPCHandler()
       wss.handleUpgrade(request, socket, head, (ws) => {
         const resp: Response<any> = {
           id: -1,
           error: UNAUTHORIZED,
           result: 'hello'
         }
-        ws.send(serialize(resp, false), { binary: false })
+        ws.send(handler.serialize(resp, false), { binary: false })
         ws.onmessage = (msg) => {
           const resp: Response<any> = {
             error: UNAUTHORIZED
           }
-          ws.send(serialize(resp, false), { binary: false })
+          ws.send(handler.serialize(resp, false), { binary: false })
         }
       })
     }
@@ -419,6 +433,7 @@ function createWebsocketClientSocket (
   ws: WebSocket,
   data: { remoteAddress: string, userAgent: string, language: string, email: string, mode: any, model: any }
 ): ConnectionSocket {
+  const handler = new RPCHandler()
   const cs: ConnectionSocket = {
     id: generateId(),
     isClosed: false,
@@ -426,34 +441,31 @@ function createWebsocketClientSocket (
       cs.isClosed = true
       ws.close()
     },
+    readRequest: (buffer: Buffer, binary: boolean) => {
+      return handler.readRequest(buffer, binary)
+    },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
-      const smsg = serialize(msg, binary)
+      const sst = Date.now()
+      const smsg = handler.serialize(msg, binary)
+      ctx.measure('serialize', Date.now() - sst)
 
       ctx.measure('send-data', smsg.length)
-      await new Promise<void>((resolve, reject) => {
-        const doSend = (): void => {
-          if (ws.readyState !== ws.OPEN || cs.isClosed) {
-            return
+      const st = Date.now()
+      if (ws.readyState !== ws.OPEN || cs.isClosed) {
+        return
+      }
+      if (ws.bufferedAmount > 16 * 1024) {
+        ctx.measure('send-bufferAmmount', 1)
+      }
+      ws.send(smsg, { binary: true, compress: compression }, (err) => {
+        if (err != null) {
+          if (!`${err.message}`.includes('WebSocket is not open')) {
+            ctx.error('send error', { err })
+            Analytics.handleError(err)
           }
-          if (ws.bufferedAmount > 16 * 1024) {
-            setTimeout(doSend)
-            return
-          }
-          ws.send(smsg, { binary: true, compress: compression }, (err) => {
-            if (err != null) {
-              if (!`${err.message}`.includes('WebSocket is not open')) {
-                ctx.error('send error', { err })
-                Analytics.handleError(err)
-                reject(err)
-              }
-              // In case socket not open, just resolve
-              resolve()
-            }
-            resolve()
-          })
         }
-        doSend()
+        ctx.measure('msg-send-delta', Date.now() - st)
       })
       return smsg.length
     }

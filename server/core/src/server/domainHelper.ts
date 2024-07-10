@@ -9,7 +9,7 @@ import type {
   ModelDb,
   WorkspaceId
 } from '@hcengineering/core'
-import core, { DOMAIN_MODEL, IndexKind, IndexOrder } from '@hcengineering/core'
+import core, { DOMAIN_BENCHMARK, DOMAIN_MODEL, IndexKind, IndexOrder } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import type { DomainHelper, DomainHelperOperations } from '../adapter'
 
@@ -38,7 +38,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
     for (const c of classes) {
       try {
         const domain = hierarchy.findDomain(c._id)
-        if (domain === undefined || domain === DOMAIN_MODEL) {
+        if (domain === undefined || domain === DOMAIN_MODEL || domain === DOMAIN_BENCHMARK) {
           continue
         }
         const attrs = hierarchy.getAllAttributes(c._id)
@@ -103,7 +103,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
     try {
       const has50Documents = await operations.hasDocuments(domain, 50)
       const allIndexes = (await operations.listIndexes(domain)).filter((it) => it.name !== '_id_')
-      console.log('check indexes', domain, has50Documents)
+      ctx.info('check indexes', { domain, has50Documents })
       if (has50Documents) {
         for (const vv of [...(domainInfo?.values() ?? []), ...(cfg?.indexes ?? [])]) {
           try {

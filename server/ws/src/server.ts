@@ -502,12 +502,6 @@ class TSessionManager implements SessionManager {
     if (workspace?.upgrade ?? false) {
       return
     }
-    if (LOGGING_ENABLED) {
-      this.ctx.info('server broadcasting to clients...', {
-        workspace: workspaceId.name,
-        count: workspace.sessions.size
-      })
-    }
 
     const sessions = [...workspace.sessions.values()]
     const ctx = this.ctx.newChild('📭 broadcast', {})
@@ -824,7 +818,7 @@ class TSessionManager implements SessionManager {
       void userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time
-          userCtx.measure('receive msg', delta)
+          requestCtx.measure('msg-receive-delta', delta)
         }
         const wsRef = this.workspaces.get(workspace)
         if (wsRef === undefined) {
@@ -843,7 +837,7 @@ class TSessionManager implements SessionManager {
           let done = false
           if (wsRef.upgrade) {
             done = true
-            console.log('FORCE CLOSE', workspace)
+            this.ctx.warn('FORCE CLOSE', { workspace })
             // In case of upgrade, we need to force close workspace not in interval handler
             await this.forceClose(workspace, ws)
           }
@@ -882,12 +876,12 @@ class TSessionManager implements SessionManager {
             binary: service.binaryMode,
             reconnect
           }
-          await ws.send(ctx, helloResponse, false, false)
+          await ws.send(requestCtx, helloResponse, false, false)
           return
         }
         const opContext = (ctx: MeasureContext): ClientSessionCtx => ({
           sendResponse: async (msg) => {
-            await sendResponse(ctx, service, ws, {
+            await sendResponse(requestCtx, service, ws, {
               id: request.id,
               result: msg,
               time: Date.now() - st,

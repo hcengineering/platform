@@ -102,7 +102,7 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
  * @public
  */
 export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
-  const ms = aggregateMetrics(m.measurements, limit)
+  let ms = aggregateMetrics(m.measurements, limit)
 
   // Use child overage, if there is no top level value specified.
   const me = Object.entries(ms)
@@ -127,6 +127,7 @@ export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
           break
         }
       }
+      ms = newMs
     }
   }
 
