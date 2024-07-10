@@ -16,7 +16,7 @@
   import core, { WithLookup, type Ref } from '@hcengineering/core'
   import { type File } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
-  import presentation, { IconDownload, createQuery, getBlobHref } from '@hcengineering/presentation'
+  import { createQuery, getBlobHref } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
@@ -24,8 +24,11 @@
   import EditFile from './EditFile.svelte'
   import FileAside from './FileAside.svelte'
   import FileHeader from './FileHeader.svelte'
+  import IconDownload from './icons/FileDownload.svelte'
+  import IconUpload from './icons/FileUpload.svelte'
 
   import drive from '../plugin'
+  import { replaceOneFile } from '../utils'
 
   export let _id: Ref<File>
   export let readonly: boolean = false
@@ -38,6 +41,7 @@
 
   let object: WithLookup<File> | undefined = undefined
   let download: HTMLAnchorElement
+  let upload: HTMLInputElement
 
   const query = createQuery()
   $: query.query(
@@ -52,6 +56,20 @@
       }
     }
   )
+
+  function handleUploadFile (): void {
+    if (object != null && upload != null) {
+      upload.click()
+    }
+  }
+
+  async function handleFileSelected (): Promise<void> {
+    const files = upload.files
+    if (object != null && files !== null && files.length > 0) {
+      await replaceOneFile(object, files[0])
+    }
+    upload.value = ''
+  }
 </script>
 
 {#if object}
@@ -66,6 +84,17 @@
     on:close
     on:update
   >
+    <input
+      bind:this={upload}
+      id="file"
+      name="file"
+      type="file"
+      style="display: none"
+      disabled={upload == null}
+      accept={object.$lookup?.file?.contentType ?? ''}
+      on:change={handleFileSelected}
+    />
+
     <svelte:fragment slot="title">
       <FileHeader {object} />
     </svelte:fragment>
@@ -77,13 +106,20 @@
             icon={IconDownload}
             iconProps={{ size: 'medium' }}
             kind={'icon'}
-            showTooltip={{ label: presentation.string.Download }}
-            on:click={() => {
-              download.click()
-            }}
+            showTooltip={{ label: drive.string.Download }}
+            on:click={handleUploadFile}
           />
         </a>
       {/await}
+      <Button
+        icon={IconUpload}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        showTooltip={{ label: drive.string.Upload }}
+        on:click={() => {
+          upload.click()
+        }}
+      />
       <Button
         icon={IconMoreH}
         iconProps={{ size: 'medium' }}

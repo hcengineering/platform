@@ -20,7 +20,7 @@
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { createDrive, createFolder, createFiles } from '../utils'
+  import { createDrive, createFolder, uploadFiles } from '../utils'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
@@ -95,7 +95,7 @@
 
     progress = true
 
-    await createFiles(list, currentSpace, parent)
+    await uploadFiles(list, currentSpace, parent)
 
     inputFile.value = ''
     progress = false

@@ -15,26 +15,20 @@
 //
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
-  import { File } from '@hcengineering/drive'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { type FileVersion } from '@hcengineering/drive'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
-  import { formatFileVersion, getFileTypeIcon } from '../utils'
+  import { formatFileVersion } from '../utils'
 
-  export let value: WithLookup<File>
+  export let value: FileVersion
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
-  export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
 
-  export let shouldShowVersion = false
-
-  $: icon = getFileTypeIcon(value.$lookup?.file?.contentType ?? '')
+  $: version = formatFileVersion(value.version)
 </script>
 
 {#if value}
@@ -42,24 +36,13 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        {#if shouldShowAvatar}
-          <div class="icon">
-            <Icon {icon} size={'small'} />
-          </div>
-        {/if}
+      <div class="flex-presenter">
         <div class="label nowrap flex flex-gap-2" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          <span>{value.name}</span>
-          {#if shouldShowVersion}
-            <span>•</span>
-            <span>{formatFileVersion(value.version)}</span>
-          {/if}
+          {version}
         </div>
       </div>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      {value.name}
-    </span>
+    <span class="overflow-label">{version}</span>
   {/if}
 {/if}

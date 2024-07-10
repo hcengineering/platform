@@ -105,11 +105,11 @@ export async function generateFolderLocation (loc: Location, id: Ref<Folder>): P
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId, doc.space],
+      path: [appComponent, workspace, driveId],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
-      path: [appComponent, workspace, driveId],
+      path: [appComponent, workspace, driveId, doc.space],
       fragment: getPanelFragment(doc)
     }
   }
@@ -130,11 +130,11 @@ export async function generateFileLocation (loc: Location, id: Ref<File>): Promi
 
   return {
     loc: {
-      path: [appComponent, workspace, driveId, doc.space],
+      path: [appComponent, workspace, driveId],
       fragment: getPanelFragment(doc)
     },
     defaultLocation: {
-      path: [appComponent, workspace, driveId],
+      path: [appComponent, workspace, driveId, doc.space],
       fragment: getPanelFragment(doc)
     }
   }

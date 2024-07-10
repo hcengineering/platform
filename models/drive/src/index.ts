@@ -17,17 +17,27 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core, {
   type Blob,
+  type Class,
+  type CollectionSize,
   type Domain,
   type FindOptions,
+  type Ref,
   type Role,
   type RolesAssignment,
   Account,
   AccountRole,
   IndexKind,
-  Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
+import {
+  type Drive,
+  type File,
+  type FileVersion,
+  type Folder,
+  type Resource,
+  TypeFileVersion,
+  driveId
+} from '@hcengineering/drive'
 import {
   type Builder,
   Hidden,
@@ -42,19 +52,24 @@ import {
   UX,
   Collection
 } from '@hcengineering/model'
-import { TDoc, TTypedSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, { type Viewlet, actionTemplates, createAction } from '@hcengineering/model-view'
+import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
 import drive from './plugin'
 
 export { driveId } from '@hcengineering/drive'
+export { driveOperation } from './migration'
 export { drive as default }
 
 export const DOMAIN_DRIVE = 'drive' as Domain
+
+@Model(drive.class.TypeFileVersion, core.class.Type)
+@UX(core.string.Number)
+export class TTypeFileVersion extends TType {}
 
 @Model(drive.class.Drive, core.class.TypedSpace)
 @UX(drive.string.Drive)
@@ -132,6 +147,54 @@ export class TFile extends TResource implements File {
   @Prop(TypeRef(drive.class.Folder), drive.string.Path)
   @ReadOnly()
   declare path: Ref<Folder>[]
+
+  @Prop(TypeFileVersion(), drive.string.Version)
+  @ReadOnly()
+    version!: number
+
+  @Prop(Collection(drive.class.FileVersion), drive.string.FileVersion)
+    versions!: CollectionSize<FileVersion>
+}
+
+@Model(drive.class.FileVersion, core.class.AttachedDoc, DOMAIN_DRIVE)
+@UX(drive.string.FileVersion)
+export class TFileVersion extends TAttachedDoc implements FileVersion {
+  declare space: Ref<Drive>
+
+  @Prop(TypeRef(drive.class.File), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<File>
+
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  declare attachedToClass: Ref<Class<File>>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'versions' = 'versions'
+
+  @Prop(TypeFileVersion(), drive.string.Version)
+  @ReadOnly()
+    version!: number
+
+  @Prop(TypeRef(core.class.Blob), drive.string.File)
+  @ReadOnly()
+    file!: Ref<Blob>
+
+  @Prop(TypeRecord(), drive.string.Metadata)
+  @ReadOnly()
+    metadata?: Record<string, any>
+}
+
+function defineTypes (builder: Builder): void {
+  builder.createModel(TTypeFileVersion)
+
+  classPresenter(
+    builder,
+    drive.class.TypeFileVersion,
+    drive.component.FileVersionVersionPresenter,
+    drive.component.FileVersionVersionPresenter
+  )
 }
 
 function defineDrive (builder: Builder): void {
@@ -429,6 +492,44 @@ function defineFolder (builder: Builder): void {
   })
 }
 
+function defineFileVersion (builder: Builder): void {
+  builder.createModel(TFileVersion)
+
+  builder.mixin(drive.class.FileVersion, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: drive.component.FileVersionPresenter
+  })
+
+  // Actions
+
+  builder.mixin(drive.class.FileVersion, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      print.action.Print,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
+  })
+
+  // createAction(
+  //   builder,
+  //   {
+  //     action: drive.actionImpl.CreateChildFolder,
+  //     label: drive.string.CreateFolder,
+  //     icon: drive.icon.Folder,
+  //     category: drive.category.Drive,
+  //     input: 'none',
+  //     target: drive.class.Folder,
+  //     context: {
+  //       mode: ['context', 'browser'],
+  //       application: drive.app.Drive,
+  //       group: 'create'
+  //     }
+  //   },
+  //   drive.action.DeleteFileVersion
+  // )
+}
+
 function defineFile (builder: Builder): void {
   builder.createModel(TFile)
 
@@ -506,6 +607,24 @@ function defineFile (builder: Builder): void {
     drive.action.RenameFile
   )
 
+  // createAction(
+  //   builder,
+  //   {
+  //     action: drive.actionImpl.UploadFile,
+  //     label: drive.string.UploadFile,
+  //     icon: drive.icon.File,
+  //     category: drive.category.Drive,
+  //     input: 'focus',
+  //     target: drive.class.File,
+  //     context: {
+  //       mode: ['context', 'browser'],
+  //       application: drive.app.Drive,
+  //       group: 'tools'
+  //     }
+  //   },
+  //   drive.action.UploadFile
+  // )
+
   createAction(builder, {
     ...actionTemplates.move,
     action: view.actionImpl.ShowPopup,
@@ -580,9 +699,11 @@ export function createModel (builder: Builder): void {
     drive.viewlet.Grid
   )
 
+  defineTypes(builder)
   defineDrive(builder)
   defineResource(builder)
   defineFolder(builder)
   defineFile(builder)
+  defineFileVersion(builder)
   defineApplication(builder)
 }

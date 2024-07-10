@@ -18,6 +18,7 @@
   import { FilePreview, createQuery } from '@hcengineering/presentation'
 
   import { createEventDispatcher, onMount } from 'svelte'
+  import EditFileVersions from './EditFileVersions.svelte'
 
   export let object: File
   export let readonly: boolean = false
@@ -38,5 +39,11 @@
 {#if object !== undefined}
   {#if blob !== undefined}
     <FilePreview file={blob} name={object.name} metadata={object.metadata} />
+  {/if}
+
+  {#if object.versions > 1}
+    <div class="w-full mt-6">
+      <EditFileVersions {object} {readonly} />
+    </div>
   {/if}
 {/if}

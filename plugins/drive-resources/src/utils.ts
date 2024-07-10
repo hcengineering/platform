@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { toIdMap, type Class, type Doc, type Ref } from '@hcengineering/core'
-import drive, { type Drive, type Folder, type Resource } from '@hcengineering/drive'
+import { type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
+import drive, { type Drive, type File as DriveFile, type Folder, type Resource, createFile, createFileVersion } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
@@ -38,6 +38,10 @@ async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<v
   }
 }
 
+export function formatFileVersion (version: number): string {
+  return `v${version}`
+}
+
 export async function createFolder (space: Ref<Drive> | undefined, parent: Ref<Folder>, open = false): Promise<void> {
   showPopup(CreateFolder, { space, parent }, 'top', async (id) => {
     if (open && id !== undefined && id !== null) {
@@ -58,32 +62,57 @@ export async function editDrive (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
 }
 
-export async function createFiles (list: FileList, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+export type UpdateExistingBehavior = 'update' | 'keep'
+
+export async function uploadFiles (
+  list: FileList,
+  space: Ref<Drive>,
+  parent: Ref<Folder>,
+  keepOrUpdate: UpdateExistingBehavior = 'keep'
+): Promise<void> {
   const client = getClient()
-  const folder = await client.findOne(drive.class.Folder, { space, _id: parent })
+
+  const files = await client.findAll(drive.class.File, { parent })
+  const filesByName = new Map(files.map((p) => [p.name, p]))
+  const names = files.map((p) => p.name)
 
   for (let index = 0; index < list.length; index++) {
     const file = list.item(index)
     if (file !== null) {
-      await createFile(file, space, folder)
+      const existing = filesByName.get(file.name)
+      if (existing !== undefined && keepOrUpdate === 'update') {
+        await replaceOneFile(existing, file)
+      } else {
+        const name = chooseUniqueFileName(file.name, names)
+        await uploadOneFile(file, name, space, parent)
+      }
     }
   }
 }
 
-export async function createFile (file: File, space: Ref<Drive>, parent: Folder | undefined): Promise<void> {
+export async function uploadOneFile (file: File, name: string, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
   const client = getClient()
 
   try {
     const uuid = await uploadFile(file)
     const metadata = await getFileMetadata(file, uuid)
 
-    await client.createDoc(drive.class.File, space, {
-      name: file.name,
-      file: uuid,
-      metadata,
-      parent: parent?._id ?? drive.ids.Root,
-      path: parent !== undefined ? [parent._id, ...parent.path] : []
-    })
+    const data = { name, file: uuid, metadata, parent }
+    await createFile(client, space, data)
+  } catch (e) {
+    void setPlatformStatus(unknownError(e))
+  }
+}
+
+export async function replaceOneFile (existing: DriveFile, file: File): Promise<void> {
+  const client = getClient()
+
+  try {
+    const uuid = await uploadFile(file)
+    const metadata = await getFileMetadata(file, uuid)
+
+    const data = { file: uuid, metadata }
+    await createFileVersion(client, existing._id, data)
   } catch (e) {
     void setPlatformStatus(unknownError(e))
   }
@@ -164,4 +193,18 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   }
 
   return parents.reverse()
+}
+
+function chooseUniqueFileName (name: string, existing: string[]): string {
+  const extPosition = name.lastIndexOf('.')
+  const fileName = extPosition === -1 ? name : name.slice(0, extPosition)
+  const fileExt = extPosition === -1 ? '' : name.slice(extPosition)
+
+  let suffix = 0
+  let newName = name
+  while (existing.includes(newName)) {
+    newName = `${fileName} (${++suffix})${fileExt}`
+  }
+
+  return newName
 }

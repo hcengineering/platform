@@ -16,7 +16,7 @@
   import { type Ref } from '@hcengineering/core'
   import { type Drive, type Folder } from '@hcengineering/drive'
 
-  import { createFiles } from '../utils'
+  import { uploadFiles } from '../utils'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
@@ -63,7 +63,7 @@
     // progress = true
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
-      await createFiles(list, space, parent)
+      await uploadFiles(list, space, parent)
     }
     // progress = false
   }

@@ -121,6 +121,10 @@ const locationWritable = writable(getRawCurrentLocation())
 
 console.log('embeddedPlatform', window.embeddedPlatform)
 
+locationWritable.subscribe((loc) => {
+  console.log(loc)
+})
+
 if (!embeddedPlatform) {
   window.addEventListener('popstate', () => {
     locationWritable.set(getRawCurrentLocation())
