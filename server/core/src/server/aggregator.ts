@@ -400,11 +400,11 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 export function buildStorage (
   config: StorageConfiguration,
   dbAdapter: RawDBAdapter,
-  storageFactory: (kind: string, config: StorageConfig) => StorageAdapter
+  storageFactory: (config: StorageConfig) => StorageAdapter
 ): AggregatorStorageAdapter {
   const adapters = new Map<string, StorageAdapter>()
   for (const c of config.storages) {
-    adapters.set(c.name, storageFactory(c.kind, c))
+    adapters.set(c.name, storageFactory(c))
   }
   return new AggregatorStorageAdapter(adapters, config.default, dbAdapter)
 }

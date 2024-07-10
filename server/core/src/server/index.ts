@@ -77,9 +77,11 @@ export async function createServerStorage (
     for (const tx of model) {
       try {
         hierarchy.tx(tx)
-        await triggers.tx(tx)
+        if (options.disableTriggers !== true) {
+          await triggers.tx(tx)
+        }
       } catch (err: any) {
-        console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
       }
     }
     modelDb.addTxes(ctx, model, false)

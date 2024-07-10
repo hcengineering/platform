@@ -167,7 +167,7 @@ class ClientImpl implements AccountClient, BackupClient {
           }
         }
       } catch (err) {
-        console.error('failed to apply model transaction, skipping', t)
+        // console.error('failed to apply model transaction, skipping', t)
         continue
       }
     }
@@ -471,7 +471,11 @@ async function buildModel (
       try {
         hierarchy.tx(tx)
       } catch (err: any) {
-        console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
+        ctx.warn('failed to apply model transaction, skipping', {
+          _id: tx._id,
+          _class: tx._class,
+          message: err?.message
+        })
       }
     }
   })

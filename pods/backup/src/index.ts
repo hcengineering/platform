@@ -13,8 +13,37 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext } from '@hcengineering/core'
 import { startBackup } from '@hcengineering/backup-service'
+import { MeasureMetricsContext } from '@hcengineering/core'
+import { DummyDbAdapter, DummyFullTextAdapter, type PipelineFactory } from '@hcengineering/server-core'
+import { createServerPipeline } from '@hcengineering/server-pipeline'
 
 const ctx = new MeasureMetricsContext('backup-service', {})
-startBackup(ctx)
+startBackup(ctx, (mongoUrl, storageAdapter) => {
+  const factory: PipelineFactory = createServerPipeline(
+    ctx,
+    mongoUrl,
+    {
+      externalStorage: storageAdapter,
+      fullTextUrl: '',
+      indexParallel: 0,
+      indexProcessing: 0,
+      rekoniUrl: '',
+      usePassedCtx: true
+    },
+    {
+      adapters: {
+        FullTextBlob: {
+          factory: async () => new DummyDbAdapter(),
+          url: ''
+        }
+      },
+      fulltextAdapter: {
+        factory: async () => new DummyFullTextAdapter(),
+        stages: () => [],
+        url: ''
+      }
+    }
+  )
+  return factory
+})

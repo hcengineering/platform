@@ -13,8 +13,22 @@
 // limitations under the License.
 //
 
-import { BaseWorkspaceInfo, getWorkspaceId, type MeasureContext } from '@hcengineering/core'
-import { type StorageAdapter } from '@hcengineering/server-core'
+import {
+  BaseWorkspaceInfo,
+  getWorkspaceId,
+  systemAccountEmail,
+  type BackupClient,
+  type Client,
+  type MeasureContext,
+  type WorkspaceIdWithUrl
+} from '@hcengineering/core'
+import {
+  BackupClientOps,
+  SessionContextImpl,
+  type Pipeline,
+  type PipelineFactory,
+  type StorageAdapter
+} from '@hcengineering/server-core'
 import { backup } from '.'
 import { createStorageBackupStorage } from './storage'
 
@@ -43,12 +57,14 @@ export interface BackupConfig {
   Interval: number // Timeout in seconds
   Timeout: number // Timeout in seconds
   BucketName: string
+  SkipWorkspaces: string
 }
 
 class BackupWorker {
   constructor (
     readonly storageAdapter: StorageAdapter,
-    readonly config: BackupConfig
+    readonly config: BackupConfig,
+    readonly pipelineFactory: PipelineFactory
   ) {}
 
   canceled = false
@@ -59,29 +75,38 @@ class BackupWorker {
     clearTimeout(this.interval)
   }
 
+  backupPromise: Promise<void> | undefined
+
+  async triggerBackup (ctx: MeasureContext): Promise<void> {
+    const failed = await this.backup(ctx)
+    if (failed.length > 0) {
+      ctx.info('Failed to backup workspaces, Retry failed workspaces once.', { failed: failed.length })
+      await this.doBackup(ctx, failed)
+    }
+  }
+
   async schedule (ctx: MeasureContext): Promise<void> {
     console.log('schedule timeout for', this.config.Interval, ' seconds')
     this.interval = setTimeout(() => {
-      void this.backup(ctx).then((failed) => {
-        if (failed.length > 0) {
-          ctx.info('Failed to backup workspaces, Retry failed workspaces once.', { failed: failed.length })
-          void this.doBackup(ctx, failed).then(() => {
-            void this.schedule(ctx)
-          })
-        } else {
-          void this.schedule(ctx)
-        }
-      })
+      if (this.backupPromise !== undefined) {
+        void this.backupPromise.then(() => {
+          void this.triggerBackup(ctx)
+        })
+      }
+      void this.triggerBackup(ctx)
     }, this.config.Interval * 1000)
   }
 
   async backup (ctx: MeasureContext): Promise<BaseWorkspaceInfo[]> {
-    const workspaces = await getWorkspaces(this.config.AccountsURL, this.config.Token)
+    const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
+    const workspaces = (await getWorkspaces(this.config.AccountsURL, this.config.Token)).filter((it) => {
+      return !workspacesIgnore.has(it.workspace)
+    })
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
     return await this.doBackup(ctx, workspaces)
   }
 
-  async doBackup (ctx: MeasureContext, workspaces: BaseWorkspaceInfo[]): Promise<BaseWorkspaceInfo[]> {
+  async doBackup (rootCtx: MeasureContext, workspaces: BaseWorkspaceInfo[]): Promise<BaseWorkspaceInfo[]> {
     let index = 0
 
     const failedWorkspaces: BaseWorkspaceInfo[] = []
@@ -90,12 +115,17 @@ class BackupWorker {
         return failedWorkspaces
       }
       index++
-      ctx.info('\n\nBACKUP WORKSPACE ', {
+      rootCtx.info('\n\nBACKUP WORKSPACE ', {
         workspace: ws.workspace,
         productId: ws.productId,
         index,
         total: workspaces.length
       })
+      const childLogger = rootCtx.logger.childLogger?.(ws.workspace, {
+        workspace: ws.workspace,
+        enableConsole: 'false'
+      })
+      const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace }, {}, childLogger)
       try {
         const storage = await createStorageBackupStorage(
           ctx,
@@ -103,6 +133,13 @@ class BackupWorker {
           getWorkspaceId(this.config.BucketName, ws.productId),
           ws.workspace
         )
+        const wsUrl: WorkspaceIdWithUrl = {
+          name: ws.workspace,
+          productId: ws.productId,
+          workspaceName: ws.workspaceName ?? '',
+          workspaceUrl: ws.workspaceUrl ?? ''
+        }
+        const pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
         await ctx.with('backup', { workspace: ws.workspace }, async (ctx) => {
           await backup(ctx, this.config.TransactorURL, getWorkspaceId(ws.workspace, ws.productId), storage, {
             skipDomains: [],
@@ -111,20 +148,84 @@ class BackupWorker {
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
             blobDownloadLimit: 100,
-            skipBlobContentTypes: []
+            skipBlobContentTypes: [],
+            storageAdapter: pipeline.storage.storageAdapter,
+            connection: this.wrapPipeline(ctx, pipeline, wsUrl)
           })
         })
       } catch (err: any) {
-        ctx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
+        rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
         failedWorkspaces.push(ws)
+        await childLogger?.close()
       }
     }
     return failedWorkspaces
   }
+
+  wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client & BackupClient {
+    const sctx = new SessionContextImpl(
+      ctx,
+      systemAccountEmail,
+      'backup',
+      true,
+      { targets: {}, txes: [] },
+      wsUrl,
+      null,
+      false
+    )
+    const backupOps = new BackupClientOps(pipeline)
+
+    return {
+      findAll: async (_class, query, options) => {
+        return await pipeline.findAll(sctx, _class, query, options)
+      },
+      findOne: async (_class, query, options) => {
+        return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
+      },
+      clean: async (domain, docs) => {
+        await backupOps.clean(ctx, domain, docs)
+      },
+      close: async () => {},
+      closeChunk: async (idx) => {
+        await backupOps.closeChunk(ctx, idx)
+      },
+      getHierarchy: () => {
+        return pipeline.storage.hierarchy
+      },
+      getModel: () => {
+        return pipeline.storage.modelDb
+      },
+      loadChunk: async (domain, idx, recheck) => {
+        return await backupOps.loadChunk(ctx, domain, idx, recheck)
+      },
+      loadDocs: async (domain, docs) => {
+        return await backupOps.loadDocs(ctx, domain, docs)
+      },
+      upload: async (domain, docs) => {
+        await backupOps.upload(ctx, domain, docs)
+      },
+      searchFulltext: async (query, options) => {
+        return {
+          docs: [],
+          total: 0
+        }
+      },
+      sendForceClose: async () => {},
+      tx: async (tx) => {
+        return {}
+      },
+      notify: (...tx) => {}
+    }
+  }
 }
 
-export function backupService (ctx: MeasureContext, storage: StorageAdapter, config: BackupConfig): () => void {
-  const backupWorker = new BackupWorker(storage, config)
+export function backupService (
+  ctx: MeasureContext,
+  storage: StorageAdapter,
+  config: BackupConfig,
+  pipelineFactory: PipelineFactory
+): () => void {
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory)
 
   const shutdown = (): void => {
     void backupWorker.close()

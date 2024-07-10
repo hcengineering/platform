@@ -32,14 +32,13 @@ import core, {
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
-import type { Pipeline, StorageAdapter } from '@hcengineering/server-core'
+import type { Pipeline, StorageAdapter, PipelineFactory } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 import {
   LOGGING_ENABLED,
   type ClientSessionCtx,
   type ConnectionSocket,
-  type PipelineFactory,
   type ServerFactory,
   type Session,
   type SessionManager,

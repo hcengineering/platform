@@ -92,11 +92,9 @@ export class MeasureMetricsContext implements MeasureContext {
       if (value instanceof Promise) {
         value = await value
       }
-      c.end()
       return value
-    } catch (err: any) {
-      c.error('Error during:' + name, { err, ...(this.logParams ?? {}) })
-      throw err
+    } finally {
+      c.end()
     }
   }
 
