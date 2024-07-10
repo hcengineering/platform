@@ -240,6 +240,7 @@ export function start (
     collaboratorApiUrl: string
     brandingUrl?: string
     previewConfig: string
+    pushPublicKey?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -279,6 +280,7 @@ export function start (
       COLLABORATOR_API_URL: config.collaboratorApiUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
+      PUSH_PUBLIC_KEY: config.pushPublicKey,
       ...(extraConfig ?? {})
     }
     res.set('Cache-Control', cacheControlNoCache)
