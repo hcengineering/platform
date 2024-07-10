@@ -48,6 +48,7 @@
     "Push": "Push",
     "Unreads": "Non lus",
     "EnablePush": "Activer les notifications push",
-    "NotificationBlockedInBrowser": "Les notifications sont bloquées dans votre navigateur. Veuillez activer les notifications dans les paramètres de votre navigateur"
+    "NotificationBlockedInBrowser": "Les notifications sont bloquées dans votre navigateur. Veuillez activer les notifications dans les paramètres de votre navigateur",
+    "Sound": "Son"
   }
 }

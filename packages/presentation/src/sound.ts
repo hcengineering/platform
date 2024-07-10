@@ -19,10 +19,10 @@ export async function prepareSound (key: string, _class?: Ref<Class<Doc>>, loop 
     const audioBuffer = await fetch(soundUrl)
       .then(async (res) => await res.arrayBuffer())
       .then(async (ArrayBuffer) => await context.decodeAudioData(ArrayBuffer))
-    const knockAudio = context.createBufferSource()
-    knockAudio.buffer = audioBuffer
-    knockAudio.loop = loop
-    sounds.set(key as Asset, knockAudio)
+    const audio = context.createBufferSource()
+    audio.buffer = audioBuffer
+    audio.loop = loop
+    sounds.set(key as Asset, audio)
     if (play) {
       playSound(key)
     }

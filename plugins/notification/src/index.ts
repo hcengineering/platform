@@ -401,7 +401,8 @@ const notification = plugin(notificationId, {
     ArchiveAllConfirmationMessage: '' as IntlString,
     YouAddedCollaborators: '' as IntlString,
     YouRemovedCollaborators: '' as IntlString,
-    Push: '' as IntlString
+    Push: '' as IntlString,
+    Sound: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,

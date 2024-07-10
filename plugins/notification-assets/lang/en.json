@@ -48,6 +48,7 @@
     "Push": "Push",
     "Unreads": "Unreads",
     "EnablePush": "Enable push notifications",
-    "NotificationBlockedInBrowser": "Notifications are blocked in your browser. Please enable notifications in your browser settings"
+    "NotificationBlockedInBrowser": "Notifications are blocked in your browser. Please enable notifications in your browser settings",
+    "Sound": "Sound"
   }
 }

@@ -48,6 +48,7 @@
     "Push": "推送",
     "Unreads": "未读",
     "EnablePush": "启用推送通知",
-    "NotificationBlockedInBrowser": "通知在您的浏览器中被阻止。请在浏览器设置中启用通知"
+    "NotificationBlockedInBrowser": "通知在您的浏览器中被阻止。请在浏览器设置中启用通知",
+    "Sound": "声音"
   }
 }
