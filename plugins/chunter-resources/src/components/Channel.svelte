@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, Ref, Timestamp } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
@@ -61,29 +61,25 @@
   $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId)
+  $: void updateDataProvider(object._id, _class, selectedMessageId)
 
   async function updateDataProvider (
     attachedTo: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
-    lastViewedTimestamp?: Timestamp,
     selectedMessageId?: Ref<ActivityMessage>
   ): Promise<void> {
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
       const loadAll = isDocChannel
-      const timestamp =
-        lastViewedTimestamp ??
-        (
-          await client.findOne(
-            notification.class.DocNotifyContext,
-            { attachedTo: object._id, user: getCurrentAccount()._id },
-            { projection: { lastViewedTimestamp: 1 } }
-          )
-        )?.lastViewedTimestamp
+      const ctx =
+        context ??
+        (await client.findOne(notification.class.DocNotifyContext, {
+          attachedTo: object._id,
+          user: getCurrentAccount()._id
+        }))
 
-      dataProvider = new ChannelDataProvider(attachedTo, _class, timestamp, selectedMessageId, loadAll)
+      dataProvider = new ChannelDataProvider(attachedTo, _class, ctx, selectedMessageId, loadAll)
     }
   }
 </script>
