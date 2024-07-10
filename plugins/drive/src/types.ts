@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AttachedDoc, Blob, CollectionSize, Doc, Ref, Type, TypedSpace } from '@hcengineering/core'
+import { Blob, Doc, Ref, Type, TypedSpace } from '@hcengineering/core'
 
 import drive from './plugin'
 
@@ -28,13 +28,15 @@ export interface Drive extends TypedSpace {}
 /** @public */
 export interface Resource extends Doc<Drive> {
   name: string
-  file?: Ref<Blob>
-  preview?: Ref<Blob>
-
   parent: Ref<Resource>
   path: Ref<Resource>[]
 
   comments?: number
+
+  // ugly but needed here to get version lookup work for Resource
+  version?: Ref<FileVersion>
+
+  // file?: Ref<FileContent>
 }
 
 /** @public */
@@ -42,7 +44,8 @@ export interface Folder extends Resource {
   parent: Ref<Folder>
   path: Ref<Folder>[]
 
-  file?: undefined
+  version?: undefined
+  // file?: undefined
 }
 
 /** @public */
@@ -50,16 +53,34 @@ export interface File extends Resource {
   parent: Ref<Folder>
   path: Ref<Folder>[]
 
-  file: Ref<Blob>
-  metadata?: Record<string, any>
+  version: Ref<FileVersion>
+  versions: Array<Ref<FileVersion>>
 
-  version: number
-  versions: CollectionSize<FileVersion>
+  sequence: number
+
+  // file: Ref<FileContent>
+  // versions: Array<Ref<FileContent>>
+  // version: number
 }
 
 /** @public */
-export interface FileVersion extends AttachedDoc<File, 'versions', Drive> {
+export interface FileVersion extends Doc<Drive> {
+  name: string
   file: Ref<Blob>
+  size: number
+  type: string
+  lastModified: number
+  metadata?: Record<string, any>
+  version: number
+}
+
+/** @public */
+export interface FileContent extends Doc<Drive> {
+  name: string
+  file: Ref<Blob>
+  size: number
+  type: string
+  lastModified: number
   metadata?: Record<string, any>
   version: number
 }

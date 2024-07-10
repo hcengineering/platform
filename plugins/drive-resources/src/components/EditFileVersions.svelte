@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { FindOptions, SortingOrder } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
+  import { type File, type FileVersion } from '@hcengineering/drive'
   import { Scroller, Section } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
 
@@ -23,21 +23,25 @@
   export let object: File
   export let readonly: boolean = false
 
-  const options: FindOptions<File> = {
-    sort: { version: SortingOrder.Descending },
-    lookup: { file: core.class.Blob }
+  const options: FindOptions<FileVersion> = {
+    sort: { version: SortingOrder.Descending }
   }
 </script>
 
-{#if object.versions > 0}
+{#if object.versions.length > 0}
   <Section label={drive.string.FileVersions}>
     <svelte:fragment slot="content">
       <Scroller horizontal>
         <Table
           readonly
           _class={drive.class.FileVersion}
-          config={['version', '$lookup.file.size', '$lookup.file.modifiedOn', 'createdBy']}
-          query={{ attachedTo: object._id }}
+          config={[
+            'version',
+            'size',
+            'modifiedOn',
+            'createdBy'
+          ]}
+          query={{ _id: { $in: object.versions } }}
           {options}
         />
       </Scroller>

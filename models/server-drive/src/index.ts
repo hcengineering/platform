@@ -31,6 +31,14 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverDrive.trigger.OnFileVersionDelete,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: drive.class.FileVersion
+    }
+  })
+
   builder.mixin<Class<Doc>, ObjectDDParticipant>(
     drive.class.Folder,
     core.class.Class,

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { type Blob } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
+  import drive, { type File } from '@hcengineering/drive'
   import { FilePreview, createQuery } from '@hcengineering/presentation'
 
   import { createEventDispatcher, onMount } from 'svelte'
@@ -27,12 +27,21 @@
   const query = createQuery()
 
   let blob: Blob | undefined = undefined
-  $: query.query(core.class.Blob, { _id: object.file }, (res) => {
-    ;[blob] = res
-  })
+  $: query.query(
+    drive.class.FileVersion,
+    { _id: object.version },
+    (res) => {
+      blob = res[0]?.$lookup?.file
+    },
+    {
+      lookup: {
+        file: core.class.Blob
+      }
+    }
+  )
 
   onMount(() => {
-    dispatch('open', { ignoreKeys: ['file', 'preview', 'parent', 'path', 'metadata'] })
+    dispatch('open', { ignoreKeys: ['parent', 'path', 'version', 'versions'] })
   })
 </script>
 
@@ -41,7 +50,7 @@
     <FilePreview file={blob} name={object.name} metadata={object.metadata} />
   {/if}
 
-  {#if object.versions > 1}
+  {#if object.versions.length > 1}
     <div class="w-full mt-6">
       <EditFileVersions {object} {readonly} />
     </div>

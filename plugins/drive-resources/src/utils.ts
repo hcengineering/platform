@@ -62,57 +62,42 @@ export async function editDrive (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
 }
 
-export type UpdateExistingBehavior = 'update' | 'keep'
-
-export async function uploadFiles (
-  list: FileList,
-  space: Ref<Drive>,
-  parent: Ref<Folder>,
-  keepOrUpdate: UpdateExistingBehavior = 'keep'
-): Promise<void> {
-  const client = getClient()
-
-  const files = await client.findAll(drive.class.File, { parent })
-  const filesByName = new Map(files.map((p) => [p.name, p]))
-  const names = files.map((p) => p.name)
-
+export async function uploadFiles (list: FileList, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
   for (let index = 0; index < list.length; index++) {
     const file = list.item(index)
     if (file !== null) {
-      const existing = filesByName.get(file.name)
-      if (existing !== undefined && keepOrUpdate === 'update') {
-        await replaceOneFile(existing, file)
-      } else {
-        const name = chooseUniqueFileName(file.name, names)
-        await uploadOneFile(file, name, space, parent)
-      }
+      await uploadOneFile(file, space, parent)
     }
   }
 }
 
-export async function uploadOneFile (file: File, name: string, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+export async function uploadOneFile (file: File, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
   const client = getClient()
 
   try {
     const uuid = await uploadFile(file)
     const metadata = await getFileMetadata(file, uuid)
 
-    const data = { name, file: uuid, metadata, parent }
-    await createFile(client, space, data)
+    const { name, size, type, lastModified } = file
+    const data = { file: uuid, name, size, type, lastModified, metadata }
+
+    await createFile(client, space, parent, data)
   } catch (e) {
     void setPlatformStatus(unknownError(e))
   }
 }
 
-export async function replaceOneFile (existing: DriveFile, file: File): Promise<void> {
+export async function replaceOneFile (existing: Ref<DriveFile>, file: File): Promise<void> {
   const client = getClient()
 
   try {
     const uuid = await uploadFile(file)
     const metadata = await getFileMetadata(file, uuid)
 
-    const data = { file: uuid, metadata }
-    await createFileVersion(client, existing._id, data)
+    const { name, size, type, lastModified } = file
+    const data = { file: uuid, name, size, type, lastModified, metadata }
+
+    await createFileVersion(client, existing, data)
   } catch (e) {
     void setPlatformStatus(unknownError(e))
   }
@@ -193,18 +178,4 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   }
 
   return parents.reverse()
-}
-
-function chooseUniqueFileName (name: string, existing: string[]): string {
-  const extPosition = name.lastIndexOf('.')
-  const fileName = extPosition === -1 ? name : name.slice(0, extPosition)
-  const fileExt = extPosition === -1 ? '' : name.slice(extPosition)
-
-  let suffix = 0
-  let newName = name
-  while (existing.includes(newName)) {
-    newName = `${fileName} (${++suffix})${fileExt}`
-  }
-
-  return newName
 }

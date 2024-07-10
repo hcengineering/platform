@@ -39,6 +39,9 @@
   }
 
   async function handleDragOver (e: DragEvent): Promise<void> {
+    if (e.dataTransfer?.files === undefined) {
+      return
+    }
     if (canDrop !== undefined && !canDrop(e)) {
       return
     }

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { WithLookup, type Ref } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
+  import { WithLookup, type Ref } from '@hcengineering/core'
+  import { type File, type FileVersion } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getBlobHref } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
@@ -40,6 +40,7 @@
   }
 
   let object: WithLookup<File> | undefined = undefined
+  let version: FileVersion | undefined = undefined
   let download: HTMLAnchorElement
   let upload: HTMLInputElement
 
@@ -49,10 +50,11 @@
     { _id },
     (res) => {
       ;[object] = res
+      version = object?.$lookup?.version
     },
     {
       lookup: {
-        file: core.class.Blob
+        version: drive.class.FileVersion
       }
     }
   )
@@ -66,13 +68,13 @@
   async function handleFileSelected (): Promise<void> {
     const files = upload.files
     if (object != null && files !== null && files.length > 0) {
-      await replaceOneFile(object, files[0])
+      await replaceOneFile(object._id, files[0])
     }
     upload.value = ''
   }
 </script>
 
-{#if object}
+{#if object && version}
   <Panel
     {object}
     {embedded}
@@ -91,7 +93,6 @@
       type="file"
       style="display: none"
       disabled={upload == null}
-      accept={object.$lookup?.file?.contentType ?? ''}
       on:change={handleFileSelected}
     />
 
@@ -100,7 +101,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#await getBlobHref(object.$lookup?.file, object.file, object.name) then href}
+      {#await getBlobHref(undefined, version.file, object.name) then href}
         <a class="no-line" {href} download={object.name} bind:this={download}>
           <Button
             icon={IconDownload}

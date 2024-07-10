@@ -25,33 +25,46 @@ import {
   FindOptions,
   FindResult
 } from '@hcengineering/core'
-import drive, { type File, type Folder } from '@hcengineering/drive'
+import drive, { FileVersion, type File, type Folder } from '@hcengineering/drive'
 import type { TriggerControl } from '@hcengineering/server-core'
 
-/**
- * @public
- */
+/** @public */
 export async function OnFileDelete (
   tx: Tx,
-  { removedMap, ctx, storageAdapter, workspace }: TriggerControl
+  { removedMap, txFactory }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<File>
 
-  // Obtain document being deleted.
-  const attach = removedMap.get(rmTx.objectId) as File
+  const res: Tx[] = []
 
-  if (attach === undefined) {
-    return []
+  const file = removedMap.get(rmTx.objectId) as File
+  if (file !== undefined) {
+    for (const version of file.versions) {
+      const removeTx = txFactory.createTxRemoveDoc(drive.class.FileVersion, file.space, version)
+      res.push(removeTx)
+    }
   }
 
-  await storageAdapter.remove(ctx, workspace, [attach.file])
+  return res
+}
+
+/** @public */
+export async function OnFileVersionDelete (
+  tx: Tx,
+  { removedMap, ctx, storageAdapter, workspace }: TriggerControl
+): Promise<Tx[]> {
+  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<FileVersion>
+
+  // Obtain document being deleted.
+  const version = removedMap.get(rmTx.objectId) as FileVersion
+  if (version !== undefined) {
+    await storageAdapter.remove(ctx, workspace, [version.file])
+  }
 
   return []
 }
 
-/**
- * @public
- */
+/** @public */
 export async function FindFolderResources (
   doc: Doc,
   hiearachy: Hierarchy,
@@ -71,7 +84,8 @@ export async function FindFolderResources (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnFileDelete
+    OnFileDelete,
+    OnFileVersionDelete
   },
   function: {
     FindFolderResources

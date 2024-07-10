@@ -16,40 +16,37 @@
 import type { Data, Ref, TxOperations } from '@hcengineering/core'
 
 import drive from './plugin'
-import { FileVersion, type Drive, type File } from './types'
+import { FileVersion, type Drive, type File, type Folder } from './types'
 
 /** @public */
 export async function createFile (
   client: TxOperations,
   space: Ref<Drive>,
-  data: Omit<Data<File>, 'path' | 'version' | 'versions'>
+  parent: Ref<Folder>,
+  data: Omit<Data<FileVersion>, 'version'>
 ): Promise<void> {
-  const version = 1
+  const folder = await client.findOne(drive.class.Folder, { _id: parent })
+  const path = folder !== undefined ? [folder._id, ...folder.path] : []
 
-  const parent = await client.findOne(drive.class.Folder, { _id: data.parent })
-  const path = parent !== undefined ? [parent._id, ...parent.path] : []
-
-  const fileId = await client.createDoc(
-    drive.class.File,
+  const versionId = await client.createDoc(
+    drive.class.FileVersion,
     space,
     {
       ...data,
-      path,
-      version,
-      versions: 0
+      version: 1
     }
   )
 
-  await client.addCollection(
-    drive.class.FileVersion,
-    space,
-    fileId,
+  await client.createDoc(
     drive.class.File,
-    'versions',
+    space,
     {
-      version,
-      file: data.file,
-      metadata: data.metadata
+      name: data.name,
+      parent,
+      path,
+      sequence: 1,
+      version: versionId,
+      versions: [versionId]
     }
   )
 }
@@ -58,32 +55,31 @@ export async function createFile (
 export async function createFileVersion (
   client: TxOperations,
   file: Ref<File>,
-  data: Pick<Data<File>, 'file' | 'metadata'>
+  data: Omit<Data<FileVersion>, 'version'>
 ): Promise<void> {
   const current = await client.findOne(drive.class.File, { _id: file })
   if (current === undefined) {
     throw new Error('file not found')
   }
 
+  const incResult = await client.update(current, { $inc: { sequence: 1 } }, true)
+  const sequence = (incResult as any).object.sequence
+
   const ops = client.apply(file)
 
-  const incResult = await client.update(current, { $inc: { version: 1 } }, true)
-  const version = (incResult as any).object.version
-
-  await client.update(current, { ...data })
-
-  await client.addCollection(
+  const versionId = await ops.createDoc(
     drive.class.FileVersion,
     current.space,
-    current._id,
-    drive.class.File,
-    'versions',
     {
-      version,
-      file: data.file,
-      metadata: data.metadata
+      ...data,
+      version: sequence
     }
   )
+
+  await ops.update(current, {
+    version: versionId,
+    versions: [...current.versions, versionId]
+  })
 
   await ops.commit()
 }
@@ -99,12 +95,9 @@ export async function restoreFileVersion (
     throw new Error('file not found')
   }
 
-  const currentVersion = await client.findOne(drive.class.FileVersion, { _id: version })
-  if (currentVersion === undefined) {
-    throw new Error('file version not found')
-  }
-
-  if (currentFile.version !== currentVersion.version) {
-    await createFileVersion(client, file, { file: currentVersion.file, metadata: currentVersion.metadata })
+  if (currentFile.version !== version) {
+    await client.update(currentFile, {
+      version
+    })
   }
 }

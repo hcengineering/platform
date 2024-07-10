@@ -17,8 +17,6 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core, {
   type Blob,
-  type Class,
-  type CollectionSize,
   type Domain,
   type FindOptions,
   type Ref,
@@ -40,19 +38,21 @@ import {
 } from '@hcengineering/drive'
 import {
   type Builder,
-  Hidden,
+  ArrOf,
+  Collection,
   Index,
   Mixin,
   Model,
   Prop,
   ReadOnly,
+  TypeFileSize,
   TypeRecord,
   TypeRef,
   TypeString,
-  UX,
-  Collection
+  TypeTimestamp,
+  UX
 } from '@hcengineering/model'
-import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
@@ -90,15 +90,6 @@ export class TResource extends TDoc implements Resource {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeRef(core.class.Blob), drive.string.File)
-  @ReadOnly()
-    file?: Ref<Blob>
-
-  @Prop(TypeRef(core.class.Blob), drive.string.Preview)
-  @ReadOnly()
-  @Hidden()
-    preview?: Ref<Blob>
-
   @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
@@ -110,6 +101,10 @@ export class TResource extends TDoc implements Resource {
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
+
+  @Prop(TypeRef(drive.class.FileVersion), drive.string.Version)
+  @ReadOnly()
+    version?: Ref<FileVersion>
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
@@ -124,21 +119,12 @@ export class TFolder extends TResource implements Folder {
   @ReadOnly()
   declare path: Ref<Folder>[]
 
-  declare file: undefined
-  declare preview: undefined
+  declare version: undefined
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
 @UX(drive.string.File)
 export class TFile extends TResource implements File {
-  @Prop(TypeRef(core.class.Blob), drive.string.File)
-  @ReadOnly()
-  declare file: Ref<Blob>
-
-  @Prop(TypeRecord(), drive.string.Metadata)
-  @ReadOnly()
-    metadata?: Record<string, any>
-
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
@@ -148,42 +134,51 @@ export class TFile extends TResource implements File {
   @ReadOnly()
   declare path: Ref<Folder>[]
 
+  @Prop(TypeRef(drive.class.FileVersion), drive.string.Version)
+  @ReadOnly()
+  declare version: Ref<FileVersion>
+
+  @Prop(ArrOf(TypeRef(drive.class.FileVersion)), drive.string.FileVersions)
+  @ReadOnly()
+    versions!: Array<Ref<FileVersion>>
+
   @Prop(TypeFileVersion(), drive.string.Version)
   @ReadOnly()
-    version!: number
-
-  @Prop(Collection(drive.class.FileVersion), drive.string.FileVersion)
-    versions!: CollectionSize<FileVersion>
+    sequence!: number
 }
 
-@Model(drive.class.FileVersion, core.class.AttachedDoc, DOMAIN_DRIVE)
+@Model(drive.class.FileVersion, core.class.Doc, DOMAIN_DRIVE)
 @UX(drive.string.FileVersion)
-export class TFileVersion extends TAttachedDoc implements FileVersion {
+export class TFileVersion extends TDoc implements FileVersion {
   declare space: Ref<Drive>
 
-  @Prop(TypeRef(drive.class.File), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-  declare attachedTo: Ref<File>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Index(IndexKind.Indexed)
-  declare attachedToClass: Ref<Class<File>>
-
-  @Prop(TypeString(), core.string.Collection)
-  @Hidden()
-  override collection: 'versions' = 'versions'
-
-  @Prop(TypeFileVersion(), drive.string.Version)
-  @ReadOnly()
-    version!: number
+  @Prop(TypeString(), drive.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
 
   @Prop(TypeRef(core.class.Blob), drive.string.File)
   @ReadOnly()
     file!: Ref<Blob>
 
+  @Prop(TypeFileSize(), drive.string.Size)
+  @ReadOnly()
+    size!: number
+
+  @Prop(TypeString(), drive.string.ContentType)
+  @ReadOnly()
+    type!: string
+
+  @Prop(TypeTimestamp(), drive.string.LastModified)
+  @ReadOnly()
+    lastModified!: number
+
   @Prop(TypeRecord(), drive.string.Metadata)
   @ReadOnly()
     metadata?: Record<string, any>
+
+  @Prop(TypeFileVersion(), drive.string.Version)
+  @ReadOnly()
+    version!: number
 }
 
 function defineTypes (builder: Builder): void {
@@ -327,23 +322,22 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        '$lookup.file.size',
+        '$lookup.version.size',
         'comments',
-        '$lookup.file.modifiedOn',
+        '$lookup.version.lastModified',
         'createdBy'
       ],
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
         lookup: {
-          file: core.class.Blob,
-          preview: core.class.Blob
+          version: drive.class.FileVersion
         },
         sort: {
           _class: SortingOrder.Descending
         }
       } as FindOptions<Resource>,
       configOptions: {
-        hiddenKeys: ['name', 'file', 'parent', 'path', 'type'],
+        hiddenKeys: ['name', 'parent', 'path', 'version', 'versions'],
         sortable: true
       }
     },
@@ -371,8 +365,8 @@ function defineResource (builder: Builder): void {
         groupBy: [],
         orderBy: [
           ['name', SortingOrder.Ascending],
-          ['$lookup.file.size', SortingOrder.Ascending],
-          ['$lookup.file.modifiedOn', SortingOrder.Descending]
+          ['$lookup.version.size', SortingOrder.Ascending],
+          ['$lookup.version.modifiedOn', SortingOrder.Descending]
         ],
         other: []
       },
@@ -383,19 +377,18 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        '$lookup.file.size',
-        '$lookup.file.modifiedOn',
+        '$lookup.version.size',
+        '$lookup.version.modifiedOn',
         'createdBy'
       ],
       configOptions: {
-        hiddenKeys: ['name', 'file', 'parent', 'path'],
+        hiddenKeys: ['name', 'parent', 'path', 'version', 'versions'],
         sortable: true
       },
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
         lookup: {
-          file: core.class.Blob,
-          preview: core.class.Blob
+          version: drive.class.FileVersion
         },
         sort: {
           _class: SortingOrder.Descending

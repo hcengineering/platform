@@ -55,13 +55,16 @@ async function EditDrive (drive: Drive): Promise<void> {
 async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const href = await getBlobHref(file.$lookup?.file, file.file, file.name)
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.target = '_blank'
-    link.href = href
-    link.download = file.name
-    link.click()
+    const version = file.$lookup?.version
+    if (version != null) {
+      const href = await getBlobHref(undefined, version.file, version.name)
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.target = '_blank'
+      link.href = href
+      link.download = file.name
+      link.click()
+    }
   }
 }
 

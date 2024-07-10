@@ -85,10 +85,12 @@ export default mergeIds(driveId, drive, {
     Name: '' as IntlString,
     Description: '' as IntlString,
     Metadata: '' as IntlString,
+    ContentType: '' as IntlString,
+    Size: '' as IntlString,
+    LastModified: '' as IntlString,
     Parent: '' as IntlString,
     Path: '' as IntlString,
     Drives: '' as IntlString,
-    Preview: '' as IntlString,
     Version: '' as IntlString
   }
 })
