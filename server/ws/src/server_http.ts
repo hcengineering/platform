@@ -66,6 +66,8 @@ export function startHttpServer (
     })
   }
 
+  const rpcHandler = new RPCHandler()
+
   const app = express()
   app.use(cors())
   app.use(
@@ -242,7 +244,6 @@ export function startHttpServer (
   })
 
   const httpServer = http.createServer(app)
-
   const wss = new WebSocketServer({
     noServer: true,
     perMessageDeflate: enableCompression
@@ -283,7 +284,8 @@ export function startHttpServer (
       language: request.headers['accept-language'] ?? '',
       email: token.email,
       mode: token.extra?.mode,
-      model: token.extra?.model
+      model: token.extra?.model,
+      rpcHandler
     }
     const cs: ConnectionSocket = createWebsocketClientSocket(ws, data)
 
@@ -385,19 +387,18 @@ export function startHttpServer (
       if (LOGGING_ENABLED) {
         ctx.error('invalid token', err)
       }
-      const handler = new RPCHandler()
       wss.handleUpgrade(request, socket, head, (ws) => {
         const resp: Response<any> = {
           id: -1,
           error: UNAUTHORIZED,
           result: 'hello'
         }
-        ws.send(handler.serialize(resp, false), { binary: false })
+        ws.send(rpcHandler.serialize(resp, false), { binary: false })
         ws.onmessage = (msg) => {
           const resp: Response<any> = {
             error: UNAUTHORIZED
           }
-          ws.send(handler.serialize(resp, false), { binary: false })
+          ws.send(rpcHandler.serialize(resp, false), { binary: false })
         }
       })
     }
@@ -431,9 +432,16 @@ export function startHttpServer (
 }
 function createWebsocketClientSocket (
   ws: WebSocket,
-  data: { remoteAddress: string, userAgent: string, language: string, email: string, mode: any, model: any }
+  data: {
+    remoteAddress: string
+    userAgent: string
+    language: string
+    email: string
+    mode: any
+    model: any
+    rpcHandler: RPCHandler
+  }
 ): ConnectionSocket {
-  const handler = new RPCHandler()
   const cs: ConnectionSocket = {
     id: generateId(),
     isClosed: false,
@@ -442,12 +450,12 @@ function createWebsocketClientSocket (
       ws.close()
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
-      return handler.readRequest(buffer, binary)
+      return data.rpcHandler.readRequest(buffer, binary)
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
       const sst = Date.now()
-      const smsg = handler.serialize(msg, binary)
+      const smsg = data.rpcHandler.serialize(msg, binary)
       ctx.measure('serialize', Date.now() - sst)
 
       ctx.measure('send-data', smsg.length)

@@ -37,13 +37,10 @@ import core, {
 import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { type ClientSessionCtx, type Session, type SessionRequest, type StatisticsElement } from './types'
-import { RPCHandler } from '@hcengineering/rpc'
-
 /**
  * @public
  */
 export class ClientSession implements Session {
-  handler = new RPCHandler()
   createTime = Date.now()
   requests = new Map<string, SessionRequest>()
   binaryMode: boolean = false
