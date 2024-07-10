@@ -106,7 +106,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     previewConfig = `*|${uploadUrl}/:workspace?file=:blobId.:format&size=:size`
   }
 
-  let pushPublicKey = process.env.PUSH_PUBLIC_KEY
+  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
 
   const brandingUrl = process.env.BRANDING_URL
 
