@@ -48,11 +48,16 @@ export async function OnReactionChanged (originTx: Tx, control: TriggerControl):
   const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
 
   if (innerTx._class === core.class.TxCreateDoc) {
-    return await createReactionNotifications(tx, control)
+    const txes = await createReactionNotifications(tx, control)
+
+    await control.apply(txes, true)
+    return txes
   }
 
   if (innerTx._class === core.class.TxRemoveDoc) {
-    return await removeReactionNotifications(tx, control)
+    const txes = await removeReactionNotifications(tx, control)
+    await control.apply(txes, true)
+    return txes
   }
 
   return []

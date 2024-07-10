@@ -15,12 +15,9 @@
 //
 
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
-import { Analytics } from '@hcengineering/analytics'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
   type AvatarInfo,
-  Employee,
-  formatName,
   getAvatarProviderId,
   getGravatarUrl,
   Person,
@@ -75,7 +72,8 @@ import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   getPersonAccount,
   getPersonAccountById,
-  NOTIFICATION_BODY_SIZE
+  NOTIFICATION_BODY_SIZE,
+  UserInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
 import { stripTags } from '@hcengineering/text'
@@ -83,7 +81,7 @@ import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
 
-import { Content, NotifyParams, NotifyResult, UserInfo } from './types'
+import { Content, NotifyParams, NotifyResult } from './types'
 import {
   getHTMLPresenter,
   getNotificationContent,
@@ -129,37 +127,41 @@ export async function getCommonNotificationTxes (
   notifyResult: NotifyResult,
   _class = notification.class.CommonInboxNotification
 ): Promise<Tx[]> {
+  if (notifyResult.size === 0) {
+    return []
+  }
+
   const res: Tx[] = []
+  const resources = await control.modelDb.findAll(serverNotification.class.NotificationProviderResources, {})
 
-  if (notifyResult.allowed) {
-    const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo })
+  for (const [provider] of notifyResult.entries()) {
+    if (provider === notification.providers.InboxNotificationProvider) {
+      const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo })
 
-    await pushInboxNotifications(
-      control,
-      res,
-      receiver,
-      attachedTo,
-      attachedToClass,
-      space,
-      notifyContexts,
-      data,
-      _class,
-      modifiedOn,
-      sender,
-      notifyResult.push
-    )
-  }
+      await pushInboxNotifications(
+        control,
+        res,
+        receiver,
+        attachedTo,
+        attachedToClass,
+        space,
+        notifyContexts,
+        data,
+        _class,
+        modifiedOn,
+        sender,
+        notifyResult.has(notification.providers.PushNotificationProvider)
+      )
+      continue
+    }
 
-  if (notifyResult.emails.length === 0) {
-    return res
-  }
+    const resource = resources.find((it) => it.provider === provider)
+    if (resource === undefined) continue
 
-  if (receiver.person !== undefined && control.hierarchy.isDerived(receiver.person._class, contact.mixin.Employee)) {
-    const emp = receiver.person as Employee
-    if (emp?.active) {
-      for (const type of notifyResult.emails) {
-        await notifyByEmail(control, type._id, doc, sender, receiver)
-      }
+    const fn = await getResource(resource.fn)
+    const txes = await fn(control, notifyResult.get(provider) ?? [], doc, receiver, sender)
+    if (txes.length > 0) {
+      res.push(...txes)
     }
   }
 
@@ -168,6 +170,7 @@ export async function getCommonNotificationTxes (
 
 async function getTextPart (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const TextPresenter = getTextPresenter(doc._class, control.hierarchy)
+  console.log({ _class: doc._class, presenter: TextPresenter })
   if (TextPresenter === undefined) return
   return await (
     await getResource(TextPresenter.presenter)
@@ -189,7 +192,7 @@ function fillTemplate (template: string, sender: string, doc: string, data: stri
 /**
  * @public
  */
-export async function getContent (
+export async function getContentByTemplate (
   doc: Doc | undefined,
   sender: string,
   type: Ref<BaseNotificationType>,
@@ -210,59 +213,6 @@ export async function getContent (
     text,
     html,
     subject
-  }
-}
-
-async function notifyByEmail (
-  control: TriggerControl,
-  type: Ref<BaseNotificationType>,
-  doc: Doc | undefined,
-  sender: UserInfo,
-  receiver: UserInfo,
-  data: string = ''
-): Promise<void> {
-  const account = receiver.account
-
-  if (account === undefined) {
-    return
-  }
-
-  const senderPerson = sender.person
-  const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
-
-  const content = await getContent(doc, senderName, type, control, data)
-
-  if (content !== undefined) {
-    await sendEmailNotification(content.text, content.html, content.subject, account.email)
-  }
-}
-
-export async function sendEmailNotification (
-  text: string,
-  html: string,
-  subject: string,
-  receiver: string
-): Promise<void> {
-  try {
-    const sesURL = getMetadata(serverNotification.metadata.SesUrl)
-    if (sesURL === undefined || sesURL === '') {
-      console.log('Please provide email service url to enable email confirmations.')
-      return
-    }
-    await fetch(concatLink(sesURL, '/send'), {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        text,
-        html,
-        subject,
-        to: [receiver]
-      })
-    })
-  } catch (err) {
-    console.log('Could not send email notification', err)
   }
 }
 
@@ -465,12 +415,6 @@ async function activityInboxNotificationToText (doc: Data<ActivityInboxNotificat
   }
   if (doc.body != null) {
     body = await translate(doc.body, params)
-  }
-
-  // TODO: temporary log to understand problem. Remove it later.
-  if (body === 'chunter:string:MessageNotificationBody') {
-    console.error('Cannot translate chunter notification: ', { doc, params })
-    Analytics.handleError(new Error('Cannot translate chunter notification'))
   }
 
   return [title, body]
@@ -716,6 +660,7 @@ export async function getNotificationTxes (
   }
 
   const res: Tx[] = []
+  const resources = await control.modelDb.findAll(serverNotification.class.NotificationProviderResources, {})
 
   for (const message of activityMessages) {
     const docMessage = message._class === activity.class.DocUpdateMessage ? (message as DocUpdateMessage) : undefined
@@ -730,33 +675,33 @@ export async function getNotificationTxes (
       docMessage
     )
 
-    if (notifyResult.allowed) {
-      await pushActivityInboxNotifications(
-        originTx,
-        control,
-        res,
-        target,
-        sender,
-        object,
-        docNotifyContexts,
-        [message],
-        params.shouldUpdateTimestamp,
-        notifyResult.push,
-        cache
-      )
-    }
+    for (const [provider, types] of notifyResult.entries()) {
+      if (provider === notification.providers.InboxNotificationProvider) {
+        await pushActivityInboxNotifications(
+          originTx,
+          control,
+          res,
+          target,
+          sender,
+          object,
+          docNotifyContexts,
+          [message],
+          params.shouldUpdateTimestamp,
+          notifyResult.has(notification.providers.PushNotificationProvider),
+          cache
+        )
+        continue
+      }
 
-    if (notifyResult.emails.length === 0) {
-      continue
-    }
+      const resource = resources.find((it) => it.provider === provider)
 
-    if (target.person !== undefined && control.hierarchy.isDerived(target.person._class, contact.mixin.Employee)) {
-      const emp = target.person as Employee
+      if (resource === undefined) continue
 
-      if (emp?.active) {
-        for (const type of notifyResult.emails) {
-          await notifyByEmail(control, type._id, object, sender, target)
-        }
+      const fn = await getResource(resource.fn)
+
+      const txes = await fn(control, types, object, target, sender)
+      if (txes.length > 0) {
+        res.push(...txes)
       }
     }
   }
@@ -775,12 +720,11 @@ export async function createCollabDocInfo (
 ): Promise<Tx[]> {
   let res: Tx[] = []
 
-  if (originTx.space === core.space.DerivedTx || collaborators.length === 0) {
+  if (originTx.space === core.space.DerivedTx) {
     return res
   }
 
   const docMessages = activityMessages.filter((message) => message.attachedTo === object._id)
-
   if (docMessages.length === 0) {
     return res
   }
@@ -793,6 +737,10 @@ export async function createCollabDocInfo (
     if (acc !== undefined) {
       targets.add(acc._id)
     }
+  }
+
+  if (targets.size === 0) {
+    return res
   }
 
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
@@ -955,17 +903,23 @@ async function updateCollaboratorsMixin (
       prevCollabs = mixin !== undefined ? new Set(await getDocCollaborators(prevDoc, mixin, control)) : new Set()
     }
 
+    const type = await control.modelDb.findOne(notification.class.BaseNotificationType, {
+      _id: notification.ids.CollaboratoAddNotification
+    })
+
+    if (type === undefined) {
+      return res
+    }
+
+    const providers = await control.modelDb.findAll(notification.class.NotificationProvider, {})
+
     for (const collab of tx.attributes.collaborators) {
       if (!prevCollabs.has(collab) && tx.modifiedBy !== collab) {
-        if (
-          await isAllowed(
-            control,
-            collab as Ref<PersonAccount>,
-            notification.ids.CollaboratoAddNotification,
-            notification.providers.PlatformNotification
-          )
-        ) {
-          newCollabs.push(collab)
+        for (const provider of providers) {
+          if (await isAllowed(control, collab as Ref<PersonAccount>, type, provider)) {
+            newCollabs.push(collab)
+            break
+          }
         }
       }
     }
@@ -1227,9 +1181,7 @@ export async function OnAttributeCreate (tx: Tx, control: TriggerControl): Promi
     objectClass,
     txClasses,
     hidden: false,
-    providers: {
-      [notification.providers.PlatformNotification]: false
-    },
+    defaultEnabled: false,
     label: attribute.label
   }
   if (isCollection) {

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person, PersonAccount, formatName, getName } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount, getName, formatName } from '@hcengineering/contact'
 import core, {
   Account,
   Ref,
@@ -25,10 +25,7 @@ import core, {
   TxUpdateDoc,
   UserStatus
 } from '@hcengineering/core'
-import notification from '@hcengineering/notification'
-import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { createPushNotification, isAllowed } from '@hcengineering/server-notification-resources'
 import love, {
   Invite,
   JoinRequest,
@@ -39,7 +36,10 @@ import love, {
   isOffice,
   loveId
 } from '@hcengineering/love'
+import { createPushNotification, isAllowed } from '@hcengineering/server-notification-resources'
+import notification from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
+import { translate } from '@hcengineering/platform'
 
 export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxMixin<Person, Employee>
@@ -254,17 +254,18 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
         const res: Tx[] = []
         const from = (await control.findAll(contact.class.Person, { _id: request.person }))[0]
         if (from === undefined) return []
+        const type = await control.modelDb.findOne(notification.class.NotificationType, {
+          _id: love.ids.KnockNotification
+        })
+        if (type === undefined) return []
+        const provider = await control.modelDb.findOne(notification.class.NotificationProvider, {
+          _id: notification.providers.PushNotificationProvider
+        })
+        if (provider === undefined) return []
         for (const user of roomInfo.persons) {
           const userAcc = await control.modelDb.findOne(contact.class.PersonAccount, { person: user })
           if (userAcc === undefined) continue
-          if (
-            await isAllowed(
-              control,
-              userAcc._id,
-              love.ids.KnockNotification,
-              notification.providers.BrowserNotification
-            )
-          ) {
+          if (await isAllowed(control, userAcc._id, type, provider)) {
             const path = [workbenchId, control.workspace.workspaceUrl, loveId]
             const title = await translate(love.string.KnockingLabel, {})
             const body = await translate(love.string.IsKnocking, {
@@ -290,9 +291,15 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
       const userAcc = await control.modelDb.findOne(contact.class.PersonAccount, { person: target._id })
       if (userAcc === undefined) return []
       const from = (await control.findAll(contact.class.Person, { _id: invite.from }))[0]
-      if (
-        await isAllowed(control, userAcc._id, love.ids.InviteNotification, notification.providers.BrowserNotification)
-      ) {
+      const type = await control.modelDb.findOne(notification.class.NotificationType, {
+        _id: love.ids.InviteNotification
+      })
+      if (type === undefined) return []
+      const provider = await control.modelDb.findOne(notification.class.NotificationProvider, {
+        _id: notification.providers.PushNotificationProvider
+      })
+      if (provider === undefined) return []
+      if (await isAllowed(control, userAcc._id, type, provider)) {
         const path = [workbenchId, control.workspace.workspaceUrl, loveId]
         const title = await translate(love.string.InivitingLabel, {})
         const body =

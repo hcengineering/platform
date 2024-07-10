@@ -182,14 +182,10 @@ export async function getPersonNotificationTxes (
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
   const messageNotifyResult = await getMessageNotifyResult(reference, receiver, control, originTx, doc)
 
-  if (messageNotifyResult.allowed) {
-    notifyResult.allowed = false
-  }
-  if (messageNotifyResult.push) {
-    notifyResult.push = false
-  }
-  if (messageNotifyResult.emails.length > 0) {
-    notifyResult.emails = []
+  for (const [provider] of messageNotifyResult.entries()) {
+    if (notifyResult.has(provider)) {
+      notifyResult.delete(provider)
+    }
   }
 
   const txes = await getCommonNotificationTxes(
@@ -206,7 +202,9 @@ export async function getPersonNotificationTxes (
     notification.class.MentionInboxNotification
   )
 
-  if (!notifyResult.allowed && notifyResult.push) {
+  const shouldNotifyInbox = notifyResult.has(notification.providers.InboxNotificationProvider)
+  const shouldPush = notifyResult.has(notification.providers.PushNotificationProvider)
+  if (!shouldNotifyInbox && shouldPush) {
     const exists = (
       await control.findAll(
         notification.class.ActivityInboxNotification,
@@ -322,17 +320,17 @@ async function getMessageNotifyResult (
     reference.attachedDocId === undefined ||
     tx._class !== core.class.TxCreateDoc
   ) {
-    return { allowed: false, emails: [], push: false }
+    return new Map()
   }
 
   const mixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
 
   if (mixin === undefined || !mixin.collaborators.includes(account._id)) {
-    return { allowed: false, emails: [], push: false }
+    return new Map()
   }
 
   if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
-    return { allowed: false, emails: [], push: false }
+    return new Map()
   }
 
   return await isShouldNotifyTx(control, tx, originTx, doc, account, false, false, undefined)

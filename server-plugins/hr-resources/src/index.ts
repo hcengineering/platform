@@ -40,7 +40,9 @@ import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getEmployee, getPersonAccountById } from '@hcengineering/server-notification'
-import { getContent, isAllowed, sendEmailNotification } from '@hcengineering/server-notification-resources'
+import { getContentByTemplate, isAllowed } from '@hcengineering/server-notification-resources'
+import gmail from '@hcengineering/gmail'
+import { sendEmailNotification } from '@hcengineering/server-gmail-resources'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
@@ -248,12 +250,13 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
   )
 }
 
+// TODO: why we need specific email notifications instead of using general flow?
 async function sendEmailNotifications (
   control: TriggerControl,
   sender: PersonAccount,
   doc: Request | PublicHoliday,
   space: Ref<Department>,
-  type: Ref<NotificationType>
+  typeId: Ref<NotificationType>
 ): Promise<void> {
   const contacts = new Set<Ref<Contact>>()
   const departments = await buildHierarchy(space, control)
@@ -268,8 +271,14 @@ async function sendEmailNotifications (
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {
     person: { $in: Array.from(contacts.values()) as Ref<Employee>[] }
   })
+  const type = await control.modelDb.findOne(notification.class.NotificationType, { _id: typeId })
+  if (type === undefined) return
+  const provider = await control.modelDb.findOne(notification.class.NotificationProvider, {
+    _id: gmail.providers.EmailNotificationProvider
+  })
+  if (provider === undefined) return
   for (const account of accounts) {
-    const allowed = await isAllowed(control, account._id, type, notification.providers.EmailNotification)
+    const allowed = await isAllowed(control, account._id, type, provider)
     if (!allowed) {
       contacts.delete(account.person)
     }
@@ -283,7 +292,7 @@ async function sendEmailNotifications (
   const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
 
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
-  const content = await getContent(doc, senderName, type, control, '')
+  const content = await getContentByTemplate(doc, senderName, type._id, control, '')
   if (content === undefined) return
 
   for (const channel of channels) {

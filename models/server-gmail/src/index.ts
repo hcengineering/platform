@@ -34,6 +34,11 @@ export function createModel (builder: Builder): void {
     }
   )
 
+  builder.createDoc(serverNotification.class.NotificationProviderResources, core.space.Model, {
+    provider: gmail.providers.EmailNotificationProvider,
+    fn: serverGmail.function.SendEmailNotifications
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverGmail.trigger.OnMessageCreate,
     txMatch: {

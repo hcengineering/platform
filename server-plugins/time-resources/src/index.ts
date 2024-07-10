@@ -37,14 +37,14 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import {
   getCommonNotificationTxes,
   getNotificationContent,
-  isShouldNotifyTx,
-  UserInfo
+  isShouldNotifyTx
 } from '@hcengineering/server-notification-resources'
 import task, { makeRank } from '@hcengineering/task'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text'
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
 import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
+import { UserInfo } from '@hcengineering/server-notification'
 
 /**
  * @public

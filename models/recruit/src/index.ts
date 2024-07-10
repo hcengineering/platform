@@ -118,7 +118,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy']
+    fields: ['createdBy', 'assignee']
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {

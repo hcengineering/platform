@@ -39,14 +39,15 @@ import serverNotification, {
   getPersonAccountById,
   HTMLPresenter,
   NotificationPresenter,
-  TextPresenter
+  TextPresenter,
+  UserInfo
 } from '@hcengineering/server-notification'
 import { getResource, IntlString, translate } from '@hcengineering/platform'
 import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import { DocUpdateMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 
-import { UserInfo, NotifyResult } from './types'
+import { NotifyResult } from './types'
 
 /**
  * @public
@@ -107,45 +108,65 @@ export async function shouldNotifyCommon (
 ): Promise<NotifyResult> {
   const type = (await control.modelDb.findAll(notification.class.CommonNotificationType, { _id: typeId }))[0]
 
-  const emailTypes: BaseNotificationType[] = []
-  let allowed = false
-  let push = false
-
   if (type === undefined) {
-    return { allowed, emails: emailTypes, push }
+    return new Map()
   }
 
-  if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.PlatformNotification)) {
-    allowed = true
-  }
-  if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.BrowserNotification)) {
-    push = true
-  }
-  if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.EmailNotification)) {
-    emailTypes.push(type)
+  const result = new Map<Ref<NotificationProvider>, BaseNotificationType[]>()
+  const providers = await control.modelDb.findAll(notification.class.NotificationProvider, {})
+
+  for (const provider of providers) {
+    const allowed = await isAllowed(control, user as Ref<PersonAccount>, type, provider)
+    if (allowed) {
+      const cur = result.get(provider._id) ?? []
+      result.set(provider._id, [...cur, type])
+    }
   }
 
-  return { allowed, push, emails: emailTypes }
+  return result
 }
 
 export async function isAllowed (
   control: TriggerControl,
   receiver: Ref<PersonAccount>,
-  typeId: Ref<BaseNotificationType>,
-  providerId: Ref<NotificationProvider>
+  type: BaseNotificationType,
+  provider: NotificationProvider
 ): Promise<boolean> {
-  const settings = await control.queryFind(notification.class.NotificationSetting, {})
-  const setting = settings.find((p) => p.attachedTo === providerId && p.type === typeId && p.modifiedBy === receiver)
+  const providersSettings = await control.queryFind(notification.class.NotificationProviderSetting, {})
+  const providerSetting = providersSettings.find(
+    ({ attachedTo, modifiedBy }) => attachedTo === provider._id && modifiedBy === receiver
+  )
+
+  if (providerSetting !== undefined && !providerSetting.enabled) {
+    return false
+  }
+
+  if (providerSetting === undefined && !provider.defaultEnabled) {
+    return false
+  }
+
+  const providerDefaults = await control.modelDb.findAll(notification.class.NotificationProviderDefaults, {})
+
+  if (providerDefaults.some((it) => it.provider === provider._id && it.ignoredTypes.includes(type._id))) {
+    return false
+  }
+
+  const typesSettings = await control.queryFind(notification.class.NotificationTypeSetting, {})
+  const setting = typesSettings.find(
+    (it) => it.attachedTo === provider._id && it.type === type._id && it.modifiedBy === receiver
+  )
+
   if (setting !== undefined) {
     return setting.enabled
   }
-  const type = (
-    await control.modelDb.findAll(notification.class.BaseNotificationType, {
-      _id: typeId
-    })
-  )[0]
+
+  if (providerDefaults.some((it) => it.provider === provider._id && it.enabledTypes.includes(type._id))) {
+    return true
+  }
+
   if (type === undefined) return false
-  return type.providers[providerId] ?? false
+
+  return type.defaultEnabled
 }
 
 export async function isShouldNotifyTx (
@@ -158,10 +179,6 @@ export async function isShouldNotifyTx (
   isSpace: boolean,
   docUpdateMessage?: DocUpdateMessage
 ): Promise<NotifyResult> {
-  let allowed = false
-  let push = false
-
-  const emailTypes: NotificationType[] = []
   const types = await getMatchedTypes(
     control,
     tx,
@@ -170,8 +187,9 @@ export async function isShouldNotifyTx (
     isSpace,
     docUpdateMessage?.attributeUpdates?.attrKey
   )
-
   const modifiedAccount = await getPersonAccountById(tx.modifiedBy, control)
+  const result = new Map<Ref<NotificationProvider>, BaseNotificationType[]>()
+  const providers = await control.modelDb.findAll(notification.class.NotificationProvider, {})
 
   for (const type of types) {
     if (
@@ -190,21 +208,17 @@ export async function isShouldNotifyTx (
         if (!res) continue
       }
     }
-    if (await isAllowed(control, user._id, type._id, notification.providers.PlatformNotification)) {
-      allowed = true
-    }
-    if (await isAllowed(control, user._id, type._id, notification.providers.BrowserNotification)) {
-      push = true
-    }
-    if (await isAllowed(control, user._id, type._id, notification.providers.EmailNotification)) {
-      emailTypes.push(type)
+    for (const provider of providers) {
+      const allowed = await isAllowed(control, user._id, type, provider)
+
+      if (allowed) {
+        const cur = result.get(provider._id) ?? []
+        result.set(provider._id, [...cur, type])
+      }
     }
   }
-  return {
-    allowed,
-    push,
-    emails: emailTypes
-  }
+
+  return result
 }
 
 async function getMatchedTypes (
@@ -414,7 +428,7 @@ export async function getNotificationContent (
 
 export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerControl): Promise<UserInfo[]> {
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
-  const persons = await control.findAll(contact.class.Person, { _id: { $in: accounts.map(({ person }) => person) } })
+  const persons = await control.queryFind(contact.class.Person, {})
 
   return accounts.map((account) => ({
     _id: account._id,
