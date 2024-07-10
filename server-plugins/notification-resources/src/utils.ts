@@ -414,7 +414,7 @@ export async function getNotificationContent (
 
 export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerControl): Promise<UserInfo[]> {
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
-  const persons = await control.findAll(contact.class.Person, { _id: { $in: accounts.map(({ person }) => person) } })
+  const persons = await control.queryFind(contact.class.Person, {})
 
   return accounts.map((account) => ({
     _id: account._id,
