@@ -281,13 +281,17 @@ describe('query', () => {
 
     const expectedLength = 2
     let attempt = 0
+    let x: undefined | ((s: any) => void)
+    const y = new Promise((resolve) => (x = resolve))
+
     const pp = new Promise((resolve) => {
       liveQuery.query<Space>(core.class.Space, { private: false }, (result) => {
         expect(result).toHaveLength(expectedLength - attempt)
+        if (attempt === 0) x?.(null)
         if (attempt++ === expectedLength) resolve(null)
       })
     })
-
+    await y
     const spaces = await liveQuery.findAll(core.class.Space, {})
     for (const space of spaces) {
       await factory.removeDoc(space._class, space.space, space._id)
@@ -298,13 +302,16 @@ describe('query', () => {
   it('remove with limit', async () => {
     const { liveQuery, factory } = await getClient()
 
-    const expectedLength = 1
+    const expectedLength = 2
     let attempt = 0
+    let x: undefined | ((s: any) => void)
+    const y = new Promise((resolve) => (x = resolve))
     const pp = new Promise((resolve) => {
       liveQuery.query<Space>(
         core.class.Space,
         { private: false },
         (result) => {
+          if (attempt === 0) x?.(null)
           expect(result).toHaveLength(attempt++ === expectedLength ? 0 : 1)
           if (attempt === expectedLength) resolve(null)
         },
@@ -312,6 +319,7 @@ describe('query', () => {
       )
     })
 
+    await y
     const spaces = await liveQuery.findAll(core.class.Space, {})
     for (const space of spaces) {
       await factory.removeDoc(space._class, space.space, space._id)
@@ -415,6 +423,14 @@ describe('query', () => {
             } else {
               expect(comment.$lookup?.space).toBeUndefined()
               attempt++
+              void factory.createDoc(
+                core.class.Space,
+                futureSpace.space,
+                {
+                  ...futureSpace
+                },
+                futureSpace._id
+              )
             }
           }
         },
@@ -422,14 +438,6 @@ describe('query', () => {
       )
     })
 
-    await factory.createDoc(
-      core.class.Space,
-      futureSpace.space,
-      {
-        ...futureSpace
-      },
-      futureSpace._id
-    )
     await pp
   })
 
@@ -580,14 +588,13 @@ describe('query', () => {
             } else {
               expect((comment.$lookup?.space as Doc)?._id).toEqual(futureSpace)
               attempt++
+              void factory.removeDoc(core.class.Space, core.space.Model, futureSpace)
             }
           }
         },
         { lookup: { space: core.class.Space } }
       )
     })
-
-    await factory.removeDoc(core.class.Space, core.space.Model, futureSpace)
 
     await pp
   })
