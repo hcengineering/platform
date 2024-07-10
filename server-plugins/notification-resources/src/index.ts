@@ -15,7 +15,6 @@
 //
 
 import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
-import { Analytics } from '@hcengineering/analytics'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
   type AvatarInfo,
@@ -465,12 +464,6 @@ async function activityInboxNotificationToText (doc: Data<ActivityInboxNotificat
   }
   if (doc.body != null) {
     body = await translate(doc.body, params)
-  }
-
-  // TODO: temporary log to understand problem. Remove it later.
-  if (body === 'chunter:string:MessageNotificationBody') {
-    console.error('Cannot translate chunter notification: ', { doc, params })
-    Analytics.handleError(new Error('Cannot translate chunter notification'))
   }
 
   return [title, body]
@@ -1299,7 +1292,7 @@ async function applyUserTxes (
       cache.set(account._id, account)
       await control.apply(txs)
 
-      const m1 = toIdMap(txes)
+      const m1 = toIdMap(txs)
       control.operationContext.derived.targets.docNotifyContext = (it) => {
         if (m1.has(it._id)) {
           return [account.email]
