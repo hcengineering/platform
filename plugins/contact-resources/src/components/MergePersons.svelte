@@ -14,7 +14,17 @@
 -->
 <script lang="ts">
   import { Channel, Person, getName } from '@hcengineering/contact'
-  import core, { Doc, DocumentUpdate, Mixin, Ref, RefTo, Tx, TxOperations, TxProcessor } from '@hcengineering/core'
+  import core, {
+    ArrOf,
+    Doc,
+    DocumentUpdate,
+    Mixin,
+    Ref,
+    RefTo,
+    Tx,
+    TxOperations,
+    TxProcessor
+  } from '@hcengineering/core'
   import { Card, createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
   import { Toggle } from '@hcengineering/ui'
   import { isCollectionAttr } from '@hcengineering/view-resources'
@@ -224,14 +234,14 @@
 
     const h = client.getHierarchy()
     // Move all possible references to Account and Employee and replace to target one.
-    const anchestors = h.getAncestors(contact.class.Person)
+    const ancestors = h.getAncestors(contact.class.Person)
     const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
       const to = it.type as RefTo<Doc>
       return (
         to.to === core.class.Account ||
         to.to === contact.class.PersonAccount ||
         h.getBaseClass(to.to) === contact.class.Person ||
-        anchestors.includes(to.to)
+        ancestors.includes(to.to)
       )
     })
 
@@ -264,12 +274,14 @@
       }
     }
     const arrs = (await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })).filter((it) => {
-      const to = it.type as RefTo<Doc>
+      const to = it.type as ArrOf<Doc>
+      if (to.of._class !== core.class.RefTo) return false
+      const refTo = to.of as RefTo<Doc>
       return (
-        to.to === core.class.Account ||
-        to.to === contact.class.PersonAccount ||
-        h.getBaseClass(to.to) === contact.class.Person ||
-        anchestors.includes(to.to)
+        refTo.to === core.class.Account ||
+        refTo.to === contact.class.PersonAccount ||
+        h.getBaseClass(refTo.to) === contact.class.Person ||
+        ancestors.includes(refTo.to)
       )
     })
 
