@@ -1,4 +1,5 @@
 import {
+  type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -7,12 +8,10 @@ import {
   type MeasureContext,
   type Ref,
   type Tx,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl,
-  type Branding
+  type WorkspaceId
 } from '@hcengineering/core'
 import { type Request, type Response } from '@hcengineering/rpc'
-import { type BroadcastFunc, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import { type Pipeline, type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 /**
@@ -83,17 +82,6 @@ export interface Session {
 
   getMode: () => string
 }
-
-/**
- * @public
- */
-export type PipelineFactory = (
-  ctx: MeasureContext,
-  ws: WorkspaceIdWithUrl,
-  upgrade: boolean,
-  broadcast: BroadcastFunc,
-  branding: Branding | null
-) => Promise<Pipeline>
 
 /**
  * @public

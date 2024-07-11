@@ -51,7 +51,8 @@ export async function createPipeline (
   constructors: MiddlewareCreator[],
   upgrade: boolean,
   broadcast: BroadcastFunc,
-  branding: Branding | null
+  branding: Branding | null,
+  disableTriggers?: boolean
 ): Promise<Pipeline> {
   const broadcastHandlers: BroadcastFunc[] = [broadcast]
   const _broadcast: BroadcastFunc = (
@@ -68,7 +69,8 @@ export async function createPipeline (
       await createServerStorage(ctx, conf, {
         upgrade,
         broadcast: _broadcast,
-        branding
+        branding,
+        disableTriggers
       })
   )
   const pipelineResult = await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), storage, constructors)

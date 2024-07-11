@@ -140,6 +140,17 @@ export interface Pipeline extends LowLevelStorage {
 /**
  * @public
  */
+export type PipelineFactory = (
+  ctx: MeasureContext,
+  ws: WorkspaceIdWithUrl,
+  upgrade: boolean,
+  broadcast: BroadcastFunc,
+  branding: Branding | null
+) => Promise<Pipeline>
+
+/**
+ * @public
+ */
 export interface TriggerControl {
   operationContext: SessionOperationContext
   ctx: MeasureContext
@@ -448,6 +459,8 @@ export interface ServerStorageOptions {
 
   broadcast: BroadcastFunc
   branding: Branding | null
+
+  disableTriggers?: boolean
 }
 
 export interface ServiceAdapter {

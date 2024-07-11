@@ -6,7 +6,6 @@ import {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
-  type BrandingMap,
   type MeasureContext
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
@@ -33,10 +32,9 @@ import {
   createPipeline,
   type DbConfiguration,
   type MiddlewareCreator,
-  type StorageAdapter,
-  type StorageConfiguration
+  type PipelineFactory,
+  type StorageAdapter
 } from '@hcengineering/server-core'
-import { type PipelineFactory, type ServerFactory } from '@hcengineering/server-ws'
 import { createIndexStages } from './indexing'
 
 /**
@@ -48,15 +46,11 @@ export function createServerPipeline (
   dbUrl: string,
   opt: {
     fullTextUrl: string
-    storageConfig: StorageConfiguration
     rekoniUrl: string
-    port: number
-    productId: string
-    brandingMap: BrandingMap
-    serverFactory: ServerFactory
-
     indexProcessing: number // 1000
     indexParallel: number // 2
+    disableTriggers?: boolean
+    usePassedCtx?: boolean
 
     externalStorage: StorageAdapter
   },
@@ -73,7 +67,8 @@ export function createServerPipeline (
     QueryJoinMiddleware.create
   ]
   return (ctx, workspace, upgrade, broadcast, branding) => {
-    const wsMetrics = metrics.newChild('🧲 session', {})
+    const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
+    const wsMetrics = metricsCtx.newChild('🧲 session', {})
     const conf: DbConfiguration = {
       domains: {
         [DOMAIN_TX]: 'MongoTx',
@@ -151,6 +146,6 @@ export function createServerPipeline (
       storageFactory: opt.externalStorage,
       workspace
     }
-    return createPipeline(ctx, conf, middlewares, upgrade, broadcast, branding)
+    return createPipeline(ctx, conf, middlewares, upgrade, broadcast, branding, opt.disableTriggers)
   }
 }

@@ -16,23 +16,32 @@
 import { MeasureContext, systemAccountEmail } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { backupService } from '@hcengineering/server-backup'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv, createStorageFromConfig } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import config from './config'
 
-export function startBackup (ctx: MeasureContext): void {
+export function startBackup (
+  ctx: MeasureContext,
+  pipelineFactoryFactory: (mongoUrl: string, storage: StorageAdapter) => PipelineFactory
+): void {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
-  const storageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfiguration, config.MongoURL)
+  const backupStorageConfig = storageConfigFromEnv(config.Storage)
+  const workspaceStorageConfig = storageConfigFromEnv(config.WorkspaceStorage)
+
+  const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+  const workspaceStorageAdapter = buildStorageFromConfig(workspaceStorageConfig, config.MongoURL)
 
   setMetadata(toolPlugin.metadata.UserAgent, config.ServiceID)
+
+  const pipelineFactory = pipelineFactoryFactory(config.MongoURL, workspaceStorageAdapter)
 
   // A token to access account service
   const token = generateToken(systemAccountEmail, { name: 'backup', productId: '' })
 
-  const shutdown = backupService(ctx, storageAdapter, { ...config, Token: token })
+  const shutdown = backupService(ctx, storageAdapter, { ...config, Token: token }, pipelineFactory)
 
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)

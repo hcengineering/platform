@@ -65,10 +65,7 @@ class StorageBlobAdapter implements DbAdapter {
   }
 
   find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
-    if (recheck === true) {
-      return (this.client as StorageAdapterEx).find(ctx, this.workspaceId)
-    }
-    return this.blobAdapter.find(ctx, domain, recheck)
+    return (this.client as StorageAdapterEx).find(ctx, this.workspaceId)
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
