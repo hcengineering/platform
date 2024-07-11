@@ -104,19 +104,21 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   return []
 }
 
-async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<void> {
+async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<Tx[]> {
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, { _id: acc as Ref<PersonAccount> })[0]
-  if (account === undefined) return
+  if (account === undefined) return []
 
   // recheck that user is still offline
   const status = (await control.findAll(core.class.UserStatus, { user: acc }))[0]
-  if (status !== undefined && status.online) return
+  if (status !== undefined && status.online) return []
 
   const person = account.person
   const infos = await control.findAll(love.class.ParticipantInfo, { person })
+  const res: Tx[] = []
   for (const info of infos) {
-    await control.apply([control.txFactory.createTxRemoveDoc(info._class, info.space, info._id)])
+    res.push(control.txFactory.createTxRemoveDoc(info._class, info.space, info._id))
   }
+  return res
 }
 
 export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -135,10 +137,13 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
       if (val) {
         return await createUserInfo(status.user, control)
       } else {
-        setTimeout(() => {
-          void removeUserInfo(status.user, control)
-        }, 20000)
-        return []
+        return await new Promise((resolve) => {
+          setTimeout(() => {
+            void removeUserInfo(status.user, control).then((res) => {
+              resolve(res)
+            })
+          }, 20000)
+        })
       }
     }
   }
