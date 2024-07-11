@@ -354,6 +354,15 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationProvider,
     core.space.Model,
     {
+      label: notification.string.Sound
+    },
+    notification.providers.SoundNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
       label: notification.string.EmailNotification
     },
     notification.providers.EmailNotification

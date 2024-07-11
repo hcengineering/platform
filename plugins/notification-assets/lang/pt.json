@@ -47,6 +47,7 @@
     "UnstarDocument": "Desmarcar documento",
     "Push": "Push",
     "EnablePush": "Ativar notificações push",
-    "NotificationBlockedInBrowser": "Notificações bloqueadas no navegador. Por favor habilite las notificaciones en la configuración de su navegador."
+    "NotificationBlockedInBrowser": "Notificações bloqueadas no navegador. Por favor habilite las notificaciones en la configuración de su navegador.",
+    "Sound": "Som"
   }
 }

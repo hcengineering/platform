@@ -212,6 +212,16 @@ module.exports = [
         }
       },
       {
+        test: /\.(wav|ogg)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            'name': 'snd/[contenthash].[ext]',
+            esModule: false
+          }
+        }
+      },
+      {
         test: /\.svg$/,
         use: [
           {

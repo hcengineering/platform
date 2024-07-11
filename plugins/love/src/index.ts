@@ -140,6 +140,9 @@ const love = plugin(loveId, {
     ExitFullScreen: '' as Asset,
     Invite: '' as Asset
   },
+  sound: {
+    Knock: '' as Asset
+  },
   metadata: {
     WebSocketURL: '' as Metadata<string>,
     ServiceEnpdoint: '' as Metadata<string>

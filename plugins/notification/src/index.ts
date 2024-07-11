@@ -352,7 +352,8 @@ const notification = plugin(notificationId, {
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,
     BrowserNotification: '' as Ref<NotificationProvider>,
-    EmailNotification: '' as Ref<NotificationProvider>
+    EmailNotification: '' as Ref<NotificationProvider>,
+    SoundNotification: '' as Ref<NotificationProvider>
   },
   integrationType: {
     MobileApp: '' as Ref<IntegrationType>
@@ -400,7 +401,8 @@ const notification = plugin(notificationId, {
     ArchiveAllConfirmationMessage: '' as IntlString,
     YouAddedCollaborators: '' as IntlString,
     YouRemovedCollaborators: '' as IntlString,
-    Push: '' as IntlString
+    Push: '' as IntlString,
+    Sound: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,
