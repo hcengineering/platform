@@ -1291,7 +1291,7 @@ async function updateRefs (client: TxOperations, newId: Ref<Doc>, doc: RelatedDo
   const ancestors = h.getAncestors(doc._class)
   const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
     const to = it.type as RefTo<Doc>
-    return ancestors.includes(to.to)
+    return ancestors.includes(h.getBaseClass(to.to))
   })
   for (const attr of reftos) {
     if (attr.name === '_id') {
@@ -1339,7 +1339,7 @@ async function updateArrRefs (client: TxOperations, newId: Ref<Doc>, doc: Relate
     const to = attr.type as ArrOf<Doc>
     if (to.of._class !== core.class.RefTo) continue
     const refto = to.of as RefTo<Doc>
-    if (ancestors.includes(refto.to)) {
+    if (ancestors.includes(h.getBaseClass(refto.to))) {
       const descendants = h.getDescendants(attr.attributeOf)
       for (const d of descendants) {
         if (h.isDerived(d, core.class.BenchmarkDoc)) {
