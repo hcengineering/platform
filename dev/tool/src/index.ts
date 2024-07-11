@@ -82,6 +82,7 @@ import {
   fixMinioBW,
   fixSkills,
   optimizeModel,
+  removeDuplicateIds,
   restoreHrTaskTypesFromUpdates,
   restoreRecruitingTaskTypes
 } from './clean'
@@ -1142,6 +1143,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         await fixJsonMarkup(toolCtx, mongodbUri, adapter, getWorkspaceId(workspace, productId), transactorUrl)
+      })
+    })
+
+  program
+    .command('remove-duplicates-ids <workspaces>')
+    .description('remove duplicates ids for futue migration')
+    .action(async (workspaces: string) => {
+      const { mongodbUri } = prepareTools()
+      await withStorage(mongodbUri, async (adapter) => {
+        await removeDuplicateIds(toolCtx, mongodbUri, adapter, productId, transactorUrl, workspaces)
       })
     })
 

@@ -15,8 +15,8 @@
 
 import { Extensions, getSchema } from '@tiptap/core'
 import { Node, Schema } from 'prosemirror-model'
-import { yDocToProsemirrorJSON } from 'y-prosemirror'
-import { Doc, applyUpdate } from 'yjs'
+import { prosemirrorJSONToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
+import { Doc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { defaultExtensions } from './extensions'
 
 /**
@@ -80,4 +80,37 @@ export function yDocContentToNodes (content: ArrayBuffer, schema?: Schema, exten
   }
 
   return nodes
+}
+
+/**
+ * Update Y.Doc content
+ *
+ * @public
+ */
+export function updateYDocContent (
+  content: ArrayBuffer,
+  updateFn: (body: Record<string, any>) => Record<string, any>,
+  schema?: Schema,
+  extensions?: Extensions
+): Doc | undefined {
+  schema ??= getSchema(extensions ?? defaultExtensions)
+
+  try {
+    const ydoc = new Doc()
+    const res = new Doc({ gc: false })
+    const uint8arr = new Uint8Array(content)
+    applyUpdate(ydoc, uint8arr)
+
+    for (const field of ydoc.share.keys()) {
+      const body = yDocToProsemirrorJSON(ydoc, field)
+      const updated = updateFn(body)
+      const yDoc = prosemirrorJSONToYDoc(schema, updated, field)
+      const update = encodeStateAsUpdate(yDoc)
+      applyUpdate(res, update)
+    }
+
+    return res
+  } catch (err: any) {
+    console.error(err)
+  }
 }
