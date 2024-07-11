@@ -21,7 +21,7 @@ import { type Action, type ActionCategory } from '@hcengineering/view'
 import { timeId } from '@hcengineering/time'
 import time from '@hcengineering/time-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
-import { ExtensionCreator } from '@hcengineering/text-editor'
+import { type ExtensionCreator } from '@hcengineering/text-editor'
 
 export default mergeIds(timeId, time, {
   action: {

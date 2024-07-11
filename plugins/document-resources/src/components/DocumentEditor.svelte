@@ -18,11 +18,7 @@
   import contact from '@hcengineering/contact'
   import { Document } from '@hcengineering/document'
   import { getResource } from '@hcengineering/platform'
-  import {
-    CollaboratorEditor,
-    HeadingsExtension,
-    ImageUploadOptions
-  } from '@hcengineering/text-editor-resources'
+  import { CollaboratorEditor, HeadingsExtension, ImageUploadOptions } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
   import { Extensions, FocusPosition } from '@tiptap/core'

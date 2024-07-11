@@ -249,11 +249,11 @@
 </script>
 
 <div bind:this={textToolbarElement} class="text-editor-toolbar buttons-group xsmall-gap mb-4">
-  <TextEditorStyleToolbar editor={editor} {textFormatCategories} on:focus={handleFocus} />
+  <TextEditorStyleToolbar {editor} {textFormatCategories} on:focus={handleFocus} />
 </div>
 
 <div bind:this={imageToolbarElement} class="text-editor-toolbar buttons-group xsmall-gap mb-4">
-  <ImageStyleToolbar editor={editor} on:focus={handleFocus} />
+  <ImageStyleToolbar {editor} on:focus={handleFocus} />
 </div>
 
 <div class="select-text" style="width: 100%;" bind:this={element} />

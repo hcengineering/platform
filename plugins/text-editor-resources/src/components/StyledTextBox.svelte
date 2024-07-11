@@ -3,7 +3,7 @@
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer, getFileUrl, getImageSize } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
-  import textEditor from '@hcengineering/text-editor'
+  import textEditor, { RefAction } from '@hcengineering/text-editor'
   import {
     ActionIcon,
     ButtonSize,
@@ -24,8 +24,7 @@
   import { Completion } from '../Completion'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
-  import { RefAction } from '@hcengineering/text-editor'
-  import { addTableHandler } from '../utils'
+    import { addTableHandler } from '../utils'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
   import { ImageUploadExtension } from './extension/imageUploadExt'

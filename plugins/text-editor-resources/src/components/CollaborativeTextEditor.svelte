@@ -551,7 +551,7 @@
   >
     {#if showTextStyleToolbar}
       <TextEditorStyleToolbar
-        editor={editor}
+        {editor}
         formatButtonSize={buttonSize}
         {textFormatCategories}
         {textNodeActions}
@@ -565,7 +565,7 @@
     bind:this={imageToolbarElement}
     style="visibility: hidden;"
   >
-    <ImageStyleToolbar editor={editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
+    <ImageStyleToolbar {editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
   </div>
 
   <div class="textInput">

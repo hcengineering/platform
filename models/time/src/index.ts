@@ -26,7 +26,6 @@ import {
   type Space,
   type Timestamp,
   type Type,
-  type CollectionSize,
   DateRangeMode,
   IndexKind
 } from '@hcengineering/core'

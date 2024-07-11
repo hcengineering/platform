@@ -14,7 +14,19 @@
 //
 
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
-import { AttachedDoc, Class, CollectionSize, Doc, Hierarchy, Markup, Mixin, Ref, Space, Timestamp, Type } from '@hcengineering/core'
+import {
+  AttachedDoc,
+  Class,
+  CollectionSize,
+  Doc,
+  Hierarchy,
+  Markup,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp,
+  Type
+} from '@hcengineering/core'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { Event, Visibility } from '@hcengineering/calendar'
 import { AnyComponent } from '@hcengineering/ui'

@@ -53,7 +53,7 @@ import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-c
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
-import time, { ToDo } from '@hcengineering/time'
+import time, { type ToDo } from '@hcengineering/time'
 import {
   type ProjectTargetPreference,
   type Component,

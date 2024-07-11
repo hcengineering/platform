@@ -74,6 +74,5 @@ export { formatCollaborativeDocumentId, formatPlatformDocumentId } from './provi
 
 export default async (): Promise<Resources> => ({
   // component: {
-
   // }
 })

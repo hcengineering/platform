@@ -297,7 +297,7 @@
         disabled={editor.view.state.selection.empty}
         showTooltip={{ label: action.label }}
         on:click={() => {
-          void action.action({ editor: editor })
+          void action.action({ editor })
         }}
       />
     {/each}

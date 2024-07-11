@@ -17,7 +17,12 @@ import { DOMAIN_MODEL } from '@hcengineering/core'
 import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
-import { type ExtensionCreator, type TextEditorExtensionFactory, type RefInputAction, type RefInputActionItem } from '@hcengineering/text-editor'
+import {
+  type ExtensionCreator,
+  type TextEditorExtensionFactory,
+  type RefInputAction,
+  type RefInputActionItem
+} from '@hcengineering/text-editor'
 import textEditor from './plugin'
 
 export { textEditorOperation } from './migration'
@@ -41,8 +46,5 @@ export class TTextEditorExtensionFactory extends TDoc implements TextEditorExten
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(
-    TRefInputActionItem,
-    TTextEditorExtensionFactory
-  )
+  builder.createModel(TRefInputActionItem, TTextEditorExtensionFactory)
 }

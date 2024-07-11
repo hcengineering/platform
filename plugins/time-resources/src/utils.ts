@@ -59,8 +59,19 @@ function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
   }
 }
 
-function isTodoable (mode: TextEditorMode, objectId?: Ref<Doc>, objectClass?: Ref<Class<Doc>>, objectSpace?: Ref<Space>): boolean {
-  return mode === 'full' && objectId !== undefined && objectClass !== undefined && objectSpace !== undefined && isTodoableClass(objectClass)
+function isTodoable (
+  mode: TextEditorMode,
+  objectId?: Ref<Doc>,
+  objectClass?: Ref<Class<Doc>>,
+  objectSpace?: Ref<Space>
+): boolean {
+  return (
+    mode === 'full' &&
+    objectId !== undefined &&
+    objectClass !== undefined &&
+    objectSpace !== undefined &&
+    isTodoableClass(objectClass)
+  )
 }
 
 export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {

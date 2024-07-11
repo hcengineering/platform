@@ -20,7 +20,12 @@
   import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, getMarkRange } from '@tiptap/core'
   import { TextSelection } from '@tiptap/pm/state'
-  import textEditor, { CollaborationUser, TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '@hcengineering/text-editor'
+  import textEditor, {
+    CollaborationUser,
+    TextEditorCommandHandler,
+    TextFormatCategory,
+    TextNodeAction
+  } from '@hcengineering/text-editor'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/types'
