@@ -1251,7 +1251,7 @@ async function applyUserTxes (
       cache.set(account._id, account)
       await control.apply(txs)
 
-      const m1 = toIdMap(txes)
+      const m1 = toIdMap(txs)
       control.operationContext.derived.targets.docNotifyContext = (it) => {
         if (m1.has(it._id)) {
           return [account.email]

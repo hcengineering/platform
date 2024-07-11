@@ -47,7 +47,7 @@ export function processRequest (
     context.measure('deserialize', ed - st)
     handleRequest(context, session, cs, request, workspaceId)
   } catch (err: any) {
-    if (err.message === 'Data read, but end of buffer not reached 123') {
+    if (((err.message as string) ?? '').includes('Data read, but end of buffer not reached')) {
       // ignore it
     } else {
       throw err

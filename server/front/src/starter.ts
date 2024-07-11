@@ -106,6 +106,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     previewConfig = `*|${uploadUrl}/:workspace?file=:blobId.:format&size=:size`
   }
 
+  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
+
   const brandingUrl = process.env.BRANDING_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
@@ -123,7 +125,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaboratorUrl,
     collaboratorApiUrl,
     brandingUrl,
-    previewConfig
+    previewConfig,
+    pushPublicKey
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

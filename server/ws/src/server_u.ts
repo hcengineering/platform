@@ -61,6 +61,8 @@ export function startUWebsocketServer (
 
   const uAPP = uWebSockets.App()
 
+  const rpcHandler = new RPCHandler()
+
   const writeStatus = (response: HttpResponse, status: string): HttpResponse => {
     return response
       .writeStatus(status)
@@ -124,7 +126,8 @@ export function startUWebsocketServer (
         language: '',
         email: data.payload.email,
         mode: data.payload.extra?.mode,
-        model: data.payload.extra?.model
+        model: data.payload.extra?.model,
+        rpcHandler
       }
       const cs = createWebSocketClientSocket(wrData, ws, data)
       data.connectionSocket = cs
@@ -370,11 +373,18 @@ export function startUWebsocketServer (
   }
 }
 function createWebSocketClientSocket (
-  wrData: { remoteAddress: ArrayBuffer, userAgent: string, language: string, email: string, mode: any, model: any },
+  wrData: {
+    remoteAddress: ArrayBuffer
+    userAgent: string
+    language: string
+    email: string
+    mode: any
+    model: any
+    rpcHandler: RPCHandler
+  },
   ws: uWebSockets.WebSocket<WebsocketUserData>,
   data: WebsocketUserData
 ): ConnectionSocket {
-  const handler = new RPCHandler()
   const cs: ConnectionSocket = {
     id: generateId(),
     isClosed: false,
@@ -388,13 +398,13 @@ function createWebSocketClientSocket (
       }
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
-      return handler.readRequest(buffer, binary)
+      return wrData.rpcHandler.readRequest(buffer, binary)
     },
     send: async (ctx, msg, binary, compression): Promise<number> => {
       if (data.backPressure !== undefined) {
         await data.backPressure
       }
-      const serialized = handler.serialize(msg, binary)
+      const serialized = wrData.rpcHandler.serialize(msg, binary)
       try {
         const sendR = ws.send(serialized, binary, compression)
         if (sendR === 2) {

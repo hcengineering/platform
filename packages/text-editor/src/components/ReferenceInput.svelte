@@ -254,6 +254,8 @@
   }
 
   .text-input {
+    max-height: 18.75rem;
+    overflow: auto;
     min-height: 2.75rem;
     padding: 0.125rem 0.75rem;
   }

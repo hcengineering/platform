@@ -641,6 +641,15 @@ export function createModel (builder: Builder): void {
       indexes: []
     }
   )
+  builder.mixin<Class<BrowserNotification>, IndexingConfiguration<BrowserNotification>>(
+    notification.class.BrowserNotification,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
 
   builder.mixin<Class<BrowserNotification>, IndexingConfiguration<BrowserNotification>>(
     notification.class.BrowserNotification,

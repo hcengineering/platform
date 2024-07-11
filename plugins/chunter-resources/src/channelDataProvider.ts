@@ -32,6 +32,7 @@ import { combineActivityMessages } from '@hcengineering/activity-resources'
 
 import chunter from './plugin'
 import { type ChatMessage } from '@hcengineering/chunter'
+import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -71,7 +72,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly tailQuery = createQuery(true)
 
   private chatId: Ref<Doc> | undefined = undefined
-  private readonly lastViewedTimestamp: Timestamp | undefined = undefined
+  private readonly context: DocNotifyContext | undefined = undefined
   private readonly msgClass: Ref<Class<ActivityMessage>>
   private selectedMsgId: Ref<ActivityMessage> | undefined = undefined
   private tailStart: Timestamp | undefined = undefined
@@ -101,15 +102,15 @@ export class ChannelDataProvider implements IChannelDataProvider {
   constructor (
     chatId: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
-    lastViewedTimestamp?: Timestamp,
+    context: DocNotifyContext | undefined,
     selectedMsgId?: Ref<ActivityMessage>,
     loadAll = false
   ) {
     this.chatId = chatId
-    this.lastViewedTimestamp = lastViewedTimestamp
+    this.context = context
     this.msgClass = _class
     this.selectedMsgId = selectedMsgId
-    this.loadData(loadAll)
+    void this.loadData(loadAll)
   }
 
   public destroy (): void {
@@ -154,7 +155,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.selectedMsgId = undefined
   }
 
-  private loadData (loadAll = false): void {
+  private async loadData (loadAll = false): Promise<void> {
     if (this.chatId === undefined) {
       return
     }
@@ -182,10 +183,25 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return
     }
 
+    const client = getClient()
     this.isInitialLoadingStore.set(true)
+    const firstNotification =
+      this.context !== undefined
+        ? await client.findOne(
+          notification.class.InboxNotification,
+          {
+            _class: {
+              $in: [notification.class.MentionInboxNotification, notification.class.ActivityInboxNotification]
+            },
+            docNotifyContext: this.context._id,
+            isViewed: false
+          },
+          { sort: { createdOn: SortingOrder.Ascending } }
+        )
+        : undefined
 
     const metadata = get(this.metadataStore)
-    const firstNewMsgIndex = this.getFirstNewMsgIndex(this.lastViewedTimestamp)
+    const firstNewMsgIndex = this.getFirstNewMsgIndex(firstNotification)
 
     if (get(this.newTimestampStore) === undefined) {
       this.newTimestampStore.set(firstNewMsgIndex !== undefined ? metadata[firstNewMsgIndex]?.createdOn : undefined)
@@ -335,18 +351,32 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return firsNewMsgIndex
   }
 
-  private getFirstNewMsgIndex (lastViewedTimestamp?: Timestamp): number | undefined {
+  private getFirstNewMsgIndex (firstNotification: InboxNotification | undefined): number | undefined {
     const metadata = get(this.metadataStore)
 
     if (metadata.length === 0) {
       return undefined
     }
 
-    if (lastViewedTimestamp === undefined) {
+    if (this.context === undefined) {
+      return -1
+    }
+
+    const lastViewedTimestamp = this.context.lastViewedTimestamp
+
+    if (lastViewedTimestamp === undefined && firstNotification === undefined) {
       return -1
     }
 
     const me = getCurrentAccount()._id
+
+    let newTimestamp = 0
+
+    if (lastViewedTimestamp !== undefined && firstNotification !== undefined) {
+      newTimestamp = Math.min(lastViewedTimestamp ?? 0, firstNotification?.createdOn ?? 0)
+    } else {
+      newTimestamp = lastViewedTimestamp ?? firstNotification?.createdOn ?? 0
+    }
 
     return metadata.findIndex((message) => {
       if (message.createdBy === me) {
@@ -355,7 +385,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
       const createdOn = message.createdOn ?? 0
 
-      return lastViewedTimestamp < createdOn
+      return newTimestamp < createdOn
     })
   }
 
