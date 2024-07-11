@@ -17,6 +17,8 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core, {
   type Blob,
+  type Class,
+  type CollectionSize,
   type Domain,
   type FindOptions,
   type Ref,
@@ -38,8 +40,8 @@ import {
 } from '@hcengineering/drive'
 import {
   type Builder,
-  ArrOf,
   Collection,
+  Hidden,
   Index,
   Mixin,
   Model,
@@ -52,7 +54,7 @@ import {
   TypeTimestamp,
   UX
 } from '@hcengineering/model'
-import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
@@ -104,7 +106,7 @@ export class TResource extends TDoc implements Resource {
 
   @Prop(TypeRef(drive.class.FileVersion), drive.string.Version)
   @ReadOnly()
-    version?: Ref<FileVersion>
+    file?: Ref<FileVersion>
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
@@ -119,7 +121,7 @@ export class TFolder extends TResource implements Folder {
   @ReadOnly()
   declare path: Ref<Folder>[]
 
-  declare version: undefined
+  declare file: undefined
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
@@ -136,21 +138,33 @@ export class TFile extends TResource implements File {
 
   @Prop(TypeRef(drive.class.FileVersion), drive.string.Version)
   @ReadOnly()
-  declare version: Ref<FileVersion>
+  declare file: Ref<FileVersion>
 
-  @Prop(ArrOf(TypeRef(drive.class.FileVersion)), drive.string.FileVersions)
+  @Prop(Collection(drive.class.FileVersion), drive.string.FileVersion)
   @ReadOnly()
-    versions!: Array<Ref<FileVersion>>
+    versions!: CollectionSize<FileVersion>
 
   @Prop(TypeFileVersion(), drive.string.Version)
   @ReadOnly()
-    sequence!: number
+    version!: number
 }
 
-@Model(drive.class.FileVersion, core.class.Doc, DOMAIN_DRIVE)
+@Model(drive.class.FileVersion, core.class.AttachedDoc, DOMAIN_DRIVE)
 @UX(drive.string.FileVersion)
-export class TFileVersion extends TDoc implements FileVersion {
+export class TFileVersion extends TAttachedDoc implements FileVersion {
   declare space: Ref<Drive>
+
+  @Prop(TypeRef(drive.class.File), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<File>
+
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  declare attachedToClass: Ref<Class<File>>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'versions' = 'versions'
 
   @Prop(TypeString(), drive.string.Name)
   @Index(IndexKind.FullText)
@@ -322,22 +336,22 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        '$lookup.version.size',
+        '$lookup.file.size',
         'comments',
-        '$lookup.version.lastModified',
+        '$lookup.file.lastModified',
         'createdBy'
       ],
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
         lookup: {
-          version: drive.class.FileVersion
+          file: drive.class.FileVersion
         },
         sort: {
           _class: SortingOrder.Descending
         }
       } as FindOptions<Resource>,
       configOptions: {
-        hiddenKeys: ['name', 'parent', 'path', 'version', 'versions'],
+        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
         sortable: true
       }
     },
@@ -365,8 +379,8 @@ function defineResource (builder: Builder): void {
         groupBy: [],
         orderBy: [
           ['name', SortingOrder.Ascending],
-          ['$lookup.version.size', SortingOrder.Ascending],
-          ['$lookup.version.modifiedOn', SortingOrder.Descending]
+          ['$lookup.file.size', SortingOrder.Ascending],
+          ['$lookup.file.modifiedOn', SortingOrder.Descending]
         ],
         other: []
       },
@@ -377,18 +391,18 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        '$lookup.version.size',
-        '$lookup.version.modifiedOn',
+        '$lookup.file.size',
+        '$lookup.file.modifiedOn',
         'createdBy'
       ],
       configOptions: {
-        hiddenKeys: ['name', 'parent', 'path', 'version', 'versions'],
+        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
         sortable: true
       },
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
         lookup: {
-          version: drive.class.FileVersion
+          file: drive.class.FileVersion
         },
         sort: {
           _class: SortingOrder.Descending
@@ -498,29 +512,30 @@ function defineFileVersion (builder: Builder): void {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      view.action.Delete,
       print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
     ]
   })
 
-  // createAction(
-  //   builder,
-  //   {
-  //     action: drive.actionImpl.CreateChildFolder,
-  //     label: drive.string.CreateFolder,
-  //     icon: drive.icon.Folder,
-  //     category: drive.category.Drive,
-  //     input: 'none',
-  //     target: drive.class.Folder,
-  //     context: {
-  //       mode: ['context', 'browser'],
-  //       application: drive.app.Drive,
-  //       group: 'create'
-  //     }
-  //   },
-  //   drive.action.DeleteFileVersion
-  // )
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.RestoreFileVersion,
+      label: drive.string.Restore,
+      icon: drive.icon.Restore,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.FileVersion,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      }
+    },
+    drive.action.RestoreFileVersion
+  )
 }
 
 function defineFile (builder: Builder): void {

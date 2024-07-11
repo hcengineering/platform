@@ -50,14 +50,20 @@
     { _id },
     (res) => {
       ;[object] = res
-      version = object?.$lookup?.version
+      version = object?.$lookup?.file
     },
     {
       lookup: {
-        version: drive.class.FileVersion
+        file: drive.class.FileVersion
       }
     }
   )
+
+  function handleDownloadFile (): void {
+    if (object != null && download != null) {
+      download.click()
+    }
+  }
 
   function handleUploadFile (): void {
     if (object != null && upload != null) {
@@ -108,7 +114,7 @@
             iconProps={{ size: 'medium' }}
             kind={'icon'}
             showTooltip={{ label: drive.string.Download }}
-            on:click={handleUploadFile}
+            on:click={handleDownloadFile}
           />
         </a>
       {/await}
@@ -117,9 +123,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         showTooltip={{ label: drive.string.Upload }}
-        on:click={() => {
-          upload.click()
-        }}
+        on:click={handleUploadFile}
       />
       <Button
         icon={IconMoreH}

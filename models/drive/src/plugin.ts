@@ -70,7 +70,8 @@ export default mergeIds(driveId, drive, {
     EditDrive: '' as Ref<Action>,
     DownloadFile: '' as Ref<Action>,
     RenameFile: '' as Ref<Action>,
-    RenameFolder: '' as Ref<Action>
+    RenameFolder: '' as Ref<Action>,
+    RestoreFileVersion: '' as Ref<Action>
   },
   actionImpl: {
     CreateChildFolder: '' as ViewAction,
@@ -78,7 +79,8 @@ export default mergeIds(driveId, drive, {
     EditDrive: '' as ViewAction,
     DownloadFile: '' as ViewAction,
     RenameFile: '' as ViewAction,
-    RenameFolder: '' as ViewAction
+    RenameFolder: '' as ViewAction,
+    RestoreFileVersion: '' as ViewAction
   },
   string: {
     Grid: '' as IntlString,
@@ -91,6 +93,7 @@ export default mergeIds(driveId, drive, {
     Parent: '' as IntlString,
     Path: '' as IntlString,
     Drives: '' as IntlString,
-    Version: '' as IntlString
+    Version: '' as IntlString,
+    Restore: '' as IntlString
   }
 })

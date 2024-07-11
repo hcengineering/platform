@@ -25,28 +25,8 @@ import {
   FindOptions,
   FindResult
 } from '@hcengineering/core'
-import drive, { FileVersion, type File, type Folder } from '@hcengineering/drive'
+import drive, { type FileVersion, type Folder } from '@hcengineering/drive'
 import type { TriggerControl } from '@hcengineering/server-core'
-
-/** @public */
-export async function OnFileDelete (
-  tx: Tx,
-  { removedMap, txFactory }: TriggerControl
-): Promise<Tx[]> {
-  const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<File>
-
-  const res: Tx[] = []
-
-  const file = removedMap.get(rmTx.objectId) as File
-  if (file !== undefined) {
-    for (const version of file.versions) {
-      const removeTx = txFactory.createTxRemoveDoc(drive.class.FileVersion, file.space, version)
-      res.push(removeTx)
-    }
-  }
-
-  return res
-}
 
 /** @public */
 export async function OnFileVersionDelete (
@@ -84,7 +64,6 @@ export async function FindFolderResources (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnFileDelete,
     OnFileVersionDelete
   },
   function: {

@@ -14,7 +14,8 @@
 //
 
 import { type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
-import drive, { type Drive, type File as DriveFile, type Folder, type Resource, createFile, createFileVersion } from '@hcengineering/drive'
+import type { Drive, File as DriveFile, FileVersion, Folder, Resource } from '@hcengineering/drive'
+import drive, { createFile, createFileVersion } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
@@ -142,6 +143,15 @@ export async function moveResources (resources: Resource[], space: Ref<Drive>, p
   }
 
   await ops.commit()
+}
+
+export async function restoreFileVersion (version: FileVersion): Promise<void> {
+  const client = getClient()
+
+  const file = await client.findOne(drive.class.File, { _id: version.attachedTo })
+  if (file !== undefined && file.file !== version._id) {
+    await client.diffUpdate(file, { file: version._id })
+  }
 }
 
 const fileTypesMap: Record<string, AnySvelteComponent> = {

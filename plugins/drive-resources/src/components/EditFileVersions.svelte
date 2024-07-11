@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { FindOptions, SortingOrder } from '@hcengineering/core'
+  import { FindOptions, SortingOrder } from '@hcengineering/core'
   import { type File, type FileVersion } from '@hcengineering/drive'
   import { Scroller, Section } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
@@ -28,12 +28,11 @@
   }
 </script>
 
-{#if object.versions.length > 0}
+{#if object.versions > 1}
   <Section label={drive.string.FileVersions}>
     <svelte:fragment slot="content">
       <Scroller horizontal>
         <Table
-          readonly
           _class={drive.class.FileVersion}
           config={[
             'version',
@@ -41,7 +40,8 @@
             'modifiedOn',
             'createdBy'
           ]}
-          query={{ _id: { $in: object.versions } }}
+          query={{ attachedTo: object._id }}
+          {readonly}
           {options}
         />
       </Scroller>

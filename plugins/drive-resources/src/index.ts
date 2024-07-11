@@ -14,7 +14,7 @@
 //
 
 import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
-import drive, { type Drive, type File, type Folder } from '@hcengineering/drive'
+import drive, { type Drive, type File, type FileVersion, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
 import { getBlobHref } from '@hcengineering/presentation'
 import { showPopup, type Location } from '@hcengineering/ui'
@@ -38,7 +38,7 @@ import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
-import { createFolder, renameResource } from './utils'
+import { createFolder, renameResource, restoreFileVersion } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
   await createFolder(doc._id, drive.ids.Root)
@@ -55,7 +55,7 @@ async function EditDrive (drive: Drive): Promise<void> {
 async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const version = file.$lookup?.version
+    const version = file.$lookup?.file
     if (version != null) {
       const href = await getBlobHref(undefined, version.file, version.name)
       const link = document.createElement('a')
@@ -89,6 +89,12 @@ async function RenameFile (doc: File | File[]): Promise<void> {
 async function RenameFolder (doc: Folder | Folder[]): Promise<void> {
   if (!Array.isArray(doc)) {
     await renameResource(doc)
+  }
+}
+
+async function RestoreFileVersion (doc: FileVersion | FileVersion[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await restoreFileVersion(doc)
   }
 }
 
@@ -126,7 +132,8 @@ export default async (): Promise<Resources> => ({
     EditDrive,
     DownloadFile,
     RenameFile,
-    RenameFolder
+    RenameFolder,
+    RestoreFileVersion
   },
   function: {
     DriveLinkProvider,

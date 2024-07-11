@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { type Blob } from '@hcengineering/core'
-  import drive, { type File } from '@hcengineering/drive'
+  import core, { type Blob, type WithLookup } from '@hcengineering/core'
+  import drive, { type File, type FileVersion } from '@hcengineering/drive'
   import { FilePreview, createQuery } from '@hcengineering/presentation'
 
   import { createEventDispatcher, onMount } from 'svelte'
@@ -27,11 +27,14 @@
   const query = createQuery()
 
   let blob: Blob | undefined = undefined
+  let version: WithLookup<FileVersion> | undefined = undefined
+
   $: query.query(
     drive.class.FileVersion,
-    { _id: object.version },
+    { _id: object.file },
     (res) => {
-      blob = res[0]?.$lookup?.file
+      ;[version] = res
+      blob = version?.$lookup?.file
     },
     {
       lookup: {
@@ -45,12 +48,12 @@
   })
 </script>
 
-{#if object !== undefined}
+{#if object !== undefined && version !== undefined}
   {#if blob !== undefined}
-    <FilePreview file={blob} name={object.name} metadata={object.metadata} />
+    <FilePreview file={blob} name={version.name} metadata={version.metadata} />
   {/if}
 
-  {#if object.versions.length > 1}
+  {#if object.versions > 1}
     <div class="w-full mt-6">
       <EditFileVersions {object} {readonly} />
     </div>

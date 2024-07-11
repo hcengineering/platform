@@ -31,7 +31,7 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  $: version = object.$lookup?.version
+  $: version = object.$lookup?.file
 
   let hovered = false
 </script>

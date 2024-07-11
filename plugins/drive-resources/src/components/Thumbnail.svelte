@@ -35,7 +35,7 @@
   let isImage = false
   let isError = false
 
-  $: version = object.$lookup?.version
+  $: version = object.$lookup?.file
   $: previewRef = version?.file
   $: isImage = version?.type?.startsWith('image/') ?? false
   $: isFolder = hierarchy.isDerived(object._class, drive.class.Folder)

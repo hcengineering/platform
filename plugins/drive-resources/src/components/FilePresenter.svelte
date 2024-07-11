@@ -34,7 +34,7 @@
 
   export let shouldShowVersion = false
 
-  $: icon = getFileTypeIcon(value.$lookup?.version?.type ?? '')
+  $: icon = getFileTypeIcon(value.$lookup?.file?.type ?? '')
 </script>
 
 {#if value}
@@ -52,7 +52,7 @@
           <span>{value.name}</span>
           {#if shouldShowVersion}
             <span>•</span>
-            <span>{formatFileVersion(value.sequence)}</span>
+            <span>{formatFileVersion(value.version)}</span>
           {/if}
         </div>
       </div>
