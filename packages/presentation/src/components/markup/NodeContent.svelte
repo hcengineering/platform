@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { MarkupNode, MarkupNodeType } from '@hcengineering/text'
+  import { AttrValue, MarkupNode, MarkupNodeType } from '@hcengineering/text'
 
   import MarkupNodes from './Nodes.svelte'
   import ObjectNode from './ObjectNode.svelte'
@@ -33,11 +33,15 @@
     return objectClass as Ref<Class<Doc>>
   }
 
-  function toString (value: string | number | undefined): string | undefined {
+  function toString (value: AttrValue | undefined): string | undefined {
     return value !== undefined ? `${value}` : undefined
   }
 
-  function toNumber (value: string | number | undefined): number | undefined {
+  function toNumber (value: AttrValue | undefined): number | undefined {
+    if (typeof value === 'boolean') {
+      return value ? 1 : 0
+    }
+
     return value !== undefined ? (typeof value === 'string' ? parseInt(value) : value) : undefined
   }
 </script>

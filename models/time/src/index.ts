@@ -399,12 +399,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
-    index: 500,
+    index: 510,
     create: time.function.CreateTodoItemExtension
   })
 
   builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
-    index: 510,
+    index: 520,
     create: time.function.CreateTodoListExtension
   })
 }

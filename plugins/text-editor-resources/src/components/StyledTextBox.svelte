@@ -24,7 +24,7 @@
   import { Completion } from '../Completion'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
-    import { addTableHandler } from '../utils'
+  import { addTableHandler } from '../utils'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
   import { ImageUploadExtension } from './extension/imageUploadExt'
