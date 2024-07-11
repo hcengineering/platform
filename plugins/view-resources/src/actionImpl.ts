@@ -80,8 +80,9 @@ async function CopyTextToClipboard (
 function Delete (
   object: Doc | Doc[],
   evt: Event,
-  props: {
-    skipCheck: boolean
+  props?: {
+    skipCheck?: boolean
+    afterDelete?: () => Promise<void>
   }
 ): void {
   const skipCheck = props?.skipCheck ?? false
@@ -91,10 +92,15 @@ function Delete (
       object,
       skipCheck,
       deleteAction: async () => {
-        const objs = Array.isArray(object) ? object : [object]
-        await deleteObjects(getClient(), objs, skipCheck).catch((err) => {
-          console.error(err)
-        })
+        try {
+          const objs = Array.isArray(object) ? object : [object]
+          await deleteObjects(getClient(), objs, skipCheck)
+          if (props?.afterDelete !== undefined) {
+            await props.afterDelete()
+          }
+        } catch (e) {
+          console.error(e)
+        }
       }
     },
     undefined

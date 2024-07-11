@@ -352,7 +352,8 @@ const view = plugin(viewId, {
 
       // If defined, documents will be set into value
       valueKey?: string
-    }>
+    }>,
+    Delete: '' as ViewAction
   }
 })
 export default view
