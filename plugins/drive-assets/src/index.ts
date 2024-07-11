@@ -25,5 +25,5 @@ loadMetadata(drive.icon, {
   FolderOpen: `${icons}#folder-open`,
   FolderClosed: `${icons}#folder-closed`,
   Download: `${icons}#download`,
-  Restore: `${icons}#restore`,
+  Restore: `${icons}#restore`
 })

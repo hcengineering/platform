@@ -31,18 +31,14 @@ export async function createFile (
   const version = 1
   const versionId: Ref<FileVersion> = generateId()
 
-  const fileId = await client.createDoc(
-    drive.class.File,
-    space,
-    {
-      name: data.name,
-      parent,
-      path,
-      file: versionId,
-      version,
-      versions: 0
-    }
-  )
+  const fileId = await client.createDoc(drive.class.File, space, {
+    name: data.name,
+    parent,
+    path,
+    file: versionId,
+    version,
+    versions: 0
+  })
 
   await client.addCollection(
     drive.class.FileVersion,

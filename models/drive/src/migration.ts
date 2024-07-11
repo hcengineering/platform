@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Blob, type Ref, DOMAIN_BLOB, generateId } from '@hcengineering/core'
+import core, { type Blob, type Ref, DOMAIN_BLOB, generateId } from '@hcengineering/core'
 import type { File, FileVersion } from '@hcengineering/drive'
 import {
   type MigrateOperation,
@@ -31,11 +31,15 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
     metadata?: Record<string, any>
   }
 
-  const files = await client.find<File>(DOMAIN_DRIVE, { version: { $exists: false } })
+  const files = await client.find<File>(DOMAIN_DRIVE, {
+    _class: drive.class.File,
+    version: { $exists: false }
+  })
   for (const file of files) {
     const exfile = file as unknown as ExFile
 
-    const blob = (await client.find<Blob>(DOMAIN_BLOB, { _id: exfile.file }))[0]
+    const blobs = await client.find<Blob>(DOMAIN_BLOB, { _id: exfile.file, _class: core.class.Blob })
+    const blob = blobs[0]
     if (blob === undefined) continue
 
     const fileVersionId: Ref<FileVersion> = generateId()
@@ -60,11 +64,16 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
 
     await client.update<File>(
       DOMAIN_DRIVE,
-      file._id,
       {
-        version: 1,
-        versions: 1,
-        file: fileVersionId,
+        _id: file._id,
+        _class: file._class
+      },
+      {
+        $set: {
+          version: 1,
+          versions: 1,
+          file: fileVersionId
+        },
         $unset: {
           metadata: 1
         }

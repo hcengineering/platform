@@ -34,12 +34,7 @@
       <Scroller horizontal>
         <Table
           _class={drive.class.FileVersion}
-          config={[
-            'version',
-            'size',
-            'modifiedOn',
-            'createdBy'
-          ]}
+          config={['version', 'size', 'modifiedOn', 'createdBy']}
           query={{ attachedTo: object._id }}
           {readonly}
           {options}
