@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@hcengineering/core'
-  import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import setting from '../plugin'
   import {
@@ -31,7 +31,7 @@
     IconCopy
   } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
-  import { clearSettingsStore } from '../store'
+  import { clearSettingsStore, settingsStore } from '../store'
 
   export let attribute: AnyAttribute
   export let exist: boolean
@@ -109,6 +109,21 @@
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue
   }
+
+  async function remove (evt: MouseEvent): Promise<void> {
+    const impl = await getResource(view.actionImpl.Delete)
+    await impl(attribute, evt, {
+      afterDelete: () => {
+        clearSettingsStore()
+      }
+    })
+  }
+
+  async function hide (): Promise<void> {
+    const value = !attribute.hidden
+    attribute.hidden = value
+    await client.update(attribute, { hidden: value })
+  }
 </script>
 
 <Modal
@@ -123,8 +138,16 @@
 >
   <svelte:fragment slot="actions">
     {#if !disabled}
-      <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} {disabled} />
-      <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} {disabled} />
+      <ButtonIcon
+        icon={attribute.hidden ? view.icon.Eye : view.icon.EyeCrossed}
+        size={'small'}
+        kind={'tertiary'}
+        {disabled}
+        on:click={hide}
+      />
+      {#if attribute.isCustom}
+        <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} {disabled} on:click={remove} />
+      {/if}
     {/if}
   </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
