@@ -208,7 +208,8 @@ export class TEmployee extends TPerson implements Employee {
 
 @Model(contact.class.PersonAccount, core.class.Account)
 export class TPersonAccount extends TAccount implements PersonAccount {
-  person!: Ref<Person>
+  @Prop(TypeRef(contact.class.Person), contact.string.Person)
+    person!: Ref<Person>
 }
 
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
