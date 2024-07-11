@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type Blob, type Ref, DOMAIN_BLOB, generateId } from '@hcengineering/core'
+import core, { type Blob, type Ref, DOMAIN_BLOB, generateId, toIdMap } from '@hcengineering/core'
 import type { File, FileVersion } from '@hcengineering/drive'
 import {
   type MigrateOperation,
@@ -35,11 +35,15 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
     _class: drive.class.File,
     version: { $exists: false }
   })
+
+  const blobIds = files.map((p) => (p as unknown as ExFile).file)
+  const blobs = await client.find<Blob>(DOMAIN_BLOB, { _id: { $in: blobIds }, _class: core.class.Blob })
+  const blobsById = toIdMap(blobs)
+
   for (const file of files) {
     const exfile = file as unknown as ExFile
 
-    const blobs = await client.find<Blob>(DOMAIN_BLOB, { _id: exfile.file, _class: core.class.Blob })
-    const blob = blobs[0]
+    const blob = blobsById.get(exfile.file)
     if (blob === undefined) continue
 
     const fileVersionId: Ref<FileVersion> = generateId()
