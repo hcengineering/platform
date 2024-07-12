@@ -103,7 +103,9 @@ export class TToDO extends TAttachedDoc implements ToDo {
     priority!: ToDoPriority
 
   visibility!: Visibility
-  attachedSpace?: Ref<Space> | undefined
+
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+    attachedSpace?: Ref<Space> | undefined
 
   @Prop(TypeString(), calendarPlugin.string.Title)
     title!: string
