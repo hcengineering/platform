@@ -23,17 +23,16 @@
   import view from '@hcengineering/view'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
+  import { Heading, TextNodeAction } from '@hcengineering/text-editor'
   import {
     CollaboratorEditor,
     FocusExtension,
-    Heading,
     HeadingsExtension,
     IsEmptyContentExtension,
     NodeHighlightExtension,
     NodeHighlightType,
-    TextNodeAction,
     highlightUpdateCommand
-  } from '@hcengineering/text-editor'
+  } from '@hcengineering/text-editor-resources'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
 
   import {
@@ -275,6 +274,9 @@
   {#key value._id}
     <CollaboratorEditor
       bind:this={textEditor}
+      objectId={value.attachedTo}
+      objectClass={value.attachedToClass}
+      objectSpace={value.space}
       {collaborativeDoc}
       {initialCollaborativeDoc}
       {user}

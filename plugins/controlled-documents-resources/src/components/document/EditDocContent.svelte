@@ -15,7 +15,8 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Heading, TableOfContents, TableOfContentsContent } from '@hcengineering/text-editor'
+  import { Heading } from '@hcengineering/text-editor'
+  import { TableOfContents, TableOfContentsContent } from '@hcengineering/text-editor-resources'
   import { EditBox, IconCircles, Scroller } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
   import { DocumentSection, calcRank } from '@hcengineering/controlled-documents'

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
   import { EmptyMarkup, MarkupNode, MarkupNodeType, markupToJSON } from '@hcengineering/text'
-  import { MarkupDiffViewer } from '@hcengineering/text-editor'
+  import { MarkupDiffViewer } from '@hcengineering/text-editor-resources'
   import { ShowMore } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
 

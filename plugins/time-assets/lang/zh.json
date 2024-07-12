@@ -57,6 +57,11 @@
     "NewToDoDetails": "新待办：{details}",
     "MarkedAsDone": "已完成",
     "WorkSchedule": "工作安排",
-    "SummaryDuration": "摘要"
+    "SummaryDuration": "摘要",
+
+    "UnassignToDo": "未指派待办事项",
+    "UnassignToDoConfirm": "您要取消指派待办事项吗？待办事项将从被指派人计划中移除。",
+    "ReassignToDo": "更改待办事项被指派人",
+    "ReassignToDoConfirm": "您要更改待办事项被指派人吗？待办事项将从当前被指派人的计划中移除。"
   }
 }

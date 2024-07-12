@@ -20,7 +20,7 @@
   import { PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
 
   export let object: Doc

@@ -23,7 +23,8 @@
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { Heading, TableOfContents } from '@hcengineering/text-editor'
+  import { Heading } from '@hcengineering/text-editor'
+  import { TableOfContents } from '@hcengineering/text-editor-resources'
   import {
     Button,
     ButtonItem,

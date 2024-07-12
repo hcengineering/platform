@@ -15,7 +15,8 @@
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Heading, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { isEmptyMarkup } from '@hcengineering/text'
+  import { Heading } from '@hcengineering/text-editor'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import documents, { Document, DocumentSection, DocumentTemplateSection } from '@hcengineering/controlled-documents'
 

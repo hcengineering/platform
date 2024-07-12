@@ -33,7 +33,7 @@ import {
 } from '@hcengineering/controlled-documents'
 import { type Resources } from '@hcengineering/platform'
 import { type ObjectSearchResult, getClient, MessageBox, getCollaboratorClient } from '@hcengineering/presentation'
-import { EmptyMarkup } from '@hcengineering/text-editor'
+import { EmptyMarkup } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { deleteObjects } from '@hcengineering/view-resources'
 

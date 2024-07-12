@@ -57,6 +57,11 @@
     "NewToDoDetails": "Nouvelle tâche : {details}",
     "MarkedAsDone": "Terminé",
     "WorkSchedule": "Horaires de travail",
-    "SummaryDuration": "Résumé"
+    "SummaryDuration": "Résumé",
+
+    "UnassignToDo": "Désassigner la tâche",
+    "UnassignToDoConfirm": "Voulez-vous désassigner la tâche ? La tâche sera retirée de la planification de l'assigné.",
+    "ReassignToDo": "Changer l'assigné de la tâche",
+    "ReassignToDoConfirm": "Voulez-vous changer l'assigné de la tâche ? La tâche sera retirée de la planification de l'assigné actuel."
   }
 }

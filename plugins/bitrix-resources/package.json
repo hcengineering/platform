@@ -42,7 +42,6 @@
     "@hcengineering/bitrix": "^0.6.52",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/presentation": "^0.6.3",
-    "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/login": "^0.6.12",

@@ -57,6 +57,7 @@
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/document": "^0.6.0",
     "@hcengineering/time": "^0.6.0",

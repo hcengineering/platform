@@ -33,6 +33,7 @@ import {
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+import { ToDo } from '@hcengineering/time'
 import {
   ProjectTypeDescriptor,
   Task,
@@ -213,6 +214,8 @@ export interface Issue extends Task {
     // Child id in template
     childId?: string
   }
+
+  todos?: CollectionSize<ToDo>
 }
 
 /**

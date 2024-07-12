@@ -26,7 +26,9 @@
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, EmptyMarkup, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { AttachIcon, StyledTextBox } from '@hcengineering/text-editor-resources'
   import { ButtonSize } from '@hcengineering/ui'
 
   import attachment from '../plugin'

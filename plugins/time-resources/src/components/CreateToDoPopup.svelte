@@ -21,7 +21,7 @@
   import tagsPlugin, { TagReference } from '@hcengineering/tags'
   import { createEventDispatcher } from 'svelte'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { PersonAccount } from '@hcengineering/contact'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
   import task, { makeRank } from '@hcengineering/task'

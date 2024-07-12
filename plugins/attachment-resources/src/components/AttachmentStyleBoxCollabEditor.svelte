@@ -19,17 +19,17 @@
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
-  import textEditor, {
+  import textEditor, { type RefAction, type TextEditorHandler } from '@hcengineering/text-editor'
+  import {
     AttachIcon,
     CollaborativeAttributeBox,
-    RefAction,
     TableIcon,
-    TextEditorHandler,
-    addTableHandler
-  } from '@hcengineering/text-editor'
+    addTableHandler,
+    defaultRefActions,
+    getModelRefActions
+  } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { defaultRefActions, getModelRefActions } from '@hcengineering/text-editor/src/components/editor/actions'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 

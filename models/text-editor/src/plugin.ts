@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,6 +16,6 @@
 
 import { mergeIds } from '@hcengineering/platform'
 // Import plugin directly to prevent .svelte components to being exposed to type typescript.
-import textEditor, { textEditorId } from '@hcengineering/text-editor/src/plugin'
+import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 export default mergeIds(textEditorId, textEditor, {})
