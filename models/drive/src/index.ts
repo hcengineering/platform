@@ -17,44 +17,61 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core, {
   type Blob,
+  type Class,
+  type CollectionSize,
   type Domain,
   type FindOptions,
+  type Ref,
   type Role,
   type RolesAssignment,
   Account,
   AccountRole,
   IndexKind,
-  Ref,
   SortingOrder
 } from '@hcengineering/core'
-import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
+import {
+  type Drive,
+  type File,
+  type FileVersion,
+  type Folder,
+  type Resource,
+  TypeFileVersion,
+  driveId
+} from '@hcengineering/drive'
 import {
   type Builder,
+  Collection,
   Hidden,
   Index,
   Mixin,
   Model,
   Prop,
   ReadOnly,
+  TypeFileSize,
   TypeRecord,
   TypeRef,
   TypeString,
-  UX,
-  Collection
+  TypeTimestamp,
+  UX
 } from '@hcengineering/model'
-import { TDoc, TTypedSpace } from '@hcengineering/model-core'
+import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, { type Viewlet, actionTemplates, createAction } from '@hcengineering/model-view'
+import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
 import drive from './plugin'
 
 export { driveId } from '@hcengineering/drive'
+export { driveOperation } from './migration'
 export { drive as default }
 
 export const DOMAIN_DRIVE = 'drive' as Domain
+
+@Model(drive.class.TypeFileVersion, core.class.Type)
+@UX(core.string.Number)
+export class TTypeFileVersion extends TType {}
 
 @Model(drive.class.Drive, core.class.TypedSpace)
 @UX(drive.string.Drive)
@@ -75,15 +92,6 @@ export class TResource extends TDoc implements Resource {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeRef(core.class.Blob), drive.string.File)
-  @ReadOnly()
-    file?: Ref<Blob>
-
-  @Prop(TypeRef(core.class.Blob), drive.string.Preview)
-  @ReadOnly()
-  @Hidden()
-    preview?: Ref<Blob>
-
   @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
@@ -95,6 +103,10 @@ export class TResource extends TDoc implements Resource {
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
     comments?: number
+
+  @Prop(TypeRef(drive.class.FileVersion), drive.string.Version)
+  @ReadOnly()
+    file?: Ref<FileVersion>
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
@@ -110,20 +122,11 @@ export class TFolder extends TResource implements Folder {
   declare path: Ref<Folder>[]
 
   declare file: undefined
-  declare preview: undefined
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
 @UX(drive.string.File)
 export class TFile extends TResource implements File {
-  @Prop(TypeRef(core.class.Blob), drive.string.File)
-  @ReadOnly()
-  declare file: Ref<Blob>
-
-  @Prop(TypeRecord(), drive.string.Metadata)
-  @ReadOnly()
-    metadata?: Record<string, any>
-
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
   @ReadOnly()
@@ -132,6 +135,75 @@ export class TFile extends TResource implements File {
   @Prop(TypeRef(drive.class.Folder), drive.string.Path)
   @ReadOnly()
   declare path: Ref<Folder>[]
+
+  @Prop(TypeRef(drive.class.FileVersion), drive.string.Version)
+  @ReadOnly()
+  declare file: Ref<FileVersion>
+
+  @Prop(Collection(drive.class.FileVersion), drive.string.FileVersion)
+  @ReadOnly()
+    versions!: CollectionSize<FileVersion>
+
+  @Prop(TypeFileVersion(), drive.string.Version)
+  @ReadOnly()
+    version!: number
+}
+
+@Model(drive.class.FileVersion, core.class.AttachedDoc, DOMAIN_DRIVE)
+@UX(drive.string.FileVersion)
+export class TFileVersion extends TAttachedDoc implements FileVersion {
+  declare space: Ref<Drive>
+
+  @Prop(TypeRef(drive.class.File), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  declare attachedTo: Ref<File>
+
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  declare attachedToClass: Ref<Class<File>>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'versions' = 'versions'
+
+  @Prop(TypeString(), drive.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeRef(core.class.Blob), drive.string.File)
+  @ReadOnly()
+    file!: Ref<Blob>
+
+  @Prop(TypeFileSize(), drive.string.Size)
+  @ReadOnly()
+    size!: number
+
+  @Prop(TypeString(), drive.string.ContentType)
+  @ReadOnly()
+    type!: string
+
+  @Prop(TypeTimestamp(), drive.string.LastModified)
+  @ReadOnly()
+    lastModified!: number
+
+  @Prop(TypeRecord(), drive.string.Metadata)
+  @ReadOnly()
+    metadata?: Record<string, any>
+
+  @Prop(TypeFileVersion(), drive.string.Version)
+  @ReadOnly()
+    version!: number
+}
+
+function defineTypes (builder: Builder): void {
+  builder.createModel(TTypeFileVersion)
+
+  classPresenter(
+    builder,
+    drive.class.TypeFileVersion,
+    drive.component.FileVersionVersionPresenter,
+    drive.component.FileVersionVersionPresenter
+  )
 }
 
 function defineDrive (builder: Builder): void {
@@ -266,21 +338,20 @@ function defineResource (builder: Builder): void {
         },
         '$lookup.file.size',
         'comments',
-        '$lookup.file.modifiedOn',
+        '$lookup.file.lastModified',
         'createdBy'
       ],
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
         lookup: {
-          file: core.class.Blob,
-          preview: core.class.Blob
+          file: drive.class.FileVersion
         },
         sort: {
           _class: SortingOrder.Descending
         }
       } as FindOptions<Resource>,
       configOptions: {
-        hiddenKeys: ['name', 'file', 'parent', 'path', 'type'],
+        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
         sortable: true
       }
     },
@@ -325,14 +396,13 @@ function defineResource (builder: Builder): void {
         'createdBy'
       ],
       configOptions: {
-        hiddenKeys: ['name', 'file', 'parent', 'path'],
+        hiddenKeys: ['name', 'parent', 'path', 'file', 'versions'],
         sortable: true
       },
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       options: {
         lookup: {
-          file: core.class.Blob,
-          preview: core.class.Blob
+          file: drive.class.FileVersion
         },
         sort: {
           _class: SortingOrder.Descending
@@ -429,6 +499,45 @@ function defineFolder (builder: Builder): void {
   })
 }
 
+function defineFileVersion (builder: Builder): void {
+  builder.createModel(TFileVersion)
+
+  builder.mixin(drive.class.FileVersion, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: drive.component.FileVersionPresenter
+  })
+
+  // Actions
+
+  builder.mixin(drive.class.FileVersion, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      view.action.Delete,
+      print.action.Print,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
+  })
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.RestoreFileVersion,
+      label: drive.string.Restore,
+      icon: drive.icon.Restore,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.FileVersion,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      }
+    },
+    drive.action.RestoreFileVersion
+  )
+}
+
 function defineFile (builder: Builder): void {
   builder.createModel(TFile)
 
@@ -506,6 +615,24 @@ function defineFile (builder: Builder): void {
     drive.action.RenameFile
   )
 
+  // createAction(
+  //   builder,
+  //   {
+  //     action: drive.actionImpl.UploadFile,
+  //     label: drive.string.UploadFile,
+  //     icon: drive.icon.File,
+  //     category: drive.category.Drive,
+  //     input: 'focus',
+  //     target: drive.class.File,
+  //     context: {
+  //       mode: ['context', 'browser'],
+  //       application: drive.app.Drive,
+  //       group: 'tools'
+  //     }
+  //   },
+  //   drive.action.UploadFile
+  // )
+
   createAction(builder, {
     ...actionTemplates.move,
     action: view.actionImpl.ShowPopup,
@@ -580,9 +707,11 @@ export function createModel (builder: Builder): void {
     drive.viewlet.Grid
   )
 
+  defineTypes(builder)
   defineDrive(builder)
   defineResource(builder)
   defineFolder(builder)
   defineFile(builder)
+  defineFileVersion(builder)
   defineApplication(builder)
 }

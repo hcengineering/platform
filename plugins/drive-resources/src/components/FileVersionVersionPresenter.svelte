@@ -13,20 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
-  import { Scroller } from '@hcengineering/ui'
-  import { DocAttributeBar } from '@hcengineering/view-resources'
+  import { Button, ButtonSize } from '@hcengineering/ui'
+  import { formatFileVersion } from '../utils'
 
-  export let object: WithLookup<File>
-  export let readonly: boolean = false
+  export let value: number | undefined
+  export let kind: 'no-border' | 'link' | 'list' = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'fit-content'
+
+  $: version = value ? formatFileVersion(value) : ''
 </script>
 
-<Scroller>
-  <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
-
-  {#if object.$lookup?.file}
-    <DocAttributeBar object={object.$lookup.file} {readonly} ignoreKeys={['name', 'file', 'version', 'version']} />
-  {/if}
-  <div class="space-divider bottom" />
-</Scroller>
+{#if kind === 'link'}
+  <Button {kind} {size} {justify} {width}>
+    <svelte:fragment slot="content">
+      {version}
+    </svelte:fragment>
+  </Button>
+{:else}
+  <span>{version}</span>
+{/if}

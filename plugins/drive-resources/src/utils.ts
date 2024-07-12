@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import { toIdMap, type Class, type Doc, type Ref } from '@hcengineering/core'
-import drive, { type Drive, type Folder, type Resource } from '@hcengineering/drive'
+import { type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
+import type { Drive, File as DriveFile, FileVersion, Folder, Resource } from '@hcengineering/drive'
+import drive, { createFile, createFileVersion } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
@@ -38,6 +39,10 @@ async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<v
   }
 }
 
+export function formatFileVersion (version: number): string {
+  return `v${version}`
+}
+
 export async function createFolder (space: Ref<Drive> | undefined, parent: Ref<Folder>, open = false): Promise<void> {
   showPopup(CreateFolder, { space, parent }, 'top', async (id) => {
     if (open && id !== undefined && id !== null) {
@@ -58,32 +63,42 @@ export async function editDrive (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
 }
 
-export async function createFiles (list: FileList, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
-  const client = getClient()
-  const folder = await client.findOne(drive.class.Folder, { space, _id: parent })
-
+export async function uploadFiles (list: FileList, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
   for (let index = 0; index < list.length; index++) {
     const file = list.item(index)
     if (file !== null) {
-      await createFile(file, space, folder)
+      await uploadOneFile(file, space, parent)
     }
   }
 }
 
-export async function createFile (file: File, space: Ref<Drive>, parent: Folder | undefined): Promise<void> {
+export async function uploadOneFile (file: File, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
   const client = getClient()
 
   try {
     const uuid = await uploadFile(file)
     const metadata = await getFileMetadata(file, uuid)
 
-    await client.createDoc(drive.class.File, space, {
-      name: file.name,
-      file: uuid,
-      metadata,
-      parent: parent?._id ?? drive.ids.Root,
-      path: parent !== undefined ? [parent._id, ...parent.path] : []
-    })
+    const { name, size, type, lastModified } = file
+    const data = { file: uuid, name, size, type, lastModified, metadata }
+
+    await createFile(client, space, parent, data)
+  } catch (e) {
+    void setPlatformStatus(unknownError(e))
+  }
+}
+
+export async function replaceOneFile (existing: Ref<DriveFile>, file: File): Promise<void> {
+  const client = getClient()
+
+  try {
+    const uuid = await uploadFile(file)
+    const metadata = await getFileMetadata(file, uuid)
+
+    const { name, size, type, lastModified } = file
+    const data = { file: uuid, name, size, type, lastModified, metadata }
+
+    await createFileVersion(client, existing, data)
   } catch (e) {
     void setPlatformStatus(unknownError(e))
   }
@@ -128,6 +143,15 @@ export async function moveResources (resources: Resource[], space: Ref<Drive>, p
   }
 
   await ops.commit()
+}
+
+export async function restoreFileVersion (version: FileVersion): Promise<void> {
+  const client = getClient()
+
+  const file = await client.findOne(drive.class.File, { _id: version.attachedTo })
+  if (file !== undefined && file.file !== version._id) {
+    await client.diffUpdate(file, { file: version._id })
+  }
 }
 
 const fileTypesMap: Record<string, AnySvelteComponent> = {

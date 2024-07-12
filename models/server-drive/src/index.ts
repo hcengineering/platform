@@ -24,10 +24,10 @@ export { serverDriveId } from '@hcengineering/server-drive'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDrive.trigger.OnFileDelete,
+    trigger: serverDrive.trigger.OnFileVersionDelete,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: drive.class.File
+      objectClass: drive.class.FileVersion
     }
   })
 

@@ -35,17 +35,18 @@
   let isImage = false
   let isError = false
 
-  $: previewBlob = object.$lookup?.preview ?? object.$lookup?.file
-  $: previewRef = object.$lookup?.preview !== undefined ? object.preview : object.file
-  $: isImage = previewBlob?.contentType?.startsWith('image/') ?? false
+  $: version = object.$lookup?.file
+  $: previewRef = version?.file
+  $: isImage = version?.type?.startsWith('image/') ?? false
   $: isFolder = hierarchy.isDerived(object._class, drive.class.Folder)
 </script>
 
 {#if isFolder}
   <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--theme-trans-color)'} />
-{:else if previewBlob != null && previewRef != null && isImage && !isError}
-  {#await getBlobRef(previewBlob, previewRef, object.name, sizeToWidth(size)) then blobSrc}
+{:else if previewRef != null && isImage && !isError}
+  {#await getBlobRef(undefined, previewRef, object.name, sizeToWidth(size)) then blobSrc}
     <img
+      draggable="false"
       class="img-fit"
       src={blobSrc.src}
       srcset={blobSrc.srcset}

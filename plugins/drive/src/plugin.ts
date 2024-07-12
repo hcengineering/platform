@@ -17,7 +17,7 @@ import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Type } fro
 import type { Asset, IntlString, Plugin, Resource as PlatformResource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Location, ResolvedLocation } from '@hcengineering/ui'
-import { Drive, File, FileSize, Folder, Resource } from './types'
+import { Drive, File, FileVersion, Folder, Resource } from './types'
 
 export * from './types'
 
@@ -30,9 +30,10 @@ export const drivePlugin = plugin(driveId, {
   class: {
     Drive: '' as Ref<Class<Drive>>,
     File: '' as Ref<Class<File>>,
+    FileVersion: '' as Ref<Class<FileVersion>>,
     Folder: '' as Ref<Class<Folder>>,
     Resource: '' as Ref<Class<Resource>>,
-    TypeFileSize: '' as Ref<Class<Type<FileSize>>>
+    TypeFileVersion: '' as Ref<Class<Type<number>>>
   },
   mixin: {
     DefaultDriveTypeData: '' as Ref<Mixin<Drive>>
@@ -44,7 +45,8 @@ export const drivePlugin = plugin(driveId, {
     Folder: '' as Asset,
     FolderOpen: '' as Asset,
     FolderClosed: '' as Asset,
-    Download: '' as Asset
+    Download: '' as Asset,
+    Restore: '' as Asset
   },
   app: {
     Drive: '' as Ref<Doc>
@@ -58,6 +60,7 @@ export const drivePlugin = plugin(driveId, {
   string: {
     Drive: '' as IntlString,
     File: '' as IntlString,
+    FileVersion: '' as IntlString,
     Folder: '' as IntlString,
     Resource: '' as IntlString
   },
