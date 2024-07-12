@@ -52,6 +52,8 @@
     "InboxNotificationsDescription": "Receba notificações pessoais em sua caixa de entrada do Huly.",
     "PushNotificationsDescription": "Receba notificações pessoais no desktop.",
     "Sound": "Som",
-    "SoundNotificationsDescription": "Receba notificações sonoras para eventos."
+    "SoundNotificationsDescription": "Receba notificações sonoras para eventos.",
+    "CommonNotificationCollectionAdded":  "{senderName} adicionou {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} removeu {collection}"
   }
 }

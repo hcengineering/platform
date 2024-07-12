@@ -53,6 +53,8 @@
     "InboxNotificationsDescription": "Получайте персональные уведомления на свой почтовый ящик Huly.",
     "PushNotificationsDescription": "Получайте персональные уведомления на рабочий стол.",
     "Sound": "Звук",
-    "SoundNotificationsDescription": "Получайте звуковые уведомления о событиях."
+    "SoundNotificationsDescription": "Получайте звуковые уведомления о событиях.",
+    "CommonNotificationCollectionAdded":  "{senderName} добавил {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} удалил {collection}"
   }
 }
