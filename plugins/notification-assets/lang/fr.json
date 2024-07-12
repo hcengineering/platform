@@ -52,6 +52,7 @@
     "General": "Général",
     "InboxNotificationsDescription": "Recevez des notifications personnelles dans votre boîte de réception Huly.",
     "PushNotificationsDescription": "Recevez des notifications personnelles sur le bureau.",
-    "Sound": "Son"
+    "Sound": "Son",
+    "SoundNotificationsDescription": "Recevez des notifications sonores pour les événements."
   }
 }

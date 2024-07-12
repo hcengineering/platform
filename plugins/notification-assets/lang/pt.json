@@ -51,6 +51,7 @@
     "General": "Geral",
     "InboxNotificationsDescription": "Receba notificações pessoais em sua caixa de entrada do Huly.",
     "PushNotificationsDescription": "Receba notificações pessoais no desktop.",
-    "Sound": "Som"
+    "Sound": "Som",
+    "SoundNotificationsDescription": "Receba notificações sonoras para eventos."
   }
 }

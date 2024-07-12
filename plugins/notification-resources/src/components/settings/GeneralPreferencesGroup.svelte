@@ -15,11 +15,11 @@
 
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import notification, { NotificationProvider, NotificationProviderSetting } from '@hcengineering/notification'
+  import notification, { NotificationProvider } from '@hcengineering/notification'
   import { Icon, Label, ModernToggle } from '@hcengineering/ui'
   import core, { Ref } from '@hcengineering/core'
 
-  export let providerSettings: NotificationProviderSetting[] = []
+  import { providersSettings } from '../../utils'
 
   const client = getClient()
   const providers = client
@@ -32,12 +32,12 @@
 
     if (provider === undefined) return false
 
-    const setting = providerSettings.find(({ attachedTo }) => attachedTo === provider._id)
+    const setting = $providersSettings.find(({ attachedTo }) => attachedTo === provider._id)
     return setting?.enabled ?? provider.defaultEnabled
   }
 
   async function updateStatus (ref: Ref<NotificationProvider>, enabled: boolean): Promise<void> {
-    const setting = providerSettings.find(({ attachedTo }) => attachedTo === ref)
+    const setting = $providersSettings.find(({ attachedTo }) => attachedTo === ref)
     if (setting !== undefined) {
       await client.update(setting, { enabled })
       setting.enabled = enabled
@@ -50,7 +50,7 @@
   }
 
   async function onToggle (provider: NotificationProvider): Promise<void> {
-    const setting = providerSettings.find(({ attachedTo }) => attachedTo === provider._id)
+    const setting = $providersSettings.find(({ attachedTo }) => attachedTo === provider._id)
     const enabled = setting !== undefined ? !setting.enabled : !provider.defaultEnabled
 
     await updateStatus(provider._id, enabled)
@@ -70,7 +70,7 @@
 </script>
 
 {#each providers as provider}
-  {@const setting = providerSettings.find(({ attachedTo }) => attachedTo === provider._id)}
+  {@const setting = $providersSettings.find(({ attachedTo }) => attachedTo === provider._id)}
 
   <div class="flex-row-center flex-gap-2">
     <div class="flex-col flex-gap-1 mb-4 w-120">

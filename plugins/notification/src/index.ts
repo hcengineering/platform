@@ -158,11 +158,13 @@ export interface NotificationProvider extends Doc {
   defaultEnabled: boolean
   depends?: Ref<NotificationProvider>
   canDisable: boolean
+  ignoreAll?: boolean
   order: number
 }
 
 export interface NotificationProviderDefaults extends Doc {
   provider: Ref<NotificationProvider>
+  excludeIgnore?: Ref<BaseNotificationType>[]
   ignoredTypes: Ref<BaseNotificationType>[]
   enabledTypes: Ref<BaseNotificationType>[]
 }
@@ -362,7 +364,7 @@ const notification = plugin(notificationId, {
   providers: {
     InboxNotificationProvider: '' as Ref<NotificationProvider>,
     PushNotificationProvider: '' as Ref<NotificationProvider>,
-    SoundNotification: '' as Ref<NotificationProvider>
+    SoundNotificationProvider: '' as Ref<NotificationProvider>
   },
   integrationType: {
     MobileApp: '' as Ref<IntegrationType>
@@ -417,6 +419,7 @@ const notification = plugin(notificationId, {
     PushNotificationsDescription: '' as IntlString,
     CommonNotificationCollectionAdded: '' as IntlString,
     CommonNotificationCollectionRemoved: '' as IntlString,
+    SoundNotificationsDescription: '' as IntlString,
     Sound: '' as IntlString
   },
   function: {
@@ -425,6 +428,9 @@ const notification = plugin(notificationId, {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasInboxNotifications: '' as Resource<
     (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>
+    >,
+    IsNotificationAllowed: '' as Resource<
+    (type: BaseNotificationType, providerId: Ref<NotificationProvider>) => boolean
     >
   },
   resolver: {

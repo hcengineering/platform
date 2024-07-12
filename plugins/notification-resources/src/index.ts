@@ -43,7 +43,8 @@ import {
   readAll,
   unreadAll,
   checkPermission,
-  unarchiveContextNotifications
+  unarchiveContextNotifications,
+  isNotificationAllowed
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -75,7 +76,8 @@ export default async (): Promise<Resources> => ({
     CanReadNotifyContext: canReadNotifyContext,
     CanUnReadNotifyContext: canUnReadNotifyContext,
     HasInboxNotifications: hasInboxNotifications,
-    CheckPushPermission: checkPermission
+    CheckPushPermission: checkPermission,
+    IsNotificationAllowed: isNotificationAllowed
   },
   actionImpl: {
     Unsubscribe: unsubscribe,

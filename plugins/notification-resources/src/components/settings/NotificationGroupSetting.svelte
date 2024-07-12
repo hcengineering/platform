@@ -17,7 +17,6 @@
   import {
     BaseNotificationType,
     NotificationProvider,
-    NotificationProviderSetting,
     NotificationGroup,
     NotificationType,
     NotificationTypeSetting,
@@ -28,10 +27,10 @@
   import { Grid, Label, ModernToggle } from '@hcengineering/ui'
 
   import notification from '../../plugin'
+  import { providersSettings } from '../../utils'
 
   export let group: Ref<NotificationGroup>
   export let settings: Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>
-  export let providerSettings: NotificationProviderSetting[] = []
 
   const client = getClient()
 
@@ -117,12 +116,22 @@
     return notification.string.Change
   }
 
-  function isIgnored (type: Ref<BaseNotificationType>, provider: Ref<NotificationProvider>): boolean {
-    return providerDefaults.some((it) => provider === it.provider && it.ignoredTypes.includes(type))
+  function isIgnored (type: Ref<BaseNotificationType>, provider: NotificationProvider): boolean {
+    const ignored = providerDefaults.some((it) => provider._id === it.provider && it.ignoredTypes.includes(type))
+
+    if (ignored) return true
+
+    if (provider.ignoreAll === true) {
+      return !providerDefaults.some(
+        (it) => provider._id === it.provider && it.excludeIgnore !== undefined && it.excludeIgnore.includes(type)
+      )
+    }
+
+    return false
   }
 
   $: filteredProviders = providers.filter((provider) => {
-    const providerSetting = providerSettings.find((p) => p.attachedTo === provider._id)
+    const providerSetting = $providersSettings.find((p) => p.attachedTo === provider._id)
 
     if (providerSetting !== undefined && !providerSetting.enabled) {
       return false
@@ -130,6 +139,14 @@
 
     if (providerSetting === undefined && !provider.defaultEnabled) {
       return false
+    }
+
+    if (provider.ignoreAll === true) {
+      const ignoreExcluded = providerDefaults
+        .map((it) => (provider._id === it.provider && it.excludeIgnore !== undefined ? it.excludeIgnore : []))
+        .flat()
+
+      return types.some((type) => ignoreExcluded.includes(type._id))
     }
 
     return true
@@ -148,7 +165,7 @@
         <Label label={type.label} />
       </div>
       {#each filteredProviders as provider (provider._id)}
-        {#if !isIgnored(type._id, provider._id)}
+        {#if !isIgnored(type._id, provider)}
           {@const status = getStatus(settings, type._id, provider._id)}
           <div class="toggle">
             <ModernToggle

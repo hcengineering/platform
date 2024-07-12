@@ -43,9 +43,13 @@ import notification, {
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification,
-  type MentionInboxNotification
+  type MentionInboxNotification,
+  type BaseNotificationType,
+  type NotificationProvider,
+  type NotificationProviderSetting,
+  type NotificationTypeSetting
 } from '@hcengineering/notification'
-import { MessageBox, getClient } from '@hcengineering/presentation'
+import { MessageBox, getClient, createQuery } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
@@ -64,6 +68,23 @@ import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengine
 import { getObjectLinkId } from '@hcengineering/view-resources'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
+
+export const providersSettings = writable<NotificationProviderSetting[]>([])
+export const typesSettings = writable<NotificationTypeSetting[]>([])
+
+const providerSettingsQuery = createQuery(true)
+const typeSettingsQuery = createQuery(true)
+
+export function loadNotificationSettings (): void {
+  providerSettingsQuery.query(notification.class.NotificationProviderSetting, {}, (res) => {
+    providersSettings.set(res)
+  })
+  typeSettingsQuery.query(notification.class.NotificationTypeSetting, {}, (res) => {
+    typesSettings.set(res)
+  })
+}
+
+loadNotificationSettings()
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
   if (docNotifyContext.hidden) {
@@ -776,4 +797,40 @@ export function notificationsComparator (notifications1: InboxNotification, noti
   }
 
   return 0
+}
+
+export function isNotificationAllowed (type: BaseNotificationType, providerId: Ref<NotificationProvider>): boolean {
+  const client = getClient()
+  const provider = client.getModel().findAllSync(notification.class.NotificationProvider, { _id: providerId })[0]
+  if (provider === undefined) return false
+
+  const providerSetting = get(providersSettings).find((it) => it.attachedTo === providerId)
+  if (providerSetting !== undefined && !providerSetting.enabled) return false
+  if (providerSetting === undefined && !provider.defaultEnabled) return false
+
+  const providerDefaults = client.getModel().findAllSync(notification.class.NotificationProviderDefaults, {})
+
+  if (providerDefaults.some((it) => it.provider === provider._id && it.ignoredTypes.includes(type._id))) {
+    return false
+  }
+
+  if (provider.ignoreAll === true) {
+    const excludedIgnore = providerDefaults.some(
+      (it) => provider._id === it.provider && it.excludeIgnore !== undefined && it.excludeIgnore.includes(type._id)
+    )
+
+    if (!excludedIgnore) return false
+  }
+
+  const setting = get(typesSettings).find((it) => it.attachedTo === provider._id && it.type === type._id)
+
+  if (setting !== undefined) {
+    return setting.enabled
+  }
+
+  if (providerDefaults.some((it) => it.provider === provider._id && it.enabledTypes.includes(type._id))) {
+    return true
+  }
+
+  return type.defaultEnabled
 }

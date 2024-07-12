@@ -293,12 +293,14 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
   defaultEnabled!: boolean
   order!: number
   depends?: Ref<NotificationProvider>
+  ignoreAll?: boolean
   canDisable!: boolean
 }
 
 @Model(notification.class.NotificationProviderDefaults, core.class.Doc)
 export class TNotificationProviderDefaults extends TDoc implements NotificationProviderDefaults {
   provider!: Ref<NotificationProvider>
+  excludeIgnore?: Ref<BaseNotificationType>[]
   ignoredTypes!: Ref<BaseNotificationType>[]
   enabledTypes!: Ref<BaseNotificationType>[]
 }
@@ -349,18 +351,8 @@ export function createModel (builder: Builder): void {
     TNotificationProvider,
     TNotificationProviderSetting,
     TNotificationTypeSetting,
-    TNotificationProviderDefaults,
-    TPushSubscription
+    TNotificationProviderDefaults
   )
-
-  // builder.createDoc(
-  //   notification.class.NotificationProvider,
-  //   core.space.Model,
-  //   {
-  //     label: notification.string.Sound
-  //   },
-  //   notification.providers.SoundNotification
-  // )
 
   builder.createDoc(
     setting.class.SettingsCategory,
@@ -705,6 +697,22 @@ export function createModel (builder: Builder): void {
       order: 20
     },
     notification.providers.PushNotificationProvider
+  )
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      icon: notification.icon.Notifications,
+      label: notification.string.Sound,
+      description: notification.string.SoundNotificationsDescription,
+      depends: notification.providers.PushNotificationProvider,
+      defaultEnabled: true,
+      canDisable: true,
+      ignoreAll: true,
+      order: 25
+    },
+    notification.providers.SoundNotificationProvider
   )
 
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {

@@ -54,6 +54,7 @@
     "PushNotificationsDescription": "Receive personal notifications on desktop.",
     "CommonNotificationCollectionAdded":  "{senderName} added {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} removed {collection}",
-    "Sound": "Sound"
+    "Sound": "Sound",
+    "SoundNotificationsDescription": "Receive sound notifications for events."
   }
 }
