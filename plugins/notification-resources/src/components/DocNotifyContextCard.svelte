@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner, tooltip } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
@@ -28,7 +28,6 @@
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
 
-  import MessagesPopup from './MessagePopup.svelte'
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
   import {
@@ -166,11 +165,11 @@
     archivingPromise = undefined
   }
 
-  function canShowTooltip (group: InboxNotification[]): boolean {
-    const first = group[0]
-
-    return canGroup(first)
-  }
+  // function canShowTooltip (group: InboxNotification[]): boolean {
+  //   const first = group[0]
+  //
+  //   return canGroup(first)
+  // }
 
   function getKey (group: InboxNotification[]): string {
     return group.map((it) => it._id).join('-')
@@ -229,15 +228,14 @@
   <div class="content">
     <div class="notifications">
       {#each groupedNotifications.slice(0, maxNotifications) as group (getKey(group))}
-        <div
-          class="notification"
-          use:tooltip={canShowTooltip(group)
-            ? {
-                component: MessagesPopup,
-                props: { context: value, notifications: group }
-              }
-            : undefined}
-        >
+        <div class="notification">
+          <!--          use:tooltip={canShowTooltip(group)-->
+          <!--            ? {-->
+          <!--                component: MessagesPopup,-->
+          <!--                props: { context: value, notifications: group }-->
+          <!--              }-->
+          <!--            : undefined}-->
+
           <div class="embeddedMarker" />
           <InboxNotificationPresenter
             value={group[0]}

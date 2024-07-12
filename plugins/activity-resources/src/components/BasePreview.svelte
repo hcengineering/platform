@@ -27,7 +27,7 @@
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
-  import { classIcon, DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { classIcon, DocNavLink } from '@hcengineering/view-resources'
   import { markupToText } from '@hcengineering/text'
 
   export let message: ActivityMessage | undefined = undefined
@@ -102,13 +102,13 @@
     width = element.clientWidth
   }}
   on:click
-  on:contextmenu={(evt) => {
-    showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
-      isActionsOpened = false
-    })
-    isActionsOpened = true
-  }}
 >
+  <!--  on:contextmenu={(evt) => {-->
+  <!--  showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {-->
+  <!--    isActionsOpened = false-->
+  <!--  })-->
+  <!--  isActionsOpened = true-->
+  <!--}}-->
   <span class="left overflow-label">
     {#if type === 'full'}
       <div class="header">
@@ -158,11 +158,11 @@
     <slot name="content" />
   </span>
 
-  {#if !readonly}
-    <div class="actions" class:opened={isActionsOpened}>
-      <slot name="actions" />
-    </div>
-  {/if}
+  <!--{#if !readonly}-->
+  <!--  <div class="actions" class:opened={isActionsOpened}>-->
+  <!--    <slot name="actions" />-->
+  <!--  </div>-->
+  <!--{/if}-->
 
   <div class="right">
     <slot name="right" />
