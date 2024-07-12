@@ -35,6 +35,7 @@
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/model-contact": "^0.6.1",
+    "@hcengineering/model-love": "^0.6.0",
     "@hcengineering/gmail": "^0.6.22",
     "@hcengineering/gmail-resources": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
@@ -43,6 +44,7 @@
     "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/setting": "^0.6.17",
-    "@hcengineering/ui": "^0.6.15"
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/preference": "^0.6.13"
   }
 }

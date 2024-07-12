@@ -231,13 +231,16 @@ export function createModel (builder: Builder): void {
         htmlTemplate: 'Reminder: {doc}',
         subjectTemplate: 'Reminder: {doc}'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: false
-      }
+      defaultEnabled: false
     },
     calendar.ids.ReminderNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [calendar.ids.ReminderNotification]
+  })
 
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,

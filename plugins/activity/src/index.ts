@@ -302,7 +302,9 @@ export default plugin(activityId, {
     Mentions: '' as IntlString,
     MentionedYouIn: '' as IntlString,
     Messages: '' as IntlString,
-    Thread: '' as IntlString
+    Thread: '' as IntlString,
+    ReactionNotificationTitle: '' as IntlString,
+    ReactionNotificationBody: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

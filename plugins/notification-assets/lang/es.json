@@ -48,6 +48,12 @@
     "Push": "Push",
     "EnablePush": "Habilitar notificaciones push",
     "NotificationBlockedInBrowser": "Las notificaciones están bloqueadas en tu navegador. Por favor, habilita las notificaciones en la configuración de tu navegador.",
-    "Sound": "Sonido"
+    "General": "General",
+    "InboxNotificationsDescription": "Reciba notificaciones personales en su bandeja de entrada de Huly.",
+    "PushNotificationsDescription": "Reciba notificaciones personales en el escritorio.",
+    "Sound": "Sonido",
+    "SoundNotificationsDescription": "Reciba notificaciones de sonido para eventos.",
+    "CommonNotificationCollectionAdded":  "{senderName} añadió {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} eliminó {collection}"
   }
 }

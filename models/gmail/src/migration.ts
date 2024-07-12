@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type Ref, type Space } from '@hcengineering/core'
+import core, { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { gmailId } from '@hcengineering/gmail'
 import {
   migrateSpace,
@@ -23,6 +23,24 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_GMAIL } from '.'
+import notification from '@hcengineering/notification'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
+
+import gmail from './plugin'
+
+async function migrateSettings (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_PREFERENCE,
+    {
+      _class: 'notification:class:NotificationSetting' as Ref<Class<Doc>>,
+      attachedTo: 'notification:providers:EmailNotification' as Ref<Doc>
+    },
+    {
+      _class: notification.class.NotificationTypeSetting,
+      attachedTo: gmail.providers.EmailNotificationProvider
+    }
+  )
+}
 
 export const gmailOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -32,6 +50,10 @@ export const gmailOperation: MigrateOperation = {
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'gmail:space:Gmail' as Ref<Space>, core.space.Workspace, [DOMAIN_GMAIL])
         }
+      },
+      {
+        state: 'migrate-setting',
+        func: migrateSettings
       }
     ])
   },

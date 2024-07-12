@@ -16,7 +16,13 @@
 
 import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
-import { NotificationContent, NotificationType } from '@hcengineering/notification'
+import {
+  BaseNotificationType,
+  InboxNotification,
+  NotificationContent,
+  NotificationProvider,
+  NotificationType
+} from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -129,7 +135,28 @@ export interface NotificationPresenter extends Class<Doc> {
   presenter: Resource<NotificationContentProvider>
 }
 
+export interface UserInfo {
+  _id: Ref<Account>
+  account?: PersonAccount
+  person?: Person
+}
+
+export type NotificationProviderFunc = (
+  control: TriggerControl,
+  types: BaseNotificationType[],
+  object: Doc,
+  data: InboxNotification,
+  receiver: UserInfo,
+  sender: UserInfo
+) => Promise<Tx[]>
+
+export interface NotificationProviderResources extends Doc {
+  provider: Ref<NotificationProvider>
+  fn: Resource<NotificationProviderFunc>
+}
+
 export const NOTIFICATION_BODY_SIZE = 50
+export const NOTIFICATION_TITLE_SIZE = 30
 
 /**
  * @public
@@ -139,6 +166,9 @@ export default plugin(serverNotificationId, {
     SesUrl: '' as Metadata<string>,
     PushPrivateKey: '' as Metadata<string>,
     PushSubject: '' as Metadata<string>
+  },
+  class: {
+    NotificationProviderResources: '' as Ref<Class<NotificationProviderResources>>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,

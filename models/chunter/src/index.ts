@@ -376,15 +376,11 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
       attachedToClass: chunter.class.DirectMessage,
-      providers: {
-        [notification.providers.EmailNotification]: false,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: false,
       group: chunter.ids.ChunterNotificationGroup,
       templates: {
-        textTemplate: '{sender} has send you a message: {doc} {data}',
-        htmlTemplate: '<p><b>{sender}</b> has send you a message {doc}</p> {data}',
+        textTemplate: '{sender} has sent you a message: {doc} {message}',
+        htmlTemplate: '<p><b>{sender}</b> has sent you a message {doc}</p> {message}',
         subjectTemplate: 'You have new direct message in {doc}'
       }
     },
@@ -400,11 +396,14 @@ export function createModel (builder: Builder): void {
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      },
-      group: chunter.ids.ChunterNotificationGroup
+      attachedToClass: chunter.class.Channel,
+      defaultEnabled: false,
+      group: chunter.ids.ChunterNotificationGroup,
+      templates: {
+        textTemplate: '{sender} has sent a message in {doc}: {message}',
+        htmlTemplate: '<p><b>{sender}</b> has sent a message in {doc}</p> {message}',
+        subjectTemplate: 'You have new message in {doc}'
+      }
     },
     chunter.ids.ChannelNotification
   )
@@ -418,11 +417,13 @@ export function createModel (builder: Builder): void {
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ThreadMessage,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      },
-      group: chunter.ids.ChunterNotificationGroup
+      defaultEnabled: false,
+      group: chunter.ids.ChunterNotificationGroup,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     chunter.ids.ThreadNotification
   )
@@ -648,6 +649,18 @@ export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: ['name', 'topic', 'private', 'archived', 'members'],
     strict: true
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
   })
 }
 

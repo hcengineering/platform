@@ -461,13 +461,21 @@ function defineDocument (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     document.ids.ContentNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [document.ids.ContentNotification]
+  })
 
   generateClassNotificationTypes(
     builder,

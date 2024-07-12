@@ -43,6 +43,8 @@
     "Thread": "Обсуждение",
     "AddReaction": "Добавить реакцию",
     "SaveForLater": "Cохранить",
-    "RemoveFromLater": "Удалить из сохраненных"
+    "RemoveFromLater": "Удалить из сохраненных",
+    "ReactionNotificationTitle": "Реакция на {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}"
   }
 }

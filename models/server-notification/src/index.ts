@@ -14,12 +14,12 @@
 // limitations under the License.
 //
 
-import { type Builder, Mixin } from '@hcengineering/model'
+import { type Builder, Mixin, Model } from '@hcengineering/model'
 
 import core, { type Account, type Doc, type Ref, type Tx } from '@hcengineering/core'
-import { TClass } from '@hcengineering/model-core'
+import { TClass, TDoc } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
-import notification, { type NotificationType } from '@hcengineering/notification'
+import notification, { type NotificationProvider, type NotificationType } from '@hcengineering/notification'
 import { type Resource } from '@hcengineering/platform'
 import serverCore, { type TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
@@ -28,7 +28,9 @@ import serverNotification, {
   type Presenter,
   type TextPresenter,
   type TypeMatch,
-  type NotificationContentProvider
+  type NotificationContentProvider,
+  type NotificationProviderResources,
+  type NotificationProviderFunc
 } from '@hcengineering/server-notification'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
@@ -55,8 +57,20 @@ export class TTypeMatch extends TNotificationType implements TypeMatch {
   >
 }
 
+@Model(serverNotification.class.NotificationProviderResources, core.class.Doc)
+export class TNotificationProviderResources extends TDoc implements NotificationProviderResources {
+  provider!: Ref<NotificationProvider>
+  fn!: Resource<NotificationProviderFunc>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
+  builder.createModel(
+    THTMLPresenter,
+    TTextPresenter,
+    TTypeMatch,
+    TNotificationPresenter,
+    TNotificationProviderResources
+  )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnActivityNotificationViewed,

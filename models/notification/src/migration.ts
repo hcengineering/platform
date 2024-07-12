@@ -22,6 +22,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import notification, { notificationId, type DocNotifyContext } from '@hcengineering/notification'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
 import { DOMAIN_NOTIFICATION } from './index'
 
@@ -67,6 +68,32 @@ export async function removeNotifications (
   }
 }
 
+export async function migrateSettings (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_PREFERENCE,
+    {
+      _class: 'notification:class:NotificationSetting' as Ref<Class<Doc>>,
+      attachedTo: 'notification:providers:BrowserNotification' as Ref<Doc>
+    },
+    {
+      _class: notification.class.NotificationTypeSetting,
+      attachedTo: notification.providers.PushNotificationProvider
+    }
+  )
+
+  await client.update(
+    DOMAIN_PREFERENCE,
+    {
+      _class: 'notification:class:NotificationSetting' as Ref<Class<Doc>>,
+      attachedTo: 'notification:providers:PlatformNotification' as Ref<Doc>
+    },
+    {
+      _class: notification.class.NotificationTypeSetting,
+      attachedTo: notification.providers.InboxNotificationProvider
+    }
+  )
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, notificationId, [
@@ -96,6 +123,10 @@ export const notificationOperation: MigrateOperation = {
             DOMAIN_NOTIFICATION
           ])
         }
+      },
+      {
+        state: 'migrate-setting',
+        func: migrateSettings
       }
     ])
   },

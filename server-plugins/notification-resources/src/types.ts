@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { BaseNotificationType } from '@hcengineering/notification'
-import { Person, PersonAccount } from '@hcengineering/contact'
-import { Account, Ref } from '@hcengineering/core'
+import { BaseNotificationType, NotificationProvider } from '@hcengineering/notification'
+import { Ref } from '@hcengineering/core'
 
 /**
  * @public
@@ -28,20 +27,10 @@ export interface Content {
 /**
  * @public
  */
-export interface NotifyResult {
-  allowed: boolean
-  push: boolean
-  emails: BaseNotificationType[]
-}
+export type NotifyResult = Map<Ref<NotificationProvider>, BaseNotificationType[]>
 
 export interface NotifyParams {
   isOwn: boolean
   isSpace: boolean
   shouldUpdateTimestamp: boolean
-}
-
-export interface UserInfo {
-  _id: Ref<Account>
-  account?: PersonAccount
-  person?: Person
 }

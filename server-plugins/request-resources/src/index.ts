@@ -164,8 +164,7 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
       senderInfo,
       { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
       notifyContexts,
-      messages,
-      new Map()
+      messages
     )
     res.push(...txes)
   }

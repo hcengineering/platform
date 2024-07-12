@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import contact, { Channel } from '@hcengineering/contact'
+import contact, { Channel, formatName } from '@hcengineering/contact'
 import {
   Account,
   Class,
+  concatLink,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -29,7 +30,10 @@ import {
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
 import { TriggerControl } from '@hcengineering/server-core'
-import notification, { NotificationType } from '@hcengineering/notification'
+import notification, { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
+import serverNotification, { NotificationProviderFunc, UserInfo } from '@hcengineering/server-notification'
+import { getContentByTemplate } from '@hcengineering/server-notification-resources'
+import { getMetadata } from '@hcengineering/platform'
 
 /**
  * @public
@@ -131,6 +135,94 @@ export async function IsIncomingMessage (
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 
+export async function sendEmailNotification (
+  text: string,
+  html: string,
+  subject: string,
+  receiver: string
+): Promise<void> {
+  try {
+    const sesURL = getMetadata(serverNotification.metadata.SesUrl)
+    if (sesURL === undefined || sesURL === '') {
+      console.log('Please provide email service url to enable email confirmations.')
+      return
+    }
+    await fetch(concatLink(sesURL, '/send'), {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text,
+        html,
+        subject,
+        to: [receiver]
+      })
+    })
+  } catch (err) {
+    console.log('Could not send email notification', err)
+  }
+}
+
+async function notifyByEmail (
+  control: TriggerControl,
+  type: Ref<BaseNotificationType>,
+  doc: Doc | undefined,
+  sender: UserInfo,
+  receiver: UserInfo,
+  data: InboxNotification
+): Promise<void> {
+  const account = receiver.account
+
+  if (account === undefined) {
+    return
+  }
+
+  const senderPerson = sender.person
+  const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
+
+  const content = await getContentByTemplate(doc, senderName, type, control, '', data)
+
+  if (content !== undefined) {
+    await sendEmailNotification(content.text, content.html, content.subject, account.email)
+  }
+}
+
+const SendEmailNotifications: NotificationProviderFunc = async (
+  control: TriggerControl,
+  types: BaseNotificationType[],
+  object: Doc,
+  data: InboxNotification,
+  receiver: UserInfo,
+  sender: UserInfo
+): Promise<Tx[]> => {
+  if (types.length === 0) {
+    return []
+  }
+
+  if (receiver.person === undefined) {
+    return []
+  }
+
+  const isEmployee = control.hierarchy.hasMixin(receiver.person, contact.mixin.Employee)
+
+  if (!isEmployee) {
+    return []
+  }
+
+  const employee = control.hierarchy.as(receiver.person, contact.mixin.Employee)
+
+  if (!employee.active) {
+    return []
+  }
+
+  for (const type of types) {
+    await notifyByEmail(control, type._id, object, sender, receiver, data)
+  }
+
+  return []
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -138,6 +230,7 @@ export default async () => ({
   },
   function: {
     IsIncomingMessage,
-    FindMessages
+    FindMessages,
+    SendEmailNotifications
   }
 })

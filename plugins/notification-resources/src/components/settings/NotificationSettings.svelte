@@ -19,26 +19,28 @@
     BaseNotificationType,
     NotificationGroup,
     NotificationPreferencesGroup,
-    NotificationSetting
+    NotificationTypeSetting
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import {
-    Location,
-    Scroller,
-    getCurrentResolvedLocation,
-    navigate,
-    resolvedLocationStore,
-    Header,
     Breadcrumb,
     defineSeparators,
-    settingsSeparators,
-    Separator,
+    getCurrentResolvedLocation,
+    Header,
+    Loading,
+    Location,
+    navigate,
     NavItem,
-    Loading
+    resolvedLocationStore,
+    Scroller,
+    Separator,
+    settingsSeparators
   } from '@hcengineering/ui'
-  import notification from '../plugin'
+
+  import notification from '../../plugin'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
+  import { providersSettings, typesSettings } from '../../utils'
 
   const client = getClient()
   const groups: NotificationGroup[] = client.getModel().findAllSync(notification.class.NotificationGroup, {})
@@ -46,13 +48,14 @@
     .getModel()
     .findAllSync(notification.class.NotificationPreferencesGroup, {})
 
-  let settings = new Map<Ref<BaseNotificationType>, NotificationSetting[]>()
+  let settings = new Map<Ref<BaseNotificationType>, NotificationTypeSetting[]>()
 
-  const query = createQuery()
+  let isProviderSettingLoading = true
+  let isTypeSettingLoading = true
 
-  let loading = true
+  $: loading = isProviderSettingLoading || isTypeSettingLoading
 
-  query.query(notification.class.NotificationSetting, {}, (res) => {
+  const unsubscribeTypeSetting = typesSettings.subscribe((res) => {
     settings = new Map()
     for (const value of res) {
       const arr = settings.get(value.type) ?? []
@@ -60,7 +63,11 @@
       settings.set(value.type, arr)
     }
     settings = settings
-    loading = false
+    isTypeSettingLoading = false
+  })
+
+  const unsubscribeProviderSetting = providersSettings.subscribe(() => {
+    isProviderSettingLoading = false
   })
 
   let group: Ref<NotificationGroup> | undefined = undefined
@@ -74,14 +81,18 @@
     }
   }
 
-  onDestroy(
-    resolvedLocationStore.subscribe((loc) => {
-      void (async (loc: Location): Promise<void> => {
-        group = loc.path[4] as Ref<NotificationGroup>
-        currentPreferenceGroup = undefined
-      })(loc)
-    })
-  )
+  const unsubscribeLocation = resolvedLocationStore.subscribe((loc) => {
+    void (async (loc: Location): Promise<void> => {
+      group = loc.path[4] as Ref<NotificationGroup>
+      currentPreferenceGroup = undefined
+    })(loc)
+  })
+
+  onDestroy(() => {
+    unsubscribeLocation()
+    unsubscribeTypeSetting()
+    unsubscribeProviderSetting()
+  })
   defineSeparators('notificationSettings', settingsSeparators)
 </script>
 
@@ -132,7 +143,7 @@
         <div class="antiNav-space" />
       </Scroller>
     </div>
-    <Separator name={'notificationSettings'} index={0} color={'var(--theme-divider-color)'} />
+    <Separator name="notificationSettings" index={0} color={'var(--theme-divider-color)'} />
     <div class="hulyComponent-content__column content">
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">

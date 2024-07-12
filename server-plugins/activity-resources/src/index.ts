@@ -36,9 +36,12 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import {
   createCollabDocInfo,
   createCollaboratorNotifications,
+  getTextPresenter,
   removeDocInboxNotifications
 } from '@hcengineering/server-notification-resources'
 import { PersonAccount } from '@hcengineering/contact'
+import { NotificationContent } from '@hcengineering/notification'
+import { getResource, translate } from '@hcengineering/platform'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 import { ReferenceTrigger } from './references'
@@ -48,11 +51,16 @@ export async function OnReactionChanged (originTx: Tx, control: TriggerControl):
   const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
 
   if (innerTx._class === core.class.TxCreateDoc) {
-    return await createReactionNotifications(tx, control)
+    const txes = await createReactionNotifications(tx, control)
+
+    await control.apply(txes, true)
+    return txes
   }
 
   if (innerTx._class === core.class.TxRemoveDoc) {
-    return await removeReactionNotifications(tx, control)
+    const txes = await removeReactionNotifications(tx, control)
+    await control.apply(txes, true)
+    return txes
   }
 
   return []
@@ -411,6 +419,36 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
   return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
 }
 
+async function ReactionNotificationContentProvider (
+  doc: ActivityMessage,
+  originTx: TxCUD<Doc>,
+  _: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<Reaction>
+  const presenter = getTextPresenter(doc._class, control.hierarchy)
+  const reaction = TxProcessor.createDoc2Doc(tx)
+
+  let text = ''
+
+  if (presenter !== undefined) {
+    const fn = await getResource(presenter.presenter)
+
+    text = await fn(doc, control)
+  } else {
+    text = await translate(activity.string.Message, {})
+  }
+
+  return {
+    title: activity.string.ReactionNotificationTitle,
+    body: activity.string.ReactionNotificationBody,
+    intlParams: {
+      title: text,
+      reaction: reaction.emoji
+    }
+  }
+}
+
 export * from './references'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -420,5 +458,8 @@ export default async () => ({
     ActivityMessagesHandler,
     OnDocRemoved,
     OnReactionChanged
+  },
+  function: {
+    ReactionNotificationContentProvider
   }
 })

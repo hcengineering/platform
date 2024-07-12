@@ -118,7 +118,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy']
+    fields: ['createdBy', 'assignee']
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {
@@ -1314,11 +1314,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
         subjectTemplate: '{doc} was assigned to you'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     recruit.ids.AssigneeNotification
   )
@@ -1354,9 +1350,11 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: recruit.class.Applicant,
       spaceSubscribe: true,
-      providers: {
-        [notification.providers.PlatformNotification]: false,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     recruit.ids.ApplicationCreateNotification

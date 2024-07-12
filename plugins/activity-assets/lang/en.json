@@ -43,6 +43,8 @@
     "Thread": "Thread",
     "AddReaction": "Add reaction",
     "SaveForLater": "Save for later",
-    "RemoveFromLater": "Remove from saved"
+    "RemoveFromLater": "Remove from saved",
+    "ReactionNotificationTitle": "Reaction on {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}"
   }
 }

@@ -149,11 +149,7 @@ function defineNotifications (builder: Builder): void {
         htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
         subjectTemplate: '{doc} was assigned to you'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     tracker.ids.AssigneeNotification
   )

@@ -566,10 +566,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>Integration with {doc} was disabled</p>',
         subjectTemplate: 'Integration with {doc} was disabled'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     setting.ids.IntegrationDisabledNotification
   )

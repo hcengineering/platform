@@ -37,17 +37,18 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import notification, { Collaborators, NotificationContent } from '@hcengineering/notification'
-import { getMetadata, IntlString } from '@hcengineering/platform'
+import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
   createCollaboratorNotifications,
   getDocCollaborators,
   getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { stripTags } from '@hcengineering/text'
+import { markupToText, stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
+import { encodeObjectURI } from '@hcengineering/view'
 
 /**
  * @public
@@ -55,9 +56,10 @@ import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${chunterId}/${channel._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${chunterId}/${encodeObjectURI(channel._id, channel._class)}`
   const link = concatLink(front, path)
-  return `<a href='${link}'>${channel.name}</a>`
+  const name = await channelTextPresenter(channel)
+  return `<a href='${link}'>${name}</a>`
 }
 
 /**
@@ -65,7 +67,16 @@ export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): 
  */
 export async function channelTextPresenter (doc: Doc): Promise<string> {
   const channel = doc as ChunterSpace
+
+  if (channel._class === chunter.class.DirectMessage) {
+    return await translate(chunter.string.Direct, {})
+  }
+
   return `${channel.name}`
+}
+
+export async function ChatMessageTextPresenter (doc: ChatMessage): Promise<string> {
+  return markupToText(doc.message)
 }
 
 /**
@@ -456,6 +467,7 @@ export default async () => ({
     CommentRemove,
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
-    ChunterNotificationContentProvider: getChunterNotificationContent
+    ChunterNotificationContentProvider: getChunterNotificationContent,
+    ChatMessageTextPresenter
   }
 })

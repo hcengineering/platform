@@ -187,10 +187,7 @@ export function createModel (builder: Builder): void {
       group: love.ids.LoveNotificationGroup,
       txClasses: [core.class.TxCreateDoc],
       objectClass: love.class.Invite,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true
-      }
+      defaultEnabled: true
     },
     love.ids.InviteNotification
   )
@@ -205,14 +202,18 @@ export function createModel (builder: Builder): void {
       group: love.ids.LoveNotificationGroup,
       txClasses: [],
       objectClass: love.class.JoinRequest,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.SoundNotification]: true
-      }
+      defaultEnabled: true
     },
     love.ids.KnockNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.SoundNotificationProvider,
+    excludeIgnore: [love.ids.KnockNotification],
+    ignoredTypes: [],
+    enabledTypes: []
+  })
+
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_LOVE,
     disabled: [{ space: 1 }, { modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]

@@ -587,10 +587,7 @@ function defineTrainingRequest (builder: Builder): void {
       group: training.notification.TrainingGroup,
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: training.class.TrainingRequest,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
+      defaultEnabled: true,
       templates: {
         textTemplate: '{sender} sent you a training request {doc}',
         htmlTemplate: '<p><b>{sender}</b> sent you a training request {doc}</p>',
