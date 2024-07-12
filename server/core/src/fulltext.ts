@@ -33,6 +33,7 @@ import core, {
   type TxCUD,
   type TxCollectionCUD,
   TxFactory,
+  TxProcessor,
   type TxResult,
   type WorkspaceId,
   docKey,
@@ -84,7 +85,7 @@ export class FullTextIndex implements WithFind {
         attachedToClass = txcol.objectClass
         tx = txcol.tx
       }
-      if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(tx._class)) {
         const cud = tx as TxCUD<Doc>
 
         if (!isClassIndexable(this.hierarchy, cud.objectClass)) {

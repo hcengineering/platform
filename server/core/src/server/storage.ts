@@ -255,7 +255,7 @@ export class TServerStorage implements ServerStorage {
 
     for (const tx of txes) {
       const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
-      if (!this.hierarchy.isDerived(txCUD._class, core.class.TxCUD)) {
+      if (!TxProcessor.isExtendsCUD(txCUD._class)) {
         // Skip unsupported tx
         ctx.error('Unsupported transaction', tx)
         continue
@@ -443,6 +443,9 @@ export class TServerStorage implements ServerStorage {
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
     if (query?.$search !== undefined) {
       return await ctx.with(p + '-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
+    }
+    if (domain === DOMAIN_MODEL) {
+      return this.modelDb.findAllSync(clazz, query, options)
     }
     const st = Date.now()
     const result = await ctx.with(
@@ -656,11 +659,11 @@ export class TServerStorage implements ServerStorage {
     ): Promise<void> => {
       const classes = new Set<Ref<Class<Doc>>>()
       for (const dtx of derived) {
-        if (this.hierarchy.isDerived(dtx._class, core.class.TxCUD)) {
+        if (TxProcessor.isExtendsCUD(dtx._class)) {
           classes.add((dtx as TxCUD<Doc>).objectClass)
         }
         const etx = TxProcessor.extractTx(dtx)
-        if (this.hierarchy.isDerived(etx._class, core.class.TxCUD)) {
+        if (TxProcessor.isExtendsCUD(etx._class)) {
           classes.add((etx as TxCUD<Doc>).objectClass)
         }
       }
@@ -876,7 +879,7 @@ export class TServerStorage implements ServerStorage {
     for (const tx of txes) {
       if (!this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
         if (tx.space !== core.space.DerivedTx) {
-          if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+          if (TxProcessor.isExtendsCUD(tx._class)) {
             const objectClass = (tx as TxCUD<Doc>).objectClass
             if (
               objectClass !== core.class.BenchmarkDoc &&

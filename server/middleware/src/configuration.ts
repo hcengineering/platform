@@ -25,7 +25,8 @@ import core, {
   MeasureContext,
   Ref,
   Tx,
-  TxCUD
+  TxCUD,
+  TxProcessor
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
@@ -51,7 +52,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+    if (TxProcessor.isExtendsCUD(tx._class)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
       if (this.targetDomains.includes(domain)) {

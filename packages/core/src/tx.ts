@@ -438,6 +438,16 @@ export abstract class TxProcessor implements WithTx {
     return doc as D
   }
 
+  static isExtendsCUD (_class: Ref<Class<Doc>>): boolean {
+    return (
+      _class === core.class.TxCreateDoc ||
+      _class === core.class.TxUpdateDoc ||
+      _class === core.class.TxRemoveDoc ||
+      _class === core.class.TxCollectionCUD ||
+      _class === core.class.TxMixin
+    )
+  }
+
   static extractTx (tx: Tx): Tx {
     if (tx._class === core.class.TxCollectionCUD) {
       const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>

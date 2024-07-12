@@ -26,6 +26,7 @@ import core, {
   Ref,
   Tx,
   TxCUD,
+  TxProcessor,
   systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -50,7 +51,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
     let target: string[] | undefined
-    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+    if (TxProcessor.isExtendsCUD(tx._class)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
       if (this.targetDomains.includes(domain)) {
@@ -98,7 +99,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         )
         ;(findResult as FindResult<Doc> as FindResult<Tx>).filter(
           (p) =>
-            !hierarchy.isDerived(p._class, core.class.TxCUD) ||
+            !TxProcessor.isExtendsCUD(p._class) ||
             !targetClasses.has((p as TxCUD<Doc>).objectClass) ||
             p.createdBy === account._id
         )

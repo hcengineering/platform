@@ -303,7 +303,7 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
         const applyIf = etx as TxApplyIf
         void this.handleTx(...applyIf.txes)
       }
-      if (this.client.getHierarchy().isDerived(etx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(etx._class)) {
         const cud = etx as TxCUD<Doc>
         const _class = this.client.getHierarchy().getClass(cud.objectClass)
         if (_class.label !== undefined) {

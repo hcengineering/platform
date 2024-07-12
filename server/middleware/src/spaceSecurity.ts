@@ -328,7 +328,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const h = this.storage.hierarchy
     let targets: string[] | undefined
 
-    if (h.isDerived(tx._class, core.class.TxCUD)) {
+    if (TxProcessor.isExtendsCUD(tx._class)) {
       const account = await getUser(this.storage, ctx)
       if (tx.objectSpace === (account._id as string)) {
         targets = [account.email, systemAccountEmail]
@@ -384,7 +384,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   private async processTx (ctx: SessionContext, tx: Tx): Promise<void> {
     const h = this.storage.hierarchy
-    if (h.isDerived(tx._class, core.class.TxCUD)) {
+    if (TxProcessor.isExtendsCUD(tx._class)) {
       const cudTx = tx as TxCUD<Doc>
       const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
       if (isSpace) {
@@ -429,8 +429,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     exclude?: string[] | undefined
   ): Promise<void> {
     for (const tx of txes) {
-      const h = this.storage.hierarchy
-      if (h.isDerived(tx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(tx._class)) {
         // TODO: Do we need security check here?
         const cudTx = tx as TxCUD<Doc>
         await this.processTxSpaceDomain(cudTx)

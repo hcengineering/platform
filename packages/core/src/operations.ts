@@ -453,7 +453,7 @@ export class ApplyOperations extends TxOperations {
       findAll: (_class, query, options?) => ops.client.findAll(_class, query, options),
       searchFulltext: (query, options) => ops.client.searchFulltext(query, options),
       tx: async (tx): Promise<TxResult> => {
-        if (ops.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
+        if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)
         }
         return {}
@@ -518,7 +518,7 @@ export class TxBuilder extends TxOperations {
       findAll: async (_class, query, options?) => toFindResult([]),
       searchFulltext: async (query, options) => ({ docs: [] }),
       tx: async (tx): Promise<TxResult> => {
-        if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+        if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)
         }
         return {}
