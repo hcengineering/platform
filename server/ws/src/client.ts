@@ -305,11 +305,11 @@ export class ClientSession implements Session {
   ): Promise<void> {
     const classes = new Set<Ref<Class<Doc>>>()
     for (const dtx of derived) {
-      if (this._pipeline.storage.hierarchy.isDerived(dtx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(dtx._class)) {
         classes.add((dtx as TxCUD<Doc>).objectClass)
       }
       const etx = TxProcessor.extractTx(dtx)
-      if (this._pipeline.storage.hierarchy.isDerived(etx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(etx._class)) {
         classes.add((etx as TxCUD<Doc>).objectClass)
       }
     }

@@ -28,6 +28,8 @@ import core, {
   MeasureContext,
   MigrationState,
   ModelDb,
+  systemAccountEmail,
+  toWorkspaceString,
   Tx,
   WorkspaceId,
   type Doc,
@@ -44,6 +46,7 @@ import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
 import { getMetadata } from '@hcengineering/platform'
+import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
 import path from 'path'
 
@@ -411,6 +414,20 @@ export async function upgradeModel (
           i++
         }
       })
+
+      if (connection === undefined) {
+        // We need to send reboot for workspace
+        console.info('send force close')
+        const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+        const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
+        await fetch(
+          serverEndpoint +
+            `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId, '@')}`,
+          {
+            method: 'PUT'
+          }
+        )
+      }
     } finally {
       await connection?.sendForceClose()
       await connection?.close()

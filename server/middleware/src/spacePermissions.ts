@@ -250,9 +250,8 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return
     }
 
-    const h = this.storage.hierarchy
     const actualTx = TxProcessor.extractTx(tx)
-    if (!h.isDerived(actualTx._class, core.class.TxCUD)) {
+    if (!TxProcessor.isExtendsCUD(actualTx._class)) {
       return
     }
 
@@ -322,8 +321,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   private async processPermissionsUpdatesFromTx (ctx: SessionContext, tx: Tx): Promise<void> {
-    const h = this.storage.hierarchy
-    if (!h.isDerived(tx._class, core.class.TxCUD)) {
+    if (!TxProcessor.isExtendsCUD(tx._class)) {
       return
     }
 

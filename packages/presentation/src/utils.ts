@@ -200,7 +200,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
       return
     }
 
-    if (!this.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
+    if (!TxProcessor.isExtendsCUD(tx._class)) {
       return
     }
 

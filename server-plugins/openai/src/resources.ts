@@ -115,7 +115,7 @@ async function performCompletion (
 export async function AsyncOnGPTRequest (tx: Tx, tc: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
 
-  if (tc.hierarchy.isDerived(actualTx._class, core.class.TxCUD) && actualTx.modifiedBy !== openai.account.GPT) {
+  if (TxProcessor.isExtendsCUD(actualTx._class) && actualTx.modifiedBy !== openai.account.GPT) {
     const cud: TxCUD<Doc> = actualTx as TxCUD<Doc>
     //
     if (tc.hierarchy.isDerived(cud.objectClass, chunter.class.ChatMessage)) {
