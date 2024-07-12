@@ -33,6 +33,7 @@ env:
     server-plugins
     templates
     tests
+    qms-tests
     rush.json
     .prettierrc
     tools
