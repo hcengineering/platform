@@ -34,8 +34,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "eslint-plugin-svelte": "^2.35.1",
-    "svelte-eslint-parser": "^0.33.1",
-    "yjs": "^13.5.52"
+    "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",

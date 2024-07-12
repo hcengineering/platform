@@ -1,9 +1,8 @@
 <script lang="ts">
   import { getContext, onDestroy } from 'svelte'
-  import type { Doc as Ydoc } from 'yjs'
   import { getClient } from '@hcengineering/presentation'
   import { type Doc } from '@hcengineering/core'
-  import { CollaborationIds } from '@hcengineering/text-editor'
+  import { CollaborationIds, type Ydoc } from '@hcengineering/text-editor'
   import {
     StringDiffViewer,
     TiptapCollabProvider,
