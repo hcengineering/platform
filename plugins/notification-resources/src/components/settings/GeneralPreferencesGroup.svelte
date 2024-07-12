@@ -60,7 +60,7 @@
       if (!current) {
         await updateStatus(provider.depends, true)
       }
-    } else {
+    } else if (!enabled) {
       const dependents = providers.filter((p) => p.depends === provider._id)
       for (const dependent of dependents) {
         await updateStatus(dependent._id, false)
@@ -84,11 +84,13 @@
         <Label label={provider.description} />
       </span>
     </div>
-    <ModernToggle
-      size="small"
-      checked={setting?.enabled ?? provider.defaultEnabled}
-      on:change={() => onToggle(provider)}
-    />
+    {#if provider.canDisable}
+      <ModernToggle
+        size="small"
+        checked={setting?.enabled ?? provider.defaultEnabled}
+        on:change={() => onToggle(provider)}
+      />
+    {/if}
   </div>
 {/each}
 

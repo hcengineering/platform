@@ -30,9 +30,11 @@ import core, {
   MixinUpdate,
   Ref,
   Tx,
+  TxCreateDoc,
   TxCUD,
   TxMixin,
   TxProcessor,
+  TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
 import serverNotification, {
@@ -370,6 +372,24 @@ async function getFallbackNotificationFullfillment (
         }
       }
       break
+    }
+  } else if (originTx._class === core.class.TxCollectionCUD && tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<Doc>
+    const clazz = control.hierarchy.getClass(createTx.objectClass)
+    const label = clazz.pluralLabel ?? clazz.label
+
+    if (label !== undefined) {
+      intlParamsNotLocalized.collection = clazz.pluralLabel ?? clazz.label
+      body = notification.string.CommonNotificationCollectionAdded
+    }
+  } else if (originTx._class === core.class.TxCollectionCUD && tx._class === core.class.TxRemoveDoc) {
+    const createTx = tx as TxRemoveDoc<Doc>
+    const clazz = control.hierarchy.getClass(createTx.objectClass)
+    const label = clazz.pluralLabel ?? clazz.label
+
+    if (label !== undefined) {
+      intlParamsNotLocalized.collection = clazz.pluralLabel ?? clazz.label
+      body = notification.string.CommonNotificationCollectionRemoved
     }
   }
 

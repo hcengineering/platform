@@ -293,6 +293,7 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
   defaultEnabled!: boolean
   order!: number
   depends?: Ref<NotificationProvider>
+  canDisable!: boolean
 }
 
 @Model(notification.class.NotificationProviderDefaults, core.class.Doc)
@@ -543,8 +544,8 @@ export function createModel (builder: Builder): void {
       group: notification.ids.NotificationGroup,
       defaultEnabled: true,
       templates: {
-        textTemplate: '{sender} mentioned you in {doc} {data}',
-        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
+        textTemplate: '{sender} mentioned you in {doc} {message}',
+        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {message}',
         subjectTemplate: 'You were mentioned in {doc}'
       }
     },
@@ -675,6 +676,7 @@ export function createModel (builder: Builder): void {
       label: notification.string.Inbox,
       description: notification.string.InboxNotificationsDescription,
       defaultEnabled: true,
+      canDisable: false,
       order: 10
     },
     notification.providers.InboxNotificationProvider
@@ -689,6 +691,7 @@ export function createModel (builder: Builder): void {
       description: notification.string.PushNotificationsDescription,
       depends: notification.providers.InboxNotificationProvider,
       defaultEnabled: true,
+      canDisable: true,
       order: 20
     },
     notification.providers.PushNotificationProvider
@@ -734,6 +737,11 @@ export function generateClassNotificationTypes (
       txClasses,
       hidden: false,
       defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{doc} updated'
+      },
       label: attribute.label
     }
     if (isCollection) {

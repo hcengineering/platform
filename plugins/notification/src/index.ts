@@ -157,6 +157,7 @@ export interface NotificationProvider extends Doc {
   icon: Asset
   defaultEnabled: boolean
   depends?: Ref<NotificationProvider>
+  canDisable: boolean
   order: number
 }
 
@@ -412,7 +413,9 @@ const notification = plugin(notificationId, {
     Push: '' as IntlString,
     General: '' as IntlString,
     InboxNotificationsDescription: '' as IntlString,
-    PushNotificationsDescription: '' as IntlString
+    PushNotificationsDescription: '' as IntlString,
+    CommonNotificationCollectionAdded: '' as IntlString,
+    CommonNotificationCollectionRemoved: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,

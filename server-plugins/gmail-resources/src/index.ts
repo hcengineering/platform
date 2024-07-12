@@ -30,7 +30,7 @@ import {
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
 import { TriggerControl } from '@hcengineering/server-core'
-import notification, { BaseNotificationType, NotificationType } from '@hcengineering/notification'
+import notification, { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
 import serverNotification, { NotificationProviderFunc, UserInfo } from '@hcengineering/server-notification'
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
@@ -170,7 +170,7 @@ async function notifyByEmail (
   doc: Doc | undefined,
   sender: UserInfo,
   receiver: UserInfo,
-  data: string = ''
+  data: InboxNotification
 ): Promise<void> {
   const account = receiver.account
 
@@ -181,7 +181,7 @@ async function notifyByEmail (
   const senderPerson = sender.person
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
 
-  const content = await getContentByTemplate(doc, senderName, type, control, data)
+  const content = await getContentByTemplate(doc, senderName, type, control, '', data)
 
   if (content !== undefined) {
     await sendEmailNotification(content.text, content.html, content.subject, account.email)
@@ -192,6 +192,7 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   control: TriggerControl,
   types: BaseNotificationType[],
   object: Doc,
+  data: InboxNotification,
   receiver: UserInfo,
   sender: UserInfo
 ): Promise<Tx[]> => {
@@ -216,7 +217,7 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   }
 
   for (const type of types) {
-    await notifyByEmail(control, type._id, object, sender, receiver)
+    await notifyByEmail(control, type._id, object, sender, receiver, data)
   }
 
   return []

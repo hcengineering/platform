@@ -416,7 +416,12 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: lead.class.Funnel,
       spaceSubscribe: true,
-      defaultEnabled: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     lead.ids.LeadCreateNotification
   )

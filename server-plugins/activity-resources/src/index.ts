@@ -36,9 +36,12 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import {
   createCollabDocInfo,
   createCollaboratorNotifications,
+  getTextPresenter,
   removeDocInboxNotifications
 } from '@hcengineering/server-notification-resources'
 import { PersonAccount } from '@hcengineering/contact'
+import { NotificationContent } from '@hcengineering/notification'
+import { getResource, translate } from '@hcengineering/platform'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
 import { ReferenceTrigger } from './references'
@@ -416,6 +419,36 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
   return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
 }
 
+async function ReactionNotificationContentProvider (
+  doc: ActivityMessage,
+  originTx: TxCUD<Doc>,
+  _: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<Reaction>
+  const presenter = getTextPresenter(doc._class, control.hierarchy)
+  const reaction = TxProcessor.createDoc2Doc(tx)
+
+  let text = ''
+
+  if (presenter !== undefined) {
+    const fn = await getResource(presenter.presenter)
+
+    text = await fn(doc, control)
+  } else {
+    text = await translate(activity.string.Message, {})
+  }
+
+  return {
+    title: activity.string.ReactionNotificationTitle,
+    body: activity.string.ReactionNotificationBody,
+    intlParams: {
+      title: text,
+      reaction: reaction.emoji
+    }
+  }
+}
+
 export * from './references'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -425,5 +458,8 @@ export default async () => ({
     ActivityMessagesHandler,
     OnDocRemoved,
     OnReactionChanged
+  },
+  function: {
+    ReactionNotificationContentProvider
   }
 })

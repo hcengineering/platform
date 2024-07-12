@@ -379,8 +379,8 @@ export function createModel (builder: Builder): void {
       defaultEnabled: false,
       group: chunter.ids.ChunterNotificationGroup,
       templates: {
-        textTemplate: '{sender} has send you a message: {doc} {data}',
-        htmlTemplate: '<p><b>{sender}</b> has send you a message {doc}</p> {data}',
+        textTemplate: '{sender} has sent you a message: {doc} {message}',
+        htmlTemplate: '<p><b>{sender}</b> has sent you a message {doc}</p> {message}',
         subjectTemplate: 'You have new direct message in {doc}'
       }
     },
@@ -396,8 +396,14 @@ export function createModel (builder: Builder): void {
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
+      attachedToClass: chunter.class.Channel,
       defaultEnabled: false,
-      group: chunter.ids.ChunterNotificationGroup
+      group: chunter.ids.ChunterNotificationGroup,
+      templates: {
+        textTemplate: '{sender} has sent a message in {doc}: {message}',
+        htmlTemplate: '<p><b>{sender}</b> has sent a message in {doc}</p> {message}',
+        subjectTemplate: 'You have new message in {doc}'
+      }
     },
     chunter.ids.ChannelNotification
   )
@@ -412,7 +418,12 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ThreadMessage,
       defaultEnabled: false,
-      group: chunter.ids.ChunterNotificationGroup
+      group: chunter.ids.ChunterNotificationGroup,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     chunter.ids.ThreadNotification
   )

@@ -18,6 +18,7 @@ import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
 import {
   BaseNotificationType,
+  InboxNotification,
   NotificationContent,
   NotificationProvider,
   NotificationType
@@ -144,6 +145,7 @@ export type NotificationProviderFunc = (
   control: TriggerControl,
   types: BaseNotificationType[],
   object: Doc,
+  data: InboxNotification,
   receiver: UserInfo,
   sender: UserInfo
 ) => Promise<Tx[]>
@@ -154,6 +156,7 @@ export interface NotificationProviderResources extends Doc {
 }
 
 export const NOTIFICATION_BODY_SIZE = 50
+export const NOTIFICATION_TITLE_SIZE = 30
 
 /**
  * @public

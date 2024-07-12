@@ -87,7 +87,7 @@
       if (!current) {
         await onToggle(typeId, provider.depends, true)
       }
-    } else {
+    } else if (!value) {
       const dependents = providers.filter(({ depends }) => depends === providerId)
       for (const dependent of dependents) {
         await onToggle(typeId, dependent._id, false)

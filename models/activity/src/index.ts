@@ -67,12 +67,13 @@ import {
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import view, { createAction } from '@hcengineering/model-view'
-import notification from '@hcengineering/notification'
+import view from '@hcengineering/model-view'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import activity from './plugin'
+import { buildActions } from './actions'
+import { buildNotifications } from './notification'
 
 export { activityId } from '@hcengineering/activity'
 export { activityOperation, migrateMessagesSpace } from './migration'
@@ -335,20 +336,8 @@ export function createModel (builder: Builder): void {
     activity.ids.ReactionAddedActivityViewlet
   )
 
-  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy', 'repliedPersons']
-  })
-
-  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy', 'repliedPersons']
-  })
-
   builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.ObjectPanel, {
     component: view.component.AttachedDocPanel
-  })
-
-  builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
-    labelPresenter: activity.component.ActivityMessageNotificationLabel
   })
 
   builder.mixin<Class<DocUpdateMessage>, IndexingConfiguration<DocUpdateMessage>>(
@@ -371,37 +360,6 @@ export function createModel (builder: Builder): void {
     }
   )
 
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: activity.string.Activity,
-      icon: activity.icon.Activity
-    },
-    activity.ids.ActivityNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      hidden: false,
-      generated: false,
-      label: activity.string.Reactions,
-      group: activity.ids.ActivityNotificationGroup,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: activity.class.Reaction,
-      defaultEnabled: false
-    },
-    activity.ids.AddReactionNotification
-  )
-
-  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
-    provider: notification.providers.InboxNotificationProvider,
-    ignoredTypes: [],
-    enabledTypes: [activity.ids.AddReactionNotification]
-  })
-
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_ACTIVITY,
     indexes: [
@@ -418,112 +376,8 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.AddReaction,
-      label: activity.string.AddReaction,
-      icon: activity.icon.Emoji,
-      input: 'focus',
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      inline: true,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.AddReactionAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.SaveForLater,
-      label: activity.string.SaveForLater,
-      icon: activity.icon.Bookmark,
-      input: 'focus',
-      inline: true,
-      actionProps: {
-        size: 'x-small'
-      },
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanSaveForLater,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.SaveForLaterAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.RemoveFromSaved,
-      label: activity.string.RemoveFromLater,
-      icon: activity.icon.BookmarkFilled,
-      input: 'focus',
-      inline: true,
-      actionProps: {
-        iconProps: {
-          fill: 'var(--global-accent-TextColor)'
-        }
-      },
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanRemoveFromSaved,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.RemoveFromLaterAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.PinMessage,
-      label: view.string.Pin,
-      icon: view.icon.Pin,
-      input: 'focus',
-      inline: true,
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanPinMessage,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.PinMessageAction
-  )
-
-  createAction(
-    builder,
-    {
-      action: activity.actionImpl.UnpinMessage,
-      label: view.string.Unpin,
-      icon: view.icon.Pin,
-      input: 'focus',
-      inline: true,
-      actionProps: {
-        iconProps: {
-          fill: 'var(--global-accent-TextColor)'
-        }
-      },
-      category: activity.category.Activity,
-      target: activity.class.ActivityMessage,
-      visibilityTester: activity.function.CanUnpinMessage,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    activity.ids.UnpinMessageAction
-  )
+  buildActions(builder)
+  buildNotifications(builder)
 }
 
 export default activity

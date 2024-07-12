@@ -28,6 +28,7 @@
   import IconAttachments from './icons/Attachments.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
 
+  export let object: Doc | undefined = undefined
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
@@ -57,7 +58,7 @@
       await createAttachments(
         client,
         list,
-        { objectClass: _class, objectId, space },
+        { objectClass: object?._class ?? _class, objectId, space },
         attachmentClass,
         attachmentClassOptions
       )

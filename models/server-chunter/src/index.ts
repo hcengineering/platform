@@ -24,12 +24,16 @@ import serverChunter from '@hcengineering/server-chunter'
 export { serverChunterId } from '@hcengineering/server-chunter'
 
 export function createModel (builder: Builder): void {
-  builder.mixin(chunter.class.Channel, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+  builder.mixin(chunter.class.ChunterSpace, core.class.Class, serverNotification.mixin.HTMLPresenter, {
     presenter: serverChunter.function.ChannelHTMLPresenter
   })
 
-  builder.mixin(chunter.class.Channel, core.class.Class, serverNotification.mixin.TextPresenter, {
+  builder.mixin(chunter.class.ChunterSpace, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverChunter.function.ChannelTextPresenter
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverChunter.function.ChatMessageTextPresenter
   })
 
   builder.mixin<Class<Doc>, ObjectDDParticipant>(

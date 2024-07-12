@@ -43,6 +43,8 @@
     "Thread": "Fil",
     "AddReaction": "Ajouter une réaction",
     "SaveForLater": "Enregistrer pour plus tard",
-    "RemoveFromLater": "Retirer des enregistrements"
+    "RemoveFromLater": "Retirer des enregistrements",
+    "ReactionNotificationTitle": "Réaction sur {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}"
   }
 }

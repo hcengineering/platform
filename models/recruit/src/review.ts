@@ -135,7 +135,12 @@ export function createReviewModel (builder: Builder): void {
       group: recruit.ids.ReviewNotificationGroup,
       txClasses: [core.class.TxCreateDoc],
       objectClass: recruit.class.Review,
-      defaultEnabled: true
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     recruit.ids.ReviewCreateNotification
   )

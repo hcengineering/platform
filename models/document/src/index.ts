@@ -458,7 +458,12 @@ function defineDocument (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
-      defaultEnabled: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     document.ids.ContentNotification
   )

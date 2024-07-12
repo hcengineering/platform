@@ -1350,7 +1350,12 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: recruit.class.Applicant,
       spaceSubscribe: true,
-      defaultEnabled: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     recruit.ids.ApplicationCreateNotification
   )

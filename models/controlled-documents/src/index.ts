@@ -902,7 +902,12 @@ export function defineNotifications (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      defaultEnabled: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     documents.notification.ContentNotification
   )

@@ -366,7 +366,12 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: time.class.ProjectToDo,
       onlyOwn: true,
-      defaultEnabled: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     time.ids.ToDoCreated
   )

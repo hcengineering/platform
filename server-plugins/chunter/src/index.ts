@@ -37,6 +37,7 @@ export default plugin(serverChunterId, {
     CommentRemove: '' as Resource<ObjectDDParticipantFunc>,
     ChannelHTMLPresenter: '' as Resource<Presenter>,
     ChannelTextPresenter: '' as Resource<Presenter>,
-    ChunterNotificationContentProvider: '' as Resource<NotificationContentProvider>
+    ChunterNotificationContentProvider: '' as Resource<NotificationContentProvider>,
+    ChatMessageTextPresenter: '' as Resource<Presenter>
   }
 })

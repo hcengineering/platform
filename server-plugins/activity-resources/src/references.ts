@@ -21,6 +21,7 @@ import core, {
   CollaborativeDoc,
   Data,
   Doc,
+  generateId,
   Hierarchy,
   Ref,
   Space,
@@ -35,7 +36,7 @@ import core, {
   TxUpdateDoc,
   Type
 } from '@hcengineering/core'
-import notification, { MentionInboxNotification } from '@hcengineering/notification'
+import notification, { CommonInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import {
   extractReferences,
   markupToPmNode,
@@ -52,7 +53,8 @@ import {
   shouldNotifyCommon,
   isShouldNotifyTx,
   NotifyResult,
-  createPushFromInbox
+  applyNotificationProviders,
+  getNotificationContent
 } from '@hcengineering/server-notification-resources'
 
 async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
@@ -188,49 +190,55 @@ export async function getPersonNotificationTxes (
     }
   }
 
-  const txes = await getCommonNotificationTxes(
-    control,
-    doc,
-    data,
-    receiverInfo,
-    senderInfo,
-    reference.srcDocId,
-    reference.srcDocClass,
-    space,
-    originTx.modifiedOn,
-    notifyResult,
-    notification.class.MentionInboxNotification
-  )
-
-  const shouldNotifyInbox = notifyResult.has(notification.providers.InboxNotificationProvider)
-  const shouldPush = notifyResult.has(notification.providers.PushNotificationProvider)
-  if (!shouldNotifyInbox && shouldPush) {
-    const exists = (
+  if (notifyResult.has(notification.providers.InboxNotificationProvider)) {
+    const txes = await getCommonNotificationTxes(
+      control,
+      doc,
+      data,
+      receiverInfo,
+      senderInfo,
+      reference.srcDocId,
+      reference.srcDocClass,
+      space,
+      originTx.modifiedOn,
+      notifyResult,
+      notification.class.MentionInboxNotification
+    )
+    res.push(...txes)
+  } else {
+    const context = (
       await control.findAll(
-        notification.class.ActivityInboxNotification,
-        { attachedTo: reference.attachedDocId as Ref<ActivityMessage>, user: receiver._id },
-        { limit: 1, projection: { _id: 1 } }
+        notification.class.DocNotifyContext,
+        { attachedTo: reference.srcDocId, user: receiver._id },
+        { projection: { _id: 1 } }
       )
     )[0]
-
-    if (exists !== undefined) {
-      const pushTx = await createPushFromInbox(
-        control,
-        receiverInfo,
+    if (context !== undefined) {
+      const content = await getNotificationContent(originTx, receiver, senderInfo, doc, control)
+      const notificationData: CommonInboxNotification = {
+        ...data,
+        ...content,
+        docNotifyContext: context._id,
+        _id: generateId(),
+        _class: notification.class.CommonInboxNotification,
+        space,
+        modifiedOn: originTx.modifiedOn,
+        modifiedBy: sender._id
+      }
+      await applyNotificationProviders(
+        notificationData,
+        notifyResult,
         reference.srcDocId,
         reference.srcDocClass,
-        { ...data, docNotifyContext: exists.docNotifyContext },
-        notification.class.MentionInboxNotification,
-        senderInfo,
-        exists._id,
-        new Map()
+        control,
+        res,
+        doc,
+        receiverInfo,
+        senderInfo
       )
-      if (pushTx !== undefined) {
-        res.push(pushTx)
-      }
     }
   }
-  res.push(...txes)
+
   return res
 }
 
