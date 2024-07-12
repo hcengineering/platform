@@ -19,7 +19,7 @@
   import { SpaceSelector, getClient, createQuery } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import task from '@hcengineering/task'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     ModernEditbox,
     CheckBox,

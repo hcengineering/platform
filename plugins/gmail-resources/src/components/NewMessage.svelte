@@ -25,7 +25,7 @@
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'

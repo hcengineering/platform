@@ -1,7 +1,8 @@
 <script lang="ts">
   import { DocumentTemplateSection } from '@hcengineering/controlled-documents'
   import { Card } from '@hcengineering/presentation'
-  import editor, { StyledTextBox } from '@hcengineering/text-editor'
+  import textEditor from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { createEventDispatcher } from 'svelte'
   import document from '../../plugin'
 
@@ -15,7 +16,7 @@
 
 <Card
   label={document.string.Guidance}
-  okLabel={editor.string.Save}
+  okLabel={textEditor.string.Save}
   okAction={() => {
     // updateAttribute(
     //   client,
@@ -34,7 +35,7 @@
     <StyledTextBox
       bind:content={updatedValue}
       showButtons={true}
-      placeholder={editor.string.EditorPlaceholder}
+      placeholder={textEditor.string.EditorPlaceholder}
       alwaysEdit={true}
     />
   </div>

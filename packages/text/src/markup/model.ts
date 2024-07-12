@@ -30,6 +30,8 @@ export enum MarkupNodeType {
   list_item = 'listItem',
   taskList = 'taskList',
   taskItem = 'taskItem',
+  todoList = 'todoList',
+  todoItem = 'todoItem',
   subLink = 'subLink',
   table = 'table',
   table_row = 'tableRow',
@@ -53,12 +55,15 @@ export interface MarkupMark {
   attrs: Record<string, any> // A map of attributes
 }
 
+export type AttrValue = string | number | boolean
+export type Attrs = Record<string, AttrValue>
+
 /** @public */
 export interface MarkupNode {
   type: MarkupNodeType
   content?: MarkupNode[] // A list of child nodes
   marks?: MarkupMark[]
-  attrs?: Record<string, string | number>
+  attrs?: Attrs
   text?: string
 }
 

@@ -21,7 +21,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { MembersBox } from '@hcengineering/contact-resources'
   import type { Funnel } from '@hcengineering/lead'
-  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import { FullDescriptionBox } from '@hcengineering/text-editor-resources'
   import { EditBox, Grid } from '@hcengineering/ui'
   import { ClassAttributeBar } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'

@@ -29,7 +29,7 @@
     Class
   } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { SpaceTypeSelector } from '@hcengineering/view-resources'
   import documents, { DocumentSpace, DocumentSpaceType } from '@hcengineering/controlled-documents'

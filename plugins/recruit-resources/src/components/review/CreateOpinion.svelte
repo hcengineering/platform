@@ -19,7 +19,7 @@
   import { Card, getClient } from '@hcengineering/presentation'
   import type { Opinion, Review } from '@hcengineering/recruit'
   import task, { Project } from '@hcengineering/task'
-  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { EditBox, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'

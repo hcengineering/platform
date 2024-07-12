@@ -18,7 +18,7 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Collaboration } from '@hcengineering/text-editor'
+  import { Collaboration } from '@hcengineering/text-editor-resources'
   import {
     Button,
     Chevron,

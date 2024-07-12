@@ -45,6 +45,7 @@
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/text": "^0.6.5",
     "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/text-editor-resources": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/chunter": "^0.6.20",

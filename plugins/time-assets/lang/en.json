@@ -57,6 +57,11 @@
     "NewToDoDetails": "New Action Item: {details}",
     "MarkedAsDone": "Completed",
     "WorkSchedule": "Work schedule",
-    "SummaryDuration": "Summary"
+    "SummaryDuration": "Summary",
+
+    "UnassignToDo": "Unassign Action Item",
+    "UnassignToDoConfirm": "Do you want to unassign this Action Item? The Action Item will be removed from the assignee's planner.",
+    "ReassignToDo": "Change Action Item assignee",
+    "ReassignToDoConfirm": "Do you want to change the Action Item assignee? The Action Item will be removed from the current assignee's planner."
   }
 }

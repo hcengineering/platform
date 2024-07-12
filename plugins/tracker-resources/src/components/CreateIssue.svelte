@@ -46,7 +46,7 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
   import {
     Component as ComponentType,
     Issue,

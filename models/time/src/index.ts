@@ -43,6 +43,7 @@ import {
   Hidden,
   Index
 } from '@hcengineering/model'
+import textEditor from '@hcengineering/text-editor'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
@@ -406,6 +407,16 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 },
       { modifiedOn: 1 }
     ]
+  })
+
+  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
+    index: 510,
+    create: time.function.CreateTodoItemExtension
+  })
+
+  builder.createDoc(textEditor.class.TextEditorExtensionFactory, core.space.Model, {
+    index: 520,
+    create: time.function.CreateTodoListExtension
   })
 }
 

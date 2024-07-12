@@ -87,11 +87,6 @@ export default mergeIds(documentId, document, {
 
     CompareTo: '' as IntlString,
 
-    UnassignToDo: '' as IntlString,
-    UnassignToDoConfirm: '' as IntlString,
-    ReassignToDo: '' as IntlString,
-    ReassignToDoConfirm: '' as IntlString,
-
     Color: '' as IntlString,
     Icon: '' as IntlString,
 

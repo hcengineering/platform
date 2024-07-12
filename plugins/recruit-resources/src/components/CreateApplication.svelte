@@ -46,7 +46,7 @@
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
   import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
   import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
   import ui, {
     Button,
     ColorPopup,

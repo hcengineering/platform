@@ -8,7 +8,7 @@
   import { type Training } from '@hcengineering/training'
   import { Attachments, AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { AttributeBarEditor, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import core from '@hcengineering/core'
   import documents from '@hcengineering/controlled-documents'
   import { trainingRoute, TrainingRouteTab } from '../routing/routes/trainingRoute'

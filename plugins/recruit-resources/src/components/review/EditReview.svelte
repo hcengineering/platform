@@ -18,7 +18,7 @@
   import { UserBox } from '@hcengineering/contact-resources'
   import { getClient } from '@hcengineering/presentation'
   import type { Review } from '@hcengineering/recruit'
-  import { FullDescriptionBox } from '@hcengineering/text-editor'
+  import { FullDescriptionBox } from '@hcengineering/text-editor-resources'
   import { EditBox, Grid } from '@hcengineering/ui'
   import { ObjectPresenter, openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'

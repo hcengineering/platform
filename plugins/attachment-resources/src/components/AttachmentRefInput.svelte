@@ -25,7 +25,9 @@
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, EmptyMarkup, ReferenceInput, type RefAction } from '@hcengineering/text-editor'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
+  import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttributesBar, getClient } from '@hcengineering/presentation'
   import { ProjectType } from '@hcengineering/task'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import tracker from '@hcengineering/tracker'
   import { Button, Component, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
   import { getFiltredKeys } from '@hcengineering/view-resources'
