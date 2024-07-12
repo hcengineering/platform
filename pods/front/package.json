@@ -14,9 +14,9 @@
     "_phase:package": "rushx package",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --bundle --minify --platform=node --external:sharp > bundle/bundle.js",
+    "bundle": "cross-env-shell \"mkdirp bundle && esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node --external:sharp --outdir=bundle\"",
     "package": "rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/front",
+    "docker:build": "cross-env ../../common/scripts/docker_build.sh hardcoreeng/front",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/front staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/front",
     "docker:tbuild": "docker build -t hardcoreeng/front . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/front",
@@ -52,7 +52,8 @@
     "@types/sharp": "~0.32.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "mkdirp": "3.0.1"
   },
   "dependencies": {
     "@hcengineering/prod": "^1.0.1",

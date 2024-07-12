@@ -14,10 +14,10 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node > bundle/bundle.js",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/account",
-    "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/account staging",
-    "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/account",
+    "bundle": "cross-env-shell \"mkdirp bundle && esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node > bundle/bundle.js\"",
+    "docker:build": "cross-env ../../common/scripts/docker_build.sh hardcoreeng/account",
+    "docker:staging": "sh ../../common/scripts/docker_tag.sh hardcoreeng/account staging",
+    "docker:push": "sh ../../common/scripts/docker_tag.sh hardcoreeng/account",
     "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 MINIO_ACCESS_KEY=minioadmi MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost SERVER_SECRET='secret' TRANSACTOR_URL=ws://localhost:3333 ts-node src/__start.ts",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
@@ -47,7 +47,8 @@
     "typescript": "^5.3.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "mkdirp": "3.0.1"
   },
   "dependencies": {
     "@hcengineering/account": "^0.6.0",
