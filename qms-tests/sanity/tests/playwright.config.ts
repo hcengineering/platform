@@ -2,11 +2,17 @@ import { devices, PlaywrightTestConfig } from '@playwright/test'
 import { config as dotenvConfig } from 'dotenv'
 dotenvConfig()
 
+let maxFailures: number | undefined
+if (process.env.TESTS_MAX_FAILURES !== undefined) {
+  maxFailures = parseInt(process.env.TESTS_MAX_FAILURES)
+}
+
 const config: PlaywrightTestConfig = {
   projects: [
     {
       name: 'QMS',
       use: {
+        permissions: ['clipboard-read', 'clipboard-write'],
         ...devices['Desktop Chrome'],
         screenshot: 'only-on-failure',
         viewport: {
@@ -24,7 +30,7 @@ const config: PlaywrightTestConfig = {
   ],
   retries: 1,
   timeout: 60000,
-  maxFailures: 5,
+  maxFailures,
   reporter: [
     ['list'],
     ['html'],
