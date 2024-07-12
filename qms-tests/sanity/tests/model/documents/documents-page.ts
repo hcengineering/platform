@@ -1,7 +1,6 @@
 import { type Locator, type Page } from '@playwright/test'
 import { CalendarPage } from '../calendar-page'
 import { NewDocument } from '../types'
-
 export class DocumentsPage extends CalendarPage {
   readonly page: Page
   readonly buttonCreateDocument: Locator
@@ -29,7 +28,7 @@ export class DocumentsPage extends CalendarPage {
   async createDocument (data: NewDocument, startSecondStep: boolean = false): Promise<void> {
     if (data.location != null) {
       await this.buttonSpaceSelector.click()
-      await this.selectListItemWithSearch(this.page, data.location.space)
+      await this.selectListItemWithSearch(this.page, data.location.space ?? '')
 
       await this.page.locator('div.parentSelector span[class*="label"]', { hasText: data.location.parent }).click()
     }

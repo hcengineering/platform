@@ -12,7 +12,8 @@ test.describe('Registration tests', () => {
     await (await page.goto(`${PlatformURI}`))?.finished()
   })
 
-  test('TESTS-143. User Registration', async ({ page }) => {
+  // Skipped until we fix init workspace for tracex
+  test.skip('TESTS-143. User Registration', async ({ page }) => {
     await allure.description('Requirement\nUsers need to register with the system')
     await allure.tms('TESTS-143', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-143')
     await allure.description('User Registration')

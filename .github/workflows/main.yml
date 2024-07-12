@@ -282,6 +282,99 @@ jobs:
       #   with:
       #     name: db-snapshot
       #     path: ./tests/db_dump
+  uitest-qms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-platform
+        with:
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+    
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+  
+      - name: Docker Build
+        run: node common/scripts/install-run-rush.js docker:build  -p 20
+        env:
+          DOCKER_CLI_HINTS: false
+      - name: Prepare server
+        run: |
+          cd ./qms-tests
+          ./prepare.sh
+      - name: Install Playwright
+        run: |
+          cd ./qms-tests/sanity
+          node ../../common/scripts/install-run-rushx.js ci
+      - name: Run UI tests
+        run: |
+          cd ./qms-tests/sanity
+          node ../../common/scripts/install-run-rushx.js uitest
+      - name: "Store docker logs"
+        if: always()
+        run: |
+          cd ./qms-tests/sanity
+          mkdir logs
+          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
+          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
+          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: ./qms-tests/sanity/playwright-report/
+      - name: Get Allure history
+        uses: actions/checkout@v4
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Generates Allure Report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
+        with:
+          allure_results: ./qms-tests/sanity/allure-results/
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+      - name: Upload allure test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: ./allure-report/
+      - name: Deploy report to Github Pages
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs
+          path: ./qms-tests/sanity/logs
   uitest-uweb:
     runs-on: ubuntu-latest
     timeout-minutes: 60

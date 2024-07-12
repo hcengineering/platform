@@ -280,7 +280,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   private async getSectionLocator (title: string): Promise<Locator> {
-    let result: Locator
+    let result: Locator | null = null
     const sectionsLocator = iterateLocator(
       (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
         ? this.sectionsLocatorEditRight
@@ -290,11 +290,15 @@ export class DocumentContentPage extends DocumentCommonPage {
       const value =
         (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
           ? await locator.inputValue()
-          : (await locator.textContent()).trim()
+          : (await locator.textContent() ?? '').trim()
       if (value === title) {
         result = locator
         break
       }
+    }
+
+    if (result == null) {
+      throw new Error('Section not found')
     }
 
     return result

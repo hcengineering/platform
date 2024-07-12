@@ -2,15 +2,15 @@
   "cookies": [],
   "origins": [
     {
-      "origin": "http://localhost:8083",
+      "origin": "http://localhost:8080",
       "localStorage": [
         {
           "name": "login:metadata:LoginEmail",
-          "value": "user2"
+          "value": "user1"
         },
         {
           "name": "login:metadata:LoginTokens",
-          "value": "{\"sanity-ws-qms\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoidXNlcjIiLCJ3b3Jrc3BhY2UiOiJzYW5pdHktd3MtcW1zIiwicHJvZHVjdElkIjoiIn0.-al3BXM41qvOaZ4s7c96xQZO73udvQrs8dH2bmhScww\"}"
+          "value": "{\"sanity-ws-qms\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoidXNlcjEiLCJ3b3Jrc3BhY2UiOiJzYW5pdHktd3MtcW1zIiwicHJvZHVjdElkIjoiIn0.vQK1jI8gHkjnNJf5XZ71L4dCqyHNmKW4_iBGrhXrqW8\"}"
         },
         {
           "name": "login:metadata:LoginEndpoint",

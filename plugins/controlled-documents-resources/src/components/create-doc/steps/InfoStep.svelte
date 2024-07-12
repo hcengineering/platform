@@ -206,6 +206,7 @@
         placeholder={documents.string.DocumentCodePlaceholder}
         disabled={loadingCodes}
         bind:value={docObject.code}
+        id="doc-code"
         kind="large-style"
       />
       {#if codeNotUnique}
