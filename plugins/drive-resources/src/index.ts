@@ -14,7 +14,7 @@
 //
 
 import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
-import drive, { type Drive, type File, type Folder } from '@hcengineering/drive'
+import drive, { type Drive, type File, type FileVersion, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
 import { getBlobHref } from '@hcengineering/presentation'
 import { showPopup, type Location } from '@hcengineering/ui'
@@ -29,6 +29,8 @@ import EditFolder from './components/EditFolder.svelte'
 import FilePanel from './components/FilePanel.svelte'
 import FilePresenter from './components/FilePresenter.svelte'
 import FileSizePresenter from './components/FileSizePresenter.svelte'
+import FileVersionPresenter from './components/FileVersionPresenter.svelte'
+import FileVersionVersionPresenter from './components/FileVersionVersionPresenter.svelte'
 import FolderPanel from './components/FolderPanel.svelte'
 import FolderPresenter from './components/FolderPresenter.svelte'
 import GridView from './components/GridView.svelte'
@@ -36,7 +38,7 @@ import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
-import { createFolder, renameResource } from './utils'
+import { createFolder, renameResource, restoreFileVersion } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
   await createFolder(doc._id, drive.ids.Root)
@@ -53,13 +55,16 @@ async function EditDrive (drive: Drive): Promise<void> {
 async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const href = await getBlobHref(file.$lookup?.file, file.file, file.name)
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.target = '_blank'
-    link.href = href
-    link.download = file.name
-    link.click()
+    const version = file.$lookup?.file
+    if (version != null) {
+      const href = await getBlobHref(undefined, version.file, version.name)
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.target = '_blank'
+      link.href = href
+      link.download = file.name
+      link.click()
+    }
   }
 }
 
@@ -87,6 +92,12 @@ async function RenameFolder (doc: Folder | Folder[]): Promise<void> {
   }
 }
 
+async function RestoreFileVersion (doc: FileVersion | FileVersion[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await restoreFileVersion(doc)
+  }
+}
+
 export async function CanRenameFile (doc: File | File[] | undefined): Promise<boolean> {
   return doc !== undefined && !Array.isArray(doc)
 }
@@ -107,6 +118,8 @@ export default async (): Promise<Resources> => ({
     FilePanel,
     FilePresenter,
     FileSizePresenter,
+    FileVersionPresenter,
+    FileVersionVersionPresenter,
     FolderPanel,
     FolderPresenter,
     GridView,
@@ -119,7 +132,8 @@ export default async (): Promise<Resources> => ({
     EditDrive,
     DownloadFile,
     RenameFile,
-    RenameFolder
+    RenameFolder,
+    RestoreFileVersion
   },
   function: {
     DriveLinkProvider,

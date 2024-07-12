@@ -51,6 +51,7 @@
     "NotificationBlockedInBrowser": "Les notifications sont bloquées dans votre navigateur. Veuillez activer les notifications dans les paramètres de votre navigateur",
     "General": "Général",
     "InboxNotificationsDescription": "Recevez des notifications personnelles dans votre boîte de réception Huly.",
-    "PushNotificationsDescription": "Recevez des notifications personnelles sur le bureau."
+    "PushNotificationsDescription": "Recevez des notifications personnelles sur le bureau.",
+    "Sound": "Son"
   }
 }

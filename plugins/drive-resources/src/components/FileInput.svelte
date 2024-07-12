@@ -13,25 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Doc } from '@hcengineering/core'
-  import { type File } from '@hcengineering/drive'
-  import { DocsNavigator } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
 
-  import FilePresenter from './FilePresenter.svelte'
-  import { resolveParents } from '../utils'
+  export let multiple: boolean = false
 
-  export let object: File
+  export function upload (): void {
+    inputFile.click()
+  }
 
-  let parents: Doc[] = []
-  $: void updateParents(object)
+  const dispatch = createEventDispatcher()
 
-  async function updateParents (object: File): Promise<void> {
-    parents = await resolveParents(object)
+  let inputFile: HTMLInputElement
+
+  async function fileSelected (): Promise<void> {
+    const files = inputFile.files
+    if (files === null || files.length === 0) {
+      return
+    }
+    dispatch('selected', files)
   }
 </script>
 
-<div class="antiHSpacer x2" />
-<DocsNavigator elements={parents} />
-<div class="title">
-  <FilePresenter value={object} shouldShowAvatar={false} shouldShowVersion disabled noUnderline />
-</div>
+<input
+  bind:this={inputFile}
+  {multiple}
+  id="file"
+  name="file"
+  type="file"
+  style="display: none"
+  disabled={inputFile == null}
+  on:change={fileSelected}
+/>

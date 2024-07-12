@@ -53,6 +53,7 @@
     "InboxNotificationsDescription": "Receive personal notifications in your Huly inbox.",
     "PushNotificationsDescription": "Receive personal notifications on desktop.",
     "CommonNotificationCollectionAdded":  "{senderName} added {collection}",
-    "CommonNotificationCollectionRemoved": "{senderName} removed {collection}"
+    "CommonNotificationCollectionRemoved": "{senderName} removed {collection}",
+    "Sound": "Sound"
   }
 }

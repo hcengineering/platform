@@ -29,10 +29,10 @@ import {
 
 */
 
-export function storageConfigFromEnv (): StorageConfiguration {
+export function storageConfigFromEnv (configEnv: string = 'STORAGE_CONFIG'): StorageConfiguration {
   const storageConfig: StorageConfiguration = { default: '', storages: [] }
 
-  const storageEnv = process.env.STORAGE_CONFIG
+  const storageEnv = process.env[configEnv]
   if (storageEnv !== undefined) {
     parseStorageEnv(storageEnv, storageConfig)
   }
@@ -83,22 +83,25 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
   }
 }
 
-export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): AggregatorStorageAdapter {
-  return buildStorage(config, createRawMongoDBAdapter(dbUrl), (kind, config): StorageAdapter => {
-    if (kind === MinioService.config) {
-      const c = config as MinioConfig
-      if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
-        throw new Error('One of endpoint/accessKey/secretKey values are not specified')
-      }
-      return new MinioService(c)
-    } else if (kind === S3Service.config) {
-      const c = config as S3Config
-      if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
-        throw new Error('One of endpoint/accessKey/secretKey values are not specified')
-      }
-      return new S3Service(c)
-    } else {
-      throw new Error('Unsupported storage kind:' + kind)
+export function createStorageFromConfig (config: StorageConfig): StorageAdapter {
+  const kind = config.kind
+  if (kind === MinioService.config) {
+    const c = config as MinioConfig
+    if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
+      throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
-  })
+    return new MinioService(c)
+  } else if (kind === S3Service.config) {
+    const c = config as S3Config
+    if (c.endpoint == null || c.accessKey == null || c.secretKey == null) {
+      throw new Error('One of endpoint/accessKey/secretKey values are not specified')
+    }
+    return new S3Service(c)
+  } else {
+    throw new Error('Unsupported storage kind:' + kind)
+  }
+}
+
+export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): AggregatorStorageAdapter {
+  return buildStorage(config, createRawMongoDBAdapter(dbUrl), createStorageFromConfig)
 }

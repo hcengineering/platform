@@ -361,7 +361,8 @@ const notification = plugin(notificationId, {
   },
   providers: {
     InboxNotificationProvider: '' as Ref<NotificationProvider>,
-    PushNotificationProvider: '' as Ref<NotificationProvider>
+    PushNotificationProvider: '' as Ref<NotificationProvider>,
+    SoundNotification: '' as Ref<NotificationProvider>
   },
   integrationType: {
     MobileApp: '' as Ref<IntegrationType>
@@ -415,7 +416,8 @@ const notification = plugin(notificationId, {
     InboxNotificationsDescription: '' as IntlString,
     PushNotificationsDescription: '' as IntlString,
     CommonNotificationCollectionAdded: '' as IntlString,
-    CommonNotificationCollectionRemoved: '' as IntlString
+    CommonNotificationCollectionRemoved: '' as IntlString,
+    Sound: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,

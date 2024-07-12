@@ -31,6 +31,8 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
+  $: version = object.$lookup?.file
+
   let hovered = false
 </script>
 
@@ -39,6 +41,7 @@
   class="card-container"
   class:selected
   class:hovered
+  draggable="false"
   on:mouseover={() => dispatch('obj-focus', object)}
   on:mouseenter={() => dispatch('obj-focus', object)}
   on:focus={() => {}}
@@ -88,11 +91,11 @@
           />
           <span>•</span>
           <span class="flex-no-shrink">
-            <TimestampPresenter value={object.$lookup?.file?.modifiedOn ?? object.createdOn ?? object.modifiedOn} />
+            <TimestampPresenter value={version?.lastModified ?? object.createdOn ?? object.modifiedOn} />
           </span>
         </div>
         <div class="flex-no-shrink font-regular-12">
-          <FileSizePresenter value={object.$lookup?.file?.size} />
+          <FileSizePresenter value={version?.size} />
         </div>
       </div>
     </div>

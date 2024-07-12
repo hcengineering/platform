@@ -24,6 +24,7 @@ import {
   type MeasureContext
 } from '@hcengineering/core'
 import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import crypto from 'node:crypto'
 import plugin from './plugin'
@@ -92,11 +93,14 @@ export class BlobClient {
   constructor (
     readonly transactorUrl: string,
     readonly workspace: WorkspaceId,
-    email?: string,
-    extra?: Record<string, string>
+    readonly opt?: {
+      email?: string
+      extra?: Record<string, string>
+      storageAdapter?: StorageAdapter
+    }
   ) {
     this.index = 0
-    this.token = generateToken(email ?? systemAccountEmail, workspace, extra)
+    this.token = generateToken(opt?.email ?? systemAccountEmail, workspace, opt?.extra)
     let url = transactorUrl
     if (url.endsWith('/')) {
       url = url.slice(0, url.length - 1)
@@ -106,6 +110,12 @@ export class BlobClient {
   }
 
   async checkFile (ctx: MeasureContext, name: string): Promise<boolean> {
+    if (this.opt?.storageAdapter !== undefined) {
+      const obj = await this.opt?.storageAdapter.stat(ctx, this.workspace, name)
+      if (obj !== undefined) {
+        return true
+      }
+    }
     for (let i = 0; i < 5; i++) {
       try {
         const response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, {
@@ -149,51 +159,66 @@ export class BlobClient {
       for (; i < 5; i++) {
         try {
           const st = Date.now()
+          let chunk: Buffer
 
-          const header: Record<string, string> = {
-            Authorization: 'Bearer ' + this.token
-          }
-
-          if (!(size !== -1 && written === 0 && size < chunkSize)) {
-            header.Range = `bytes=${written}-${size === -1 ? written + chunkSize : Math.min(size - 1, written + chunkSize)}`
-          }
-
-          response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, { headers: header })
-          if (header.Range != null) {
-            ctx.info('fetch part', { time: Date.now() - st, blobId: name, written, size })
-          }
-          if (response.status === 403) {
-            i = 5
-            // No file, so make it empty
-            throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
-          }
-          if (response.status === 404) {
-            i = 5
-            // No file, so make it empty
-            throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
-          }
-          if (response.status === 416) {
-            if (size === -1) {
-              size = parseInt((response.headers.get('content-range') ?? '').split('*/')[1])
-              continue
+          if (this.opt?.storageAdapter !== undefined) {
+            const chunks: Buffer[] = []
+            const readable = await this.opt.storageAdapter.partial(ctx, this.workspace, name, written, chunkSize)
+            await new Promise<void>((resolve) => {
+              readable.on('data', (chunk) => {
+                chunks.push(chunk)
+              })
+              readable.on('end', () => {
+                resolve()
+              })
+            })
+            chunk = Buffer.concat(chunks)
+          } else {
+            const header: Record<string, string> = {
+              Authorization: 'Bearer ' + this.token
             }
 
-            // No file, so make it empty
-            throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
-          }
-          const chunk = Buffer.from(await response.arrayBuffer())
+            if (!(size !== -1 && written === 0 && size < chunkSize)) {
+              header.Range = `bytes=${written}-${size === -1 ? written + chunkSize : Math.min(size - 1, written + chunkSize)}`
+            }
 
-          if (header.Range == null) {
-            size = chunk.length
-          }
-          // We need to parse
-          // 'Content-Range': `bytes ${start}-${end}/${size}`
-          // To determine if something is left
-          const range = response.headers.get('Content-Range')
-          if (range !== null) {
-            const [, total] = range.split(' ')[1].split('/')
-            if (total !== undefined) {
-              size = parseInt(total)
+            response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, { headers: header })
+            if (header.Range != null) {
+              ctx.info('fetch part', { time: Date.now() - st, blobId: name, written, size })
+            }
+            if (response.status === 403) {
+              i = 5
+              // No file, so make it empty
+              throw new Error(`Unauthorized ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+            }
+            if (response.status === 404) {
+              i = 5
+              // No file, so make it empty
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+            }
+            if (response.status === 416) {
+              if (size === -1) {
+                size = parseInt((response.headers.get('content-range') ?? '').split('*/')[1])
+                continue
+              }
+
+              // No file, so make it empty
+              throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
+            }
+            chunk = Buffer.from(await response.arrayBuffer())
+
+            if (header.Range == null) {
+              size = chunk.length
+            }
+            // We need to parse
+            // 'Content-Range': `bytes ${start}-${end}/${size}`
+            // To determine if something is left
+            const range = response.headers.get('Content-Range')
+            if (range !== null) {
+              const [, total] = range.split(' ')[1].split('/')
+              if (total !== undefined) {
+                size = parseInt(total)
+              }
             }
           }
 
@@ -219,6 +244,10 @@ export class BlobClient {
           }
           break
         } catch (err: any) {
+          if (err?.code === 'NoSuchKey') {
+            ctx.info('No such key', { name })
+            return
+          }
           if (i > 4) {
             await new Promise<void>((resolve) => {
               writable.end(resolve)
@@ -236,26 +265,30 @@ export class BlobClient {
   }
 
   async upload (ctx: MeasureContext, name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {
-    // TODO: We need to improve this logig, to allow restore of huge blobs
-    for (let i = 0; i < 5; i++) {
-      try {
-        await fetch(
-          this.transactorAPIUrl +
-            `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}&size=${size}`,
-          {
-            method: 'PUT',
-            headers: {
-              Authorization: 'Bearer ' + this.token,
-              'Content-Type': contentType
-            },
-            body: buffer
+    if (this.opt?.storageAdapter !== undefined) {
+      await this.opt.storageAdapter.put(ctx, this.workspace, name, buffer, contentType, size)
+    } else {
+      // TODO: We need to improve this logig, to allow restore of huge blobs
+      for (let i = 0; i < 5; i++) {
+        try {
+          await fetch(
+            this.transactorAPIUrl +
+              `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}&size=${size}`,
+            {
+              method: 'PUT',
+              headers: {
+                Authorization: 'Bearer ' + this.token,
+                'Content-Type': contentType
+              },
+              body: buffer
+            }
+          )
+          break
+        } catch (err: any) {
+          if (i === 4) {
+            ctx.error('failed to upload file', { name })
+            throw err
           }
-        )
-        break
-      } catch (err: any) {
-        if (i === 4) {
-          ctx.error('failed to upload file', { name })
-          throw err
         }
       }
     }

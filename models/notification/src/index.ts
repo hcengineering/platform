@@ -349,8 +349,18 @@ export function createModel (builder: Builder): void {
     TNotificationProvider,
     TNotificationProviderSetting,
     TNotificationTypeSetting,
-    TNotificationProviderDefaults
+    TNotificationProviderDefaults,
+    TPushSubscription
   )
+
+  // builder.createDoc(
+  //   notification.class.NotificationProvider,
+  //   core.space.Model,
+  //   {
+  //     label: notification.string.Sound
+  //   },
+  //   notification.providers.SoundNotification
+  // )
 
   builder.createDoc(
     setting.class.SettingsCategory,

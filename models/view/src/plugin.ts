@@ -23,7 +23,6 @@ import view from '@hcengineering/view-resources/src/plugin'
 
 export default mergeIds(viewId, view, {
   actionImpl: {
-    Delete: '' as ViewAction,
     Archive: '' as ViewAction,
     Join: '' as ViewAction,
     Leave: '' as ViewAction,

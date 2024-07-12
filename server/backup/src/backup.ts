@@ -503,6 +503,8 @@ export async function backup (
     connectTimeout: number
     skipBlobContentTypes: string[]
     blobDownloadLimit: number
+    connection?: CoreClient & BackupClient
+    storageAdapter?: StorageAdapter
   } = {
     force: false,
     recheck: false,
@@ -529,18 +531,20 @@ export async function backup (
       canceled = true
     }, options.timeout)
   }
-  const connection = (await connect(
-    transactorUrl,
-    workspaceId,
-    undefined,
-    {
-      mode: 'backup'
-    },
-    undefined,
-    options.connectTimeout
-  )) as unknown as CoreClient & BackupClient
+  const connection =
+    options.connection ??
+    ((await connect(
+      transactorUrl,
+      workspaceId,
+      undefined,
+      {
+        mode: 'backup'
+      },
+      undefined,
+      options.connectTimeout
+    )) as unknown as CoreClient & BackupClient)
 
-  const blobClient = new BlobClient(transactorUrl, workspaceId)
+  const blobClient = new BlobClient(transactorUrl, workspaceId, { storageAdapter: options.storageAdapter })
   ctx.info('starting backup', { workspace: workspaceId.name })
 
   let tmpDir: string | undefined
@@ -897,14 +901,15 @@ export async function backup (
                   ctx.error('error packing file', { err })
                 }
               })
-              // if (blob.size > 1024 * 1024) {
-              ctx.info('download blob', {
-                _id: blob._id,
-                contentType: blob.contentType,
-                size: blob.size,
-                provider: blob.provider,
-                pending: docs.length
-              })
+              if (blob.size > 1024 * 1024) {
+                ctx.info('download blob', {
+                  _id: blob._id,
+                  contentType: blob.contentType,
+                  size: blob.size,
+                  provider: blob.provider,
+                  pending: docs.length
+                })
+              }
 
               printDownloaded(blob._id, blob.size)
             } catch (err: any) {
@@ -970,7 +975,9 @@ export async function backup (
     ctx.error('backup error', { err, workspace: workspaceId.name })
   } finally {
     ctx.info('end backup', { workspace: workspaceId.name })
-    await connection.close()
+    if (options.connection === undefined) {
+      await connection.close()
+    }
     ctx.end()
     if (options.timeout !== -1) {
       clearTimeout(timer)

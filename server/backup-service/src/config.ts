@@ -24,6 +24,10 @@ interface Config extends Omit<BackupConfig, 'Token'> {
   Interval: number // Timeout in seconds
   Timeout: number // Timeout in seconds
   BucketName: string
+  Storage: string // A bucket storage config
+  WorkspaceStorage: string // A workspace storage config
+
+  SkipWorkspaces: string
 
   MongoURL: string
 }
@@ -36,10 +40,22 @@ const envMap: { [key in keyof Config]: string } = {
   BucketName: 'BUCKET_NAME',
   Interval: 'INTERVAL',
   Timeout: 'TIMEOUT',
-  MongoURL: 'MONGO_URL'
+  MongoURL: 'MONGO_URL',
+  SkipWorkspaces: 'SKIP_WORKSPACES',
+  Storage: 'STORAGE',
+  WorkspaceStorage: 'WORKSPACE_STORAGE'
 }
 
-const required: Array<keyof Config> = ['TransactorURL', 'AccountsURL', 'Secret', 'ServiceID', 'BucketName', 'MongoURL']
+const required: Array<keyof Config> = [
+  'TransactorURL',
+  'AccountsURL',
+  'Secret',
+  'ServiceID',
+  'BucketName',
+  'MongoURL',
+  'Storage',
+  'WorkspaceStorage'
+]
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -50,7 +66,10 @@ const config: Config = (() => {
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '3600'),
     Timeout: parseInt(process.env[envMap.Timeout] ?? '3600'),
-    MongoURL: process.env[envMap.MongoURL]
+    MongoURL: process.env[envMap.MongoURL],
+    SkipWorkspaces: process.env[envMap.SkipWorkspaces] ?? '',
+    WorkspaceStorage: process.env[envMap.WorkspaceStorage],
+    Storage: process.env[envMap.Storage]
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

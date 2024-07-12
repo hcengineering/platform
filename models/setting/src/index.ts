@@ -454,7 +454,7 @@ export function createModel (builder: Builder): void {
     },
     label: setting.string.HideAttribute,
     input: 'any',
-    icon: view.icon.Setting,
+    icon: view.icon.EyeCrossed,
     category: setting.category.Settings,
     target: core.class.Attribute,
     context: {
@@ -474,7 +474,7 @@ export function createModel (builder: Builder): void {
     },
     label: setting.string.ShowAttribute,
     input: 'any',
-    icon: view.icon.Setting,
+    icon: view.icon.Eye,
     category: setting.category.Settings,
     target: core.class.Attribute,
     context: {

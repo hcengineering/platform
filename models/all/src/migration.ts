@@ -42,6 +42,7 @@ import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
 import { loveId, loveOperation } from '@hcengineering/model-love'
 import { documentOperation } from '@hcengineering/model-document'
+import { driveOperation } from '@hcengineering/model-drive'
 import { textEditorOperation } from '@hcengineering/model-text-editor'
 import { questionsOperation } from '@hcengineering/model-questions'
 import { trainingOperation } from '@hcengineering/model-training'
@@ -79,6 +80,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['activityServer', activityServerOperation],
   [loveId, loveOperation],
   ['document', documentOperation],
+  ['drive', driveOperation],
   ['textEditor', textEditorOperation],
   // We should call it after activityServer and chunter
   ['notification', notificationOperation]

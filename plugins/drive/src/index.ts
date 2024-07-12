@@ -16,6 +16,7 @@
 import { driveId, drivePlugin } from './plugin'
 
 export * from './types'
+export * from './utils'
 export { driveId }
 
 export default drivePlugin

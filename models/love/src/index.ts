@@ -202,7 +202,12 @@ export function createModel (builder: Builder): void {
       group: love.ids.LoveNotificationGroup,
       txClasses: [],
       objectClass: love.class.JoinRequest,
-      defaultEnabled: true
+      defaultEnabled: true,
+      // providers: {
+      //   [notification.providers.PlatformNotification]: true,
+      //   [notification.providers.BrowserNotification]: true,
+      //   [notification.providers.SoundNotification]: true
+      // }
     },
     love.ids.KnockNotification
   )
