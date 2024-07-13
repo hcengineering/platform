@@ -185,11 +185,11 @@
     {
       id: 'references',
       icon: document.icon.References
-    },
-    {
-      id: 'history',
-      icon: document.icon.History
     }
+    // {
+    //   id: 'history',
+    //   icon: document.icon.History
+    // }
   ]
   let selectedAside: string | boolean = false
 
