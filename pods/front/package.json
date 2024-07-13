@@ -14,8 +14,8 @@
     "_phase:package": "rushx package",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "cross-env-shell \"mkdirp bundle && esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node --external:sharp --outdir=bundle\"",
-    "package": "rm -rf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rm ./dist/config.json",
+    "bundle": "mkdirp bundle && cross-env MODEL_VERSION=\"$(node ../../common/scripts/show_version.js)\" GIT_REVISION=\"$(../../common/scripts/git_version.sh)\" esbuild src/__start.ts --bundle --external:*.node --sourcemap=inline --minify --platform=node --external:bufferutil --external:utf-8-validate --outfile=bundle/bundle.js",
+    "package": "rimraf ./dist && cp -r ../../dev/prod/dist . && cp -r ../../dev/prod/public/* ./dist/ && rimraf ./dist/config.json",
     "docker:build": "cross-env ../../common/scripts/docker_build.sh hardcoreeng/front",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/front staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/front",
@@ -53,7 +53,9 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "mkdirp": "3.0.1"
+    "mkdirp": "^3.0.1",
+    "rimraf": "^6.0.1",
+    "ncp": "~2.0.0"
   },
   "dependencies": {
     "@hcengineering/prod": "^1.0.1",
