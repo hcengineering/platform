@@ -14,7 +14,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "cross-env-shell \"mkdirp bundle && esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node > bundle/bundle.js\"",
+    "bundle": "mkdirp bundle && cross-env MODEL_VERSION=\"$(node ../../common/scripts/show_version.js)\" esbuild src/__start.ts --bundle --minify --platform=node > bundle/bundle.js",
     "docker:build": "cross-env ../../common/scripts/docker_build.sh hardcoreeng/account",
     "docker:staging": "sh ../../common/scripts/docker_tag.sh hardcoreeng/account staging",
     "docker:push": "sh ../../common/scripts/docker_tag.sh hardcoreeng/account",
