@@ -13,12 +13,36 @@
 // limitations under the License.
 //
 
+import { type Editor } from '@tiptap/core'
 import TiptapTable from '@tiptap/extension-table'
-import TableNodeView from './TableNodeView.svelte'
+import { CellSelection } from '@tiptap/pm/tables'
 import { SvelteNodeViewRenderer } from '../../node-view'
+import TableNodeView from './TableNodeView.svelte'
+import { isTableSelected } from './utils'
 
 export const Table = TiptapTable.extend({
+  addKeyboardShortcuts () {
+    return {
+      'Mod-Backspace': () => handleDelete(this.editor),
+      'Mod-Delete': () => handleDelete(this.editor)
+    }
+  },
   addNodeView () {
     return SvelteNodeViewRenderer(TableNodeView, {})
   }
 })
+
+function handleDelete (editor: Editor): boolean {
+  const { selection } = editor.state
+  if (selection instanceof CellSelection) {
+    if (isTableSelected(selection)) {
+      return editor.commands.deleteTable()
+    } else if (selection.isColSelection()) {
+      return editor.commands.deleteColumn()
+    } else if (selection.isRowSelection()) {
+      return editor.commands.deleteRow()
+    }
+  }
+
+  return false
+}
