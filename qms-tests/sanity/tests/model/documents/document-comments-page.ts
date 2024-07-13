@@ -1,0 +1,133 @@
+import { type Locator, type Page, expect } from '@playwright/test'
+import { DocumentCommonPage } from './document-common-page'
+
+export class DocumentCommentsPage extends DocumentCommonPage {
+  readonly page: Page
+  readonly buttonDocumentTitle: Locator
+
+  constructor (page: Page) {
+    super(page)
+    this.page = page
+    this.buttonDocumentTitle = page.locator('button.version-item span.name')
+  }
+
+  async checkCommentExist (message: string, count: number = 1): Promise<void> {
+    await expect(this.page.locator('div[data-float="aside"] div.root span', { hasText: message })).toHaveCount(count)
+  }
+
+  async resolveComments (message: string, position: string = '1'): Promise<void> {
+    await this.page
+      .locator('div[data-float="aside"] div.root span', { hasText: message })
+      .locator('xpath=..')
+      .locator('span:first-child', { hasText: position })
+      .hover()
+
+    await this.page
+      .locator('div[data-float="aside"] div.root span', { hasText: message })
+      .locator('xpath=..')
+      .locator('span:first-child', { hasText: position })
+      .locator('xpath=../..')
+      .locator('div.tools button')
+      .click()
+  }
+
+  async resolveAllComments (): Promise<void> {
+    const buttonsCount: number = await this.page.locator('div[data-float="aside"] div.root div.tools button').count()
+    for (let i = 0; i < buttonsCount; i++) {
+      await this.page.locator('div[data-float="aside"] div.root').first().click()
+      await this.page.locator('div[data-float="aside"] div.root div.tools button').first().click()
+    }
+  }
+
+  async checkCommentNotExist (message: string): Promise<void> {
+    await expect(this.page.locator('div[data-float="aside"] div.root span', { hasText: message })).toHaveCount(0)
+  }
+
+  async checkCommentCanBeResolved (message: string, position: number): Promise<void> {
+    await this.page
+      .locator('div[data-float="aside"] div.root span', { hasText: message })
+      .locator('xpath=..')
+      .locator('span:first-child', { hasText: String(position) })
+      .hover()
+
+    await expect(
+      this.page
+        .locator('div[data-float="aside"] div.root span', { hasText: message })
+        .locator('xpath=..')
+        .locator('span:first-child', { hasText: String(position) })
+        .locator('xpath=../..')
+        .locator('div.tools button')
+    ).toBeEnabled()
+  }
+
+  async checkCommentCanNotBeResolved (message: string, position: number): Promise<void> {
+    await this.page
+      .locator('div[data-float="aside"] div.root span', { hasText: message })
+      .locator('xpath=..')
+      .locator('span:first-child', { hasText: String(position) })
+      .hover()
+
+    await expect(
+      this.page
+        .locator('div[data-float="aside"] div.root span', { hasText: message })
+        .locator('xpath=..')
+        .locator('span:first-child', { hasText: String(position) })
+        .locator('xpath=../..')
+        .locator('div.tools button')
+    ).not.toBeVisible()
+  }
+
+  async addReplyInPopupByCommentId (commentId: number, replyText: string): Promise<void> {
+    const comment = this.page
+      .locator('div.popup div.root div.header span:first-child', { hasText: String(commentId) })
+      .locator('xpath=../../../..')
+    await comment.locator('div.ref-input div.tiptap').fill(replyText)
+    await comment.locator('div.ref-input div.buttons-panel > button').click()
+  }
+
+  async checkCommentInPopupById (
+    commentId: number,
+    header: string,
+    author: string,
+    message: string,
+    reply: string
+  ): Promise<void> {
+    const comment = this.page
+      .locator('div.popup div.root div.header > div > span:first-child', { hasText: String(commentId) })
+      .locator('xpath=../../../..')
+    // check header
+    await expect(comment.locator('div.header > div > span:last-child')).toHaveText(header)
+    // can be resolved
+    await comment.locator('div.header div.tools button').hover()
+    await expect(comment.locator('div.header div.tools button')).toBeEnabled()
+    // check author
+    await expect(comment.locator('div.root div.header > a span[class*="label"]').first()).toHaveText(author)
+    // check message
+    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').first()).toHaveText(message)
+    // check comment
+    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').last()).toHaveText(reply)
+  }
+
+  async checkCommentInPanelById (
+    commentId: number,
+    header: string,
+    author: string,
+    message: string,
+    reply: string
+  ): Promise<void> {
+    const comment = this.page
+      .locator('div.box div.root div.header > div > span:first-child', { hasText: String(commentId) })
+      .locator('xpath=../../../..')
+    // check header
+    await expect(comment.locator('div.header > div > span:last-child')).toHaveText(header)
+    // can be resolved
+    await comment.locator('div.header > div > span:last-child').hover()
+    await expect(comment.locator('div.header div.tools button')).toBeEnabled()
+    // check author
+    await expect(comment.locator('div.root div.header > a span[class*="label"]').first()).toHaveText(author)
+    // check message
+    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').first()).toHaveText(message)
+    // check comment
+    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').last()).toHaveText(reply)
+  }
+}

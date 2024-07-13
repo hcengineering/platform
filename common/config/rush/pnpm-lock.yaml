@@ -539,6 +539,9 @@ dependencies:
   '@rush-temp/products-resources':
     specifier: file:./projects/products-resources.tgz
     version: file:projects/products-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
+  '@rush-temp/qms-tests-sanity':
+    specifier: file:./projects/qms-tests-sanity.tgz
+    version: file:projects/qms-tests-sanity.tgz
   '@rush-temp/query':
     specifier: file:./projects/query.tgz
     version: file:projects/query.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -23272,6 +23275,30 @@ packages:
       - node-notifier
       - supports-color
       - ts-node
+    dev: false
+
+  file:projects/qms-tests-sanity.tgz:
+    resolution: {integrity: sha512-ntTsOcgNEYuQVnuTv8IDdeGHDmCqEJpcQijo2H/OJJlOfHBj52ijRQCFB8Jnhv6L2RLEV9euSHAk+VGxvWsqyw==, tarball: file:projects/qms-tests-sanity.tgz}
+    name: '@rush-temp/qms-tests-sanity'
+    version: 0.0.0
+    dependencies:
+      '@playwright/test': 1.41.2
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      allure-playwright: 2.12.2
+      cross-env: 7.0.3
+      dotenv: 16.0.3
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   file:projects/query.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
