@@ -22,7 +22,6 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentHistoryPage } from '../model/documents/document-history-page'
 import { faker } from '@faker-js/faker'
 
-
 test.use({
   storageState: PlatformSetting
 })
