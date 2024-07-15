@@ -2076,6 +2076,11 @@
       "packageName": "@hcengineering/server-analytics-collector-resources",
       "projectFolder": "server-plugins/analytics-collector-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-telegram-bot",
+      "projectFolder": "services/telegram-bot/pod-telegram-bot",
+      "shouldPublish": false
     }
   ]
 }

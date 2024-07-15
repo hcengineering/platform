@@ -384,6 +384,21 @@
       "showAsyncStacks": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/services/analytics-collector/pod-analytics-collector"
+    },
+    {
+      "name": "Debug telegram bot",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4020",
+        "DOMAIN": "localhost",
+        "BOT_TOKEN": "token"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
     }
   ]
 }

@@ -602,6 +602,9 @@ dependencies:
   '@rush-temp/pod-telegram':
     specifier: file:./projects/pod-telegram.tgz
     version: file:projects/pod-telegram.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4)
+  '@rush-temp/pod-telegram-bot':
+    specifier: file:./projects/pod-telegram-bot.tgz
+    version: file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)
   '@rush-temp/preference':
     specifier: file:./projects/preference.tgz
     version: file:projects/preference.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1280,9 +1283,6 @@ dependencies:
   '@types/web-push':
     specifier: ~3.6.3
     version: 3.6.3
-  '@types/ws':
-    specifier: ^8.5.11
-    version: 8.5.11
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.11.0
     version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
@@ -1478,9 +1478,6 @@ dependencies:
   eslint-plugin-svelte:
     specifier: ^2.35.1
     version: 2.35.1(eslint@8.56.0)(svelte@4.2.12)(ts-node@10.9.2)
-  express:
-    specifier: ^4.19.2
-    version: 4.19.2
   express-fileupload:
     specifier: ^1.5.1
     version: 1.5.1
@@ -1745,6 +1742,9 @@ dependencies:
   tar-stream:
     specifier: ^2.2.0
     version: 2.2.0
+  telegraf:
+    specifier: ^4.16.3
+    version: 4.16.3
   telegram:
     specifier: 2.22.2
     version: 2.22.2
@@ -1802,9 +1802,6 @@ dependencies:
   winston-daily-rotate-file:
     specifier: ^5.0.0
     version: 5.0.0(winston@3.13.1)
-  ws:
-    specifier: ^8.18.0
-    version: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
   y-prosemirror:
     specifier: ^1.2.1
     version: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
@@ -8244,6 +8241,10 @@ packages:
       defer-to-connect: 2.0.1
     dev: false
 
+  /@telegraf/types@7.1.0:
+    resolution: {integrity: sha512-kGevOIbpMcIlCDeorKGpwZmdH7kHbqlk/Yj6dEpJMKEQw5lk0KVQY0OLXaCswy8GqlIVLd5625OB+rAntP9xVw==}
+    dev: false
+
   /@testing-library/dom@8.20.1:
     resolution: {integrity: sha512-/DiOQ5xBxgdYRC8LNk7U+RWat0S3qRLeIw3ZIkMQ9kkVlRmwD/Eg8k8CqIpD6GW7u20JIUOfMKbxtiLutpjQ4g==}
     engines: {node: '>=12'}
@@ -10132,6 +10133,13 @@ packages:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
     dev: false
 
+  /abort-controller@3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+    dependencies:
+      event-target-shim: 5.0.1
+    dev: false
+
   /accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
@@ -11173,6 +11181,17 @@ packages:
     resolution: {integrity: sha512-gvW7InbIyF8AicrqWoptdW08pUxuhq8BEgowNajy9RhiE86fmGAGl+bLKo6oB8QP0CkqHLowfN0oJdKC/J6LbA==}
     dev: false
 
+  /buffer-alloc-unsafe@1.1.0:
+    resolution: {integrity: sha512-TEM2iMIEQdJ2yjPJoSIsldnleVaAk1oW3DBVUykyOLsEsFmEc9kn+SFFPz+gl54KQNxlDnAwCXosOS9Okx2xAg==}
+    dev: false
+
+  /buffer-alloc@1.2.0:
+    resolution: {integrity: sha512-CFsHQgjtW1UChdXgbyJGtnm+O/uLQeZdtbDo8mfUgYXCHSM1wgrVxXm6bSyrUuErEb+4sYVGCzASBRot7zyrow==}
+    dependencies:
+      buffer-alloc-unsafe: 1.1.0
+      buffer-fill: 1.0.0
+    dev: false
+
   /buffer-crc32@0.2.13:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
     dev: false
@@ -11194,6 +11213,10 @@ packages:
   /buffer-equal@1.0.1:
     resolution: {integrity: sha512-QoV3ptgEaQpvVwbXdSO39iqPQTCxSF7A5U99AxbHYqUdCizL/lH2Z0A2y6nbZucxMEOtNyZfG2s6gsVugGpKkg==}
     engines: {node: '>=0.4'}
+    dev: false
+
+  /buffer-fill@1.0.0:
+    resolution: {integrity: sha512-T7zexNBwiiaCOGDg9xNX9PBmjrubblRkENuptryuI64URkXDFum9il/JGL8Lm8wYfAXpredVXXZz7eMHilimiQ==}
     dev: false
 
   /buffer-from@1.1.2:
@@ -13991,6 +14014,11 @@ packages:
     dependencies:
       d: 1.0.2
       es5-ext: 0.10.64
+    dev: false
+
+  /event-target-shim@5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
     dev: false
 
   /eventemitter3@4.0.7:
@@ -18670,6 +18698,11 @@ packages:
       retry: 0.13.1
     dev: false
 
+  /p-timeout@4.1.0:
+    resolution: {integrity: sha512-+/wmHtzJuWii1sXn3HCuH/FTwGhrp4tmJTxSKJbfS+vkipci6osxXM5mY0jUiRzWKMTgUT8l7HFbeSwZAynqHw==}
+    engines: {node: '>=10'}
+    dev: false
+
   /p-timeout@5.1.0:
     resolution: {integrity: sha512-auFDyzzzGZZZdHz3BtET9VEz0SE/uMEAx7uWfGPucfzEwwe/xH0iVeZibQmANYE/hp9T2+UUZT5m+BKyrDp3Ew==}
     engines: {node: '>=12'}
@@ -20307,6 +20340,12 @@ packages:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
     dev: false
 
+  /safe-compare@1.1.4:
+    resolution: {integrity: sha512-b9wZ986HHCo/HbKrRpBJb2kqXMK9CEWIE1egeEvZsYn69ay3kdfl9nG3RyOcR+jInTDf7a86WQ1d4VJX7goSSQ==}
+    dependencies:
+      buffer-alloc: 1.2.0
+    dev: false
+
   /safe-regex-test@1.0.3:
     resolution: {integrity: sha512-CdASjNJPvRa7roO6Ra/gLYBTzYzzPyyBXxIMdGW3USQLyjWEls2RgW5UBTXaQVp+OrpeCK3bLem8smtmheoRuw==}
     engines: {node: '>= 0.4'}
@@ -20332,6 +20371,11 @@ packages:
       graceful-fs: 4.2.11
       mkdirp: 0.5.6
       rimraf: 2.7.1
+    dev: false
+
+  /sandwich-stream@2.0.2:
+    resolution: {integrity: sha512-jLYV0DORrzY3xaz/S9ydJL6Iz7essZeAfnAavsJ+zsJGZ1MOnsS52yRjU3uF3pJa/lla7+wisp//fxOwOH8SKQ==}
+    engines: {node: '>= 0.10'}
     dev: false
 
   /sanitize-filename@1.6.3:
@@ -21640,6 +21684,24 @@ packages:
       minizlib: 2.1.2
       mkdirp: 1.0.4
       yallist: 4.0.0
+    dev: false
+
+  /telegraf@4.16.3:
+    resolution: {integrity: sha512-yjEu2NwkHlXu0OARWoNhJlIjX09dRktiMQFsM678BAH/PEPVwctzL67+tvXqLCRQQvm3SDtki2saGO9hLlz68w==}
+    engines: {node: ^12.20.0 || >=14.13.1}
+    hasBin: true
+    dependencies:
+      '@telegraf/types': 7.1.0
+      abort-controller: 3.0.0
+      debug: 4.3.5
+      mri: 1.2.0
+      node-fetch: 2.7.0
+      p-timeout: 4.1.0
+      safe-compare: 1.1.4
+      sandwich-stream: 2.0.2
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
     dev: false
 
   /telegram@2.22.2:
@@ -29019,7 +29081,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-XTI4qfulSUmxQELlvipQdb6F4i2MG1uBldX7HHP19oBB7fTn85S/qXQols9NOggFWtgIw5ApT2VdQqiJLqmOGQ==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-Fchfe/8DE4XgMKNE+EpaMxj3dwfwb/UBRwxvL8AlResTO0oVMKI0zapd8QCF2jX6EgAgskiQc4QYmZAug1bSng==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -29143,6 +29205,60 @@ packages:
       - babel-jest
       - babel-plugin-macros
       - bufferutil
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - node-notifier
+      - snappy
+      - socks
+      - supports-color
+      - utf-8-validate
+    dev: false
+
+  file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-tzFUvXyCkZdPcsjLrbLzTDaUsC6aw8Kj1rRsPpyLSf13mqO1Z+9NnN1RoGitHuAlBvmN6NzZR5kAuYddGge6gQ==, tarball: file:projects/pod-telegram-bot.tgz}
+    id: file:projects/pod-telegram-bot.tgz
+    name: '@rush-temp/pod-telegram-bot'
+    version: 0.0.0
+    dependencies:
+      '@tsconfig/node16': 1.0.4
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@types/node-fetch': 2.6.11
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      dotenv: 16.0.3
+      esbuild: 0.20.1
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.19.2
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      mongodb: 6.8.0
+      node-fetch: 2.7.0
+      prettier: 3.2.5
+      telegraf: 4.16.3
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
+      typescript: 5.3.3
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@babel/core'
+      - '@jest/types'
+      - '@mongodb-js/zstd'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - bufferutil
+      - encoding
       - gcp-metadata
       - kerberos
       - mongodb-client-encryption
@@ -31872,7 +31988,7 @@ packages:
     dev: false
 
   file:projects/server-telegram-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-4Pob/P+5sdtU7LGgb1jJbqVms72MXOpAvOZ+GivgI3j9JvqvbOfHn87O1jVhrWa865xZrdGlV9+T9grap3W3xg==, tarball: file:projects/server-telegram-resources.tgz}
+    resolution: {integrity: sha512-VsEVxoPM/hyelQa9/rQFzo+vbS8ixxU4RvVWdM0ae9HJuaEyszX4y9GheG/SDMa0NzCtyOOLf9KqL3ohGpkWRg==, tarball: file:projects/server-telegram-resources.tgz}
     id: file:projects/server-telegram-resources.tgz
     name: '@rush-temp/server-telegram-resources'
     version: 0.0.0
@@ -31892,20 +32008,13 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
       - '@babel/core'
       - '@jest/types'
-      - '@mongodb-js/zstd'
       - '@types/node'
       - babel-jest
       - babel-plugin-macros
       - esbuild
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
       - node-notifier
-      - snappy
-      - socks
       - supports-color
       - ts-node
     dev: false
