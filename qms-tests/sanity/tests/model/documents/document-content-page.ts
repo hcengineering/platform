@@ -42,6 +42,19 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly textId: Locator
   readonly sectionsLocatorViewRight: Locator
   readonly sectionsLocatorEditRight: Locator
+  readonly addSpaceButton: Locator
+  readonly inputSpaceName: Locator
+  readonly roleSelector: Locator
+  readonly selectRoleMember: Locator
+  readonly createButton: Locator
+  readonly createNewDocument: Locator
+  readonly selectCustom: Locator
+  readonly nextStepButton: Locator
+  readonly customSpecificReason: Locator
+  readonly newDocumentTitle: Locator
+  readonly createDraft: Locator
+  readonly draftNewVersion: Locator
+  readonly buttonHistoryTab: Locator
 
   constructor (page: Page) {
     super(page)
@@ -93,6 +106,19 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.textId = page.locator('div.flex:has(div.label:text("ID")) div.field')
     this.sectionsLocatorViewRight = page.locator('div.section span.label')
     this.sectionsLocatorEditRight = page.locator('div.section span.label input')
+    this.addSpaceButton = page.locator('#tree-orgspaces')
+    this.inputSpaceName = page.getByPlaceholder('New documents space')
+    this.roleSelector = page.getByRole('button', { name: 'Members' })
+    this.selectRoleMember = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.createButton = page.getByRole('button', { name: 'Create' })
+    this.createNewDocument = page.getByRole('button', { name: 'Create new document' })
+    this.selectCustom = page.getByText('Custom')
+    this.customSpecificReason = page.getByPlaceholder('Specify the reason...')
+    this.nextStepButton = page.getByRole('button', { name: 'Next step' })
+    this.newDocumentTitle = page.getByPlaceholder('New document')
+    this.createDraft = page.getByRole('button', { name: 'Create Draft' })
+    this.draftNewVersion = page.getByRole('button', { name: 'Draft new version' })
+    this.buttonHistoryTab = page.getByText('History')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -135,6 +161,63 @@ export class DocumentContentPage extends DocumentCommonPage {
   async executeMoreActions (action: string): Promise<void> {
     await this.buttonMoreActions.click()
     await this.selectFromDropdown(this.page, action)
+  }
+
+  async checkIfFolderExists (folderName: string): Promise<void> {
+    await expect(this.page.getByRole('button', { name: folderName })).toBeVisible()
+  }
+
+  async clickAddFolderButton (): Promise<void> {
+    await this.addSpaceButton.click()
+  }
+
+  async fillDocumentSpaceForm (spaceName: string): Promise<void> {
+    await this.inputSpaceName.fill(spaceName)
+    await this.roleSelector.nth(2).click()
+    await this.selectRoleMember.nth(2).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.createButton.click()
+  }
+
+  async createNewDocumentInsideFolder (folderName: string): Promise<void> {
+    await this.page.getByRole('button', { name: folderName }).hover()
+    await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
+    await this.createNewDocument.click()
+  }
+
+  async createNewDocumentFromFolder (
+    title: string,
+    custom: boolean = false,
+    specificReason: string = ''
+  ): Promise<void> {
+    await this.page.locator('.antiRadio > .marker').first().click()
+    await this.nextStepButton.click()
+    await this.newDocumentTitle.fill(title)
+    if (custom) {
+      await this.selectCustom.click()
+      await this.customSpecificReason.fill(specificReason)
+    }
+    await this.nextStepButton.click()
+    await this.createDraft.click()
+  }
+
+  async clickSendForApproval (): Promise<void> {
+    await this.buttonSendForApproval.click()
+  }
+
+  async clickDraftNewVersion (): Promise<void> {
+    await this.buttonDraftNewVersion.click()
+  }
+
+  async clickHistoryTab (): Promise<void> {
+    await this.buttonHistoryTab.first().click()
+  }
+
+  async checkIfHistoryVersionExists (description: string): Promise<void> {
+    await this.page.waitForTimeout(200)
+    await expect(this.page.getByText(description)).toBeVisible()
+    await expect(this.page.getByText('v0.1', { exact: true })).toBeVisible()
   }
 
   async checkDocumentStatus (status: DocumentStatus): Promise<void> {

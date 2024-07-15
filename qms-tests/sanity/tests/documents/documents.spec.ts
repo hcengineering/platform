@@ -20,6 +20,8 @@ import { DocumentReleasePage } from '../model/documents/document-release-page'
 import { DocumentReasonAndImpactPage } from '../model/documents/document-reason-impact-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentHistoryPage } from '../model/documents/document-history-page'
+import { faker } from '@faker-js/faker'
+
 
 test.use({
   storageState: PlatformSetting
@@ -804,7 +806,7 @@ test.describe('QMS. Documents tests', () => {
     })
 
     await test.step('10. Check History tab', async () => {
-      await documentContentPage.buttonHistoryTab.click()
+      await documentContentPage.buttonHistoryTab.first().click()
 
       const documentHistoryPage = new DocumentHistoryPage(page)
       await documentHistoryPage.checkHistoryEventExist('New document creation')
@@ -1110,5 +1112,232 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkContentForTheSection(overviewContent)
       await documentContentPage.checkContentForTheSection(mainContent)
     })
+  })
+
+  test('TESTS-206. Send for approval document after resolve comments', async ({ page, browser }) => {
+    await allure.description(
+      'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
+    )
+    await allure.tms('TESTS-206', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-141')
+    const userSecondPage = await getSecondPage(browser)
+    const completeDocument: NewDocument = {
+      template: 'HR (HR)',
+      title: `Complete document-${generateId()}`,
+      description: `Complete document description-${generateId()}`
+    }
+    const reviewer = 'Dirak Kainin'
+    const documentDetails: DocumentDetails = {
+      type: 'HR',
+      category: 'Human Resources',
+      version: 'v0.1',
+      status: DocumentStatus.DRAFT,
+      owner: 'Appleseed John',
+      author: 'Appleseed John'
+    }
+    const newContentFirst: Content = {
+      sectionTitle: `Complete document. Overview-${generateId()}`,
+      content: `Complete document. New content-${generateId()}!!!!`
+    }
+    const updateContentFirst: Content = {
+      sectionTitle: `Complete document Updated. Updated Overview-${generateId()}`,
+      content: `Complete document Updated. Updated content-${generateId()}!!!!`
+    }
+    const newContentSecond: Content = {
+      sectionTitle: `Complete document. Description-${generateId()}`,
+      content: `Complete document. New content Description-${generateId()}!!!!`
+    }
+    const messageToTitle: string = `Complete document. Message to the first title-${generateId()}`
+    const messageToContent: string = `Complete document. Message to the content-${generateId()}`
+
+    await prepareDocumentStep(page, completeDocument)
+
+    const documentContentPage = new DocumentContentPage(page)
+    await test.step('2. Add section and content', async () => {
+      await documentContentPage.checkDocumentTitle(completeDocument.title)
+      await documentContentPage.checkDocumentStatus(DocumentStatus.DRAFT)
+      await documentContentPage.checkDocument(documentDetails)
+      await documentContentPage.checkCurrentRights(DocumentRights.EDITING)
+
+      await documentContentPage.updateSectionTitle('1', newContentFirst.sectionTitle)
+      await documentContentPage.addContentToTheSection(newContentFirst)
+
+      await documentContentPage.addNewSection('1', 'below')
+      await documentContentPage.updateSectionTitle('2', newContentSecond.sectionTitle)
+      await documentContentPage.addContentToTheSection(newContentSecond)
+      await attachScreenshot('TESTS-206_add_section_and_content.png', page)
+    })
+
+    await test.step('3. Send for Review', async () => {
+      await documentContentPage.buttonSendForReview.click()
+      await documentContentPage.fillSelectReviewersForm([reviewer])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_REVIEW)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_REVIEW
+      })
+      await attachScreenshot('TESTS-206_send_for_review.png', page)
+    })
+
+    await test.step('4. As author add comments to the first section', async () => {
+      await documentContentPage.addMessageToTheSectionTitle(newContentFirst.sectionTitle, messageToTitle)
+      await documentContentPage.addMessageToTheText(newContentFirst.content, messageToContent)
+
+      await documentContentPage.buttonComments.click()
+
+      const documentCommentsPage = new DocumentCommentsPage(page)
+      await documentCommentsPage.checkCommentExist(newContentFirst.sectionTitle, 2)
+      await documentCommentsPage.checkCommentCanBeResolved(newContentFirst.sectionTitle, 1)
+      await documentCommentsPage.checkCommentCanBeResolved(newContentFirst.sectionTitle, 2)
+      await attachScreenshot('TESTS-206_author_add_comments.png', page)
+    })
+
+    await test.step('5. As reviewer add comments to the second section and Complete Review', async () => {
+      await (await userSecondPage.goto(`${PlatformURI}/${DocumentURI}`))?.finished()
+
+      const documentsPageSecond = new DocumentsPage(userSecondPage)
+      await documentsPageSecond.openDocument(completeDocument.title)
+
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      await documentContentPageSecond.addMessageToTheSectionTitle(newContentSecond.sectionTitle, messageToTitle)
+      await documentContentPageSecond.addMessageToTheText(newContentSecond.content, messageToContent)
+
+      await documentContentPageSecond.buttonComments.click()
+
+      const documentCommentsPageSecond = new DocumentCommentsPage(userSecondPage)
+      await documentCommentsPageSecond.checkCommentExist(newContentSecond.sectionTitle, 2)
+      await documentCommentsPageSecond.checkCommentCanBeResolved(newContentSecond.sectionTitle, 3)
+      await documentCommentsPageSecond.checkCommentCanBeResolved(newContentSecond.sectionTitle, 4)
+
+      await documentContentPageSecond.completeReview()
+
+      await documentContentPageSecond.checkDocumentStatus(DocumentStatus.REVIEWED)
+      await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
+      await attachScreenshot('TESTS-206_reviewer_add_comments.png', page)
+    })
+
+    await test.step('6. Update Document and fix reviews', async () => {
+      await documentContentPage.buttonEditDocument.click()
+
+      await documentContentPage.updateSectionTitle('1', updateContentFirst.sectionTitle)
+      await documentContentPage.addContentToTheSection(updateContentFirst)
+      await documentContentPage.checkContentForTheSection(updateContentFirst)
+
+      const documentCommentsPage = new DocumentCommentsPage(page)
+      await documentCommentsPage.checkCommentExist(updateContentFirst.sectionTitle, 2)
+      await documentCommentsPage.resolveAllComments()
+
+      await documentCommentsPage.checkCommentNotExist(updateContentFirst.sectionTitle)
+      await attachScreenshot('TESTS-206_fix_reviews.png', page)
+
+      await documentContentPage.buttonDocumentInformation.click()
+      await documentContentPage.checkDocumentStatus(DocumentStatus.DRAFT)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.DRAFT,
+        version: 'v0.1'
+      })
+      await attachScreenshot('TESTS-206_check_document.png', page)
+    })
+
+    await test.step('7. Send for Approval', async () => {
+      await documentContentPage.buttonSendForApproval.click()
+      await documentContentPage.fillSelectApproversForm([reviewer])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_APPROVAL,
+        version: 'v0.1'
+      })
+      await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
+    })
+
+    await test.step('8. Approve document', async () => {
+      const documentsPageSecond = new DocumentsPage(userSecondPage)
+      await documentsPageSecond.openDocument(completeDocument.title)
+
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      await documentContentPageSecond.confirmApproval()
+
+      await documentContentPageSecond.buttonDocumentInformation.click()
+      await documentContentPageSecond.checkDocumentStatus(DocumentStatus.EFFECTIVE)
+      await documentContentPageSecond.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.EFFECTIVE,
+        version: 'v0.1'
+      })
+      await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
+
+      await attachScreenshot('TESTS-206_approve_document.png', page)
+    })
+
+    await test.step('9. Check document', async () => {
+      await documentContentPage.checkDocumentStatus(DocumentStatus.EFFECTIVE)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.EFFECTIVE,
+        version: 'v0.1'
+      })
+      await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
+
+      await attachScreenshot('TESTS-206_check_document.png', page)
+    })
+
+    await test.step('10. Check History tab', async () => {
+      await documentContentPage.buttonHistoryTab.first().click()
+
+      const documentHistoryPage = new DocumentHistoryPage(page)
+      await documentHistoryPage.checkHistoryEventExist('New document creation')
+      await attachScreenshot('TESTS-206_check_history_tab.png', page)
+    })
+  })
+
+  test('TESTS-352. Create a document', async ({ page }) => {
+    const folderName = faker.word.words(1)
+    const documentTitle = faker.word.words(2)
+    await allure.description('Requirement\nUsers need to create a new document')
+    await allure.tms('TESTS-352', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-352')
+
+    const documentContentPage = new DocumentContentPage(page)
+    await documentContentPage.clickAddFolderButton()
+    await documentContentPage.fillDocumentSpaceForm(folderName)
+    await documentContentPage.createNewDocumentInsideFolder(folderName)
+    await documentContentPage.createNewDocumentFromFolder(documentTitle)
+
+    await test.step('2. Check if document and folder exists', async () => {
+      await documentContentPage.checkIfFolderExists(folderName)
+      await documentContentPage.checkDocumentTitle(documentTitle)
+    })
+
+    await attachScreenshot('TESTS-352_create_document.png', page)
+  })
+
+  test('TESTS-380. As a space QARA, I can select "Custom" field in "Reason" for creating this Quality doc and it is stored in the History of Version 2 of this doc', async ({
+    page
+  }) => {
+    const folderName = faker.word.words(5)
+    const documentTitle = faker.word.words(5)
+    const reason = faker.word.words(5)
+    await allure.description('Requirement\nUsers need to create a new document')
+    await allure.tms('TESTS-380', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-380')
+
+    const documentContentPage = new DocumentContentPage(page)
+    await documentContentPage.clickAddFolderButton()
+    await documentContentPage.fillDocumentSpaceForm(folderName)
+    await documentContentPage.createNewDocumentInsideFolder(folderName)
+    await documentContentPage.createNewDocumentFromFolder(documentTitle, true, reason)
+
+    await test.step('2. Check if document and folder exists', async () => {
+      await documentContentPage.checkIfFolderExists(folderName)
+      await documentContentPage.checkDocumentTitle(documentTitle)
+    })
+    await documentContentPage.clickSendForApproval()
+    await documentContentPage.fillSelectApproversForm(['Appleseed John'])
+    await documentContentPage.confirmApproval()
+    await documentContentPage.clickDraftNewVersion()
+    await documentContentPage.clickHistoryTab()
+    await test.step('3. Check if history version exists', async () => {
+      await documentContentPage.checkIfHistoryVersionExists(reason)
+    })
+    await attachScreenshot('TESTS-380_create_document.png', page)
   })
 })
