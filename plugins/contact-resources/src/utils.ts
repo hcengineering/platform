@@ -481,7 +481,12 @@ export function groupByPersonAccountCategories (categories: any[]): AggregateVal
           .map((it) => new AggregateValueData(it.person, it._id, it.space))
         fst = new AggregateValue(personAccount.person, people)
         personMap.set(personAccount.person, fst)
-        existingCategories.push(fst)
+        if (fst.name === undefined) {
+          existingCategories[0] = new AggregateValue(undefined, [...existingCategories[0].values, ...fst.values])
+          // Join with first value
+        } else {
+          existingCategories.push(fst)
+        }
       }
     }
   }
