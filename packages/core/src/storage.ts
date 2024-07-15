@@ -16,7 +16,7 @@
 import type { Asset } from '@hcengineering/platform'
 
 import type { KeysByType } from 'simplytyped'
-import type { AttachedDoc, Class, Doc, Ref, Space } from './classes'
+import type { Account, AttachedDoc, Class, Doc, Ref, Space } from './classes'
 import type { Tx } from './tx'
 
 /**
@@ -122,6 +122,9 @@ export type FindOptions<T extends Doc> = {
   sort?: SortingQuery<T>
   lookup?: Lookup<T>
   projection?: Projection<T>
+
+  // If set, document should be accessible from space by selected account.
+  account?: Ref<Account>
 
   // If specified total will be returned
   total?: boolean

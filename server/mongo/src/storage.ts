@@ -459,6 +459,24 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   ): Promise<FindResult<T>> {
     const pipeline: any[] = []
+
+    if (options?.account !== undefined) {
+      pipeline.push({
+        $lookup: {
+          from: 'space',
+          localField: 'space',
+          foreignField: '_id',
+          as: '__account_space',
+          pipeline: [{ $project: { members: 1, private: 1 } }]
+        }
+      })
+      pipeline.push({
+        $match: {
+          $or: [{ '__account_space.members': options.account }, { '__account_space.private': false }]
+        }
+      })
+    }
+
     const match = { $match: this.translateQuery(clazz, query) }
     const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
     const steps = await this.getLookups(clazz, options?.lookup)
@@ -507,6 +525,9 @@ abstract class MongoAdapterBase implements DbAdapter {
       throw e
     }
     for (const row of result) {
+      if (options?.account != null) {
+        delete (row as any).__account_space
+      }
       await ctx.with('fill-lookup', {}, async (ctx) => {
         await this.fillLookupValue(ctx, clazz, options?.lookup, row)
       })
@@ -612,7 +633,13 @@ abstract class MongoAdapterBase implements DbAdapter {
       domain?: Domain // Allow to find for Doc's in specified domain only.
     }
   ): Promise<FindResult<T>> {
-    if (options != null && (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))) {
+    if (
+      options != null &&
+      (options?.lookup != null ||
+        this.isEnumSort(_class, options) ||
+        this.isRulesSort(options) ||
+        options?.account != null)
+    ) {
       return await ctx.with('pipeline', {}, async (ctx) => await this.findWithPipeline(ctx, _class, query, options))
     }
     const domain = options?.domain ?? this.hierarchy.getDomain(_class)

@@ -473,6 +473,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return map
   }
 
+  totalQueryTime = 0
+
   async getDomainSpaces (domain: Domain): Promise<Set<Ref<Space>>> {
     let domainSpaces = this._domainSpaces.get(domain)
     if (domainSpaces === undefined) {
@@ -531,15 +533,24 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     if (!isSystem(account) && account.role !== AccountRole.DocGuest) {
       if (!isOwner(account, ctx) || !isSpace) {
-        if (query[field] !== undefined) {
-          ;(newQuery as any)[field] = await this.mergeQuery(account, query[field], domain, isSpace)
+        if (isSpace) {
+          if (query[field] !== undefined) {
+            ;(newQuery as any)[field] = await this.mergeQuery(account, query[field], domain, isSpace)
+          } else {
+            const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account, !isSpace))
+            ;(newQuery as any)[field] = { $in: spaces }
+          }
         } else {
-          const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account, !isSpace))
-          ;(newQuery as any)[field] = { $in: spaces }
+          if (options === undefined) {
+            options = {}
+          }
+          options.account = account._id
         }
       }
     }
+
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+
     if (!isOwner(account, ctx) && account.role !== AccountRole.DocGuest) {
       if (options?.lookup !== undefined) {
         for (const object of findResult) {
