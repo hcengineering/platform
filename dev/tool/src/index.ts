@@ -33,7 +33,8 @@ import {
   setAccountAdmin,
   setRole,
   UpgradeWorker,
-  upgradeWorkspace
+  upgradeWorkspace,
+  type Workspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -86,7 +87,6 @@ import {
   restoreHrTaskTypesFromUpdates,
   restoreRecruitingTaskTypes
 } from './clean'
-import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
 import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
@@ -394,31 +394,60 @@ export function devTool (
     )
 
   program
-    .command('remove-unused-workspaces')
+    .command('list-unused-workspaces')
     .description(
       'remove unused workspaces, please pass --remove to really delete them. Without it will only mark them disabled'
     )
     .option('-r|--remove [remove]', 'Force remove', false)
-    .option('-d|--disable [disable]', 'Force disable', false)
-    .option('-e|--exclude [exclude]', 'A comma separated list of workspaces to exclude', '')
-    .action(async (cmd: { remove: boolean, disable: boolean, exclude: string }) => {
+    .option('-t|--timeout [timeout]', 'Timeout in days', '7')
+    .action(async (cmd: { remove: boolean, disable: boolean, exclude: string, timeout: string }) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
-        const workspaces = await listWorkspacesPure(db, productId)
+        const workspaces = new Map((await listWorkspacesPure(db, productId)).map((p) => [p._id.toString(), p]))
+
+        const accounts = await listAccounts(db)
+
+        const _timeout = parseInt(cmd.timeout) ?? 7
 
         await withStorage(mongodbUri, async (adapter) => {
           // We need to update workspaces with missing workspaceUrl
-          await checkOrphanWorkspaces(
-            toolCtx,
-            workspaces,
-            transactorUrl,
-            productId,
-            cmd,
-            db,
-            client,
-            adapter,
-            cmd.exclude.split(',')
-          )
+
+          for (const a of accounts) {
+            const authored = a.workspaces
+              .map((it) => workspaces.get(it.toString()))
+              .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
+            authored.sort((a, b) => b.lastVisit - a.lastVisit)
+            if (authored.length > 0) {
+              const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
+              toolCtx.info(a.email, {
+                workspaces: a.workspaces.length,
+                firstName: a.first,
+                lastName: a.last,
+                lastLoginDays
+              })
+              for (const ws of authored) {
+                const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+
+                if (lastVisitDays > _timeout) {
+                  toolCtx.warn('  --- unused', {
+                    url: ws.workspaceUrl,
+                    id: ws.workspace,
+                    lastVisitDays
+                  })
+                  if (cmd.remove) {
+                    await dropWorkspaceFull(toolCtx, db, client, productId, null, ws.workspace, adapter)
+                  }
+                } else {
+                  toolCtx.warn('  +++ used', {
+                    url: ws.workspaceUrl,
+                    id: ws.workspace,
+                    createdBy: ws.createdBy,
+                    lastVisitDays
+                  })
+                }
+              }
+            }
+          }
         })
       })
     })
