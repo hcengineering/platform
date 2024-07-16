@@ -524,7 +524,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.waitInit()
 
     const domain = this.storage.hierarchy.getDomain(_class)
-    const newQuery = query
+    const newQuery = { ...query }
     const account = await getUser(this.storage, ctx)
     const isSpace = this.storage.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
@@ -536,7 +536,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           ;(newQuery as any)[field] = res
           if (typeof res === 'object') {
             if (Array.isArray(res.$in) && res.$in.length === 1 && Object.keys(res).length === 1) {
-              ;(newQuery as any)[field] = res
+              ;(newQuery as any)[field] = res.$in[0]
             }
           }
         } else {
