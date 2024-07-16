@@ -13,21 +13,13 @@
 // limitations under the License.
 //
 
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import drive, { driveId } from '@hcengineering/drive'
+import { mergeIds } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui'
+import { uploaderId } from '@hcengineering/uploader'
+import uploader from '@hcengineering/uploader-resources/src/plugin'
 
-export default mergeIds(driveId, drive, {
-  string: {
-    CreateDrive: '' as IntlString,
-    CreateFolder: '' as IntlString,
-    UploadFile: '' as IntlString,
-    UploadFolder: '' as IntlString,
-    Download: '' as IntlString,
-    Upload: '' as IntlString,
-    EditDrive: '' as IntlString,
-    Rename: '' as IntlString,
-    RoleLabel: '' as IntlString,
-    Root: '' as IntlString,
-    FileVersions: '' as IntlString
+export default mergeIds(uploaderId, uploader, {
+  component: {
+    WorkbenchExtension: '' as AnyComponent
   }
 })

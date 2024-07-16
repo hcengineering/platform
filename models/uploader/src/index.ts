@@ -13,21 +13,19 @@
 // limitations under the License.
 //
 
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import drive, { driveId } from '@hcengineering/drive'
+import { type Builder } from '@hcengineering/model'
+import core from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
+import workbench from '@hcengineering/model-workbench'
 
-export default mergeIds(driveId, drive, {
-  string: {
-    CreateDrive: '' as IntlString,
-    CreateFolder: '' as IntlString,
-    UploadFile: '' as IntlString,
-    UploadFolder: '' as IntlString,
-    Download: '' as IntlString,
-    Upload: '' as IntlString,
-    EditDrive: '' as IntlString,
-    Rename: '' as IntlString,
-    RoleLabel: '' as IntlString,
-    Root: '' as IntlString,
-    FileVersions: '' as IntlString
-  }
-})
+import uploader from './plugin'
+
+export { uploaderId } from '@hcengineering/uploader'
+export { uploader as default }
+
+export function createModel (builder: Builder): void {
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: workbench.extensions.WorkbenchExtensions,
+    component: uploader.component.WorkbenchExtension
+  })
+}

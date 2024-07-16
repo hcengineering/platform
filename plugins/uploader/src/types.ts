@@ -13,21 +13,21 @@
 // limitations under the License.
 //
 
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import drive, { driveId } from '@hcengineering/drive'
+import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { Uppy } from '@uppy/core'
 
-export default mergeIds(driveId, drive, {
-  string: {
-    CreateDrive: '' as IntlString,
-    CreateFolder: '' as IntlString,
-    UploadFile: '' as IntlString,
-    UploadFolder: '' as IntlString,
-    Download: '' as IntlString,
-    Upload: '' as IntlString,
-    EditDrive: '' as IntlString,
-    Rename: '' as IntlString,
-    RoleLabel: '' as IntlString,
-    Root: '' as IntlString,
-    FileVersions: '' as IntlString
-  }
-})
+/** @public */
+export interface FileUploadTarget {
+  space: Ref<Space>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+}
+
+/** @public */
+export interface FileUpload {
+  target: FileUploadTarget
+  uppy: Uppy
+}
+
+/** @public */
+export type FileUploadCallback = (uuid: string, name: string, file: File | Blob) => Promise<void>

@@ -73,7 +73,6 @@
     "y-protocols": "^1.0.6",
     "y-prosemirror": "^1.2.1",
     "yjs": "^13.5.52",
-    "filesize": "^8.0.3",
     "fast-equals": "^5.0.1",
     "rfc6902": "^5.0.1",
     "diff": "^5.1.0",

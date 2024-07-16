@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,23 +11,14 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import FileUploadStatusBar from './FileUploadStatusBar.svelte'
+  import { uploads } from '@hcengineering/uploader'
+</script>
 
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import drive, { driveId } from '@hcengineering/drive'
-
-export default mergeIds(driveId, drive, {
-  string: {
-    CreateDrive: '' as IntlString,
-    CreateFolder: '' as IntlString,
-    UploadFile: '' as IntlString,
-    UploadFolder: '' as IntlString,
-    Download: '' as IntlString,
-    Upload: '' as IntlString,
-    EditDrive: '' as IntlString,
-    Rename: '' as IntlString,
-    RoleLabel: '' as IntlString,
-    Root: '' as IntlString,
-    FileVersions: '' as IntlString
-  }
-})
+<div class="flex-row-center flex-gap-2">
+  {#each $uploads as upload}
+    <FileUploadStatusBar {upload} />
+  {/each}
+</div>

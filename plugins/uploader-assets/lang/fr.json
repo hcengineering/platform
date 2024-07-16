@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Cancel": "Annuler"
+  },
+  "status": {
+    "Waiting": "En attente",
+    "Uploading": "Téléchargement",
+    "Completed": "Terminé"
+  }
+}

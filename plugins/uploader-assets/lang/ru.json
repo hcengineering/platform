@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Cancel": "Отмена"
+  },
+  "status": {
+    "Waiting": "Ожидание",
+    "Uploading": "Загрузка",
+    "Completed": "Завершено"
+  }
+}

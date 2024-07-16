@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/drive-resources",
+  "name": "@hcengineering/uploader-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
@@ -39,17 +39,20 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/drive": "^0.6.0",
-    "@hcengineering/contact-resources": "^0.6.0",
-    "@hcengineering/panel": "^0.6.23",
     "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/uploader": "^0.6.0",
     "svelte": "^4.2.12",
-    "fast-equals": "^5.0.1"
+    "@uppy/core": "^3.13.1",
+    "@uppy/drag-drop": "^3.1.1",
+    "@uppy/dashboard": "^3.9.1",
+    "@uppy/status-bar": "^3.3.3",
+    "@uppy/progress-bar": "^3.1.1",
+    "@uppy/screen-capture": "^3.2.0",
+    "@uppy/webcam": "^3.4.2",
+    "@uppy/xhr-upload": "^3.6.8"
   }
 }

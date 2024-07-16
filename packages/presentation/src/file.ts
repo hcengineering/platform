@@ -19,7 +19,7 @@ import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
 import plugin from './plugin'
-import type { BlobMetadata, FilePreviewExtension } from './types'
+import type { BlobMetadata, FileOrBlob, FilePreviewExtension } from './types'
 import { createQuery } from './utils'
 
 /**
@@ -76,7 +76,7 @@ export async function deleteFile (id: string): Promise<void> {
 /**
  * @public
  */
-export async function getFileMetadata (file: File, uuid: Ref<Blob>): Promise<BlobMetadata | undefined> {
+export async function getFileMetadata (file: FileOrBlob, uuid: Ref<Blob>): Promise<BlobMetadata | undefined> {
   const previewType = await getPreviewType(file.type, $previewTypes)
   if (previewType?.metadataProvider === undefined) {
     return undefined

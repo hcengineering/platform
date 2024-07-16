@@ -44,6 +44,7 @@ import { templatesId } from '@hcengineering/templates'
 import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin from '@hcengineering/ui'
+import { uploaderId } from '@hcengineering/uploader'
 import view, { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 
@@ -92,6 +93,7 @@ import '@hcengineering/training-assets'
 import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/text-editor-assets'
+import '@hcengineering/uploader-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
@@ -151,6 +153,7 @@ function configureI18n(): void {
    addStringsLoader(presentationId, async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`))
    addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`))
    addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
+   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
    addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
    addStringsLoader(attachmentId, async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`))
    addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
@@ -321,6 +324,7 @@ export async function configurePlatform() {
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
+  addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

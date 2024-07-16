@@ -13,21 +13,25 @@
 // limitations under the License.
 //
 
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import drive, { driveId } from '@hcengineering/drive'
+import type { IntlString, Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
+import type { AnyComponent } from '@hcengineering/ui'
 
-export default mergeIds(driveId, drive, {
+/** @public */
+export const uploaderId = 'uploader' as Plugin
+
+export const uploaderPlugin = plugin(uploaderId, {
+  component: {
+    FileUploadPopup: '' as AnyComponent
+  },
+  status: {
+    Waiting: '' as IntlString,
+    Uploading: '' as IntlString,
+    Completed: '' as IntlString
+  },
   string: {
-    CreateDrive: '' as IntlString,
-    CreateFolder: '' as IntlString,
-    UploadFile: '' as IntlString,
-    UploadFolder: '' as IntlString,
-    Download: '' as IntlString,
-    Upload: '' as IntlString,
-    EditDrive: '' as IntlString,
-    Rename: '' as IntlString,
-    RoleLabel: '' as IntlString,
-    Root: '' as IntlString,
-    FileVersions: '' as IntlString
+    Cancel: '' as IntlString
   }
 })
+
+export default uploaderPlugin
