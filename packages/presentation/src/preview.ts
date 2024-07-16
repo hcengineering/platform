@@ -4,9 +4,6 @@ import { getMetadata } from '@hcengineering/platform'
 import { getBlobHref, getClient, getCurrentWorkspaceUrl, getFileUrl } from '.'
 import presentation from './plugin'
 
-type SupportedFormat = string
-const defaultSupportedFormats = 'avif,webp,heif,jpeg'
-
 export interface ProviderPreviewConfig {
   // Identifier of provider
   // If set to '' could be applied to any provider, for example to exclude some 'image/gif' etc from being processing with providers.
@@ -14,8 +11,6 @@ export interface ProviderPreviewConfig {
   // Preview url
   // If '' preview is disabled for config.
   previewUrl: string
-  // A supported file formats
-  formats: SupportedFormat[]
 
   // Content type markers, will check by containts, if passed, only allow to be used with matched content types.
   contentTypes?: string[]
@@ -28,8 +23,7 @@ export interface PreviewConfig {
 
 const defaultPreview = (): ProviderPreviewConfig => ({
   providerId: '',
-  formats: ['avif', 'webp', 'jpg'],
-  previewUrl: `/files/${getCurrentWorkspaceUrl()}?file=:blobId.:format&size=:size`
+  previewUrl: `/files/${getCurrentWorkspaceUrl()}?file=:blobId&size=:size`
 })
 
 /**
@@ -39,7 +33,7 @@ const defaultPreview = (): ProviderPreviewConfig => ({
 
 - providerName - a provider name should be same as in Storage configuration.
   It coult be empty and it will match by content types.
-- previewUrl - an Url with :workspace, :blobId, :downloadFile, :size, :format placeholders, they will be replaced in UI with an appropriate blob values.
+- previewUrl - an Url with :workspace, :blobId, :downloadFile, :size placeholders, they will be replaced in UI with an appropriate blob values.
 - supportedFormats - a `,` separated list of file extensions.
 - contentTypes - a ',' separated list of content type patterns.
 
@@ -58,14 +52,14 @@ export function parsePreviewConfig (config?: string): PreviewConfig | undefined 
     if (c === '') {
       continue // Skip empty lines
     }
+    const vars = c.split('|')
     let [provider, url, formats, contentTypes] = c.split('|').map((it) => it.trim())
-    if (formats === undefined) {
-      formats = defaultSupportedFormats
+    if (vars.length === 3) {
+      contentTypes = formats // Backward compatibility, since formats are obsolete
     }
     const p: ProviderPreviewConfig = {
       providerId: provider,
       previewUrl: url,
-      formats: formats.split(',').map((it) => it.trim()),
       // Allow preview only for images by default
       contentTypes:
         contentTypes !== undefined
@@ -94,7 +88,6 @@ export function getPreviewConfig (): PreviewConfig {
           {
             providerId: '',
             contentTypes: ['image/gif', 'image/apng', 'image/svg'], // Disable gif and apng format preview.
-            formats: [],
             previewUrl: ''
           }
         ]
@@ -182,25 +175,19 @@ function blobToSrcSet (
   url = url.replaceAll(':blobId', encodeURIComponent(blob._id))
 
   let result = ''
-  for (const f of cfg.formats ?? []) {
-    if (result.length > 0) {
-      result += ', '
-    }
-
-    const fu = url.replaceAll(':format', f)
-
-    if (width !== undefined) {
-      result +=
-        fu.replaceAll(':size', `${width}`) +
-        ' 1x , ' +
-        fu.replaceAll(':size', `${width * 2}`) +
-        ' 2x, ' +
-        fu.replaceAll(':size', `${width * 3}`) +
-        ' 3x'
-    } else {
-      result += fu.replaceAll(':size', `${-1}`)
-    }
+  const fu = url
+  if (width !== undefined) {
+    result +=
+      fu.replaceAll(':size', `${width}`) +
+      ' 1x , ' +
+      fu.replaceAll(':size', `${width * 2}`) +
+      ' 2x, ' +
+      fu.replaceAll(':size', `${width * 3}`) +
+      ' 3x'
+  } else {
+    result += fu.replaceAll(':size', `${-1}`)
   }
+
   return result
 }
 

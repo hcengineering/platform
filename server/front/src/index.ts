@@ -32,12 +32,10 @@ import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
 import fs from 'fs'
+import { Readable } from 'stream'
 
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
-
-type SupportedFormat = 'jpeg' | 'avif' | 'heif' | 'webp' | 'png'
-const supportedFormats: SupportedFormat[] = ['avif', 'webp', 'heif', 'jpeg', 'png']
 
 async function storageUpload (
   ctx: MeasureContext,
@@ -118,6 +116,8 @@ async function getFileRange (
           'Last-Modified': new Date(stat.modifiedOn).toISOString()
         })
 
+        res.send(Readable.toWeb(dataStream))
+
         dataStream.pipe(res)
 
         await new Promise<void>((resolve, reject) => {
@@ -179,7 +179,12 @@ async function getFile (
   }
   if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'failed') {
     // Send 412 (Precondition Failed)
-    res.statusCode = 412
+    res.writeHead(412, {
+      'content-type': stat.contentType,
+      etag: stat.etag,
+      'last-modified': new Date(stat.modifiedOn).toISOString(),
+      'cache-control': cacheControlValue
+    })
     res.end()
     return
   }
@@ -360,15 +365,10 @@ export function start (
             (req.query.token as string | undefined)
           payload = token !== undefined ? decodeToken(token) : payload
 
-          let uuid = req.params.file ?? req.query.file
+          const uuid = req.params.file ?? req.query.file
           if (uuid === undefined) {
             res.status(404).send()
             return
-          }
-
-          const format: SupportedFormat | undefined = supportedFormats.find((it) => uuid.endsWith(it))
-          if (format !== undefined) {
-            uuid = uuid.slice(0, uuid.length - format.length - 1)
           }
 
           let blobInfo = await ctx.with(
@@ -411,12 +411,13 @@ export function start (
           }
 
           const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
-          if (format !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
+          const accept = req.headers.accept
+          if (accept !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
             blobInfo = await ctx.with(
               'resize',
               {},
               async (ctx) =>
-                await getGeneratePreview(ctx, blobInfo as PlatformBlob, size ?? -1, uuid, config, payload, format)
+                await getGeneratePreview(ctx, blobInfo as PlatformBlob, size ?? -1, uuid, config, payload, accept)
             )
           }
 
@@ -728,6 +729,8 @@ export function start (
   }
 }
 
+const supportedFormats = ['avif', 'webp', 'heif', 'jpeg', 'png']
+
 async function getGeneratePreview (
   ctx: MeasureContext,
   blob: PlatformBlob,
@@ -735,11 +738,29 @@ async function getGeneratePreview (
   uuid: string,
   config: { storageAdapter: StorageAdapter },
   payload: Token,
-  format: SupportedFormat = 'jpeg'
+  accept: string
 ): Promise<PlatformBlob> {
   if (size === undefined) {
     return blob
   }
+
+  const formats = accept.split(',').map((it) => it.trim())
+
+  // Select appropriate format
+  let format: string | undefined
+
+  for (const f of formats) {
+    const [type] = f.split(';')
+    const [clazz, kind] = type.split('/')
+    if (clazz === 'image' && supportedFormats.includes(kind)) {
+      format = kind
+      break
+    }
+  }
+  if (format === undefined) {
+    return blob
+  }
+
   const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
 
   const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
@@ -820,7 +841,7 @@ async function getGeneratePreview (
       Analytics.handleError(err)
       ctx.error('failed to resize image', {
         err,
-        format,
+        format: accept,
         contentType: blob.contentType,
         uuid,
         size: blob.size,
