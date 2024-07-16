@@ -12,14 +12,14 @@
     "types": "./lib/index.d.ts"
   },
   "scripts": {
-    "build": "./uws.sh",
-    "build:watch": "./uws.sh",
+    "build": "sh ./uws.sh",
+    "build:watch": "sh ./uws.sh",
     "test": "echo 'test'",
     "format": "echo 'format'",
     "_phase:build": "rushx build",
     "_phase:test": "echo 'test'",
     "_phase:format": "echo 'format'",
-    "_phase:validate": "./uws.sh"
+    "_phase:validate": "sh ./uws.sh"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0"
