@@ -269,6 +269,10 @@ export async function createClient (
   const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
   conn.onConnect = async (event) => {
     console.log('Client: onConnect', event)
+    if (event === ClientConnectEvent.Maintenance) {
+      await oldOnConnect?.(ClientConnectEvent.Maintenance)
+      return
+    }
     // Find all new transactions and apply
     const loadModelResponse = await ctx.with(
       'connect',

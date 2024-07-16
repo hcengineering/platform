@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, { type DocNotifyContext } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
   generateId,
   type Ref,
@@ -409,7 +409,7 @@ export async function removeActivityChannels (contexts: DocNotifyContext[]): Pro
       const notifications = notificationsByContext.get(context._id) ?? []
       await client.archiveNotifications(
         ops,
-        notifications.map(({ _id }) => _id)
+        notifications.map(({ _id }: InboxNotification) => _id)
       )
       await ops.remove(context)
     }
