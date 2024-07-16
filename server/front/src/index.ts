@@ -261,9 +261,14 @@ export function start (
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
+  const childLogger = ctx.logger.childLogger?.('requests', {
+    enableConsole: 'false'
+  })
+  const requests = ctx.newChild('requests', {}, {}, childLogger)
+
   class MyStream {
     write (text: string): void {
-      ctx.info(text)
+      requests.info(text)
     }
   }
 
