@@ -723,6 +723,9 @@ export function start (
   })
 
   const server = app.listen(port)
+
+  server.keepAliveTimeout = 60 * 1000 + 1000
+  server.headersTimeout = 60 * 1000 + 2000
   return () => {
     server.close()
   }
