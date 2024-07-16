@@ -26,6 +26,12 @@
     "Status": "Status",
     "MessagesSelected": "messages selected",
     "ConfigLabel": "Telegram",
-    "ConfigDescription": "Extension to read and write Telegram messages"
+    "ConfigDescription": "Extension to read and write Telegram messages",
+    "ConnectBotInfoStart": "To start interacting with our bot, simply open",
+    "ConnectBotInfoEnd": "and click \"Start\".",
+    "ConnectBotError": "Looks like a connection could’t be automatically established. Please try reconnecting the bot by clicking “Start”.",
+    "TestConnection": "Test connection",
+    "Connected": "Connected",
+    "TelegramNotificationDescription": "Receive personal notifications in Telegram."
   }
 }

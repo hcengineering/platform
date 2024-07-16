@@ -35,7 +35,12 @@ export default mergeIds(telegramId, telegram, {
     Cancel: '' as IntlString,
     Share: '' as IntlString,
     PublishSelected: '' as IntlString,
-    MessagesSelected: '' as IntlString
+    MessagesSelected: '' as IntlString,
+    ConnectBotInfoStart: '' as IntlString,
+    ConnectBotInfoEnd: '' as IntlString,
+    ConnectBotError: '' as IntlString,
+    TestConnection: '' as IntlString,
+    Connected: '' as IntlString
   },
   component: {
     MessagePresenter: '' as AnyComponent

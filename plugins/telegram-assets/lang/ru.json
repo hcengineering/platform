@@ -26,6 +26,12 @@
     "Status": "Статус",
     "MessagesSelected": "сообщений выбрано",
     "ConfigLabel": "Telegram",
-    "ConfigDescription": "Расширение по работе с Telegram"
+    "ConfigDescription": "Расширение по работе с Telegram",
+    "ConnectBotInfoStart": "Для начала работы с нашим ботом, просто откройте",
+    "ConnectBotInfoEnd": "и нажмите «Старт».",
+    "ConnectBotError": "Похоже, что подключение не установилось автоматически. Попробуйте переподключить бота, нажав «Старт».",
+    "TestConnection": "Проверить подключение",
+    "Connected": "Подключено",
+    "TelegramNotificationDescription": "Получайте уведомления в Telegram."
   }
 }

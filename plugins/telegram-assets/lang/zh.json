@@ -26,6 +26,12 @@
     "Status": "状态",
     "MessagesSelected": "选中的消息",
     "ConfigLabel": "Telegram",
-    "ConfigDescription": "扩展以读取和撰写 Telegram 消息"
+    "ConfigDescription": "扩展以读取和撰写 Telegram 消息",
+    "ConnectBotInfoStart": "要开始与我们的机器人互动，只需打开",
+    "ConnectBotInfoEnd": "然后单击“开始”。",
+    "ConnectBotError": "看起来无法自动建立连接。 请尝试通过单击“开始”重新连接机器人。",
+    "TestConnection": "测试连接",
+    "Connected": "已连接",
+    "TelegramNotificationDescription": "在 Telegram 中接收个人通知。"
   }
 }

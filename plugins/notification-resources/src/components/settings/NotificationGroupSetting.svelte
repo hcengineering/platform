@@ -22,7 +22,7 @@
     NotificationTypeSetting,
     NotificationProviderDefaults
   } from '@hcengineering/notification'
-  import { IntlString } from '@hcengineering/platform'
+  import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Grid, Label, ModernToggle } from '@hcengineering/ui'
 
@@ -130,26 +130,39 @@
     return false
   }
 
-  $: filteredProviders = providers.filter((provider) => {
-    const providerSetting = $providersSettings.find((p) => p.attachedTo === provider._id)
+  async function getFilteredProviders (providers: NotificationProvider[]): Promise<NotificationProvider[]> {
+    const result: NotificationProvider[] = []
 
-    if (providerSetting !== undefined && !providerSetting.enabled) {
-      return false
+    for (const provider of providers) {
+      const providerSetting = $providersSettings.find((p) => p.attachedTo === provider._id)
+
+      if (providerSetting !== undefined && !providerSetting.enabled) continue
+      if (providerSetting === undefined && !provider.defaultEnabled) continue
+
+      if (provider.isAvailableFn !== undefined) {
+        const isAvailableFn = await getResource(provider.isAvailableFn)
+        if (!isAvailableFn()) continue
+      }
+
+      if (provider.ignoreAll === true) {
+        const ignoreExcluded = providerDefaults
+          .map((it) => (provider._id === it.provider && it.excludeIgnore !== undefined ? it.excludeIgnore : []))
+          .flat()
+
+        const included = types.some((type) => ignoreExcluded.includes(type._id))
+        if (!included) continue
+      }
+
+      result.push(provider)
     }
 
-    if (providerSetting === undefined && !provider.defaultEnabled) {
-      return false
-    }
+    return result
+  }
 
-    if (provider.ignoreAll === true) {
-      const ignoreExcluded = providerDefaults
-        .map((it) => (provider._id === it.provider && it.excludeIgnore !== undefined ? it.excludeIgnore : []))
-        .flat()
+  let filteredProviders: NotificationProvider[] = []
 
-      return types.some((type) => ignoreExcluded.includes(type._id))
-    }
-
-    return true
+  $: void getFilteredProviders(providers).then((result) => {
+    filteredProviders = result
   })
 
   $: column = filteredProviders.length + 1

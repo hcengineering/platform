@@ -120,7 +120,8 @@ interface Config {
   LOVE_ENDPOINT?: string
   LIVEKIT_WS?: string
   SIGN_URL?: string
-  PRINT_URL?: string
+  PRINT_URL?: string,
+  TELEGRAM_BOT_URL?: string
 }
 
 export interface Branding {
@@ -251,6 +252,7 @@ export async function configurePlatform() {
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL ?? 'http://localhost:4020')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)

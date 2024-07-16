@@ -15,7 +15,7 @@
 
 import { ChannelItem } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
+import { NotificationProvider, NotificationType } from '@hcengineering/notification'
 import type { Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
@@ -91,6 +91,10 @@ export default plugin(telegramId, {
     IntegrationOwnerTG: '' as Ref<TemplateField>
   },
   metadata: {
-    TelegramURL: '' as Metadata<string>
+    TelegramURL: '' as Metadata<string>,
+    BotUrl: '' as Metadata<string>
+  },
+  providers: {
+    TelegramNotificationProvider: '' as Ref<NotificationProvider>
   }
 })

@@ -160,6 +160,8 @@ export interface NotificationProvider extends Doc {
   canDisable: boolean
   ignoreAll?: boolean
   order: number
+  presenter?: AnyComponent
+  isAvailableFn?: Resource<() => boolean>
 }
 
 export interface NotificationProviderDefaults extends Doc {
