@@ -729,7 +729,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       category: tracker.category.Tracker,
       target: core.class.Space,
       query: {
-        _class: { $nin: [tracker.class.Project] }
+        _class: { $ne: tracker.class.Project }
       },
       context: {
         mode: ['context'],

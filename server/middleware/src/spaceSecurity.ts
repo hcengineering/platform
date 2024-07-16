@@ -532,10 +532,20 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (!isSystem(account) && account.role !== AccountRole.DocGuest) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
-          ;(newQuery as any)[field] = await this.mergeQuery(account, query[field], domain, isSpace)
+          const res = await this.mergeQuery(account, query[field], domain, isSpace)
+          ;(newQuery as any)[field] = res
+          if (typeof res === 'object') {
+            if (Array.isArray(res.$in) && res.$in.length === 1 && Object.keys(res).length === 1) {
+              ;(newQuery as any)[field] = res
+            }
+          }
         } else {
           const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account, !isSpace))
-          ;(newQuery as any)[field] = { $in: spaces }
+          if (spaces.length === 1) {
+            ;(newQuery as any)[field] = spaces[0]
+          } else {
+            ;(newQuery as any)[field] = { $in: spaces }
+          }
         }
       }
     }
