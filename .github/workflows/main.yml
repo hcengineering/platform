@@ -237,7 +237,7 @@ jobs:
           docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
           docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
 
-          docker ps | grep transactor | cut -f 1 -d ' ' | xargs -I {} docker cp {}:/usr/src/app/logs .
+          docker ps | grep transactor | cut -f 1 -d ' ' | xargs -I {} docker cp {}:/app/logs .
           docker ps | grep front | cut -f 1 -d ' ' | xargs -I {} docker cp {}:/app/logs .
       - name: Upload test results
         if: always()
