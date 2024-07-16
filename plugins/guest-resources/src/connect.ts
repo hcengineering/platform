@@ -55,10 +55,6 @@ export async function connect (title: string): Promise<Client | undefined> {
   _token = token
 
   let version: Version | undefined
-  let serverEndpoint = endpoint.replace(/^ws/g, 'http')
-  if (serverEndpoint.endsWith('/')) {
-    serverEndpoint = serverEndpoint.substring(0, serverEndpoint.length - 1)
-  }
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
@@ -98,21 +94,15 @@ export async function connect (title: string): Promise<Client | undefined> {
               location.reload()
               versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
             }
-            const serverVersion: { version: string } = await (
-              await fetch(serverEndpoint + '/api/v1/version', {})
-            ).json()
-
-            console.log('Server version', serverVersion.version)
-            if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
+            console.log('Server version', reconnectVersionStr)
+            if (reconnectVersionStr !== '' && reconnectVersionStr !== currentVersionStr) {
               if (typeof sessionStorage !== 'undefined') {
-                if (sessionStorage.getItem(versionStorageKey) !== serverVersion.version) {
-                  sessionStorage.setItem(versionStorageKey, serverVersion.version)
+                if (sessionStorage.getItem(versionStorageKey) !== reconnectVersionStr) {
+                  sessionStorage.setItem(versionStorageKey, reconnectVersionStr)
                   location.reload()
                 }
-              } else {
-                location.reload()
               }
-              versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
+              versionError.set(`${currentVersionStr} => ${reconnectVersionStr}`)
             }
           }
         })()
@@ -145,23 +135,6 @@ export async function connect (title: string): Promise<Client | undefined> {
         versionError.set(`${versionStr} => ${requiredVersion}`)
         return undefined
       }
-    }
-
-    try {
-      const serverVersion: { version: string } = await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
-
-      console.log('Server version', serverVersion.version, version !== undefined ? versionToString(version) : '')
-      if (
-        serverVersion.version !== '' &&
-        (version === undefined || serverVersion.version !== versionToString(version))
-      ) {
-        const versionStr = version !== undefined ? versionToString(version) : 'unknown'
-        versionError.set(`${versionStr} => ${serverVersion.version}`)
-        return
-      }
-    } catch (err: any) {
-      versionError.set('server version not available')
-      return
     }
   } catch (err: any) {
     Analytics.handleError(err)

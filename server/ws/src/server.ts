@@ -221,25 +221,35 @@ class TSessionManager implements SessionManager {
 
   @withContext('get-workspace-info')
   async getWorkspaceInfo (ctx: MeasureContext, accounts: string, token: string): Promise<WorkspaceLoginInfo> {
-    const userInfo = await (
-      await fetch(accounts, {
-        method: 'POST',
-        headers: {
-          Authorization: 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          method: 'getWorkspaceInfo',
-          params: [true]
-        })
-      })
-    ).json()
-    if (userInfo.error !== undefined) {
-      ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
-      throw new Error(JSON.stringify(userInfo.error))
-    }
+    for (let i = 0; i < 10; i++) {
+      try {
+        const userInfo = await (
+          await fetch(accounts, {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer ' + token,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              method: 'getWorkspaceInfo',
+              params: [true]
+            })
+          })
+        ).json()
 
-    return { ...userInfo.result, upgrade: userInfo.upgrade }
+        if (userInfo.error !== undefined) {
+          ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
+          throw new Error(JSON.stringify(userInfo.error))
+        }
+        return { ...userInfo.result, upgrade: userInfo.upgrade }
+      } catch (err: any) {
+        if (i === 9) {
+          throw err
+        }
+        await new Promise<void>((resolve) => setTimeout(resolve, 100))
+      }
+    }
+    throw new Error('')
   }
 
   @withContext('📲 add-session')
