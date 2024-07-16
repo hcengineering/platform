@@ -17,16 +17,20 @@ import { MeasureMetricsContext } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
 
 import config from './config'
+import { createServer, listen } from './server'
 
 export const start = async (): Promise<void> => {
   const ctx = new MeasureMetricsContext('telegram-bot', {})
-
-  ctx.info('Starting telegram bot', { port: config.Port })
-
   const bot = new Telegraf(config.BotToken)
-  await bot.launch()
 
-  const onClose = (): void => {}
+  const app = createServer(bot)
+  const server = listen(app, ctx, config.Port)
+
+  void bot.launch()
+
+  const onClose = (): void => {
+    server.close(() => process.exit())
+  }
 
   process.once('SIGINT', () => {
     bot.stop('SIGINT')
