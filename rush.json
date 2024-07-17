@@ -502,6 +502,26 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/uploader",
+      "projectFolder": "plugins/uploader",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/uploader-assets",
+      "projectFolder": "plugins/uploader-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/uploader-resources",
+      "projectFolder": "plugins/uploader-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-uploader",
+      "projectFolder": "models/uploader",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator-client",
       "projectFolder": "packages/collaborator-client",
       "shouldPublish": true

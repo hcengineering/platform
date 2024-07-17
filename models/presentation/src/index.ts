@@ -30,6 +30,7 @@ import {
   type DocCreateExtension,
   type DocCreateFunction,
   type DocRules,
+  type FileOrBlob,
   type FilePreviewExtension,
   type ObjectSearchCategory,
   type ObjectSearchContext,
@@ -91,7 +92,7 @@ export class TFilePreviewExtension extends TComponentPointExtension implements F
     contentType!: string | string[]
 
   alignment?: string
-  metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+  metadataProvider?: Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   availabilityChecker?: Resource<() => Promise<boolean>>
 }
 

@@ -13,14 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Ref } from '@hcengineering/core'
-  import { type Drive, type Folder } from '@hcengineering/drive'
-
-  import { uploadFiles } from '../utils'
+  import { type Blob, type Ref } from '@hcengineering/core'
+  import drive, { createFile, type Drive, type Folder } from '@hcengineering/drive'
+  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { FileOrBlob, getClient, getFileMetadata } from '@hcengineering/presentation'
+  import { uploadFiles } from '@hcengineering/uploader'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
   export let canDrop: ((e: DragEvent) => boolean) | undefined = undefined
+
+  const client = getClient()
 
   let dragover = false
   let counter = 0
@@ -63,12 +66,30 @@
     e.preventDefault()
     e.stopPropagation()
 
-    // progress = true
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
-      await uploadFiles(list, space, parent)
+      const target =
+        parent !== drive.ids.Root
+          ? { objectId: parent, objectClass: drive.class.Folder }
+          : { objectId: space, objectClass: drive.class.Drive }
+      await uploadFiles(list, target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
+        try {
+          const metadata = await getFileMetadata(file, uuid as Ref<Blob>)
+          const data = {
+            file: uuid as Ref<Blob>,
+            size: file.size,
+            type: file.type,
+            lastModified: file instanceof File ? file.lastModified : Date.now(),
+            name,
+            metadata
+          }
+
+          await createFile(client, space, parent, data)
+        } catch (err) {
+          void setPlatformStatus(unknownError(err))
+        }
+      })
     }
-    // progress = false
   }
 </script>
 

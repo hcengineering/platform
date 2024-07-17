@@ -17,7 +17,7 @@ import { type Blob, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
-import { type BlobMetadata, type FilePreviewExtension } from '@hcengineering/presentation'
+import { type BlobMetadata, type FileOrBlob, type FilePreviewExtension } from '@hcengineering/presentation'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
 
@@ -139,8 +139,8 @@ export default mergeIds(viewId, view, {
     CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanJoinSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    BlobImageMetadata: '' as Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
-    BlobVideoMetadata: '' as Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+    BlobImageMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
+    BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,

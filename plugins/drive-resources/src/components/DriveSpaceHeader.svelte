@@ -13,20 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { type Drive } from '@hcengineering/drive'
-  import { createQuery } from '@hcengineering/presentation'
+  import { AccountRole, Blob, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { createFile, type Drive } from '@hcengineering/drive'
+  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { createQuery, FileOrBlob, getClient, getFileMetadata } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
+  import { showFilesUploadPopup } from '@hcengineering/uploader'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { createDrive, createFolder, uploadFiles } from '../utils'
+  import { createDrive, createFolder } from '../utils'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
   const me = getCurrentAccount()
 
+  const client = getClient()
   const query = createQuery()
 
   let loading = true
@@ -63,7 +66,28 @@
 
   async function handleUploadFile (): Promise<void> {
     if (currentSpace !== undefined) {
-      inputFile.click()
+      const space = currentSpace
+      const target =
+        parent !== drive.ids.Root
+          ? { objectId: parent, objectClass: drive.class.Folder }
+          : { objectId: space, objectClass: drive.class.Drive }
+      await showFilesUploadPopup(target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
+        try {
+          const metadata = await getFileMetadata(file, uuid as Ref<Blob>)
+          const data = {
+            file: uuid as Ref<Blob>,
+            size: file.size,
+            type: file.type,
+            lastModified: file instanceof File ? file.lastModified : Date.now(),
+            name,
+            metadata
+          }
+
+          await createFile(client, space, parent, data)
+        } catch (err) {
+          void setPlatformStatus(unknownError(err))
+        }
+      })
     }
   }
 
@@ -79,43 +103,11 @@
         { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
         // { id: drive.string.UploadFolder, label: drive.string.UploadFolder }
       ]
-
-  let progress = false
-  let inputFile: HTMLInputElement
-
-  async function fileSelected (): Promise<void> {
-    if (currentSpace === undefined) {
-      return
-    }
-
-    const list = inputFile.files
-    if (list === null || list.length === 0) {
-      return
-    }
-
-    progress = true
-
-    await uploadFiles(list, currentSpace, parent)
-
-    inputFile.value = ''
-    progress = false
-  }
 </script>
 
 {#if loading}
   <Loading shrink />
 {:else}
-  <input
-    bind:this={inputFile}
-    disabled={inputFile == null}
-    multiple
-    type="file"
-    name="file"
-    id="file"
-    style="display: none"
-    on:change={fileSelected}
-  />
-
   <div class="antiNav-subheader">
     {#if hasDrive}
       <ButtonWithDropdown
@@ -126,7 +118,7 @@
         mainButtonId={'new-document'}
         dropdownIcon={IconDropdown}
         {dropdownItems}
-        disabled={currentSpace === undefined || progress}
+        disabled={currentSpace === undefined}
         on:click={handleUploadFile}
         on:dropdown-selected={(ev) => {
           void handleDropdownItemSelected(ev.detail)
@@ -140,7 +132,6 @@
         width={'100%'}
         kind={'primary'}
         gap={'large'}
-        disabled={progress}
         on:click={handleCreateDrive}
       />
     {/if}
