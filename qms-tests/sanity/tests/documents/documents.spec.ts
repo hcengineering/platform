@@ -805,7 +805,7 @@ test.describe('QMS. Documents tests', () => {
     })
 
     await test.step('10. Check History tab', async () => {
-      await documentContentPage.buttonHistoryTab.click()
+      await documentContentPage.buttonHistoryTab.first().click()
 
       const documentHistoryPage = new DocumentHistoryPage(page)
       await documentHistoryPage.checkHistoryEventExist('New document creation')
