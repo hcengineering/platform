@@ -23564,10 +23564,11 @@ packages:
     dev: false
 
   file:projects/qms-tests-sanity.tgz:
-    resolution: {integrity: sha512-ntTsOcgNEYuQVnuTv8IDdeGHDmCqEJpcQijo2H/OJJlOfHBj52ijRQCFB8Jnhv6L2RLEV9euSHAk+VGxvWsqyw==, tarball: file:projects/qms-tests-sanity.tgz}
+    resolution: {integrity: sha512-2NJnLTGNRdrMXybXslRQNNCyyDLmsA069UyXn8uBG/WQaMHzr9rTXvtRpltXSfgCn+WAc8VidyT68O6J8RAPQA==, tarball: file:projects/qms-tests-sanity.tgz}
     name: '@rush-temp/qms-tests-sanity'
     version: 0.0.0
     dependencies:
+      '@faker-js/faker': 8.4.1
       '@playwright/test': 1.41.2
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
