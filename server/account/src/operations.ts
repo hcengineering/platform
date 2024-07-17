@@ -123,15 +123,19 @@ const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: Endpoi
     .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
     .flat()
 
+  // This is really bad
   if (transactors.length === 0) {
-    // This is really bad
-    if (transactors.length === 0) {
-      ctx.error('No transactors for group, will use default group', { group: workspaceInfo.transactor })
-    }
-    transactors = (groups.get('') ?? [])
-      .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
-      .flat()
+    ctx.error('No transactors for group, will use default group', { group: workspaceInfo.transactor })
   }
+  transactors = (groups.get('') ?? [])
+    .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
+    .flat()
+
+  if (transactors.length === 0) {
+    ctx.error('No transactors for default group', { group: workspaceInfo.transactor })
+    throw new Error('Please provide transactor endpoint url')
+  }
+
   const hash = hashWorkspace(workspaceInfo)
   return transactors[Math.abs(hash % transactors.length)]
 }

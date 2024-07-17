@@ -163,7 +163,7 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         "MONGO_URL": "mongodb://localhost:27017",
-        "ACCOUNTS_URL": "ws://localhost:3333",
+        "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
