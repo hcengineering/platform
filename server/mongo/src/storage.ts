@@ -613,7 +613,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   ): Promise<FindResult<T>> {
     if (options != null && (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))) {
-      return await ctx.with('pipeline', {}, async (ctx) => await this.findWithPipeline(ctx, _class, query, options))
+      return await ctx.with('pipeline', {}, async (ctx) => await this.findWithPipeline(ctx, _class, query, options), {
+        _class,
+        query,
+        options
+      })
     }
     const domain = options?.domain ?? this.hierarchy.getDomain(_class)
     const coll = this.collection(domain)

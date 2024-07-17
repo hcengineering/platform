@@ -23,6 +23,7 @@
   import view from '@hcengineering/view'
   import { getDocTitle } from '@hcengineering/view-resources'
 
+  import { createEventDispatcher } from 'svelte'
   import chunter from '../../../plugin'
   import { getChannelName, getObjectIcon } from '../../../utils'
   import { ChatNavItemModel, SortFnOptions } from '../types'
@@ -31,9 +32,9 @@
   export let id: string
   export let header: IntlString
   export let objects: Doc[]
+  export let itemsCount: number
   export let contexts: DocNotifyContext[]
   export let actions: Action[] = []
-  export let maxItems: number | undefined = undefined
   export let objectId: Ref<Doc> | undefined
   export let sortFn: (items: ChatNavItemModel[], options: SortFnOptions) => ChatNavItemModel[]
 
@@ -42,10 +43,10 @@
 
   let sortedItems: ChatNavItemModel[] = []
   let items: ChatNavItemModel[] = []
-  let visibleItems: ChatNavItemModel[] = []
+
+  const dispatcher = createEventDispatcher()
 
   let canShowMore = false
-  let isShownMore = false
 
   $: void getChatNavItems(objects, (res) => {
     items = res
@@ -56,9 +57,7 @@
     userStatusByAccount: $statusByUserStore,
     personAccountById: $personAccountByIdStore
   })
-  $: canShowMore = !!maxItems && items.length > maxItems
-
-  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, sortedItems, objectId)
+  $: canShowMore = itemsCount > items.length
 
   const getChatNavItems = reduceCalls(
     async (objects: Doc[], handler: (items: ChatNavItemModel[]) => void): Promise<void> => {
@@ -102,46 +101,13 @@
   )
 
   function onShowMore (): void {
-    isShownMore = !isShownMore
+    dispatcher('show-more')
   }
 
-  function getVisibleItems (
-    canShowMore: boolean,
-    isShownMore: boolean,
-    maxItems: number | undefined,
-    items: ChatNavItemModel[],
-    selectedObjectId: Ref<Doc> | undefined
-  ): ChatNavItemModel[] {
-    if (!canShowMore || isShownMore) {
-      return items
-    }
-
-    const result = items.slice(0, maxItems)
-
-    if (selectedObjectId === undefined) {
-      return result
-    }
-
-    const exists = result.some(({ id }) => id === selectedObjectId)
-
-    if (exists) {
-      return result
-    }
-
-    const selectedItem = items.find(({ id }) => id === selectedObjectId)
-
-    if (selectedItem === undefined) {
-      return result
-    }
-
-    result.push(selectedItem)
-
-    return result
-  }
-  $: visibleItem = visibleItems.find(({ id }) => id === objectId)
+  $: visibleItem = sortedItems.find(({ id }) => id === objectId)
 </script>
 
-{#if visibleItems.length > 0 && contexts.length > 0}
+{#if sortedItems.length > 0 && contexts.length > 0}
   <NavGroup
     _id={id}
     label={header}
@@ -149,23 +115,17 @@
     {actions}
     highlighted={items.some((it) => it.id === objectId)}
     isFold
-    empty={visibleItems.length === 0}
+    empty={sortedItems.length === 0}
     visible={visibleItem !== undefined}
     noDivider
   >
-    {#each visibleItems as item (item.id)}
+    {#each sortedItems as item (item.id)}
       {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
       <ChatNavItem {context} isSelected={objectId === item.id} {item} type={'type-object'} on:select />
     {/each}
     {#if canShowMore}
       <div class="showMore">
-        <ModernButton
-          label={isShownMore ? ui.string.ShowLess : ui.string.ShowMore}
-          kind="tertiary"
-          inheritFont
-          size="extra-small"
-          on:click={onShowMore}
-        />
+        <ModernButton label={ui.string.ShowMore} kind="tertiary" inheritFont size="extra-small" on:click={onShowMore} />
       </div>
     {/if}
     <svelte:fragment slot="visible" let:isOpen>

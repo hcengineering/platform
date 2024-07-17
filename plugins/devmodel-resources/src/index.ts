@@ -58,10 +58,7 @@ export class PresentationClientHook implements ClientHook {
       if (this.notifyEnabled) {
         const rtx = tx.filter((tx) => (tx as any).objectClass !== core.class.BenchmarkDoc)
         if (rtx.length > 0) {
-          console.debug(
-            'devmodel# notify=>',
-            testing ? JSON.stringify(cutObjectArray(rtx)).slice(0, 160) : rtx.length === 1 ? rtx[0] : tx
-          )
+          console.debug('devmodel# notify=>', testing ? cutObjectArray(rtx) : rtx.length === 1 ? rtx[0] : tx)
         }
       }
     })

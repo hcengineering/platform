@@ -35,7 +35,8 @@
     Ref,
     toIdMap,
     TxProcessor,
-    WithLookup
+    WithLookup,
+    type Blob
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
@@ -184,7 +185,7 @@
     )
   })
 
-  async function createCandidate () {
+  async function createCandidate (): Promise<void> {
     const _id: Ref<Person> = generateId()
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
@@ -220,7 +221,7 @@
       }
     }
 
-    const applyOps = client.apply(_id)
+    const applyOps = client.apply(_id, 'create-candidate')
 
     await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(
@@ -233,7 +234,7 @@
 
     if (object.resumeUuid !== undefined) {
       const resume = resumeDraft() as resumeFile
-      applyOps.addCollection(
+      await applyOps.addCollection(
         attachment.class.Attachment,
         contact.space.Contacts,
         _id,
@@ -241,7 +242,7 @@
         'attachments',
         {
           name: resume.name,
-          file: resume.uuid,
+          file: resume.uuid as Ref<Blob>,
           size: resume.size,
           type: resume.type,
           lastModified: resume.lastModified

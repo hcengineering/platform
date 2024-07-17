@@ -103,7 +103,7 @@
 
     archivedOtherNotificationsQuery.query(
       notification.class.InboxNotification,
-      { _class: { $nin: [notification.class.ActivityInboxNotification] }, archived: true, user: me._id },
+      { _class: { $ne: notification.class.ActivityInboxNotification }, archived: true, user: me._id },
       (res) => {
         archivedOtherNotifications = res
       },
