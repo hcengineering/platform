@@ -37,7 +37,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   setPresentationCookie(token, getCurrentWorkspaceUrl())
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = (await selectWorkspace(ws))[1]
+  const workspaceLoginInfo = (await selectWorkspace(ws, token))[1]
   if (workspaceLoginInfo == null) {
     navigate({
       path: [loginId]

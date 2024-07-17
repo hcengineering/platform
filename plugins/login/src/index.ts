@@ -84,7 +84,9 @@ export default plugin(loginId, {
     >,
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
-    SelectWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
+    SelectWorkspace: '' as Resource<
+    (workspace: string, token: string | null | undefined) => Promise<[Status, WorkspaceLoginInfo | undefined]>
+    >,
     FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
     GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,

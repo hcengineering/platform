@@ -245,14 +245,17 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
   }
 }
 
-export async function selectWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+export async function selectWorkspace (
+  workspace: string,
+  token: string | null | undefined
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  token = token ?? getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[0] = 'login'
@@ -800,7 +803,7 @@ export async function afterConfirm (): Promise<void> {
   if (joinedWS.length === 0) {
     goTo('createWorkspace')
   } else if (joinedWS.length === 1) {
-    const result = (await selectWorkspace(joinedWS[0].workspace))[1]
+    const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)

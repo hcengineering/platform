@@ -10,7 +10,6 @@ export const toolId = 'tool' as Plugin
  */
 const toolPlugin = plugin(toolId, {
   metadata: {
-    Endpoint: '' as Metadata<string>, // Account URL endpoint
     InitWorkspace: '' as Metadata<string>,
     InitScriptURL: '' as Metadata<string>
   }

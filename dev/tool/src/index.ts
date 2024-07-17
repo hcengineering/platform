@@ -46,7 +46,7 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import { BlobClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, { BlobClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 
@@ -159,7 +159,7 @@ export function devTool (
   }
 
   setMetadata(accountPlugin.metadata.Transactors, transactorUrl)
-  setMetadata(toolPlugin.metadata.Endpoint, accountsUrl)
+  setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
   async function withDatabase (uri: string, f: (db: Db, client: MongoClient) => Promise<any>): Promise<void> {
@@ -271,7 +271,9 @@ export function devTool (
         cmd: { token: string, host: string, enable: string, tokenLimit: string, embeddings: string }
       ) => {
         console.log(`enabling OpenAI for workspace ${workspace}...`)
-        await openAIConfig(accountsUrl, workspace, productId, {
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await openAIConfig(endpoint, workspace, productId, {
           token: cmd.token,
           endpoint: cmd.host,
           enabled: cmd.enable === 'true',
@@ -661,7 +663,9 @@ export function devTool (
         }
       ) => {
         const storage = await createFileBackupStorage(dirName)
-        await backup(toolCtx, accountsUrl, getWorkspaceId(workspace, productId), storage, {
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await backup(toolCtx, endpoint, wsid, storage, {
           force: cmd.force,
           recheck: cmd.recheck,
           include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim())),
@@ -710,7 +714,9 @@ export function devTool (
         cmd: { merge: boolean, parallel: string, recheck: boolean, include: string, skip: string }
       ) => {
         const storage = await createFileBackupStorage(dirName)
-        await restore(toolCtx, accountsUrl, getWorkspaceId(workspace, productId), storage, {
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await restore(toolCtx, endpoint, wsid, storage, {
           date: parseInt(date ?? '-1'),
           merge: cmd.merge,
           parallel: parseInt(cmd.parallel ?? '1'),
@@ -741,7 +747,9 @@ export function devTool (
           getWorkspaceId(bucketName, productId),
           dirName
         )
-        await backup(toolCtx, accountsUrl, getWorkspaceId(workspace, productId), storage)
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await backup(toolCtx, endpoint, wsid, storage)
       })
     })
 
@@ -793,7 +801,9 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
-        await restore(toolCtx, accountsUrl, getWorkspaceId(workspace, productId), storage, {
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await restore(toolCtx, endpoint, wsid, storage, {
           date: parseInt(date ?? '-1')
         })
       })
@@ -903,15 +913,9 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         await withDatabase(mongodbUri, async (db) => {
-          await cleanWorkspace(
-            toolCtx,
-            mongodbUri,
-            getWorkspaceId(workspace, productId),
-            adapter,
-            getElasticUrl(),
-            accountsUrl,
-            cmd
-          )
+          const wsid = getWorkspaceId(workspace, productId)
+          const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+          await cleanWorkspace(toolCtx, mongodbUri, wsid, adapter, getElasticUrl(), endpoint, cmd)
         })
       })
     })
@@ -984,21 +988,30 @@ export function devTool (
     .command('clean-removed-transactions <workspace>')
     .description('clean removed transactions')
     .action(async (workspace: string, cmd: any) => {
-      await cleanRemovedTransactions(getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await cleanRemovedTransactions(wsid, endpoint)
     })
 
   program
     .command('clean-archived-spaces <workspace>')
     .description('clean archived spaces')
     .action(async (workspace: string, cmd: any) => {
-      await cleanArchivedSpaces(getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await cleanArchivedSpaces(wsid, endpoint)
     })
 
   program
     .command('chunter-fix-comments <workspace>')
     .description('chunter-fix-comments')
     .action(async (workspace: string, cmd: any) => {
-      await fixCommentDoubleIdCreate(getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await fixCommentDoubleIdCreate(wsid, endpoint)
     })
 
   program
@@ -1008,7 +1021,10 @@ export function devTool (
     .option('--property <property>', 'Property name', '')
     .option('--detail <detail>', 'Show details', false)
     .action(async (workspace: string, cmd: { detail: boolean, mixin: string, property: string }) => {
-      await showMixinForeignAttributes(getWorkspaceId(workspace, productId), accountsUrl, cmd)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await showMixinForeignAttributes(wsid, endpoint, cmd)
     })
 
   program
@@ -1018,7 +1034,10 @@ export function devTool (
     .option('--property <property>', 'Property name', '')
     .action(async (workspace: string, cmd: { mixin: string, property: string }) => {
       const { mongodbUri } = prepareTools()
-      await fixMixinForeignAttributes(mongodbUri, getWorkspaceId(workspace, productId), accountsUrl, cmd)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await fixMixinForeignAttributes(mongodbUri, wsid, endpoint, cmd)
     })
 
   program
@@ -1029,7 +1048,9 @@ export function devTool (
     .option('--list', 'List plugin states', false)
     .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
       console.log(JSON.stringify(cmd))
-      await changeConfiguration(getWorkspaceId(workspace, productId), accountsUrl, cmd)
+      const wsid = getWorkspaceId(workspace, productId)
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+      await changeConfiguration(wsid, endpoint, cmd)
     })
 
   program
@@ -1046,7 +1067,10 @@ export function devTool (
         const workspaces = await listWorkspacesRaw(db, productId)
         for (const ws of workspaces) {
           console.log('configure', ws.workspaceName ?? ws.workspace)
-          await changeConfiguration(getWorkspaceId(ws.workspace, productId), accountsUrl, cmd)
+          const wsid = getWorkspaceId(ws.workspace, productId)
+          const token = generateToken(systemAccountEmail, wsid)
+          const endpoint = await getTransactorEndpoint(token)
+          await changeConfiguration(wsid, endpoint, cmd)
         }
       })
     })
@@ -1056,7 +1080,10 @@ export function devTool (
     .description('optimize model')
     .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
       console.log(JSON.stringify(cmd))
-      await optimizeModel(getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await optimizeModel(wsid, endpoint)
     })
 
   program
@@ -1138,7 +1165,10 @@ export function devTool (
     .description('fix skills for workspace')
     .action(async (workspace: string, step: string) => {
       const { mongodbUri } = prepareTools()
-      await fixSkills(mongodbUri, getWorkspaceId(workspace, productId), accountsUrl, step)
+      const wsid = getWorkspaceId(workspace, productId)
+      const token = generateToken(systemAccountEmail, wsid)
+      const endpoint = await getTransactorEndpoint(token)
+      await fixSkills(mongodbUri, wsid, endpoint, step)
     })
 
   program
@@ -1147,7 +1177,9 @@ export function devTool (
     .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
-      await restoreRecruitingTaskTypes(mongodbUri, getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+      await restoreRecruitingTaskTypes(mongodbUri, wsid, endpoint)
     })
 
   program
@@ -1156,7 +1188,9 @@ export function devTool (
     .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
-      await restoreHrTaskTypesFromUpdates(mongodbUri, getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+      await restoreHrTaskTypesFromUpdates(mongodbUri, wsid, endpoint)
     })
 
   program
@@ -1174,7 +1208,9 @@ export function devTool (
         cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
       ) => {
         const { mongodbUri } = prepareTools()
-        await updateField(mongodbUri, getWorkspaceId(workspace, productId), accountsUrl, cmd)
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await updateField(mongodbUri, wsid, endpoint, cmd)
       }
     )
 
@@ -1183,7 +1219,9 @@ export function devTool (
     .description('reindex workspace to elastic')
     .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
-      await recreateElastic(mongodbUri, getWorkspaceId(workspace, productId), accountsUrl)
+      const wsid = getWorkspaceId(workspace, productId)
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+      await recreateElastic(mongodbUri, wsid, endpoint)
     })
 
   program
@@ -1192,7 +1230,9 @@ export function devTool (
     .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
-        await fixJsonMarkup(toolCtx, mongodbUri, adapter, getWorkspaceId(workspace, productId), accountsUrl)
+        const wsid = getWorkspaceId(workspace, productId)
+        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
+        await fixJsonMarkup(toolCtx, mongodbUri, adapter, wsid, endpoint)
       })
     })
 

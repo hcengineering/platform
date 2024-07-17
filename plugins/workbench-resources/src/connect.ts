@@ -71,20 +71,16 @@ export async function connect (title: string): Promise<Client | undefined> {
   let token = tokens[ws]
 
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
-  const workspaceLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
+  const workspaceLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws, token))[1])
   if (workspaceLoginInfo !== undefined) {
     tokens[ws] = workspaceLoginInfo.token
     token = workspaceLoginInfo.token
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
-  if (workspaceLoginInfo == null) {
-    location.reload()
-    return
-  }
 
   setMetadata(presentation.metadata.Token, token)
 
-  if (workspaceLoginInfo.creating === true) {
+  if (workspaceLoginInfo?.creating === true) {
     const fetchWorkspace = await getResource(login.function.FetchWorkspace)
     let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
     if (loginInfo?.creating === true) {
@@ -104,11 +100,11 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setPresentationCookie(token, getCurrentWorkspaceUrl())
 
-  setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo.endpoint)
+  setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo?.endpoint)
 
-  const endpoint = workspaceLoginInfo.endpoint // fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
-  const email = workspaceLoginInfo.email // fetchMetadataLocalStorage(login.metadata.LoginEmail)
-  if (token === undefined || endpoint === null || email === null) {
+  const endpoint = workspaceLoginInfo?.endpoint // fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+  const email = workspaceLoginInfo?.email // fetchMetadataLocalStorage(login.metadata.LoginEmail)
+  if (token == null || endpoint == null || email == null) {
     const navigateUrl = encodeURIComponent(JSON.stringify(loc))
     navigate({
       path: [loginId],
