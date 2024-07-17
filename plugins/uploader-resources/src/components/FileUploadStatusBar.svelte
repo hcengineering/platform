@@ -18,7 +18,7 @@
   import { type State as UppyState } from '@uppy/core'
   import { onDestroy, onMount } from 'svelte'
 
-  import { type FileUpload } from '../types'
+  import { type FileUpload } from '../store'
 
   import IconError from './icons/Error.svelte'
   import FileUploadStatusPopup from './FileUploadStatusPopup.svelte'

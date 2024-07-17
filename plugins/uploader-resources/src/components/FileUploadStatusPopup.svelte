@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     Button,
     IconClose,
@@ -29,8 +30,7 @@
   import IconRetry from './icons/Retry.svelte'
 
   import uploader from '../plugin'
-  import { type FileUpload } from '../types'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { type FileUpload } from '../store'
 
   export let upload: FileUpload
 
@@ -206,6 +206,10 @@
   .upload-file-row {
     .upload-file-row__content {
       flex-grow: 2;
+    }
+
+    .upload-file-row__tools {
+      flex-shrink: 0;
     }
   }
 </style>

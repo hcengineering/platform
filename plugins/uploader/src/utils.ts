@@ -13,13 +13,10 @@
 // limitations under the License.
 //
 
-import { showPopup } from '@hcengineering/ui'
-import type { FileUploadCallback, FileUploadOptions, FileUploadTarget } from '@hcengineering/uploader'
+import { getResource } from '@hcengineering/platform'
 
-import FileUploadPopup from './components/FileUploadPopup.svelte'
-
-import { dockFileUpload } from './store'
-import { getUppy } from './uppy'
+import uploader from './plugin'
+import type { FileUploadCallback, FileUploadOptions, FileUploadTarget } from './types'
 
 /** @public */
 export async function showFilesUploadPopup (
@@ -27,13 +24,8 @@ export async function showFilesUploadPopup (
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  const uppy = getUppy(options, onFileUploaded)
-
-  showPopup(FileUploadPopup, { uppy, target }, undefined, (res) => {
-    if (res === true && options.hideProgress !== true) {
-      dockFileUpload(target, uppy)
-    }
-  })
+  const fn = await getResource(uploader.function.ShowFilesUploadPopup)
+  await fn(target, options, onFileUploaded)
 }
 
 /** @public */
@@ -43,19 +35,6 @@ export async function uploadFiles (
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  if (files.length === 0) return
-
-  const uppy = getUppy(options, onFileUploaded)
-
-  for (let index = 0; index < files.length; index++) {
-    const data = files[index]
-    const { name, type } = data
-    uppy.addFile({ name, type, data })
-  }
-
-  if (options.hideProgress !== true) {
-    dockFileUpload(target, uppy)
-  }
-
-  await uppy.upload()
+  const fn = await getResource(uploader.function.UploadFiles)
+  await fn(files, target, options, onFileUploaded)
 }

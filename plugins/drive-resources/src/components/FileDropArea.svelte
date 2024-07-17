@@ -17,7 +17,7 @@
   import drive, { createFile, type Drive, type Folder } from '@hcengineering/drive'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { FileOrBlob, getClient, getFileMetadata } from '@hcengineering/presentation'
-  import { uploadFiles } from '@hcengineering/uploader-resources'
+  import { uploadFiles } from '@hcengineering/uploader'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
@@ -66,7 +66,6 @@
     e.preventDefault()
     e.stopPropagation()
 
-    // progress = true
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
       const target = parent !== drive.ids.Root
@@ -90,7 +89,6 @@
         }
       })
     }
-    // progress = false
   }
 </script>
 

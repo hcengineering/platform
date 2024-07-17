@@ -15,5 +15,8 @@
 
 import { uploaderId, uploaderPlugin } from './plugin'
 
+export * from './types'
+export * from './utils'
+
 export { uploaderId }
 export default uploaderPlugin

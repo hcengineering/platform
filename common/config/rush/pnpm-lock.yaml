@@ -1134,8 +1134,8 @@ dependencies:
     specifier: ^3.1.1
     version: 3.1.1(@uppy/core@3.13.1)
   '@uppy/locales':
-    specifier: ^3.5.4
-    version: 3.5.4
+    specifier: ^4.0.3
+    version: 4.0.3
   '@uppy/progress-bar':
     specifier: ^3.1.1
     version: 3.1.1(@uppy/core@3.13.1)
@@ -8226,10 +8226,10 @@ packages:
       preact: 10.22.1
     dev: false
 
-  /@uppy/locales@3.5.4:
-    resolution: {integrity: sha512-i0x8qtP2ZghlpLN3QCwRiqvbutkvaLryMXvSWF8nvfAiY7XX1zMcRme7+W2ovSMEeiNK+gjjuLCMmbQhmZFx+Q==}
+  /@uppy/locales@4.0.3:
+    resolution: {integrity: sha512-nr/zJV1MsU4VSB3sXhFj+8kh7Rlnq/4G2MmXrNQfb5aEEAxHMpAFKQo0DAQuIyt2oJTKQyL07Ukdpyjm0Ox43Q==}
     dependencies:
-      '@uppy/utils': 5.9.0
+      '@uppy/utils': 6.0.0
     dev: false
 
   /@uppy/progress-bar@3.1.1(@uppy/core@3.13.1):
@@ -8293,6 +8293,13 @@ packages:
 
   /@uppy/utils@5.9.0:
     resolution: {integrity: sha512-9Ubddd3orCOLYjf0KobwgJ+aTrABSxk9t4X/QdM4qJHVZuMIftkaMplrViRUO+kvIBCXEZDIP2AmS060siDNGw==}
+    dependencies:
+      lodash: 4.17.21
+      preact: 10.22.1
+    dev: false
+
+  /@uppy/utils@6.0.0:
+    resolution: {integrity: sha512-24mvEYlt189setvd0z8l3LJRxiq+W8UAZ3lCHRP1Qzq6rSdd/cVaTiIgV+0ZvNnZMmiEKeKdEcfFG3VeGvE3dg==}
     dependencies:
       lodash: 4.17.21
       preact: 10.22.1
@@ -20185,7 +20192,7 @@ packages:
     dev: false
 
   file:projects/drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-6sTRcpshfpkO++7gcMrN8yPpebB9peBW6LxmeirhNQRyKed69pW1YTW2DOL1N6lvD6jcgFWmd3sh4xY8DUsQ2g==, tarball: file:projects/drive-resources.tgz}
+    resolution: {integrity: sha512-1saL40JzcAtJ3+B+oqfEjKbAjQk07/2aosafiSMPav5k2h42odFfk0le2HQDufXLyviMVGdUJOyP0HJeaaqyXQ==, tarball: file:projects/drive-resources.tgz}
     id: file:projects/drive-resources.tgz
     name: '@rush-temp/drive-resources'
     version: 0.0.0
@@ -27583,7 +27590,7 @@ packages:
     dev: false
 
   file:projects/uploader-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-mr4bU3u0RKoq+Wuk+sINtQDoXSIRi3mXaJ6odK3lpHE6Q3tTTkb62uyF5c5eAA2/lNcuaNqIyF/uI6nssVFBog==, tarball: file:projects/uploader-resources.tgz}
+    resolution: {integrity: sha512-f8lz0mU3oNornVvzvDMJooPjlaV8thYdgnLVuhkCHBGfAk7vfuo22K39R37lgbSnxxNFm2OtHYe5k5XfQXLXlg==, tarball: file:projects/uploader-resources.tgz}
     id: file:projects/uploader-resources.tgz
     name: '@rush-temp/uploader-resources'
     version: 0.0.0
@@ -27594,7 +27601,7 @@ packages:
       '@uppy/core': 3.13.1
       '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
       '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/locales': 3.5.4
+      '@uppy/locales': 4.0.3
       '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
       '@uppy/screen-capture': 3.2.0(@uppy/core@3.13.1)
       '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)

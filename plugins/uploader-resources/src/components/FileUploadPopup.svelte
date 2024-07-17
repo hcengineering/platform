@@ -19,12 +19,9 @@
   import Dashboard from '@uppy/dashboard'
   import { onMount, onDestroy, createEventDispatcher } from 'svelte'
 
-  import { type FileUploadTarget } from '../types'
-
   const dispatch = createEventDispatcher()
 
   export let uppy: Uppy<any, any>
-  export let target: FileUploadTarget
 
   let container: HTMLElement
 

@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
-import type { IntlString, Plugin } from '@hcengineering/platform'
+import type { IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
+
+import type { UploadFilesFn, UploadFilesPopupFn } from './types'
 
 /** @public */
 export const uploaderId = 'uploader' as Plugin
@@ -33,6 +35,10 @@ export const uploaderPlugin = plugin(uploaderId, {
   string: {
     Cancel: '' as IntlString,
     Retry: '' as IntlString
+  },
+  function: {
+    ShowFilesUploadPopup: '' as Resource<UploadFilesPopupFn>,
+    UploadFiles: '' as Resource<UploadFilesFn>
   }
 })
 

@@ -13,10 +13,16 @@
 // limitations under the License.
 //
 
+import { type FileUploadTarget } from '@hcengineering/uploader'
+
 import { type Uppy } from '@uppy/core'
 import { type Writable, writable } from 'svelte/store'
 
-import { type FileUpload, type FileUploadTarget } from './types'
+/** @public */
+export interface FileUpload {
+  target: FileUploadTarget
+  uppy: Uppy
+}
 
 /** @public */
 export const uploads: Writable<FileUpload[]> = writable([])

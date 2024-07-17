@@ -17,6 +17,7 @@ import { generateId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { getCurrentLanguage } from '@hcengineering/theme'
+import type { FileUploadCallback, FileUploadOptions } from '@hcengineering/uploader'
 
 import Uppy, { type IndexedObject, type UppyOptions } from '@uppy/core'
 import ScreenCapture from '@uppy/screen-capture'
@@ -29,8 +30,6 @@ import Es from '@uppy/locales/lib/es_ES'
 import Pt from '@uppy/locales/lib/pt_PT'
 import Ru from '@uppy/locales/lib/ru_RU'
 import Zh from '@uppy/locales/lib/zh_CN'
-
-import type { FileUploadCallback, FileUploadOptions } from './types'
 
 type Locale = UppyOptions['locale']
 

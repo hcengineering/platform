@@ -14,13 +14,21 @@
 //
 
 import type { Class, Doc, Ref } from '@hcengineering/core'
-import type { Uppy } from '@uppy/core'
 
 /** @public */
-export interface FileUpload {
-  target: FileUploadTarget
-  uppy: Uppy
-}
+export type UploadFilesPopupFn = (
+  target: FileUploadTarget,
+  options: FileUploadOptions,
+  onFileUploaded: FileUploadCallback
+) => Promise<void>
+
+/** @public */
+export type UploadFilesFn = (
+  files: File[] | FileList,
+  target: FileUploadTarget,
+  options: FileUploadOptions,
+  onFileUploaded: FileUploadCallback
+) => Promise<void>
 
 /** @public */
 export interface FileUploadTarget {
