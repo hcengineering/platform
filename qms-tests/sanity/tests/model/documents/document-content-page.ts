@@ -1,7 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import { Content, DocumentDetails, DocumentRights, DocumentStatus } from '../types'
+import { Content, DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../types'
 import { DocumentCommonPage } from './document-common-page'
 import { iterateLocator, PlatformPassword } from '../../utils'
+import { DocumentHistoryPage } from './document-history-page'
 
 export class DocumentContentPage extends DocumentCommonPage {
   readonly page: Page
@@ -55,6 +56,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly createDraft: Locator
   readonly draftNewVersion: Locator
   readonly buttonHistoryTab: Locator
+  readonly documentHeader: Locator
 
   constructor (page: Page) {
     super(page)
@@ -119,10 +121,15 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.createDraft = page.getByRole('button', { name: 'Create Draft' })
     this.draftNewVersion = page.getByRole('button', { name: 'Draft new version' })
     this.buttonHistoryTab = page.getByText('History')
+    this.documentHeader = page.getByRole('button', { name: 'Complete document' })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle).toContainText(title)
+  }
+
+  async clickDocumentHeader (name: string): Promise<void> {
+    await this.page.getByRole('button', { name }).click()
   }
 
   async updateSectionTitle (sectionId: string, title: string): Promise<void> {
@@ -131,6 +138,23 @@ export class DocumentContentPage extends DocumentCommonPage {
       .locator('xpath=..')
       .locator('span.label input')
       .fill(title)
+  }
+
+  async addReasonAndImpactToTheDocument (description: string, reason: string): Promise<void> {
+    await this.page.getByText('Reason & Impact').click()
+    await this.page.getByPlaceholder('Describe what was changed...').fill(description)
+    await this.page.getByPlaceholder('Describe why it was changed...').click()
+    await this.page.getByPlaceholder('Describe why it was changed...').fill(reason)
+  }
+
+  async selectRelease (version: string): Promise<void> {
+    await this.page.getByText('Release').click()
+    if (version === 'Major') {
+      await this.page.getByText('Major').click()
+    }
+    if (version === 'Minor') {
+      await this.page.getByText('Minor').click()
+    }
   }
 
   async addContentToTheSection (content: Content): Promise<void> {
@@ -286,6 +310,40 @@ export class DocumentContentPage extends DocumentCommonPage {
     if (closePopup) {
       await this.closeNewMessagePopup()
     }
+  }
+
+  async sendForApproval (
+    releaseType: string,
+    version: string,
+    reason: string,
+    impact: string,
+    prevVersion: string,
+    newVersion: string,
+    userPage: Page,
+    completeDocument: NewDocument,
+    documentDetails: DocumentDetails
+  ): Promise<void> {
+    const documentContentPageSecond = new DocumentContentPage(userPage)
+
+    await this.clickDraftNewVersion()
+    await this.selectRelease(releaseType)
+    await this.addReasonAndImpactToTheDocument(reason, impact)
+    await this.buttonSendForApproval.click()
+    await this.buttonSelectMemberSubmit.click()
+    await this.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+    await this.checkDocument({
+      ...documentDetails,
+      status: DocumentStatus.IN_APPROVAL,
+      version
+    })
+    await this.checkCurrentRights(DocumentRights.VIEWING)
+    await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + prevVersion)
+    await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + newVersion)
+    await documentContentPageSecond.confirmApproval()
+    await this.buttonHistoryTab.first().click()
+    const documentHistoryPage = new DocumentHistoryPage(this.page)
+    await documentHistoryPage.checkHistoryEventExist('New document creation')
+    await documentHistoryPage.checkHistoryEventExist(reason)
   }
 
   async addMessageToTheSectionTitle (title: string, message: string, closePopup: boolean = true): Promise<void> {
