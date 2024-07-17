@@ -26,6 +26,7 @@
   import type { UppyFile, State as UppyState } from '@uppy/core'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
+  import IconCompleted from './icons/Completed.svelte'
   import IconError from './icons/Error.svelte'
   import IconRetry from './icons/Retry.svelte'
 
@@ -93,7 +94,7 @@
   })
 
   function getFileError (file: UppyFile<any, any>): string | undefined {
-    return 'error' in file ? file.error as string : undefined
+    return 'error' in file ? (file.error as string) : undefined
   }
 
   function getFilePercentage (file: UppyFile<any, any>): number {
@@ -125,9 +126,11 @@
         {@const percentage = getFilePercentage(file)}
 
         <div class="upload-file-row flex-row-center justify-start flex-gap-4">
-          <div class="upload-file-row__status">
+          <div class="upload-file-row__status w-4">
             {#if error}
               <IconError size={'small'} fill={'var(--theme-error-color)'} />
+            {:else if file.progress.uploadComplete}
+              <IconCompleted size={'small'} fill="#38833F" />
             {:else}
               <ProgressCircle value={percentage} size={'small'} primary />
             {/if}
@@ -139,26 +142,24 @@
               {#if error}
                 <Label label={uploader.status.Error} />
                 <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(error) }}>{error}</span>
-              {:else}
-                {#if file.progress.uploadStarted != null}
-                  {#if file.progress.uploadComplete}
-                    <Label label={uploader.status.Completed} />
-                    {#if file.progress.bytesTotal}
-                      <span>{filesize(file.progress.bytesTotal)}</span>
-                    {/if}
-                  {:else}
-                    <Label label={uploader.status.Uploading} />
-                    {#if file.progress.bytesTotal}
-                      <span>{filesize(file.progress.bytesUploaded)} / {filesize(file.progress.bytesTotal)}</span>
-                    {:else}
-                      <span>{filesize(file.progress.bytesUploaded)}}</span>
-                    {/if}
-                  {/if}
-                {:else}
-                  <Label label={uploader.status.Waiting} />
+              {:else if file.progress.uploadStarted != null}
+                {#if file.progress.uploadComplete}
+                  <Label label={uploader.status.Completed} />
                   {#if file.progress.bytesTotal}
                     <span>{filesize(file.progress.bytesTotal)}</span>
                   {/if}
+                {:else}
+                  <Label label={uploader.status.Uploading} />
+                  {#if file.progress.bytesTotal}
+                    <span>{filesize(file.progress.bytesUploaded)} / {filesize(file.progress.bytesTotal)}</span>
+                  {:else}
+                    <span>{filesize(file.progress.bytesUploaded)}}</span>
+                  {/if}
+                {/if}
+              {:else}
+                <Label label={uploader.status.Waiting} />
+                {#if file.progress.bytesTotal}
+                  <span>{filesize(file.progress.bytesTotal)}</span>
                 {/if}
               {/if}
             </div>

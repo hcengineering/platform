@@ -59,10 +59,7 @@ export type UppyBody = Body & {
 }
 
 /** @public */
-export function getUppy (
-  options: FileUploadOptions,
-  onFileUploaded?: FileUploadCallback
-): Uppy<UppyMeta, UppyBody> {
+export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUploadCallback): Uppy<UppyMeta, UppyBody> {
   const id = generateId()
   const locale = getUppyLocale(getCurrentLanguage())
   const uppy = new Uppy<UppyMeta, UppyBody>({ id, locale, ...options })

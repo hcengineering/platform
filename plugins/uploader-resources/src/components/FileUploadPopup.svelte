@@ -34,18 +34,15 @@
   onMount(() => {
     uppy.on('upload', handleUpload)
 
-    uppy.use(
-      Dashboard,
-      {
-        id: 'huly:Dashboard',
-        target: container,
-        inline: true,
-        width: 750,
-        disableInformer: true,
-        proudlyDisplayPoweredByUppy: false,
-        theme: dark ? 'dark' : 'light'
-      }
-    )
+    uppy.use(Dashboard, {
+      id: 'huly:Dashboard',
+      target: container,
+      inline: true,
+      width: 750,
+      disableInformer: true,
+      proudlyDisplayPoweredByUppy: false,
+      theme: dark ? 'dark' : 'light'
+    })
   })
 
   onDestroy(() => {
@@ -60,10 +57,10 @@
 <div class="uppy-Container" bind:this={container} />
 
 <style lang="scss">
-  @import "@uppy/core/dist/style.min.css";
-  @import "@uppy/dashboard/dist/style.min.css";
-  @import "@uppy/drag-drop/dist/style.min.css";
-  @import "@uppy/progress-bar/dist/style.min.css";
+  @import '@uppy/core/dist/style.min.css';
+  @import '@uppy/dashboard/dist/style.min.css';
+  @import '@uppy/drag-drop/dist/style.min.css';
+  @import '@uppy/progress-bar/dist/style.min.css';
   @import '@uppy/screen-capture/dist/style.min.css';
   @import '@uppy/webcam/dist/style.min.css';
 </style>

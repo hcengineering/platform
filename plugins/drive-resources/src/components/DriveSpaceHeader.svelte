@@ -67,9 +67,10 @@
   async function handleUploadFile (): Promise<void> {
     if (currentSpace !== undefined) {
       const space = currentSpace
-      const target = parent !== drive.ids.Root
-        ? { objectId: parent, objectClass: drive.class.Folder }
-        : { objectId: space, objectClass: drive.class.Drive }
+      const target =
+        parent !== drive.ids.Root
+          ? { objectId: parent, objectClass: drive.class.Folder }
+          : { objectId: space, objectClass: drive.class.Drive }
       await showFilesUploadPopup(target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
         try {
           const metadata = await getFileMetadata(file, uuid as Ref<Blob>)

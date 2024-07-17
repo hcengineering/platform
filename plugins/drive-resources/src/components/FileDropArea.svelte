@@ -68,9 +68,10 @@
 
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
-      const target = parent !== drive.ids.Root
-        ? { objectId: parent, objectClass: drive.class.Folder }
-        : { objectId: space, objectClass: drive.class.Drive }
+      const target =
+        parent !== drive.ids.Root
+          ? { objectId: parent, objectClass: drive.class.Folder }
+          : { objectId: space, objectClass: drive.class.Drive }
       await uploadFiles(list, target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
         try {
           const metadata = await getFileMetadata(file, uuid as Ref<Blob>)

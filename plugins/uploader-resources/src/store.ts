@@ -29,7 +29,7 @@ export const uploads: Writable<FileUpload[]> = writable([])
 
 /** @public */
 export function dockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  uploads.update(instances => {
+  uploads.update((instances) => {
     instances.push({ target, uppy })
     return instances
   })
@@ -55,7 +55,7 @@ function undockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
   uppy.cancelAll()
   uppy.close()
 
-  uploads.update(instances => {
-    return instances.filter(instance => instance.uppy !== uppy)
+  uploads.update((instances) => {
+    return instances.filter((instance) => instance.uppy !== uppy)
   })
 }
