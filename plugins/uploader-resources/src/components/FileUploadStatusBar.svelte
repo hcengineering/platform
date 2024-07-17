@@ -82,7 +82,7 @@
   use:tooltip={state.error != null ? { label: getEmbeddedLabel(state.error) } : undefined}
 >
   {#if state.error}
-    <IconError size={'small'} fill={'var(--theme-error-color)'} />
+    <IconError size={'small'} fill={'var(--negative-button-default)'} />
   {:else}
     <ProgressCircle value={progress} size={'small'} primary />
   {/if}

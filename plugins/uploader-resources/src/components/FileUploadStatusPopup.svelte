@@ -128,9 +128,9 @@
         <div class="upload-file-row flex-row-center justify-start flex-gap-4">
           <div class="upload-file-row__status w-4">
             {#if error}
-              <IconError size={'small'} fill={'var(--theme-error-color)'} />
+              <IconError size={'small'} fill={'var(--negative-button-default)'} />
             {:else if file.progress.uploadComplete}
-              <IconCompleted size={'small'} fill="#38833F" />
+              <IconCompleted size={'small'} fill={'var(--positive-button-default)'} />
             {:else}
               <ProgressCircle value={percentage} size={'small'} primary />
             {/if}
