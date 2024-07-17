@@ -21,7 +21,14 @@
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, ComponentExtensions, getClient, isAdminUser, reduceCalls } from '@hcengineering/presentation'
+  import {
+    ActionContext,
+    ComponentExtensions,
+    createQuery,
+    getClient,
+    isAdminUser,
+    reduceCalls
+  } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -406,6 +413,7 @@
       const _class = props[2] as Ref<Class<Doc>>
       const _id = await parseLinkId(linkProviders, props[1], _class)
       const doc = await client.findOne<Doc>(_class, { _id })
+      panelDoc = { _class, _id }
 
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
@@ -427,6 +435,17 @@
     } else {
       closePanel(false)
     }
+  }
+  let panelDoc: undefined | { _id: Ref<Doc>, _class: Ref<Class<Doc>> } = undefined
+  const panelQuery = createQuery()
+
+  $: if (panelDoc !== undefined) {
+    panelQuery.query(panelDoc._class, { _id: panelDoc._id }, (r) => {
+      if (r.length === 0) {
+        closePanel(false)
+        panelDoc = undefined
+      }
+    })
   }
 
   function clear (level: number): void {
