@@ -306,7 +306,7 @@ async function withRetry<T> (
       return await op()
     } catch (err: any) {
       error = err
-      ctx.error('error', err)
+      ctx.error('error', { err })
       if (retries !== 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }

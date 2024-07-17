@@ -27,11 +27,13 @@ import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { getStatistics, wipeStatistics } from './stats'
 import { LOGGING_ENABLED, type ConnectionSocket, type HandleRequestFunction, type SessionManager } from './types'
 
-import { type StorageAdapter, type PipelineFactory } from '@hcengineering/server-core'
+import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import 'bufferutil'
 import 'utf-8-validate'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+
+const rpcHandler = new RPCHandler()
 
 /**
  * @public
@@ -59,8 +61,6 @@ export function startHttpServer (
       parallel: os.availableParallelism()
     })
   }
-
-  const rpcHandler = new RPCHandler()
 
   const app = express()
   app.use(cors())
@@ -433,7 +433,6 @@ function createWebsocketClientSocket (
     email: string
     mode: any
     model: any
-    rpcHandler: RPCHandler
   }
 ): ConnectionSocket {
   const cs: ConnectionSocket = {
@@ -444,12 +443,12 @@ function createWebsocketClientSocket (
       ws.close()
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
-      return data.rpcHandler.readRequest(buffer, binary)
+      return rpcHandler.readRequest(buffer, binary)
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
       const sst = Date.now()
-      const smsg = data.rpcHandler.serialize(msg, binary)
+      const smsg = rpcHandler.serialize(msg, binary)
       ctx.measure('serialize', Date.now() - sst)
 
       ctx.measure('send-data', smsg.length)

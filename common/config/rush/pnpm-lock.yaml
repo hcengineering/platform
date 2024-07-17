@@ -617,6 +617,9 @@ dependencies:
   '@rush-temp/server-chunter-resources':
     specifier: file:./projects/server-chunter-resources.tgz
     version: file:projects/server-chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/server-client':
+    specifier: file:./projects/server-client.tgz
+    version: file:projects/server-client.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3)
   '@rush-temp/server-collaboration':
     specifier: file:./projects/server-collaboration.tgz
     version: file:projects/server-collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -18655,7 +18658,7 @@ packages:
     dev: false
 
   file:projects/account-service.tgz:
-    resolution: {integrity: sha512-6mRpNCi4FRpm+ks+wuuSDxGFA9Zvjn++OdmqzbwuOMYj6veUSWc3xwDNV/sf3uoqr9+XvGmcJ97iSIkmtGu+TA==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-Fuwk3SFuB13IVSqXz3/e+UJDhB1VDCLPqfq2wsNPtxEciz2XmYe3ES0uwJWjG0ODeURQmOFBdTNH6v/b4z/Usw==, tarball: file:projects/account-service.tgz}
     name: '@rush-temp/account-service'
     version: 0.0.0
     dependencies:
@@ -18705,7 +18708,7 @@ packages:
     dev: false
 
   file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-JTnXiO6DfjRlbofOhtUcTRVJbvTjlVGRk+n1uFvLhQrH0JtaGxlpeeXRAtc49yVlMGr6PuEsiw64yl/HvXuIGQ==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-OVtV/EdSPTaEi4Wx+62Lp0gHTxGMUWd/wKpeRWE2/lJSmG5oLr9jjnoePmcrVvMPO/IZ4gsB+KDdnOTyetr5XQ==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -19083,7 +19086,7 @@ packages:
     dev: false
 
   file:projects/backup-service.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-ieEVBe6Ql9U5jEPlXPttIxFkkqUjjhAFwzWRXZCZVZ+l0b46LTW/HsrwMob+2bgZZ7N+xsd/uv3v1QCGr6jlCQ==, tarball: file:projects/backup-service.tgz}
+    resolution: {integrity: sha512-yVHrvyvHvtRFu894lGDl0o19qrJv3scuxI80Dg+rQDzjb4nWXAPGAj477N6TR7vrZSmYAmsR5qEaHkXxc35ipg==, tarball: file:projects/backup-service.tgz}
     id: file:projects/backup-service.tgz
     name: '@rush-temp/backup-service'
     version: 0.0.0
@@ -19684,7 +19687,7 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(utf-8-validate@6.0.3)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-RHYlR+704EhdJDPooKU+D4BzSDC0Ov00TritI4GOFPnTBbbVkQHCWLqowr1om/rTE/lJ3oHTGPwMBkkfNvAkpw==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-eDPnkAnIaUaGLba+Av96GDL0ZVP+2A816BsZpU0vjQRikeqyigKcLvIc/Nj6Cx4cyLnswCZ7UNrjLm3IF/ReLQ==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
@@ -23009,7 +23012,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-R8dx0uU9jPZ0AmS23UqoxKen0+94WDDHy8YfwhIVuZge+FMUwSBR/7nKBry0bNIyHA2C8yl8AxfJa/o2YedxzQ==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-S+s9phcwoQlupWjErJ7eENrXbytc5PylnYoF4viz0OFxIjK8HOHEqODnEtU2VSsX3XphavV2ECT52BQsct2N1g==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -23058,7 +23061,7 @@ packages:
     dev: false
 
   file:projects/pod-backup.tgz:
-    resolution: {integrity: sha512-s9kcgWCYc8P3K8PwE+faNd1ZMgf5B8WYobO8YnPxUlfzOIOdAWoZwzSzWK7brEh8NGeYsfCGn8zxRj+EijOv2Q==, tarball: file:projects/pod-backup.tgz}
+    resolution: {integrity: sha512-cHCcTxI/Vi0V6XlrDbRHoYPHkyxXMt46iCY6sAlIuSU/6pgTQbNfZvrwCMVvlJS6AbZ/aCtmKsw6B54x9hnPQQ==, tarball: file:projects/pod-backup.tgz}
     name: '@rush-temp/pod-backup'
     version: 0.0.0
     dependencies:
@@ -24227,7 +24230,7 @@ packages:
     dev: false
 
   file:projects/server-backup.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-LuaW1naKF+DcYgzDYKohAfO1mMtqzpnglsAfNyAl0hNYUWA/F7M5+/qcy0LpHuwRTltol+RWBBLVeLMzMX9A/Q==, tarball: file:projects/server-backup.tgz}
+    resolution: {integrity: sha512-1G/CeRC6a8hTyfEkae5eIXGQ65v4y07RK1DO+W8WH7uhKgLRLPChyjLIoYa2/GpsxPTV1NyTZ63M3hd8HvSCrw==, tarball: file:projects/server-backup.tgz}
     id: file:projects/server-backup.tgz
     name: '@rush-temp/server-backup'
     version: 0.0.0
@@ -24381,6 +24384,41 @@ packages:
       - node-notifier
       - supports-color
       - ts-node
+    dev: false
+
+  file:projects/server-client.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
+    resolution: {integrity: sha512-9l5RCmDLMfYsi0/vTRI1f3bN66KGOxsPAVG8ttndM+arbj+agJu6s6v4iBkWJvJrIMeOvHTuVc2hH19BO6R2CQ==, tarball: file:projects/server-client.tgz}
+    id: file:projects/server-client.tgz
+    name: '@rush-temp/server-client'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@types/uuid': 8.3.4
+      '@types/ws': 8.5.10
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - bufferutil
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+      - utf-8-validate
     dev: false
 
   file:projects/server-collaboration-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
@@ -25767,7 +25805,7 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-3TUSDFQDCGfnf+u6ADBSVX7xBJY3hxkTMPCXdA8r7vmHw2jD+goCUOWjFwCKHyBm2/ObM3ABgrqoysGt2loLsA==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-Ibxxdk6p28gC3P/J0QYczp22ReCawRbyhwU/OfWYV40YaZ9oCNresriDeS1PzyWhq/0l5eIhzU6mH/C40lnpvw==, tarball: file:projects/server-tool.tgz}
     id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0
@@ -27240,7 +27278,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-azLyJg979njyDjMIjjb/48UDVkrmgZnP8xOzH4Xov1JHAKw7ioNGNmq3wdpG4csgdghhrnmhMMXkae1ur2stlA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-O4d1ONaLUVPZoHEWAV0uOgGNcFNbn4bBCN9HMG9HtX/LldTSGZHRqyTk26VYThvFV/FVjyLbp0MWiv3jUIvUyA==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0

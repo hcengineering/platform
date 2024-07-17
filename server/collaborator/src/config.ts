@@ -25,7 +25,6 @@ export interface Config {
   Port: number
 
   AccountsUrl: string
-  TransactorUrl: string
   MongoUrl: string
   UploadUrl: string
 }
@@ -36,12 +35,11 @@ const envMap: { [key in keyof Config]: string } = {
   Interval: 'INTERVAL',
   Port: 'COLLABORATOR_PORT',
   AccountsUrl: 'ACCOUNTS_URL',
-  TransactorUrl: 'TRANSACTOR_URL',
   MongoUrl: 'MONGO_URL',
   UploadUrl: 'UPLOAD_URL'
 }
 
-const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl', 'TransactorUrl', 'MongoUrl']
+const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl', 'MongoUrl']
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -50,7 +48,6 @@ const config: Config = (() => {
     Interval: parseInt(process.env[envMap.Interval] ?? '30000'),
     Port: parseInt(process.env[envMap.Port] ?? '3078'),
     AccountsUrl: process.env[envMap.AccountsUrl],
-    TransactorUrl: process.env[envMap.TransactorUrl],
     MongoUrl: process.env[envMap.MongoUrl],
     UploadUrl: process.env[envMap.UploadUrl] ?? '/files'
   }

@@ -36,14 +36,16 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setPresentationCookie(token, getCurrentWorkspaceUrl())
 
-  const getEndpoint = await getResource(login.function.GetEndpoint)
-  const endpoint = await getEndpoint()
-  if (endpoint == null) {
+  const selectWorkspace = await getResource(login.function.SelectWorkspace)
+  const workspaceLoginInfo = (await selectWorkspace(ws))[1]
+  if (workspaceLoginInfo == null) {
     navigate({
       path: [loginId]
     })
     return
   }
+
+  setMetadata(presentation.metadata.Token, token)
 
   if (_token !== token && _client !== undefined) {
     await _client.close()
@@ -58,7 +60,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(
     token,
-    endpoint,
+    workspaceLoginInfo.endpoint,
     () => {
       location.reload()
     },
@@ -167,7 +169,6 @@ function clearMetadata (ws: string): void {
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
   setPresentationCookie('', getCurrentWorkspaceUrl())
-  setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()
 }

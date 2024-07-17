@@ -258,8 +258,6 @@ export async function configurePlatform() {
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
 
-  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
   setMetadata(love.metadata.ServiceEnpdoint, config.LOVE_ENDPOINT)
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)

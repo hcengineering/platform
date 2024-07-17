@@ -62,9 +62,7 @@ export default plugin(loginId, {
     LoginTokens: '' as Metadata<Record<string, string>>,
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
-    LoginEmail: '' as Metadata<string>,
-    OverrideLoginToken: '' as Metadata<string>, // debug purposes
-    OverrideEndpoint: '' as Metadata<string>
+    LoginEmail: '' as Metadata<string>
   },
   component: {
     LoginApp: '' as AnyComponent,

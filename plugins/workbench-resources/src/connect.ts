@@ -70,41 +70,44 @@ export async function connect (title: string): Promise<Client | undefined> {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   let token = tokens[ws]
 
-  if (
-    token === undefined &&
-    (getMetadata(presentation.metadata.Token) !== undefined ||
-      fetchMetadataLocalStorage(login.metadata.LastToken) != null)
-  ) {
-    const selectWorkspace = await getResource(login.function.SelectWorkspace)
-    const loginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
-    if (loginInfo !== undefined) {
-      tokens[ws] = loginInfo.token
-      token = loginInfo.token
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-    }
+  const selectWorkspace = await getResource(login.function.SelectWorkspace)
+  const workspaceLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
+  if (workspaceLoginInfo !== undefined) {
+    tokens[ws] = workspaceLoginInfo.token
+    token = workspaceLoginInfo.token
+    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
+  if (workspaceLoginInfo == null) {
+    location.reload()
+    return
+  }
+
   setMetadata(presentation.metadata.Token, token)
 
-  const fetchWorkspace = await getResource(login.function.FetchWorkspace)
-  let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
-  if (loginInfo?.creating === true) {
-    while (true) {
-      if (ws !== getCurrentLocation().path[1]) return
-      workspaceCreating.set(loginInfo?.createProgress ?? 0)
-      loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
-      workspaceCreating.set(loginInfo?.createProgress)
-      if (loginInfo?.creating === false) {
-        workspaceCreating.set(-1)
-        break
+  if (workspaceLoginInfo.creating === true) {
+    const fetchWorkspace = await getResource(login.function.FetchWorkspace)
+    let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+    if (loginInfo?.creating === true) {
+      while (true) {
+        if (ws !== getCurrentLocation().path[1]) return
+        workspaceCreating.set(loginInfo?.createProgress ?? 0)
+        loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+        workspaceCreating.set(loginInfo?.createProgress)
+        if (loginInfo?.creating === false) {
+          workspaceCreating.set(-1)
+          break
+        }
+        await new Promise<void>((resolve) => setTimeout(resolve, 1000))
       }
-      await new Promise<void>((resolve) => setTimeout(resolve, 1000))
     }
   }
 
   setPresentationCookie(token, getCurrentWorkspaceUrl())
 
-  const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
+  setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo.endpoint)
+
+  const endpoint = workspaceLoginInfo.endpoint // fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+  const email = workspaceLoginInfo.email // fetchMetadataLocalStorage(login.metadata.LoginEmail)
   if (token === undefined || endpoint === null || email === null) {
     const navigateUrl = encodeURIComponent(JSON.stringify(loc))
     navigate({

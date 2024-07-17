@@ -33,6 +33,7 @@ import { connect } from '@hcengineering/server-tool'
 
 import client from '@hcengineering/client'
 import { setMetadata } from '@hcengineering/platform'
+import serverClientPlugin, { getTransactorEndpoint } from '@hcengineering/server-client'
 import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
@@ -78,7 +79,7 @@ interface PendingMsg extends Msg {
 export async function benchmark (
   workspaceId: WorkspaceId[],
   users: Map<string, string[]>,
-  transactorUrl: string,
+  accountsUrl: string,
   cmd: {
     from: number
     steps: number
@@ -168,11 +169,14 @@ export async function benchmark (
 
   const token = generateToken(systemAccountEmail, workspaceId[0])
 
+  setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
+  const endpoint = await getTransactorEndpoint(token, 'external')
+  console.log('monitor endpoint', endpoint, 'workspace', workspaceId[0].name)
   const monitorConnection = isMainThread
     ? ((await ctx.with(
         'connect',
         {},
-        async () => await connect(transactorUrl, workspaceId[0], undefined, { mode: 'backup' })
+        async () => await connect(endpoint, workspaceId[0], undefined, { mode: 'backup' })
       )) as BackupClient & Client)
     : undefined
 
@@ -202,7 +206,7 @@ export async function benchmark (
       const st = Date.now()
 
       try {
-        const fetchUrl = transactorUrl.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
+        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
         void fetch(fetchUrl)
           .then((res) => {
             void res
@@ -286,14 +290,18 @@ export async function benchmark (
         await Promise.all(
           Array.from(Array(i))
             .map((it, idx) => idx)
-            .map((it) => {
+            .map(async (it) => {
               const wsid = workspaceId[randNum(workspaceId.length)]
               const workId = 'w-' + i + '-' + it
               const wsUsers = users.get(wsid.name) ?? []
+
+              const token = generateToken(systemAccountEmail, wsid)
+              const endpoint = await getTransactorEndpoint(token, 'external')
+              console.log('endpoint', endpoint, 'workspace', wsid.name)
               const msg: StartMessage = {
                 email: wsUsers[randNum(wsUsers.length)],
                 workspaceId: wsid,
-                transactorUrl,
+                transactorUrl: endpoint,
                 id: i,
                 idd: it,
                 workId,
@@ -314,7 +322,7 @@ export async function benchmark (
               }
               workers[i % workers.length].postMessage(msg)
 
-              return new Promise((resolve) => {
+              return await new Promise((resolve) => {
                 works.set(workId, () => {
                   resolve(null)
                 })

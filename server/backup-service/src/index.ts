@@ -16,10 +16,10 @@
 import { MeasureContext, systemAccountEmail } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { backupService } from '@hcengineering/server-backup'
+import serverClientPlugin from '@hcengineering/server-client'
 import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv, createStorageFromConfig } from '@hcengineering/server-storage'
+import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
 import config from './config'
 
 export function startBackup (
@@ -27,6 +27,8 @@ export function startBackup (
   pipelineFactoryFactory: (mongoUrl: string, storage: StorageAdapter) => PipelineFactory
 ): void {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
+  setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 
   const backupStorageConfig = storageConfigFromEnv(config.Storage)
   const workspaceStorageConfig = storageConfigFromEnv(config.WorkspaceStorage)
@@ -34,7 +36,6 @@ export function startBackup (
   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
   const workspaceStorageAdapter = buildStorageFromConfig(workspaceStorageConfig, config.MongoURL)
 
-  setMetadata(toolPlugin.metadata.UserAgent, config.ServiceID)
 
   const pipelineFactory = pipelineFactoryFactory(config.MongoURL, workspaceStorageAdapter)
 

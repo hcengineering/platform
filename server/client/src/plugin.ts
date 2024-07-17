@@ -3,17 +3,16 @@ import { Metadata, plugin, Plugin } from '@hcengineering/platform'
 /**
  * @public
  */
-export const toolId = 'tool' as Plugin
+export const toolId = 'server-client' as Plugin
 
 /**
  * @public
  */
-const toolPlugin = plugin(toolId, {
+const serverClientPlugin = plugin(toolId, {
   metadata: {
     Endpoint: '' as Metadata<string>, // Account URL endpoint
-    InitWorkspace: '' as Metadata<string>,
-    InitScriptURL: '' as Metadata<string>
+    UserAgent: '' as Metadata<string>
   }
 })
 
-export default toolPlugin
+export default serverClientPlugin

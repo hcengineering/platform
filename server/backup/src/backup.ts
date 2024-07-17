@@ -31,13 +31,16 @@ import core, {
   RateLimiter,
   Ref,
   SortingOrder,
+  systemAccountEmail,
   TxCollectionCUD,
   WorkspaceId,
   type Blob,
   type DocIndexState
 } from '@hcengineering/core'
+import { BlobClient, createClient } from '@hcengineering/server-client'
 import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
-import { BlobClient, connect } from '@hcengineering/server-tool'
+import { generateToken } from '@hcengineering/server-token'
+import { connect } from '@hcengineering/server-tool'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
@@ -531,20 +534,16 @@ export async function backup (
       canceled = true
     }, options.timeout)
   }
+
+  const token = generateToken(systemAccountEmail, workspaceId, {
+    mode: 'backup'
+  })
+
   const connection =
     options.connection ??
-    ((await connect(
-      transactorUrl,
-      workspaceId,
-      undefined,
-      {
-        mode: 'backup'
-      },
-      undefined,
-      options.connectTimeout
-    )) as unknown as CoreClient & BackupClient)
+    ((await createClient(transactorUrl, token, undefined, options.connectTimeout)) as CoreClient & BackupClient)
 
-  const blobClient = new BlobClient(transactorUrl, workspaceId, { storageAdapter: options.storageAdapter })
+  const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
   ctx.info('starting backup', { workspace: workspaceId.name })
 
   let tmpDir: string | undefined
@@ -1121,12 +1120,15 @@ export async function restore (
   }
 
   ctx.info('connecting:', { transactorUrl, workspace: workspaceId.name })
-  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+
+  const token = generateToken(systemAccountEmail, workspaceId, {
     mode: 'backup',
     model: 'upgrade'
-  })) as unknown as CoreClient & BackupClient
+  })
 
-  const blobClient = new BlobClient(transactorUrl, workspaceId)
+  const connection = (await createClient(transactorUrl, token)) as CoreClient & BackupClient
+
+  const blobClient = new BlobClient(transactorUrl, token, workspaceId)
   console.log('connected')
 
   // We need to find empty domains and clean them.

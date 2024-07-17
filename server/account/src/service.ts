@@ -112,7 +112,7 @@ export class UpgradeWorker {
       logger.log('error', err)
 
       if (!opt.console) {
-        ctx.error('error', err)
+        ctx.error('error', { err })
       }
 
       ctx.info('---failed---------', {
