@@ -16,12 +16,15 @@
   import { themeStore } from '@hcengineering/ui'
 
   import { type Uppy } from '@uppy/core'
-  import Dashboard, { type DashboardOptions } from '@uppy/dashboard'
+  import Dashboard from '@uppy/dashboard'
   import { onMount, onDestroy, createEventDispatcher } from 'svelte'
+
+  import { type FileUploadTarget } from '../types'
 
   const dispatch = createEventDispatcher()
 
-  export let uppy: Uppy
+  export let uppy: Uppy<any, any>
+  export let target: FileUploadTarget
 
   let container: HTMLElement
 
@@ -34,16 +37,18 @@
   onMount(() => {
     uppy.on('upload', handleUpload)
 
-    const options: DashboardOptions = {
-      id: 'huly:Dashboard',
-      target: container,
-      inline: true,
-      width: 750,
-      disableInformer: true,
-      proudlyDisplayPoweredByUppy: false,
-      theme: dark ? 'dark' : 'light'
-    }
-    uppy.use(Dashboard, options)
+    uppy.use(
+      Dashboard,
+      {
+        id: 'huly:Dashboard',
+        target: container,
+        inline: true,
+        width: 750,
+        disableInformer: true,
+        proudlyDisplayPoweredByUppy: false,
+        theme: dark ? 'dark' : 'light'
+      }
+    )
   })
 
   onDestroy(() => {

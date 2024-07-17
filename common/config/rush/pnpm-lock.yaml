@@ -1133,6 +1133,9 @@ dependencies:
   '@uppy/drag-drop':
     specifier: ^3.1.1
     version: 3.1.1(@uppy/core@3.13.1)
+  '@uppy/locales':
+    specifier: ^3.5.4
+    version: 3.5.4
   '@uppy/progress-bar':
     specifier: ^3.1.1
     version: 3.1.1(@uppy/core@3.13.1)
@@ -8223,6 +8226,12 @@ packages:
       preact: 10.22.1
     dev: false
 
+  /@uppy/locales@3.5.4:
+    resolution: {integrity: sha512-i0x8qtP2ZghlpLN3QCwRiqvbutkvaLryMXvSWF8nvfAiY7XX1zMcRme7+W2ovSMEeiNK+gjjuLCMmbQhmZFx+Q==}
+    dependencies:
+      '@uppy/utils': 5.9.0
+    dev: false
+
   /@uppy/progress-bar@3.1.1(@uppy/core@3.13.1):
     resolution: {integrity: sha512-c7Wcv6/gvrdxICnZUaU/cZG6wUtS0V/GYGssGFQ6OW84h0smuzGGA+KOh9zKqr6HBHxgKRxmCDtrlTlSSvAuQQ==}
     peerDependencies:
@@ -8270,24 +8279,6 @@ packages:
 
   /@uppy/store-default@3.2.2:
     resolution: {integrity: sha512-OiSgT++Jj4nLK0N9WTeod3UNjCH81OXE5BcMJCd9oWzl2d0xPNq2T/E9Y6O72XVd+6Y7+tf5vZlPElutfMB3KQ==}
-    dev: false
-
-  /@uppy/svelte@3.1.5(@uppy/core@3.13.1)(@uppy/dashboard@3.9.1)(@uppy/drag-drop@3.1.1)(@uppy/progress-bar@3.1.1)(@uppy/status-bar@3.3.3)(svelte@4.2.12):
-    resolution: {integrity: sha512-N/Ig7JYJbVCQerxfemezSDaSRCkPgKw1bl35FaZet2DrUXLn7hrdx/ZosX4T6bSs9PgyEEUvkYCCT9+XneQmfg==}
-    peerDependencies:
-      '@uppy/core': ^3.11.3
-      '@uppy/dashboard': ^3.8.3
-      '@uppy/drag-drop': ^3.1.0
-      '@uppy/progress-bar': ^3.1.1
-      '@uppy/status-bar': ^3.3.3
-      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0
-    dependencies:
-      '@uppy/core': 3.13.1
-      '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
-      '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)
-      svelte: 4.2.12
     dev: false
 
   /@uppy/thumbnail-generator@3.1.0(@uppy/core@3.13.1):
@@ -20194,7 +20185,7 @@ packages:
     dev: false
 
   file:projects/drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-1saL40JzcAtJ3+B+oqfEjKbAjQk07/2aosafiSMPav5k2h42odFfk0le2HQDufXLyviMVGdUJOyP0HJeaaqyXQ==, tarball: file:projects/drive-resources.tgz}
+    resolution: {integrity: sha512-6sTRcpshfpkO++7gcMrN8yPpebB9peBW6LxmeirhNQRyKed69pW1YTW2DOL1N6lvD6jcgFWmd3sh4xY8DUsQ2g==, tarball: file:projects/drive-resources.tgz}
     id: file:projects/drive-resources.tgz
     name: '@rush-temp/drive-resources'
     version: 0.0.0
@@ -20202,15 +20193,6 @@ packages:
       '@types/jest': 29.5.12
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      '@uppy/core': 3.13.1
-      '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
-      '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
-      '@uppy/screen-capture': 3.2.0(@uppy/core@3.13.1)
-      '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)
-      '@uppy/svelte': 3.1.5(@uppy/core@3.13.1)(@uppy/dashboard@3.9.1)(@uppy/drag-drop@3.1.1)(@uppy/progress-bar@3.1.1)(@uppy/status-bar@3.3.3)(svelte@4.2.12)
-      '@uppy/webcam': 3.4.2(@uppy/core@3.13.1)
-      '@uppy/xhr-upload': 3.6.8(@uppy/core@3.13.1)
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
@@ -20218,7 +20200,6 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.12)(ts-node@10.9.2)
       fast-equals: 5.0.1
-      filesize: 8.0.7
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
@@ -26915,7 +26896,6 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.12)(ts-node@10.9.2)
       fast-equals: 5.0.1
-      filesize: 8.0.7
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       lib0: 0.2.89
       prettier: 3.2.5
@@ -26960,7 +26940,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.12)(ts-node@10.9.2):
-    resolution: {integrity: sha512-PAi3SowjX1BVR2OJFz80YabahPeG+jpRbhNWoOB9mjbVtswR81eVf662kChkZ6xZgLNpwfYt1euhUxBC4esryg==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-nOuNj+6fkpq/ivYOfCpmxG6u3sfkfKE3UqymxbVOVF2WWRAFOn2kBUOorEBt1v8dpSWeZIwvEI0aOnluJG3uqg==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -26976,7 +26956,6 @@ packages:
       eslint-plugin-import: 2.29.1(eslint@8.56.0)
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      filesize: 8.0.7
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       sass: 1.71.1
@@ -27604,7 +27583,7 @@ packages:
     dev: false
 
   file:projects/uploader-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-Z4fMh7C4fwP5gvcT+j2t+A10AiDvtw+4jhlBkkSqsprdFC7gV+MYRSKmIcYxP3u4Vt9qPB0lktYidCLAaa1Ikg==, tarball: file:projects/uploader-resources.tgz}
+    resolution: {integrity: sha512-mr4bU3u0RKoq+Wuk+sINtQDoXSIRi3mXaJ6odK3lpHE6Q3tTTkb62uyF5c5eAA2/lNcuaNqIyF/uI6nssVFBog==, tarball: file:projects/uploader-resources.tgz}
     id: file:projects/uploader-resources.tgz
     name: '@rush-temp/uploader-resources'
     version: 0.0.0
@@ -27615,6 +27594,7 @@ packages:
       '@uppy/core': 3.13.1
       '@uppy/dashboard': 3.9.1(@uppy/core@3.13.1)
       '@uppy/drag-drop': 3.1.1(@uppy/core@3.13.1)
+      '@uppy/locales': 3.5.4
       '@uppy/progress-bar': 3.1.1(@uppy/core@3.13.1)
       '@uppy/screen-capture': 3.2.0(@uppy/core@3.13.1)
       '@uppy/status-bar': 3.3.3(@uppy/core@3.13.1)
@@ -27657,7 +27637,7 @@ packages:
     dev: false
 
   file:projects/uploader.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-5gGvAxWhxzAatzZlPgCh+xVeek+9/ot76p6pabJ6GDqLgbMbqgbSpVB3Z7zyqondf28xndi8xMoCSwGmkj9oSg==, tarball: file:projects/uploader.tgz}
+    resolution: {integrity: sha512-I9YdHj2BjihbcZe7/8XXUpXbTr08ck0ucDmczr1skY48uEorai9Amw0MB3o1UL9eyUsOFyssgglX8DLr2JTVNg==, tarball: file:projects/uploader.tgz}
     id: file:projects/uploader.tgz
     name: '@rush-temp/uploader'
     version: 0.0.0

@@ -13,12 +13,15 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import uploader, { uploaderId } from '@hcengineering/uploader'
 
 export default mergeIds(uploaderId, uploader, {
   component: {
     FileUploadExt: '' as AnyComponent
+  },
+  string: {
+    UploadingTo: '' as IntlString
   }
 })

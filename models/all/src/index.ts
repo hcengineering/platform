@@ -73,7 +73,7 @@ import { templatesId, createModel as templatesModel } from '@hcengineering/model
 import { textEditorId, createModel as textEditorModel } from '@hcengineering/model-text-editor'
 import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
-import uploader, { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
+import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 

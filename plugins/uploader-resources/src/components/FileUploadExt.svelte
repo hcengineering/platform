@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import FileUploadStatusBar from './FileUploadStatusBar.svelte'
-  import { uploads } from '@hcengineering/uploader'
+  import { uploads } from '../store'
 </script>
 
 <div class="flex-row-center flex-gap-2">

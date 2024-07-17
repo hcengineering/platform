@@ -14,31 +14,42 @@
 //
 
 import { type Uppy } from '@uppy/core'
-// import { type Writable, writable } from 'svelte/store'
+import { type Writable, writable } from 'svelte/store'
 
 import { type FileUpload, type FileUploadTarget } from './types'
 
 /** @public */
-// export const uploads: Writable<FileUpload[]> = writable([])
-export const uploads: FileUpload[] = []
+export const uploads: Writable<FileUpload[]> = writable([])
 
 /** @public */
 export function dockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  // uploads.update(instances => {
-  //   instances.push({ target, uppy })
-  //   return instances
-  // })
+  uploads.update(instances => {
+    instances.push({ target, uppy })
+    return instances
+  })
 
-  // uppy.on('complete', () => {
-  //   undockFileUpload(target, uppy)
-  // })
+  uppy.on('complete', () => {
+    undockFileUploadIfCompleted(target, uppy)
+  })
+
+  uppy.on('file-removed', () => {
+    undockFileUploadIfCompleted(target, uppy)
+  })
+}
+
+function undockFileUploadIfCompleted (target: FileUploadTarget, uppy: Uppy): void {
+  const files = uppy.getFiles()
+  const incompleted = files.filter((p) => p.progress?.uploadComplete !== true)
+  if (incompleted.length === 0) {
+    undockFileUpload(target, uppy)
+  }
 }
 
 function undockFileUpload (target: FileUploadTarget, uppy: Uppy): void {
-  // uppy.cancelAll()
-  // uppy.close()
+  uppy.cancelAll()
+  uppy.close()
 
-  // uploads.update(instances => {
-  //   return instances.filter(instance => instance.uppy !== uppy)
-  // })
+  uploads.update(instances => {
+    return instances.filter(instance => instance.uppy !== uppy)
+  })
 }

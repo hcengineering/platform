@@ -13,20 +13,27 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { Class, Doc, Ref } from '@hcengineering/core'
 import type { Uppy } from '@uppy/core'
-
-/** @public */
-export interface FileUploadTarget {
-  space: Ref<Space>
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-}
 
 /** @public */
 export interface FileUpload {
   target: FileUploadTarget
   uppy: Uppy
+}
+
+/** @public */
+export interface FileUploadTarget {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+}
+
+/** @public */
+export interface FileUploadOptions {
+  maxFileSize?: number
+  maxNumberOfFiles?: number
+  allowedFileTypes?: string
+  hideProgress?: boolean
 }
 
 /** @public */

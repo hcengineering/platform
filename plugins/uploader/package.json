@@ -39,15 +39,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/ui": "^0.6.15",
-    "@uppy/core": "^3.13.1",
-    "@uppy/drag-drop": "^3.1.1",
-    "@uppy/dashboard": "^3.9.1",
-    "@uppy/status-bar": "^3.3.3",
-    "@uppy/progress-bar": "^3.1.1",
-    "@uppy/screen-capture": "^3.2.0",
-    "@uppy/webcam": "^3.4.2",
-    "@uppy/xhr-upload": "^3.6.8"
+    "@hcengineering/ui": "^0.6.15"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

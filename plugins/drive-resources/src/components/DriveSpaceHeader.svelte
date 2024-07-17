@@ -18,7 +18,7 @@
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, FileOrBlob, getClient, getFileMetadata } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
-  import { showFilesUploadPopup } from '@hcengineering/uploader'
+  import { showFilesUploadPopup } from '@hcengineering/uploader-resources'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
@@ -67,12 +67,10 @@
   async function handleUploadFile (): Promise<void> {
     if (currentSpace !== undefined) {
       const space = currentSpace
-      const target = {
-        space: currentSpace,
-        objectId: parent,
-        objectClass: drive.class.Folder
-      }
-      showFilesUploadPopup(target, async (uuid: string, name: string, file: FileOrBlob) => {
+      const target = parent !== drive.ids.Root
+        ? { objectId: parent, objectClass: drive.class.Folder }
+        : { objectId: space, objectClass: drive.class.Drive }
+      showFilesUploadPopup(target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
         try {
           const metadata = await getFileMetadata(file, uuid as Ref<Blob>)
           const data = {

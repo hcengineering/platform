@@ -1,6 +1,6 @@
 <script lang="ts">
   import { rootBarExtensions } from '@hcengineering/ui'
-  import { onDestroy, onMount } from 'svelte'
+  import { onMount } from 'svelte'
 
   import uploader from '../plugin'
 
@@ -13,10 +13,6 @@
       }
       return cur
     })
-  })
-
-  onDestroy(async () => {
-    // do nothing ?
   })
 </script>
 

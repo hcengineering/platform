@@ -27,10 +27,12 @@ export const uploaderPlugin = plugin(uploaderId, {
   status: {
     Waiting: '' as IntlString,
     Uploading: '' as IntlString,
-    Completed: '' as IntlString
+    Completed: '' as IntlString,
+    Error: '' as IntlString
   },
   string: {
-    Cancel: '' as IntlString
+    Cancel: '' as IntlString,
+    Retry: '' as IntlString
   }
 })
 
