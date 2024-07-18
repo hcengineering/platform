@@ -13,11 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment } from '@hcengineering/attachment'
+  import attachment, { Attachment, BlobMetadata } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
   import core, { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
+  import {
+    FileOrBlob,
+    KeyedAttribute,
+    createQuery,
+    getClient,
+    getFileMetadata,
+    uploadFile
+  } from '@hcengineering/presentation'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
   import textEditor, { type RefAction, type TextEditorHandler } from '@hcengineering/text-editor'
   import {
@@ -29,6 +36,7 @@
     getModelRefActions
   } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
+  import { showFilesUploadPopup, uploadFiles } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
@@ -106,8 +114,6 @@
     }
   )
 
-  let inputFile: HTMLInputElement
-
   export function isFocused (): boolean {
     return editor?.isFocused() ?? false
   }
@@ -119,28 +125,50 @@
   }
 
   export function handleAttach (): void {
-    inputFile.click()
+    void showFilesUploadPopup(
+      { objectId: object._id, objectClass: object._class },
+      {},
+      async (uuid, name, file, metadata) => {
+        await createAttachment(uuid, name, file, metadata)
+      }
+    )
   }
 
-  async function fileSelected (): Promise<void> {
-    if (readonly) return
+  async function attachFiles (files: File[] | FileList): Promise<void> {
     progress = true
-    const list = inputFile.files
-    if (list === null || list.length === 0) return
-    for (let index = 0; index < list.length; index++) {
-      const file = list.item(index)
-      if (file !== null) {
-        await createAttachment(file)
-      }
+    if (files.length > 0) {
+      await uploadFiles(
+        files,
+        { objectId: object._id, objectClass: object._class },
+        {},
+        async (uuid, name, file, metadata) => {
+          await createAttachment(uuid, name, file, metadata)
+        }
+      )
     }
-    inputFile.value = ''
     progress = false
   }
 
-  async function createAttachment (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
+  async function attachFile (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     try {
       const uuid = await uploadFile(file)
+      const metadata = await getFileMetadata(file, uuid)
+      await createAttachment(uuid, file.name, file, metadata)
+      return { file: uuid, type: file.type }
+    } catch (err: any) {
+      await setPlatformStatus(unknownError(err))
+    }
+  }
+
+  async function createAttachment (
+    uuid: Ref<Blob>,
+    name: string,
+    file: FileOrBlob,
+    metadata: BlobMetadata | undefined
+  ): Promise<void> {
+    try {
       const _id: Ref<Attachment> = generateId()
+
       const attachmentDoc: Attachment = {
         _id,
         _class: attachment.class.Attachment,
@@ -150,11 +178,12 @@
         space: object.space,
         attachedTo: object._id,
         attachedToClass: object._class,
-        name: file.name,
+        name,
         file: uuid,
         type: file.type,
         size: file.size,
-        lastModified: file.lastModified
+        metadata,
+        lastModified: file instanceof File ? file.lastModified : Date.now()
       }
 
       await client.addCollection(
@@ -166,7 +195,6 @@
         attachmentDoc,
         attachmentDoc._id
       )
-      return { file: uuid, type: file.type }
     } catch (err: any) {
       await setPlatformStatus(unknownError(err))
     }
@@ -195,31 +223,34 @@
       return
     }
 
+    progress = true
+
     const items = evt.clipboardData?.items ?? []
+    const files = []
     for (const index in items) {
       const item = items[index]
       if (item.kind === 'file') {
         const blob = item.getAsFile()
         if (blob !== null) {
-          await createAttachment(blob)
+          files.push(blob)
         }
       }
     }
+
+    if (files.length > 0) {
+      await attachFiles(files)
+    }
+
+    progress = false
   }
 
   export async function fileDrop (e: DragEvent): Promise<void> {
     if (readonly) return
-    progress = true
+
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
-      for (let index = 0; index < list.length; index++) {
-        const file = list.item(index)
-        if (file !== null) {
-          await createAttachment(file)
-        }
-      }
+      await attachFiles(list)
     }
-    progress = false
   }
 
   async function removeAttachment (attachment: Attachment): Promise<void> {
@@ -240,17 +271,6 @@
 
   let progressItems: Ref<Doc>[] = []
 </script>
-
-<input
-  bind:this={inputFile}
-  disabled={inputFile == null}
-  multiple
-  type="file"
-  name="file"
-  id="fileInput"
-  style="display: none"
-  on:change={fileSelected}
-/>
 
 {#key object?._id}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -274,9 +294,7 @@
       {boundary}
       {refActions}
       {readonly}
-      attachFile={async (file) => {
-        return await createAttachment(file)
-      }}
+      {attachFile}
       on:open-document={async (event) => {
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {

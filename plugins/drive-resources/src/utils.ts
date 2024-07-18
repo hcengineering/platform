@@ -14,10 +14,10 @@
 //
 
 import { type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
-import type { Drive, File as DriveFile, FileVersion, Folder, Resource } from '@hcengineering/drive'
-import drive, { createFile, createFileVersion } from '@hcengineering/drive'
-import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import type { Drive, FileVersion, Folder, Resource } from '@hcengineering/drive'
+import drive from '@hcengineering/drive'
+import { type Asset } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
 
@@ -61,47 +61,6 @@ export async function createDrive (open = false): Promise<void> {
 
 export async function editDrive (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
-}
-
-export async function uploadFiles (list: FileList, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
-  for (let index = 0; index < list.length; index++) {
-    const file = list.item(index)
-    if (file !== null) {
-      await uploadOneFile(file, space, parent)
-    }
-  }
-}
-
-export async function uploadOneFile (file: File, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
-  const client = getClient()
-
-  try {
-    const uuid = await uploadFile(file)
-    const metadata = await getFileMetadata(file, uuid)
-
-    const { name, size, type, lastModified } = file
-    const data = { file: uuid, name, size, type, lastModified, metadata }
-
-    await createFile(client, space, parent, data)
-  } catch (e) {
-    void setPlatformStatus(unknownError(e))
-  }
-}
-
-export async function replaceOneFile (existing: Ref<DriveFile>, file: File): Promise<void> {
-  const client = getClient()
-
-  try {
-    const uuid = await uploadFile(file)
-    const metadata = await getFileMetadata(file, uuid)
-
-    const { name, size, type, lastModified } = file
-    const data = { file: uuid, name, size, type, lastModified, metadata }
-
-    await createFileVersion(client, existing, data)
-  } catch (e) {
-    void setPlatformStatus(unknownError(e))
-  }
 }
 
 export async function renameResource (resource: Resource): Promise<void> {

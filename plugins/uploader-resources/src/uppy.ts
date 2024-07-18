@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import { type Blob, type Ref, generateId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
+import presentation, { getFileMetadata } from '@hcengineering/presentation'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import type { FileUploadCallback, FileUploadOptions } from '@hcengineering/uploader'
 
@@ -60,9 +60,18 @@ export type UppyBody = Body & {
 
 /** @public */
 export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUploadCallback): Uppy<UppyMeta, UppyBody> {
-  const id = generateId()
-  const locale = getUppyLocale(getCurrentLanguage())
-  const uppy = new Uppy<UppyMeta, UppyBody>({ id, locale, ...options })
+  const uppyOptions: Partial<UppyOptions> = {
+    id: generateId(),
+    locale: getUppyLocale(getCurrentLanguage()),
+    allowMultipleUploadBatches: false,
+    restrictions: {
+      maxFileSize: options.maxFileSize,
+      maxNumberOfFiles: options.maxNumberOfFiles,
+      allowedFileTypes: options.allowedFileTypes
+    }
+  }
+
+  const uppy = new Uppy<UppyMeta, UppyBody>(uppyOptions)
     .use(ScreenCapture)
     .use(Webcam)
     .use(XHR, {
@@ -82,9 +91,10 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
     uppy.addPostProcessor(async (fileIds: string[]) => {
       for (const fileId of fileIds) {
         const file = uppy.getFile(fileId)
-        const uuid = file?.response?.body?.uuid
+        const uuid = file?.response?.body?.uuid as Ref<Blob>
         if (uuid !== undefined) {
-          await onFileUploaded(uuid, file.name, file.data)
+          const metadata = await getFileMetadata(file.data, uuid)
+          await onFileUploaded(uuid, file.name, file.data, metadata)
         }
       }
     })
