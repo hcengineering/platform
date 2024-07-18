@@ -29,7 +29,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
     await allure.description(
       'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
     )
-    await allure.tms('TESTS-325', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-141')
+    await allure.tms('TESTS-325', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-325')
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
       template: 'HR (HR)',
@@ -77,7 +77,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
-      await attachScreenshot('TESTS-206_approve_document.png', page)
+      await attachScreenshot('TESTS-325_approve_document.png', page)
     })
 
     await test.step('4. Check document', async () => {
@@ -89,14 +89,13 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
-      await attachScreenshot('TESTS-206_check_document.png', page)
+      await attachScreenshot('TESTS-325_check_document.png', page)
     })
     await test.step('5. Check History tab', async () => {
       await documentContentPage.buttonHistoryTab.first().click()
       const documentHistoryPage = new DocumentHistoryPage(page)
       await documentHistoryPage.checkHistoryEventExist('New document creation')
-      await attachScreenshot('TESTS-206_check_history_tab.png', page)
-      await page.waitForTimeout(100)
+      await attachScreenshot('TESTS-325_check_history_tab.png', page)
     })
     await test.step('6. Send for Approval v0.2', async () => {
       await documentContentPage.sendForApproval(
