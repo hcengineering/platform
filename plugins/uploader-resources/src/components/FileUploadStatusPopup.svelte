@@ -17,8 +17,9 @@
   import {
     Button,
     IconClose,
-    ProgressCircle,
     Label,
+    ProgressCircle,
+    Scroller,
     humanReadableFileSize as filesize,
     tooltip
   } from '@hcengineering/ui'
@@ -110,97 +111,109 @@
 
 <div class="antiPopup upload-popup">
   <div class="upload-popup__header flex-row-center flex-gap-1">
-    <Label label={uploader.string.UploadingTo} params={{ files: files.length }} />
-    <ObjectPresenter
-      objectId={upload.target.objectId}
-      _class={upload.target.objectClass}
-      shouldShowAvatar={false}
-      accent
-      noUnderline
-    />
+    <div class="label overflow-label">
+      <Label label={uploader.string.UploadingTo} params={{ files: files.length }} />
+    </div>
+    <div class="flex flex-grow overflow-label">
+      <ObjectPresenter
+        objectId={upload.target.objectId}
+        _class={upload.target.objectClass}
+        shouldShowAvatar={false}
+        accent
+        noUnderline
+      />
+    </div>
   </div>
-  <div class="flex-col flex-gap-4">
-    {#each files as file}
-      {#if file.progress}
-        {@const error = getFileError(file)}
-        {@const percentage = getFilePercentage(file)}
+  <Scroller>
+    <div class="upload-popup__content flex-col flex-no-shrink flex-gap-4">
+      {#each files as file}
+        {#if file.progress}
+          {@const error = getFileError(file)}
+          {@const percentage = getFilePercentage(file)}
 
-        <div class="upload-file-row flex-row-center justify-start flex-gap-4">
-          <div class="upload-file-row__status w-4">
-            {#if error}
-              <IconError size={'small'} fill={'var(--negative-button-default)'} />
-            {:else if file.progress.uploadComplete}
-              <IconCompleted size={'small'} fill={'var(--positive-button-default)'} />
-            {:else}
-              <ProgressCircle value={percentage} size={'small'} primary />
-            {/if}
-          </div>
-
-          <div class="upload-file-row__content flex-col flex-gap-1">
-            <div class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.name) }}>{file.name}</div>
-            <div class="flex-row-center flex-gap-2 text-sm">
+          <div class="upload-file-row flex-row-center justify-start flex-gap-4">
+            <div class="upload-file-row__status w-4">
               {#if error}
-                <Label label={uploader.status.Error} />
-                <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(error) }}>{error}</span>
-              {:else if file.progress.uploadStarted != null}
-                {#if file.progress.uploadComplete}
-                  <Label label={uploader.status.Completed} />
+                <IconError size={'small'} fill={'var(--negative-button-default)'} />
+              {:else if file.progress.uploadComplete}
+                <IconCompleted size={'small'} fill={'var(--positive-button-default)'} />
+              {:else}
+                <ProgressCircle value={percentage} size={'small'} primary />
+              {/if}
+            </div>
+
+            <div class="upload-file-row__content flex-col flex-gap-1">
+              <div class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(file.name) }}>{file.name}</div>
+              <div class="flex-row-center flex-gap-2 text-sm">
+                {#if error}
+                  <Label label={uploader.status.Error} />
+                  <span class="label overflow-label" use:tooltip={{ label: getEmbeddedLabel(error) }}>{error}</span>
+                {:else if file.progress.uploadStarted != null}
+                  {#if file.progress.uploadComplete}
+                    <Label label={uploader.status.Completed} />
+                    {#if file.progress.bytesTotal}
+                      <span>{filesize(file.progress.bytesTotal)}</span>
+                    {/if}
+                  {:else}
+                    <Label label={uploader.status.Uploading} />
+                    {#if file.progress.bytesTotal}
+                      <span>{filesize(file.progress.bytesUploaded)} / {filesize(file.progress.bytesTotal)}</span>
+                    {:else}
+                      <span>{filesize(file.progress.bytesUploaded)}}</span>
+                    {/if}
+                  {/if}
+                {:else}
+                  <Label label={uploader.status.Waiting} />
                   {#if file.progress.bytesTotal}
                     <span>{filesize(file.progress.bytesTotal)}</span>
                   {/if}
-                {:else}
-                  <Label label={uploader.status.Uploading} />
-                  {#if file.progress.bytesTotal}
-                    <span>{filesize(file.progress.bytesUploaded)} / {filesize(file.progress.bytesTotal)}</span>
-                  {:else}
-                    <span>{filesize(file.progress.bytesUploaded)}}</span>
-                  {/if}
                 {/if}
-              {:else}
-                <Label label={uploader.status.Waiting} />
-                {#if file.progress.bytesTotal}
-                  <span>{filesize(file.progress.bytesTotal)}</span>
-                {/if}
+              </div>
+            </div>
+
+            <div class="upload-file-row__tools flex-row-center">
+              {#if error}
+                <Button
+                  kind={'icon'}
+                  icon={IconRetry}
+                  iconProps={{ size: 'small' }}
+                  showTooltip={{ label: uploader.string.Retry }}
+                  on:click={() => {
+                    handleRetryFile(file)
+                  }}
+                />
+              {/if}
+              {#if !file.progress.uploadComplete && individualCancellation}
+                <Button
+                  kind={'icon'}
+                  icon={IconClose}
+                  iconProps={{ size: 'small' }}
+                  showTooltip={{ label: uploader.string.Cancel }}
+                  on:click={() => {
+                    handleCancelFile(file)
+                  }}
+                />
               {/if}
             </div>
           </div>
-
-          <div class="upload-file-row__tools flex-row-center">
-            {#if error}
-              <Button
-                kind={'icon'}
-                icon={IconRetry}
-                iconProps={{ size: 'small' }}
-                showTooltip={{ label: uploader.string.Retry }}
-                on:click={() => {
-                  handleRetryFile(file)
-                }}
-              />
-            {/if}
-            {#if !file.progress.uploadComplete && individualCancellation}
-              <Button
-                kind={'icon'}
-                icon={IconClose}
-                iconProps={{ size: 'small' }}
-                showTooltip={{ label: uploader.string.Cancel }}
-                on:click={() => {
-                  handleCancelFile(file)
-                }}
-              />
-            {/if}
-          </div>
-        </div>
-      {/if}
-    {/each}
-  </div>
+        {/if}
+      {/each}
+    </div>
+  </Scroller>
 </div>
 
 <style lang="scss">
   .upload-popup {
     padding: var(--spacing-2);
+    max-height: 30rem;
 
     .upload-popup__header {
       padding-bottom: 1rem;
+    }
+
+    .upload-popup__content {
+      margin: 0.5rem;
+      margin-right: 0.625rem;
     }
   }
 

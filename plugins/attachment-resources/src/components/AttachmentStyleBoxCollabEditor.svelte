@@ -36,7 +36,7 @@
     getModelRefActions
   } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
-  import { showFilesUploadPopup, uploadFiles } from '@hcengineering/uploader'
+  import { uploadFiles } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
@@ -114,6 +114,8 @@
     }
   )
 
+  let inputFile: HTMLInputElement
+
   export function isFocused (): boolean {
     return editor?.isFocused() ?? false
   }
@@ -125,13 +127,28 @@
   }
 
   export function handleAttach (): void {
-    void showFilesUploadPopup(
+    inputFile.click()
+  }
+
+  async function fileSelected (): Promise<void> {
+    if (readonly) return
+
+    const list = inputFile.files
+    if (list === null || list.length === 0) return
+
+    progress = true
+
+    await uploadFiles(
+      list,
       { objectId: object._id, objectClass: object._class },
       {},
       async (uuid, name, file, metadata) => {
         await createAttachment(uuid, name, file, metadata)
       }
     )
+
+    inputFile.value = ''
+    progress = false
   }
 
   async function attachFiles (files: File[] | FileList): Promise<void> {
@@ -271,6 +288,17 @@
 
   let progressItems: Ref<Doc>[] = []
 </script>
+
+<input
+  bind:this={inputFile}
+  disabled={inputFile == null}
+  multiple
+  type="file"
+  name="file"
+  id="fileInput"
+  style="display: none"
+  on:change={fileSelected}
+/>
 
 {#key object?._id}
   <!-- svelte-ignore a11y-no-static-element-interactions -->

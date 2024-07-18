@@ -20,8 +20,6 @@ import { getCurrentLanguage } from '@hcengineering/theme'
 import type { FileUploadCallback, FileUploadOptions } from '@hcengineering/uploader'
 
 import Uppy, { type IndexedObject, type UppyOptions } from '@uppy/core'
-import ScreenCapture from '@uppy/screen-capture'
-import Webcam from '@uppy/webcam'
 import XHR from '@uppy/xhr-upload'
 
 import En from '@uppy/locales/lib/en_US'
@@ -71,21 +69,18 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
     }
   }
 
-  const uppy = new Uppy<UppyMeta, UppyBody>(uppyOptions)
-    .use(ScreenCapture)
-    .use(Webcam)
-    .use(XHR, {
-      endpoint: getMetadata(presentation.metadata.UploadURL) ?? '',
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
-      },
-      getResponseData: (body: string): UppyBody => {
-        return {
-          uuid: body
-        }
+  const uppy = new Uppy<UppyMeta, UppyBody>(uppyOptions).use(XHR, {
+    endpoint: getMetadata(presentation.metadata.UploadURL) ?? '',
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
+    },
+    getResponseData: (body: string): UppyBody => {
+      return {
+        uuid: body
       }
-    })
+    }
+  })
 
   if (onFileUploaded != null) {
     uppy.addPostProcessor(async (fileIds: string[]) => {
