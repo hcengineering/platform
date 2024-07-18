@@ -24,11 +24,13 @@ import { RPCHandler } from '@hcengineering/rpc'
 import { getStatistics, wipeStatistics } from './stats'
 import { LOGGING_ENABLED, type ConnectionSocket, type HandleRequestFunction, type SessionManager } from './types'
 
-import { type StorageAdapter, type PipelineFactory } from '@hcengineering/server-core'
+import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 import { Readable } from 'stream'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+
+const rpcHandler = new RPCHandler()
 
 interface WebsocketUserData extends WebsocketData {
   backPressure?: Promise<void>
@@ -54,8 +56,6 @@ export function startUWebsocketServer (
   if (LOGGING_ENABLED) console.log(`starting U server on port ${port} ...`)
 
   const uAPP = uWebSockets.App()
-
-  const rpcHandler = new RPCHandler()
 
   const writeStatus = (response: HttpResponse, status: string): HttpResponse => {
     return response
@@ -374,7 +374,6 @@ function createWebSocketClientSocket (
     email: string
     mode: any
     model: any
-    rpcHandler: RPCHandler
   },
   ws: uWebSockets.WebSocket<WebsocketUserData>,
   data: WebsocketUserData
@@ -392,13 +391,13 @@ function createWebSocketClientSocket (
       }
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
-      return wrData.rpcHandler.readRequest(buffer, binary)
+      return rpcHandler.readRequest(buffer, binary)
     },
     send: async (ctx, msg, binary, compression): Promise<number> => {
       if (data.backPressure !== undefined) {
         await data.backPressure
       }
-      const serialized = wrData.rpcHandler.serialize(msg, binary)
+      const serialized = rpcHandler.serialize(msg, binary)
       try {
         const sendR = ws.send(serialized, binary, compression)
         if (sendR === 2) {

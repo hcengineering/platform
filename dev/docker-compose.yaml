@@ -52,8 +52,7 @@ services:
       - SERVER_PORT=3000
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://mongodb:27017
-      - TRANSACTOR_URL=ws://transactor:3333
-      - ENDPOINT_URL=ws://localhost:3333
+      - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://front:8080
       - INIT_WORKSPACE=demo-tracker
@@ -98,7 +97,6 @@ services:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3000
-      - TRANSACTOR_URL=ws://transactor:3333
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27017
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -118,7 +116,6 @@ services:
   #     - ACCOUNTS_URL=http://localhost:3000
   #     - FRONT_URL=http://localhost:8084
   #     - UPLOAD_URL=/files
-  #     - TRANSACTOR_URL=ws://localhost:3333
   #     - ELASTIC_URL=http://elastic:9200
   #     - STORAGE_CONFIG=${STORAGE_CONFIG}
   transactor:

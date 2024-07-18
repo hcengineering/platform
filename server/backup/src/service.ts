@@ -22,6 +22,7 @@ import {
   type MeasureContext,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
+import { listAccountWorkspaces } from '@hcengineering/server-client'
 import {
   BackupClientOps,
   SessionContextImpl,
@@ -31,26 +32,7 @@ import {
 } from '@hcengineering/server-core'
 import { backup } from '.'
 import { createStorageBackupStorage } from './storage'
-
-async function getWorkspaces (accounts: string, token: string): Promise<BaseWorkspaceInfo[]> {
-  const workspaces = await (
-    await fetch(accounts, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'listWorkspaces',
-        params: [token]
-      })
-    })
-  ).json()
-
-  return (workspaces.result as BaseWorkspaceInfo[]) ?? []
-}
-
 export interface BackupConfig {
-  TransactorURL: string
   AccountsURL: string
   Token: string
 
@@ -99,7 +81,7 @@ class BackupWorker {
 
   async backup (ctx: MeasureContext): Promise<BaseWorkspaceInfo[]> {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
-    const workspaces = (await getWorkspaces(this.config.AccountsURL, this.config.Token)).filter((it) => {
+    const workspaces = (await listAccountWorkspaces(this.config.Token)).filter((it) => {
       return !workspacesIgnore.has(it.workspace)
     })
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
@@ -140,8 +122,9 @@ class BackupWorker {
           workspaceUrl: ws.workspaceUrl ?? ''
         }
         const pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
+
         await ctx.with('backup', { workspace: ws.workspace }, async (ctx) => {
-          await backup(ctx, this.config.TransactorURL, getWorkspaceId(ws.workspace, ws.productId), storage, {
+          await backup(ctx, ws.endpoint, getWorkspaceId(ws.workspace, ws.productId), storage, {
             skipDomains: [],
             force: false,
             recheck: false,

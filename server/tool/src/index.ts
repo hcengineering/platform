@@ -407,7 +407,7 @@ export async function upgradeModel (
 
       if (connection === undefined) {
         // We need to send reboot for workspace
-        console.info('send force close')
+        ctx.info('send force close', { workspace: workspaceId.name, transactorUrl })
         const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
         const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
         await fetch(

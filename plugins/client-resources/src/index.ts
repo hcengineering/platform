@@ -14,11 +14,10 @@
 //
 
 import clientPlugin from '@hcengineering/client'
+import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
   AccountClient,
-  ClientConnectEvent,
   LoadModelResponse,
-  MeasureContext,
   Tx,
   TxHandler,
   TxPersistenceStore,
@@ -71,14 +70,7 @@ function decodeTokenPayload (token: string): any {
 export default async () => {
   return {
     function: {
-      GetClient: async (
-        token: string,
-        endpoint: string,
-        onUpgrade?: () => void,
-        onUnauthorized?: () => void,
-        onConnect?: (event: ClientConnectEvent, data: any) => void,
-        ctx?: MeasureContext
-      ): Promise<AccountClient> => {
+      GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
         const client = createClient(
@@ -88,7 +80,7 @@ export default async () => {
             const upgradeHandler: TxHandler = (...txes: Tx[]) => {
               for (const tx of txes) {
                 if (tx?._class === core.class.TxModelUpgrade) {
-                  onUpgrade?.()
+                  opt?.onUpgrade?.()
                   return
                 }
                 if (tx?._class === core.class.TxWorkspaceEvent) {
@@ -105,15 +97,7 @@ export default async () => {
               handler(...txes)
             }
             const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
-            const clientConnection = connect(
-              url,
-              upgradeHandler,
-              tokenPayload.workspace,
-              tokenPayload.email,
-              onUpgrade,
-              onUnauthorized,
-              onConnect
-            )
+            const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, opt)
             const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
             if ((connectTimeout ?? 0) > 0) {
               return new Promise<ClientConnection>((resolve, reject) => {
@@ -121,6 +105,7 @@ export default async () => {
                   if (!clientConnection.isConnected()) {
                     clientConnection.onConnect = undefined
                     void clientConnection?.close()
+                    void opt?.onDialTimeout?.()
                     reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                   }
                 }, connectTimeout)
@@ -135,7 +120,7 @@ export default async () => {
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
           createModelPersistence(getWSFromToken(token)),
-          ctx
+          opt?.ctx
         )
         return await client
       }

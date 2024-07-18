@@ -18,7 +18,6 @@ import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineeri
 import { UNAUTHORIZED } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
-import compression from 'compression'
 import cors from 'cors'
 import express, { type Response as ExpressResponse } from 'express'
 import http, { type IncomingMessage } from 'http'
@@ -27,11 +26,13 @@ import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { getStatistics, wipeStatistics } from './stats'
 import { LOGGING_ENABLED, type ConnectionSocket, type HandleRequestFunction, type SessionManager } from './types'
 
-import { type StorageAdapter, type PipelineFactory } from '@hcengineering/server-core'
+import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import 'bufferutil'
 import 'utf-8-validate'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+
+const rpcHandler = new RPCHandler()
 
 /**
  * @public
@@ -60,25 +61,8 @@ export function startHttpServer (
     })
   }
 
-  const rpcHandler = new RPCHandler()
-
   const app = express()
   app.use(cors())
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
-
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 1,
-      memLevel: 9
-    })
-  )
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 
@@ -433,7 +417,6 @@ function createWebsocketClientSocket (
     email: string
     mode: any
     model: any
-    rpcHandler: RPCHandler
   }
 ): ConnectionSocket {
   const cs: ConnectionSocket = {
@@ -444,12 +427,12 @@ function createWebsocketClientSocket (
       ws.close()
     },
     readRequest: (buffer: Buffer, binary: boolean) => {
-      return data.rpcHandler.readRequest(buffer, binary)
+      return rpcHandler.readRequest(buffer, binary)
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
       const sst = Date.now()
-      const smsg = data.rpcHandler.serialize(msg, binary)
+      const smsg = rpcHandler.serialize(msg, binary)
       ctx.measure('serialize', Date.now() - sst)
 
       ctx.measure('send-data', smsg.length)

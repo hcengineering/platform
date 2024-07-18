@@ -20,9 +20,6 @@ import devmodel, { devModelId } from '@hcengineering/devmodel'
 import client from '@hcengineering/client'
 
 export function configurePlatformDevServer() {  
-  console.log('Use Endpoint override:', process.env.LOGIN_ENDPOINT)
-  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-
   // Set devmodel to hook client to be able to present all activity
   enableDevModel()
 }
