@@ -69,7 +69,7 @@ import {
   StorageConfiguration,
   type StorageAdapter
 } from '@hcengineering/server-core'
-import { createIndexStages, createServerPipeline } from '@hcengineering/server-pipeline'
+import { createIndexStages, createServerPipeline, registerServerPlugins } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -978,6 +978,7 @@ export async function createWorkspace (
       const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
       try {
+        registerServerPlugins()
         const factory: PipelineFactory = createServerPipeline(
           ctx,
           mongodbUri,
