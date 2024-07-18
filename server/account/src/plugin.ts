@@ -23,6 +23,9 @@ export const accountPlugin = plugin(accountId, {
     RecoverySubject: '' as IntlString,
     InviteText: '' as IntlString,
     InviteHTML: '' as IntlString,
-    InviteSubject: '' as IntlString
+    InviteSubject: '' as IntlString,
+    OtpText: '' as IntlString,
+    OtpHTML: '' as IntlString,
+    OtpSubject: '' as IntlString
   }
 })

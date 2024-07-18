@@ -8,6 +8,9 @@
     "RecoverySubject": "Recuperação de Senha",
     "InviteText": "Foi convidado para {ws}. Para se juntar, cole o seguinte link na barra de URL do seu navegador web: {link}. Link válido por {expHours} horas.",
     "InviteHTML": "<p>Foi convidado para {ws}. Para se juntar, clique no link abaixo: <a href={link}>Juntar-se</a></p><p>Se o link de convite acima não funcionar, cole o seguinte link na barra de URL do seu navegador web: {link}</p><p>Link válido por {expHours} horas.</p>",
-    "InviteSubject": "Convite para {ws}"
+    "InviteSubject": "Convite para {ws}",
+    "OtpText": "Por favor, confirme o seu OTP em {app}\n\n Aqui está o seu código OTP: {otp}",
+    "OtpHTML": "<h2>Por favor, confirme o seu OTP em {app}</h2>\n\n <p>Aqui está o seu código OTP: <b>{otp}</b></p>",
+    "OtpSubject": "Verificação de OTP de {app}"
   }
 }

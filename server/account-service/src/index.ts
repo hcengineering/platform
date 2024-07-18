@@ -7,7 +7,8 @@ import account, {
   UpgradeWorker,
   accountId,
   cleanInProgressWorkspaces,
-  getMethods
+  getMethods,
+  cleanExpiredOtp
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -112,6 +113,10 @@ export function serveAccount (
 
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)
+
+    setInterval(() => {
+      void cleanExpiredOtp(db)
+    }, 60 * 1000)
 
     const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
     if (performUpgrade) {

@@ -8,6 +8,9 @@
     "RecoverySubject": "Password recovery",
     "InviteText": "You were invited to {ws}. To join, please paste the following link into your browser's URL bar: {link}. The link is valid for {expHours} hours.",
     "InviteHTML": "<p>You were invited to {ws}. To join, please click the link below: <a href={link}>Join</a></p><p>If the invite link above does not work, paste the following link into your browser's URL bar: {link}</p><p>The link is valid for {expHours} hours.</p>",
-    "InviteSubject": "Invitation to {ws}"
+    "InviteSubject": "Invitation to {ws}",
+    "OtpText": "Please confirm your OTP on {app}\n\n Here is your OTP code: {otp}",
+    "OtpHTML": "<h2>Please confirm your OTP on {app}</h2>\n\n <p>Here is your OTP code: <b>{otp}</b></p>",
+    "OtpSubject": "{app} OTP verification"
   }
 }

@@ -1085,6 +1085,9 @@ dependencies:
   '@types/node-fetch':
     specifier: ~2.6.2
     version: 2.6.11
+  '@types/otp-generator':
+    specifier: ^4.0.2
+    version: 4.0.2
   '@types/passport-github2':
     specifier: ^1.2.9
     version: 1.2.9
@@ -1361,6 +1364,9 @@ dependencies:
   node-fetch:
     specifier: ^2.6.6
     version: 2.7.0
+  otp-generator:
+    specifier: ^4.0.1
+    version: 4.0.1
   p-queue:
     specifier: ~7.3.0
     version: 7.3.4
@@ -7811,6 +7817,10 @@ packages:
 
   /@types/object.pick@1.3.4:
     resolution: {integrity: sha512-5PjwB0uP2XDp3nt5u5NJAG2DORHIRClPzWT/TTZhJ2Ekwe8M5bA9tvPdi9NO/n2uvu2/ictat8kgqvLfcIE1SA==}
+    dev: false
+
+  /@types/otp-generator@4.0.2:
+    resolution: {integrity: sha512-9+qqWzuFb332hXPbLgjUyOXlbcaTQkmkmqQjTduvNuOmPV5fW+iLv70JsVEhdUy0DWi4kY34++HDCaWl6N0AYg==}
     dev: false
 
   /@types/parse-json@4.0.2:
@@ -14837,6 +14847,11 @@ packages:
       forwarded-parse: 2.1.2
     dev: false
 
+  /otp-generator@4.0.1:
+    resolution: {integrity: sha512-2TJ52vUftA0+J3eque4wwVtpaL4/NdIXDL0gFWFJFVUAZwAN7+9tltMhL7GCNYaHJtuONoier8Hayyj4HLbSag==}
+    engines: {node: '>=14.10.0'}
+    dev: false
+
   /p-cancelable@2.1.1:
     resolution: {integrity: sha512-BZOr3nRQHOntUjTrH8+Lh54smKHoHyur8We1V8DSMVrl5A2malOOwuJRnKRDjSnkoeBh4at6BwEnb5I7Jl31wg==}
     engines: {node: '>=8'}
@@ -18674,13 +18689,14 @@ packages:
     dev: false
 
   file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-JTnXiO6DfjRlbofOhtUcTRVJbvTjlVGRk+n1uFvLhQrH0JtaGxlpeeXRAtc49yVlMGr6PuEsiw64yl/HvXuIGQ==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-iH8UC2zbCbgmvf6EWNt6haa75VsVHqQMS0Nh96A11a1Gwwhv0MfnXOegADTFDmW6Ju3hOorRKlNvkdZXKdWHVA==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
       '@types/node-fetch': 2.6.11
+      '@types/otp-generator': 4.0.2
       '@types/ws': 8.5.10
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -18692,6 +18708,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       mongodb: 6.8.0
       node-fetch: 2.7.0
+      otp-generator: 4.0.1
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3

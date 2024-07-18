@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
-import login, { loginId, type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
+import { loginId, type LoginInfo, type OtpInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
   PlatformError,
@@ -24,7 +24,8 @@ import {
   translate,
   unknownError,
   unknownStatus,
-  type Status
+  Status,
+  Severity
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
@@ -37,6 +38,8 @@ import {
   type Location
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
+
+import login from './plugin'
 import { type Pages } from './index'
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
@@ -1023,5 +1026,125 @@ export async function getProviders (): Promise<string[]> {
   } catch (err: any) {
     Analytics.handleError(err)
     return []
+  }
+}
+
+export async function sendOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'sendOtp',
+    params: [email]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+
+    if (result.error == null) {
+      Analytics.handleEvent('sendOtp')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Send otp error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    console.error('Send otp error', err)
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function loginWithOtp (email: string, otp: string): Promise<[Status, LoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(login.metadata.OverrideLoginToken)
+  if (token !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token, endpoint, email, confirmed: true }]
+    }
+  }
+
+  const request = {
+    method: 'validateOtp',
+    params: [email, otp]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+
+    if (result.error == null) {
+      Analytics.handleEvent('loginWithOtp')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Login with otp error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    console.error('Login with otp error', err)
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function doLoginNavigate (
+  result: LoginInfo | undefined,
+  updateStatus: (status: Status) => void,
+  navigateUrl?: string
+): Promise<void> {
+  if (result !== undefined) {
+    setMetadata(presentation.metadata.Token, result.token)
+    setMetadataLocalStorage(login.metadata.LastToken, result.token)
+    setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+    setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+    if (navigateUrl !== undefined) {
+      try {
+        const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+        const workspace = loc.path[1]
+        if (workspace !== undefined) {
+          const workspaces = await getWorkspaces()
+          if (workspaces.find((p) => p.workspace === workspace) !== undefined) {
+            updateStatus(new Status(Severity.INFO, login.status.ConnectingToServer, {}))
+
+            const [loginStatus, result] = await selectWorkspace(workspace)
+            updateStatus(loginStatus)
+            navigateToWorkspace(workspace, result, navigateUrl)
+            return
+          }
+        }
+      } catch (err: any) {
+        // Json parse error could be ignored
+      }
+    }
+    const loc = getCurrentLocation()
+    loc.path[1] = result.confirmed ? 'selectWorkspace' : 'confirmationSend'
+    loc.path.length = 2
+    if (navigateUrl !== undefined) {
+      loc.query = { ...loc.query, navigateUrl }
+    }
+    navigate(loc)
   }
 }
