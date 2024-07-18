@@ -18,7 +18,6 @@ import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineeri
 import { UNAUTHORIZED } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
-import compression from 'compression'
 import cors from 'cors'
 import express, { type Response as ExpressResponse } from 'express'
 import http, { type IncomingMessage } from 'http'
@@ -64,21 +63,6 @@ export function startHttpServer (
 
   const app = express()
   app.use(cors())
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
-
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 1,
-      memLevel: 9
-    })
-  )
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 

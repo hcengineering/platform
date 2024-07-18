@@ -887,7 +887,7 @@ export async function getProviders (): Promise<string[]> {
         Analytics.handleError(err)
         return []
       }
-      await new Promise<void>(resolve => setTimeout(resolve, 100))
+      await new Promise<void>((resolve) => setTimeout(resolve, 100))
     }
   }
   return []

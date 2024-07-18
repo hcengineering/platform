@@ -396,7 +396,7 @@ class Connection implements ClientConnection {
 
     this.dialTimer = setTimeout(() => {
       if (!opened && !this.closed) {
-        this.opt?.onDialTimeout?.()
+        void this.opt?.onDialTimeout?.()
         this.scheduleOpen(true)
       }
     }, dialTimeout)

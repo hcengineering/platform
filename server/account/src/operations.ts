@@ -107,7 +107,10 @@ const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: Endpoi
   if (transactorsUrl === undefined) {
     throw new Error('Please provide transactor endpoint url')
   }
-  const endpoints = transactorsUrl.split(',').map(it => it.trim()).filter(it => it.length > 0)
+  const endpoints = transactorsUrl
+    .split(',')
+    .map((it) => it.trim())
+    .filter((it) => it.length > 0)
 
   if (endpoints.length === 0) {
     throw new Error('Please provide transactor endpoint url')
