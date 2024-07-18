@@ -36,7 +36,6 @@ export function startBackup (
   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
   const workspaceStorageAdapter = buildStorageFromConfig(workspaceStorageConfig, config.MongoURL)
 
-
   const pipelineFactory = pipelineFactoryFactory(config.MongoURL, workspaceStorageAdapter)
 
   // A token to access account service
