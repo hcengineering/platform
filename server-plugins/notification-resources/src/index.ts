@@ -34,6 +34,7 @@ import core, {
   Data,
   Doc,
   DocumentUpdate,
+  generateId,
   MeasureContext,
   MixinUpdate,
   Ref,
@@ -73,8 +74,8 @@ import serverNotification, {
   getPersonAccount,
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE,
-  UserInfo,
-  NOTIFICATION_TITLE_SIZE
+  NOTIFICATION_TITLE_SIZE,
+  UserInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
 import { stripTags } from '@hcengineering/text'
@@ -805,9 +806,27 @@ export async function createCollabDocInfo (
 
     if (info === undefined) continue
 
-    res = res.concat(
-      await getNotificationTxes(control, object, tx, originTx, info, sender, params, notifyContexts, docMessages)
+    const targetRes = await getNotificationTxes(
+      control,
+      object,
+      tx,
+      originTx,
+      info,
+      sender,
+      params,
+      notifyContexts,
+      docMessages
     )
+    const ids = new Set(res.map((it) => it._id))
+    if (info.account?.email !== undefined) {
+      const id = generateId() as string
+      control.operationContext.derived.targets[id] = (it) => {
+        if (ids.has(it._id)) {
+          return [info.account?.email as string]
+        }
+      }
+    }
+    res = res.concat(targetRes)
   }
   return res
 }
