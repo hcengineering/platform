@@ -137,13 +137,11 @@ export async function connect (title: string): Promise<Client | undefined> {
     'create-client',
     {},
     async (ctx) =>
-      await clientFactory(
-        token,
-        endpoint,
-        () => {
+      await clientFactory(token, endpoint, {
+        onUpgrade: () => {
           location.reload()
         },
-        () => {
+        onUnauthorized: () => {
           clearMetadata(ws)
           navigate({
             path: [loginId],
@@ -151,7 +149,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           })
         },
         // We need to refresh all active live queries and clear old queries.
-        (event: ClientConnectEvent, data: any) => {
+        onConnect: (event: ClientConnectEvent, data: any) => {
           console.log('WorkbenchClient: onConnect', event)
           if (event === ClientConnectEvent.Maintenance) {
             if (data != null && data.total !== 0) {
@@ -212,8 +210,15 @@ export async function connect (title: string): Promise<Client | undefined> {
             console.error(err)
           }
         },
-        ctx
-      )
+        ctx,
+        onDialTimeout: async () => {
+          const newLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws, token))[1])
+          if (newLoginInfo?.endpoint !== endpoint) {
+            console.log('endpoint changed, reloading')
+            location.reload()
+          }
+        }
+      })
   )
 
   _client = newClient

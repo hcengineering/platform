@@ -55,17 +55,18 @@ export enum ClientSocketReadyState {
   CLOSED = 3
 }
 
+export interface ClientFactoryOptions {
+  onUpgrade?: () => void
+  onUnauthorized?: () => void
+  onConnect?: (event: ClientConnectEvent, data: any) => void
+  ctx?: MeasureContext
+  onDialTimeout?: () => void | Promise<void>
+}
+
 /**
  * @public
  */
-export type ClientFactory = (
-  token: string,
-  endpoint: string,
-  onUpgrade?: () => void,
-  onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent, data: any) => void,
-  ctx?: MeasureContext
-) => Promise<AccountClient>
+export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactoryOptions) => Promise<AccountClient>
 
 export default plugin(clientId, {
   metadata: {

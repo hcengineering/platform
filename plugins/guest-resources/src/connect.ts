@@ -58,13 +58,11 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   let version: Version | undefined
   const clientFactory = await getResource(client.function.GetClient)
-  _client = await clientFactory(
-    token,
-    workspaceLoginInfo.endpoint,
-    () => {
+  _client = await clientFactory(token, workspaceLoginInfo.endpoint, {
+    onUpgrade: () => {
       location.reload()
     },
-    () => {
+    onUnauthorized: () => {
       clearMetadata(ws)
       navigate({
         path: [loginId],
@@ -72,7 +70,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    (event: ClientConnectEvent) => {
+    onConnect: (event: ClientConnectEvent) => {
       console.log('WorkbenchClient: onConnect', event)
       try {
         if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
@@ -112,7 +110,7 @@ export async function connect (title: string): Promise<Client | undefined> {
         console.error(err)
       }
     }
-  )
+  })
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
   Analytics.setWorkspace(ws)
