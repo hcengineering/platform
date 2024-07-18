@@ -1072,6 +1072,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-client",
+      "projectFolder": "server/client",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/tests-sanity",
       "projectFolder": "tests/sanity",
       "shouldPublish": false

@@ -18,6 +18,7 @@ import { Node, Schema } from 'prosemirror-model'
 import { prosemirrorJSONToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { defaultExtensions } from './extensions'
+import { MarkupNode } from './markup/model'
 
 /**
  * Get ProseMirror node from Y.Doc content
@@ -113,4 +114,21 @@ export function updateYDocContent (
   } catch (err: any) {
     console.error(err)
   }
+}
+
+/**
+ * Create Y.Doc
+ *
+ * @public
+ */
+export function YDocFromContent (content: MarkupNode, field: string, schema?: Schema, extensions?: Extensions): Doc {
+  schema ??= getSchema(extensions ?? defaultExtensions)
+
+  const res = new Doc({ gc: false })
+
+  const yDoc = prosemirrorJSONToYDoc(schema, content, field)
+  const update = encodeStateAsUpdate(yDoc)
+  applyUpdate(res, update)
+
+  return res
 }

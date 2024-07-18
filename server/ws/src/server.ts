@@ -408,7 +408,8 @@ class TSessionManager implements SessionManager {
       productId: '',
       createProgress: 100,
       creating: false,
-      disabled: false
+      disabled: false,
+      endpoint: ''
     }
   }
 

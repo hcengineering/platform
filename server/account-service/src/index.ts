@@ -24,6 +24,7 @@ import {
 } from '@hcengineering/core'
 import { type MigrateOperation } from '@hcengineering/model'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
+import serverClientPlugin from '@hcengineering/server-client'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
@@ -61,8 +62,6 @@ export function serveAccount (
     process.exit(1)
   }
 
-  const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
-
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
@@ -85,6 +84,7 @@ export function serveAccount (
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
 
+  setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
   setMetadata(account.metadata.SES_URL, ses)
@@ -96,9 +96,11 @@ export function serveAccount (
   if (initWS !== undefined) {
     setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
   }
-  setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
-  setMetadata(toolPlugin.metadata.Transactor, transactorUri)
-  setMetadata(toolPlugin.metadata.UserAgent, 'AccountService')
+  const initScriptUrl = process.env.INIT_SCRIPT_URL
+  if (initScriptUrl !== undefined) {
+    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
+  }
+  setMetadata(serverClientPlugin.metadata.UserAgent, 'AccountService')
 
   let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
 

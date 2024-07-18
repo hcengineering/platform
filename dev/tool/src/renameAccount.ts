@@ -1,6 +1,8 @@
 import { type Account, changeEmail, getAccount, listWorkspacesPure, type Workspace } from '@hcengineering/account'
-import core, { type MeasureContext, TxOperations } from '@hcengineering/core'
+import core, { getWorkspaceId, type MeasureContext, systemAccountEmail, TxOperations } from '@hcengineering/core'
 import contact from '@hcengineering/model-contact'
+import { getTransactorEndpoint } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type Db } from 'mongodb'
 
@@ -8,7 +10,7 @@ export async function renameAccount (
   ctx: MeasureContext,
   db: Db,
   productId: string,
-  transactorUrl: string,
+  accountsUrl: string,
   oldEmail: string,
   newEmail: string
 ): Promise<void> {
@@ -24,7 +26,7 @@ export async function renameAccount (
 
   await changeEmail(ctx, db, account, newEmail)
 
-  await fixWorkspaceEmails(account, db, productId, transactorUrl, oldEmail, newEmail)
+  await fixWorkspaceEmails(account, db, productId, accountsUrl, oldEmail, newEmail)
 }
 
 export async function fixAccountEmails (
@@ -46,7 +48,7 @@ async function fixWorkspaceEmails (
   account: Account,
   db: Db,
   productId: string,
-  transactorUrl: string,
+  accountsUrl: string,
   oldEmail: string,
   newEmail: string
 ): Promise<void> {
@@ -59,8 +61,11 @@ async function fixWorkspaceEmails (
     }
     console.log('checking workspace', ws.workspaceName, ws.workspace)
 
+    const wsid = getWorkspaceId(ws.workspace, productId)
+    const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid))
+
     // Let's connect and update account information.
-    await fixEmailInWorkspace(transactorUrl, ws, oldEmail, newEmail)
+    await fixEmailInWorkspace(endpoint, ws, oldEmail, newEmail)
   }
 }
 

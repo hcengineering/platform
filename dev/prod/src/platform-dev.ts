@@ -20,9 +20,6 @@ import { addLocation, setMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 
 export function configurePlatformDevServer() {  
-  console.log('Use Endpoint override:', process.env.LOGIN_ENDPOINT)
-  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-
   // Set devmodel to hook client to be able to present all activity
   enableDevModel()
 }

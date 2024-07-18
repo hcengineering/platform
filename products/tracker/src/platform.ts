@@ -67,7 +67,6 @@ export async function configurePlatform() {
   }
   setMetadata(telegram.metadata.TelegramURL, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(gmail.metadata.GmailURL, process.env.GMAIL_URL ?? 'http://localhost:8087')
-  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp)
   setMetadata(workbench.metadata.ExcludedApplications, [contact.app.Contacts])

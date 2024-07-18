@@ -113,7 +113,13 @@ export class CommonTrackerPage extends CalendarPage {
     await this.viewButton().click()
     await this.firstOptionButton().click()
     await this.assigneeMenuItem().click()
-    await this.page.keyboard.press('Escape')
+    await this.closePopup()
+  }
+
+  async closePopup (): Promise<void> {
+    while (await this.page.locator('.popup').isVisible()) {
+      await this.page.keyboard.press('Escape')
+    }
   }
 
   async verifyViewOption (panel: string, viewletSelector: string): Promise<void> {
@@ -122,7 +128,7 @@ export class CommonTrackerPage extends CalendarPage {
     await expect(viewlet).toHaveClass(/selected/)
     await this.viewButton().click()
     await expect(this.firstOptionButton()).toContainText('Assignee')
-    await this.page.keyboard.press('Escape')
+    await this.closePopup()
   }
 
   async navigateToComponents (PlatformURI: string): Promise<void> {

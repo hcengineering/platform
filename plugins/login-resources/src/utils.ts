@@ -42,8 +42,6 @@ import { workbenchId } from '@hcengineering/workbench'
 import login from './plugin'
 import { type Pages } from './index'
 
-const DEV_WORKSPACE = 'DEV WORKSPACE'
-
 /**
  * Perform a login operation to required workspace with user credentials.
  */
@@ -52,14 +50,6 @@ export async function doLogin (email: string, password: string): Promise<[Status
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, confirmed: true }]
-    }
   }
 
   const request = {
@@ -103,14 +93,6 @@ export async function signUp (
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, confirmed: true }]
-    }
-  }
-
   const request = {
     method: 'createAccount',
     params: [email, password, first, last]
@@ -145,15 +127,6 @@ export async function createWorkspace (
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, confirmed: true, workspace: workspaceName }]
-    }
   }
 
   const token = getMetadata(presentation.metadata.Token)
@@ -200,20 +173,6 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [
-        {
-          workspace: DEV_WORKSPACE,
-          workspaceId: DEV_WORKSPACE,
-          lastVisit: 0
-        }
-      ]
-    }
-  }
-
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -254,15 +213,6 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-    if (endpoint !== undefined) {
-      return { token: overrideToken, endpoint, email, confirmed: true }
-    }
-  }
-
   const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     if (doNavigate) {
@@ -298,23 +248,17 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
   }
 }
 
-export async function selectWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+export async function selectWorkspace (
+  workspace: string,
+  token: string | null | undefined
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, workspace, confirmed: true }]
-    }
-  }
-
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  token = token ?? getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[0] = 'login'
@@ -326,7 +270,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
 
   const request = {
     method: 'selectWorkspace',
-    params: [workspace]
+    params: [workspace, 'external']
   }
 
   try {
@@ -357,15 +301,6 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, workspace, confirmed: true }]
-    }
   }
 
   const token = getMetadata(presentation.metadata.Token)
@@ -405,14 +340,6 @@ export async function createMissingEmployee (workspace: string): Promise<[Status
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK]
-    }
   }
 
   const token = getMetadata(presentation.metadata.Token)
@@ -488,15 +415,6 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, workspace: DEV_WORKSPACE, confirmed: true }]
-    }
   }
 
   let token = getMetadata(presentation.metadata.Token)
@@ -611,14 +529,6 @@ export async function join (
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, workspace: DEV_WORKSPACE, confirmed: true }]
-    }
-  }
-
   const request = {
     method: 'join',
     params: [email, password, inviteId]
@@ -659,14 +569,6 @@ export async function signUpJoin (
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, workspace: DEV_WORKSPACE, confirmed: true }]
-    }
-  }
-
   const request = {
     method: 'signUpJoin',
     params: [email, password, first, last, inviteId]
@@ -701,13 +603,6 @@ export async function changePassword (oldPassword: string, password: string): Pr
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
   const token = getMetadata(presentation.metadata.Token) as string
 
   const request = {
@@ -738,13 +633,6 @@ export async function leaveWorkspace (email: string): Promise<void> {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
   const token = getMetadata(presentation.metadata.Token) as string
 
   const request = {
@@ -769,13 +657,6 @@ export async function sendInvite (email: string, personId?: Ref<Doc>, role?: Acc
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
   const token = getMetadata(presentation.metadata.Token) as string
 
   const params = [email, personId, role]
@@ -802,13 +683,6 @@ export async function requestPassword (email: string): Promise<Status> {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return OK
-    }
-  }
   const request = {
     method: 'requestPassword',
     params: [email]
@@ -840,13 +714,6 @@ export async function confirm (email: string): Promise<[Status, LoginInfo | unde
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, confirmed: true }]
-    }
-  }
   const request = {
     method: 'confirm',
     params: [email]
@@ -939,7 +806,7 @@ export async function afterConfirm (): Promise<void> {
   if (joinedWS.length === 0) {
     goTo('createWorkspace')
   } else if (joinedWS.length === 1) {
-    const result = (await selectWorkspace(joinedWS[0].workspace))[1]
+    const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
@@ -961,12 +828,6 @@ export async function getEnpoint (): Promise<string | undefined> {
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-
-  if (endpoint !== undefined) {
-    return endpoint
   }
 
   const params: [] = []
@@ -1019,14 +880,20 @@ export async function getProviders (): Promise<string[]> {
     throw new Error('accounts url not specified')
   }
 
-  try {
-    const response = await fetch(concatLink(accountsUrl, '/providers'))
-    const result = await response.json()
-    return result
-  } catch (err: any) {
-    Analytics.handleError(err)
-    return []
+  for (let i = 0; i < 5; i++) {
+    try {
+      const response = await fetch(concatLink(accountsUrl, '/providers'))
+      const result = await response.json()
+      return result
+    } catch (err: any) {
+      if (i === 4) {
+        Analytics.handleError(err)
+        return []
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 100))
+    }
   }
+  return []
 }
 
 export async function sendOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
@@ -1070,14 +937,6 @@ export async function loginWithOtp (email: string, otp: string): Promise<[Status
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, confirmed: true }]
-    }
   }
 
   const request = {
@@ -1129,7 +988,7 @@ export async function doLoginNavigate (
           if (workspaces.find((p) => p.workspace === workspace) !== undefined) {
             updateStatus(new Status(Severity.INFO, login.status.ConnectingToServer, {}))
 
-            const [loginStatus, result] = await selectWorkspace(workspace)
+            const [loginStatus, result] = await selectWorkspace(workspace, undefined)
             updateStatus(loginStatus)
             navigateToWorkspace(workspace, result, navigateUrl)
             return

@@ -21,7 +21,7 @@
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/collaborator",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator",
-    "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 TRANSACTOR_URL=ws://localhost:3333 SECRET=secret MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ts-node src/__start.ts",
+    "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 SECRET=secret MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ts-node src/__start.ts",
     "format": "format src",
     "test": "jest --passWithNoTests --silent",
     "_phase:build": "compile transpile src",
@@ -48,7 +48,7 @@
     "@types/express": "^4.17.13",
     "@types/cors": "^2.8.12",
     "@types/compression": "~1.7.2",
-    "@types/ws": "^8.5.3",
+    "@types/ws": "^8.5.11",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5"
@@ -58,7 +58,7 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-tool": "^0.6.0",
+    "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
@@ -76,10 +76,9 @@
     "mongodb": "^6.8.0",
     "yjs": "^13.5.52",
     "y-prosemirror": "^1.2.1",
-    "express": "^4.18.3",
+    "express": "^4.19.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "compression": "~1.7.4",
-    "ws": "^8.16.0"
+    "ws": "^8.18.0"
   }
 }

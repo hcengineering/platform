@@ -50,8 +50,7 @@ services:
       - ACCOUNT_PORT=3003
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://mongodb:27018
-      - TRANSACTOR_URL=ws://transactor:3334
-      - ENDPOINT_URL=ws://localhost:3334
+      - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding-test.json
@@ -125,7 +124,6 @@ services:
       - COLLABORATOR_PORT=3079
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3003
-      - TRANSACTOR_URL=ws://transactor:3334
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -147,7 +145,6 @@ services:
   #     - account
   #   environment:
   #     - SECRET=secret
-  #     - TRANSACTOR_URL=ws://transactor:3334
   #     - ACCOUNTS_URL=http://account:3003
 volumes:
   files:

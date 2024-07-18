@@ -664,4 +664,6 @@ export interface BaseWorkspaceInfo {
 
   creating?: boolean
   createProgress?: number // Some progress
+
+  endpoint: string
 }
