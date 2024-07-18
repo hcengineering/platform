@@ -11,6 +11,7 @@ export class LoginPage {
   inputEmail = (): Locator => this.page.locator('input[name=email]')
   inputPassword = (): Locator => this.page.locator('input[name=current-password]')
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
+  loginWithPassword = (): Locator => this.page.locator('a', { hasText: 'Login with password' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
   invalidPasswordMessage = (): Locator => this.page.getByText('Invalid password')
   recoverLink = (): Locator => this.page.getByRole('link', { name: 'Recover' })
@@ -42,6 +43,7 @@ export class LoginPage {
   }
 
   async login (email: string, password: string): Promise<void> {
+    await this.loginWithPassword().click()
     await this.inputEmail().fill(email)
     await this.inputPassword().fill(password)
     expect(await this.buttonLogin().isEnabled()).toBe(true)
