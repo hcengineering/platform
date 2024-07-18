@@ -13,6 +13,7 @@ const toolPlugin = plugin(toolId, {
     Endpoint: '' as Metadata<string>,
     Transactor: '' as Metadata<string>,
     InitWorkspace: '' as Metadata<string>,
+    InitScriptURL: '' as Metadata<string>,
     UserAgent: '' as Metadata<string>
   }
 })
