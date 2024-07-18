@@ -24,6 +24,7 @@ import contact, {
   Person,
   PersonAccount
 } from '@hcengineering/contact'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import core, {
   AccountRole,
   BaseWorkspaceInfo,
@@ -43,16 +44,32 @@ import core, {
   Version,
   versionToString,
   WorkspaceId,
+  WorkspaceIdWithUrl,
   type Branding
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, initializeWorkspace, initModel, upgradeModel } from '@hcengineering/server-tool'
+import toolPlugin, {
+  connect,
+  initializeWorkspace,
+  initModel,
+  updateModel,
+  prepareTools,
+  upgradeModel
+} from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
-import { type StorageAdapter } from '../../core/types'
+import {
+  DummyFullTextAdapter,
+  Pipeline,
+  PipelineFactory,
+  SessionContextImpl,
+  StorageConfiguration,
+  type StorageAdapter
+} from '@hcengineering/server-core'
+import { createIndexStages, createServerPipeline } from '@hcengineering/server-pipeline'
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -940,17 +957,72 @@ export async function createWorkspace (
     }
     const model: Tx[] = []
     try {
+      const wsUrl: WorkspaceIdWithUrl = {
+        name: workspaceInfo.workspace,
+        productId: workspaceInfo.productId,
+        workspaceName: workspaceInfo.workspaceName ?? '',
+        workspaceUrl: workspaceInfo.workspaceUrl ?? ''
+      }
+
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
 
       await childLogger.withLog('init-workspace', {}, async (ctx) => {
-        await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 20) })
+        await initModel(ctx, wsId, txes, ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 10) })
         })
       })
 
-      await initializeWorkspace(ctx, branding, getTransactor(), wsId, ctxModellogger, async (value) => {
-        await updateInfo({ createProgress: 30 + Math.round((Math.min(value, 100) / 100) * 65) })
-      })
+      const { mongodbUri } = prepareTools([])
+
+      const storageConfig: StorageConfiguration = storageConfigFromEnv()
+      const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+
+      try {
+        const factory: PipelineFactory = createServerPipeline(
+          ctx,
+          mongodbUri,
+          {
+            externalStorage: storageAdapter,
+            fullTextUrl: 'http://localost:9200',
+            indexParallel: 0,
+            indexProcessing: 0,
+            rekoniUrl: '',
+            usePassedCtx: true
+          },
+          {
+            fulltextAdapter: {
+              factory: async () => new DummyFullTextAdapter(),
+              url: '',
+              stages: (adapter, storage, storageAdapter, contentAdapter) =>
+                createIndexStages(
+                  ctx.newChild('stages', {}),
+                  wsUrl,
+                  branding,
+                  adapter,
+                  storage,
+                  storageAdapter,
+                  contentAdapter,
+                  0,
+                  0
+                )
+            }
+          }
+        )
+
+        const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
+        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
+
+        await updateModel(ctx, wsId, migrationOperation, client, ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 10) })
+        })
+
+        await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: 30 + Math.round((Math.min(value, 100) / 100) * 70) })
+        })
+        await pipeline.close()
+      } finally {
+        await storageAdapter.close()
+      }
     } catch (err: any) {
       Analytics.handleError(err)
       return { workspaceInfo, err, client: null as any }
@@ -967,6 +1039,47 @@ export async function createWorkspace (
     await updateInfo({ createProgress: 100, disabled: false, creating: false })
     return { workspaceInfo, model }
   })
+}
+
+function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client {
+  const sctx = new SessionContextImpl(
+    ctx,
+    systemAccountEmail,
+    'backup',
+    true,
+    { targets: {}, txes: [] },
+    wsUrl,
+    null,
+    false
+  )
+
+  return {
+    findAll: async (_class, query, options) => {
+      return await pipeline.findAll(sctx, _class, query, options)
+    },
+    findOne: async (_class, query, options) => {
+      return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
+    },
+    close: async () => {
+      await pipeline.close()
+    },
+    getHierarchy: () => {
+      return pipeline.storage.hierarchy
+    },
+    getModel: () => {
+      return pipeline.storage.modelDb
+    },
+    searchFulltext: async (query, options) => {
+      return {
+        docs: [],
+        total: 0
+      }
+    },
+    tx: async (tx) => {
+      return await pipeline.tx(sctx, tx)
+    },
+    notify: (...tx) => {}
+  }
 }
 
 /**

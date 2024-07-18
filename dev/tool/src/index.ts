@@ -145,6 +145,10 @@ export function devTool (
   if (initWS !== undefined) {
     setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
   }
+  const initScriptUrl = process.env.INIT_SCRIPT_URL
+  if (initScriptUrl !== undefined) {
+    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
+  }
 
   setMetadata(toolPlugin.metadata.Endpoint, transactorUrl)
   setMetadata(toolPlugin.metadata.Transactor, transactorUrl)
