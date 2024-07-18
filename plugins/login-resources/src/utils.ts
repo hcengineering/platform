@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
+import { AccountRole, concatLink, type Doc, type Ref } from '@hcengineering/core'
 import login, { loginId, type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
@@ -877,12 +877,18 @@ export async function getProviders (): Promise<string[]> {
     throw new Error('accounts url not specified')
   }
 
-  try {
-    const response = await fetch(concatLink(accountsUrl, '/providers'))
-    const result = await response.json()
-    return result
-  } catch (err: any) {
-    Analytics.handleError(err)
-    return []
+  for (let i = 0; i < 5; i++) {
+    try {
+      const response = await fetch(concatLink(accountsUrl, '/providers'))
+      const result = await response.json()
+      return result
+    } catch (err: any) {
+      if (i === 4) {
+        Analytics.handleError(err)
+        return []
+      }
+      await new Promise<void>(resolve => setTimeout(resolve, 100))
+    }
   }
+  return []
 }

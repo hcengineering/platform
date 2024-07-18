@@ -33,8 +33,8 @@ dependencies:
     specifier: ^2.9.0
     version: 2.11.2(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
   '@koa/cors':
-    specifier: ^3.1.0
-    version: 3.4.3
+    specifier: ^5.0.0
+    version: 5.0.0
   '@livekit/krisp-noise-filter':
     specifier: ~0.2.1
     version: 0.2.2(livekit-client@2.2.0)
@@ -1059,23 +1059,23 @@ dependencies:
     specifier: ^4.0.9
     version: 4.0.9
   '@types/koa':
-    specifier: 2.14.0
-    version: 2.14.0
+    specifier: ^2.15.0
+    version: 2.15.0
   '@types/koa-bodyparser':
-    specifier: ^4.3.3
+    specifier: ^4.3.12
     version: 4.3.12
   '@types/koa-passport':
-    specifier: ^6.0.0
+    specifier: ^6.0.3
     version: 6.0.3
   '@types/koa-router':
-    specifier: ^7.4.4
+    specifier: ^7.4.8
     version: 7.4.8
   '@types/koa-session':
     specifier: ^6.4.5
     version: 6.4.5
   '@types/koa__cors':
-    specifier: ^3.0.3
-    version: 3.3.1
+    specifier: ^5.0.0
+    version: 5.0.0
   '@types/markdown-it':
     specifier: ~13.0.0
     version: 13.0.8
@@ -1326,13 +1326,13 @@ dependencies:
     specifier: ^0.5.6
     version: 0.5.6
   koa:
-    specifier: ^2.13.1
-    version: 2.15.0
+    specifier: ^2.15.3
+    version: 2.15.3
   koa-bodyparser:
-    specifier: ^4.3.0
+    specifier: ^4.4.1
     version: 4.4.1
   koa-passport:
-    specifier: ~6.0.0
+    specifier: ^6.0.0
     version: 6.0.0
   koa-router:
     specifier: ^12.0.1
@@ -4705,9 +4705,9 @@ packages:
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
     dev: false
 
-  /@koa/cors@3.4.3:
-    resolution: {integrity: sha512-WPXQUaAeAMVaLTEFpoq3T2O1C+FstkjJnDQqy95Ck1UdILajsRhu6mhJ8H2f4NFPRBoCNN+qywTJfq/gGki5mw==}
-    engines: {node: '>= 8.0.0'}
+  /@koa/cors@5.0.0:
+    resolution: {integrity: sha512-x/iUDjcS90W69PryLDIMgFyV21YLTnG9zOpPXS7Bkt2b8AsY3zZsIpOLBkYr9fBcF3HbkKaER5hOBZLfpLgYNw==}
+    engines: {node: '>= 14.0.0'}
     dependencies:
       vary: 1.1.2
     dev: false
@@ -7702,13 +7702,13 @@ packages:
   /@types/koa-bodyparser@4.3.12:
     resolution: {integrity: sha512-hKMmRMVP889gPIdLZmmtou/BijaU1tHPyMNmcK7FAHAdATnRcGQQy78EqTTxLH1D4FTsrxIzklAQCso9oGoebQ==}
     dependencies:
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
     dev: false
 
   /@types/koa-compose@3.2.8:
     resolution: {integrity: sha512-4Olc63RY+MKvxMwVknCUDhRQX1pFQoBZ/lXcRLP69PQkEpze/0cr8LNqJQe5NFb/b19DWi2a5bTi2VAlQzhJuA==}
     dependencies:
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
     dev: false
 
   /@types/koa-morgan@1.0.8:
@@ -7721,21 +7721,21 @@ packages:
   /@types/koa-passport@6.0.3:
     resolution: {integrity: sha512-9iV8aiSICfBZpqkkzUshqxN2wTuoj4HGRRH0Idv3lHhXV9rZRCOyDdJSg+vZ6RHSQg0ZeBeAdIL4r/l8bR4SPA==}
     dependencies:
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
       '@types/passport': 1.0.16
     dev: false
 
   /@types/koa-router@7.4.8:
     resolution: {integrity: sha512-SkWlv4F9f+l3WqYNQHnWjYnyTxYthqt8W9az2RTdQW7Ay8bc00iRZcrb8MC75iEfPqnGcg2csEl8tTG1NQPD4A==}
     dependencies:
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
     dev: false
 
   /@types/koa-session@6.4.5:
     resolution: {integrity: sha512-Vc6+fslnPuMH2v9y80WYeo39UMo8mweuNNthKCwYU2ZE6l5vnRrzRU3BRvexKwsoI5sxsRl5CxDsBlLI8kY/XA==}
     dependencies:
       '@types/cookies': 0.9.0
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
     dev: false
 
   /@types/koa@2.14.0:
@@ -7751,10 +7751,23 @@ packages:
       '@types/node': 20.11.19
     dev: false
 
-  /@types/koa__cors@3.3.1:
-    resolution: {integrity: sha512-aFGYhTFW7651KhmZZ05VG0QZJre7QxBxDj2LF1lf6GA/wSXEfKVAJxiQQWzRV4ZoMzQIO8vJBXKsUcRuvYK9qw==}
+  /@types/koa@2.15.0:
+    resolution: {integrity: sha512-7QFsywoE5URbuVnG3loe03QXuGajrnotr3gQkXcEBShORai23MePfFYdhz90FEtBBpkyIYQbVD+evKtloCgX3g==}
     dependencies:
-      '@types/koa': 2.14.0
+      '@types/accepts': 1.3.7
+      '@types/content-disposition': 0.5.8
+      '@types/cookies': 0.9.0
+      '@types/http-assert': 1.5.5
+      '@types/http-errors': 2.0.4
+      '@types/keygrip': 1.0.6
+      '@types/koa-compose': 3.2.8
+      '@types/node': 20.11.19
+    dev: false
+
+  /@types/koa__cors@5.0.0:
+    resolution: {integrity: sha512-LCk/n25Obq5qlernGOK/2LUwa/2YJb2lxHUkkvYFDOpLXlVI6tKcdfCHRBQnOY4LwH6el5WOLs6PD/a8Uzau6g==}
+    dependencies:
+      '@types/koa': 2.15.0
     dev: false
 
   /@types/linkify-it@3.0.5:
@@ -13774,8 +13787,8 @@ packages:
       - supports-color
     dev: false
 
-  /koa@2.15.0:
-    resolution: {integrity: sha512-KEL/vU1knsoUvfP4MC4/GthpQrY/p6dzwaaGI6Rt4NQuFqkw3qrvsdYF5pz3wOfi7IGTvMPHC9aZIcUKYFNxsw==}
+  /koa@2.15.3:
+    resolution: {integrity: sha512-j/8tY9j5t+GVMLeioLaxweJiKUayFhlGqNTzf2ZGwL0ZCQijd2RLHK0SLW5Tsko8YyyqCZC2cojIb0/s62qTAg==}
     engines: {node: ^4.8.4 || ^6.10.1 || ^7.10.1 || >= 8.1.4}
     dependencies:
       accepts: 1.3.8
@@ -18658,17 +18671,17 @@ packages:
     dev: false
 
   file:projects/account-service.tgz:
-    resolution: {integrity: sha512-Fuwk3SFuB13IVSqXz3/e+UJDhB1VDCLPqfq2wsNPtxEciz2XmYe3ES0uwJWjG0ODeURQmOFBdTNH6v/b4z/Usw==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-m2wnBUxpiATGM4uSuNprCebldYmLYweixWs/lkbmn2oxzV797WaTrigIQEEPowYOydBskozS7uc/PgBj9WhkCw==, tarball: file:projects/account-service.tgz}
     name: '@rush-temp/account-service'
     version: 0.0.0
     dependencies:
-      '@koa/cors': 3.4.3
+      '@koa/cors': 5.0.0
       '@types/jest': 29.5.12
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
       '@types/koa-bodyparser': 4.3.12
       '@types/koa-morgan': 1.0.8
       '@types/koa-router': 7.4.8
-      '@types/koa__cors': 3.3.1
+      '@types/koa__cors': 5.0.0
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -18680,7 +18693,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      koa: 2.15.0
+      koa: 2.15.3
       koa-bodyparser: 4.4.1
       koa-morgan: 1.0.1
       koa-router: 12.0.1
@@ -19033,13 +19046,13 @@ packages:
     dev: false
 
   file:projects/auth-providers.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-K7Qf0md9csGly3ZJEo3qCxVvo3ThuuXnBS/1gZCX2Lzo08IOdRfctONlZ0QQiRmZMwuhvdbxTe1Yt+xR1BgH6A==, tarball: file:projects/auth-providers.tgz}
+    resolution: {integrity: sha512-1rnMBtJmT15O/aYKqKngvn9iIxcbSOBJOUNyivTY89+Rmp5NvP/p8J+2IMJZbCvqdA0xRgWtAcgVlFD2dwCGww==, tarball: file:projects/auth-providers.tgz}
     id: file:projects/auth-providers.tgz
     name: '@rush-temp/auth-providers'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
       '@types/koa-passport': 6.0.3
       '@types/koa-router': 7.4.8
       '@types/koa-session': 6.4.5
@@ -19055,7 +19068,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      koa: 2.15.0
+      koa: 2.15.3
       koa-passport: 6.0.0
       koa-router: 12.0.1
       koa-session: 6.4.0
@@ -23012,16 +23025,16 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-S+s9phcwoQlupWjErJ7eENrXbytc5PylnYoF4viz0OFxIjK8HOHEqODnEtU2VSsX3XphavV2ECT52BQsct2N1g==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-8TNm2djgcpy9V0WMdb8XmOwbMxGSSpvVs76DMoKhEcAjFHtmK/G32IOOvh721krtM5NibFqpEo4SERxjYWn7Qg==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
-      '@koa/cors': 3.4.3
+      '@koa/cors': 5.0.0
       '@types/jest': 29.5.12
-      '@types/koa': 2.14.0
+      '@types/koa': 2.15.0
       '@types/koa-bodyparser': 4.3.12
       '@types/koa-router': 7.4.8
-      '@types/koa__cors': 3.3.1
+      '@types/koa__cors': 5.0.0
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -23033,7 +23046,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      koa: 2.15.0
+      koa: 2.15.3
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
       mongodb: 6.8.0
