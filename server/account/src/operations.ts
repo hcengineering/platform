@@ -338,35 +338,32 @@ async function getAccountInfo (
 }
 
 async function sendOtpEmail (branding: Branding | null, otp: string, email: string): Promise<void> {
-  try {
-    const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-    if (sesURL === undefined || sesURL === '') {
-      throw new Error('Please provide email service url')
-    }
-
-    const lang = branding?.language
-    const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
-
-    const text = await translate(accountPlugin.string.OtpText, { otp, app }, lang)
-    const html = await translate(accountPlugin.string.OtpHTML, { otp, app }, lang)
-    const subject = await translate(accountPlugin.string.OtpSubject, { app }, lang)
-
-    const to = email
-    await fetch(concatLink(sesURL, '/send'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        text,
-        html,
-        subject,
-        to
-      })
-    })
-  } catch (err) {
-    console.log('Could not send otp email', err)
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    console.info('Please provide email service url to enable email otp.')
+    return
   }
+
+  const lang = branding?.language
+  const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
+
+  const text = await translate(accountPlugin.string.OtpText, { otp, app }, lang)
+  const html = await translate(accountPlugin.string.OtpHTML, { otp, app }, lang)
+  const subject = await translate(accountPlugin.string.OtpSubject, { app }, lang)
+
+  const to = email
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
 }
 
 async function getAccountInfoByToken (
@@ -487,7 +484,6 @@ export async function sendOtp (
   const expires = now + timeToLive
   const otp = await getNewOtp(db)
 
-  console.log({ newOtp: otp })
   await sendOtpEmail(branding, otp, email)
   await db.collection<OtpRecord>(OTP_COLLECTION).insertOne({ account: account._id, otp, expires, createdOn: now })
 
