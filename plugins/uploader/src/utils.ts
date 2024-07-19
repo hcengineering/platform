@@ -64,11 +64,12 @@ export async function getDataTransferFiles (dataTransfer: DataTransfer): Promise
 export function toFileWithPath (file: File, path?: string): FileWithPath {
   const { webkitRelativePath } = file
   Object.defineProperty(file, 'relativePath', {
-    value: typeof path === 'string'
-      ? path
-      : typeof webkitRelativePath === 'string' && webkitRelativePath.length > 0
-        ? webkitRelativePath
-        : file.name,
+    value:
+      typeof path === 'string'
+        ? path
+        : typeof webkitRelativePath === 'string' && webkitRelativePath.length > 0
+          ? webkitRelativePath
+          : file.name,
     writable: false,
     configurable: false,
     enumerable: true

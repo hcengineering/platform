@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import core, { Data, Ref } from '@hcengineering/core'
-  import { Drive, Folder } from '@hcengineering/drive'
+  import { type Drive, type Folder, createFolder } from '@hcengineering/drive'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import { EditBox, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -24,7 +24,6 @@
   import { createEventDispatcher } from 'svelte'
 
   import drive from '../plugin'
-  import { createFolder } from '../utils'
 
   export function canClose (): boolean {
     return name === ''

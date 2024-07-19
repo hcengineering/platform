@@ -49,9 +49,8 @@ export async function uploadFiles (
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  const items = files instanceof DataTransfer
-    ? await getDataTransferFiles(files)
-    : Array.from(files, (p) => toFileWithPath(p))
+  const items =
+    files instanceof DataTransfer ? await getDataTransferFiles(files) : Array.from(files, (p) => toFileWithPath(p))
 
   if (items.length === 0) return
 
