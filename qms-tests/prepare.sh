@@ -11,6 +11,11 @@ else
     exit ${docker_exit}
 fi
 
+if [ "x$DO_CLEAN" == 'xtrue' ]; then
+    echo 'Do docker Clean'
+    docker system prune -a -f
+fi
+
 
 # Create init workspace
 ./tool.sh create-workspace init-ws-qms -w InitTest

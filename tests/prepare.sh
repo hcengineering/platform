@@ -11,6 +11,11 @@ else
     exit ${docker_exit}
 fi
 
+if [ "x$DO_CLEAN" == 'xtrue' ]; then
+    echo 'Do docker Clean'
+    docker system prune -a -f
+fi
+
 ./wait-elastic.sh 9201
 
 # Create workspace record in accounts
