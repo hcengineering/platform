@@ -14,7 +14,13 @@
 //
 
 import { showPopup } from '@hcengineering/ui'
-import type { FileUploadCallback, FileUploadOptions, FileUploadTarget } from '@hcengineering/uploader'
+import {
+  type FileUploadCallback,
+  type FileUploadOptions,
+  type FileUploadTarget,
+  getDataTransferFiles,
+  toFileWithPath
+} from '@hcengineering/uploader'
 
 import FileUploadPopup from './components/FileUploadPopup.svelte'
 
@@ -38,19 +44,22 @@ export async function showFilesUploadPopup (
 
 /** @public */
 export async function uploadFiles (
-  files: File[] | FileList,
+  files: File[] | FileList | DataTransfer,
   target: FileUploadTarget,
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  if (files.length === 0) return
+  const items = files instanceof DataTransfer
+    ? await getDataTransferFiles(files)
+    : Array.from(files, (p) => toFileWithPath(p))
+
+  if (items.length === 0) return
 
   const uppy = getUppy(options, onFileUploaded)
 
-  for (let index = 0; index < files.length; index++) {
-    const data = files[index]
-    const { name, type } = data
-    uppy.addFile({ name, type, data })
+  for (const data of items) {
+    const { name, type, relativePath } = data
+    uppy.addFile({ name, type, data, meta: { relativePath } })
   }
 
   if (options.hideProgress !== true) {

@@ -74,7 +74,7 @@
           maxNumberOfFiles: 1,
           hideProgress: true
         },
-        async (uuid, name, file, metadata) => {
+        async (uuid, name, file, path, metadata) => {
           const data = {
             file: uuid,
             name,

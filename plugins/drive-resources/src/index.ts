@@ -38,14 +38,14 @@ import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
-import { createFolder, renameResource, restoreFileVersion } from './utils'
+import { showCreateFolderPopup, showRenameResourcePopup, restoreFileVersion } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
-  await createFolder(doc._id, drive.ids.Root)
+  await showCreateFolderPopup(doc._id, drive.ids.Root)
 }
 
 async function CreateChildFolder (doc: Folder): Promise<void> {
-  await createFolder(doc.space, doc._id)
+  await showCreateFolderPopup(doc.space, doc._id)
 }
 
 async function EditDrive (drive: Drive): Promise<void> {
@@ -82,13 +82,13 @@ async function FileLinkProvider (doc: Doc): Promise<Location> {
 
 async function RenameFile (doc: File | File[]): Promise<void> {
   if (!Array.isArray(doc)) {
-    await renameResource(doc)
+    await showRenameResourcePopup(doc)
   }
 }
 
 async function RenameFolder (doc: Folder | Folder[]): Promise<void> {
   if (!Array.isArray(doc)) {
-    await renameResource(doc)
+    await showRenameResourcePopup(doc)
   }
 }
 

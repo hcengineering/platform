@@ -49,7 +49,9 @@ type Meta = IndexedObject<any>
 type Body = IndexedObject<any>
 
 /** @public */
-export type UppyMeta = Meta
+export type UppyMeta = Meta & {
+  relativePath?: string
+}
 
 /** @public */
 export type UppyBody = Body & {
@@ -89,7 +91,7 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
         const uuid = file?.response?.body?.uuid as Ref<Blob>
         if (uuid !== undefined) {
           const metadata = await getFileMetadata(file.data, uuid)
-          await onFileUploaded(uuid, file.name, file.data, metadata)
+          await onFileUploaded(uuid, file.name, file.data, file.meta.relativePath, metadata)
         }
       }
     })
