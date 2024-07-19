@@ -306,6 +306,7 @@
         onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
+        allowGuests
       />
     </div>
 
