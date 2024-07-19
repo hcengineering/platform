@@ -15,6 +15,11 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
+import { formatLink } from './kits/default-kit'
+import { isEditable } from './kits/editor-kit'
+import { openTableOptions, isEditableTableActive } from './components/extension/table/table'
+import { openImage, expandImage, moreImageActions } from './components/extension/imageExt'
+
 export * from '@hcengineering/presentation/src/types'
 export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
@@ -26,12 +31,12 @@ export { default as FullDescriptionBox } from './components/FullDescriptionBox.s
 export { default as MarkupDiffViewer } from './components/MarkupDiffViewer.svelte'
 export { default as ReferenceInput } from './components/ReferenceInput.svelte'
 export { default as StringDiffViewer } from './components/StringDiffViewer.svelte'
-export { default as StyleButton } from './components/StyleButton.svelte'
+export { default as StyleButton } from './components/TextActionButton.svelte'
 export { default as StyledTextArea } from './components/StyledTextArea.svelte'
 export { default as StyledTextBox } from './components/StyledTextBox.svelte'
 export { default as StyledTextEditor } from './components/StyledTextEditor.svelte'
 export { default as TextEditor } from './components/TextEditor.svelte'
-export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
+export { default as TextEditorToolbar } from './components/TextEditorToolbar.svelte'
 export { default as AttachIcon } from './components/icons/Attach.svelte'
 export { default as TableIcon } from './components/icons/Table.svelte'
 export { default as TableOfContents } from './components/toc/TableOfContents.svelte'
@@ -55,15 +60,16 @@ export {
 } from './components/extension/nodeHighlight'
 export {
   NodeUuidExtension,
-  type NodeUuidCommands,
   type NodeUuidOptions,
-  type NodeUuidStorage
+  type NodeUuidStorage,
+  getNodeElement,
+  selectNode,
+  nodeUuidName
 } from './components/extension/nodeUuid'
 export { InlinePopupExtension } from './components/extension/inlinePopup'
-export { InlineStyleToolbarExtension, type InlineStyleToolbarOptions } from './components/extension/inlineStyleToolbar'
+export { InlineToolbarExtension, type InlineStyleToolbarOptions } from './components/extension/inlineToolbar'
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { ImageUploadExtension, type ImageUploadOptions } from './components/extension/imageUploadExt'
-
 export * from './command/deleteAttachment'
 export {
   TiptapCollabProvider,
@@ -73,6 +79,13 @@ export {
 export { formatCollaborativeDocumentId, formatPlatformDocumentId } from './provider/utils'
 
 export default async (): Promise<Resources> => ({
-  // component: {
-  // }
+  function: {
+    FormatLink: formatLink,
+    OpenTableOptions: openTableOptions,
+    OpenImage: openImage,
+    ExpandImage: expandImage,
+    MoreImageActions: moreImageActions,
+    IsEditableTableActive: isEditableTableActive,
+    IsEditable: isEditable
+  }
 })

@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { FilePreviewPopup } from '@hcengineering/presentation'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
-import { showPopup } from '@hcengineering/ui'
-import { nodeInputRule } from '@tiptap/core'
+import textEditor from '@hcengineering/text-editor'
+import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
+import { type Editor, nodeInputRule } from '@tiptap/core'
+import { type BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { InlinePopupExtension } from './inlinePopup'
 
 /**
  * @public
@@ -26,7 +30,11 @@ export type ImageAlignment = 'center' | 'left' | 'right'
 /**
  * @public
  */
-export interface ImageOptions extends ImageNodeOptions {}
+export type ImageOptions = ImageNodeOptions & {
+  toolbar?: Omit<BubbleMenuOptions, 'pluginKey'> & {
+    isHidden?: () => boolean
+  }
+}
 
 export interface ImageAlignmentOptions {
   align?: ImageAlignment
@@ -158,5 +166,94 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
         }
       })
     ]
+  },
+
+  addExtensions () {
+    return [
+      InlinePopupExtension.configure({
+        ...this.options.toolbar,
+        shouldShow: ({ editor, view, state, oldState, from, to }) => {
+          if (this.options.toolbar?.isHidden?.() === true) {
+            return false
+          }
+
+          if (editor.isDestroyed) {
+            return false
+          }
+
+          // For some reason shouldShow might be called after dismount and
+          // after destroying the editor. We should handle this just no to have
+          // any errors in runtime
+          const editorElement = editor.view.dom
+          if (editorElement === null || editorElement === undefined) {
+            return false
+          }
+
+          // When clicking on a element inside the bubble menu the editor "blur" event
+          // is called and the bubble menu item is focussed. In this case we should
+          // consider the menu as part of the editor and keep showing the menu
+          const isChildOfMenu = editorElement.contains(document.activeElement)
+          const hasEditorFocus = view.hasFocus() || isChildOfMenu
+          if (!hasEditorFocus) {
+            return false
+          }
+
+          return editor.isActive('image')
+        }
+      })
+    ]
   }
 })
+
+export async function openImage (editor: Editor): Promise<void> {
+  const attributes = editor.getAttributes('image')
+  const fileId = attributes['file-id'] ?? attributes.src
+  const fileName = attributes.alt ?? ''
+  await new Promise<void>((resolve) => {
+    showPopup(FilePreviewPopup, { file: fileId, name: fileName, fullSize: true, showIcon: false }, 'centered', () => {
+      resolve()
+    })
+  })
+}
+
+export async function expandImage (editor: Editor): Promise<void> {
+  const attributes = editor.getAttributes('image')
+  const fileId = attributes['file-id'] ?? attributes.src
+  const url = getFileUrl(fileId)
+  window.open(url, '_blank')
+}
+
+export async function moreImageActions (editor: Editor, event: MouseEvent): Promise<void> {
+  const widthActions = ['25%', '50%', '75%', '100%', textEditor.string.Unset].map((it) => {
+    return {
+      id: `#imageWidth${it}`,
+      label: it === textEditor.string.Unset ? it : getEmbeddedLabel(it),
+      action: () =>
+        editor.commands.setImageSize({ width: it === textEditor.string.Unset ? undefined : it, height: undefined }),
+      category: {
+        label: textEditor.string.Width
+      }
+    }
+  })
+
+  const actions = [...widthActions]
+
+  await new Promise<void>((resolve) => {
+    showPopup(
+      SelectPopup,
+      {
+        value: actions
+      },
+      getEventPositionElement(event),
+      (val) => {
+        if (val !== undefined) {
+          const op = actions.find((it) => it.id === val)
+          if (op !== undefined) {
+            op.action()
+            resolve()
+          }
+        }
+      }
+    )
+  })
+}
