@@ -24,8 +24,7 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   concatLink,
-  createClient,
-  type ClientConnection
+  createClient
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -74,7 +73,7 @@ export default async () => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
         const client = createClient(
-          (handler: TxHandler) => {
+          async (handler: TxHandler) => {
             const url = concatLink(endpoint, `/${token}`)
 
             const upgradeHandler: TxHandler = (...txes: Tx[]) => {
@@ -97,26 +96,32 @@ export default async () => {
               handler(...txes)
             }
             const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
-            const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, opt)
+
+            const newOpt = { ...opt }
             const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
+            let connectPromise: Promise<void> | undefined
             if ((connectTimeout ?? 0) > 0) {
-              return new Promise<ClientConnection>((resolve, reject) => {
+              connectPromise = new Promise<void>((resolve, reject) => {
                 const connectTO = setTimeout(() => {
                   if (!clientConnection.isConnected()) {
-                    clientConnection.onConnect = undefined
+                    newOpt.onConnect = undefined
                     void clientConnection?.close()
                     void opt?.onDialTimeout?.()
                     reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                   }
                 }, connectTimeout)
-                clientConnection.onConnect = async (event) => {
+                newOpt.onConnect = (event) => {
                   // Any event is fine, it means server is alive.
                   clearTimeout(connectTO)
-                  resolve(clientConnection)
+                  resolve()
                 }
               })
             }
-            return Promise.resolve(clientConnection)
+            const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
+            if (connectPromise !== undefined) {
+              await connectPromise
+            }
+            return await Promise.resolve(clientConnection)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
           createModelPersistence(getWSFromToken(token)),
