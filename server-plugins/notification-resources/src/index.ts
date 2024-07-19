@@ -363,9 +363,11 @@ export async function pushInboxNotifications (
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
     await control.apply([createContextTx])
-    control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
-      if (it._id === createContextTx._id) {
-        return [account.email]
+    if (target.account?.email !== undefined) {
+      control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
+        if (it._id === createContextTx._id) {
+          return [target.account?.email as string]
+        }
       }
     }
     docNotifyContextId = createContextTx.objectId
@@ -375,12 +377,15 @@ export async function pushInboxNotifications (
         lastUpdateTimestamp: modifiedOn
       })
       await control.apply([updateTx])
-      control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
-        if (it._id === updateTx._id) {
-          return [account.email]
+      if (target.account?.email !== undefined) {
+        control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
+          if (it._id === updateTx._id) {
+            return [target.account?.email as string]
+          }
         }
       }
     }
+
     docNotifyContextId = context._id
   }
 
@@ -817,7 +822,7 @@ export async function createCollabDocInfo (
       notifyContexts,
       docMessages
     )
-    const ids = new Set(res.map((it) => it._id))
+    const ids = new Set(targetRes.map((it) => it._id))
     if (info.account?.email !== undefined) {
       const id = generateId() as string
       control.operationContext.derived.targets[id] = (it) => {
