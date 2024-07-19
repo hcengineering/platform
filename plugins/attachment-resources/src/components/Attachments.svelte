@@ -15,15 +15,18 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Blob, Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Icon, Label, resizeObserver, Scroller, Spinner, Button, IconAdd } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
-  import attachment from '../plugin'
-  import { createAttachments } from '../utils'
+  import { uploadFiles } from '@hcengineering/uploader'
   import { createEventDispatcher } from 'svelte'
+
+  import attachment from '../plugin'
+  import { createAttachment } from '../utils'
+
   import AttachmentDroppable from './AttachmentDroppable.svelte'
   import IconAttachments from './icons/Attachments.svelte'
   import UploadDuo from './icons/UploadDuo.svelte'
@@ -49,19 +52,23 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function fileSelected () {
+  async function fileSelected (): Promise<void> {
     const list = inputFile.files
     if (list === null || list.length === 0) return
 
     loading++
     try {
-      await createAttachments(
-        client,
-        list,
-        { objectClass: object?._class ?? _class, objectId, space },
-        attachmentClass,
-        attachmentClassOptions
-      )
+      await uploadFiles(list, { objectId, objectClass: object?._class ?? _class }, {}, async (uuid, name, file) => {
+        await createAttachment(
+          client,
+          uuid,
+          name,
+          file,
+          { objectClass: object?._class ?? _class, objectId, space },
+          attachmentClass,
+          attachmentClassOptions
+        )
+      })
     } finally {
       loading--
     }
@@ -71,11 +78,11 @@
     dispatch('attached')
   }
 
-  function openFile () {
+  function openFile (): void {
     inputFile.click()
   }
 
-  function updateContent (evt: CustomEvent) {
+  function updateContent (evt: CustomEvent): void {
     attachments = evt.detail.length
     dispatch('attachments', evt.detail)
   }

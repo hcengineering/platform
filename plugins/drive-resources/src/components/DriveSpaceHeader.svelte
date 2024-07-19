@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Blob, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createFile, type Drive } from '@hcengineering/drive'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, FileOrBlob, getClient, getFileMetadata } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
   import { showFilesUploadPopup } from '@hcengineering/uploader'
 
@@ -71,11 +71,10 @@
         parent !== drive.ids.Root
           ? { objectId: parent, objectClass: drive.class.Folder }
           : { objectId: space, objectClass: drive.class.Drive }
-      await showFilesUploadPopup(target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
+      await showFilesUploadPopup(target, {}, async (uuid, name, file, metadata) => {
         try {
-          const metadata = await getFileMetadata(file, uuid as Ref<Blob>)
           const data = {
-            file: uuid as Ref<Blob>,
+            file: uuid,
             size: file.size,
             type: file.type,
             lastModified: file instanceof File ? file.lastModified : Date.now(),

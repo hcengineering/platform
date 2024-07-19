@@ -349,7 +349,7 @@
       return
     }
 
-    const size = await getImageSize(file, getFileUrl(attached.file))
+    const size = await getImageSize(file)
 
     editor.commands.insertContent(
       {

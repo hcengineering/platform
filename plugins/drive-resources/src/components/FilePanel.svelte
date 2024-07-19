@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, type Ref } from '@hcengineering/core'
-  import { type File, type FileVersion } from '@hcengineering/drive'
+  import { type Ref, type WithLookup } from '@hcengineering/core'
+  import { createFileVersion, type File as DriveFile, type FileVersion } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
-  import { createQuery, getBlobHref } from '@hcengineering/presentation'
+  import { createQuery, getBlobHref, getClient } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
+  import { showFilesUploadPopup } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
 
@@ -28,9 +29,8 @@
   import IconUpload from './icons/FileUpload.svelte'
 
   import drive from '../plugin'
-  import { replaceOneFile } from '../utils'
 
-  export let _id: Ref<File>
+  export let _id: Ref<DriveFile>
   export let readonly: boolean = false
   export let embedded: boolean = false
   export let kind: 'default' | 'modern' = 'default'
@@ -39,12 +39,13 @@
     return false
   }
 
-  let object: WithLookup<File> | undefined = undefined
+  let object: WithLookup<DriveFile> | undefined = undefined
   let version: FileVersion | undefined = undefined
   let download: HTMLAnchorElement
-  let upload: HTMLInputElement
 
+  const client = getClient()
   const query = createQuery()
+
   $: query.query(
     drive.class.File,
     { _id },
@@ -66,17 +67,27 @@
   }
 
   function handleUploadFile (): void {
-    if (object != null && upload != null) {
-      upload.click()
-    }
-  }
+    if (object != null) {
+      void showFilesUploadPopup(
+        { objectId: object._id, objectClass: object._class },
+        {
+          maxNumberOfFiles: 1,
+          hideProgress: true
+        },
+        async (uuid, name, file, metadata) => {
+          const data = {
+            file: uuid,
+            name,
+            size: file.size,
+            type: file.type,
+            lastModified: file instanceof File ? file.lastModified : Date.now(),
+            metadata
+          }
 
-  async function handleFileSelected (): Promise<void> {
-    const files = upload.files
-    if (object != null && files !== null && files.length > 0) {
-      await replaceOneFile(object._id, files[0])
+          await createFileVersion(client, _id, data)
+        }
+      )
     }
-    upload.value = ''
   }
 </script>
 
@@ -92,16 +103,6 @@
     on:close
     on:update
   >
-    <input
-      bind:this={upload}
-      id="file"
-      name="file"
-      type="file"
-      style="display: none"
-      disabled={upload == null}
-      on:change={handleFileSelected}
-    />
-
     <svelte:fragment slot="title">
       <FileHeader {object} />
     </svelte:fragment>

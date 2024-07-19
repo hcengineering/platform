@@ -150,7 +150,7 @@ async function handleImageUpload (
 
   try {
     const url = getFileUrl(attached.file)
-    const size = await getImageSize(file, url)
+    const size = await getImageSize(file)
     const node = view.state.schema.nodes.image.create({
       'file-id': attached.file,
       src: url,

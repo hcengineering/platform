@@ -13,15 +13,13 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import { type Blob, type Ref, generateId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
+import presentation, { getFileMetadata } from '@hcengineering/presentation'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import type { FileUploadCallback, FileUploadOptions } from '@hcengineering/uploader'
 
 import Uppy, { type IndexedObject, type UppyOptions } from '@uppy/core'
-import ScreenCapture from '@uppy/screen-capture'
-import Webcam from '@uppy/webcam'
 import XHR from '@uppy/xhr-upload'
 
 import En from '@uppy/locales/lib/en_US'
@@ -60,31 +58,38 @@ export type UppyBody = Body & {
 
 /** @public */
 export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUploadCallback): Uppy<UppyMeta, UppyBody> {
-  const id = generateId()
-  const locale = getUppyLocale(getCurrentLanguage())
-  const uppy = new Uppy<UppyMeta, UppyBody>({ id, locale, ...options })
-    .use(ScreenCapture)
-    .use(Webcam)
-    .use(XHR, {
-      endpoint: getMetadata(presentation.metadata.UploadURL) ?? '',
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
-      },
-      getResponseData: (body: string): UppyBody => {
-        return {
-          uuid: body
-        }
+  const uppyOptions: Partial<UppyOptions> = {
+    id: generateId(),
+    locale: getUppyLocale(getCurrentLanguage()),
+    allowMultipleUploadBatches: false,
+    restrictions: {
+      maxFileSize: options.maxFileSize,
+      maxNumberOfFiles: options.maxNumberOfFiles,
+      allowedFileTypes: options.allowedFileTypes
+    }
+  }
+
+  const uppy = new Uppy<UppyMeta, UppyBody>(uppyOptions).use(XHR, {
+    endpoint: getMetadata(presentation.metadata.UploadURL) ?? '',
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
+    },
+    getResponseData: (body: string): UppyBody => {
+      return {
+        uuid: body
       }
-    })
+    }
+  })
 
   if (onFileUploaded != null) {
     uppy.addPostProcessor(async (fileIds: string[]) => {
       for (const fileId of fileIds) {
         const file = uppy.getFile(fileId)
-        const uuid = file?.response?.body?.uuid
+        const uuid = file?.response?.body?.uuid as Ref<Blob>
         if (uuid !== undefined) {
-          await onFileUploaded(uuid, file.name, file.data)
+          const metadata = await getFileMetadata(file.data, uuid)
+          await onFileUploaded(uuid, file.name, file.data, metadata)
         }
       }
     })

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref } from '@hcengineering/core'
+import type { Blob as PlatformBlob, Class, Doc, Ref } from '@hcengineering/core'
 
 /** @public */
 export type UploadFilesPopupFn = (
@@ -40,9 +40,14 @@ export interface FileUploadTarget {
 export interface FileUploadOptions {
   maxFileSize?: number
   maxNumberOfFiles?: number
-  allowedFileTypes?: string
+  allowedFileTypes?: string[] | null
   hideProgress?: boolean
 }
 
 /** @public */
-export type FileUploadCallback = (uuid: string, name: string, file: File | Blob) => Promise<void>
+export type FileUploadCallback = (
+  uuid: Ref<PlatformBlob>,
+  name: string,
+  file: File | Blob,
+  metadata: Record<string, any> | undefined
+) => Promise<void>
