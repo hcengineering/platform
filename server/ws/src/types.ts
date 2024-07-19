@@ -70,6 +70,8 @@ export interface Session {
 
   requests: Map<string, SessionRequest>
 
+  broadcastTx: Tx[]
+
   binaryMode: boolean
   useCompression: boolean
   total: StatisticsElement
@@ -81,6 +83,8 @@ export interface Session {
   isUpgradeClient: () => boolean
 
   getMode: () => string
+
+  broadcast: (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]) => void
 }
 
 /**
