@@ -219,6 +219,7 @@ jobs:
       - name: Prepare server
         run: |
           cd ./tests
+          export DO_CLEAN=true
           ./prepare.sh
       - name: Install Playwright
         run: |
@@ -318,6 +319,7 @@ jobs:
       - name: Prepare server
         run: |
           cd ./qms-tests
+          export DO_CLEAN=true
           ./prepare.sh
       - name: Install Playwright
         run: |
