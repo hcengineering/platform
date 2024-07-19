@@ -103,6 +103,7 @@
             }}
             kind="regular"
             size="large"
+            allowGuests
           />
         {/each}
       </div>
