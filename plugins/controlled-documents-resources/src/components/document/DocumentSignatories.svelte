@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { Label, Scroller, getUserTimezone } from '@hcengineering/ui'
+  import { Label, Scroller } from '@hcengineering/ui'
   import { createQuery } from '@hcengineering/presentation'
   import documents, { DocumentApprovalRequest, DocumentReviewRequest } from '@hcengineering/controlled-documents'
   import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
@@ -23,6 +23,7 @@
 
   import documentsRes from '../../plugin'
   import { $controlledDocument as controlledDocument } from '../../stores/editors/document/editor'
+  import { formatSignatureDate } from '../../utils'
 
   interface Signer {
     id?: Ref<Person>
@@ -38,7 +39,6 @@
 
   const reviewQuery = createQuery()
   const approvalQuery = createQuery()
-  const timeZone: string = getUserTimezone()
 
   $: if ($controlledDocument !== undefined) {
     reviewQuery.query(
@@ -92,7 +92,7 @@
         id: $controlledDocument.author,
         role: 'author',
         name: getNameByEmployeeId($controlledDocument.author),
-        date: $controlledDocument.createdOn !== undefined ? formatDate($controlledDocument.createdOn) : ''
+        date: $controlledDocument.createdOn !== undefined ? formatSignatureDate($controlledDocument.createdOn) : ''
       }
     ]
 
@@ -105,7 +105,7 @@
           id: rAcc?.person,
           role: 'reviewer',
           name: getNameByEmployeeId(rAcc?.person),
-          date: formatDate(date ?? reviewRequest.modifiedOn)
+          date: formatSignatureDate(date ?? reviewRequest.modifiedOn)
         })
       })
     }
@@ -119,23 +119,10 @@
           id: aAcc?.person,
           role: 'approver',
           name: getNameByEmployeeId(aAcc?.person),
-          date: formatDate(date ?? approvalRequest.modifiedOn)
+          date: formatSignatureDate(date ?? approvalRequest.modifiedOn)
         })
       })
     }
-  }
-
-  function formatDate (date: number): string {
-    return new Date(date).toLocaleDateString('default', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      timeZone,
-      timeZoneName: 'short',
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric'
-    })
   }
 
   function getSignerLabel (role: 'author' | 'reviewer' | 'approver'): IntlString {
