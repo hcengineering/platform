@@ -236,6 +236,8 @@ export function getClient (): TxOperations & Client & OptimisticTxes {
   return client
 }
 
+let txQueue: Tx[] = []
+
 /**
  * @public
  */
@@ -265,8 +267,15 @@ export async function setClient (_client: Client): Promise<void> {
 
   client = uiClient
 
+  const notifyCaller = reduceCalls(async () => {
+    const t = txQueue
+    txQueue = []
+    await uiClient.doNotify(...t)
+  })
+
   _client.notify = (...tx: Tx[]) => {
-    void uiClient.doNotify(...tx)
+    txQueue.push(...tx)
+    void notifyCaller()
   }
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient(true)

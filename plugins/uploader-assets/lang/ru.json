@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Cancel": "Отмена",
+    "Retry": "Повторить",
+    "UploadingTo": "Загрузка {files, plural, one {# файл} few {# файла} other {# файлов}} в"
+  },
+  "status": {
+    "Error": "Ошибка",
+    "Waiting": "Ожидание",
+    "Uploading": "Загрузка",
+    "Completed": "Завершено"
+  }
+}

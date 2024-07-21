@@ -17,6 +17,7 @@ import core, {
   AccountRole,
   TxFactory,
   TxProcessor,
+  reduceCalls,
   toIdMap,
   type Account,
   type Class,
@@ -36,7 +37,14 @@ import core, {
 } from '@hcengineering/core'
 import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-import { type ClientSessionCtx, type Session, type SessionRequest, type StatisticsElement } from './types'
+import {
+  type ClientSessionCtx,
+  type ConnectionSocket,
+  type Session,
+  type SessionRequest,
+  type StatisticsElement
+} from './types'
+import { handleSend } from './utils'
 /**
  * @public
  */
@@ -47,6 +55,8 @@ export class ClientSession implements Session {
   useCompression: boolean = true
   sessionId = ''
   lastRequest = Date.now()
+
+  broadcastTx: Tx[] = []
 
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
@@ -295,6 +305,47 @@ export class ClientSession implements Session {
     }
     // Send all other except us.
     void handleSend(toSendAll, undefined, Array.from(toSendTarget.keys()))
+  }
+
+  doBroadcast = reduceCalls(async (ctx: MeasureContext, socket: ConnectionSocket) => {
+    if (this.broadcastTx.length > 10000) {
+      const classes = new Set<Ref<Class<Doc>>>()
+      for (const dtx of this.broadcastTx) {
+        if (TxProcessor.isExtendsCUD(dtx._class)) {
+          classes.add((dtx as TxCUD<Doc>).objectClass)
+        }
+        const etx = TxProcessor.extractTx(dtx)
+        if (TxProcessor.isExtendsCUD(etx._class)) {
+          classes.add((etx as TxCUD<Doc>).objectClass)
+        }
+      }
+      const bevent = createBroadcastEvent(Array.from(classes))
+      this.broadcastTx = []
+      await socket.send(
+        ctx,
+        {
+          result: [bevent]
+        },
+        this.binaryMode,
+        this.useCompression
+      )
+    } else {
+      const txes = [...this.broadcastTx]
+      this.broadcastTx = []
+      await handleSend(ctx, socket, { result: txes }, 32 * 1024, this.binaryMode, this.useCompression)
+    }
+  })
+
+  timeout: any
+
+  broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
+    this.broadcastTx.push(...tx)
+    // We need to put into client broadcast queue, to send user requests first
+    // Collapse events in 1 second interval
+    clearTimeout(this.timeout)
+    this.timeout = setTimeout(() => {
+      void this.doBroadcast(ctx, socket)
+    }, 5)
   }
 
   private async sendWithPart (

@@ -32,7 +32,7 @@ import core, {
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
-import type { Pipeline, StorageAdapter, PipelineFactory } from '@hcengineering/server-core'
+import type { Pipeline, PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 import {
@@ -220,36 +220,37 @@ class TSessionManager implements SessionManager {
   }
 
   @withContext('get-workspace-info')
-  async getWorkspaceInfo (ctx: MeasureContext, accounts: string, token: string): Promise<WorkspaceLoginInfo> {
-    for (let i = 0; i < 10; i++) {
-      try {
-        const userInfo = await (
-          await fetch(accounts, {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer ' + token,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              method: 'getWorkspaceInfo',
-              params: [true]
-            })
+  async getWorkspaceInfo (
+    ctx: MeasureContext,
+    accounts: string,
+    token: string
+  ): Promise<WorkspaceLoginInfo | undefined> {
+    try {
+      const userInfo = await (
+        await fetch(accounts, {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            method: 'getWorkspaceInfo',
+            params: [true]
           })
-        ).json()
+        })
+      ).json()
 
-        if (userInfo.error !== undefined) {
-          ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
-          throw new Error(JSON.stringify(userInfo.error))
-        }
-        return { ...userInfo.result, upgrade: userInfo.upgrade }
-      } catch (err: any) {
-        if (i === 9) {
-          throw err
-        }
-        await new Promise<void>((resolve) => setTimeout(resolve, 100))
+      if (userInfo.error !== undefined) {
+        ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
+        throw new Error(JSON.stringify(userInfo.error))
       }
+      return { ...userInfo.result, upgrade: userInfo.upgrade }
+    } catch (err: any) {
+      if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+        return undefined
+      }
+      throw err
     }
-    throw new Error('')
   }
 
   @withContext('📲 add-session')
@@ -270,17 +271,12 @@ class TSessionManager implements SessionManager {
     const wsString = toWorkspaceString(token.workspace, '@')
 
     let workspaceInfo: WorkspaceLoginInfo | undefined
-    for (let i = 0; i < 5; i++) {
-      try {
-        workspaceInfo =
-          accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
-        break
-      } catch (err: any) {
-        if (i === 4) {
-          throw err
-        }
-        await new Promise((resolve) => setTimeout(resolve, 10))
-      }
+    workspaceInfo =
+      accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+
+    if (workspaceInfo === undefined) {
+      // No connection to account service, retry from client.
+      return { upgrade: true }
     }
 
     if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
@@ -412,7 +408,8 @@ class TSessionManager implements SessionManager {
       productId: '',
       createProgress: 100,
       creating: false,
-      disabled: false
+      disabled: false,
+      endpoint: ''
     }
   }
 
@@ -514,11 +511,11 @@ class TSessionManager implements SessionManager {
 
     const sessions = [...workspace.sessions.values()]
     const ctx = this.ctx.newChild('📭 broadcast', {})
-    function send (): void {
+    const send = (): void => {
       for (const sessionRef of sessions) {
         const tt = sessionRef.session.getUser()
         if ((target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)) {
-          void sendResponse(ctx, sessionRef.session, sessionRef.socket, { result: resp })
+          sessionRef.session.broadcast(ctx, sessionRef.socket, resp)
         }
       }
       ctx.end()
@@ -550,8 +547,8 @@ class TSessionManager implements SessionManager {
         pipelineCtx,
         { ...token.workspace, workspaceUrl, workspaceName },
         upgrade,
-        (tx, targets) => {
-          this.broadcastAll(workspace, tx, targets)
+        (tx, targets, exclude) => {
+          this.broadcastAll(workspace, tx, targets, exclude)
         },
         branding
       ),

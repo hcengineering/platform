@@ -34,6 +34,7 @@ import core, {
   Data,
   Doc,
   DocumentUpdate,
+  generateId,
   MeasureContext,
   MixinUpdate,
   Ref,
@@ -73,8 +74,8 @@ import serverNotification, {
   getPersonAccount,
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE,
-  UserInfo,
-  NOTIFICATION_TITLE_SIZE
+  NOTIFICATION_TITLE_SIZE,
+  UserInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
 import { stripTags } from '@hcengineering/text'
@@ -362,9 +363,11 @@ export async function pushInboxNotifications (
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
     await control.apply([createContextTx])
-    control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
-      if (it._id === createContextTx._id) {
-        return [account.email]
+    if (target.account?.email !== undefined) {
+      control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
+        if (it._id === createContextTx._id) {
+          return [target.account?.email as string]
+        }
       }
     }
     docNotifyContextId = createContextTx.objectId
@@ -374,12 +377,15 @@ export async function pushInboxNotifications (
         lastUpdateTimestamp: modifiedOn
       })
       await control.apply([updateTx])
-      control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
-        if (it._id === updateTx._id) {
-          return [account.email]
+      if (target.account?.email !== undefined) {
+        control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
+          if (it._id === updateTx._id) {
+            return [target.account?.email as string]
+          }
         }
       }
     }
+
     docNotifyContextId = context._id
   }
 
@@ -805,9 +811,27 @@ export async function createCollabDocInfo (
 
     if (info === undefined) continue
 
-    res = res.concat(
-      await getNotificationTxes(control, object, tx, originTx, info, sender, params, notifyContexts, docMessages)
+    const targetRes = await getNotificationTxes(
+      control,
+      object,
+      tx,
+      originTx,
+      info,
+      sender,
+      params,
+      notifyContexts,
+      docMessages
     )
+    const ids = new Set(targetRes.map((it) => it._id))
+    if (info.account?.email !== undefined) {
+      const id = generateId() as string
+      control.operationContext.derived.targets[id] = (it) => {
+        if (ids.has(it._id)) {
+          return [info.account?.email as string]
+        }
+      }
+    }
+    res = res.concat(targetRes)
   }
   return res
 }

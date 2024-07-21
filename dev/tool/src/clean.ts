@@ -21,49 +21,52 @@ import { loadCollaborativeDoc, saveCollaborativeDoc, yDocToBuffer } from '@hceng
 import contact from '@hcengineering/contact'
 import core, {
   type ArrOf,
+  type BackupClient,
+  type Class,
   ClassifierKind,
   type CollaborativeDoc,
+  type Client as CoreClient,
   DOMAIN_BENCHMARK,
   DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_STATUS,
   DOMAIN_TX,
+  type Doc,
   type DocumentUpdate,
+  type Domain,
   type Hierarchy,
   type Markup,
-  type RefTo,
-  SortingOrder,
-  TxOperations,
-  TxProcessor,
-  generateId,
-  getObjectValue,
-  getWorkspaceId,
-  toIdMap,
-  updateAttribute,
-  type BackupClient,
-  type Class,
-  type Client as CoreClient,
-  type Doc,
-  type Domain,
   type MeasureContext,
+  type MigrationState,
   type Ref,
+  type RefTo,
+  type RelatedDocument,
+  SortingOrder,
   type Status,
   type StatusCategory,
   type TxCUD,
   type TxCreateDoc,
   type TxMixin,
+  TxOperations,
+  TxProcessor,
   type TxUpdateDoc,
   type WorkspaceId,
-  DOMAIN_MIGRATION,
-  type MigrationState,
-  type RelatedDocument
+  generateId,
+  getObjectValue,
+  getWorkspaceId,
+  systemAccountEmail,
+  toIdMap,
+  updateAttribute
 } from '@hcengineering/core'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import recruit, { type Applicant, type Vacancy } from '@hcengineering/recruit'
+import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
 import task, { type ProjectType, type Task, type TaskType } from '@hcengineering/task'
@@ -1054,7 +1057,7 @@ export async function removeDuplicateIds (
   mongodbUri: string,
   storageAdapter: StorageAdapter,
   productId: string,
-  transactorUrl: string,
+  accountsUrl: string,
   initWorkspacesStr: string
 ): Promise<void> {
   const state = 'REMOVE_DUPLICATE_IDS'
@@ -1127,7 +1130,8 @@ export async function removeDuplicateIds (
       const check = await db.collection(DOMAIN_MIGRATION).findOne({ state, plugin: workspace.workspace })
       if (check != null) continue
 
-      const wsClient = (await connect(transactorUrl, workspaceId, undefined, {
+      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, workspaceId))
+      const wsClient = (await connect(endpoint, workspaceId, undefined, {
         model: 'upgrade'
       })) as CoreClient & BackupClient
       for (const set of ids) {

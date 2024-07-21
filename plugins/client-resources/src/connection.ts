@@ -15,7 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
+import client, { ClientSocket, ClientSocketReadyState, type ClientFactoryOptions } from '@hcengineering/client'
 import core, {
   Account,
   Class,
@@ -42,8 +42,7 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
-import { HelloRequest, HelloResponse, ReqId, type Response } from '@hcengineering/rpc'
-import { RPCHandler } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -99,9 +98,7 @@ class Connection implements ClientConnection {
     private readonly handler: TxHandler,
     readonly workspace: string,
     readonly email: string,
-    private readonly onUpgrade?: () => void,
-    private readonly onUnauthorized?: () => void,
-    readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
+    readonly opt?: ClientFactoryOptions
   ) {
     if (typeof sessionStorage !== 'undefined') {
       // Find local session id in session storage only if user refresh a page.
@@ -228,7 +225,7 @@ class Connection implements ClientConnection {
         Analytics.handleError(new PlatformError(resp.error))
         this.closed = true
         this.websocket?.close()
-        this.onUnauthorized?.()
+        this.opt?.onUnauthorized?.()
       }
       console.error(resp.error)
       return
@@ -237,7 +234,7 @@ class Connection implements ClientConnection {
     if (resp.id === -1) {
       this.delay = 0
       if (resp.result?.state === 'upgrading') {
-        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        void this.opt?.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
         this.upgrading = true
         this.delay = 3
         return
@@ -245,7 +242,7 @@ class Connection implements ClientConnection {
       if (resp.result === 'hello') {
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
-          this.onUpgrade?.()
+          this.opt?.onUpgrade?.()
         }
 
         this.upgrading = false
@@ -262,8 +259,9 @@ class Connection implements ClientConnection {
           v.reconnect?.()
         }
 
-        void this.onConnect?.(
-          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
+        void this.opt?.onConnect?.(
+          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
+          null
         )
         this.schedulePing(socketId)
         return
@@ -358,7 +356,7 @@ class Connection implements ClientConnection {
       for (const tx of txArr) {
         if (tx?._class === core.class.TxModelUpgrade) {
           console.log('Processing upgrade', this.workspace, this.email)
-          this.onUpgrade?.()
+          this.opt?.onUpgrade?.()
           return
         }
       }
@@ -398,6 +396,7 @@ class Connection implements ClientConnection {
 
     this.dialTimer = setTimeout(() => {
       if (!opened && !this.closed) {
+        void this.opt?.onDialTimeout?.()
         this.scheduleOpen(true)
       }
     }, dialTimeout)
@@ -645,11 +644,7 @@ export function connect (
   handler: TxHandler,
   workspace: string,
   user: string,
-  onUpgrade?: () => void,
-  onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent, data?: any) => void
+  opt?: ClientFactoryOptions
 ): ClientConnection {
-  return new Connection(url, handler, workspace, user, onUpgrade, onUnauthorized, async (event, data) => {
-    onConnect?.(event, data)
-  })
+  return new Connection(url, handler, workspace, user, opt)
 }

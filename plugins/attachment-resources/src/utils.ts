@@ -15,9 +15,17 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import { type Class, type TxOperations as Client, type Data, type Doc, type Ref, type Space } from '@hcengineering/core'
+import {
+  type Blob,
+  type Class,
+  type TxOperations as Client,
+  type Data,
+  type Doc,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
 import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import { type FileOrBlob, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 
 import attachment from './plugin'
 
@@ -28,25 +36,41 @@ export async function createAttachments (
   attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment,
   extraData: Partial<Data<Attachment>> = {}
 ): Promise<void> {
-  const { objectClass, objectId, space } = attachTo
   try {
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
         const uuid = await uploadFile(file)
-        const metadata = await getFileMetadata(file, uuid)
-
-        await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
-          ...extraData,
-          name: file.name,
-          file: uuid,
-          type: file.type,
-          size: file.size,
-          lastModified: file.lastModified,
-          metadata
-        })
+        await createAttachment(client, uuid, file.name, file, attachTo, attachmentClass, extraData)
       }
     }
+  } catch (err: any) {
+    await setPlatformStatus(unknownError(err))
+  }
+}
+
+export async function createAttachment (
+  client: Client,
+  uuid: Ref<Blob>,
+  name: string,
+  file: FileOrBlob,
+  attachTo: { objectClass: Ref<Class<Doc>>, space: Ref<Space>, objectId: Ref<Doc> },
+  attachmentClass: Ref<Class<Attachment>> = attachment.class.Attachment,
+  extraData: Partial<Data<Attachment>> = {}
+): Promise<void> {
+  const { objectClass, objectId, space } = attachTo
+  try {
+    const metadata = await getFileMetadata(file, uuid)
+
+    await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
+      ...extraData,
+      name,
+      file: uuid,
+      type: file.type,
+      size: file.size,
+      lastModified: file instanceof File ? file.lastModified : Date.now(),
+      metadata
+    })
   } catch (err: any) {
     await setPlatformStatus(unknownError(err))
   }

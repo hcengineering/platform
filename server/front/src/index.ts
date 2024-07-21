@@ -261,9 +261,14 @@ export function start (
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
+  const childLogger = ctx.logger.childLogger?.('requests', {
+    enableConsole: 'false'
+  })
+  const requests = ctx.newChild('requests', {}, {}, childLogger)
+
   class MyStream {
     write (text: string): void {
-      ctx.info(text)
+      requests.info(text)
     }
   }
 
@@ -288,8 +293,9 @@ export function start (
       PUSH_PUBLIC_KEY: config.pushPublicKey,
       ...(extraConfig ?? {})
     }
-    res.set('Cache-Control', cacheControlNoCache)
     res.status(200)
+    res.set('Cache-Control', cacheControlNoCache)
+    res.set('Connection', 'keep-alive')
     res.json(data)
   })
 
@@ -300,6 +306,7 @@ export function start (
       const admin = payload.extra?.admin === 'true'
       res.status(200)
       res.setHeader('Content-Type', 'application/json')
+      res.set('Connection', 'keep-alive')
       res.setHeader('Cache-Control', cacheControlNoCache)
 
       const json = JSON.stringify({
@@ -346,6 +353,7 @@ export function start (
           ) {
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
+          res.setHeader('Connection', 'keep-alive')
         }
       }
     })
@@ -708,7 +716,7 @@ export function start (
     '.avif'
   ]
 
-  app.get('*', function (request, response) {
+  app.get('*', (request, response) => {
     if (filesPatterns.some((it) => request.path.endsWith(it))) {
       response.sendStatus(404)
       return

@@ -33,6 +33,7 @@
     _class?: Ref<Class<Doc>>
     label: IntlString
     objects: Doc[]
+    count: number
   }
 
   const client = getClient()
@@ -41,9 +42,9 @@
   const contextByDocStore = inboxClient.contextByDoc
 
   const contextsQuery = createQuery()
-  const objectsQueryByClass = new Map<Ref<Class<Doc>>, LiveQuery>()
+  const objectsQueryByClass = new Map<Ref<Class<Doc>>, { query: LiveQuery, limit: number }>()
 
-  let objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
+  let objectsByClass = new Map<Ref<Class<Doc>>, { docs: Doc[], total: number }>()
   let contexts: DocNotifyContext[] = []
 
   let shouldPushObject = false
@@ -84,24 +85,26 @@
 
     for (const [_class, ctx] of contextsByClass.entries()) {
       const ids = ctx.map(({ attachedTo }) => attachedTo)
-      const query = objectsQueryByClass.get(_class) ?? createQuery()
+      const { query, limit } = objectsQueryByClass.get(_class) ?? {
+        query: createQuery(),
+        limit: model.maxSectionItems ?? 5
+      }
 
-      objectsQueryByClass.set(_class, query)
+      objectsQueryByClass.set(_class, { query, limit: limit ?? model.maxSectionItems ?? 5 })
 
-      query.query(_class, { _id: { $in: ids } }, (res: Doc[]) => {
-        objectsByClass = objectsByClass.set(_class, res)
+      query.query(_class, { _id: { $in: limit !== -1 ? ids.slice(0, limit) : ids } }, (res: Doc[]) => {
+        objectsByClass = objectsByClass.set(_class, { docs: res, total: ids.length })
       })
     }
 
     for (const [classRef, query] of objectsQueryByClass.entries()) {
       if (!contextsByClass.has(classRef)) {
-        query.unsubscribe()
+        query.query.unsubscribe()
         objectsQueryByClass.delete(classRef)
         objectsByClass.delete(classRef)
-
-        objectsByClass = objectsByClass
       }
     }
+    objectsByClass = objectsByClass
   }
 
   function getObjectGroup (object: Doc): ChatGroup {
@@ -118,7 +121,7 @@
 
   const getSections = reduceCalls(
     async (
-      objectsByClass: Map<Ref<Class<Doc>>, Doc[]>,
+      objectsByClass: Map<Ref<Class<Doc>>, { docs: Doc[], total: number }>,
       model: ChatNavGroupModel,
       object: { _id: Doc['_id'], _class: Doc['_class'] } | undefined,
       getPushObj: () => Doc,
@@ -129,8 +132,9 @@
       if (!model.wrap) {
         result.push({
           id: model.id,
-          objects: Array.from(objectsByClass.values()).flat(),
-          label: model.label ?? chunter.string.Channels
+          objects: Array.from(Array.from(objectsByClass.values()).map((it) => it.docs)).flat(),
+          label: model.label ?? chunter.string.Channels,
+          count: Array.from(Array.from(objectsByClass.values()).map((it) => it.total)).reduceRight((a, b) => a + b, 0)
         })
 
         handler(result)
@@ -140,27 +144,29 @@
       let isObjectPushed = false
 
       if (
-        Array.from(objectsByClass.values())
+        Array.from(Array.from(objectsByClass.values()).map((it) => it.docs))
           .flat()
           .some((o) => o._id === object?._id)
       ) {
         isObjectPushed = true
       }
 
-      for (const [_class, objects] of objectsByClass.entries()) {
+      for (let [_class, { docs: objects, total }] of objectsByClass.entries()) {
         const clazz = hierarchy.getClass(_class)
         const sectionObjects = [...objects]
 
         if (object !== undefined && _class === object._class && !objects.some(({ _id }) => _id === object._id)) {
           isObjectPushed = true
           sectionObjects.push(getPushObj())
+          total++
         }
 
         result.push({
           id: _class,
           _class,
           objects: sectionObjects,
-          label: clazz.pluralLabel ?? clazz.label
+          label: clazz.pluralLabel ?? clazz.label,
+          count: total
         })
       }
 
@@ -171,7 +177,8 @@
           id: object._id,
           _class: object._class,
           objects: [getPushObj()],
-          label: clazz.pluralLabel ?? clazz.label
+          label: clazz.pluralLabel ?? clazz.label,
+          count: 1
         })
       }
 
@@ -203,7 +210,16 @@
     header={section.label}
     actions={getSectionActions(section, contexts)}
     sortFn={model.sortFn}
-    maxItems={model.maxSectionItems}
+    itemsCount={section.count}
+    on:show-more={() => {
+      if (section._class !== undefined) {
+        const query = objectsQueryByClass.get(section._class)
+        if (query !== undefined) {
+          query.limit += 50
+          loadObjects(contexts)
+        }
+      }
+    }}
     on:select
   />
 {/each}

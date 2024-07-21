@@ -36,14 +36,16 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setPresentationCookie(token, getCurrentWorkspaceUrl())
 
-  const getEndpoint = await getResource(login.function.GetEndpoint)
-  const endpoint = await getEndpoint()
-  if (endpoint == null) {
+  const selectWorkspace = await getResource(login.function.SelectWorkspace)
+  const workspaceLoginInfo = (await selectWorkspace(ws, token))[1]
+  if (workspaceLoginInfo == null) {
     navigate({
       path: [loginId]
     })
     return
   }
+
+  setMetadata(presentation.metadata.Token, token)
 
   if (_token !== token && _client !== undefined) {
     await _client.close()
@@ -56,13 +58,11 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   let version: Version | undefined
   const clientFactory = await getResource(client.function.GetClient)
-  _client = await clientFactory(
-    token,
-    endpoint,
-    () => {
+  _client = await clientFactory(token, workspaceLoginInfo.endpoint, {
+    onUpgrade: () => {
       location.reload()
     },
-    () => {
+    onUnauthorized: () => {
       clearMetadata(ws)
       navigate({
         path: [loginId],
@@ -70,7 +70,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    (event: ClientConnectEvent) => {
+    onConnect: (event: ClientConnectEvent) => {
       console.log('WorkbenchClient: onConnect', event)
       try {
         if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
@@ -110,7 +110,7 @@ export async function connect (title: string): Promise<Client | undefined> {
         console.error(err)
       }
     }
-  )
+  })
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
   Analytics.setWorkspace(ws)
@@ -167,7 +167,6 @@ function clearMetadata (ws: string): void {
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
   setPresentationCookie('', getCurrentWorkspaceUrl())
-  setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()
 }

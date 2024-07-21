@@ -17,7 +17,6 @@ import { type IntlString, mergeIds } from '@hcengineering/platform'
 import drive, { driveId } from '@hcengineering/drive'
 
 export default mergeIds(driveId, drive, {
-  component: {},
   string: {
     CreateDrive: '' as IntlString,
     CreateFolder: '' as IntlString,

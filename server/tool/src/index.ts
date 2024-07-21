@@ -31,31 +31,36 @@ import core, {
   systemAccountEmail,
   toWorkspaceString,
   Tx,
+  TxOperations,
   WorkspaceId,
+  WorkspaceIdWithUrl,
   type Doc,
   type TxCUD
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
-import { DomainIndexHelperImpl, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
+import {
+  AggregatorStorageAdapter,
+  DomainIndexHelperImpl,
+  StorageAdapter,
+  StorageConfiguration
+} from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { Db, Document } from 'mongodb'
 import { connect } from './connect'
-import { createWorkspaceData, InitScript } from './initializer'
+import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
 import { getMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
+import * as yaml from 'js-yaml'
 import path from 'path'
 
 export * from './connect'
 export * from './plugin'
 export { toolPlugin as default }
-
-export const CONFIG_DB = '%config'
-const scriptsCol = 'initScripts'
 
 export class FileModelLogger implements ModelLogger {
   handle: fs.WriteStream
@@ -102,10 +107,8 @@ export function prepareTools (rawTxes: Tx[]): {
  */
 export async function initModel (
   ctx: MeasureContext,
-  transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
-  migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
@@ -116,7 +119,6 @@ export async function initModel (
 
   const _client = getMongoClient(mongodbUri)
   const client = await _client.getClient()
-  let connection: (CoreClient & BackupClient) | undefined
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
   try {
@@ -126,67 +128,71 @@ export async function initModel (
     const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
     logger.log('model transactions inserted.', { count: result.insertedCount })
 
-    await progress(10)
+    await progress(30)
 
-    logger.log('creating data...', { transactorUrl })
-    const { model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+    logger.log('creating data...', { workspaceId })
 
-    await progress(20)
+    await progress(60)
 
     logger.log('create minio bucket', { workspaceId })
 
     await storageAdapter.make(ctx, workspaceId)
-
-    logger.log('connecting to transactor', { workspaceId, transactorUrl })
-
-    connection = (await connect(
-      transactorUrl,
-      workspaceId,
-      undefined,
-      {
-        model: 'upgrade',
-        admin: 'true'
-      },
-      model
-    )) as unknown as CoreClient & BackupClient
-
-    const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
-    const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
-    const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
-
-    try {
-      let i = 0
-      for (const op of migrateOperations) {
-        logger.log('Migrate', { name: op[0] })
-        await op[1].upgrade(migrateState, async () => connection as any, logger)
-        i++
-        await progress(20 + (((100 / migrateOperations.length) * i) / 100) * 10)
-      }
-      await progress(30)
-
-      // Create update indexes
-      await createUpdateIndexes(
-        ctx,
-        connection,
-        db,
-        logger,
-        async (value) => {
-          await progress(30 + (Math.min(value, 100) / 100) * 70)
-        },
-        workspaceId
-      )
-      await progress(100)
-    } catch (e: any) {
-      logger.error('error', { error: e })
-      throw e
-    }
+    await progress(100)
   } catch (err: any) {
     ctx.error('Failed to create workspace', { error: err })
     throw err
   } finally {
     await storageAdapter.close()
-    await connection?.sendForceClose()
-    await connection?.close()
+    _client.close()
+  }
+}
+
+export async function updateModel (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  migrateOperations: [string, MigrateOperation][],
+  connection: TxOperations,
+  logger: ModelLogger = consoleModelLogger,
+  progress: (value: number) => Promise<void>
+): Promise<void> {
+  logger.log('connecting to transactor', { workspaceId })
+
+  const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
+  const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
+  const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
+
+  const { mongodbUri } = prepareTools([])
+
+  const _client = getMongoClient(mongodbUri)
+  const client = await _client.getClient()
+
+  try {
+    const db = getWorkspaceDB(client, workspaceId)
+
+    let i = 0
+    for (const op of migrateOperations) {
+      logger.log('Migrate', { name: op[0] })
+      await op[1].upgrade(migrateState, async () => connection as any, logger)
+      i++
+      await progress((((100 / migrateOperations.length) * i) / 100) * 30)
+    }
+
+    // Create update indexes
+    await createUpdateIndexes(
+      ctx,
+      connection,
+      db,
+      logger,
+      async (value) => {
+        await progress(30 + (Math.min(value, 100) / 100) * 70)
+      },
+      workspaceId
+    )
+    await progress(100)
+  } catch (e: any) {
+    logger.error('error', { error: e })
+    throw e
+  } finally {
     _client.close()
   }
 }
@@ -197,24 +203,20 @@ export async function initModel (
 export async function initializeWorkspace (
   ctx: MeasureContext,
   branding: Branding | null,
-  transactorUrl: string,
-  workspaceId: WorkspaceId,
+  wsUrl: WorkspaceIdWithUrl,
+  storageAdapter: AggregatorStorageAdapter,
+  client: TxOperations,
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
   const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-  if (initWS === undefined) return
-
-  const { mongodbUri } = prepareTools([])
-
-  const _client = getMongoClient(mongodbUri)
-  const client = await _client.getClient()
-  let connection: (CoreClient & BackupClient) | undefined
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+  const sriptUrl = getMetadata(toolPlugin.metadata.InitScriptURL)
+  if (initWS === undefined || sriptUrl === undefined) return
   try {
-    const db = client.db(CONFIG_DB)
-    const scripts = await db.collection<InitScript>(scriptsCol).find({}).toArray()
+    // `https://raw.githubusercontent.com/hcengineering/init/main/script.yaml`
+    const req = await fetch(sriptUrl)
+    const text = await req.text()
+    const scripts = yaml.load(text) as any as InitScript[]
     let script: InitScript | undefined
     if (initWS !== undefined) {
       script = scripts.find((it) => it.name === initWS)
@@ -225,24 +227,12 @@ export async function initializeWorkspace (
     if (script === undefined) {
       return
     }
-    try {
-      connection = (await connect(transactorUrl, workspaceId, undefined, {
-        model: 'upgrade',
-        admin: 'true'
-      })) as unknown as CoreClient & BackupClient
-      await createWorkspaceData(ctx, connection, storageAdapter, workspaceId, script, logger, progress)
-    } catch (e: any) {
-      logger.error('error', { error: e })
-      throw e
-    }
+
+    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client)
+    await initializer.processScript(script, logger, progress)
   } catch (err: any) {
     ctx.error('Failed to create workspace', { error: err })
     throw err
-  } finally {
-    await storageAdapter.close()
-    await connection?.sendForceClose()
-    await connection?.close()
-    _client.close()
   }
 }
 
@@ -417,7 +407,7 @@ export async function upgradeModel (
 
       if (connection === undefined) {
         // We need to send reboot for workspace
-        console.info('send force close')
+        ctx.info('send force close', { workspace: workspaceId.name, transactorUrl })
         const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
         const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
         await fetch(

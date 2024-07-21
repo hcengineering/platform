@@ -409,7 +409,7 @@
       return await createAttachment(file)
     }}
   />
-  {#if (attachments.size > 0 && enableAttachments) || progress}
+  {#if attachments.size > 0 && enableAttachments}
     <AttachmentsGrid
       attachments={Array.from(attachments.values())}
       {progress}

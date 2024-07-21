@@ -13,34 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-
-  export let multiple: boolean = false
-
-  export function upload (): void {
-    inputFile.click()
-  }
-
-  const dispatch = createEventDispatcher()
-
-  let inputFile: HTMLInputElement
-
-  async function fileSelected (): Promise<void> {
-    const files = inputFile.files
-    if (files === null || files.length === 0) {
-      return
-    }
-    dispatch('selected', files)
-  }
+  import FileUploadStatusBar from './FileUploadStatusBar.svelte'
+  import { uploads } from '../store'
 </script>
 
-<input
-  bind:this={inputFile}
-  {multiple}
-  id="file"
-  name="file"
-  type="file"
-  style="display: none"
-  disabled={inputFile == null}
-  on:change={fileSelected}
-/>
+<div class="flex-row-center flex-gap-2">
+  {#each $uploads as upload}
+    <FileUploadStatusBar {upload} />
+  {/each}
+</div>

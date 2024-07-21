@@ -11,7 +11,7 @@
   export let space: Ref<Project>
   export let options: FindOptions<Card> | undefined
 
-  const isArchived = { $nin: [true] }
+  const isArchived = { $ne: true }
   const query = createQuery()
   let states: Ref<State>[] = []
   $: query.query(task.class.State, { space, isArchived }, (result) => {

@@ -14,10 +14,9 @@
 //
 import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
 import { FileNode, type FileOptions as FileNodeOptions } from '@hcengineering/text'
-import { showPopup } from '@hcengineering/ui'
+import { humanReadableFileSize, showPopup } from '@hcengineering/ui'
 import { nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import filesize from 'filesize'
 import { type FileAttachFunction } from './types'
 
 const attachIcon =
@@ -96,7 +95,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
       'div',
       nodeAttributes,
       ['div', { class: 'file-name-container' }, icon, ['a', linkAttributes, `${fileName}`]],
-      ['div', { class: 'file-size' }, `${filesize(size)}`]
+      ['div', { class: 'file-size' }, `${humanReadableFileSize(size)}`]
     ]
   },
 
