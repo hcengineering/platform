@@ -88,6 +88,7 @@ export function serveAccount (
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
   setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
+  setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
 
@@ -117,9 +118,12 @@ export function serveAccount (
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)
 
-    setInterval(() => {
-      void cleanExpiredOtp(db)
-    }, 3 * 60 * 1000)
+    setInterval(
+      () => {
+        void cleanExpiredOtp(db)
+      },
+      3 * 60 * 1000
+    )
 
     const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
     if (performUpgrade) {

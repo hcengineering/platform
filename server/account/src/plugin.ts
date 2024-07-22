@@ -14,7 +14,8 @@ export const accountPlugin = plugin(accountId, {
     SES_URL: '' as Metadata<string>,
     ProductName: '' as Metadata<string>,
     Transactors: '' as Metadata<string>,
-    OtpTimeToLiveSec: '' as Metadata<number>
+    OtpTimeToLiveSec: '' as Metadata<number>,
+    OtpRetryDelaySec: '' as Metadata<number>
   },
   string: {
     ConfirmationText: '' as IntlString,

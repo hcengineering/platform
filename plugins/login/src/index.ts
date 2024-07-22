@@ -58,7 +58,7 @@ export interface LoginInfo {
 
 export interface OtpInfo {
   sent: boolean
-  expires: Timestamp
+  retryOn: Timestamp
 }
 
 export default plugin(loginId, {

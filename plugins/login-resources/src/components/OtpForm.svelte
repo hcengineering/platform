@@ -27,7 +27,7 @@
 
   export let navigateUrl: string | undefined = undefined
   export let email: string
-  export let expires: Timestamp
+  export let retryOn: Timestamp
 
   const dispatch = createEventDispatcher()
 
@@ -184,9 +184,9 @@
     status = otpStatus
 
     if (result !== undefined && result.sent && otpStatus === OK) {
-      expires = result.expires
+      retryOn = result.retryOn
       clearOtpData()
-      if (timer !== undefined) timer.restart(expires)
+      if (timer !== undefined) timer.restart(retryOn)
       canResend = false
     }
   }
@@ -252,7 +252,7 @@
       <span class="time ml-2">
         <TimeLeft
           bind:this={timer}
-          time={expires}
+          time={retryOn}
           on:timeout={() => {
             canResend = true
           }}

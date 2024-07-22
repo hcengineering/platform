@@ -191,7 +191,7 @@ export interface OtpRecord {
 
 export interface OtpInfo {
   sent: boolean
-  expires: Timestamp
+  retryOn: Timestamp
 }
 
 /**
@@ -474,12 +474,13 @@ export async function sendOtp (
       .limit(1)
       .toArray()
   )[0]
-  const isValid = otpData !== undefined && otpData.expires > now
+
+  const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
+  const isValid = otpData !== undefined && otpData.expires > now && otpData.createdOn + retryDelay * 1000 > now
 
   if (isValid) {
-    return { sent: true, expires: otpData.expires }
+    return { sent: true, retryOn: otpData.createdOn + retryDelay * 1000 }
   }
-
   const secs = getMetadata(accountPlugin.metadata.OtpTimeToLiveSec) ?? 60
   const timeToLive = secs * 1000
   const expires = now + timeToLive
@@ -488,21 +489,14 @@ export async function sendOtp (
   await sendOtpEmail(branding, otp, email)
   await db.collection<OtpRecord>(OTP_COLLECTION).insertOne({ account: account._id, otp, expires, createdOn: now })
 
-  return { sent: true, expires }
+  return { sent: true, retryOn: now + retryDelay * 1000 }
 }
 
 async function isOtpValid (db: Db, account: Account, otp: string): Promise<boolean> {
-  const otpData = (
-    await db
-      .collection<OtpRecord>(OTP_COLLECTION)
-      .find({ account: account._id })
-      .sort({ createdOn: -1 })
-      .limit(1)
-      .toArray()
-  )[0]
-  const isExpired = otpData !== undefined && otpData.expires < Date.now()
+  const now = Date.now()
+  const otpData = (await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ account: account._id, otp })) ?? undefined
 
-  return otpData !== undefined && !isExpired && otp === otpData.otp
+  return otpData !== undefined && otpData.expires > now
 }
 
 export async function validateOtp (

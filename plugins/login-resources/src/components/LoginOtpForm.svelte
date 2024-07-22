@@ -29,7 +29,7 @@
 
   let status = OK
   let step = OtpLoginSteps.Email
-  let otpExpires = 0
+  let otpRetryOn = 0
 
   const action = {
     i18n: login.string.LogIn,
@@ -40,7 +40,7 @@
 
       if (result !== undefined && result.sent && otpStatus === OK) {
         step = OtpLoginSteps.Otp
-        otpExpires = result.expires
+        otpRetryOn = result.retryOn
       }
     }
   }
@@ -63,5 +63,5 @@
 {/if}
 
 {#if step === OtpLoginSteps.Otp && formData.username !== ''}
-  <OtpForm email={formData.username} {navigateUrl} expires={otpExpires} on:step={handleStep} />
+  <OtpForm email={formData.username} {navigateUrl} retryOn={otpRetryOn} on:step={handleStep} />
 {/if}
