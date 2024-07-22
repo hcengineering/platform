@@ -36,8 +36,8 @@
       const person = $personByIdStore.get(me)
       if (person === undefined) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
-      await client.update(request, { status: RequestStatus.Approved })
     }
+    await client.update(request, { status: RequestStatus.Approved })
   }
 
   async function decline (): Promise<void> {
