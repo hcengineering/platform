@@ -57,6 +57,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly draftNewVersion: Locator
   readonly buttonHistoryTab: Locator
   readonly documentHeader: Locator
+  readonly leaveFolder: Locator
 
   constructor (page: Page) {
     super(page)
@@ -122,6 +123,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.draftNewVersion = page.getByRole('button', { name: 'Draft new version' })
     this.buttonHistoryTab = page.getByText('History')
     this.documentHeader = page.getByRole('button', { name: 'Complete document' })
+    this.leaveFolder = page.getByRole('button', { name: 'Leave' })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -209,6 +211,13 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
     await this.createNewDocument.click()
   }
+
+  async clickLeaveFolder (folderName: string): Promise<void> {
+    await this.page.getByRole('button', { name: folderName }).hover()
+    await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
+    await this.leaveFolder.click()
+  }
+
 
   async createNewDocumentFromFolder (
     title: string,

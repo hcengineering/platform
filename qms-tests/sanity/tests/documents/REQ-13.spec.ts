@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { BrowserContext, Page, test } from '@playwright/test'
 import {
   attachScreenshot,
   DocumentURI,

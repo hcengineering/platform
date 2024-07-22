@@ -31,6 +31,13 @@ test.describe('QMS. Documents tests', () => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
 
+  test.afterEach(async ({ browser }) => {
+    const contexts = browser.contexts();
+    for (const context of contexts) {
+      await context.close();
+    }
+  });
+
   test('TESTS-123. Create a document', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create a new document')
     await allure.tms('TESTS-123', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-123')
@@ -928,6 +935,8 @@ test.describe('QMS. Documents tests', () => {
     })
   })
 
+ 
+
   test('TESTS-155. Change document owner. QARA user changes owner from one user to another', async ({
     page,
     browser
@@ -1265,9 +1274,9 @@ test.describe('QMS. Documents tests', () => {
   test('TESTS-380. As a space QARA, I can select "Custom" field in "Reason" for creating this Quality doc and it is stored in the History of Version 2 of this doc', async ({
     page
   }) => {
-    const folderName = faker.word.words(5)
-    const documentTitle = faker.word.words(5)
-    const reason = faker.word.words(5)
+    const folderName = generateId(5)
+    const documentTitle = generateId(5)
+    const reason = generateId(5)
     await allure.description('Requirement\nUsers need to create a new document')
     await allure.tms('TESTS-380', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-380')
 
@@ -1290,6 +1299,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkIfHistoryVersionExists(reason)
     })
     await attachScreenshot('TESTS-380_create_document.png', page)
+    await documentContentPage.clickLeaveFolder(folderName)
   })
 
   test('TESTS-214. Check old existing document content', async ({ page, browser }) => {
