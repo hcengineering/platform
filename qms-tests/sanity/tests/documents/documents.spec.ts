@@ -32,11 +32,11 @@ test.describe('QMS. Documents tests', () => {
   })
 
   test.afterEach(async ({ browser }) => {
-    const contexts = browser.contexts();
+    const contexts = browser.contexts()
     for (const context of contexts) {
-      await context.close();
+      await context.close()
     }
-  });
+  })
 
   test('TESTS-123. Create a document', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create a new document')
@@ -934,8 +934,6 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-161_add_comment_and_check_comment_in_the_right_panel.png', page)
     })
   })
-
- 
 
   test('TESTS-155. Change document owner. QARA user changes owner from one user to another', async ({
     page,

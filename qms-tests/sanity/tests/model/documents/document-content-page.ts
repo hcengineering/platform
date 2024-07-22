@@ -218,7 +218,6 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.leaveFolder.click()
   }
 
-
   async createNewDocumentFromFolder (
     title: string,
     custom: boolean = false,
