@@ -83,8 +83,7 @@ test.describe('Registration tests', () => {
     await test.step('1. Try to login with wrong password', async () => {
       const loginPage = new LoginPage(page)
       await loginPage.login('user1', 'wrongPassword')
-      await loginPage.checkIfUserIsLoggedIn("wrong-password")
-
+      await loginPage.checkIfUserIsLoggedIn('wrong-password')
     })
     await attachScreenshot('TESTS-396_empty_fields.png', page)
   })
@@ -95,8 +94,7 @@ test.describe('Registration tests', () => {
     await test.step('1. Try to login with wrong email', async () => {
       const loginPage = new LoginPage(page)
       await loginPage.login('wrongEmail', '1234')
-      await loginPage.checkIfUserIsLoggedIn("wrong-email")
-
+      await loginPage.checkIfUserIsLoggedIn('wrong-email')
     })
     await attachScreenshot('TESTS-397_empty_fields.png', page)
   })
@@ -107,8 +105,7 @@ test.describe('Registration tests', () => {
     await test.step('1. Try to login with working credentials', async () => {
       const loginPage = new LoginPage(page)
       await loginPage.login('user1', '1234')
-      await loginPage.checkIfUserIsLoggedIn("correct-credentials")
-
+      await loginPage.checkIfUserIsLoggedIn('correct-credentials')
     })
     await attachScreenshot('TESTS-398_empty_fields.png', page)
   })
