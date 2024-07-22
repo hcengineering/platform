@@ -25,5 +25,20 @@ export class LoginPage {
     await this.inputPassword.fill(password)
     expect(await this.buttonLogin.isEnabled()).toBe(true)
     await this.buttonLogin.click()
+  }  
+
+  async checkIfUserIsLoggedIn (credentials: string): Promise<void> {
+    if (credentials === 'wrong-password') {
+      await expect(this.buttonLogin).toBeVisible()
+      await expect(this.page.getByText('Invalid password')).toBeVisible()
+        }
+
+    if (credentials === 'wrong-email') {
+      await expect(this.buttonLogin).toBeVisible()
+      await expect(this.page.getByText('Account not found')).toBeVisible()    
+    }
+    if (credentials === 'correct-credentials') {
+      await expect(this.page.getByText('SanityTest')).toBeVisible()
+  }
   }
 }
