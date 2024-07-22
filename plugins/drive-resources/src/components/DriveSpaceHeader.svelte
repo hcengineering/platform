@@ -22,7 +22,7 @@
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { createDrive, createFolder } from '../utils'
+  import { showCreateDrivePopup, showCreateFolderPopup } from '../utils'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
@@ -57,11 +57,11 @@
   }
 
   async function handleCreateDrive (): Promise<void> {
-    await createDrive()
+    await showCreateDrivePopup()
   }
 
   async function handleCreateFolder (): Promise<void> {
-    await createFolder(currentSpace, parent, true)
+    await showCreateFolderPopup(currentSpace, parent, true)
   }
 
   async function handleUploadFile (): Promise<void> {
@@ -71,7 +71,7 @@
         parent !== drive.ids.Root
           ? { objectId: parent, objectClass: drive.class.Folder }
           : { objectId: space, objectClass: drive.class.Drive }
-      await showFilesUploadPopup(target, {}, async (uuid, name, file, metadata) => {
+      await showFilesUploadPopup(target, {}, async (uuid, name, file, path, metadata) => {
         try {
           const data = {
             file: uuid,

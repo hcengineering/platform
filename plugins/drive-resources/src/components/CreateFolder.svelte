@@ -15,13 +15,14 @@
 //
 -->
 <script lang="ts">
-  import core, { Ref, generateId } from '@hcengineering/core'
-  import { Drive, Folder } from '@hcengineering/drive'
+  import core, { Data, Ref } from '@hcengineering/core'
+  import { type Drive, type Folder, createFolder } from '@hcengineering/drive'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import { EditBox, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+
   import drive from '../plugin'
 
   export function canClose (): boolean {
@@ -30,8 +31,6 @@
 
   export let space: Ref<Drive> | undefined
   export let parent: Ref<Folder> | undefined
-
-  const id: Ref<Folder> = generateId()
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -52,26 +51,12 @@
       return
     }
 
-    let path: Ref<Folder>[] = []
-
-    if (_parent != null && _parent !== drive.ids.Root) {
-      const parent = await client.findOne(drive.class.Folder, { _id: _parent })
-      if (parent === undefined) {
-        throw new Error('parent not found')
-      }
-      path = [parent._id, ...parent.path]
+    const data: Omit<Data<Folder>, 'path'> = {
+      name: getTitle(name),
+      parent: _parent ?? drive.ids.Root
     }
 
-    await client.createDoc(
-      drive.class.Folder,
-      _space,
-      {
-        name: getTitle(name),
-        parent: _parent ?? drive.ids.Root,
-        path
-      },
-      id
-    )
+    const id = await createFolder(client, _space, data)
 
     dispatch('close', id)
   }
