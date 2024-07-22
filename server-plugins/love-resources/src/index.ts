@@ -100,8 +100,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
     [tx],
     'createUserInfo'
   )
-  await control.apply([ptx])
-  return []
+  return [ptx]
 }
 
 async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<Tx[]> {

@@ -783,6 +783,10 @@ export class TServerStorage implements ServerStorage {
                 )
                 const aresult = await performAsync(applyCtx)
 
+                if (aresult.length > 0) {
+                  await this.apply(applyCtx, aresult)
+                }
+
                 if (applyTxes.length > 0) {
                   await this.apply(applyCtx, applyTxes)
                 }
