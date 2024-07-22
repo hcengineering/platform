@@ -19,6 +19,7 @@ export const serverDocumentsId = 'server-documents' as Plugin
 export default plugin(serverDocumentsId, {
   trigger: {
     OnCollaborativeSectionDeleted: '' as Resource<TriggerFunc>,
+    OnDocDeleted: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
     OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,
