@@ -293,7 +293,6 @@
       on:click={togglePlannerNav}
     />
     <div class="heading-bold-20 ml-4">
-      <Label label={time.string.ToDoColon} />
       {#if mode === 'date'}
         {getDateStr(currentDate)}
       {:else}

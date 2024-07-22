@@ -32,7 +32,7 @@
 
 {#await p then blobRef}
   {#if loading}
-    <div class="flex justify-center">
+    <div class="flex-center w-full h-full clear-mins">
       <Loading />
     </div>
   {/if}
