@@ -781,13 +781,16 @@ export class TServerStorage implements ServerStorage {
                   this.options.branding,
                   true
                 )
-                const result = await performAsync(applyCtx)
+                const aresult = await performAsync(applyCtx)
 
                 if (applyTxes.length > 0) {
                   await this.apply(applyCtx, applyTxes)
                 }
                 // We need to broadcast changes
-                await this.broadcastCtx(applyCtx.derived.txes.concat(result), applyCtx.derived.targets)
+                const combinedTxes = applyCtx.derived.txes.concat(aresult)
+                if (combinedTxes.length > 0) {
+                  await this.broadcastCtx(combinedTxes, applyCtx.derived.targets)
+                }
               },
               { count: txes.length }
             )

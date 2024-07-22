@@ -18,7 +18,7 @@
   import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
   import { ERROR, IntlString, OK, Severity, Status, getMetadata, translate } from '@hcengineering/platform'
-  import { EditBox, StylishEdit, ModernDialog } from '@hcengineering/ui'
+  import { EditBox, StylishEdit, ModernDialog, fetchMetadataLocalStorage } from '@hcengineering/ui'
 
   import documents from '../plugin'
   import StatusControl from './requests/StatusControl.svelte'
@@ -33,7 +33,8 @@
   let rejectionNote = ''
 
   const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-  const email: string = getMetadata(login.metadata.LoginEmail) ?? ''
+  const email: string =
+    getMetadata(login.metadata.LoginEmail) ?? fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
   const disableEmailField = email !== ''
 
   const object: LoginInfo = {

@@ -88,6 +88,13 @@ export async function connect (title: string): Promise<Client | undefined> {
         if (ws !== getCurrentLocation().path[1]) return
         workspaceCreating.set(loginInfo?.createProgress ?? 0)
         loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+        if (loginInfo === undefined) {
+          // something went wrong, workspace not exist, redirect to login
+          navigate({
+            path: [loginId]
+          })
+          return
+        }
         workspaceCreating.set(loginInfo?.createProgress)
         if (loginInfo?.creating === false) {
           workspaceCreating.set(-1)

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
+  import { type Ref } from '@hcengineering/core'
   import drive, { createFile, type Drive, type Folder } from '@hcengineering/drive'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { FileOrBlob, getClient, getFileMetadata } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { uploadFiles } from '@hcengineering/uploader'
 
   export let space: Ref<Drive>
@@ -72,11 +72,10 @@
         parent !== drive.ids.Root
           ? { objectId: parent, objectClass: drive.class.Folder }
           : { objectId: space, objectClass: drive.class.Drive }
-      await uploadFiles(list, target, {}, async (uuid: string, name: string, file: FileOrBlob) => {
+      await uploadFiles(list, target, {}, async (uuid, name, file, metadata) => {
         try {
-          const metadata = await getFileMetadata(file, uuid as Ref<Blob>)
           const data = {
-            file: uuid as Ref<Blob>,
+            file: uuid,
             size: file.size,
             type: file.type,
             lastModified: file instanceof File ? file.lastModified : Date.now(),

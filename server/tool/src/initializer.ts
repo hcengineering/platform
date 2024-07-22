@@ -79,7 +79,6 @@ export interface UploadStep {
   type: 'upload'
   fromUrl: string
   contentType: string
-  size?: number
   resultVariable?: string
 }
 
@@ -142,12 +141,14 @@ export class WorkspaceInitializer {
       const id = uuid()
       const resp = await fetch(step.fromUrl)
       const buffer = Buffer.from(await resp.arrayBuffer())
-      await this.storageAdapter.put(this.ctx, this.wsUrl, id, buffer, step.contentType, step.size)
+      await this.storageAdapter.put(this.ctx, this.wsUrl, id, buffer, step.contentType, buffer.length)
       if (step.resultVariable !== undefined) {
-        vars[step.resultVariable] = id
+        vars[`\${${step.resultVariable}}`] = id
+        vars[`\${${step.resultVariable}_size}`] = buffer.length
       }
     } catch (error) {
       logger.error('Upload failed', error)
+      throw error
     }
   }
 
@@ -158,7 +159,7 @@ export class WorkspaceInitializer {
       throw new Error(`Document not found: ${JSON.stringify(query)}`)
     }
     if (step.resultVariable !== undefined) {
-      vars[step.resultVariable] = res
+      vars[`\${${step.resultVariable}}`] = res
     }
   }
 
@@ -187,7 +188,7 @@ export class WorkspaceInitializer {
   ): Promise<void> {
     const _id = generateId<T>()
     if (step.resultVariable !== undefined) {
-      vars[step.resultVariable] = _id
+      vars[`\${${step.resultVariable}}`] = _id
     }
     const data = await this.fillPropsWithMarkdown(
       { ...(defaults.get(step._class) ?? {}), ...step.data },
@@ -225,8 +226,15 @@ export class WorkspaceInitializer {
       ) {
         throw new Error('Add collection step must have attachedTo, attachedToClass, collection and space')
       }
-      return (await this.client.addCollection(_class, space, attachedTo, attachedToClass, collection, props),
-      _id) as unknown as Ref<T>
+      return (await this.client.addCollection(
+        _class,
+        space,
+        attachedTo,
+        attachedToClass,
+        collection,
+        props,
+        _id as Ref<AttachedDoc> | undefined
+      )) as unknown as Ref<T>
     } else {
       const { space, ...props } = data
       if (space === undefined) {
@@ -297,7 +305,9 @@ export class WorkspaceInitializer {
           const matched = fieldRegexp.exec(value)
           if (matched === null) break
           const result = vars[matched[0]]
-          if (result !== undefined && typeof result === 'string') {
+          if (result === undefined) {
+            throw new Error(`Variable ${matched[0]} not found`)
+          } else {
             value = value.replaceAll(matched[0], result)
             fieldRegexp.lastIndex = 0
           }

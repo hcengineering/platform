@@ -511,11 +511,11 @@ class TSessionManager implements SessionManager {
 
     const sessions = [...workspace.sessions.values()]
     const ctx = this.ctx.newChild('📭 broadcast', {})
-    function send (): void {
+    const send = (): void => {
       for (const sessionRef of sessions) {
         const tt = sessionRef.session.getUser()
         if ((target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)) {
-          void sendResponse(ctx, sessionRef.session, sessionRef.socket, { result: resp })
+          sessionRef.session.broadcast(ctx, sessionRef.socket, resp)
         }
       }
       ctx.end()
@@ -547,8 +547,8 @@ class TSessionManager implements SessionManager {
         pipelineCtx,
         { ...token.workspace, workspaceUrl, workspaceName },
         upgrade,
-        (tx, targets) => {
-          this.broadcastAll(workspace, tx, targets)
+        (tx, targets, exclude) => {
+          this.broadcastAll(workspace, tx, targets, exclude)
         },
         branding
       ),

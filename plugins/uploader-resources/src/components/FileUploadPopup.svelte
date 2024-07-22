@@ -17,6 +17,9 @@
 
   import { type Uppy } from '@uppy/core'
   import Dashboard from '@uppy/dashboard'
+  import ScreenCapture from '@uppy/screen-capture'
+  import Webcam from '@uppy/webcam'
+
   import { onMount, onDestroy, createEventDispatcher } from 'svelte'
 
   const dispatch = createEventDispatcher()
@@ -34,6 +37,8 @@
   onMount(() => {
     uppy.on('upload', handleUpload)
 
+    uppy.use(ScreenCapture)
+    uppy.use(Webcam)
     uppy.use(Dashboard, {
       id: 'huly:Dashboard',
       target: container,

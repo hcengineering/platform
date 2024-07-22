@@ -214,6 +214,7 @@
             </div>
           {/each}
         {/if}
+        <div class="bottomSpacing no-print" />
       </div>
     </Scroller>
   </div>
@@ -269,6 +270,9 @@
     }
   }
 
+  .bottomSpacing {
+    padding-bottom: 30vh;
+  }
   .drag-over-highlight {
     opacity: 0.2;
   }
