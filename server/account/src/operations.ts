@@ -480,7 +480,8 @@ export async function sendOtp (
     return { sent: true, expires: otpData.expires }
   }
 
-  const timeToLive = 30 * 1000
+  const secs = getMetadata(accountPlugin.metadata.OtpTimeToLiveSec) ?? 60
+  const timeToLive = secs * 1000
   const expires = now + timeToLive
   const otp = await getNewOtp(db)
 
@@ -527,10 +528,15 @@ export async function validateOtp (
 
   try {
     const info = toAccountInfo(account)
+
+    if (account.confirmed !== true) {
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
+    }
+
     const result = {
       endpoint: '',
       email,
-      confirmed: info.confirmed ?? true,
+      confirmed: true,
       token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
     }
     await db.collection<OtpRecord>(OTP_COLLECTION).deleteMany({ account: account._id })

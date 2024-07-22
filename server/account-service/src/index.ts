@@ -87,6 +87,7 @@ export function serveAccount (
   setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
+  setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
 
@@ -118,7 +119,7 @@ export function serveAccount (
 
     setInterval(() => {
       void cleanExpiredOtp(db)
-    }, 60 * 1000)
+    }, 3 * 60 * 1000)
 
     const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
     if (performUpgrade) {
