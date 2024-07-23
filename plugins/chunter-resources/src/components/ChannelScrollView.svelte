@@ -22,13 +22,14 @@
   import {
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
-    canGroupMessages
+    canGroupMessages,
+    messageInFocus
   } from '@hcengineering/activity-resources'
   import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
+  import { ButtonIcon, IconDropdown, Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'
 
@@ -100,6 +101,9 @@
 
   let selectedDate: Timestamp | undefined = undefined
   let dateToJump: Timestamp | undefined = undefined
+
+  let prevScrollHeight = 0
+  let isScrollAtBottom = false
 
   let messagesCount = 0
 
@@ -277,6 +281,7 @@
 
   function handleScroll ({ autoScrolling }: ScrollParams): void {
     saveScrollPosition()
+    updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
     if (autoScrolling) {
       return
     }
@@ -450,6 +455,8 @@
       isScrollInitialized = true
       isInitialScrolling = false
     }
+
+    updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
   }
 
   function reinitializeScroll (): void {
@@ -557,9 +564,6 @@
     loadMore()
   }
 
-  let prevScrollHeight = 0
-  let isScrollAtBottom = false
-
   function saveScrollPosition (): void {
     if (!scrollElement) {
       return
@@ -588,7 +592,7 @@
     }
   })
 
-  async function compensateAside (isOpened: boolean) {
+  async function compensateAside (isOpened: boolean): Promise<void> {
     if (!isInitialScrolling && isScrollAtBottom && !wasAsideOpened && isOpened) {
       await wait()
       scrollToBottom()
@@ -599,7 +603,7 @@
 
   $: void compensateAside(isAsideOpened)
 
-  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage) {
+  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage): boolean {
     let prevMetadata: MessageMetadata | undefined = undefined
 
     if (prevMessage === undefined) {
@@ -617,6 +621,53 @@
   onDestroy(() => {
     unsubscribe()
   })
+
+  let showScrollDownButton = false
+
+  $: updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
+
+  function updateDownButtonVisibility (
+    metadata: MessageMetadata[],
+    displayMessages: DisplayActivityMessage[],
+    element?: HTMLDivElement
+  ): void {
+    if (metadata.length === 0 || displayMessages.length === 0) {
+      showScrollDownButton = false
+      return
+    }
+
+    const lastMetadata = metadata[metadata.length - 1]
+    const lastMessage = displayMessages[displayMessages.length - 1]
+
+    if (lastMetadata._id !== lastMessage._id) {
+      showScrollDownButton = true
+    } else if (element != null) {
+      const { scrollHeight, scrollTop, offsetHeight } = element
+
+      showScrollDownButton = scrollHeight > offsetHeight + scrollTop + 300
+    } else {
+      showScrollDownButton = false
+    }
+  }
+
+  function handleScrollDown (): void {
+    selectedMessageId = undefined
+    messageInFocus.set(undefined)
+
+    const metadata = $metadataStore
+    const lastMetadata = metadata[metadata.length - 1]
+    const lastMessage = displayMessages[displayMessages.length - 1]
+
+    void inboxClient.readDoc(client, objectId)
+
+    if (lastMetadata._id !== lastMessage._id) {
+      separatorIndex = -1
+      provider.jumpToEnd(true)
+      reinitializeScroll()
+    } else {
+      scrollToBottom()
+    }
+  }
 </script>
 
 {#if isLoading}
@@ -689,6 +740,12 @@
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
     </Scroller>
+
+    {#if showScrollDownButton}
+      <div class="down-button absolute">
+        <ButtonIcon icon={IconDropdown} size="small" on:click={handleScrollDown} />
+      </div>
+    {/if}
   </div>
   {#if object}
     <div class="ref-input">
@@ -727,5 +784,11 @@
     top: 0;
     left: 0;
     right: 0;
+  }
+
+  .down-button {
+    bottom: 0;
+    right: 1.25rem;
+    background: var(--theme-panel-color);
   }
 </style>
