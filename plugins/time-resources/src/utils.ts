@@ -1,8 +1,6 @@
 import type { WorkSlot, ToDo } from '@hcengineering/time'
 import type { DefSeparators } from '@hcengineering/ui'
 import core, { type Class, type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
-import { DAY, HOUR, MINUTE } from '@hcengineering/ui'
-import { translate } from '@hcengineering/platform'
 import time from '@hcengineering/time'
 import { type TextEditorMode, type AnyExtension } from '@hcengineering/text-editor'
 import { SvelteNodeViewRenderer } from '@hcengineering/text-editor-resources'
@@ -11,7 +9,6 @@ import { getClient } from '@hcengineering/presentation'
 import ToDoItemNodeView from './components/text-editor/node-view/ToDoItemNodeView.svelte'
 import ToDoListNodeView from './components/text-editor/node-view/ToDoListNodeView.svelte'
 import { TodoItemExtension, TodoListExtension } from './text-editor-extensions'
-import timePlugin from './plugin'
 
 export * from './types'
 
@@ -134,24 +131,4 @@ export function calculateEventsDuration (events: WorkSlot[]): number {
   })
 
   return duration
-}
-
-export async function formatEventsDuration (duration: number, language: string): Promise<string> {
-  let text = ''
-  const days = Math.floor(duration / DAY)
-  if (days > 0) {
-    text += await translate(timePlugin.string.Days, { days }, language)
-  }
-  const hours = Math.floor((duration % DAY) / HOUR)
-  if (hours > 0) {
-    text += ' '
-    text += await translate(timePlugin.string.Hours, { hours }, language)
-  }
-  const minutes = Math.floor((duration % HOUR) / MINUTE)
-  if (minutes > 0) {
-    text += ' '
-    text += await translate(timePlugin.string.Minutes, { minutes }, language)
-  }
-  text = text.trim()
-  return text
 }

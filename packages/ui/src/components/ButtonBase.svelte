@@ -103,10 +103,10 @@
   on:keydown
 >
   {#if loading}
-    <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
-  {:else if icon}<div class="icon">
-      <Icon {icon} {iconProps} size={actualIconSize} />
-    </div>{/if}
+    <div class="icon"><Spinner size={'small'} /></div>
+  {:else if icon}
+    <div class="icon"><Icon {icon} {iconProps} size={actualIconSize} /></div>
+  {/if}
   {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}
   <slot />
@@ -136,10 +136,6 @@
       justify-content: center;
       width: var(--spacing-2_5);
       height: var(--spacing-2_5);
-
-      &.animate {
-        animation: rotate 2s linear infinite;
-      }
     }
     span {
       white-space: nowrap;
