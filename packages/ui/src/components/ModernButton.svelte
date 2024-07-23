@@ -14,6 +14,7 @@
   export let labelParams: Record<string, any> = {}
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let size: ButtonBaseSize = 'large'
+  export let shape: 'rectangle' | 'round' = 'rectangle'
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconSize: IconSize | undefined = undefined
   export let disabled: boolean = false
@@ -29,6 +30,7 @@
 <ButtonBase
   type={'type-button'}
   {title}
+  {shape}
   {label}
   {labelParams}
   {kind}

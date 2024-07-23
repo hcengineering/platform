@@ -29,10 +29,10 @@ import { derived, get, type Readable, writable } from 'svelte/store'
 import { type ActivityMessage } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages } from '@hcengineering/activity-resources'
+import { type ChatMessage } from '@hcengineering/chunter'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
-import { type ChatMessage } from '@hcengineering/chunter'
-import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -175,7 +175,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
     )
   }
 
-  private async loadInitialMessages (selectedMsg?: Ref<ActivityMessage>, loadAll = false): Promise<void> {
+  private async loadInitialMessages (
+    selectedMsg?: Ref<ActivityMessage>,
+    loadAll = false,
+    ignoreNew = false
+  ): Promise<void> {
     const isLoading = get(this.isInitialLoadingStore)
     const isLoaded = get(this.isInitialLoadedStore)
 
@@ -183,28 +187,15 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return
     }
 
-    const client = getClient()
     this.isInitialLoadingStore.set(true)
-    const firstNotification =
-      this.context !== undefined
-        ? await client.findOne(
-          notification.class.InboxNotification,
-          {
-            _class: {
-              $in: [notification.class.MentionInboxNotification, notification.class.ActivityInboxNotification]
-            },
-            docNotifyContext: this.context._id,
-            isViewed: false
-          },
-          { sort: { createdOn: SortingOrder.Ascending } }
-        )
-        : undefined
 
     const metadata = get(this.metadataStore)
-    const firstNewMsgIndex = this.getFirstNewMsgIndex(firstNotification)
+    const firstNewMsgIndex = ignoreNew ? undefined : await this.getFirstNewMsgIndex()
 
     if (get(this.newTimestampStore) === undefined) {
       this.newTimestampStore.set(firstNewMsgIndex !== undefined ? metadata[firstNewMsgIndex]?.createdOn : undefined)
+    } else if (ignoreNew) {
+      this.newTimestampStore.set(undefined)
     }
 
     const startPosition = this.getStartPosition(selectedMsg ?? this.selectedMsgId, firstNewMsgIndex)
@@ -351,7 +342,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return firsNewMsgIndex
   }
 
-  private getFirstNewMsgIndex (firstNotification: InboxNotification | undefined): number | undefined {
+  private async getFirstNewMsgIndex (): Promise<number | undefined> {
     const metadata = get(this.metadataStore)
 
     if (metadata.length === 0) {
@@ -363,6 +354,18 @@ export class ChannelDataProvider implements IChannelDataProvider {
     }
 
     const lastViewedTimestamp = this.context.lastViewedTimestamp
+    const client = getClient()
+    const firstNotification = await client.findOne(
+      notification.class.InboxNotification,
+      {
+        _class: {
+          $in: [notification.class.MentionInboxNotification, notification.class.ActivityInboxNotification]
+        },
+        docNotifyContext: this.context._id,
+        isViewed: false
+      },
+      { sort: { createdOn: SortingOrder.Ascending } }
+    )
 
     if (lastViewedTimestamp === undefined && firstNotification === undefined) {
       return -1
@@ -436,7 +439,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     await this.loadInitialMessages(msg._id)
   }
 
-  public jumpToMessage (message: ActivityMessage): boolean {
+  public jumpToMessage (message: MessageMetadata): boolean {
     const metadata = get(this.metadataStore).find(({ _id }) => _id === message._id)
 
     if (metadata === undefined) {
@@ -455,7 +458,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return true
   }
 
-  public jumpToEnd (): boolean {
+  public jumpToEnd (ignoreNew = false): boolean {
     const last = get(this.metadataStore)[get(this.metadataStore).length - 1]
 
     if (last === undefined) {
@@ -468,8 +471,9 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return false
     }
 
+    this.selectedMsgId = undefined
     this.clearMessages()
-    void this.loadInitialMessages()
+    void this.loadInitialMessages(this.selectedMsgId, false, ignoreNew)
 
     return true
   }
