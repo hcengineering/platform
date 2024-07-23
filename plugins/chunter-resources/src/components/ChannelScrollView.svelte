@@ -440,8 +440,8 @@
       shouldWaitAndRead = true
       autoscroll = true
       shouldScrollToNew = true
+      isInitialScrolling = false
       waitLastMessageRenderAndRead(() => {
-        isInitialScrolling = false
         autoscroll = false
       })
     } else if (separatorElement) {
