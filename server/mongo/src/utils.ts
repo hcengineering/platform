@@ -130,7 +130,6 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
     existing = new MongoClientReferenceImpl(
       MongoClient.connect(uri, {
         appName: 'transactor',
-        maxPoolSize: 1,
         ...options,
         enableUtf8Validation: false,
         ...extraOptions
