@@ -949,7 +949,10 @@ abstract class MongoAdapterBase implements DbAdapter {
                     }
                   }
                 }
-              })
+              }),
+              {
+                ordered: false
+              }
             )
           })
         } catch (err: any) {
@@ -979,8 +982,6 @@ interface OperationBulk {
   findUpdate: Set<Ref<Doc>>
 
   raw: (() => Promise<TxResult>)[]
-
-  remove: Set<Ref<Doc>>
 }
 
 class MongoAdapter extends MongoAdapterBase {
@@ -1032,7 +1033,6 @@ class MongoAdapter extends MongoAdapterBase {
       const domainBulk: OperationBulk = {
         add: [],
         update: new Map(),
-        remove: new Set(),
         bulkOperations: [],
         findUpdate: new Set(),
         raw: []
@@ -1091,11 +1091,6 @@ class MongoAdapter extends MongoAdapterBase {
                 })
               })
             }
-            if (domainBulk.remove.size > 0) {
-              await ctx.with('remove', {}, async () => {
-                await coll.deleteMany({ _id: { $in: Array.from(domainBulk.remove) } }, { ordered: false })
-              })
-            }
             if (domainBulk.findUpdate.size > 0) {
               await ctx.with('find-result', {}, async () => {
                 const docs = await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray()
@@ -1115,7 +1110,6 @@ class MongoAdapter extends MongoAdapterBase {
             domain,
             add: domainBulk.add.length,
             update: domainBulk.update.size,
-            remove: domainBulk.remove.size,
             bulk: domainBulk.bulkOperations.length,
             find: domainBulk.findUpdate.size,
             raw: domainBulk.raw.length
@@ -1147,7 +1141,7 @@ class MongoAdapter extends MongoAdapterBase {
   }
 
   protected txRemoveDoc (bulk: OperationBulk, tx: TxRemoveDoc<Doc>): void {
-    bulk.remove.add(tx.objectId)
+    bulk.bulkOperations.push({ deleteOne: { filter: { _id: tx.objectId } } })
   }
 
   protected txMixin (bulk: OperationBulk, tx: TxMixin<Doc, Doc>): void {
