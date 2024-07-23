@@ -2,11 +2,11 @@
   import { slide } from 'svelte/transition'
   import documents, { DocumentRequest } from '@hcengineering/controlled-documents'
   import chunter from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { PersonAccountRefPresenter } from '@hcengineering/contact-resources'
+  import { type Person, type PersonAccount } from '@hcengineering/contact'
+  import { PersonAccountRefPresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Chevron, Label } from '@hcengineering/ui'
+  import { Chevron, Label, tooltip } from '@hcengineering/ui'
 
   import { $documentSnapshots as documentSnapshots } from '../../../stores/editors/document'
   import documentsRes from '../../../plugin'
@@ -14,13 +14,16 @@
   import RejectedIcon from '../../icons/Rejected.svelte'
   import CancelledIcon from '../../icons/Cancelled.svelte'
   import WaitingIcon from '../../icons/Waiting.svelte'
+  import SignatureInfo from './SignatureInfo.svelte'
 
   export let request: DocumentRequest
   export let initiallyExpanded: boolean = false
 
   interface PersonalApproval {
     account: Ref<PersonAccount>
+    person?: Ref<Person>
     approved: 'approved' | 'rejected' | 'cancelled' | 'waiting'
+    timestamp?: number
   }
 
   const client = getClient()
@@ -31,38 +34,45 @@
   let rejectingMessage: string | undefined
   let approvals: PersonalApproval[] = []
 
-  $: if (request != null) {
-    void getRequestData()
-  }
+  $: void getRequestData(request)
 
   $: type = hierarchy.isDerived(request._class, documents.class.DocumentApprovalRequest)
     ? documents.string.Approval
     : documents.string.Review
 
-  async function getRequestData (): Promise<void> {
-    if (request !== undefined) {
-      approvals = await getApprovals(request)
-      const rejectingComment = await client.findOne(chunter.class.ChatMessage, {
-        attachedTo: request?._id,
-        attachedToClass: request?._class
-      })
-      rejectingMessage = rejectingComment?.message
+  async function getRequestData (req: DocumentRequest): Promise<void> {
+    if (req == null) {
+      return
     }
+
+    approvals = await getApprovals(req, $personAccountByIdStore)
+    const rejectingComment = await client.findOne(chunter.class.ChatMessage, {
+      attachedTo: req?._id,
+      attachedToClass: req?._class
+    })
+    rejectingMessage = rejectingComment?.message
   }
 
-  async function getApprovals (req: DocumentRequest): Promise<PersonalApproval[]> {
+  async function getApprovals (
+    req: DocumentRequest,
+    accountById: typeof $personAccountByIdStore
+  ): Promise<PersonalApproval[]> {
     const rejectedBy: PersonalApproval[] =
       req.rejected !== undefined
         ? [
             {
               account: req.rejected,
-              approved: 'rejected'
+              person: accountById.get(req.rejected)?.person,
+              approved: 'rejected',
+              timestamp: req.modifiedOn
             }
           ]
         : []
-    const approvedBy: PersonalApproval[] = req.approved.map((id) => ({
+    const approvedBy: PersonalApproval[] = req.approved.map((id, idx) => ({
       account: id,
-      approved: 'approved'
+      person: accountById.get(id)?.person,
+      approved: 'approved',
+      timestamp: req.approvedDates?.[idx] ?? req.modifiedOn
     }))
     const ignoredBy = req.requested
       .filter((p) => p !== req?.rejected)
@@ -70,6 +80,7 @@
       .map(
         (id): PersonalApproval => ({
           account: id,
+          person: accountById.get(id)?.person,
           approved: req?.rejected !== undefined ? 'cancelled' : 'waiting'
         })
       )
@@ -115,15 +126,30 @@
     {#each approvals as approver}
       <div class="approver">
         <PersonAccountRefPresenter value={approver.account} avatarSize="x-small" />
-        {#if approver.approved === 'approved'}
-          <ApprovedIcon size="medium" fill={'var(--theme-docs-accepted-color)'} />
-        {:else if approver.approved === 'rejected'}
-          <RejectedIcon size="medium" fill={'var(--negative-button-default)'} />
-        {:else if approver.approved === 'cancelled'}
-          <CancelledIcon size="medium" />
-        {:else if approver.approved === 'waiting'}
-          <WaitingIcon size="medium" />
-        {/if}
+        {#key approver.timestamp}
+          <!-- For some reason tooltip is not interactive w/o remount -->
+          <span
+            use:tooltip={approver.timestamp !== undefined
+              ? {
+                  component: SignatureInfo,
+                  props: {
+                    id: approver.person,
+                    timestamp: approver.timestamp
+                  }
+                }
+              : undefined}
+          >
+            {#if approver.approved === 'approved'}
+              <ApprovedIcon size="medium" fill={'var(--theme-docs-accepted-color)'} />
+            {:else if approver.approved === 'rejected'}
+              <RejectedIcon size="medium" fill={'var(--negative-button-default)'} />
+            {:else if approver.approved === 'cancelled'}
+              <CancelledIcon size="medium" />
+            {:else if approver.approved === 'waiting'}
+              <WaitingIcon size="medium" />
+            {/if}
+          </span>
+        {/key}
       </div>
       {#if rejectingMessage !== undefined && approver.approved === 'rejected'}
         <div class="reject-message">{@html rejectingMessage}</div>
