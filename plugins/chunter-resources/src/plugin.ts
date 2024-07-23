@@ -108,6 +108,7 @@ export default mergeIds(chunterId, chunter, {
     ArchiveActivityConfirmationTitle: '' as IntlString,
     ArchiveActivityConfirmationMessage: '' as IntlString,
     JoinChannelHeader: '' as IntlString,
-    JoinChannelText: '' as IntlString
+    JoinChannelText: '' as IntlString,
+    LatestMessages: '' as IntlString
   }
 })

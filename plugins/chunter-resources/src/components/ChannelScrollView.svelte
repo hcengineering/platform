@@ -29,7 +29,7 @@
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, IconDropdown, Loading, Scroller, ScrollParams } from '@hcengineering/ui'
+  import { Loading, ModernButton, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'
 
@@ -743,7 +743,13 @@
 
     {#if showScrollDownButton}
       <div class="down-button absolute">
-        <ButtonIcon icon={IconDropdown} size="small" on:click={handleScrollDown} />
+        <ModernButton
+          label={chunter.string.LatestMessages}
+          shape="round"
+          size="small"
+          kind="primary"
+          on:click={handleScrollDown}
+        />
       </div>
     {/if}
   </div>
@@ -787,8 +793,9 @@
   }
 
   .down-button {
-    bottom: 0;
-    right: 1.25rem;
-    background: var(--theme-panel-color);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    bottom: -0.75rem;
   }
 </style>

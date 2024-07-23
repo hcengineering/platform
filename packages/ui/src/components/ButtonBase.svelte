@@ -40,6 +40,7 @@
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+  export let shape: 'rectangle' | 'round' = 'rectangle'
   export let id: string | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
@@ -89,7 +90,7 @@
 <button
   {id}
   bind:this={element}
-  class="font-medium-14 {kind} {size} {type}"
+  class="font-medium-14 {kind} {size} {type} {shape}"
   class:loading
   class:pressed
   class:inheritColor
@@ -155,6 +156,10 @@
       height: var(--global-large-Size);
       border-radius: var(--medium-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
+
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-2);
       }
@@ -167,6 +172,9 @@
       height: var(--global-medium-Size);
       border-radius: var(--medium-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-2);
       }
@@ -180,6 +188,9 @@
       gap: var(--spacing-0_5);
       border-radius: var(--small-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-1);
       }
@@ -192,6 +203,9 @@
       height: var(--global-extra-small-Size);
       border-radius: var(--extra-small-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-1);
       }
