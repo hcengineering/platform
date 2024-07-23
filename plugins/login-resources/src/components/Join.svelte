@@ -14,7 +14,13 @@
 -->
 <script lang="ts">
   import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
-  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import {
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
+    Location,
+    navigate,
+    setMetadataLocalStorage
+  } from '@hcengineering/ui'
 
   import { checkJoined, join, signUpJoin } from '../utils'
   import Form from './Form.svelte'
@@ -85,6 +91,19 @@
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+        if (location.query?.navigateUrl != null) {
+          try {
+            const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+            if (loc.path[1] === result.workspace) {
+              navigate(loc)
+              return
+            }
+          } catch (err: any) {
+            // Json parse error could be ignored
+          }
+        }
+
         navigate({ path: [workbenchId, result.workspace] })
       }
     }
@@ -126,6 +145,17 @@
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
 
+      if (location.query?.navigateUrl != null) {
+        try {
+          const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+          if (loc.path[1] === result.workspace) {
+            navigate(loc)
+            return
+          }
+        } catch (err: any) {
+          // Json parse error could be ignored
+        }
+      }
       navigate({ path: [workbenchId, result.workspace] })
     }
   }
