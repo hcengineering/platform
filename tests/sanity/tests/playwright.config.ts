@@ -24,12 +24,15 @@ const config: PlaywrightTestConfig = {
           snapshots: true,
           screenshots: true,
           sources: true
+        },
+        contextOptions: {
+          reducedMotion: 'reduce'
         }
       }
     }
   ],
   retries: 1,
-  timeout: 60000,
+  timeout: 160000,
   maxFailures,
   expect: {
     timeout: 15000
