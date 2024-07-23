@@ -56,11 +56,12 @@
       ops = 0
     }, 1000)
     const rate = new RateLimiter(commandsToSendParallel)
+    const client = getClient()
 
     const doOp = async () => {
       const st = Date.now()
       active++
-      await getClient().createDoc(core.class.BenchmarkDoc, core.space.Configuration, {
+      await client.createDoc(core.class.BenchmarkDoc, core.space.Configuration, {
         source: genData(dataSize),
         request: {
           documents: 1,

@@ -164,7 +164,10 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
                       }
                     }
                   }
-                })
+                }),
+                {
+                  ordered: false
+                }
               )
             })
           } catch (err: any) {

@@ -18,7 +18,8 @@ export function newMetrics (): Metrics {
     operations: 0,
     value: 0,
     measurements: {},
-    params: {}
+    params: {},
+    namedParams: {}
   }
 }
 
@@ -27,18 +28,32 @@ function getUpdatedTopResult (
   time: number,
   params: FullParamsType
 ): Metrics['topResult'] {
-  if (current === undefined || current.length < 3 || current.some((it) => it.value < time)) {
-    const result = [
-      ...(current ?? []),
-      {
-        value: time,
-        params: cutObjectArray(params)
-      }
-    ]
-    result.sort((a, b) => b.value - a.value)
-    return result.slice(0, 3)
+  if (time === 0) {
+    return current
   }
-  return current
+  const result: Metrics['topResult'] = current ?? []
+
+  const newValue = {
+    value: time,
+    params: cutObjectArray(params)
+  }
+
+  if (result.length > 6) {
+    if (result[0].value < newValue.value) {
+      result[0] = newValue
+      return result
+    }
+    if (result[result.length - 1].value > newValue.value) {
+      result[result.length - 1] = newValue
+      return result
+    }
+
+    // Shift the middle
+    return [result[0], newValue, ...result.slice(1, 3), result[5]]
+  } else {
+    result.push(newValue)
+    return result
+  }
 }
 
 /**
@@ -48,12 +63,14 @@ function getUpdatedTopResult (
 export function measure (
   metrics: Metrics,
   params: ParamsType,
-  fullParams: FullParamsType = {},
+  fullParams: FullParamsType | (() => FullParamsType) = {},
   endOp?: (spend: number) => void
 ): () => void {
   const st = Date.now()
-  return (value?: number) => {
+  return (value?: number, override?: boolean) => {
     const ed = Date.now()
+
+    const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
     // Update params if required
     for (const [k, v] of Object.entries(params)) {
       let params = metrics.params[k]
@@ -70,16 +87,24 @@ export function measure (
         }
         params[vKey] = param
       }
-      param.value += value ?? ed - st
-      param.operations++
+      if (override === true) {
+        metrics.operations = value ?? ed - st
+      } else {
+        param.value += value ?? ed - st
+        param.operations++
+      }
 
-      param.topResult = getUpdatedTopResult(param.topResult, ed - st, fullParams)
+      param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
     }
     // Update leaf data
-    metrics.value += value ?? ed - st
-    metrics.operations++
+    if (override === true) {
+      metrics.operations = value ?? ed - st
+    } else {
+      metrics.value += value ?? ed - st
+      metrics.operations++
+    }
 
-    metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fullParams)
+    metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fParams)
     endOp?.(ed - st)
   }
 }
@@ -136,7 +161,8 @@ export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
     measurements: ms,
     params: m.params,
     value: sumVal,
-    topResult: m.topResult
+    topResult: m.topResult,
+    namedParams: m.namedParams
   }
 }
 

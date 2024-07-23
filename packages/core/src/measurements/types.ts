@@ -29,6 +29,7 @@ export interface MetricsData {
  * @public
  */
 export interface Metrics extends MetricsData {
+  namedParams: ParamsType
   params: Record<string, Record<string, MetricsData>>
   measurements: Record<string, Metrics>
 }
@@ -59,7 +60,7 @@ export interface MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: FullParamsType
+    fullParams?: FullParamsType | (() => FullParamsType)
   ) => Promise<T>
 
   withLog: <T>(
@@ -73,7 +74,7 @@ export interface MeasureContext {
 
   parent?: MeasureContext
 
-  measure: (name: string, value: number) => void
+  measure: (name: string, value: number, override?: boolean) => void
 
   // Capture error
   error: (message: string, obj?: Record<string, any>) => void

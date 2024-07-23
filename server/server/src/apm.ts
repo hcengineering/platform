@@ -1,4 +1,4 @@
-import { MeasureContext, MeasureLogger, ParamType, ParamsType } from '@hcengineering/core'
+import { MeasureContext, MeasureLogger, ParamType, ParamsType, type FullParamsType } from '@hcengineering/core'
 import apm, { Agent, Span, Transaction } from 'elastic-apm-node'
 
 /**
@@ -71,7 +71,7 @@ export class APMMeasureContext implements MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType
+    fullParams?: FullParamsType | (() => FullParamsType)
   ): Promise<T> {
     const c = this.newChild(name, params)
     try {
