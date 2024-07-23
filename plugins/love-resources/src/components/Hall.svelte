@@ -13,14 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Contact, Person } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
-  import { Floor as FloorType, Office, Room, isOffice } from '@hcengineering/love'
-  import { activeFloor, floors, rooms } from '../stores'
+  import love, { Floor as FloorType, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
+  import { getClient } from '@hcengineering/presentation'
+  import { deviceOptionsStore as deviceInfo, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { onMount } from 'svelte'
+  import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms } from '../stores'
+  import { tryConnect } from '../utils'
   import Floor from './Floor.svelte'
   import FloorConfigure from './FloorConfigure.svelte'
   import Floors from './Floors.svelte'
-  import { Contact, Person } from '@hcengineering/contact'
 
   function getRooms (rooms: Room[], floor: Ref<FloorType>): Room[] {
     return rooms.filter((p) => p.floor === floor)
@@ -36,6 +40,28 @@
     .map((p) => (p as Office).person) as Ref<Person>[]
 
   $: $deviceInfo.replacedPanel = replacedPanel
+
+  onMount(async () => {
+    const loc = getCurrentLocation()
+    const { meetId, ...query } = loc.query ?? {}
+    if (meetId != null) {
+      loc.query = Object.keys(query).length === 0 ? undefined : query
+      navigate(loc, true)
+      const client = getClient()
+      const info = await client.findOne(love.class.RoomInfo, { _id: meetId as Ref<RoomInfo> })
+      if (info === undefined) return
+      const room = $rooms.find((p) => p._id === info.room)
+      if (room === undefined) return
+      tryConnect(
+        $personByIdStore,
+        $myInfo,
+        room,
+        $infos.filter((p) => p.room === room._id),
+        $myRequests,
+        $invites
+      )
+    }
+  })
 </script>
 
 <Floors bind:floor={selectedFloor} bind:configure />

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person, PersonAccount, getName, formatName } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount, formatName, getName } from '@hcengineering/contact'
 import core, {
   Account,
   Ref,
@@ -25,7 +25,6 @@ import core, {
   TxUpdateDoc,
   UserStatus
 } from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
 import love, {
   Invite,
   JoinRequest,
@@ -36,10 +35,11 @@ import love, {
   isOffice,
   loveId
 } from '@hcengineering/love'
-import { createPushNotification, isAllowed } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
-import { workbenchId } from '@hcengineering/workbench'
 import { translate } from '@hcengineering/platform'
+import { TriggerControl } from '@hcengineering/server-core'
+import { createPushNotification, isAllowed } from '@hcengineering/server-notification-resources'
+import { workbenchId } from '@hcengineering/workbench'
 
 export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxMixin<Person, Employee>
@@ -202,11 +202,15 @@ function setDefaultRoomAccess (info: ParticipantInfo, roomInfos: RoomInfo[], con
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     oldRoomInfo.persons = oldRoomInfo.persons.filter((p) => p !== info.person)
-    res.push(
-      control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, oldRoomInfo._id, {
-        persons: oldRoomInfo.persons
-      })
-    )
+    if (oldRoomInfo.persons.length === 0) {
+      res.push(control.txFactory.createTxRemoveDoc(oldRoomInfo._class, oldRoomInfo.space, oldRoomInfo._id))
+    } else {
+      res.push(
+        control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, oldRoomInfo._id, {
+          persons: oldRoomInfo.persons
+        })
+      )
+    }
     if (oldRoomInfo.persons.length === 0) {
       const resetAccessTx = control.txFactory.createTxUpdateDoc(
         oldRoomInfo.isOffice ? love.class.Office : love.class.Room,
