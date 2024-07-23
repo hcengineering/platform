@@ -21,6 +21,7 @@ import { openTableOptions, isEditableTableActive } from './components/extension/
 import { openImage, expandImage, moreImageActions } from './components/extension/imageExt'
 
 export * from '@hcengineering/presentation/src/types'
+export type { EditorKitOptions } from './kits/editor-kit'
 export { default as Collaboration } from './components/Collaboration.svelte'
 export { default as CollaborationDiffViewer } from './components/CollaborationDiffViewer.svelte'
 export { default as CollaborativeAttributeBox } from './components/CollaborativeAttributeBox.svelte'

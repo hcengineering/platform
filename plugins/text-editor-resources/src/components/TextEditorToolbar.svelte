@@ -55,6 +55,15 @@
       for (const action of actions) {
         const tester = action.visibilityTester
 
+        if (typeof action.action !== 'string') {
+          const { command } = action.action
+
+          if ((editor.commands as any)[command] === undefined) {
+            console.error(`Command ${command} not found`)
+            continue
+          }
+        }
+
         if (tester === undefined) {
           newVisibleActions.push(action)
           continue

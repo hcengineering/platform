@@ -167,7 +167,7 @@ export type TextActionActiveFunction = (editor: Editor) => Promise<boolean>
  * Describes toggle handler for a text action
  */
 export interface TogglerDescriptor {
-  command: string
+  command: keyof SingleCommands
   params?: any
 }
 
