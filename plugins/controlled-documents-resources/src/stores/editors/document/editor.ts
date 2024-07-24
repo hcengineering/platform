@@ -202,8 +202,8 @@ export const $documentStateForCurrentUser = combine($controlledDocument, $review
       return ControlledDocumentState.InReview
     }
 
-    const currentAccount = getCurrentAccount()._id as Ref<PersonAccount>
-    if (reviewRequest.approved?.includes(currentAccount)) {
+    const currentPerson = (getCurrentAccount() as PersonAccount).person
+    if (reviewRequest.approved?.includes(currentPerson)) {
       return ControlledDocumentState.Reviewed
     }
   }
@@ -228,7 +228,7 @@ export const $documentState = $controlledDocument.map((doc) => {
 })
 
 export const $documentReviewIsActive = combine($reviewRequest, $documentStateForCurrentUser, (reviewReq, state) => {
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const me = (getCurrentAccount() as PersonAccount).person
 
   if (reviewReq == null) {
     return false
@@ -244,7 +244,7 @@ export const $documentApprovalIsActive = combine(
   $approvalRequest,
   $documentStateForCurrentUser,
   (doc, approvalReq, state) => {
-    const me = getCurrentAccount()._id as Ref<PersonAccount>
+    const me = (getCurrentAccount() as PersonAccount).person
 
     if (approvalReq == null) {
       return false
