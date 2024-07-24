@@ -15,6 +15,7 @@
 //
 
 import core, {
+  getCurrentAccount,
   toIdMap,
   type Attribute,
   type Class,
@@ -284,7 +285,11 @@ export async function getAllStates (
       return statuses.map((p) => p?._id)
     }
   }
-  const allStates = get(statusStore).array.filter((p) => p.ofAttribute === attr._id)
+  const joinedProjectsTypes = get(typesOfJoinedProjectsStore) ?? []
+  const includedStatuses = Array.from(get(taskTypeStore).values())
+    .filter((taskType) => joinedProjectsTypes.includes(taskType.parent))
+    .flatMap((taskType) => taskType.statuses)
+  const allStates = get(statusStore).array.filter((p) => p.ofAttribute === attr._id && includedStatuses.includes(p._id))
   if (filterDone) {
     return allStates
       .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
@@ -356,6 +361,8 @@ async function statusSort (
 
 export const typeStore = writable<IdMap<ProjectType>>(new Map())
 export const taskTypeStore = writable<IdMap<TaskType>>(new Map())
+export const typesOfJoinedProjectsStore = writable<Array<Ref<ProjectType>>>()
+export const joinedProjectsStore = writable<Project[]>()
 
 function fillStores (): void {
   const client = getClient()
@@ -369,6 +376,12 @@ function fillStores (): void {
     const taskQuery = createQuery(true)
     taskQuery.query(task.class.TaskType, {}, (res) => {
       taskTypeStore.set(toIdMap(res))
+    })
+
+    const projectQuery = createQuery(true)
+    projectQuery.query(task.class.Project, { members: getCurrentAccount()._id }, (res) => {
+      typesOfJoinedProjectsStore.set(res.map((r) => r.type).filter((it, idx, arr) => arr.indexOf(it) === idx))
+      joinedProjectsStore.set(res)
     })
   } else {
     setTimeout(() => {
