@@ -1079,6 +1079,9 @@ dependencies:
   '@storybook/testing-library':
     specifier: ^0.0.14-next.2
     version: 0.0.14-next.2
+  '@telegraf/entity':
+    specifier: ^0.5.0
+    version: 0.5.0
   '@tiptap/core':
     specifier: ^2.2.4
     version: 2.2.4(@tiptap/pm@2.2.4)
@@ -8239,6 +8242,12 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       defer-to-connect: 2.0.1
+    dev: false
+
+  /@telegraf/entity@0.5.0:
+    resolution: {integrity: sha512-4oHOoXcrNaK44zPq4GuTgMmUvCSQxJRVAuPFzVtSeiKzCBJnLeYblsMqWotokhrZSDnNpunC1sxhqI3iVYa/sg==}
+    dependencies:
+      '@telegraf/types': 7.1.0
     dev: false
 
   /@telegraf/types@7.1.0:
@@ -29081,7 +29090,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-Fchfe/8DE4XgMKNE+EpaMxj3dwfwb/UBRwxvL8AlResTO0oVMKI0zapd8QCF2jX6EgAgskiQc4QYmZAug1bSng==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-91Ac7EN5mpCKBG8sIWUljU+qSb6mtEJNVt9TynP8U0++Bhlmyvcryd4k2rMC5S+M/GvmlikUpAZ+MdIBsqUM+g==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -29216,20 +29225,23 @@ packages:
     dev: false
 
   file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-tzFUvXyCkZdPcsjLrbLzTDaUsC6aw8Kj1rRsPpyLSf13mqO1Z+9NnN1RoGitHuAlBvmN6NzZR5kAuYddGge6gQ==, tarball: file:projects/pod-telegram-bot.tgz}
+    resolution: {integrity: sha512-5aNiXb56A6ahUK3uBr1N/XKTfzqHehsnor8q85ch2me0IH2tJ+gssDTbcrKxddyZLBIE/0U0Csspj1tCDx5D1w==, tarball: file:projects/pod-telegram-bot.tgz}
     id: file:projects/pod-telegram-bot.tgz
     name: '@rush-temp/pod-telegram-bot'
     version: 0.0.0
     dependencies:
+      '@telegraf/entity': 0.5.0
       '@tsconfig/node16': 1.0.4
       '@types/cors': 2.8.17
       '@types/express': 4.17.21
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/node-fetch': 2.6.11
+      '@types/otp-generator': 4.0.2
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      cors: 2.8.5
       dotenv: 16.0.3
       esbuild: 0.20.1
       eslint: 8.56.0
@@ -29239,9 +29251,11 @@ packages:
       eslint-plugin-node: 11.1.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
+      htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       mongodb: 6.8.0
       node-fetch: 2.7.0
+      otp-generator: 4.0.1
       prettier: 3.2.5
       telegraf: 4.16.3
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)

@@ -239,7 +239,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "FRONT_URL": "http://localhost:8080",
-        "PORT": "3500",
+        "PORT": "3500"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -294,7 +294,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -384,21 +384,6 @@
       "showAsyncStacks": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/services/analytics-collector/pod-analytics-collector"
-    },
-    {
-      "name": "Debug telegram bot",
-      "type": "node",
-      "request": "launch",
-      "args": ["src/index.ts"],
-      "env": {
-        "PORT": "4020",
-        "DOMAIN": "localhost",
-        "BOT_TOKEN": "token"
-      },
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "runtimeVersion": "20",
-      "sourceMaps": true,
-      "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
     }
   ]
 }

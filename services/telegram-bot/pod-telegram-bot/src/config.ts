@@ -15,8 +15,18 @@
 
 export interface Config {
   Port: number
-  Domain: string
   BotToken: string
+  FrontUrl: string
+  MongoURL: string
+  MongoDB: string
+  TransactorUrl: string
+  ServiceId: string
+  Secret: string
+  Domain: string
+  BotPort: number
+  App: string
+  OtpTimeToLiveSec: number
+  OtpRetryDelaySec: number
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -24,8 +34,19 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4020,
-    Domain: process.env.DOMAIN ?? 'localhost',
-    BotToken: process.env.BOT_TOKEN
+    BotToken: process.env.BOT_TOKEN,
+    FrontUrl: process.env.FRONT_URL,
+    MongoURL: process.env.MONGO_URL,
+    MongoDB: process.env.MONGO_DB,
+    TransactorUrl: process.env.TRANSACTOR_URL,
+    ServiceId: process.env.SERVICE_ID,
+    Secret: process.env.SECRET,
+    Domain: process.env.DOMAIN,
+    BotPort: parseNumber(process.env.BOT_PORT) ?? 4021,
+    // TODO: later we should get this title from branding map
+    App: process.env.APP ?? 'Huly',
+    OtpTimeToLiveSec: parseNumber(process.env.OTP_TIME_TO_LIVE_SEC) ?? 60,
+    OtpRetryDelaySec: parseNumber(process.env.OTP_RETRY_DELAY_SEC) ?? 60
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

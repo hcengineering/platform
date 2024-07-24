@@ -13,19 +13,15 @@
 // limitations under the License.
 //
 
-import { MongoClient } from 'mongodb'
+import { telegramId } from '@hcengineering/telegram'
+import { addStringsLoader, platformId } from '@hcengineering/platform'
+import { coreId } from '@hcengineering/core'
+import coreEng from '@hcengineering/core/lang/en.json'
+import platformEng from '@hcengineering/platform/lang/en.json'
+import telegramEng from '@hcengineering/telegram-assets/lang/en.json'
 
-import config from './config'
-
-export const getDB = (() => {
-  let client: MongoClient | undefined
-
-  return async () => {
-    if (client === undefined) {
-      client = new MongoClient(config.MongoURL)
-      await client.connect()
-    }
-
-    return client.db(config.MongoDB)
-  }
-})()
+export function registerLoaders (): void {
+  addStringsLoader(coreId, async (lang: string) => coreEng)
+  addStringsLoader(platformId, async (lang: string) => platformEng)
+  addStringsLoader(telegramId, async (lang: string) => telegramEng)
+}

@@ -17,10 +17,16 @@ import { Token, decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { IncomingHttpHeaders, type Server } from 'http'
-
-import { ApiError } from './error'
 import { MeasureContext } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
+import telegram, { TelegramNotificationRecord } from '@hcengineering/telegram'
+import { translate } from '@hcengineering/platform'
+
+import { ApiError } from './error'
+import { PlatformWorker } from './worker'
+import { Limiter } from './limiter'
+import config from './config'
+import { toTelegramHtml } from './utils'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {
@@ -88,15 +94,61 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-export function createServer (bot: Telegraf): Express {
+export function createServer (bot: Telegraf, worker: PlatformWorker): Express {
+  const limiter = new Limiter()
   const app = express()
+
   app.use(cors())
   app.use(express.json())
 
   app.post(
     '/test',
     wrapRequest(async (_, res, token) => {
-      // TODO: implement method
+      const record = await worker.getUserRecordByEmail(token.email)
+      if (record === undefined) {
+        throw new ApiError(404)
+      }
+
+      await limiter.add(record.telegramId, async () => {
+        const testMessage = await translate(telegram.string.TestMessage, { app: config.App })
+        await bot.telegram.sendMessage(record.telegramId, testMessage)
+      })
+
+      res.status(200)
+      res.json({})
+    })
+  )
+
+  app.post(
+    '/auth',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
+
+      const { code } = req.body
+
+      if (code == null || code === '' || typeof code !== 'string') {
+        throw new ApiError(400)
+      }
+
+      const record = await worker.getUserRecordByEmail(token.email)
+
+      if (record !== undefined) {
+        throw new ApiError(409, 'User already authorized')
+      }
+
+      const newRecord = await worker.authorizeUser(code, token.email)
+
+      if (newRecord === undefined) {
+        throw new ApiError(500)
+      }
+
+      void limiter.add(newRecord.telegramId, async () => {
+        const message = await translate(telegram.string.AccountConnectedHtml, { app: config.App, email: token.email })
+        await bot.telegram.sendMessage(newRecord.telegramId, message, { parse_mode: 'HTML' })
+      })
+
       res.status(200)
       res.json({})
     })
@@ -106,9 +158,40 @@ export function createServer (bot: Telegraf): Express {
     '/info',
     wrapRequest(async (_, res, token) => {
       const me = await bot.telegram.getMe()
-      console.log(me)
       res.status(200)
       res.json({ username: me.username, name: me.first_name })
+    })
+  )
+
+  app.post(
+    '/notify',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || !Array.isArray(req.body)) {
+        throw new ApiError(400)
+      }
+      const notificationRecords = req.body as TelegramNotificationRecord[]
+      const usersRecords = await worker.getUsersRecords()
+
+      for (const notificationRecord of notificationRecords) {
+        const userRecord = usersRecords.find((record) => record.email === token.email)
+        if (userRecord !== undefined) {
+          void limiter.add(userRecord.telegramId, async () => {
+            const formattedMessage = toTelegramHtml(notificationRecord)
+            const message = await bot.telegram.sendMessage(userRecord.telegramId, formattedMessage, {
+              parse_mode: 'HTML'
+            })
+            await worker.addNotificationRecord({
+              notificationId: notificationRecord.notificationId,
+              email: userRecord.email,
+              workspace: notificationRecord.workspace,
+              telegramId: message.message_id
+            })
+          })
+        }
+      }
+
+      res.status(200)
+      res.json({})
     })
   )
 

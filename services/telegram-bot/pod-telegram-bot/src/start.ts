@@ -14,16 +14,35 @@
 //
 
 import { MeasureMetricsContext } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
+import serverToken from '@hcengineering/server-token'
 
 import config from './config'
 import { createServer, listen } from './server'
 import { setUpBot } from './bot'
+import { PlatformWorker } from './worker'
+import { registerLoaders } from './loaders'
 
 export const start = async (): Promise<void> => {
+  setMetadata(serverToken.metadata.Secret, config.Secret)
+  registerLoaders()
+
   const ctx = new MeasureMetricsContext('telegram-bot', {})
 
-  const bot = await setUpBot()
-  const app = createServer(bot)
+  const worker = await PlatformWorker.create()
+  const bot = await setUpBot(worker)
+  const app = createServer(bot, worker)
+
+  void bot.launch({ webhook: { domain: config.Domain, port: config.BotPort } }).then(() => {
+    ctx.info('Webhook bot listening on', { port: config.BotPort, domain: config.Domain })
+    void bot.telegram.getWebhookInfo().then(console.log)
+  })
+
+  app.post(`/telegraf/${bot.secretPathComponent()}`, (req, res) => {
+    void bot.handleUpdate(req.body, res)
+    res.status(200).send()
+  })
+
   const server = listen(app, ctx, config.Port)
 
   const onClose = (): void => {

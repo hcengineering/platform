@@ -13,19 +13,24 @@
 // limitations under the License.
 //
 
-import { MongoClient } from 'mongodb'
+import { Ref, Timestamp } from '@hcengineering/core'
+import { InboxNotification } from '@hcengineering/notification'
 
-import config from './config'
+export interface UserRecord {
+  telegramId: number
+  email: string
+}
 
-export const getDB = (() => {
-  let client: MongoClient | undefined
+export interface NotificationRecord {
+  notificationId: Ref<InboxNotification>
+  workspace: string
+  email: string
+  telegramId: number
+}
 
-  return async () => {
-    if (client === undefined) {
-      client = new MongoClient(config.MongoURL)
-      await client.connect()
-    }
-
-    return client.db(config.MongoDB)
-  }
-})()
+export interface OtpRecord {
+  telegramId: number
+  code: string
+  expires: Timestamp
+  createdOn: Timestamp
+}
