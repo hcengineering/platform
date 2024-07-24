@@ -19,32 +19,53 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import view from '@hcengineering/view'
+  import { ThreadMessage } from '@hcengineering/chunter'
+  import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
 
   export let _class: Ref<Class<Doc>>
   export let _id: Ref<Doc>
 
+  const dispatch = createEventDispatcher()
   const pinnedQuery = createQuery()
+  const pinnedThreadsQuery = createQuery()
 
   let pinnedMessagesCount = 0
+  let pinnedThreadsCount = 0
 
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
     { attachedTo: _id, isPinned: true },
     (res: ActivityMessage[]) => {
       pinnedMessagesCount = res.length
-    }
+    },
+    { projection: { _id: 1, attachedTo: 1, isPinned: 1 } }
   )
+
+  $: pinnedThreadsQuery.query(
+    chunter.class.ThreadMessage,
+    { objectId: _id, isPinned: true },
+    (res: ThreadMessage[]) => {
+      pinnedThreadsCount = res.length
+    },
+    { projection: { _id: 1, objectId: 1, isPinned: 1 } }
+  )
+
   function openMessagesPopup (ev: MouseEvent) {
-    showPopup(PinnedMessagesPopup, { attachedTo: _id, attachedToClass: _class }, eventToHTMLElement(ev))
+    showPopup(PinnedMessagesPopup, { attachedTo: _id, attachedToClass: _class }, eventToHTMLElement(ev), (result) => {
+      if (result == null) return
+      dispatch('select', result)
+    })
   }
+
+  $: count = pinnedMessagesCount + pinnedThreadsCount
 </script>
 
-{#if pinnedMessagesCount > 0}
+{#if count > 0}
   <div class="antiHSpacer x2" />
   <ModernButton size={'extra-small'} on:click={openMessagesPopup}>
     <Icon icon={view.icon.Pin} size={'x-small'} />
-    <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count: pinnedMessagesCount }} /></span>
+    <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count }} /></span>
   </ModernButton>
 {/if}
