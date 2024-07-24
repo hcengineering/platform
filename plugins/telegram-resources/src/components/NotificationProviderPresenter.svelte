@@ -14,10 +14,10 @@
 -->
 
 <script lang="ts">
-  import { Icon, IconCheckmark, Label, Loading, ModernButton } from '@hcengineering/ui'
+  import { CodeForm, Icon, IconCheckmark, Label, Loading, ModernButton } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
-  import { getMetadata } from '@hcengineering/platform'
-  import { concatLink } from '@hcengineering/core'
+  import { getEmbeddedLabel, getMetadata, IntlString } from '@hcengineering/platform'
+  import { concatLink, getCurrentAccount } from '@hcengineering/core'
 
   import telegram from '../plugin'
   import TelegramColor from './icons/TelegramColor.svelte'
@@ -50,6 +50,7 @@
         }
       })
       info = await res.json()
+      console.log({info})
     } catch (e) {}
 
     isLoading = false
@@ -70,10 +71,48 @@
         }
       })
       isConnectionEstablished = res.ok
+      if (!res.ok) {
+        connectionError = new Error('Connection failed')
+      }
     } catch (e) {
       connectionError = e as Error
     }
     isTestingConnection = false
+  }
+
+  const codeFields = [
+    { id: 'code-1', name: 'code-1', optional: false },
+    { id: 'code-2', name: 'code-2', optional: false },
+    { id: 'code-3', name: 'code-3', optional: false },
+    { id: 'code-4', name: 'code-4', optional: false },
+    { id: 'code-5', name: 'code-5', optional: false },
+    { id: 'code-6', name: 'code-6', optional: false }
+  ]
+
+  let isCodeValid = false
+  let codeError: IntlString | undefined
+
+  async function handleCode (event: CustomEvent<string>): Promise<void> {
+    isCodeValid = false
+    codeError = undefined
+
+    try {
+      const link = concatLink(url, '/auth')
+      const res = await fetch(link, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ code: event.detail, account: getCurrentAccount()._id })
+      })
+      isCodeValid = res.ok
+      if (!res.ok) {
+        codeError = res.status === 409 ? telegram.string.AccountAlreadyConnected : telegram.string.InvalidCode
+      }
+    } catch (e) {
+      codeError = telegram.string.SomethingWentWrong
+    }
   }
 </script>
 
@@ -102,16 +141,32 @@
         {/if}
       </div>
       {#if connectionError}
-        <span class="label-error">
+        <span class="label-error mt-2">
           <Label label={telegram.string.ConnectBotError} />
         </span>
       {/if}
       <div class="flex-row-center flex-gap-1 mt-2">
         <Label label={telegram.string.ConnectBotInfoStart} />
-        <a target="_blank" href={`https://t.me/@${info.username}`}>{info.username}</a>
+        <a target="_blank" href={`https://t.me/${info.username}`}>{info.username}</a>
         <Label label={telegram.string.ConnectBotInfoEnd} />
       </div>
+
+      <CodeForm fields={codeFields} size="small" on:submit={handleCode} />
+      {#if codeError}
+        <span class="label-error mt-2">
+          <Label label={codeError} />
+        </span>
+      {:else if isCodeValid}
+        <span class="flex-row-center flex-gap-1 mt-2 label-connected">
+          <Label label={telegram.string.Connected} />
+          <Icon icon={IconCheckmark} size="medium" />
+        </span>
+      {/if}
     </div>
+  {:else}
+    <span class="label-error mt-2">
+      <Label label={getEmbeddedLabel('Unable connect to service. Please try again.')} />
+    </span>
   {/if}
 {/if}
 

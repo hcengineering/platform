@@ -113,6 +113,7 @@ export interface NotificationTemplate {
 export interface NotificationContent {
   title: IntlString
   body: IntlString
+  data?: Markup
   intlParams: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
 }
@@ -234,6 +235,7 @@ export interface InboxNotification extends Doc {
   // For browser notifications
   title?: IntlString
   body?: IntlString
+  data?: Markup
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
   archived?: boolean

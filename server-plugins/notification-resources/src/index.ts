@@ -169,7 +169,6 @@ export async function getCommonNotificationTxes (
 
 async function getTextPart (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const TextPresenter = getTextPresenter(doc._class, control.hierarchy)
-  console.log({ _class: doc._class, presenter: TextPresenter })
   if (TextPresenter === undefined) return
   return await (
     await getResource(TextPresenter.presenter)
@@ -484,7 +483,7 @@ async function mentionInboxNotificationToText (
   return await commonInboxNotificationToText(doc)
 }
 
-async function getTranslatedNotificationContent (
+export async function getTranslatedNotificationContent (
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
   control: TriggerControl
@@ -631,7 +630,7 @@ export async function pushActivityInboxNotifications (
     return
   }
 
-  const content = await getNotificationContent(originTx, target.account, sender, object, control)
+  const content = await getNotificationContent(originTx, target.account, sender, object, control, activityMessage)
   const data: Partial<Data<ActivityInboxNotification>> = {
     ...content,
     attachedTo: activityMessage._id,

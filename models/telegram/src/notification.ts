@@ -66,7 +66,7 @@ export function defineNotifications (builder: Builder): void {
 
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.InboxNotificationProvider,
-    ignoredTypes: [],
+    ignoredTypes: [notification.ids.CollaboratoAddNotification],
     enabledTypes: [telegram.ids.NewMessageNotification]
   })
 }

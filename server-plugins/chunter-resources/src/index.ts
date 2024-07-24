@@ -72,7 +72,7 @@ export async function channelTextPresenter (doc: Doc): Promise<string> {
     return await translate(chunter.string.Direct, {})
   }
 
-  return `${channel.name}`
+  return `#${channel.name}`
 }
 
 export async function ChatMessageTextPresenter (doc: ChatMessage): Promise<string> {
@@ -338,6 +338,7 @@ export async function getChunterNotificationContent (
   return {
     title,
     body,
+    data: message,
     intlParams,
     intlParamsNotLocalized
   }

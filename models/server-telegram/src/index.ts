@@ -37,6 +37,11 @@ export function createModel (builder: Builder): void {
     }
   )
 
+  builder.createDoc(serverNotification.class.NotificationProviderResources, core.space.Model, {
+    provider: telegram.providers.TelegramNotificationProvider,
+    fn: serverTelegram.function.SendTelegramNotifications
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTelegram.trigger.OnMessageCreate,
     txMatch: {

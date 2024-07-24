@@ -1,7 +1,9 @@
 import {
   Account,
   AttachedDoc,
+  type Attribute,
   Class,
+  Collection,
   Doc,
   Hierarchy,
   Mixin,
@@ -20,6 +22,7 @@ import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcen
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
 import { TriggerControl } from '@hcengineering/server-core'
+import { translate } from '@hcengineering/platform'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -341,4 +344,60 @@ function getHiddenAttrs (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Set<str
   return new Set(
     [...hierarchy.getAllAttributes(_class).entries()].filter(([, attr]) => attr.hidden === true).map(([k]) => k)
   )
+}
+
+export async function getAttrName (
+  attributeUpdates: DocAttributeUpdates,
+  objectClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy
+): Promise<string | undefined> {
+  const { attrKey, attrClass, isMixin } = attributeUpdates
+  let attrObjectClass = objectClass
+
+  try {
+    if (isMixin) {
+      const keyedAttribute = [...hierarchy.getAllAttributes(attrClass).entries()]
+        .filter(([, value]) => value.hidden !== true)
+        .map(([key, attr]) => ({ key, attr }))
+        .find(({ key }) => key === attrKey)
+      if (keyedAttribute === undefined) {
+        return undefined
+      }
+      attrObjectClass = keyedAttribute.attr.attributeOf
+    }
+
+    const attribute = hierarchy.getAttribute(attrObjectClass, attrKey)
+
+    const label = attribute.shortLabel ?? attribute.label
+
+    if (label === undefined) {
+      return undefined
+    }
+
+    return await translate(label, {})
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
+}
+
+export function getCollectionAttribute (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>,
+  collection?: string
+): Attribute<Collection<AttachedDoc>> | undefined {
+  if (collection === undefined) {
+    return undefined
+  }
+
+  const descendants = hierarchy.getDescendants(objectClass)
+
+  for (const descendant of descendants) {
+    const collectionAttribute = hierarchy.findAttribute(descendant, collection)
+    if (collectionAttribute !== undefined) {
+      return collectionAttribute
+    }
+  }
+
+  return undefined
 }

@@ -130,7 +130,10 @@
     return false
   }
 
-  async function getFilteredProviders (providers: NotificationProvider[]): Promise<NotificationProvider[]> {
+  async function getFilteredProviders (
+    providers: NotificationProvider[],
+    types: BaseNotificationType[]
+  ): Promise<NotificationProvider[]> {
     const result: NotificationProvider[] = []
 
     for (const provider of providers) {
@@ -161,7 +164,7 @@
 
   let filteredProviders: NotificationProvider[] = []
 
-  $: void getFilteredProviders(providers).then((result) => {
+  $: void getFilteredProviders(providers, types).then((result) => {
     filteredProviders = result
   })
 
