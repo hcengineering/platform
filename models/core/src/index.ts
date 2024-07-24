@@ -194,26 +194,32 @@ export function createModel (builder: Builder): void {
     core.class.Class,
     core.mixin.IndexConfiguration,
     {
-      indexes: [
-        'tx.objectId',
-        'tx.operations.attachedTo',
-        'space',
-        {
-          objectSpace: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        {
-          objectSpace: 1,
-          modifiedBy: 1,
-          objectClass: 1
-        }
-      ]
+      indexes: ['tx.objectId', 'tx.operations.attachedTo']
     }
   )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_TX,
-    disabled: [{ space: 1 }, { objectClass: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+    disabled: [
+      { space: 1 },
+      { objectClass: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 },
+      { modifiedBy: 1 },
+      { objectSpace: 1 }
+    ],
+    indexes: [
+      {
+        keys: {
+          objectSpace: 1,
+          _id: 1,
+          modifiedOn: 1
+        },
+        filter: {
+          objectSpace: core.space.Model
+        }
+      }
+    ]
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
@@ -299,20 +305,13 @@ export function createModel (builder: Builder): void {
     {
       indexes: [
         {
-          _class: 1,
-          stages: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        {
-          _class: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        {
-          _class: 1,
-          _id: 1,
-          objectClass: 1
+          keys: {
+            _class: 1,
+            stages: 1,
+            _id: 1,
+            modifiedOn: 1
+          },
+          sparse: true
         }
       ]
     }

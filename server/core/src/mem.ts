@@ -50,7 +50,7 @@ export class DummyDbAdapter implements DbAdapter {
   async init (): Promise<void> {}
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
+  async removeOldIndex (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]): Promise<void> {}
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []

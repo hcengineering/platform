@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import { toWorkspaceString, type Doc, type Domain, type FieldIndex, type WorkspaceId } from '@hcengineering/core'
+import {
+  generateId,
+  toWorkspaceString,
+  type Doc,
+  type Domain,
+  type FieldIndexConfig,
+  type WorkspaceId
+} from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import { MongoClient, type Collection, type Db, type Document, type MongoClientOptions } from 'mongodb'
@@ -27,10 +34,15 @@ process.on('exit', () => {
   })
 })
 
+const clientRefs = new Map<string, ClientRef>()
+
 /**
  * @public
  */
 export async function shutdown (): Promise<void> {
+  for (const it of Array.from(clientRefs.values())) {
+    console.error((it as any).stack)
+  }
   for (const c of connections.values()) {
     c.close(true)
   }
@@ -78,9 +90,12 @@ class MongoClientReferenceImpl {
     this.count++
   }
 }
-
 export class ClientRef implements MongoClientReference {
-  constructor (readonly client: MongoClientReferenceImpl) {}
+  id = generateId()
+  stack = new Error().stack
+  constructor (readonly client: MongoClientReferenceImpl) {
+    clientRefs.set(this.id, this)
+  }
 
   closed = false
   async getClient (): Promise<MongoClient> {
@@ -94,6 +109,7 @@ export class ClientRef implements MongoClientReference {
   close (): void {
     // Do not allow double close of mongo connection client
     if (!this.closed) {
+      clientRefs.delete(this.id)
       this.closed = true
       this.client.close()
     }
@@ -106,13 +122,14 @@ export class ClientRef implements MongoClientReference {
  */
 export function getMongoClient (uri: string, options?: MongoClientOptions): MongoClientReference {
   const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
-  const key = `${uri}${process.env.MONGO_OPTIONS}_${JSON.stringify(options)}`
+  const key = `${uri}${process.env.MONGO_OPTIONS ?? '{}'}_${JSON.stringify(options ?? {})}`
   let existing = connections.get(key)
 
   // If not created or closed
   if (existing === undefined) {
     existing = new MongoClientReferenceImpl(
       MongoClient.connect(uri, {
+        appName: 'transactor',
         ...options,
         enableUtf8Validation: false,
         ...extraOptions
@@ -184,8 +201,20 @@ export class DBCollectionHelper implements DomainHelperOperations {
     return this.collections.has(domain)
   }
 
-  async createIndex (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }): Promise<void> {
-    await this.collection(domain).createIndex(value, options)
+  async createIndex (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {
+    if (typeof value === 'string') {
+      await this.collection(domain).createIndex(value, options)
+    } else {
+      if (value.filter !== undefined) {
+        await this.collection(domain).createIndex(value.keys, {
+          ...options,
+          sparse: false,
+          partialFilterExpression: value.filter
+        })
+      } else {
+        await this.collection(domain).createIndex(value.keys, { ...options, sparse: value.sparse ?? true })
+      }
+    }
   }
 
   async dropIndex (domain: Domain, name: string): Promise<void> {

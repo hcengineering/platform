@@ -46,7 +46,7 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 
@@ -244,13 +244,29 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         console.log(`assigning user ${email} to ${workspace}...`)
-        const workspaceInfo = await getWorkspaceById(db, productId, workspace)
-        if (workspaceInfo === null) {
-          throw new Error(`workspace ${workspace} not found`)
-        }
-        console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(toolCtx, db, productId, null, email, workspaceInfo.workspace, AccountRole.User)
+          const workspaceInfo = await getWorkspaceById(db, productId, workspace)
+          if (workspaceInfo === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace, productId })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          console.log('assigning to workspace', workspaceInfo, endpoint)
+          const client = await createClient(endpoint, token)
+          console.log('assigning to workspace connected', workspaceInfo, endpoint)
+          await assignWorkspace(
+            toolCtx,
+            db,
+            productId,
+            null,
+            email,
+            workspaceInfo.workspace,
+            AccountRole.User,
+            undefined,
+            undefined,
+            client
+          )
+          await client.close()
         } catch (err: any) {
           console.error(err)
         }
@@ -328,7 +344,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       console.log(`set user ${email} role for ${workspace}...`)
       await withDatabase(mongodbUri, async (db) => {
-        await setRole(toolCtx, db, email, workspace, productId, role)
+        const workspaceInfo = await getWorkspaceById(db, productId, workspace)
+        if (workspaceInfo === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+        console.log('assigning to workspace', workspaceInfo)
+        const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace, productId })
+        const endpoint = await getTransactorEndpoint(token, 'external')
+        const client = await createClient(endpoint, token)
+        await setRole(toolCtx, db, email, workspace, productId, role, client)
+        await client.close()
       })
     })
 

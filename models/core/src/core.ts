@@ -36,7 +36,7 @@ import {
   type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
-  type FieldIndex,
+  type FieldIndexConfig,
   type FullTextSearchContext,
   type IndexStageState,
   type IndexingConfiguration,
@@ -134,7 +134,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
 export class TBlob extends TDoc implements Blob {
   @Prop(TypeString(), core.string.Blob)
   @ReadOnly()
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     provider!: string
 
   @Prop(TypeString(), core.string.BlobContentType)
@@ -340,7 +340,6 @@ export class TDocIndexState extends TDoc implements DocIndexState {
     stages!: Record<string, boolean | string>
 
   @Prop(TypeString(), getEmbeddedLabel('Generation'))
-  @Index(IndexKind.Indexed)
   @Hidden()
     generationId?: string
 }
@@ -371,7 +370,7 @@ export class TConfiguration extends TDoc implements Configuration {
 
 @MMixin(core.mixin.IndexConfiguration, core.class.Class)
 export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
-  indexes!: FieldIndex<T>[]
+  indexes!: (string | FieldIndexConfig<T>)[]
   searchDisabled!: boolean
 }
 

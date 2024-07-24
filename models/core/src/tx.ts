@@ -46,7 +46,7 @@ import { TDoc } from './core'
 @Model(core.class.Tx, core.class.Doc, DOMAIN_TX)
 export class TTx extends TDoc implements Tx {
   @Prop(TypeRef(core.class.Space), core.string.Space)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
   @Hidden()
     objectSpace!: Ref<Space>
 }
@@ -62,7 +62,7 @@ export class TTxCUD<T extends Doc> extends TTx implements TxCUD<T> {
     objectId!: Ref<T>
 
   @Prop(TypeRef(core.class.Class), core.string.ClassLabel)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
   @Hidden()
     objectClass!: Ref<Class<T>>
 }
