@@ -61,6 +61,10 @@ class ElasticDataAdapter implements DbAdapter {
     this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
   }
 
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return new Set()
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,

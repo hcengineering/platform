@@ -513,10 +513,18 @@ abstract class MongoAdapterBase implements DbAdapter {
     let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      result = await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
-        domain,
-        pipeline
-      })
+      await ctx.with(
+        'toArray',
+        {},
+        async (ctx) => {
+          result = await toArray(cursor)
+        },
+        () => ({
+          size: result.length,
+          domain,
+          pipeline
+        })
+      )
     } catch (e) {
       console.error('error during executing cursor in findWithPipeline', clazz, cutObjectArray(query), options, e)
       throw e
@@ -619,6 +627,33 @@ abstract class MongoAdapterBase implements DbAdapter {
     return false
   }
 
+  @withContext('groupBy')
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    const result = await this.globalCtx.with(
+      'groupBy',
+      { domain },
+      async (ctx) => {
+        const coll = this.collection(domain)
+        const grResult = await coll
+          .aggregate([
+            {
+              $group: {
+                _id: '$' + field
+              }
+            }
+          ])
+          .toArray()
+        return new Set(grResult.map((it) => it._id as unknown as T))
+      },
+
+      () => ({
+        findOps: this.findOps,
+        txOps: this.txOps
+      })
+    )
+    return result
+  }
+
   findOps: number = 0
   txOps: number = 0
   opIndex: number = 0
@@ -691,6 +726,22 @@ abstract class MongoAdapterBase implements DbAdapter {
           const coll = this.collection(domain)
           const mongoQuery = this.translateQuery(_class, query)
 
+          if (options?.limit === 1) {
+            // Skip sort/projection/etc.
+            return await ctx.with(
+              'find-one',
+              {},
+              async (ctx) => {
+                const doc = await coll.findOne(mongoQuery)
+                if (doc != null) {
+                  return toFindResult([doc as unknown as T])
+                }
+                return toFindResult([])
+              },
+              { mongoQuery }
+            )
+          }
+
           let cursor = coll.find<T>(mongoQuery)
 
           if (options?.projection !== undefined) {
@@ -717,11 +768,20 @@ abstract class MongoAdapterBase implements DbAdapter {
 
           // Error in case of timeout
           try {
-            const res: T[] = await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
-              mongoQuery,
-              options,
-              domain
-            })
+            let res: T[] = []
+            await ctx.with(
+              'toArray',
+              {},
+              async (ctx) => {
+                res = await toArray(cursor)
+              },
+              () => ({
+                size: res.length,
+                mongoQuery,
+                options,
+                domain
+              })
+            )
             if (options?.total === true && options?.limit === undefined) {
               total = res.length
             }

@@ -96,6 +96,8 @@ export interface Middleware {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+
+  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
   handleBroadcast: HandleBroadcastFunc
   searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }

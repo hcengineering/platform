@@ -430,6 +430,10 @@ export class TServerStorage implements ServerStorage {
     return this.model.filter((it) => it.modifiedOn > lastModelTx)
   }
 
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return await this.getAdapter(domain, false).groupBy(ctx, domain, field)
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
