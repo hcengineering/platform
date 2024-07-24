@@ -50,9 +50,7 @@
         }
       })
       info = await res.json()
-      console.log({info})
     } catch (e) {}
-
     isLoading = false
   }
 
