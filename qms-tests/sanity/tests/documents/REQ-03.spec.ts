@@ -12,7 +12,7 @@ import { allure } from 'allure-playwright'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
-import { prepareDocumentStep } from '../documents/common-documents-steps'
+import { prepareDocumentStep } from './common-documents-steps'
 
 import { DocumentHistoryPage } from '../model/documents/document-history-page'
 

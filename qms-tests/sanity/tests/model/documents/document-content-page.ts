@@ -58,6 +58,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly buttonHistoryTab: Locator
   readonly documentHeader: Locator
   readonly leaveFolder: Locator
+  readonly textContainer: Locator
 
   constructor (page: Page) {
     super(page)
@@ -124,6 +125,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.buttonHistoryTab = page.getByText('History')
     this.documentHeader = page.getByRole('button', { name: 'Complete document' })
     this.leaveFolder = page.getByRole('button', { name: 'Leave' })
+    this.textContainer = page.locator('.tiptap')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -140,6 +142,10 @@ export class DocumentContentPage extends DocumentCommonPage {
       .locator('xpath=..')
       .locator('span.label input')
       .fill(title)
+  }
+
+  async checkIfTextExists (text: string): Promise<void> {
+    await expect(this.textContainer).toContainText(text)
   }
 
   async addReasonAndImpactToTheDocument (description: string, reason: string): Promise<void> {
