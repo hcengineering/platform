@@ -2,7 +2,7 @@ import { test } from '@playwright/test'
 import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { PlatformSetting, fillSearch } from '../utils'
+import { PlatformSetting, PlatformURI, fillSearch } from '../utils'
 import {
   DEFAULT_STATUSES,
   ViewletSelectors,
@@ -168,6 +168,25 @@ test.describe('Tracker tests', () => {
       estimation: '1h',
       dueDate: '24'
     })
+  })
+
+  test('check shouldShowAll option', async ({ page }) => {
+    await (
+      await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/issues`)
+    )?.finished()
+    const issuesPage = new IssuesPage(page)
+    await navigate(page)
+    await issuesPage.navigateToIssues()
+    await issuesPage.searchIssueByName('!!!!')
+    await issuesPage.openViewOptionsAndToggleShouldShowAll()
+    await issuesPage.clickModelSelectorAll()
+    await issuesPage.verifyCategoryHeadersVisibility()
+    await issuesPage.openViewOptionsAndToggleShouldShowAll()
+
+    await page.click(ViewletSelectors.Board)
+    await issuesPage.openViewOptionsAndToggleShouldShowAll()
+    await issuesPage.verifyCategoryHeadersVisibilityKanban()
+    await issuesPage.openViewOptionsAndToggleShouldShowAll()
   })
 })
 async function doSaveViewTest (

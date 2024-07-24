@@ -100,6 +100,13 @@ export class IssuesPage extends CommonTrackerPage {
   todoHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Todo")').first()
   doneHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Done")').first()
   canceledHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Canceled")').first()
+
+  inProgressHeaderKanban = (): Locator => this.page.locator('.header :text-is("In Progress")').first()
+  backlogHeaderKanban = (): Locator => this.page.locator('.header :text-is("Backlog")').first()
+  todoHeaderKanban = (): Locator => this.page.locator('.header :text-is("Todo")').first()
+  doneHeaderKanban = (): Locator => this.page.locator('.header :text-is("Done")').first()
+  canceledHeaderKanban = (): Locator => this.page.locator('.header :text-is("Canceled")').first()
+
   myIssuesButton = (): Locator => this.page.locator('text="My issues"')
   assignedTab = (): Locator => this.page.locator('[data-id="tab-assigned"]')
   createdTab = (): Locator => this.page.locator('[data-id="tab-created"]')
@@ -600,6 +607,14 @@ export class IssuesPage extends CommonTrackerPage {
     await expect(this.todoHeader()).toBeVisible()
     await expect(this.doneHeader()).toBeVisible()
     await expect(this.canceledHeader()).toBeVisible()
+  }
+
+  async verifyCategoryHeadersVisibilityKanban (): Promise<void> {
+    await expect(this.inProgressHeaderKanban()).toBeVisible()
+    await expect(this.backlogHeaderKanban()).toBeVisible()
+    await expect(this.todoHeaderKanban()).toBeVisible()
+    await expect(this.doneHeaderKanban()).toBeVisible()
+    await expect(this.canceledHeaderKanban()).toBeVisible()
   }
 
   async openAllCategories (): Promise<void> {

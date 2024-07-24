@@ -93,6 +93,9 @@ export class CommonTrackerPage extends CalendarPage {
   viewButton = (): Locator => this.page.locator('button:has-text("View")')
   firstOptionButton = (): Locator => this.page.locator('.antiCard >> button >> nth=0')
   assigneeMenuItem = (): Locator => this.page.locator('.menu-item:has-text("Assignee")')
+  shouldShowAllToggle = (): Locator =>
+    this.page.locator('.antiCard.menu .antiCard-menu__item:has-text("Show empty groups")')
+
   header = (): Locator => this.page.getByText('Issues All Active Backlog')
   filter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
   view = (): Locator => this.page.getByRole('button', { name: 'View' })
@@ -120,6 +123,12 @@ export class CommonTrackerPage extends CalendarPage {
     while (await this.page.locator('.popup').isVisible()) {
       await this.page.keyboard.press('Escape')
     }
+  }
+
+  async openViewOptionsAndToggleShouldShowAll (): Promise<void> {
+    await this.viewButton().click()
+    await this.shouldShowAllToggle().click()
+    await this.page.keyboard.press('Escape')
   }
 
   async verifyViewOption (panel: string, viewletSelector: string): Promise<void> {
