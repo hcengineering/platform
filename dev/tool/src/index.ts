@@ -238,6 +238,38 @@ export function devTool (
     })
 
   program
+    .command('compact-db')
+    .description('compact all db collections')
+    .action(async (cmd) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        console.log('compacting db ...')
+        let gtotal: number = 0
+        try {
+          const workspaces = await listWorkspacesPure(db, productId)
+          for (const workspace of workspaces) {
+            let total: number = 0
+            const wsDb = getWorkspaceDB(client, { name: workspace.workspace, productId })
+            const collections = wsDb.listCollections()
+            while (true) {
+              const collInfo = await collections.next()
+              if (collInfo === null) {
+                break
+              }
+              const result = await wsDb.command({ compact: collInfo.name })
+              total += result.bytesFreed
+            }
+            gtotal += total
+            console.log('total feed for db', workspace.workspaceName, Math.round(total / (1024 * 1024)))
+          }
+          console.log('global total feed', Math.round(gtotal / (1024 * 1024)))
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+
+  program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
     .action(async (email: string, workspace: string, cmd) => {
