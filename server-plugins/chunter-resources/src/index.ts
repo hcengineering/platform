@@ -104,23 +104,18 @@ export async function CommentRemove (
   })
 }
 
-async function OnThreadMessageCreated (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const actualTx = TxProcessor.extractTx(tx)
+  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<ThreadMessage>
 
-  if (actualTx._class !== core.class.TxCreateDoc) {
+  if (tx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)) {
     return []
   }
 
-  const doc = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<Doc>)
+  const threadMessage = TxProcessor.createDoc2Doc(tx)
+  const message = (await control.findAll(activity.class.ActivityMessage, { _id: threadMessage.attachedTo }))[0]
 
-  if (!hierarchy.isDerived(doc._class, chunter.class.ThreadMessage)) {
-    return []
-  }
-
-  const threadMessage = doc as ThreadMessage
-
-  if (!hierarchy.isDerived(threadMessage.attachedToClass, activity.class.ActivityMessage)) {
+  if (message === undefined) {
     return []
   }
 
@@ -129,21 +124,26 @@ async function OnThreadMessageCreated (tx: Tx, control: TriggerControl): Promise
     threadMessage.space,
     threadMessage.attachedTo,
     {
-      lastReply: tx.modifiedOn
+      lastReply: originTx.modifiedOn
     }
   )
 
-  const employee = control.modelDb.getObject(tx.modifiedBy) as PersonAccount
-  const employeeTx = control.txFactory.createTxUpdateDoc<ActivityMessage>(
+  const personAccount = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
+
+  if ((message.repliedPersons ?? []).includes(personAccount.person)) {
+    return [lastReplyTx]
+  }
+
+  const repliedPersonTx = control.txFactory.createTxUpdateDoc<ActivityMessage>(
     threadMessage.attachedToClass,
     threadMessage.space,
     threadMessage.attachedTo,
     {
-      $push: { repliedPersons: employee.person }
+      $push: { repliedPersons: personAccount.person }
     }
   )
 
-  return [lastReplyTx, employeeTx]
+  return [lastReplyTx, repliedPersonTx]
 }
 
 async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {

@@ -157,14 +157,6 @@
         },
         _id as Ref<ThreadMessage>
       )
-
-      await operations.update(parentMessage, { lastReply: Date.now() })
-
-      const hasPerson = !!parentMessage.repliedPersons?.includes(account.person)
-
-      if (!hasPerson) {
-        await operations.update(parentMessage, { $push: { repliedPersons: account.person } })
-      }
     } else {
       await operations.addCollection<Doc, ChatMessage>(
         _class,
