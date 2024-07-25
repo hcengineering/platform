@@ -268,18 +268,19 @@
     const maxMsgPerScreen = Math.ceil(scrollElement.clientHeight / minMsgHeightPx)
     const limit = Math.max(maxMsgPerScreen, provider.limit)
 
-    if (shouldLoadMoreUp() && scrollElement && provider.canLoadMore('backward', messages[0]?.createdOn)) {
+    if (shouldLoadMoreUp()) {
       shouldScrollToNew = false
-      scrollToRestore = scrollElement.scrollHeight
-      void provider.loadMore('backward', messages[0]?.createdOn, limit)
-    } else if (shouldLoadMoreDown() && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)) {
+      scrollToRestore = scrollElement?.scrollHeight ?? 0
+      provider.addNextChunk('backward', messages[0]?.createdOn, limit)
+    } else if (shouldLoadMoreDown()) {
+      scrollToRestore = 0
       shouldScrollToNew = false
-      void provider.loadMore('forward', messages[messages.length - 1]?.createdOn, limit)
       isScrollAtBottom = false
+      provider.addNextChunk('forward', messages[messages.length - 1]?.createdOn, limit)
     }
   }
 
-  function handleScroll ({ autoScrolling }: ScrollParams): void {
+  async function handleScroll ({ autoScrolling }: ScrollParams): Promise<void> {
     saveScrollPosition()
     updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
     if (autoScrolling) {
@@ -668,6 +669,9 @@
       scrollToBottom()
     }
   }
+
+  const canLoadNextBackwardStore = provider.canLoadNextBackwardStore
+  const canLoadNextForwardStore = provider.canLoadNextForwardStore
 </script>
 
 {#if isLoading}
@@ -697,7 +701,7 @@
       onScroll={handleScroll}
       onResize={handleResize}
     >
-      {#if loadMoreAllowed && provider.canLoadMore('backward', messages[0]?.createdOn)}
+      {#if loadMoreAllowed && $canLoadNextBackwardStore}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
       <slot name="header" />
@@ -736,7 +740,7 @@
         />
       {/each}
 
-      {#if loadMoreAllowed && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)}
+      {#if loadMoreAllowed && $canLoadNextForwardStore}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
     </Scroller>
