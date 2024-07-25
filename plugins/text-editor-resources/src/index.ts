@@ -16,7 +16,7 @@
 
 import { type Resources } from '@hcengineering/platform'
 import { formatLink } from './kits/default-kit'
-import { isEditable } from './kits/editor-kit'
+import { isEditable, isHeadingVisible } from './kits/editor-kit'
 import { openTableOptions, isEditableTableActive } from './components/extension/table/table'
 import { openImage, expandImage, moreImageActions } from './components/extension/imageExt'
 
@@ -87,6 +87,7 @@ export default async (): Promise<Resources> => ({
     ExpandImage: expandImage,
     MoreImageActions: moreImageActions,
     IsEditableTableActive: isEditableTableActive,
-    IsEditable: isEditable
+    IsEditable: isEditable,
+    IsHeadingVisible: isHeadingVisible
   }
 })
