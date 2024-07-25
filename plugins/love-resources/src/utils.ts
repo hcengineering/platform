@@ -48,7 +48,7 @@ export async function getToken (
   userId: string,
   participantName: string
 ): Promise<string> {
-  const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
+  const endpoint = getMetadata(love.metadata.ServiceEndpoint)
   if (endpoint === undefined) {
     throw new Error('Love service endpoint not found')
   }
@@ -667,7 +667,7 @@ export async function toggleVideo (): Promise<void> {
 
 export async function record (room: Room): Promise<void> {
   try {
-    const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
+    const endpoint = getMetadata(love.metadata.ServiceEndpoint)
     if (endpoint === undefined) {
       throw new Error('Love service endpoint not found')
     }
@@ -703,7 +703,7 @@ export async function record (room: Room): Promise<void> {
 
 async function checkRecordAvailable (): Promise<void> {
   try {
-    const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
+    const endpoint = getMetadata(love.metadata.ServiceEndpoint)
     if (endpoint === undefined) {
       setTimeout(() => {
         void checkRecordAvailable()
