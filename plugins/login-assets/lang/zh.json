@@ -50,6 +50,12 @@
     "SentTo": "我们已发送验证码到 ",
     "CanFindCode": "找不到验证码？请检查您的垃圾邮件文件夹。",
     "LoginWithPassword": "使用密码登录",
-    "LoginWithCode": "使用代码登录"
+    "LoginWithCode": "使用代码登录",
+    "FillInProfile": "填写您的个人资料",
+    "SetUpPassword": "设置您的密码",
+    "Next": "下一个",
+    "Skip": "跳过",
+    "SignUpCompleted": "注册完成",
+    "StartUsingHuly": "开始使用 Huly"
   }
 }

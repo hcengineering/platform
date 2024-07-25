@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,23 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { LoginInfo } from '@hcengineering/login'
   import { Status, Severity, OK } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
 
   import Form from './Form.svelte'
-  import { createWorkspace, getAccount, goTo, setLoginInfo } from '../utils'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { createWorkspace, setLoginInfo } from '../utils'
   import login from '../plugin'
-  import { workbenchId } from '@hcengineering/workbench'
-  import { onMount } from 'svelte'
-  import { LoginInfo } from '@hcengineering/login'
+
+  export let account: LoginInfo
+
+  const dispatch = createEventDispatcher()
 
   const fields = [
-    {
-      id: 'workspace',
-      name: 'workspace',
-      i18n: login.string.Workspace,
-      rules: []
-    }
+    { id: 'workspace', name: 'workspace', i18n: login.string.Workspace }
   ]
 
   const object = {
@@ -38,18 +34,6 @@
   }
 
   let status: Status<any> = OK
-
-  let account: LoginInfo | undefined = undefined
-
-  onMount(async () => {
-    account = await getAccount()
-    if (account?.confirmed === false) {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'confirmationSend'
-      loc.path.length = 2
-      navigate(loc)
-    }
-  })
 
   const action = {
     i18n: login.string.CreateWorkspace,
@@ -61,8 +45,7 @@
 
       if (result !== undefined) {
         setLoginInfo(result)
-
-        navigate({ path: [workbenchId, result.workspace] })
+        dispatch('step', result)
       }
     }
   }
@@ -70,19 +53,9 @@
 
 <Form
   caption={login.string.CreateWorkspace}
+  subtitle={account.email}
   {status}
   {fields}
   {object}
   {action}
-  subtitle={account?.email}
-  bottomActions={[
-    {
-      caption: login.string.HaveWorkspace,
-      i18n: login.string.SelectWorkspace,
-      page: 'selectWorkspace',
-      func: () => {
-        goTo('selectWorkspace')
-      }
-    }
-  ]}
 />

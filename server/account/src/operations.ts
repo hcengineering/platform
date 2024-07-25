@@ -366,7 +366,7 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
   })
 }
 
-async function getAccountInfoByToken (
+export async function getAccountInfoByToken (
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -956,6 +956,35 @@ export async function createAccount (
     token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
   }
   return result
+}
+
+/**
+ * @public
+ */
+export async function signUpOtp (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  _email: string
+): Promise<OtpInfo> {
+  const email = cleanEmail(_email)
+  const first = email.split('@', 1)[0] ?? ''
+  const last = ''
+
+  await createAcc(
+    ctx,
+    db,
+    productId,
+    branding,
+    email,
+    null,
+    first,
+    last,
+    false
+  )
+
+  return await sendOtp(ctx, db, productId, branding, _email)
 }
 
 /**
@@ -2564,6 +2593,29 @@ export async function loginWithProvider (
 /**
  * @public
  */
+export async function changeUsername (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  first: string,
+  last: string
+): Promise<void> {
+  const { email } = decodeToken(token)
+  const account = await getAccount(db, email)
+
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { first, last } })
+  ctx.info('change-username success', { email })
+}
+
+/**
+ * @public
+ */
 export function getMethods (
   version: Data<Version>,
   txes: Tx[],
@@ -2574,6 +2626,7 @@ export function getMethods (
     join: wrap(join),
     sendOtp: wrap(sendOtp),
     validateOtp: wrap(validateOtp),
+    signUpOtp: wrap(signUpOtp),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),
@@ -2593,7 +2646,8 @@ export function getMethods (
     sendInvite: wrap(sendInvite),
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
-    createMissingEmployee: wrap(createMissingEmployee)
+    createMissingEmployee: wrap(createMissingEmployee),
+    changeUsername: wrap(changeUsername)
     // updateAccount: wrap(updateAccount)
   }
 }

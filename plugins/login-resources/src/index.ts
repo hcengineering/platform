@@ -64,8 +64,15 @@ export const pages = [
   'confirm',
   'confirmationSend',
   'auth',
-  'login-password'
+  'login-password',
+  'onboard'
 ] as const
+
+export enum OnboardSteps {
+  Workspace = 'workspace',
+  User = 'user',
+  Finish = 'finish'
+}
 
 export enum OtpLoginSteps {
   Email = 'email',

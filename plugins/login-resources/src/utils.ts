@@ -120,6 +120,40 @@ export async function signUp (
   }
 }
 
+export async function signUpOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'signUpOtp',
+    params: [email]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('signUpOtp')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Sign up error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
 export async function createWorkspace (
   workspaceName: string
 ): Promise<[Status, (LoginInfo & { workspace: string }) | undefined]> {
@@ -379,6 +413,9 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   tokens[loginInfo.workspace] = loginInfo.token
 
+  setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
+
   setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
   setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
@@ -626,6 +663,36 @@ export async function changePassword (oldPassword: string, password: string): Pr
   }
 }
 
+export async function changeUsername (first: string, last: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token) as string
+
+  const request = {
+    method: 'changeUsername',
+    params: [first, last]
+  }
+
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request)
+  })
+  const resp = await response.json()
+  if (resp.error !== undefined) {
+    const err = new PlatformError(resp.error)
+    Analytics.handleError(err)
+    throw err
+  }
+}
+
 export async function leaveWorkspace (email: string): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
@@ -801,20 +868,16 @@ export function getHref (path: Pages): string {
   return host + url
 }
 
-export async function afterConfirm (): Promise<void> {
+export async function afterConfirm (wspage: 'onboard' | 'createWorkspace' = 'createWorkspace'): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('createWorkspace')
+    goTo(wspage)
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-      tokens[result.workspace] = result.token
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+      setLoginInfo(result)
 
       navigateToWorkspace(joinedWS[0].workspace, result)
     }
@@ -1004,6 +1067,15 @@ export async function doLoginNavigate (
     if (navigateUrl !== undefined) {
       loc.query = { ...loc.query, navigateUrl }
     }
+    navigate(loc)
+  }
+}
+
+export async function ensureConfirmed (account: LoginInfo): Promise<void> {
+  if (!account.confirmed) {
+    const loc = getCurrentLocation()
+    loc.path[1] = 'confirmationSend'
+    loc.path.length = 2
     navigate(loc)
   }
 }

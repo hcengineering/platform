@@ -106,10 +106,17 @@ export function serveAccount (
 
   let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
 
+  let worker: UpgradeWorker | undefined
+
   const app = new Koa()
   const router = new Router()
 
-  let worker: UpgradeWorker | undefined
+  app.use(
+    cors({
+      credentials: true
+    })
+  )
+  app.use(bodyParser())
 
   void client.then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
@@ -211,12 +218,6 @@ export function serveAccount (
     ctx.body = result
   })
 
-  app.use(
-    cors({
-      credentials: true
-    })
-  )
-  app.use(bodyParser())
   app.use(router.routes()).use(router.allowedMethods())
 
   const server = app.listen(ACCOUNT_PORT, () => {

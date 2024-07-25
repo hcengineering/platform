@@ -54,7 +54,7 @@ services:
       - MONGO_URL=mongodb://mongodb:27017
       - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://front:8080
+      - FRONT_URL=http://localhost:8087
       - INIT_WORKSPACE=demo-tracker
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://localhost:3000

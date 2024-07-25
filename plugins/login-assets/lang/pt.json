@@ -50,6 +50,12 @@
     "SentTo": "Enviamos um código para ",
     "CanFindCode": "Não encontra o seu código? Verifique a sua pasta de spam.",
     "LoginWithPassword": "Iniciar sessão com palavra-passe",
-    "LoginWithCode": "Iniciar sessão com código"
+    "LoginWithCode": "Iniciar sessão com código",
+    "FillInProfile": "Preencha o seu perfil",
+    "SetUpPassword": "Definir a sua palavra-passe",
+    "Next": "Seguinte",
+    "Skip": "Saltar",
+    "SignUpCompleted": "Registo concluído",
+    "StartUsingHuly": "Começar a usar Huly"
   }
 }

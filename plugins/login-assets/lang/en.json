@@ -50,6 +50,12 @@
     "SentTo": "We've sent a code to ",
     "CanFindCode": "Can't find your code? Check your spam folder.",
     "LoginWithPassword": "Login with password",
-    "LoginWithCode": "Login with code"
+    "LoginWithCode": "Login with code",
+    "FillInProfile": "Fill in your profile",
+    "SetUpPassword": "Set up your password",
+    "Next": "Next",
+    "Skip": "Skip",
+    "SignUpCompleted": "Sign up completed",
+    "StartUsingHuly": "Start using Huly"
   }
 }
