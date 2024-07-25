@@ -15,6 +15,8 @@
 import core, { DOMAIN_TX, type Ref, type TxCreateDoc } from '@hcengineering/core'
 import request, { requestId, type Request } from '@hcengineering/request'
 import {
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
   tryMigrate,
   type MigrateOperation,
   type MigrationClient,
@@ -44,7 +46,7 @@ async function migrateRequestPersonAccounts (client: MigrationClient): Promise<v
     },
     {}
   )
-
+  const operations: { filter: MigrationDocumentQuery<Request>, update: MigrateUpdate<Request> }[] = []
   for (const request of requests) {
     const newRequestedPersons = request.requested
       .map((paId) => personAccountToPersonMap[paId as unknown as Ref<PersonAccount>])
@@ -56,33 +58,31 @@ async function migrateRequestPersonAccounts (client: MigrationClient): Promise<v
       request.rejected != null ? personAccountToPersonMap[request.rejected as unknown as Ref<PersonAccount>] : undefined
 
     if (newRequestedPersons.length > 0) {
-      await client.update(
-        DOMAIN_REQUEST,
-        {
+      operations.push({
+        filter: {
           _id: request._id
         },
-        {
-          $set: {
-            requested: newRequestedPersons,
-            approved: newApprovedPersons
-          }
+        update: {
+          requested: newRequestedPersons,
+          approved: newApprovedPersons
         }
-      )
+      })
     }
 
     if (newRejectedPerson !== undefined) {
-      await client.update(
-        DOMAIN_REQUEST,
-        {
+      operations.push({
+        filter: {
           _id: request._id
         },
-        {
-          $set: {
-            rejected: newRejectedPerson
-          }
+        update: {
+          rejected: newRejectedPerson
         }
-      )
+      })
     }
+  }
+
+  if (operations.length > 0) {
+    await client.bulk(DOMAIN_REQUEST, operations)
   }
 }
 
