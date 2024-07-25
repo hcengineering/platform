@@ -740,6 +740,8 @@ abstract class MongoAdapterBase implements DbAdapter {
                 }
                 if (options?.projection !== undefined) {
                   findOptions.projection = this.calcProjection<T>(options, _class)
+                } else {
+                  findOptions.projection = { '%hash%': 0 }
                 }
 
                 const doc = await coll.findOne(mongoQuery, findOptions)
@@ -759,6 +761,8 @@ abstract class MongoAdapterBase implements DbAdapter {
             if (projection != null) {
               cursor = cursor.project(projection)
             }
+          } else {
+            cursor = cursor.project({ '%hash%': 0 })
           }
           let total: number = -1
           if (options != null) {
