@@ -30,7 +30,7 @@
 
   export let createParams: Record<string, any> = {}
   export let viewletId = tracker.viewlet.SubIssues
-  export let createLabel = tracker.string.CreatedIssue
+  export let createLabel = tracker.string.AddIssue
   export let hasSubIssues = false
 
   let isCollapsed = false
