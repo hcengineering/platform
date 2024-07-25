@@ -52,11 +52,7 @@ export function parsePreviewConfig (config?: string): PreviewConfig | undefined 
     if (c === '') {
       continue // Skip empty lines
     }
-    const vars = c.split('|')
-    let [provider, url, formats, contentTypes] = c.split('|').map((it) => it.trim())
-    if (vars.length === 3) {
-      contentTypes = formats // Backward compatibility, since formats are obsolete
-    }
+    const [provider, url, contentTypes] = c.split('|').map((it) => it.trim())
     const p: ProviderPreviewConfig = {
       providerId: provider,
       previewUrl: url,
