@@ -80,7 +80,8 @@ import {
   type Filter,
   type FindCursor,
   type Sort,
-  type UpdateFilter
+  type UpdateFilter,
+  type FindOptions as MongoFindOptions
 } from 'mongodb'
 import { DBCollectionHelper, getMongoClient, getWorkspaceDB, type MongoClientReference } from './utils'
 
@@ -732,7 +733,16 @@ abstract class MongoAdapterBase implements DbAdapter {
               'find-one',
               {},
               async (ctx) => {
-                const doc = await coll.findOne(mongoQuery)
+                const findOptions: MongoFindOptions = {}
+
+                if (options?.sort !== undefined) {
+                  findOptions.sort = this.collectSort<T>(options, _class)
+                }
+                if (options?.projection !== undefined) {
+                  findOptions.projection = this.calcProjection<T>(options, _class)
+                }
+
+                const doc = await coll.findOne(mongoQuery, findOptions)
                 if (doc != null) {
                   return toFindResult([doc as unknown as T])
                 }
