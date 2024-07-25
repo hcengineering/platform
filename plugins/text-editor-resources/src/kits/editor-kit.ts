@@ -276,5 +276,5 @@ export async function isEditable (editor: Editor): Promise<boolean> {
 }
 
 export async function isHeadingVisible (editor: Editor, ctx: ActionContext): Promise<boolean> {
-  return await isEditable(editor) && ctx.mode === 'full'
+  return (await isEditable(editor)) && ctx.mode === 'full'
 }
