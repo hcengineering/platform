@@ -41,6 +41,7 @@ loadMetadata(contact.icon, {
   Whatsapp: `${icons}#whatsapp`,
   Profile: `${icons}#profile`,
   KickUser: `${icons}#kickUser`,
-  ComponentMembers: `${icons}#componentMembers`
+  ComponentMembers: `${icons}#componentMembers`,
+  Contacts: `${icons}#contacts`
 })
 addStringsLoader(contactId, async (lang: string) => await import(`../lang/${lang}.json`))

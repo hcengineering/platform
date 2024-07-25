@@ -16,8 +16,8 @@
   import contact, { PersonAccount, formatName } from '@hcengineering/contact'
   import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Scroller } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, SearchInput, Header, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -54,7 +54,9 @@
 <div class="hulyComponent">
   <Header>
     <Breadcrumb icon={setting.icon.Owners} label={setting.string.Owners} size={'large'} isCurrent />
-    <EditBox kind={'search-style'} focusIndex={1} bind:value={search} placeholder={presentation.string.Search} />
+    <svelte:fragment slot="search">
+      <SearchInput bind:value={search} collapsed />
+    </svelte:fragment>
   </Header>
   <div class="hulyComponent-content__column content">
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>

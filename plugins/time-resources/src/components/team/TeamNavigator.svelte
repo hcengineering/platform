@@ -18,7 +18,7 @@
   import task, { Project } from '@hcengineering/task'
   import { Label, Separator, Scroller, NavItem } from '@hcengineering/ui'
   import { ObjectPresenter, TreeNode } from '@hcengineering/view-resources'
-  import { NavFooter } from '@hcengineering/workbench-resources'
+  import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
   import time from '../../plugin'
 
   export let navFloat: boolean = false
@@ -41,11 +41,9 @@
   $: selectedItem = projects.find((pr) => pr._id === selected)
 </script>
 
-<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left">
   <div class="antiPanel-wrap__content hulyNavPanel-container">
-    <div class="hulyNavPanel-header">
-      <span class="overflow-label"><Label label={time.string.TeamPlanner} /></span>
-    </div>
+    <NavHeader label={time.string.TeamPlanner} />
 
     <Scroller shrink>
       <TreeNode
@@ -55,6 +53,7 @@
         empty={projects.length === 0}
         highlighted={selected !== undefined}
         visible={selected !== undefined}
+        noDivider
       >
         {#each projects as _project}
           <NavItem

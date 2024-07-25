@@ -33,7 +33,6 @@
   export let _id: Ref<DriveFile>
   export let readonly: boolean = false
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
   export function canClose (): boolean {
     return false
@@ -95,10 +94,10 @@
   <Panel
     {object}
     {embedded}
-    {kind}
     allowClose={!embedded}
     isHeader={false}
     useMaxWidth={false}
+    adaptive={'default'}
     on:open
     on:close
     on:update

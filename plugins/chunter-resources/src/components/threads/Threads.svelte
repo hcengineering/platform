@@ -44,20 +44,10 @@
   )
 </script>
 
-<div class="ac-header full divide caption-height" style="padding: 0.5rem 1rem">
-  <Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind="breadcrumbs" />
-</div>
+<Header icon={chunter.icon.Thread} intlLabel={chunter.string.Threads} titleKind={'breadcrumbs'} />
 
-<div class="body h-full w-full">
-  <Scroller padding="0.75rem 0.5rem">
-    {#each threads as thread}
-      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
-    {/each}
-  </Scroller>
-</div>
-
-<style lang="scss">
-  .body {
-    background-color: var(--theme-panel-color);
-  }
-</style>
+<Scroller padding="0.75rem 0.5rem">
+  {#each threads as thread}
+    <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
+  {/each}
+</Scroller>

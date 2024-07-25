@@ -32,7 +32,7 @@
   const departments = [hr.ids.Head]
 </script>
 
-<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left">
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <NavHeader label={hr.string.HRApplication} />
 
@@ -42,6 +42,7 @@
         label={hr.string.Departments}
         highlighted={department !== undefined}
         isFold={department !== undefined}
+        noDivider
       >
         <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
       </TreeNode>

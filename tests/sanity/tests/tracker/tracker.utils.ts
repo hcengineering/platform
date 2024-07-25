@@ -16,8 +16,8 @@ export interface IssueProps {
 }
 
 export enum ViewletSelectors {
-  Table = '.tablist-container >> div.button:nth-child(1)',
-  Board = '.tablist-container >> div.button:nth-child(2)'
+  Table = 'label[data-view*="List"]',
+  Board = 'label[data-view*="Board"]'
 }
 
 export const PRIORITIES = ['No priority', 'Urgent', 'High', 'Medium', 'Low']
@@ -38,7 +38,7 @@ export async function navigate (page: Page): Promise<void> {
 }
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {
-  await page.click('button:has-text("View")')
+  await page.click('button[data-id="btn-viewOptions"]')
   await page.click('.antiCard >> .grouping >> button >> nth=0')
   await page.click(`.menu-item:has-text("${groupName}")`)
   await expect(page.locator('.antiCard >> .grouping >> button >> nth=0')).toContainText(groupName)
@@ -47,7 +47,7 @@ export async function setViewGroup (page: Page, groupName: string): Promise<void
 }
 
 export async function setViewOrder (page: Page, orderName: string): Promise<void> {
-  await page.click('button:has-text("View")')
+  await page.click('button[data-id="btn-viewOptions"]')
   await page.click('.antiCard >> .ordering >> button')
   await page.click(`.menu-item:has-text("${orderName}")`)
   await expect(page.locator('.antiCard >> .ordering >> button')).toContainText(orderName)
@@ -109,7 +109,10 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
 }
 
 export async function createComponent (page: Page, componentName: string): Promise<void> {
-  await page.click('text=Components')
+  await page
+    .locator('[id="navGroup-tracker\\:project\\:DefaultProject"]')
+    .getByRole('button', { name: 'Components' })
+    .click()
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
   )
@@ -120,7 +123,10 @@ export async function createComponent (page: Page, componentName: string): Promi
 }
 
 export async function createMilestone (page: Page, milestoneName: string): Promise<void> {
-  await page.click('text=Milestones')
+  await page
+    .locator('[id="navGroup-tracker\\:project\\:DefaultProject"]')
+    .getByRole('button', { name: 'Milestones' })
+    .click()
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/milestones`
   )
@@ -244,7 +250,7 @@ export async function performPanelTest (page: Page, statuses: string[], panel: s
   const locator = page.locator('.list-container')
   const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
   await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')
-  await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
+  await page.locator(`.switcher-container span:has-text("${mode}")`).click()
   await page.click(ViewletSelectors.Table)
   for (const s of statuses) {
     await expect(locator).toContainText(s)

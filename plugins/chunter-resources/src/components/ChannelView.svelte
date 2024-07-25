@@ -40,8 +40,7 @@
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
-  export let allowClose = false
-  export let embedded = false
+  export let embedded: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -94,15 +93,15 @@
   }
 </script>
 
-<div class="popupPanel panel" class:embedded>
+<div class="popupPanel panel">
   <ChannelHeader
     _id={object._id}
     _class={object._class}
     {object}
-    {allowClose}
     {withAside}
     bind:filters
     canOpen={isDocChat}
+    allowClose={embedded}
     {isAsideShown}
     on:close
     on:select={handleMessageSelect}

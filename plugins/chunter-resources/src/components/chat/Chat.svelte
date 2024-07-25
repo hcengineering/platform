@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, Class } from '@hcengineering/core'
+  import { Doc, Ref, Class, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Component,
@@ -24,11 +24,12 @@
     Separator,
     Location,
     restoreLocation,
-    deviceOptionsStore as deviceInfo
+    deviceOptionsStore as deviceInfo,
+    type AnyComponent
   } from '@hcengineering/ui'
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { chunterId } from '@hcengineering/chunter'
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
@@ -38,6 +39,10 @@
   import { chatSpecials, loadSavedAttachments } from './utils'
   import { SelectChannelEvent } from './types'
   import { openChannel } from '../../navigation'
+
+  export let currentSpace: Ref<Space> | undefined = undefined
+  export let asideComponent: AnyComponent | undefined = undefined
+  export let asideId: string | undefined = undefined
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
@@ -56,6 +61,7 @@
   let currentSpecial: SpecialNavModel | undefined
 
   let object: Doc | undefined = undefined
+  let replacedPanel: HTMLElement
 
   location.subscribe((loc) => {
     syncLocation(loc)
@@ -137,26 +143,40 @@
 
   defineSeparators('chat', [
     { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
-    { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
+    { size: 'auto', minSize: 20, maxSize: 'auto' },
+    { size: 20, minSize: 20, maxSize: 50, float: 'aside' }
   ])
 
   onMount(() => {
     loadSavedAttachments()
   })
+  $: $deviceInfo.replacedPanel = replacedPanel
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 </script>
 
-<div class="flex-row-top h-full">
+<div class="hulyPanels-container">
   {#if $deviceInfo.navigator.visible}
-    <div class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'}">
+    <div
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} border-left"
+    >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
       <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
     </div>
-    <Separator name="chat" float={$deviceInfo.navigator.float} index={0} />
+    <Separator
+      name="chat"
+      float={$deviceInfo.navigator.float}
+      index={0}
+      color={'transparent'}
+      separatorSize={0}
+      short
+    />
   {/if}
 
-  <div class="antiPanel-component filled w-full">
+  <div bind:this={replacedPanel} class="hulyComponent" class:beforeAside={asideComponent !== undefined && asideId}>
     {#if currentSpecial}
       <Component
         is={currentSpecial.component}
@@ -177,4 +197,10 @@
       <ChannelView {object} {context} />
     {/if}
   </div>
+  {#if asideComponent !== undefined && asideId}
+    <Separator name={'chat'} index={1} color={'var(--theme-divider-color)'} separatorSize={1} />
+    <div class="hulyComponent aside">
+      <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close />
+    </div>
+  {/if}
 </div>

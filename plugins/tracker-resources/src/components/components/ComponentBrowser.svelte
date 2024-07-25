@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { DocumentQuery, WithLookup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { isCreateAllowed } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Button, IconAdd, Label, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, Breadcrumbs, SearchInput, showPopup, Header } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -29,7 +29,6 @@
   export let query: DocumentQuery<Component> = {}
   export let search = ''
   export let filterMode: ComponentsFilterMode = 'all'
-  export let panelWidth: number = 0
 
   const space = typeof query.space === 'string' ? query.space : tracker.project.DefaultProject
 
@@ -41,12 +40,6 @@
   let searchQuery: DocumentQuery<Component> = { ...query }
   let resultQuery: DocumentQuery<Component> = { ...searchQuery }
 
-  let asideFloat = false
-  let asideShown = true
-
-  let docWidth: number
-  let docSize = false
-
   function showCreateDialog (): void {
     showPopup(NewComponent, { space, targetElement: null }, 'top')
   }
@@ -56,45 +49,29 @@
   $: resultQuery = { ...searchQuery }
 
   let viewOptions: ViewOptions | undefined
-
-  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
-  $: if (panelWidth >= 900 && asideFloat) {
-    asideFloat = false
-    asideShown = false
-  }
-
-  $: if (docWidth <= 900 && !docSize) docSize = true
-  $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
-<div class="ac-header full divide caption-height">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label {label} /></span>
-    <span class="componentTitle ml-1">
-      › <Label label={title} />
-    </span>
-  </div>
-
-  <div class="ac-header-full medium-gap mb-1">
+<Header
+  adaptive={'freezeActions'}
+  hideActions={!(project !== undefined && isCreateAllowed(tracker.class.Component, project))}
+>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector bind:viewlet bind:viewlets viewletQuery={{ attachTo: tracker.class.Component }} />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <Breadcrumbs items={[{ icon: tracker.icon.Component, label }, { label: title }]} />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed />
+    <FilterButton _class={tracker.class.Component} {space} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
     {#if project !== undefined && isCreateAllowed(tracker.class.Component, project)}
       <Button icon={IconAdd} label={tracker.string.Component} kind="primary" on:click={showCreateDialog} />
     {/if}
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} />
-    <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
-    <div class="buttons-divider" />
-    <FilterButton _class={tracker.class.Component} {space} />
-  </div>
-  <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
-    <!-- <ActionIcon icon={IconMoreH} size="small" /> -->
-  </div>
-</div>
-
+  </svelte:fragment>
+</Header>
 <FilterBar
   _class={tracker.class.Component}
   {space}
@@ -102,14 +79,6 @@
   {viewOptions}
   on:change={({ detail }) => (resultQuery = detail)}
 />
-
-<div class="flex w-full h-full clear-mins">
-  {#if viewlet && viewOptions}
-    <ComponentsContent {viewlet} query={{ ...resultQuery }} {space} {viewOptions} />
-  {/if}
-  {#if $$slots.aside !== undefined && asideShown}
-    <div class="popupPanel-body__aside flex" class:float={asideFloat} class:shown={asideShown}>
-      <slot name="aside" />
-    </div>
-  {/if}
-</div>
+{#if viewlet && viewOptions}
+  <ComponentsContent {viewlet} query={{ ...resultQuery }} {space} {viewOptions} />
+{/if}

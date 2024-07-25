@@ -43,7 +43,6 @@ export interface Application extends Doc {
   navHeaderComponent?: AnyComponent
   accessLevel?: AccountRole
   navFooterComponent?: AnyComponent
-  modern?: boolean
 }
 
 /**

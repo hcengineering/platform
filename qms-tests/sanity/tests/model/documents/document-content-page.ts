@@ -63,7 +63,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     super(page)
     this.page = page
     this.buttonDocumentTitle = page.locator('button.version-item span.name')
-    this.buttonMoreActions = page.locator('div.popupPanel-title > [class="no-print"] > button:not([id])')
+    this.buttonMoreActions = page.locator('.hulyHeader-buttonsGroup > .no-print > .antiButton').first()
     this.textDocumentStatus = page.locator('button.version-item div.root span.label')
     this.textType = page.locator('div.flex:has(div.label:text("Template name")) div.field')
     this.textCategory = page.locator('div.flex:has(div.label:text("Category")) div.field')
@@ -73,21 +73,23 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.textAuthor = page.locator('div.flex:has(div.label:text("Author")) div.field')
     this.buttonSelectNewOwner = page.locator('div.popup button.small')
     this.buttonSelectNewOwnerChange = page.locator('div.popup button.dangerous')
-    this.buttonSendForReview = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonSendForReview = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Send for review'
     })
-    this.buttonSendForApproval = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonSendForApproval = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Send for approval'
     })
     this.buttonAddMembers = page.locator('div.popup div.addButton')
     this.buttonSelectMemberSubmit = page.locator('div.popup div.footer button[type="submit"]')
     this.textSelectReviewersPopup = page.locator('div.popup span.label', { hasText: 'Select reviewers' })
     this.textSelectApproversPopup = page.locator('div.popup span.label', { hasText: 'Select approvers' })
-    this.buttonCurrentRights = page.locator('div.popupPanel-title button[type="button"] > span[slot="content"]')
+    this.buttonCurrentRights = page.locator(
+      'div.hulyHeader-buttonsGroup.extra button[type="button"] > span[slot="content"]'
+    )
     this.buttonAddMessageToText = page.locator('div.text-editor-toolbar > button:last-child')
     this.buttonComments = page.locator('button[id$="comment"]')
     this.textDocumentTitle = page.locator('div.panel div.title')
-    this.buttonCompleteReview = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonCompleteReview = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Complete review'
     })
     this.inputPassword = page.locator('input[name="documents:string:Password"]')
@@ -96,10 +98,10 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.inputRejectionReason = page.locator('div.popup div[id="rejection-reason"] input')
     this.buttonApprove = page.locator('button[type="button"] > span', { hasText: 'Approve' })
     this.buttonDocument = page.locator('button[id$="info"]')
-    this.buttonEditDocument = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonEditDocument = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Edit document'
     })
-    this.buttonDraftNewVersion = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonDraftNewVersion = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Draft new version'
     })
     this.buttonDocumentInformation = page.locator('button[id$="info"]')

@@ -273,11 +273,13 @@
     isSub={false}
     selectedAside={$activeRightPanelTab ?? false}
     withoutActivity
-    contentClasses="m0 h-full flex-col"
+    contentClasses="h-full flex-col"
     withoutContentScroll
     allowClose={withClose && !embedded}
     {embedded}
     printHeader={false}
+    adaptive={'doubleRow'}
+    overflowExtra
     on:close
     on:select={(ev) => rightPanelTabChanged(ev.detail)}
   >
@@ -312,8 +314,8 @@
         </button>
       </div>
     </svelte:fragment>
-    <svelte:fragment slot="pre-utils">
-      <div class="flex flex-gap-2 no-print">
+    <svelte:fragment slot="extra">
+      <div class="flex flex-gap-1 no-print">
         {#if $isProjectEditable}
           {#if $isDocumentOwner && !$documentReviewIsActive && !$documentApprovalIsActive}
             {#if $canSendForReview}
@@ -377,7 +379,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="post-utils">
-      <div class="no-print">
+      <div class="no-print ml-1">
         <Button
           icon={IconMoreV}
           iconProps={{ size: 'medium' }}

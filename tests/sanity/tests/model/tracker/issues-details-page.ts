@@ -167,7 +167,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async openSubIssueByName (issueName: string): Promise<void> {
-    await this.page.locator('div.main div.listGrid a', { hasText: issueName }).click()
+    await this.page.locator('div.listGrid a', { hasText: issueName }).click()
   }
 
   async checkIssueContainsAttachment (fileName: string): Promise<void> {

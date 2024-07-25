@@ -226,6 +226,7 @@ export function createModel (builder: Builder): void {
             position: 'event',
             componentProps: {
               labelTasks: recruit.string.Applications,
+              icon: recruit.icon.AssignedToMe,
               _class: recruit.class.Applicant,
               config: [
                 ['assigned', view.string.Assigned, {}],

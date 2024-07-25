@@ -29,13 +29,13 @@ export class ChannelPage {
   readonly saveMessageTab = (): Locator => this.page.getByRole('button', { name: 'Saved' })
   readonly pinnedMessageButton = (): Locator => this.page.getByRole('button', { name: 'pinned' })
   readonly pinnedMessage = (message: string): Locator => this.page.locator('.antiPopup').getByText(message)
-  readonly closeReplyButton = (): Locator => this.page.locator('.close > .svg-medium')
+  readonly closeReplyButton = (): Locator => this.page.locator('.hulyHeader-container > button.iconOnly')
   readonly openReplyMessage = (): Locator => this.page.getByText('1 reply Last reply less than')
   readonly editMessageButton = (): Locator => this.page.getByRole('button', { name: 'Edit' })
   readonly copyLinkButton = (): Locator => this.page.getByRole('button', { name: 'Copy link' })
   readonly deleteMessageButton = (): Locator => this.page.getByRole('button', { name: 'Delete' })
   readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
-  readonly openChannelDetails = (): Locator => this.page.locator('.ac-header > .antiButton')
+  readonly openChannelDetails = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > .antiButton')
   readonly changeChannelNameConfirm = (): Locator => this.page.locator('.ml-2 > .antiButton')
   readonly privateOrPublicChangeButton = (change: string, autoJoin: boolean): Locator =>
     this.page

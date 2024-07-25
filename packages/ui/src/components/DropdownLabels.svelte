@@ -67,6 +67,7 @@
     {kind}
     {justify}
     {disabled}
+    pressed={opened}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened) {
@@ -98,7 +99,12 @@
       }
     }}
   >
-    <span slot="content" class="overflow-label disabled" class:content-color={selectedItem === undefined}>
+    <span
+      slot="content"
+      class="overflow-label disabled"
+      class:mr-2={showDropdownIcon}
+      class:content-color={selectedItem === undefined}
+    >
       {#if $$slots.content}
         <slot name="content" />
       {:else if Array.isArray(selectedItem)}

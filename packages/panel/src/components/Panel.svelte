@@ -45,9 +45,14 @@
   export let withoutContentScroll: boolean = false
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
-  export let kind: 'default' | 'modern' = 'default'
-  export let printHeader = true
-  export let printAside = false
+  export let printHeader: boolean = true
+  export let printAside: boolean = false
+  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'disabled'
+  export let hideBefore: boolean = false
+  export let hideSearch: boolean = true
+  export let hideActions: boolean = false
+  export let hideExtra: boolean = false
+  export let overflowExtra: boolean = false
 
   export function getAside (): string | boolean {
     return panel.getAside()
@@ -115,13 +120,18 @@
   on:close
   {allowClose}
   {embedded}
-  {kind}
   {floatAside}
   bind:useMaxWidth
   {isFullSize}
   {customAside}
   {printHeader}
   {printAside}
+  {adaptive}
+  {hideBefore}
+  {hideSearch}
+  {hideActions}
+  {hideExtra}
+  {overflowExtra}
   bind:selectedAside
   on:select={(result) => {
     selectedAside = result.detail
@@ -144,7 +154,6 @@
   <svelte:fragment slot="utils">
     {#if isUtils && $$slots.utils}
       <slot name="utils" />
-      <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
     {/if}
   </svelte:fragment>
 
@@ -194,6 +203,10 @@
 
   <svelte:fragment slot="post-utils">
     <slot name="post-utils" />
+  </svelte:fragment>
+
+  <svelte:fragment slot="extra">
+    <slot name="extra" />
   </svelte:fragment>
 
   <svelte:fragment slot="page-header">
