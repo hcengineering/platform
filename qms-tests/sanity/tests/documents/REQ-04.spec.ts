@@ -25,11 +25,14 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
 
-  test('TESTS-271. Generate a PDF from an Effective doc', async ({ page, browser }) => {
+  test('TESTS-399. Tool does not influence content: Entered text in a document does not change over time', async ({
+    page,
+    browser
+  }) => {
     await allure.description(
       'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
     )
-    await allure.tms('TESTS-399', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-399')
+    await allure.tms('TESTS-399', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-399')
 
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
@@ -87,19 +90,21 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await attachScreenshot('TESTS-399_approve_document.png', page)
     })
 
-    await test.step('4. Check the content of the draft', async () => {
+    await test.step('4. Check the content of the draft matches the approved version', async () => {
       const actualText = await page.locator('.tiptap').innerText()
       const expectedText = newContent.content.trim().replace(/\s+/g, ' ')
       const cleanedActualText = actualText.trim().replace(/\s+/g, ' ')
 
       expect(cleanedActualText).toContain(expectedText)
-      await attachScreenshot('TESTS-270-check_content.png', page)
+      await attachScreenshot('TESTS-399-check_content.png', page)
     })
   })
 
-  test.skip('TESTS-270. Generate a PDF from an Effective doc', async ({ page, browser }) => {
-    await allure.description('Requirement\nGenerate a PDF from an Effective doc')
-    await allure.tms('TESTS-270', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-270')
+  test.skip('TESTS-271. Generate a PDF from an Effective doc', async ({ page, browser }) => {
+    await allure.description(
+      'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
+    )
+    await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-271')
 
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
@@ -154,11 +159,11 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
-      await attachScreenshot('TESTS-270_approve_document.png', page)
+      await attachScreenshot('TESTS-271_approve_document.png', page)
     })
 
     await test.step('4. Download PDF', async () => {
-      await attachScreenshot('TESTS-270-check_content.png', page)
+      await attachScreenshot('TESTS-271-check_content.png', page)
     })
   })
 })
