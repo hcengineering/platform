@@ -240,7 +240,8 @@ export function devTool (
   program
     .command('compact-db')
     .description('compact all db collections')
-    .action(async (cmd) => {
+    .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
+    .action(async (cmd: { workspace: string }) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         console.log('compacting db ...')
@@ -248,6 +249,9 @@ export function devTool (
         try {
           const workspaces = await listWorkspacesPure(db, productId)
           for (const workspace of workspaces) {
+            if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+              continue
+            }
             let total: number = 0
             const wsDb = getWorkspaceDB(client, { name: workspace.workspace, productId })
             const collections = wsDb.listCollections()
