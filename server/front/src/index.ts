@@ -32,7 +32,6 @@ import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
 import fs from 'fs'
-import { Readable } from 'stream'
 
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
@@ -115,8 +114,6 @@ async function getFileRange (
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString()
         })
-
-        res.send(Readable.toWeb(dataStream))
 
         dataStream.pipe(res)
 
@@ -306,7 +303,7 @@ export function start (
       const admin = payload.extra?.admin === 'true'
       res.status(200)
       res.setHeader('Content-Type', 'application/json')
-      res.set('Connection', 'keep-alive')
+      res.setHeader('Connection', 'keep-alive')
       res.setHeader('Cache-Control', cacheControlNoCache)
 
       const json = JSON.stringify({
