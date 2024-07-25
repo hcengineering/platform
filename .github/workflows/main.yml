@@ -10,11 +10,11 @@ concurrency:
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [main]
+    branches: [develop, main]
     tags:
       - v*
   pull_request:
-    branches: [main]
+    branches: [develop, main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
