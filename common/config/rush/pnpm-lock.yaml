@@ -454,7 +454,7 @@ dependencies:
     version: file:projects/model-templates.tgz
   '@rush-temp/model-text-editor':
     specifier: file:./projects/model-text-editor.tgz
-    version: file:projects/model-text-editor.tgz(@tiptap/pm@2.2.4)
+    version: file:projects/model-text-editor.tgz
   '@rush-temp/model-time':
     specifier: file:./projects/model-time.tgz
     version: file:projects/model-time.tgz
@@ -1382,6 +1382,9 @@ dependencies:
   p-queue:
     specifier: ~7.3.0
     version: 7.3.4
+  passport-custom:
+    specifier: ~1.1.1
+    version: 1.1.1
   passport-github2:
     specifier: ~0.1.12
     version: 0.1.12
@@ -15045,6 +15048,13 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /passport-custom@1.1.1:
+    resolution: {integrity: sha512-/2m7jUGxmCYvoqenLB9UrmkCgPt64h8ZtV+UtuQklZ/Tn1NpKBeOorCYkB/8lMRoiZ5hUrCoMmDtxCS/d38mlg==}
+    engines: {node: '>= 0.10.0'}
+    dependencies:
+      passport-strategy: 1.0.0
+    dev: false
+
   /passport-github2@0.1.12:
     resolution: {integrity: sha512-3nPUCc7ttF/3HSP/k9sAXjz3SkGv5Nki84I05kSQPo01Jqq1NzJACgMblCK0fGcv9pKCG/KXU3AJRDGLqHLoIw==}
     engines: {node: '>= 0.8.0'}
@@ -19060,7 +19070,7 @@ packages:
     dev: false
 
   file:projects/auth-providers.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-1rnMBtJmT15O/aYKqKngvn9iIxcbSOBJOUNyivTY89+Rmp5NvP/p8J+2IMJZbCvqdA0xRgWtAcgVlFD2dwCGww==, tarball: file:projects/auth-providers.tgz}
+    resolution: {integrity: sha512-ixfEzxmzLbrHghRymDcvdyz35q9DsDnA1qqheztJNa2zLH5102sfEMEooVLShU3cD+uf/KhNbcTyea1on8GlfA==, tarball: file:projects/auth-providers.tgz}
     id: file:projects/auth-providers.tgz
     name: '@rush-temp/auth-providers'
     version: 0.0.0
@@ -19087,6 +19097,7 @@ packages:
       koa-router: 12.0.1
       koa-session: 6.4.0
       mongodb: 6.8.0
+      passport-custom: 1.1.1
       passport-github2: 0.1.12
       passport-google-oauth20: 2.0.0
       prettier: 3.2.5
@@ -22578,13 +22589,11 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/model-text-editor.tgz(@tiptap/pm@2.2.4):
-    resolution: {integrity: sha512-a2Q7SUya+W86b84tBEmHhf0+LJNVxtfweKCuwzGh77gfmSz8ok0aQjpRA61JHQuk8NfP96K+CKAA4oJh1LMpAg==, tarball: file:projects/model-text-editor.tgz}
-    id: file:projects/model-text-editor.tgz
+  file:projects/model-text-editor.tgz:
+    resolution: {integrity: sha512-z1TlVHF8VxcMeChSZ70ZGJsKdGSKisnpnPGuLmp2yYS30ckD5ohoj4KeqgbKu+qT+72FYSg4COXFoAYnszgfoA==, tarball: file:projects/model-text-editor.tgz}
     name: '@rush-temp/model-text-editor'
     version: 0.0.0
     dependencies:
-      '@tiptap/starter-kit': 2.2.4(@tiptap/pm@2.2.4)
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -22595,7 +22604,6 @@ packages:
       prettier: 3.2.5
       typescript: 5.3.3
     transitivePeerDependencies:
-      - '@tiptap/pm'
       - supports-color
     dev: false
 
