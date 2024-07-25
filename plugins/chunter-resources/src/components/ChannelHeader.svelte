@@ -78,7 +78,7 @@
     on:aside-toggled
     on:close
   >
-    <PinnedMessages {_id} {_class} />
+    <PinnedMessages {_id} {_class} on:select />
   </Header>
 </div>
 

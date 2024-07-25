@@ -16,23 +16,27 @@
   import core, { Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import {
     defineSeparators,
+    getCurrentLocation,
     Label,
     location as locationStore,
     ModernButton,
+    navigate,
     panelSeparators,
     Separator
   } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
+  import { messageInFocus } from '@hcengineering/activity-resources'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
   import DocAside from './chat/DocAside.svelte'
   import chunter from '../plugin'
   import ChannelAside from './chat/ChannelAside.svelte'
+  import { isThreadMessage } from '../utils'
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
@@ -76,6 +80,18 @@
   }
 
   defineSeparators('aside', panelSeparators)
+
+  async function handleMessageSelect (event: CustomEvent<ActivityMessage>): Promise<void> {
+    const message = event.detail
+
+    if (isThreadMessage(message)) {
+      const location = getCurrentLocation()
+      location.path[4] = message.attachedTo
+      navigate(location)
+    }
+
+    messageInFocus.set(message._id)
+  }
 </script>
 
 <div class="popupPanel panel" class:embedded>
@@ -89,6 +105,7 @@
     canOpen={isDocChat}
     {isAsideShown}
     on:close
+    on:select={handleMessageSelect}
     on:aside-toggled={() => {
       isAsideShown = !isAsideShown
     }}

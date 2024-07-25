@@ -16,9 +16,9 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumbs, IconClose, Label, location as locationStore } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { getMessageFromLoc } from '@hcengineering/activity-resources'
+  import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
 
   import chunter from '../../plugin'
@@ -45,8 +45,23 @@
   let channelName: string | undefined = undefined
   let dataProvider: ChannelDataProvider | undefined = undefined
 
-  locationStore.subscribe((newLocation) => {
-    selectedMessageId = getMessageFromLoc(newLocation)
+  const unsubscribe = messageInFocus.subscribe((id) => {
+    if (id !== undefined && id !== selectedMessageId) {
+      selectedMessageId = id
+    }
+
+    messageInFocus.set(undefined)
+  })
+
+  const unsubscribeLocation = locationStore.subscribe((newLocation) => {
+    const id = getMessageFromLoc(newLocation)
+    selectedMessageId = id
+    messageInFocus.set(id)
+  })
+
+  onDestroy(() => {
+    unsubscribe()
+    unsubscribeLocation()
   })
 
   $: messageQuery.query(activity.class.ActivityMessage, { _id }, (result: ActivityMessage[]) => {
@@ -111,14 +126,13 @@
     <div class="container">
       {#if message && dataProvider !== undefined}
         <ChannelScrollView
-          {selectedMessageId}
-          withDates={false}
+          bind:selectedMessageId
+          embedded
           skipLabels
           object={message}
           objectId={message._id}
           objectClass={message._class}
           provider={dataProvider}
-          loadMoreAllowed={false}
         >
           <svelte:fragment slot="header">
             <div class="mt-3">

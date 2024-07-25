@@ -92,7 +92,7 @@
     skipLabels={!isDocChannel}
     selectedFilters={filters}
     startFromBottom
-    {selectedMessageId}
+    bind:selectedMessageId
     {collection}
     provider={dataProvider}
     {isAsideOpened}

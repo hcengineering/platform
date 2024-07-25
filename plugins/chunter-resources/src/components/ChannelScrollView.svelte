@@ -55,7 +55,7 @@
   export let scrollElement: HTMLDivElement | undefined = undefined
   export let startFromBottom = false
   export let selectedFilters: Ref<ActivityMessagesFilter>[] = []
-  export let withDates: boolean = true
+  export let embedded = false
   export let collection: string | undefined = undefined
   export let showEmbedded = false
   export let skipLabels = false
@@ -355,7 +355,7 @@
   }
 
   function updateSelectedDate (): void {
-    if (!withDates) {
+    if (embedded) {
       return
     }
 
@@ -468,13 +468,13 @@
     if (isLoading || !isScrollInitialized || isInitialScrolling) {
       return
     }
-    const msg = messages.find(({ _id }) => _id === selectedMessageId)
+    const msg = $metadataStore.find(({ _id }) => _id === selectedMessageId)
     if (msg !== undefined) {
       const isReload = provider.jumpToMessage(msg)
       if (isReload) {
         reinitializeScroll()
       }
-    } else {
+    } else if (selectedMessageId === undefined) {
       provider.jumpToEnd()
       reinitializeScroll()
     }
@@ -677,7 +677,7 @@
     {#if startFromBottom}
       <div class="grower" />
     {/if}
-    {#if withDates && displayMessages.length > 0 && selectedDate}
+    {#if !embedded && displayMessages.length > 0 && selectedDate}
       <div class="selectedDate">
         <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
       </div>
@@ -702,7 +702,7 @@
       {/if}
       <slot name="header" />
 
-      {#if displayMessages.length === 0 && !hierarchy.isDerived(objectClass, activity.class.ActivityMessage)}
+      {#if displayMessages.length === 0 && !embedded}
         <BlankView
           icon={chunter.icon.Thread}
           header={chunter.string.NoMessagesInChannel}
@@ -717,7 +717,7 @@
           <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
         {/if}
 
-        {#if withDates && message.createdOn && $datesStore.includes(message.createdOn)}
+        {#if !embedded && message.createdOn && $datesStore.includes(message.createdOn)}
           <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={jumpToDate} />
         {/if}
 
@@ -741,7 +741,7 @@
       {/if}
     </Scroller>
 
-    {#if showScrollDownButton}
+    {#if !embedded && showScrollDownButton}
       <div class="down-button absolute">
         <ModernButton
           label={chunter.string.LatestMessages}
