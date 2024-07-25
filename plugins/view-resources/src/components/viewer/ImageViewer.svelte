@@ -44,7 +44,6 @@
     style:max-width={width}
     style:max-height={height}
     src={blobRef.src}
-    srcset={blobRef.srcset}
     alt={name}
     style:height={loading ? '0' : ''}
   />
