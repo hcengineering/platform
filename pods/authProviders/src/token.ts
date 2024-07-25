@@ -18,47 +18,48 @@ export function registerToken (
 ): string | undefined {
   passport.use(
     'token',
-    new CustomStrategy(
-      function (req: any, done: any) {
-        const token = req.body.token ?? req.query.token
+    new CustomStrategy(function (req: any, done: any) {
+      const token = req.body.token ?? req.query.token
 
-        getAccountInfoByToken(measureCtx, db, productId, null, token)
-          .then((user: any) => done(null, user))
-          .catch((err: any) => done(err))
-      }
-    )
+      getAccountInfoByToken(measureCtx, db, productId, null, token)
+        .then((user: any) => done(null, user))
+        .catch((err: any) => done(err))
+    })
   )
 
-  router.get('/auth/token', async (ctx, next) => {
-    measureCtx.info('try auth via', { provider: 'token' })
-    const host = getHost(ctx.request.headers)
-    const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
-    const state = encodeURIComponent(
-      JSON.stringify({
-        inviteId: ctx.query?.inviteId,
-        branding
-      })
-    )
+  router.get(
+    '/auth/token',
+    async (ctx, next) => {
+      measureCtx.info('try auth via', { provider: 'token' })
+      const host = getHost(ctx.request.headers)
+      const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
+      const state = encodeURIComponent(
+        JSON.stringify({
+          inviteId: ctx.query?.inviteId,
+          branding
+        })
+      )
 
-    await passport.authenticate('token', { session: true, state })(ctx, next)
-  },
-  async (ctx, next) => {
-    measureCtx.info('Provider auth success', { type: 'token', user: ctx.state?.user })
-    const user = ctx.state.user
-    if (user !== undefined) {
-      const state = safeParseAuthState(ctx.query?.state)
-      const branding = getBranding(brandings, state?.branding)
+      await passport.authenticate('token', { session: true, state })(ctx, next)
+    },
+    async (ctx, next) => {
+      measureCtx.info('Provider auth success', { type: 'token', user: ctx.state?.user })
+      const user = ctx.state.user
+      if (user !== undefined) {
+        const state = safeParseAuthState(ctx.query?.state)
+        const branding = getBranding(brandings, state?.branding)
 
-      if (ctx.session != null) {
-        ctx.session.loginInfo = user
+        if (ctx.session != null) {
+          ctx.session.loginInfo = user
+        }
+
+        measureCtx.info('Success auth, redirect', { email: user.email, type: 'token' })
+        // Successful authentication, redirect to your application
+        ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login/auth'))
       }
-
-      measureCtx.info('Success auth, redirect', { email: user.email, type: 'token' })
-      // Successful authentication, redirect to your application
-      ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login/auth'))
+      await next()
     }
-    await next()
-  })
+  )
 
   return 'token'
 }

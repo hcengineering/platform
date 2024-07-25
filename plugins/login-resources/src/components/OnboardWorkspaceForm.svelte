@@ -25,9 +25,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const fields = [
-    { id: 'workspace', name: 'workspace', i18n: login.string.Workspace }
-  ]
+  const fields = [{ id: 'workspace', name: 'workspace', i18n: login.string.Workspace }]
 
   const object = {
     workspace: ''
@@ -51,11 +49,4 @@
   }
 </script>
 
-<Form
-  caption={login.string.CreateWorkspace}
-  subtitle={account.email}
-  {status}
-  {fields}
-  {object}
-  {action}
-/>
+<Form caption={login.string.CreateWorkspace} subtitle={account.email} {status} {fields} {object} {action} />

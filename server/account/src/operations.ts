@@ -347,9 +347,9 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
   const lang = branding?.language
   const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
 
-  const text = await translate(accountPlugin.string.OtpText, { otp, app }, lang)
-  const html = await translate(accountPlugin.string.OtpHTML, { otp, app }, lang)
-  const subject = await translate(accountPlugin.string.OtpSubject, { app }, lang)
+  const text = await translate(accountPlugin.string.OtpText, { code: otp, app }, lang)
+  const html = await translate(accountPlugin.string.OtpHTML, { code: otp, app }, lang)
+  const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
 
   const to = email
   await fetch(concatLink(sesURL, '/send'), {
@@ -972,17 +972,7 @@ export async function signUpOtp (
   const first = email.split('@', 1)[0] ?? ''
   const last = ''
 
-  await createAcc(
-    ctx,
-    db,
-    productId,
-    branding,
-    email,
-    null,
-    first,
-    last,
-    false
-  )
+  await createAcc(ctx, db, productId, branding, email, null, first, last, false)
 
   return await sendOtp(ctx, db, productId, branding, _email)
 }
