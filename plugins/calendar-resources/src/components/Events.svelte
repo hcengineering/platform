@@ -15,8 +15,18 @@
 <script lang="ts">
   import { Event } from '@hcengineering/calendar'
   import { Class, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import { AnyComponent, Button, Component, IconAdd, Label, Loading, showPopup } from '@hcengineering/ui'
+  import { IntlString, Asset } from '@hcengineering/platform'
+  import {
+    AnyComponent,
+    Button,
+    Component,
+    IconAdd,
+    Label,
+    Loading,
+    showPopup,
+    Header,
+    Breadcrumb
+  } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { ViewletSelector, getViewOptions, viewOptionStore } from '@hcengineering/view-resources'
   import calendar from '../plugin'
@@ -26,7 +36,7 @@
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Event> = {}
 
-  // export let viewIcon: Asset = calendar.icon.Calendar
+  export let viewIcon: Asset = calendar.icon.Calendar
   export let viewLabel: IntlString = calendar.string.Events
 
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
@@ -58,17 +68,19 @@
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label label={viewLabel} /></span>
-  </div>
-
-  <div class="ac-header-full medium-gap mb-1">
+<Header adaptive={'disabled'}>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector bind:viewlet bind:loading bind:preference bind:viewlets viewletQuery={{ attachTo: _class }} />
+  </svelte:fragment>
+
+  <Breadcrumb icon={viewIcon} label={viewLabel} size={'large'} isCurrent />
+
+  <svelte:fragment slot="actions">
     <Button icon={IconAdd} label={createLabel} kind={'primary'} on:click={showCreateDialog} />
-  </div>
-</div>
-<div class="flex-col w-full h-full background-comp-header-color">
+  </svelte:fragment>
+</Header>
+
+<div class="flex-col w-full h-full">
   {#if viewlet?.$lookup?.descriptor?.component}
     {#if loading}
       <Loading />

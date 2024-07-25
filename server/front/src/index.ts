@@ -31,8 +31,9 @@ import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
-import fs from 'fs'
-import { Readable } from 'stream'
+import fs, { createReadStream, mkdtempSync } from 'fs'
+import { rm, writeFile } from 'fs/promises'
+import { tmpdir } from 'os'
 
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
@@ -116,8 +117,6 @@ async function getFileRange (
           'Last-Modified': new Date(stat.modifiedOn).toISOString()
         })
 
-        res.send(Readable.toWeb(dataStream))
-
         dataStream.pipe(res)
 
         await new Promise<void>((resolve, reject) => {
@@ -129,11 +128,10 @@ async function getFileRange (
           dataStream.on('error', (err) => {
             ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
             Analytics.handleError(err)
+
             res.end()
+            dataStream.destroy()
             reject(err)
-          })
-          dataStream.on('close', () => {
-            res.end()
           })
         })
       } catch (err: any) {
@@ -172,7 +170,8 @@ async function getFile (
       'content-type': stat.contentType,
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
-      'cache-control': cacheControlValue
+      'cache-control': cacheControlValue,
+      Connection: 'keep-alive'
     })
     res.end()
     return
@@ -183,7 +182,8 @@ async function getFile (
       'content-type': stat.contentType,
       etag: stat.etag,
       'last-modified': new Date(stat.modifiedOn).toISOString(),
-      'cache-control': cacheControlValue
+      'cache-control': cacheControlValue,
+      Connection: 'keep-alive'
     })
     res.end()
     return
@@ -199,7 +199,8 @@ async function getFile (
           'Content-Type': stat.contentType,
           Etag: stat.etag,
           'Last-Modified': new Date(stat.modifiedOn).toISOString(),
-          'Cache-Control': cacheControlValue
+          'Cache-Control': cacheControlValue,
+          Connection: 'keep-alive'
         })
 
         dataStream.pipe(res)
@@ -212,6 +213,9 @@ async function getFile (
           dataStream.on('error', function (err) {
             Analytics.handleError(err)
             ctx.error('error', { err })
+
+            res.end()
+            dataStream.destroy()
             reject(err)
           })
         })
@@ -252,17 +256,21 @@ export function start (
 ): () => void {
   const app = express()
 
+  const tempFileDir = mkdtempSync(join(tmpdir(), 'front-'))
+  let temoFileIndex = 0
+
   app.use(cors())
   app.use(
     fileUpload({
-      useTempFiles: true
+      useTempFiles: true,
+      tempFileDir
     })
   )
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
   const childLogger = ctx.logger.childLogger?.('requests', {
-    enableConsole: 'false'
+    enableConsole: 'true'
   })
   const requests = ctx.newChild('requests', {}, {}, childLogger)
 
@@ -306,7 +314,7 @@ export function start (
       const admin = payload.extra?.admin === 'true'
       res.status(200)
       res.setHeader('Content-Type', 'application/json')
-      res.set('Connection', 'keep-alive')
+      res.setHeader('Connection', 'keep-alive')
       res.setHeader('Cache-Control', cacheControlNoCache)
 
       const json = JSON.stringify({
@@ -386,7 +394,7 @@ export function start (
           )
 
           if (blobInfo === undefined) {
-            ctx.error('No such key', { file: uuid, workspace: payload.workspace })
+            ctx.error('No such key', { file: uuid, workspace: payload.workspace.name })
             res.status(404).send()
             return
           }
@@ -420,12 +428,14 @@ export function start (
 
           const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
           const accept = req.headers.accept
-          if (accept !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
+          if (accept !== undefined && isImage && blobInfo.contentType !== 'image/gif' && size !== undefined) {
             blobInfo = await ctx.with(
               'resize',
               {},
               async (ctx) =>
-                await getGeneratePreview(ctx, blobInfo as PlatformBlob, size ?? -1, uuid, config, payload, accept)
+                await getGeneratePreview(ctx, blobInfo as PlatformBlob, size, uuid, config, payload, accept, () =>
+                  join(tempFileDir, `${++temoFileIndex}`)
+                )
             )
           }
 
@@ -749,7 +759,8 @@ async function getGeneratePreview (
   uuid: string,
   config: { storageAdapter: StorageAdapter },
   payload: Token,
-  accept: string
+  accept: string,
+  tempFile: () => string
 ): Promise<PlatformBlob> {
   if (size === undefined) {
     return blob
@@ -772,6 +783,14 @@ async function getGeneratePreview (
     return blob
   }
 
+  if (size === -1) {
+    size = 2048
+  }
+
+  if (size > 2048) {
+    size = 2048
+  }
+
   const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
 
   const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
@@ -781,54 +800,61 @@ async function getGeneratePreview (
     // We have cached small document, let's proceed with it.
     return d
   } else {
-    let data: Buffer
+    const files: string[] = []
     try {
       // Let's get data and resize it
-      data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
+      const fname = tempFile()
+      files.push(fname)
+      await writeFile(fname, await config.storageAdapter.get(ctx, payload.workspace, uuid))
 
-      let pipeline = sharp(data)
-
+      let pipeline = sharp(fname)
       sharp.cache(false)
 
-      // const metadata = await pipeline.metadata()
-
-      if (size !== -1) {
-        pipeline = pipeline.resize({
-          width: size,
-          fit: 'cover',
-          withoutEnlargement: true
-        })
-      }
+      pipeline = pipeline.resize({
+        width: size,
+        fit: 'cover',
+        withoutEnlargement: true
+      })
 
       let contentType = 'image/jpeg'
       switch (format) {
         case 'jpeg':
-          pipeline = pipeline.jpeg({})
+          pipeline = pipeline.jpeg({
+            progressive: true
+          })
           contentType = 'image/jpeg'
           break
         case 'avif':
           pipeline = pipeline.avif({
-            quality: size !== undefined && size < 128 ? undefined : 85
+            lossless: false,
+            effort: 0
           })
           contentType = 'image/avif'
           break
         case 'heif':
           pipeline = pipeline.heif({
-            quality: size !== undefined && size < 128 ? undefined : 80
+            effort: 0
           })
           contentType = 'image/heif'
           break
         case 'webp':
-          pipeline = pipeline.webp()
+          pipeline = pipeline.webp({
+            effort: 0
+          })
           contentType = 'image/webp'
           break
         case 'png':
-          pipeline = pipeline.png()
+          pipeline = pipeline.png({
+            effort: 0
+          })
           contentType = 'image/png'
           break
       }
 
-      const dataBuff = await pipeline.toBuffer()
+      const outFile = tempFile()
+      files.push(outFile)
+
+      const dataBuff = await ctx.with('resize', { contentType }, async () => await pipeline.toFile(outFile))
       pipeline.destroy()
 
       // Add support of avif as well.
@@ -836,14 +862,14 @@ async function getGeneratePreview (
         ctx,
         payload.workspace,
         sizeId,
-        dataBuff,
+        createReadStream(outFile),
         contentType,
-        dataBuff.length
+        dataBuff.size
       )
       return {
         ...blob,
         _id: sizeId as Ref<PlatformBlob>,
-        size: dataBuff.length,
+        size: dataBuff.size,
         contentType,
         etag: upload.etag,
         storageId: sizeId
@@ -861,6 +887,10 @@ async function getGeneratePreview (
 
       // Return original in case of error
       return blob
+    } finally {
+      for (const f of files) {
+        await rm(f)
+      }
     }
   }
 }

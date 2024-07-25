@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,27 +13,62 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import { type Editor } from '@tiptap/core'
+  import { type TextEditorAction, type ActionContext } from '@hcengineering/text-editor'
+  import { getResource } from '@hcengineering/platform'
+  import { Icon, IconSize, tooltip } from '@hcengineering/ui'
 
-  export let icon: Asset | AnySvelteComponent
-  export let iconProps: any = undefined
+  export let action: TextEditorAction
   export let size: IconSize
-  export let selected: boolean = false
-  export let showTooltip: LabelAndProps | undefined = undefined
-  export let disabled: boolean = false
+  export let editor: Editor
+  export let actionCtx: ActionContext
+
+  const dispatch = createEventDispatcher()
+  let selected: boolean = false
+  $: void updateSelected(editor, action)
+
+  async function updateSelected (e: Editor, { isActive }: TextEditorAction): Promise<void> {
+    if (isActive === undefined) {
+      selected = false
+      return
+    }
+
+    if (typeof isActive === 'string') {
+      const isActiveFunc = await getResource(isActive)
+      selected = await isActiveFunc(e)
+    } else {
+      const { name, params } = isActive
+      selected = editor.isActive(name, params)
+    }
+  }
+
+  async function handleClick (event: MouseEvent): Promise<void> {
+    const handler = action.action
+
+    if (typeof handler === 'string') {
+      const actionFunc = await getResource(handler)
+      await actionFunc(editor, event, actionCtx)
+    } else {
+      const { command, params } = handler
+
+      const cmd = (editor.commands as any)[command]
+      if (cmd) {
+        cmd(params)
+      }
+    }
+    dispatch('focus')
+  }
 </script>
 
 <button
   class="button {size}"
   class:selected
-  class:disabled
-  {disabled}
-  use:tooltip={showTooltip}
+  use:tooltip={{ label: action.label }}
   tabindex="0"
-  on:click|preventDefault|stopPropagation
+  on:click|preventDefault|stopPropagation={handleClick}
 >
-  <Icon {icon} {size} {iconProps} />
+  <Icon icon={action.icon} {size} />
 </button>
 
 <style lang="scss">

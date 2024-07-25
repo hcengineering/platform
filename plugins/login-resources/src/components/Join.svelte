@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { Location, getCurrentLocation, navigate } from '@hcengineering/ui'
 
   import { checkJoined, join, setLoginInfo, signUpJoin } from '../utils'
   import Form from './Form.svelte'
@@ -78,6 +78,19 @@
 
       if (result !== undefined) {
         setLoginInfo(result)
+
+        if (location.query?.navigateUrl != null) {
+          try {
+            const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+            if (loc.path[1] === result.workspace) {
+              navigate(loc)
+              return
+            }
+          } catch (err: any) {
+            // Json parse error could be ignored
+          }
+        }
+
         navigate({ path: [workbenchId, result.workspace] })
       }
     }
@@ -113,6 +126,17 @@
     if (result !== undefined) {
       setLoginInfo(result)
 
+      if (location.query?.navigateUrl != null) {
+        try {
+          const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+          if (loc.path[1] === result.workspace) {
+            navigate(loc)
+            return
+          }
+        } catch (err: any) {
+          // Json parse error could be ignored
+        }
+      }
       navigate({ path: [workbenchId, result.workspace] })
     }
   }

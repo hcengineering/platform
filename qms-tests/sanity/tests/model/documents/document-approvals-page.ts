@@ -19,7 +19,7 @@ export class DocumentApprovalsPage extends DocumentCommonPage {
   }
 
   async checkSuccessApproval (approvalName: string): Promise<void> {
-    await expect(this.page.locator('svg[fill*="accepted"]').locator('xpath=..').locator('span.ap-label')).toHaveText(
+    await expect(this.page.locator('svg[fill*="accepted"]').locator('xpath=../..').locator('span.ap-label')).toHaveText(
       approvalName
     )
   }

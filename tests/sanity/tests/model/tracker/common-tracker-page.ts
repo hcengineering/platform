@@ -26,7 +26,9 @@ export class CommonTrackerPage extends CalendarPage {
   inputKeepOriginalMoveIssuesModal = (): Locator =>
     this.page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
 
-  buttonMoreActions = (): Locator => this.page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
+  buttonMoreActions = (): Locator =>
+    this.page.locator('.popupPanel > .hulyHeader-container > div:nth-child(3) > button').first()
+
   textActivityContent = (): Locator => this.page.locator('div.activityMessage div.content')
   linkInActivity = (): Locator => this.page.locator('div[id="activity:string:Activity"] a')
   inputCommentFile = (): Locator => this.page.locator('input#file')
@@ -40,7 +42,7 @@ export class CommonTrackerPage extends CalendarPage {
   textCategoryHeader = (): Locator =>
     this.page.locator('div.category-container > div.categoryHeader span[class*="label"]')
 
-  buttonFilter = (): Locator => this.page.locator('div.search-start > div:first-child button')
+  buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
   selectPopupMenu = (filter: string): Locator =>
     this.page.locator('div.selectPopup [class*="menu"]', { hasText: filter })
 
@@ -90,13 +92,18 @@ export class CommonTrackerPage extends CalendarPage {
   createIssueButton = (): Locator => this.page.locator('form button:has-text("Create issue")')
   componentName = (componentName: string): Locator => this.page.locator(`text=${componentName}`)
   panelSelector = (panel: string): Locator => this.page.locator(`text="${panel}"`)
-  viewButton = (): Locator => this.page.locator('button:has-text("View")')
+  viewButton = (): Locator => this.page.locator('button[data-id="btn-viewOptions"]')
   firstOptionButton = (): Locator => this.page.locator('.antiCard >> button >> nth=0')
   assigneeMenuItem = (): Locator => this.page.locator('.menu-item:has-text("Assignee")')
-  header = (): Locator => this.page.getByText('Issues All Active Backlog')
+  shouldShowAllToggle = (): Locator =>
+    this.page.locator('.antiCard.menu .antiCard-menu__item:has-text("Show empty groups")')
+
+  header = (): Locator =>
+    this.page.locator('button.hulyBreadcrumb-container > span.hulyBreadcrumb-label', { hasText: 'Issues' })
+
   filter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
-  view = (): Locator => this.page.getByRole('button', { name: 'View' })
-  showMore = (): Locator => this.page.getByRole('button', { name: 'Show' })
+  view = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > button[data-id="btn-viewOptions"]')
+  showMore = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > button[data-id="btn-viewSetting"]')
   task1 = (): Locator => this.page.getByRole('link', { name: 'Welcome to Huly! 🌟' })
   task2 = (): Locator => this.page.getByRole('link', { name: 'Create your first Project 📌' })
   task3 = (): Locator => this.page.getByRole('link', { name: 'Create your first Issue 📝' })
@@ -122,10 +129,16 @@ export class CommonTrackerPage extends CalendarPage {
     }
   }
 
+  async openViewOptionsAndToggleShouldShowAll (): Promise<void> {
+    await this.viewButton().click()
+    await this.shouldShowAllToggle().click()
+    await this.page.keyboard.press('Escape')
+  }
+
   async verifyViewOption (panel: string, viewletSelector: string): Promise<void> {
     await this.page.click(`text="${panel}"`)
     const viewlet = this.page.locator(viewletSelector)
-    await expect(viewlet).toHaveClass(/selected/)
+    await expect(viewlet.locator('input')).toBeChecked()
     await this.viewButton().click()
     await expect(this.firstOptionButton()).toContainText('Assignee')
     await this.closePopup()

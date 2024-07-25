@@ -16,6 +16,11 @@
 import type { Blob as PlatformBlob, Class, Doc, Ref } from '@hcengineering/core'
 
 /** @public */
+export interface FileWithPath extends File {
+  relativePath?: string
+}
+
+/** @public */
 export type UploadFilesPopupFn = (
   target: FileUploadTarget,
   options: FileUploadOptions,
@@ -24,7 +29,7 @@ export type UploadFilesPopupFn = (
 
 /** @public */
 export type UploadFilesFn = (
-  files: File[] | FileList,
+  files: File[] | FileList | DataTransfer,
   target: FileUploadTarget,
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
@@ -48,6 +53,7 @@ export interface FileUploadOptions {
 export type FileUploadCallback = (
   uuid: Ref<PlatformBlob>,
   name: string,
-  file: File | Blob,
+  file: FileWithPath | Blob,
+  path: string | undefined,
   metadata: Record<string, any> | undefined
 ) => Promise<void>

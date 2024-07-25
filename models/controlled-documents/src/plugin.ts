@@ -22,6 +22,7 @@ import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type NotificationType, type NotificationGroup } from '@hcengineering/notification'
+import { type TextActionVisibleFunction, type TextActionFunction } from '@hcengineering/text-editor'
 
 export default mergeIds(documentsId, documents, {
   component: {
@@ -55,7 +56,11 @@ export default mergeIds(documentsId, documents, {
     OtherTemplate: '' as Ref<TagCategory>
   },
   function: {
-    DocumentIdentifierProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+    DocumentIdentifierProvider: '' as Resource<
+      <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>
+    >,
+    Comment: '' as Resource<TextActionFunction>,
+    IsCommentVisible: '' as Resource<TextActionVisibleFunction>
   },
   actionImpl: {
     AddCollaborativeSectionAbove: '' as ViewAction,

@@ -1,7 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import { Content, DocumentDetails, DocumentRights, DocumentStatus } from '../types'
+import { Content, DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../types'
 import { DocumentCommonPage } from './document-common-page'
 import { iterateLocator, PlatformPassword } from '../../utils'
+import { DocumentHistoryPage } from './document-history-page'
 
 export class DocumentContentPage extends DocumentCommonPage {
   readonly page: Page
@@ -42,12 +43,27 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly textId: Locator
   readonly sectionsLocatorViewRight: Locator
   readonly sectionsLocatorEditRight: Locator
+  readonly addSpaceButton: Locator
+  readonly inputSpaceName: Locator
+  readonly roleSelector: Locator
+  readonly selectRoleMember: Locator
+  readonly createButton: Locator
+  readonly createNewDocument: Locator
+  readonly selectCustom: Locator
+  readonly nextStepButton: Locator
+  readonly customSpecificReason: Locator
+  readonly newDocumentTitle: Locator
+  readonly createDraft: Locator
+  readonly draftNewVersion: Locator
+  readonly buttonHistoryTab: Locator
+  readonly documentHeader: Locator
+  readonly leaveFolder: Locator
 
   constructor (page: Page) {
     super(page)
     this.page = page
     this.buttonDocumentTitle = page.locator('button.version-item span.name')
-    this.buttonMoreActions = page.locator('div.popupPanel-title > [class="no-print"] > button:not([id])')
+    this.buttonMoreActions = page.locator('.hulyHeader-buttonsGroup > .no-print > .antiButton').first()
     this.textDocumentStatus = page.locator('button.version-item div.root span.label')
     this.textType = page.locator('div.flex:has(div.label:text("Template name")) div.field')
     this.textCategory = page.locator('div.flex:has(div.label:text("Category")) div.field')
@@ -57,21 +73,23 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.textAuthor = page.locator('div.flex:has(div.label:text("Author")) div.field')
     this.buttonSelectNewOwner = page.locator('div.popup button.small')
     this.buttonSelectNewOwnerChange = page.locator('div.popup button.dangerous')
-    this.buttonSendForReview = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonSendForReview = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Send for review'
     })
-    this.buttonSendForApproval = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonSendForApproval = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Send for approval'
     })
     this.buttonAddMembers = page.locator('div.popup div.addButton')
     this.buttonSelectMemberSubmit = page.locator('div.popup div.footer button[type="submit"]')
     this.textSelectReviewersPopup = page.locator('div.popup span.label', { hasText: 'Select reviewers' })
     this.textSelectApproversPopup = page.locator('div.popup span.label', { hasText: 'Select approvers' })
-    this.buttonCurrentRights = page.locator('div.popupPanel-title button[type="button"] > span[slot="content"]')
+    this.buttonCurrentRights = page.locator(
+      'div.hulyHeader-buttonsGroup.extra button[type="button"] > span[slot="content"]'
+    )
     this.buttonAddMessageToText = page.locator('div.text-editor-toolbar > button:last-child')
     this.buttonComments = page.locator('button[id$="comment"]')
     this.textDocumentTitle = page.locator('div.panel div.title')
-    this.buttonCompleteReview = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonCompleteReview = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Complete review'
     })
     this.inputPassword = page.locator('input[name="documents:string:Password"]')
@@ -80,10 +98,10 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.inputRejectionReason = page.locator('div.popup div[id="rejection-reason"] input')
     this.buttonApprove = page.locator('button[type="button"] > span', { hasText: 'Approve' })
     this.buttonDocument = page.locator('button[id$="info"]')
-    this.buttonEditDocument = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonEditDocument = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Edit document'
     })
-    this.buttonDraftNewVersion = page.locator('div.popupPanel-title button[type="button"] > span', {
+    this.buttonDraftNewVersion = page.locator('div.hulyHeader-buttonsGroup.extra button[type="button"] > span', {
       hasText: 'Draft new version'
     })
     this.buttonDocumentInformation = page.locator('button[id$="info"]')
@@ -93,10 +111,29 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.textId = page.locator('div.flex:has(div.label:text("ID")) div.field')
     this.sectionsLocatorViewRight = page.locator('div.section span.label')
     this.sectionsLocatorEditRight = page.locator('div.section span.label input')
+    this.addSpaceButton = page.locator('#tree-orgspaces')
+    this.inputSpaceName = page.getByPlaceholder('New documents space')
+    this.roleSelector = page.getByRole('button', { name: 'Members' })
+    this.selectRoleMember = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.createButton = page.getByRole('button', { name: 'Create' })
+    this.createNewDocument = page.getByRole('button', { name: 'Create new document' })
+    this.selectCustom = page.getByText('Custom')
+    this.customSpecificReason = page.getByPlaceholder('Specify the reason...')
+    this.nextStepButton = page.getByRole('button', { name: 'Next step' })
+    this.newDocumentTitle = page.getByPlaceholder('New document')
+    this.createDraft = page.getByRole('button', { name: 'Create Draft' })
+    this.draftNewVersion = page.getByRole('button', { name: 'Draft new version' })
+    this.buttonHistoryTab = page.getByText('History')
+    this.documentHeader = page.getByRole('button', { name: 'Complete document' })
+    this.leaveFolder = page.getByRole('button', { name: 'Leave' })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle).toContainText(title)
+  }
+
+  async clickDocumentHeader (name: string): Promise<void> {
+    await this.page.getByRole('button', { name }).click()
   }
 
   async updateSectionTitle (sectionId: string, title: string): Promise<void> {
@@ -105,6 +142,23 @@ export class DocumentContentPage extends DocumentCommonPage {
       .locator('xpath=..')
       .locator('span.label input')
       .fill(title)
+  }
+
+  async addReasonAndImpactToTheDocument (description: string, reason: string): Promise<void> {
+    await this.page.getByText('Reason & Impact').click()
+    await this.page.getByPlaceholder('Describe what was changed...').fill(description)
+    await this.page.getByPlaceholder('Describe why it was changed...').click()
+    await this.page.getByPlaceholder('Describe why it was changed...').fill(reason)
+  }
+
+  async selectRelease (version: string): Promise<void> {
+    await this.page.getByText('Release').click()
+    if (version === 'Major') {
+      await this.page.getByText('Major').click()
+    }
+    if (version === 'Minor') {
+      await this.page.getByText('Minor').click()
+    }
   }
 
   async addContentToTheSection (content: Content): Promise<void> {
@@ -135,6 +189,69 @@ export class DocumentContentPage extends DocumentCommonPage {
   async executeMoreActions (action: string): Promise<void> {
     await this.buttonMoreActions.click()
     await this.selectFromDropdown(this.page, action)
+  }
+
+  async checkIfFolderExists (folderName: string): Promise<void> {
+    await expect(this.page.getByRole('button', { name: folderName })).toBeVisible()
+  }
+
+  async clickAddFolderButton (): Promise<void> {
+    await this.addSpaceButton.click()
+  }
+
+  async fillDocumentSpaceForm (spaceName: string): Promise<void> {
+    await this.inputSpaceName.fill(spaceName)
+    await this.roleSelector.nth(2).click()
+    await this.selectRoleMember.nth(2).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.createButton.click()
+  }
+
+  async createNewDocumentInsideFolder (folderName: string): Promise<void> {
+    await this.page.getByRole('button', { name: folderName }).hover()
+    await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
+    await this.createNewDocument.click()
+  }
+
+  async clickLeaveFolder (folderName: string): Promise<void> {
+    await this.page.getByRole('button', { name: folderName }).hover()
+    await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
+    await this.leaveFolder.click()
+  }
+
+  async createNewDocumentFromFolder (
+    title: string,
+    custom: boolean = false,
+    specificReason: string = ''
+  ): Promise<void> {
+    await this.page.locator('.antiRadio > .marker').first().click()
+    await this.nextStepButton.click()
+    await this.newDocumentTitle.fill(title)
+    if (custom) {
+      await this.selectCustom.click()
+      await this.customSpecificReason.fill(specificReason)
+    }
+    await this.nextStepButton.click()
+    await this.createDraft.click()
+  }
+
+  async clickSendForApproval (): Promise<void> {
+    await this.buttonSendForApproval.click()
+  }
+
+  async clickDraftNewVersion (): Promise<void> {
+    await this.buttonDraftNewVersion.click()
+  }
+
+  async clickHistoryTab (): Promise<void> {
+    await this.buttonHistoryTab.first().click()
+  }
+
+  async checkIfHistoryVersionExists (description: string): Promise<void> {
+    await this.page.waitForTimeout(200)
+    await expect(this.page.getByText(description)).toBeVisible()
+    await expect(this.page.getByText('v0.1', { exact: true })).toBeVisible()
   }
 
   async checkDocumentStatus (status: DocumentStatus): Promise<void> {
@@ -203,6 +320,40 @@ export class DocumentContentPage extends DocumentCommonPage {
     if (closePopup) {
       await this.closeNewMessagePopup()
     }
+  }
+
+  async sendForApproval (
+    releaseType: string,
+    version: string,
+    reason: string,
+    impact: string,
+    prevVersion: string,
+    newVersion: string,
+    userPage: Page,
+    completeDocument: NewDocument,
+    documentDetails: DocumentDetails
+  ): Promise<void> {
+    const documentContentPageSecond = new DocumentContentPage(userPage)
+
+    await this.clickDraftNewVersion()
+    await this.selectRelease(releaseType)
+    await this.addReasonAndImpactToTheDocument(reason, impact)
+    await this.buttonSendForApproval.click()
+    await this.buttonSelectMemberSubmit.click()
+    await this.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+    await this.checkDocument({
+      ...documentDetails,
+      status: DocumentStatus.IN_APPROVAL,
+      version
+    })
+    await this.checkCurrentRights(DocumentRights.VIEWING)
+    await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + prevVersion)
+    await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + newVersion)
+    await documentContentPageSecond.confirmApproval()
+    await this.buttonHistoryTab.first().click()
+    const documentHistoryPage = new DocumentHistoryPage(this.page)
+    await documentHistoryPage.checkHistoryEventExist('New document creation')
+    await documentHistoryPage.checkHistoryEventExist(reason)
   }
 
   async addMessageToTheSectionTitle (title: string, message: string, closePopup: boolean = true): Promise<void> {

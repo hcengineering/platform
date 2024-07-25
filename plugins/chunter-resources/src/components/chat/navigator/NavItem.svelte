@@ -109,7 +109,6 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-left: var(--spacing-1);
     padding: var(--spacing-0_5);
     color: var(--global-tertiary-TextColor);
     border: none;

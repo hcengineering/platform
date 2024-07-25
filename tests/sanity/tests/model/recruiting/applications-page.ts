@@ -23,9 +23,10 @@ export class ApplicationsPage extends CommonRecruitingPage {
   readonly buttonCreateNewApplication = (): Locator =>
     this.page.locator('form[id="recruit:string:CreateApplication"] button[type="submit"]')
 
-  readonly buttonTabCreated = (): Locator => this.page.locator('div[data-id="tab-created"]')
+  readonly buttonTabCreated = (): Locator => this.page.locator('label[data-id="tab-created"]')
   readonly textTableFirstCell = (): Locator => this.page.locator('div[class$="firstCell"]')
-  readonly buttonTypeSelector = (): Locator => this.page.locator('div[class*="header"] div[class*="title"] button')
+  readonly buttonTypeSelector = (): Locator =>
+    this.page.locator('div[class*="hulyHeader-container"] div[class*="hulyHeader-titleGroup"] button')
 
   // ACTIONS
   async clickButtonTabCreated (): Promise<void> {

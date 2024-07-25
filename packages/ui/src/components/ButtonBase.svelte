@@ -34,13 +34,16 @@
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
+  export let noPrint: boolean = false
   export let autoFocus: boolean = false
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+  export let shape: 'rectangle' | 'round' = 'rectangle'
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
 
@@ -89,23 +92,25 @@
 <button
   {id}
   bind:this={element}
-  class="font-medium-14 {kind} {size} {type}"
+  class="font-medium-14 {kind} {size} {type} {shape}"
   class:loading
   class:pressed
   class:inheritColor
   class:inheritFont
   class:menu={hasMenu}
   class:iconOnly
+  class:no-print={noPrint}
   disabled={loading || disabled}
+  data-id={dataId}
   use:tp={tooltip}
   on:click|stopPropagation|preventDefault
   on:keydown
 >
   {#if loading}
-    <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
-  {:else if icon}<div class="icon">
-      <Icon {icon} {iconProps} size={actualIconSize} />
-    </div>{/if}
+    <div class="icon"><Spinner size={'small'} /></div>
+  {:else if icon}
+    <div class="icon"><Icon {icon} {iconProps} size={actualIconSize} /></div>
+  {/if}
   {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}
   <slot />
@@ -119,8 +124,7 @@
     flex-shrink: 0;
     gap: var(--spacing-1);
 
-    border: 1px;
-    border-style: solid;
+    border: 1px solid transparent;
 
     &:not(:disabled, .loading) {
       cursor: pointer;
@@ -135,10 +139,6 @@
       justify-content: center;
       width: var(--spacing-2_5);
       height: var(--spacing-2_5);
-
-      &.animate {
-        animation: rotate 2s linear infinite;
-      }
     }
     span {
       white-space: nowrap;
@@ -155,6 +155,10 @@
       height: var(--global-large-Size);
       border-radius: var(--medium-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
+
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-2);
       }
@@ -167,6 +171,9 @@
       height: var(--global-medium-Size);
       border-radius: var(--medium-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-2);
       }
@@ -180,6 +187,9 @@
       gap: var(--spacing-0_5);
       border-radius: var(--small-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-1);
       }
@@ -192,6 +202,9 @@
       height: var(--global-extra-small-Size);
       border-radius: var(--extra-small-BorderRadius);
 
+      &.round {
+        border-radius: var(--large-BorderRadius);
+      }
       &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-1);
       }

@@ -18,6 +18,7 @@ import core, {
   BackupClient,
   Branding,
   Client as CoreClient,
+  coreId,
   DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
@@ -37,7 +38,7 @@ import core, {
   type Doc,
   type TxCUD
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
+import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import {
   AggregatorStorageAdapter,
@@ -180,7 +181,8 @@ export async function updateModel (
     // Create update indexes
     await createUpdateIndexes(
       ctx,
-      connection,
+      connection.getHierarchy(),
+      connection.getModel(),
       db,
       logger,
       async (value) => {
@@ -234,13 +236,6 @@ export async function initializeWorkspace (
     ctx.error('Failed to create workspace', { error: err })
     throw err
   }
-}
-
-export function getStorageAdapter (): StorageAdapter {
-  const { mongodbUri } = prepareTools([])
-
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  return buildStorageFromConfig(storageConfig, mongodbUri)
 }
 
 /**
@@ -368,6 +363,27 @@ export async function upgradeModel (
         await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
         i++
       }
+
+      await tryMigrate(migrateClient, coreId, [
+        {
+          state: '#sparse',
+          func: async () => {
+            ctx.info('Migrate to sparse indexes')
+            // Create update indexes
+            await createUpdateIndexes(
+              ctx,
+              hierarchy,
+              modelDb,
+              db,
+              logger,
+              async (value) => {
+                await progress(90 + (Math.min(value, 100) / 100) * 10)
+              },
+              workspaceId
+            )
+          }
+        }
+      ])
     })
 
     logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
@@ -400,7 +416,7 @@ export async function upgradeModel (
             await op[1].upgrade(migrateState, getUpgradeClient, logger)
           })
           logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
-          await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
+          await progress(60 + ((100 / migrateOperations.length) * i * 30) / 100)
           i++
         }
       })
@@ -460,33 +476,37 @@ async function fetchModelFromMongo (
 
   const txAdapter = await createMongoTxAdapter(ctx, hierarchy, mongodbUri, workspaceId, modelDb)
 
-  model = model ?? (await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx)))
+  try {
+    model = model ?? (await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx)))
 
-  await ctx.with('build local model', {}, async () => {
-    for (const tx of model ?? []) {
-      try {
-        hierarchy.tx(tx)
-      } catch (err: any) {}
-    }
-    modelDb.addTxes(ctx, model as Tx[], false)
-  })
-  await txAdapter.close()
+    await ctx.with('build local model', {}, async () => {
+      for (const tx of model ?? []) {
+        try {
+          hierarchy.tx(tx)
+        } catch (err: any) {}
+      }
+      modelDb.addTxes(ctx, model as Tx[], false)
+    })
+  } finally {
+    await txAdapter.close()
+  }
   return { hierarchy, modelDb, model }
 }
 
 async function createUpdateIndexes (
   ctx: MeasureContext,
-  connection: CoreClient,
+  hierarchy: Hierarchy,
+  model: ModelDb,
   db: Db,
   logger: ModelLogger,
   progress: (value: number) => Promise<void>,
   workspaceId: WorkspaceId
 ): Promise<void> {
-  const domainHelper = new DomainIndexHelperImpl(ctx, connection.getHierarchy(), connection.getModel(), workspaceId)
+  const domainHelper = new DomainIndexHelperImpl(ctx, hierarchy, model, workspaceId)
   const dbHelper = new DBCollectionHelper(db)
   await dbHelper.init()
   let completed = 0
-  const allDomains = connection.getHierarchy().domains()
+  const allDomains = hierarchy.domains()
   for (const domain of allDomains) {
     if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT || domain === DOMAIN_BENCHMARK) {
       continue

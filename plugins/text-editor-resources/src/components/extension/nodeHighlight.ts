@@ -52,7 +52,6 @@ const generateAttributes = (uuid: string, options: NodeHighlightExtensionOptions
 }
 
 const NodeHighlight = 'node-highlight'
-
 const NodeHighlightMeta = 'node-highlight'
 
 export interface NodeHighlightCommands<ReturnType> {

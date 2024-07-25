@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { PersonAccount } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
@@ -26,6 +26,7 @@
   import IssuesView from '../issues/IssuesView.svelte'
 
   export let config: [string, IntlString, object][] = []
+  export let icon: Asset | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const currentUser = getCurrentAccount() as PersonAccount
@@ -105,5 +106,5 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
+  <IssuesView {query} space={undefined} {icon} title={tracker.string.MyIssues} {modeSelectorProps} />
 {/if}

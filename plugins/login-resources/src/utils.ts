@@ -284,7 +284,7 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 
 export async function selectWorkspace (
   workspace: string,
-  token: string | null | undefined
+  token?: string | null | undefined
 ): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
@@ -489,7 +489,8 @@ export async function getInviteLink (
   expHours: number,
   mask: string,
   limit: number | undefined,
-  role: AccountRole
+  role: AccountRole,
+  navigateUrl?: string
 ): Promise<string> {
   const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
   const loc = getCurrentLocation()
@@ -498,6 +499,9 @@ export async function getInviteLink (
   loc.path.length = 2
   loc.query = {
     inviteId
+  }
+  if (navigateUrl !== undefined) {
+    loc.query.navigateUrl = navigateUrl
   }
   loc.fragment = undefined
 

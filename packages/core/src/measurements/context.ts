@@ -11,12 +11,12 @@ export class MeasureMetricsContext implements MeasureContext {
   private readonly params: ParamsType
   logger: MeasureLogger
   metrics: Metrics
-  private readonly done: (value?: number) => void
+  private readonly done: (value?: number, override?: boolean) => void
 
   constructor (
     name: string,
     params: ParamsType,
-    fullParams: FullParamsType = {},
+    fullParams: FullParamsType | (() => FullParamsType) = {},
     metrics: Metrics = newMetrics(),
     logger?: MeasureLogger,
     readonly parent?: MeasureContext,
@@ -25,8 +25,21 @@ export class MeasureMetricsContext implements MeasureContext {
     this.name = name
     this.params = params
     this.metrics = metrics
+    this.metrics.namedParams = this.metrics.namedParams ?? {}
+    for (const [k, v] of Object.entries(params)) {
+      if (this.metrics.namedParams[k] !== v) {
+        this.metrics.namedParams[k] = v
+      } else {
+        this.metrics.namedParams[k] = '*'
+      }
+    }
     this.done = measure(metrics, params, fullParams, (spend) => {
-      this.logger.logOperation(this.name, spend, { ...params, ...fullParams, ...(this.logParams ?? {}) })
+      this.logger.logOperation(this.name, spend, {
+        ...params,
+        ...(typeof fullParams === 'function' ? fullParams() : fullParams),
+        ...fullParams,
+        ...(this.logParams ?? {})
+      })
     })
 
     const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
@@ -63,12 +76,17 @@ export class MeasureMetricsContext implements MeasureContext {
     }
   }
 
-  measure (name: string, value: number): void {
+  measure (name: string, value: number, override?: boolean): void {
     const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]), this.logger, this)
-    c.done(value)
+    c.done(value, override)
   }
 
-  newChild (name: string, params: ParamsType, fullParams?: FullParamsType, logger?: MeasureLogger): MeasureContext {
+  newChild (
+    name: string,
+    params: ParamsType,
+    fullParams?: FullParamsType | (() => FullParamsType),
+    logger?: MeasureLogger
+  ): MeasureContext {
     return new MeasureMetricsContext(
       name,
       params,
@@ -84,7 +102,7 @@ export class MeasureMetricsContext implements MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType
+    fullParams?: ParamsType | (() => FullParamsType)
   ): Promise<T> {
     const c = this.newChild(name, params, fullParams, this.logger)
     try {

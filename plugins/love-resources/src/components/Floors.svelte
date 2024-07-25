@@ -58,7 +58,7 @@
       : 'landscape'} border-left will-change-opacity"
   >
     <div class="antiPanel-wrap__content hulyNavPanel-container">
-      <div class="hulyNavPanel-header small" class:withButton={editable}>
+      <div class="hulyNavPanel-header" class:withButton={editable}>
         <span class="overflow-label">
           <Label label={love.string.Floors} />
         </span>

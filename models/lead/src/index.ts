@@ -117,7 +117,7 @@ export function createModel (builder: Builder): void {
             accessLevel: AccountRole.User,
             componentProps: {
               _class: lead.mixin.Customer,
-              icon: lead.icon.Lead,
+              icon: contact.icon.Person,
               label: lead.string.Customers
             },
             position: 'top'
@@ -125,12 +125,13 @@ export function createModel (builder: Builder): void {
           {
             id: 'funnels',
             component: workbench.component.SpecialView,
-            icon: view.icon.List,
+            icon: lead.icon.Funnels,
             label: lead.string.Funnels,
             position: 'bottom',
             accessLevel: AccountRole.User,
             componentProps: {
               _class: lead.class.Funnel,
+              icon: lead.icon.Funnels,
               label: lead.string.Funnels,
               createComponent: lead.component.CreateFunnel,
               createLabel: lead.string.CreateFunnel

@@ -31,9 +31,11 @@ import documents, {
   calcRank,
   type DocumentTraining,
   getEffectiveDocUpdate,
-  getDocumentId
+  getDocumentId,
+  type DocumentRequest
 } from '@hcengineering/controlled-documents'
 import training, { type TrainingRequest, TrainingState } from '@hcengineering/training'
+import { RequestStatus } from '@hcengineering/request'
 
 /**
  * @public
@@ -351,6 +353,26 @@ export async function OnDocHasBecomeEffective (
   ]
 }
 
+export async function OnDocDeleted (tx: TxUpdateDoc<ControlledDocument>, control: TriggerControl): Promise<Tx[]> {
+  const requests = await control.findAll(documents.class.DocumentRequest, {
+    attachedTo: tx.objectId,
+    status: RequestStatus.Active
+  })
+  const cancelTxes = requests.map((request) =>
+    control.txFactory.createTxUpdateDoc<DocumentRequest>(request._class, request.space, request._id, {
+      status: RequestStatus.Cancelled
+    })
+  )
+  await control.apply([
+    ...cancelTxes,
+    control.txFactory.createTxUpdateDoc<ControlledDocument>(tx.objectClass, tx.objectSpace, tx.objectId, {
+      controlledState: undefined
+    })
+  ])
+
+  return []
+}
+
 export async function OnDocPlannedEffectiveDateChanged (
   tx: TxUpdateDoc<ControlledDocument>,
   control: TriggerControl
@@ -446,6 +468,7 @@ export async function documentTextPresenter (doc: ControlledDocument): Promise<s
 export default async () => ({
   trigger: {
     OnCollaborativeSectionDeleted,
+    OnDocDeleted,
     OnDocPlannedEffectiveDateChanged,
     OnDocApprovalRequestApproved,
     OnDocHasBecomeEffective,

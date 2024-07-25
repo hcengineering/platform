@@ -51,23 +51,18 @@
     CollaborationUser,
     RefAction,
     TextEditorCommandHandler,
-    TextEditorHandler,
-    TextFormatCategory,
-    TextNodeAction
+    TextEditorHandler
   } from '@hcengineering/text-editor'
   import { addTableHandler } from '../utils'
 
   import CollaborationUsers from './CollaborationUsers.svelte'
-  import ImageStyleToolbar from './ImageStyleToolbar.svelte'
-  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { EmojiExtension } from './extension/emoji'
   import { FileUploadExtension } from './extension/fileUploadExt'
   import { ImageUploadExtension } from './extension/imageUploadExt'
   import { InlineCommandsExtension } from './extension/inlineCommands'
-  import { InlinePopupExtension } from './extension/inlinePopup'
-  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { LeftMenuExtension } from './extension/leftMenu'
   import { type FileAttachFunction } from './extension/types'
   import { completionConfig, inlineCommandsConfig } from './extensions'
@@ -92,16 +87,6 @@
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
 
   export let extensions: AnyExtension[] = []
-  export let textFormatCategories: TextFormatCategory[] = [
-    TextFormatCategory.Heading,
-    TextFormatCategory.TextDecoration,
-    TextFormatCategory.Link,
-    TextFormatCategory.List,
-    TextFormatCategory.Quote,
-    TextFormatCategory.Code,
-    TextFormatCategory.Table
-  ]
-  export let textNodeActions: TextNodeAction[] = []
   export let refActions: RefAction[] = []
 
   export let editorAttributes: Record<string, string> = {}
@@ -263,25 +248,8 @@
     editor.setEditable(editable, true)
   }
 
-  $: showTextStyleToolbar =
-    ((editable && textFormatCategories.length > 0) || textNodeActions.length > 0) && canShowPopups
-
-  $: tippyOptions = {
-    zIndex: 100000,
-    popperOptions: {
-      modifiers: [
-        {
-          name: 'preventOverflow',
-          options: {
-            boundary,
-            padding: 8,
-            altAxis: true,
-            tether: false
-          }
-        }
-      ]
-    }
-  }
+  // TODO: should be inside the editor
+  $: showToolbar = canShowPopups
 
   const optionalExtensions: AnyExtension[] = []
 
@@ -438,29 +406,22 @@
           objectClass,
           objectSpace,
           history: false,
-          submit: false
+          submit: false,
+          toolbar: {
+            element: textToolbarElement,
+            boundary,
+            isHidden: () => !showToolbar
+          },
+          image: {
+            toolbar: {
+              element: imageToolbarElement,
+              boundary,
+              isHidden: () => !showToolbar
+            }
+          }
         }),
         ...optionalExtensions,
         Placeholder.configure({ placeholder: placeHolderStr }),
-        InlineStyleToolbarExtension.configure({
-          tippyOptions,
-          element: textToolbarElement,
-          isSupported: () => showTextStyleToolbar
-        }),
-        InlinePopupExtension.configure({
-          pluginKey: 'show-image-actions-popup',
-          element: imageToolbarElement,
-          tippyOptions: {
-            ...tippyOptions,
-            appendTo: () => boundary ?? element
-          },
-          shouldShow: ({ editor }) => {
-            if (!editable || !canShowPopups) {
-              return false
-            }
-            return editor.isActive('image')
-          }
-        }),
         Collaboration.configure({
           document: ydoc,
           field
@@ -544,29 +505,22 @@
     </div>
   {/if}
 
-  <div
-    class="text-editor-toolbar buttons-group xsmall-gap mb-4"
-    bind:this={textToolbarElement}
-    style="visibility: hidden;"
-  >
-    {#if showTextStyleToolbar}
-      <TextEditorStyleToolbar
-        {editor}
-        formatButtonSize={buttonSize}
-        {textFormatCategories}
-        {textNodeActions}
-        on:focus={handleFocus}
-      />
-    {/if}
-  </div>
+  <TextEditorToolbar
+    bind:toolbar={textToolbarElement}
+    visible={showToolbar}
+    {editor}
+    formatButtonSize={buttonSize}
+    on:focus={handleFocus}
+  />
 
-  <div
-    class="text-editor-toolbar buttons-group xsmall-gap mb-4"
-    bind:this={imageToolbarElement}
-    style="visibility: hidden;"
-  >
-    <ImageStyleToolbar {editor} formatButtonSize={buttonSize} on:focus={handleFocus} />
-  </div>
+  <TextEditorToolbar
+    bind:toolbar={imageToolbarElement}
+    kind="image"
+    visible={showToolbar}
+    {editor}
+    formatButtonSize={buttonSize}
+    on:focus={handleFocus}
+  />
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
@@ -607,15 +561,6 @@
     display: flex;
     flex-direction: column;
     position: relative;
-  }
-
-  .text-editor-toolbar {
-    margin: -0.5rem -0.25rem 0.5rem;
-    padding: 0.375rem;
-    background-color: var(--theme-comp-header-color);
-    border-radius: 0.5rem;
-    box-shadow: var(--button-shadow);
-    z-index: 1;
   }
 
   .textInput {

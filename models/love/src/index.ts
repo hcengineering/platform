@@ -141,7 +141,6 @@ export function createModel (builder: Builder): void {
       alias: loveId,
       hidden: false,
       position: 'top',
-      modern: true,
       component: love.component.Main
     },
     love.app.Love

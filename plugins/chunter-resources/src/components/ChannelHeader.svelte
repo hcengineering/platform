@@ -28,10 +28,10 @@
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let object: Doc | undefined
-  export let allowClose = false
-  export let canOpen = false
-  export let withAside = false
-  export let isAsideShown = false
+  export let allowClose: boolean = false
+  export let canOpen: boolean = false
+  export let withAside: boolean = false
+  export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
 
   const client = getClient()
@@ -60,30 +60,23 @@
     hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)
 </script>
 
-<div class="ac-header divide full caption-height">
-  <Header
-    bind:filters
-    {object}
-    icon={getObjectIcon(_class)}
-    iconProps={{ value: object, showStatus: true }}
-    label={title}
-    intlLabel={chunter.string.Channel}
-    {description}
-    titleKind={isPerson ? 'default' : 'breadcrumbs'}
-    withFilters={!hierarchy.isDerived(_class, chunter.class.ChunterSpace)}
-    {allowClose}
-    {canOpen}
-    {withAside}
-    {isAsideShown}
-    on:aside-toggled
-    on:close
-  >
-    <PinnedMessages {_id} {_class} />
-  </Header>
-</div>
-
-<style lang="scss">
-  .ac-header {
-    padding: 0.5rem 1rem;
-  }
-</style>
+<Header
+  bind:filters
+  {object}
+  icon={getObjectIcon(_class)}
+  iconProps={{ value: object, showStatus: true }}
+  label={title}
+  intlLabel={chunter.string.Channel}
+  {description}
+  titleKind={isPerson ? 'default' : 'breadcrumbs'}
+  withFilters={!hierarchy.isDerived(_class, chunter.class.ChunterSpace)}
+  {allowClose}
+  {canOpen}
+  {withAside}
+  {isAsideShown}
+  hideBefore
+  on:aside-toggled
+  on:close
+>
+  <PinnedMessages {_id} {_class} on:select />
+</Header>

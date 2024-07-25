@@ -22,13 +22,14 @@
   import {
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
-    canGroupMessages
+    canGroupMessages,
+    messageInFocus
   } from '@hcengineering/activity-resources'
   import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
+  import { Loading, ModernButton, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'
 
@@ -54,7 +55,7 @@
   export let scrollElement: HTMLDivElement | undefined = undefined
   export let startFromBottom = false
   export let selectedFilters: Ref<ActivityMessagesFilter>[] = []
-  export let withDates: boolean = true
+  export let embedded = false
   export let collection: string | undefined = undefined
   export let showEmbedded = false
   export let skipLabels = false
@@ -100,6 +101,9 @@
 
   let selectedDate: Timestamp | undefined = undefined
   let dateToJump: Timestamp | undefined = undefined
+
+  let prevScrollHeight = 0
+  let isScrollAtBottom = false
 
   let messagesCount = 0
 
@@ -277,6 +281,7 @@
 
   function handleScroll ({ autoScrolling }: ScrollParams): void {
     saveScrollPosition()
+    updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
     if (autoScrolling) {
       return
     }
@@ -350,7 +355,7 @@
   }
 
   function updateSelectedDate (): void {
-    if (!withDates) {
+    if (embedded) {
       return
     }
 
@@ -440,8 +445,8 @@
       shouldWaitAndRead = true
       autoscroll = true
       shouldScrollToNew = true
+      isInitialScrolling = false
       waitLastMessageRenderAndRead(() => {
-        isInitialScrolling = false
         autoscroll = false
       })
     } else if (separatorElement) {
@@ -450,6 +455,8 @@
       isScrollInitialized = true
       isInitialScrolling = false
     }
+
+    updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
   }
 
   function reinitializeScroll (): void {
@@ -461,13 +468,13 @@
     if (isLoading || !isScrollInitialized || isInitialScrolling) {
       return
     }
-    const msg = messages.find(({ _id }) => _id === selectedMessageId)
+    const msg = $metadataStore.find(({ _id }) => _id === selectedMessageId)
     if (msg !== undefined) {
       const isReload = provider.jumpToMessage(msg)
       if (isReload) {
         reinitializeScroll()
       }
-    } else {
+    } else if (selectedMessageId === undefined) {
       provider.jumpToEnd()
       reinitializeScroll()
     }
@@ -557,9 +564,6 @@
     loadMore()
   }
 
-  let prevScrollHeight = 0
-  let isScrollAtBottom = false
-
   function saveScrollPosition (): void {
     if (!scrollElement) {
       return
@@ -588,7 +592,7 @@
     }
   })
 
-  async function compensateAside (isOpened: boolean) {
+  async function compensateAside (isOpened: boolean): Promise<void> {
     if (!isInitialScrolling && isScrollAtBottom && !wasAsideOpened && isOpened) {
       await wait()
       scrollToBottom()
@@ -599,7 +603,7 @@
 
   $: void compensateAside(isAsideOpened)
 
-  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage) {
+  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage): boolean {
     let prevMetadata: MessageMetadata | undefined = undefined
 
     if (prevMessage === undefined) {
@@ -617,6 +621,53 @@
   onDestroy(() => {
     unsubscribe()
   })
+
+  let showScrollDownButton = false
+
+  $: updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
+
+  function updateDownButtonVisibility (
+    metadata: MessageMetadata[],
+    displayMessages: DisplayActivityMessage[],
+    element?: HTMLDivElement
+  ): void {
+    if (metadata.length === 0 || displayMessages.length === 0) {
+      showScrollDownButton = false
+      return
+    }
+
+    const lastMetadata = metadata[metadata.length - 1]
+    const lastMessage = displayMessages[displayMessages.length - 1]
+
+    if (lastMetadata._id !== lastMessage._id) {
+      showScrollDownButton = true
+    } else if (element != null) {
+      const { scrollHeight, scrollTop, offsetHeight } = element
+
+      showScrollDownButton = scrollHeight > offsetHeight + scrollTop + 300
+    } else {
+      showScrollDownButton = false
+    }
+  }
+
+  function handleScrollDown (): void {
+    selectedMessageId = undefined
+    messageInFocus.set(undefined)
+
+    const metadata = $metadataStore
+    const lastMetadata = metadata[metadata.length - 1]
+    const lastMessage = displayMessages[displayMessages.length - 1]
+
+    void inboxClient.readDoc(client, objectId)
+
+    if (lastMetadata._id !== lastMessage._id) {
+      separatorIndex = -1
+      provider.jumpToEnd(true)
+      reinitializeScroll()
+    } else {
+      scrollToBottom()
+    }
+  }
 </script>
 
 {#if isLoading}
@@ -626,7 +677,7 @@
     {#if startFromBottom}
       <div class="grower" />
     {/if}
-    {#if withDates && displayMessages.length > 0 && selectedDate}
+    {#if !embedded && displayMessages.length > 0 && selectedDate}
       <div class="selectedDate">
         <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
       </div>
@@ -651,7 +702,7 @@
       {/if}
       <slot name="header" />
 
-      {#if displayMessages.length === 0 && !hierarchy.isDerived(objectClass, activity.class.ActivityMessage)}
+      {#if displayMessages.length === 0 && !embedded}
         <BlankView
           icon={chunter.icon.Thread}
           header={chunter.string.NoMessagesInChannel}
@@ -666,7 +717,7 @@
           <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
         {/if}
 
-        {#if withDates && message.createdOn && $datesStore.includes(message.createdOn)}
+        {#if !embedded && message.createdOn && $datesStore.includes(message.createdOn)}
           <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={jumpToDate} />
         {/if}
 
@@ -689,6 +740,18 @@
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
     </Scroller>
+
+    {#if !embedded && showScrollDownButton}
+      <div class="down-button absolute">
+        <ModernButton
+          label={chunter.string.LatestMessages}
+          shape="round"
+          size="small"
+          kind="primary"
+          on:click={handleScrollDown}
+        />
+      </div>
+    {/if}
   </div>
   {#if object}
     <div class="ref-input">
@@ -708,7 +771,7 @@
   }
 
   .ref-input {
-    margin: 1.25rem 1rem;
+    margin: 1.25rem 1rem 1rem;
   }
 
   .overlay {
@@ -727,5 +790,12 @@
     top: 0;
     left: 0;
     right: 0;
+  }
+
+  .down-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    bottom: -0.75rem;
   }
 </style>

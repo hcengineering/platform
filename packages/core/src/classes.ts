@@ -15,6 +15,7 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { DocumentQuery } from './storage'
 
 /**
  * @public
@@ -122,6 +123,7 @@ export enum IndexKind {
    * Also mean to include into Elastic search.
    */
   Indexed,
+
   // Same as indexed but for descending
   IndexedDsc
 }
@@ -623,6 +625,12 @@ export type FieldIndex<T extends Doc> = {
   [P in keyof T]?: IndexOrder
 } & Record<string, IndexOrder>
 
+export interface FieldIndexConfig<T extends Doc> {
+  sparse?: boolean
+  filter?: Omit<DocumentQuery<T>, '$search'>
+  keys: FieldIndex<T> | string
+}
+
 /**
  * @public
  *
@@ -630,7 +638,7 @@ export type FieldIndex<T extends Doc> = {
  */
 export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   // Define a list of extra index definitions.
-  indexes: (FieldIndex<T> | string)[]
+  indexes: (string | FieldIndexConfig<T>)[]
   searchDisabled?: boolean
 }
 
@@ -643,7 +651,7 @@ export interface DomainIndexConfiguration extends Doc {
   disabled?: (FieldIndex<Doc> | string)[]
 
   // Additional indexes we could like to enabled
-  indexes?: (FieldIndex<Doc> | string)[]
+  indexes?: (FieldIndexConfig<Doc> | string)[]
 
   skip?: string[]
 }

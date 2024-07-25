@@ -453,12 +453,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const map = new Set<Ref<Space>>()
     const field = this.getKey(domain)
     while (true) {
+      const nin = Array.from(map.values())
       const spaces = await this.storage.findAll(
         ctx,
         core.class.Doc,
-        {
-          [field]: { $nin: Array.from(map.values()) }
-        },
+        nin.length > 0
+          ? {
+              [field]: { $nin: nin }
+            }
+          : {},
         {
           projection: { [field]: 1 },
           limit: 1000,

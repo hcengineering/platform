@@ -14,7 +14,8 @@
 //
 
 import { codeBlockOptions, codeOptions } from '@hcengineering/text'
-import { Extension } from '@tiptap/core'
+import { showPopup } from '@hcengineering/ui'
+import { type Editor, Extension } from '@tiptap/core'
 import type { CodeOptions } from '@tiptap/extension-code'
 import type { CodeBlockOptions } from '@tiptap/extension-code-block'
 import type { HardBreakOptions } from '@tiptap/extension-hard-break'
@@ -24,6 +25,8 @@ import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
+
+import LinkPopup from '../components/LinkPopup.svelte'
 
 export interface DefaultKitOptions {
   codeBlock?: Partial<CodeBlockOptions> | false
@@ -64,3 +67,15 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
     ]
   }
 })
+
+export async function formatLink (editor: Editor): Promise<void> {
+  const link = editor.getAttributes('link').href
+
+  showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
+    if (newLink === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run()
+    } else {
+      editor.chain().focus().extendMarkRange('link').setLink({ href: newLink }).run()
+    }
+  })
+}

@@ -13,10 +13,29 @@
 // limitations under the License.
 //
 
-import { type AttachedData, type Ref, type TxOperations, generateId } from '@hcengineering/core'
+import { type AttachedData, type Data, type Ref, type TxOperations, generateId } from '@hcengineering/core'
 
 import drive from './plugin'
 import type { Drive, File, FileVersion, Folder } from './types'
+
+/** @public */
+export async function createFolder (
+  client: TxOperations,
+  space: Ref<Drive>,
+  data: Omit<Data<Folder>, 'path'>
+): Promise<Ref<Folder>> {
+  let path: Array<Ref<Folder>> = []
+
+  if (data.parent !== drive.ids.Root) {
+    const parent = await client.findOne(drive.class.Folder, { _id: data.parent })
+    if (parent === undefined) {
+      throw new Error('parent not found')
+    }
+    path = [parent._id, ...parent.path]
+  }
+
+  return await client.createDoc(drive.class.Folder, space, { ...data, path })
+}
 
 /** @public */
 export async function createFile (

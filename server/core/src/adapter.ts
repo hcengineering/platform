@@ -19,7 +19,7 @@ import {
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
-  type FieldIndex,
+  type FieldIndexConfig,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -37,7 +37,7 @@ import { type StorageAdapter } from './storage'
 export interface DomainHelperOperations {
   create: (domain: Domain) => Promise<void>
   exists: (domain: Domain) => boolean
-  createIndex: (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }) => Promise<void>
+  createIndex: (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }) => Promise<void>
   dropIndex: (domain: Domain, name: string) => Promise<void>
   listIndexes: (domain: Domain) => Promise<{ name: string }[]>
   hasDocuments: (domain: Domain, count: number) => Promise<boolean>
@@ -94,7 +94,7 @@ export interface DbAdapter {
 
   helper?: () => DomainHelperOperations
   createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
-  removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
+  removeOldIndex: (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]) => Promise<void>
 
   close: () => Promise<void>
   findAll: <T extends Doc>(

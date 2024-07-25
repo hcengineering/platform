@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery, Ref } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
@@ -30,6 +30,7 @@
   export let currentSpace: Ref<Project> | undefined = undefined
   export let baseQuery: DocumentQuery<Issue> = {}
   export let title: IntlString
+  export let icon: Asset | undefined = undefined
   export let config: [string, IntlString, object][]
   export let allProjectsTypes: boolean = false
 
@@ -110,7 +111,7 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  <IssuesView query={finalQuery} space={currentSpace} {title} {modeSelectorProps}>
+  <IssuesView query={finalQuery} space={currentSpace} {icon} {title} {modeSelectorProps}>
     <svelte:fragment slot="type_selector" let:viewlet>
       {#if !allProjectsTypes}
         <TypeSelector {baseClass} project={currentSpace} allTypes={toVL(viewlet)?.descriptor === view.viewlet.List} />

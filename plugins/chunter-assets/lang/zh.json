@@ -110,6 +110,7 @@
     "JoinChannelHeader": "点击“加入”开始。",
     "JoinChannelText": "加入后，你将能够阅读所有消息并参与讨论。",
     "NoMessagesInChannel": "此频道中没有消息。",
-    "SendMessagesInChannel": "在此频道中发送消息。"
+    "SendMessagesInChannel": "在此频道中发送消息。",
+    "LatestMessages": "↓ 最新消息"
   }
 }

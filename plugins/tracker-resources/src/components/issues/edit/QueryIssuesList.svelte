@@ -30,7 +30,7 @@
 
   export let createParams: Record<string, any> = {}
   export let viewletId = tracker.viewlet.SubIssues
-  export let createLabel = tracker.string.CreatedIssue
+  export let createLabel = tracker.string.AddIssue
   export let hasSubIssues = false
 
   let isCollapsed = false
@@ -134,7 +134,7 @@
   {/if}
   <div class="flex-row-center gap-2 no-print">
     {#if hasSubIssues}
-      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'ghost'} bind:viewlet />
+      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
     {/if}
     {#if hasSubIssues}
       <slot name="buttons" />

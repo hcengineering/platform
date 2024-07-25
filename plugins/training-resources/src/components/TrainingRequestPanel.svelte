@@ -192,7 +192,16 @@
 {#if object !== null && trainingObject !== null}
   <ActionContext context={{ mode: 'editor' }} />
 
-  <Panel {object} {embedded} isHeader={false} isSub={false} on:close withoutActivity contentClasses="h-full">
+  <Panel
+    {object}
+    {embedded}
+    isHeader={false}
+    isSub={false}
+    on:close
+    withoutActivity
+    contentClasses="h-full"
+    adaptive={'default'}
+  >
     <svelte:fragment slot="title">
       {#if isOwner}
         <PanelTitle training={trainingObject}>

@@ -284,7 +284,7 @@
 </script>
 
 <div class="toDos-container">
-  <Header type={'type-panel'} hideSeparator>
+  <Header type={'type-panel'} hideSeparator adaptive={'disabled'}>
     <ButtonIcon
       icon={$deviceInfo.navigator.visible ? MenuClose : MenuOpen}
       kind={'tertiary'}
@@ -293,7 +293,6 @@
       on:click={togglePlannerNav}
     />
     <div class="heading-bold-20 ml-4">
-      <Label label={time.string.ToDoColon} />
       {#if mode === 'date'}
         {getDateStr(currentDate)}
       {:else}

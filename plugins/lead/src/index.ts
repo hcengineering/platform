@@ -80,6 +80,7 @@ const lead = plugin(leadId, {
   },
   icon: {
     Funnel: '' as Asset,
+    Funnels: '' as Asset,
     Lead: '' as Asset,
     LeadApplication: '' as Asset,
     CreateCustomer: '' as Asset

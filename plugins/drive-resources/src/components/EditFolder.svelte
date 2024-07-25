@@ -22,5 +22,5 @@
 </script>
 
 {#if object}
-  <FolderBrowser space={object.space} parent={object._id} {readonly} />
+  <FolderBrowser space={object.space} parent={object._id} {readonly} type={'folder'} />
 {/if}

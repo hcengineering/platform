@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, DocumentQuery, getCurrentAccount, Ref, Status } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement } from '@hcengineering/tags'
   import { selectedTagElements } from '@hcengineering/tags-resources'
@@ -23,11 +23,12 @@
   import {
     Component,
     IModeSelector,
-    Label,
+    Breadcrumb,
     Loading,
     ModeSelector,
     resolvedLocationStore,
-    SearchEdit
+    SearchInput,
+    Header
   } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
@@ -43,6 +44,7 @@
 
   export let _class: Ref<Class<Task>> = task.class.Task
   export let labelTasks = task.string.Tasks
+  export let icon: Asset
   export let config: [string, IntlString, object][] = []
 
   let search = ''
@@ -145,38 +147,36 @@
   }
 </script>
 
-<div
-  class="ac-header full divide caption-height"
-  class:header-with-mode-selector={modeSelectorProps !== undefined}
-  class:header-without-label={!labelTasks}
->
-  <div class="ac-header__wrap-title">
-    <span class="ac-header__title"><Label label={labelTasks} /></span>
-    {#if modeSelectorProps !== undefined}
-      <ModeSelector props={modeSelectorProps} />
-    {/if}
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit
+<Header adaptive={'freezeActions'} hideActions={modeSelectorProps === undefined}>
+  <svelte:fragment slot="beforeTitle">
+    <ViewletSelector
+      hidden
+      bind:viewlet
+      bind:preference
+      bind:loading
+      viewletQuery={{ attachTo: _class, descriptor: task.viewlet.StatusTable }}
+    />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <Breadcrumb {icon} label={labelTasks} size={'large'} isCurrent />
+
+  <svelte:fragment slot="search" let:doubleRow>
+    <SearchInput
       bind:value={search}
+      collapsed
       on:change={() => {
         updateResultQuery(search, documentIds, doneStates, mode)
       }}
     />
-    <div class="buttons-divider" />
-    <FilterButton {_class} />
-  </div>
-  <ViewletSelector
-    hidden
-    bind:viewlet
-    bind:preference
-    bind:loading
-    viewletQuery={{ attachTo: _class, descriptor: task.viewlet.StatusTable }}
-  />
-  <ViewletSettingButton bind:viewOptions bind:viewlet />
-</div>
+    <FilterButton {_class} adaptive={doubleRow} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions" let:doubleRow>
+    {#if modeSelectorProps !== undefined}
+      <ModeSelector kind={'subtle'} props={modeSelectorProps} />
+    {/if}
+  </svelte:fragment>
+</Header>
 <FilterBar {_class} query={searchQuery} space={undefined} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
 
 <Component is={tags.component.TagsCategoryBar} props={{ targetClass: _class, category }} on:change={handleChange} />

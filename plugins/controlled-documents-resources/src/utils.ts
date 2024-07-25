@@ -35,7 +35,7 @@ import contact, { type Employee, type PersonAccount } from '@hcengineering/conta
 import request, { RequestStatus } from '@hcengineering/request'
 import textEditor from '@hcengineering/text-editor'
 import { isEmptyMarkup } from '@hcengineering/text'
-import { getEventPositionElement, showPopup, type Location } from '@hcengineering/ui'
+import { getEventPositionElement, showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
 import { type KeyFilter } from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
 import documents, {
@@ -834,4 +834,19 @@ export async function createTemplate (space: OrgSpace): Promise<void> {
   const project = await getLatestProjectId(space._id)
   wizardOpened({ $$currentStep: 'info', location: { space: space._id, project: project ?? documents.ids.NoProject } })
   showPopup(documents.component.QmsTemplateWizard, {})
+}
+
+export function formatSignatureDate (date: number): string {
+  const timeZone: string = getUserTimezone()
+
+  return new Date(date).toLocaleDateString('default', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone,
+    timeZoneName: 'short',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric'
+  })
 }

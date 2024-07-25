@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
-  import textEditor, { CollaborationUser, RefAction, TextNodeAction } from '@hcengineering/text-editor'
+  import textEditor, { CollaborationUser, RefAction } from '@hcengineering/text-editor'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FocusExtension } from './extension/focus'
@@ -26,7 +26,6 @@
   export let object: Doc
   export let key: KeyedAttribute
   export let readonly = false
-  export let textNodeActions: TextNodeAction[] = []
   export let refActions: RefAction[] = []
 
   export let user: CollaborationUser
@@ -111,7 +110,6 @@
   objectAttr={key.key}
   {user}
   {userComponent}
-  {textNodeActions}
   {refActions}
   {extensions}
   {attachFile}

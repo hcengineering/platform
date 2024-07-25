@@ -18,18 +18,11 @@
   import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
-  import { AnyExtension, Editor, FocusPosition, getMarkRange } from '@tiptap/core'
-  import { TextSelection } from '@tiptap/pm/state'
-  import textEditor, {
-    CollaborationUser,
-    TextEditorCommandHandler,
-    TextFormatCategory,
-    TextNodeAction
-  } from '@hcengineering/text-editor'
+  import { AnyExtension, FocusPosition } from '@tiptap/core'
+  import textEditor, { CollaborationUser, TextEditorCommandHandler } from '@hcengineering/text-editor'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/types'
-  import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
 
   export let collaborativeDoc: CollaborativeDoc
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
@@ -49,7 +42,6 @@
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
 
   export let overflow: 'auto' | 'none' = 'auto'
-  export let textNodeActions: TextNodeAction[] = []
   export let editorAttributes: Record<string, string> = {}
   export let onExtensions: () => AnyExtension[] = () => []
   export let boundary: HTMLElement | undefined = undefined
@@ -59,77 +51,10 @@
 
   let element: HTMLElement
 
-  let editor: Editor | undefined
   let collaborativeEditor: CollaborativeTextEditor
 
   export function commands (): TextEditorCommandHandler | undefined {
     return collaborativeEditor?.commands()
-  }
-
-  // TODO Not collaborative
-  export function getNodeElement (uuid: string): Element | null {
-    if (editor === undefined || uuid === '') {
-      return null
-    }
-
-    return editor.view.dom.querySelector(nodeElementQuerySelector(uuid))
-  }
-
-  // TODO Not collaborative
-  export function selectNode (uuid: string): void {
-    if (editor === undefined) {
-      return
-    }
-
-    const { doc, schema, tr } = editor.view.state
-    let foundNode = false
-    doc.descendants((node, pos) => {
-      if (foundNode) {
-        return false
-      }
-
-      const nodeUuidMark = node.marks.find(
-        (mark) => mark.type.name === NodeUuidExtension.name && mark.attrs[NodeUuidExtension.name] === uuid
-      )
-
-      if (nodeUuidMark === undefined) {
-        return
-      }
-
-      foundNode = true
-
-      // the first pos does not contain the mark, so we need to add 1 (pos + 1) to get the correct range
-      const range = getMarkRange(doc.resolve(pos + 1), schema.marks[NodeUuidExtension.name])
-
-      if (range === undefined) {
-        return false
-      }
-
-      const [$start, $end] = [doc.resolve(range.from), doc.resolve(range.to)]
-      editor?.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
-      focus()
-    })
-  }
-
-  // TODO Not collaborative
-  export function selectRange (from: number, to: number): void {
-    if (editor === undefined) {
-      return
-    }
-
-    const { doc, tr } = editor.view.state
-    const [$start, $end] = [doc.resolve(from), doc.resolve(to)]
-    editor.view.dispatch(tr.setSelection(new TextSelection($start, $end)))
-    focus()
-  }
-
-  // TODO Not collaborative
-  export function setNodeUuid (nodeId: string): boolean {
-    if (editor === undefined || editor.view.state.selection.empty || nodeId === '') {
-      return false
-    }
-
-    return editor.chain().setNodeUuid(nodeId).run()
   }
 
   export function focus (position?: FocusPosition): void {
@@ -178,28 +103,14 @@
     {overflow}
     {boundary}
     {attachFile}
-    textFormatCategories={readonly
-      ? []
-      : [
-          TextFormatCategory.Heading,
-          TextFormatCategory.TextDecoration,
-          TextFormatCategory.Link,
-          TextFormatCategory.List,
-          TextFormatCategory.Quote,
-          TextFormatCategory.Code,
-          TextFormatCategory.Table
-        ]}
     extensions={[...onExtensions()]}
-    {textNodeActions}
     {canShowPopups}
     {editorAttributes}
+    on:editor
     on:update
     on:open-document
     on:blur
     on:focus={handleFocus}
-    on:editor={(evt) => {
-      editor = evt.detail
-    }}
   />
 </div>
 

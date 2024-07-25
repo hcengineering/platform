@@ -454,7 +454,7 @@ dependencies:
     version: file:projects/model-templates.tgz
   '@rush-temp/model-text-editor':
     specifier: file:./projects/model-text-editor.tgz
-    version: file:projects/model-text-editor.tgz
+    version: file:projects/model-text-editor.tgz(@tiptap/pm@2.2.4)
   '@rush-temp/model-time':
     specifier: file:./projects/model-time.tgz
     version: file:projects/model-time.tgz
@@ -18983,7 +18983,7 @@ packages:
     dev: false
 
   file:projects/attachment-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-mF2tlDyxapMhNMctw3bDd2lr7PI5S3gh/QMVEtFTIJuO03UEwIul29Xi0xlKWUH/afiSe9397lP3jbU0rm5OMg==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-ZEkxtUt4tXWqiEQOGDSFHr65Zw9PtVeCQJ5zS8zdDdpF+vh1BAaLW7OydhYafKYw5RheG50HOK/R6wPDcNd3Lw==, tarball: file:projects/attachment-resources.tgz}
     id: file:projects/attachment-resources.tgz
     name: '@rush-temp/attachment-resources'
     version: 0.0.0
@@ -21522,7 +21522,7 @@ packages:
     dev: false
 
   file:projects/model-controlled-documents.tgz:
-    resolution: {integrity: sha512-/R834PH7U0ysT1eecrsWFubbW1aIKoxs7PewHwYICCvQSM21Bfe+7FzM1rm3KyaZ0gyu8J6HRONdi55vLRzN/g==, tarball: file:projects/model-controlled-documents.tgz}
+    resolution: {integrity: sha512-Fg2GDNEA/E5UucxJtuVYq9G9aPq2BTBbo5HYwk64AzpWOfYEI0mzv+FAeAeTMPRKwZR8TDKxKgNCmmMXsmo/PQ==, tarball: file:projects/model-controlled-documents.tgz}
     name: '@rush-temp/model-controlled-documents'
     version: 0.0.0
     dependencies:
@@ -22578,11 +22578,13 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/model-text-editor.tgz:
-    resolution: {integrity: sha512-QAA7Ajq9B3WQ5bJPqPw8XKkaV1l42Wdqj88uhdc5yA/I2KG7bvo6BB94R/V/so3bt98tvyjDzWj5KzCvFshfWA==, tarball: file:projects/model-text-editor.tgz}
+  file:projects/model-text-editor.tgz(@tiptap/pm@2.2.4):
+    resolution: {integrity: sha512-a2Q7SUya+W86b84tBEmHhf0+LJNVxtfweKCuwzGh77gfmSz8ok0aQjpRA61JHQuk8NfP96K+CKAA4oJh1LMpAg==, tarball: file:projects/model-text-editor.tgz}
+    id: file:projects/model-text-editor.tgz
     name: '@rush-temp/model-text-editor'
     version: 0.0.0
     dependencies:
+      '@tiptap/starter-kit': 2.2.4(@tiptap/pm@2.2.4)
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -22591,9 +22593,9 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       typescript: 5.3.3
     transitivePeerDependencies:
+      - '@tiptap/pm'
       - supports-color
     dev: false
 
@@ -23301,7 +23303,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-PcNk328Y0w6TESBRrSlt0ARPyyFaygF6vO3aIi27DcqbF6SQJi50QFk3PShNb/OVhGkFTyXx8mn++2WpI4QPKA==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-qkCAH3xI1PgIlcZMYba7hsH3mpizW9nfMF13DaxgTu7glkC4ycPl+CHxhiqUadpHPfPQXNk6g7mNj2fS9ZyuGw==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -23625,10 +23627,11 @@ packages:
     dev: false
 
   file:projects/qms-tests-sanity.tgz:
-    resolution: {integrity: sha512-ntTsOcgNEYuQVnuTv8IDdeGHDmCqEJpcQijo2H/OJJlOfHBj52ijRQCFB8Jnhv6L2RLEV9euSHAk+VGxvWsqyw==, tarball: file:projects/qms-tests-sanity.tgz}
+    resolution: {integrity: sha512-2NJnLTGNRdrMXybXslRQNNCyyDLmsA069UyXn8uBG/WQaMHzr9rTXvtRpltXSfgCn+WAc8VidyT68O6J8RAPQA==, tarball: file:projects/qms-tests-sanity.tgz}
     name: '@rush-temp/qms-tests-sanity'
     version: 0.0.0
     dependencies:
+      '@faker-js/faker': 8.4.1
       '@playwright/test': 1.41.2
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
@@ -26931,7 +26934,7 @@ packages:
     dev: false
 
   file:projects/text-editor-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-wMIq/Qz9IudMF8tWnHCcSb11OmrfEByJDICav6WZMUK3EZRHp+YMhGYOtDsOaCSeN/CuJxnR8IUU9G+F5zTTBw==, tarball: file:projects/text-editor-assets.tgz}
+    resolution: {integrity: sha512-HrJXNpWkSNwguy4rSL6Cihc3/1eTmi0KQAmyLix1ci88uOK/9kKga7lMnKAsuobrB9DjbuLgPpcEMNpavMi13w==, tarball: file:projects/text-editor-assets.tgz}
     id: file:projects/text-editor-assets.tgz
     name: '@rush-temp/text-editor-assets'
     version: 0.0.0
