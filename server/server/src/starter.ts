@@ -18,7 +18,7 @@ export interface ServerEnv {
 
 export function serverConfigFromEnv (): ServerEnv {
   const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
-  const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'true') === 'true'
+  const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'false') === 'true'
 
   const url = process.env.MONGO_URL
   if (url === undefined) {
