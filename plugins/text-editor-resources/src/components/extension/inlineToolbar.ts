@@ -1,14 +1,19 @@
 import { Extension, isTextSelection } from '@tiptap/core'
 import { type BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
 import { PluginKey } from '@tiptap/pm/state'
+import { type ActionContext } from '@hcengineering/text-editor'
+
 import { InlinePopupExtension } from './inlinePopup'
 
+export const inlineToolbarKey = 'toolbar'
+
 export type InlineStyleToolbarOptions = BubbleMenuOptions & {
-  isSupported: () => boolean
-  canShowWithoutSelection?: boolean
+  isHidden?: () => boolean
+  ctx?: ActionContext
 }
 
-export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOptions>({
+export const InlineToolbarExtension = Extension.create<InlineStyleToolbarOptions>({
+  name: inlineToolbarKey,
   pluginKey: new PluginKey('inline-style-toolbar'),
   addExtensions () {
     const options: InlineStyleToolbarOptions = this.options
@@ -17,7 +22,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
       InlinePopupExtension.configure({
         ...options,
         shouldShow: ({ editor, view, state, oldState, from, to }) => {
-          if (!this.options.isSupported()) {
+          if (this.options.isHidden?.() === true) {
             return false
           }
 
@@ -26,7 +31,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
           }
 
           // For some reason shouldShow might be called after dismount and
-          // after destroing the editor. We should handle this just no to have
+          // after destroying the editor. We should handle this just no to have
           // any errors in runtime
           const editorElement = editor.view.dom
           if (editorElement === null || editorElement === undefined) {
@@ -51,11 +56,8 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
           // Doubleclick an empty paragraph returns a node size of 2.
           // So we check also for an empty text size.
           const isEmptyTextBlock = doc.textBetween(from, to).length === 0 && textSelection
-          if (empty || isEmptyTextBlock) {
-            return this.options.canShowWithoutSelection ?? false
-          }
 
-          return textSelection
+          return textSelection && !empty && !isEmptyTextBlock
         }
       })
     ]

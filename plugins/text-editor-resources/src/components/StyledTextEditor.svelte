@@ -39,15 +39,6 @@
   export let editorAttributes: Record<string, string> = {}
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
-  export let textFormatCategories: TextFormatCategory[] = [
-    TextFormatCategory.Heading,
-    TextFormatCategory.TextDecoration,
-    TextFormatCategory.Link,
-    TextFormatCategory.List,
-    TextFormatCategory.Quote,
-    TextFormatCategory.Code,
-    TextFormatCategory.Table
-  ]
 
   let editor: TextEditor | undefined = undefined
 
@@ -168,7 +159,6 @@
             bind:content
             {placeholder}
             {extensions}
-            {textFormatCategories}
             bind:this={editor}
             on:value
             on:content={(ev) => {
@@ -187,7 +177,6 @@
           bind:content
           {placeholder}
           {extensions}
-          {textFormatCategories}
           bind:this={editor}
           on:value
           on:content={(ev) => {

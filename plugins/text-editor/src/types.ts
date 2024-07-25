@@ -1,11 +1,11 @@
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
+import { type Class, type Space, type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui/src/types'
 import { type RelativePosition } from 'yjs'
 import { type AnyExtension, type Content, type Editor, type SingleCommands } from '@tiptap/core'
 import { type ParseOptions } from '@tiptap/pm/model'
 
-export type { AnyExtension } from '@tiptap/core'
+export type { AnyExtension, Editor } from '@tiptap/core'
 /**
  * @public
  */
@@ -73,13 +73,6 @@ export interface RefAction {
   disabled?: boolean
 }
 
-export interface TextNodeAction {
-  id: string
-  label?: IntlString
-  icon: Asset | AnySvelteComponent
-  action: (params: { editor: Editor }) => Promise<void> | void
-}
-
 /**
  * @public
  */
@@ -101,6 +94,15 @@ export interface TextEditorCommandProps {
  * @public
  */
 export type TextEditorCommand = (props: TextEditorCommandProps) => boolean
+
+/**
+ * @public
+ */
+export interface ActionContext {
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
+  objectSpace?: Ref<Space>
+}
 
 /**
  * @public
@@ -144,4 +146,51 @@ export type ExtensionCreator = (mode: TextEditorMode, ctx: any) => AnyExtension
 export interface TextEditorExtensionFactory extends Doc {
   index: number
   create: Resource<ExtensionCreator>
+}
+
+/**
+ * Action handler for text editor action
+ */
+export type TextActionFunction = (editor: Editor, event: MouseEvent, ctx: ActionContext) => Promise<void>
+
+/**
+ * Handler to determine whether the text action is visible
+ */
+export type TextActionVisibleFunction = (editor: Editor, ctx: ActionContext) => Promise<boolean>
+
+/**
+ * Handler to determine whether the text action is active
+ */
+export type TextActionActiveFunction = (editor: Editor) => Promise<boolean>
+
+/**
+ * Describes toggle handler for a text action
+ */
+export interface TogglerDescriptor {
+  command: keyof SingleCommands
+  params?: any
+}
+
+/**
+ * Describes isActive handler for a text action
+ */
+export interface ActiveDescriptor {
+  name: string
+  params?: any
+}
+
+export type TextEditorActionKind = 'text' | 'image'
+
+/**
+ * Defines a text action for text action editor
+ */
+export interface TextEditorAction extends Doc {
+  kind?: TextEditorActionKind
+  action: TogglerDescriptor | Resource<TextActionFunction>
+  visibilityTester?: Resource<TextActionVisibleFunction>
+  icon: Asset
+  isActive?: ActiveDescriptor | Resource<TextActionActiveFunction>
+  label: IntlString
+  category: number
+  index: number
 }

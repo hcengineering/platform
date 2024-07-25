@@ -33,7 +33,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.11"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/text-editor": "^0.6.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

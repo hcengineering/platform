@@ -15,8 +15,9 @@
 //
 
 import { type Class, type Ref } from '@hcengineering/core'
-import { type IntlString, type Metadata, type Plugin, plugin } from '@hcengineering/platform'
-import { type TextEditorExtensionFactory, type RefInputActionItem } from './types'
+import { type Asset, type IntlString, type Metadata, type Plugin, plugin } from '@hcengineering/platform'
+
+import { type TextEditorExtensionFactory, type RefInputActionItem, TextEditorAction } from './types'
 
 /**
  * @public
@@ -26,7 +27,8 @@ export const textEditorId = 'text-editor' as Plugin
 export default plugin(textEditorId, {
   class: {
     RefInputActionItem: '' as Ref<Class<RefInputActionItem>>,
-    TextEditorExtensionFactory: '' as Ref<Class<TextEditorExtensionFactory>>
+    TextEditorExtensionFactory: '' as Ref<Class<TextEditorExtensionFactory>>,
+    TextEditorAction: '' as Ref<Class<TextEditorAction>>
   },
   metadata: {
     CollaboratorUrl: '' as Metadata<string>
@@ -84,5 +86,27 @@ export default plugin(textEditorId, {
     Image: '' as IntlString,
     SeparatorLine: '' as IntlString,
     TodoList: '' as IntlString
+  },
+  icon: {
+    Header1: '' as Asset,
+    Header2: '' as Asset,
+    Header3: '' as Asset,
+    Underline: '' as Asset,
+    Strikethrough: '' as Asset,
+    Bold: '' as Asset,
+    Italic: '' as Asset,
+    Link: '' as Asset,
+    ListNumber: '' as Asset,
+    ListBullet: '' as Asset,
+    Quote: '' as Asset,
+    Code: '' as Asset,
+    CodeBlock: '' as Asset,
+    TableProps: '' as Asset,
+    AlignLeft: '' as Asset,
+    AlignCenter: '' as Asset,
+    AlignRight: '' as Asset,
+    MoreH: '' as Asset,
+    Expand: '' as Asset,
+    ScaleOut: '' as Asset
   }
 })

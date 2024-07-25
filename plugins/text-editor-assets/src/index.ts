@@ -13,3 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { loadMetadata } from '@hcengineering/platform'
+import textEditor from '@hcengineering/text-editor'
+
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(textEditor.icon, {
+  Header1: `${icons}#header1`,
+  Header2: `${icons}#header2`,
+  Header3: `${icons}#header3`,
+  Underline: `${icons}#underline`,
+  Strikethrough: `${icons}#strikethrough`,
+  Bold: `${icons}#bold`,
+  Italic: `${icons}#italic`,
+  Link: `${icons}#link`,
+  ListNumber: `${icons}#listNumber`,
+  ListBullet: `${icons}#listBullet`,
+  Quote: `${icons}#quote`,
+  Code: `${icons}#code`,
+  CodeBlock: `${icons}#codeBlock`,
+  TableProps: `${icons}#tableProps`,
+  AlignLeft: `${icons}#alignLeft`,
+  AlignCenter: `${icons}#alignCenter`,
+  AlignRight: `${icons}#alignRight`,
+  MoreH: `${icons}#moreH`,
+  Expand: `${icons}#expand`,
+  ScaleOut: `${icons}#scaleOut`
+})

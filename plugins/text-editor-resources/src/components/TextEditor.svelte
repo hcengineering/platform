@@ -18,7 +18,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
-  import textEditor, { TextFormatCategory } from '@hcengineering/text-editor'
+  import textEditor from '@hcengineering/text-editor'
   import { AnyExtension, Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
   import { ParseOptions } from '@tiptap/pm/model'
@@ -26,17 +26,13 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { deleteAttachment } from '../command/deleteAttachment'
-  import ImageStyleToolbar from './ImageStyleToolbar.svelte'
-  import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
+  import TextEditorToolbar from './TextEditorToolbar.svelte'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { InlinePopupExtension } from './extension/inlinePopup'
-  import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { getEditorKit } from '../../src/kits/editor-kit'
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditor.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
-  export let textFormatCategories: TextFormatCategory[] = []
   export let supportSubmit = true
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
@@ -136,23 +132,6 @@
   let textToolbarElement: HTMLElement
   let imageToolbarElement: HTMLElement
 
-  $: tippyOptions = {
-    zIndex: 100000,
-    popperOptions: {
-      modifiers: [
-        {
-          name: 'preventOverflow',
-          options: {
-            boundary,
-            padding: 8,
-            altAxis: true,
-            tether: false
-          }
-        }
-      ]
-    }
-  }
-
   export function focus (position?: FocusPosition): void {
     posFocus = position
     needFocus = true
@@ -180,33 +159,22 @@
           (await getEditorKit()).configure({
             mode: 'compact',
             file: canEmbedFiles ? {} : false,
-            image: canEmbedImages ? {} : false,
-            submit: supportSubmit ? { submit } : false
+            image: canEmbedImages
+              ? {
+                  toolbar: {
+                    element: imageToolbarElement,
+                    boundary
+                  }
+                }
+              : false,
+            submit: supportSubmit ? { submit } : false,
+            toolbar: {
+              element: textToolbarElement,
+              boundary
+            }
           }),
           Placeholder.configure({ placeholder: placeHolderStr }),
-          ...extensions,
-          InlineStyleToolbarExtension.configure({
-            tippyOptions,
-            // TODO: Toolbar element is updated on every component update,
-            //  but extensions is created only on mount. This causes issues when
-            //  you're trying to use TextEditor in long-living components that
-            //  get updated, e.g. in QuestionCollectionItemEditor in Surveys
-            element: textToolbarElement,
-            isSupported: () => true
-          }),
-          InlinePopupExtension.configure({
-            pluginKey: 'show-image-actions-popup',
-            // TODO: Toolbar element is updated on every component update,
-            //  but extensions is created only on mount. This causes issues when
-            //  you're trying to use TextEditor in long-living components that
-            //  get updated, e.g. in QuestionCollectionItemEditor in Surveys
-            element: imageToolbarElement,
-            tippyOptions: {
-              ...tippyOptions,
-              appendTo: () => boundary ?? element
-            },
-            shouldShow: ({ editor }) => editor.isEditable && editor.isActive('image')
-          })
+          ...extensions
         ],
         parseOptions: {
           preserveWhitespace: 'full'
@@ -248,23 +216,10 @@
   }
 </script>
 
-<div bind:this={textToolbarElement} class="text-editor-toolbar buttons-group xsmall-gap mb-4">
-  <TextEditorStyleToolbar {editor} {textFormatCategories} on:focus={handleFocus} />
-</div>
+<TextEditorToolbar bind:toolbar={textToolbarElement} {editor} on:focus={handleFocus} />
 
-<div bind:this={imageToolbarElement} class="text-editor-toolbar buttons-group xsmall-gap mb-4">
-  <ImageStyleToolbar {editor} on:focus={handleFocus} />
-</div>
+{#if canEmbedImages}
+  <TextEditorToolbar bind:toolbar={imageToolbarElement} kind="image" {editor} on:focus={handleFocus} />
+{/if}
 
 <div class="select-text" style="width: 100%;" bind:this={element} />
-
-<style lang="scss">
-  .text-editor-toolbar {
-    margin: -0.5rem -0.25rem 0.5rem;
-    padding: 0.375rem;
-    background-color: var(--theme-comp-header-color);
-    border-radius: 0.5rem;
-    box-shadow: var(--theme-popup-shadow);
-    z-index: 1;
-  }
-</style>
