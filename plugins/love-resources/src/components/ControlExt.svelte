@@ -352,7 +352,7 @@
   })
 
   const beforeUnloadListener = () => {
-    if ($myInfo !== undefined) {
+    if ($myInfo !== undefined && $isCurrentInstanceConnected) {
       leaveRoom($myInfo, $myOffice)
     }
   }
