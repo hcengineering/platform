@@ -134,7 +134,7 @@
   {/if}
   <div class="flex-row-center gap-2 no-print">
     {#if hasSubIssues}
-      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'ghost'} bind:viewlet />
+      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
     {/if}
     {#if hasSubIssues}
       <slot name="buttons" />

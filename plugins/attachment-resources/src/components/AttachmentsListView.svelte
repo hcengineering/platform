@@ -75,9 +75,10 @@
   .attachmentRow {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     margin: 0.5rem 1.5rem;
     padding: 0.5rem;
-    border: 1px solid var(--divider-color);
+    border: 1px solid var(--theme-divider-color);
     border-radius: 0.5rem;
 
     .eAttachmentRowActions {

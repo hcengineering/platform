@@ -63,6 +63,7 @@
   export let shrink: number = 0
   export let accent: boolean = false
   export let noFocus: boolean = false
+  export let noPrint: boolean = false
   export let adaptiveShrink: WidthType | null = null
   export let gap: 'medium' | 'large' = 'medium'
   export let stopPropagation: boolean = true
@@ -128,6 +129,7 @@
   class="antiButton {kind} {size} jf-{justify} sh-{shape ?? 'no-shape'} bs-{borderStyle} gap-{gap}"
   class:only-icon={iconOnly || adaptive}
   class:no-focus={noFocus}
+  class:no-print={noPrint}
   class:accent
   class:highlight
   class:pressed

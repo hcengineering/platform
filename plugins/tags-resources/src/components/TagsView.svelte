@@ -17,7 +17,16 @@
   import { Asset, IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
-  import { AnySvelteComponent, Button, Label, SearchEdit, showPopup, IconAdd, themeStore } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    Button,
+    Breadcrumb,
+    SearchInput,
+    showPopup,
+    IconAdd,
+    themeStore,
+    Header
+  } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
   import CategoryBar from './CategoryBar.svelte'
@@ -89,28 +98,23 @@
     // $: twoRows = $deviceInfo.twoRows
 </script>
 
-<div class="ac-header full divide">
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label label={title} /></span>
-  </div>
+<Header adaptive={'disabled'}>
+  <Breadcrumb {icon} label={title} size={'large'} isCurrent />
 
-  <div class="ac-header-full medium-gap mb-1">
-    <slot />
-    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit
+  <svelte:fragment slot="search">
+    <SearchInput
       bind:value={search}
+      collapsed
       on:change={() => {
         updateResultQuery(search, category)
       }}
     />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
-
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <slot />
+    <Button icon={IconAdd} label={сreateItemLabel} kind={'primary'} on:click={showCreateDialog} />
+  </svelte:fragment>
+</Header>
 <CategoryBar
   {targetClass}
   {category}

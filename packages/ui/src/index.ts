@@ -36,6 +36,7 @@ export type {
   ButtonItem,
   IconSize,
   TabItem,
+  BreadcrumbItem,
   DeviceOptions,
   TSeparatedItem,
   SeparatedItem,
@@ -102,6 +103,9 @@ export { default as Row } from './components/Row.svelte'
 export { default as EditWithIcon } from './components/EditWithIcon.svelte'
 export { default as SearchEdit } from './components/SearchEdit.svelte'
 export { default as SearchPicker } from './components/SearchPicker.svelte'
+export { default as SearchInput } from './components/SearchInput.svelte'
+export { default as Switcher } from './components/Switcher.svelte'
+export { default as SwitcherBase } from './components/SwitcherBase.svelte'
 export { default as Chip } from './components/Chip.svelte'
 export { default as Loading } from './components/Loading.svelte'
 export { default as Spinner } from './components/Spinner.svelte'

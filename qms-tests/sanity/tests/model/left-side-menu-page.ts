@@ -10,6 +10,6 @@ export class LeftSideMenuPage {
     this.page = page
     this.buttonPlanning = page.locator('button[id$="Planning"]')
     this.buttonTeam = page.locator('button[id$="Team"]')
-    this.buttonDocuments = page.locator('button[id$="documents:string:DocumentApplication"]')
+    this.buttonDocuments = page.locator('[id$="app-documents\\:string\\:DocumentApplication"]')
   }
 }

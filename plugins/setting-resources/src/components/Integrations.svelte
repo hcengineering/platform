@@ -43,7 +43,8 @@
   <Header>
     <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
   </Header>
-  <div class="ac-body__cards-container">
+
+  <div class="cards_grid">
     {#each integrationTypes as integrationType (integrationType._id)}
       {#if integrationType.allowMultiple}
         {#each getIntegrations(integrationType._id, integrations) as integration (integration._id)}
@@ -56,3 +57,14 @@
     {/each}
   </div>
 </div>
+
+<style lang="scss">
+  .cards_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
+    grid-auto-rows: minmax(12.5rem, auto);
+    grid-gap: 1.5rem;
+    padding: 1.5rem;
+    overflow: auto;
+  }
+</style>

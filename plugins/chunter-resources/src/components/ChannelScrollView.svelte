@@ -771,7 +771,7 @@
   }
 
   .ref-input {
-    margin: 1.25rem 1rem;
+    margin: 1.25rem 1rem 1rem;
   }
 
   .overlay {

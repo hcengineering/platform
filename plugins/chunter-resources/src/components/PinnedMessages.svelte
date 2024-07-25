@@ -63,8 +63,7 @@
 </script>
 
 {#if count > 0}
-  <div class="antiHSpacer x2" />
-  <ModernButton size={'extra-small'} on:click={openMessagesPopup}>
+  <ModernButton size={'small'} on:click={openMessagesPopup}>
     <Icon icon={view.icon.Pin} size={'x-small'} />
     <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count }} /></span>
   </ModernButton>

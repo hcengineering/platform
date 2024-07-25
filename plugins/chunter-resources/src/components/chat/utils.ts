@@ -30,7 +30,6 @@ import { get, writable } from 'svelte/store'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
-import activity from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type Action, showPopup } from '@hcengineering/ui'
 import contact, { type PersonAccount } from '@hcengineering/contact'
@@ -84,24 +83,25 @@ export const chatSpecials: SpecialNavModel[] = [
   {
     id: 'saved',
     label: chunter.string.Saved,
-    icon: activity.icon.Bookmark,
+    icon: chunter.icon.Bookmarks,
     position: 'top',
     component: chunter.component.SavedMessages
   },
   {
     id: 'chunterBrowser',
     label: chunter.string.ChunterBrowser,
-    icon: view.icon.Database,
+    icon: chunter.icon.ChunterBrowser,
     component: chunter.component.ChunterBrowser,
     position: 'top'
   },
   {
     id: 'channels',
     label: chunter.string.Channels,
-    icon: view.icon.List,
+    icon: chunter.icon.ChannelBrowser,
     component: workbench.component.SpecialView,
     componentProps: {
       _class: chunter.class.Channel,
+      icon: chunter.icon.ChannelBrowser,
       label: chunter.string.Channels,
       createLabel: chunter.string.CreateChannel,
       createComponent: chunter.component.CreateChannel

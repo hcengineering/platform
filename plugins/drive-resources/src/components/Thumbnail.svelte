@@ -42,7 +42,7 @@
 </script>
 
 {#if isFolder}
-  <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--theme-trans-color)'} />
+  <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--global-no-priority-PriorityColor)'} />
 {:else if previewRef != null && isImage && !isError}
   {#await getBlobRef(undefined, previewRef, object.name, sizeToWidth(size)) then blobSrc}
     <img

@@ -23,5 +23,8 @@ loadMetadata(chunter.icon, {
   Thread: `${icons}#thread`,
   Lock: `${icons}#lock`,
   ChannelBrowser: `${icons}#channelbrowser`,
-  Copy: `${icons}#copy`
+  ChunterBrowser: `${icons}#chunterbrowser`,
+  Copy: `${icons}#copy`,
+  Messages: `${icons}#messages`,
+  Bookmarks: `${icons}#bookmarks`
 })

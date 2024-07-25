@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project, Task, getStates } from '@hcengineering/task'
   import type { TabItem } from '@hcengineering/ui'
-  import { ScrollerBar, TabList } from '@hcengineering/ui'
+  import { ScrollerBar, TabList, Switcher } from '@hcengineering/ui'
   import { TableBrowser, statusStore } from '@hcengineering/view-resources'
   import { typeStore } from '..'
   import task from '../plugin'
@@ -150,13 +150,15 @@
   }
 </script>
 
-<div class="ac-header full divide">
-  <TabList
+<div class="hulyHeader-container clearPadding justify-between flex-gap-4">
+  <Switcher
+    name={'status-table-states'}
+    kind={'subtle'}
+    selected={doneStatusesView ? 'DoneStates' : 'AllStates'}
     items={[
       { id: 'AllStates', labelIntl: task.string.AllStates },
       { id: 'DoneStates', labelIntl: task.string.DoneStates }
     ]}
-    multiselect={false}
     on:select={handleSelect}
   />
   {#if doneStatusesView}
@@ -174,14 +176,4 @@
     />
   {/if}
 </div>
-<div class="statustableview-container">
-  <TableBrowser {_class} bind:query={resultQuery} config={resConfig} {options} showNotification />
-</div>
-
-<style lang="scss">
-  .statustableview-container {
-    flex-grow: 1;
-    min-height: 0;
-    height: 100%;
-  }
-</style>
+<TableBrowser {_class} bind:query={resultQuery} config={resConfig} {options} showNotification />

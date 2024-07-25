@@ -34,6 +34,7 @@
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
+  export let noPrint: boolean = false
   export let autoFocus: boolean = false
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
@@ -42,6 +43,7 @@
   export let element: HTMLButtonElement | undefined = undefined
   export let shape: 'rectangle' | 'round' = 'rectangle'
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
 
@@ -97,7 +99,9 @@
   class:inheritFont
   class:menu={hasMenu}
   class:iconOnly
+  class:no-print={noPrint}
   disabled={loading || disabled}
+  data-id={dataId}
   use:tp={tooltip}
   on:click|stopPropagation|preventDefault
   on:keydown
@@ -120,8 +124,7 @@
     flex-shrink: 0;
     gap: var(--spacing-1);
 
-    border: 1px;
-    border-style: solid;
+    border: 1px solid transparent;
 
     &:not(:disabled, .loading) {
       cursor: pointer;

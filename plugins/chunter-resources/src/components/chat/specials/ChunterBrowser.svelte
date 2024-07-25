@@ -14,13 +14,16 @@
 -->
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
+  import chunter from '@hcengineering/chunter'
   import { FileBrowser } from '@hcengineering/attachment-resources'
-  import { AnySvelteComponent, Button, Scroller } from '@hcengineering/ui'
+  import { Scroller, Switcher } from '@hcengineering/ui'
+  import type { AnySvelteComponent } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
-  import contact from '@hcengineering/contact-resources/src/plugin'
+  import contact from '@hcengineering/contact'
+  import contactPlg from '@hcengineering/contact-resources/src/plugin'
   import { EmployeeBrowser } from '@hcengineering/contact-resources'
   import MessagesBrowser from './MessagesBrowser.svelte'
-  import { FilterButton } from '@hcengineering/view-resources'
+  import { FilterBar, FilterButton } from '@hcengineering/view-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   import { userSearch } from '../../../index'
@@ -31,7 +34,9 @@
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
 
-  let searchType: SearchType = SearchType.Messages
+  const saved = localStorage.getItem('chunter-browser-st')
+  let searchType: SearchType = saved ? parseInt(saved, 10) : SearchType.Messages
+  $: localStorage.setItem('chunter-browser-st', searchType.toString())
 
   const components: {
     component: AnySvelteComponent
@@ -47,66 +52,71 @@
         requestedSpaceClasses: [plugin.class.Channel, plugin.class.DirectMessage]
       }
     },
-    { searchType: SearchType.Contacts, component: EmployeeBrowser, filterClass: contact.mixin.Employee }
+    { searchType: SearchType.Contacts, component: EmployeeBrowser, filterClass: contactPlg.mixin.Employee }
   ]
+  let searchValue: string = ''
 </script>
 
-<div class="flex-col h-full">
-  <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
-    <Header icon={workbench.icon.Search} intlLabel={plugin.string.ChunterBrowser} titleKind="breadcrumbs" />
-  </div>
-  <div class="h-full browser">
-    <div class="pb-16 component">
-      <div class="h-full">
-        {#if components[searchType].component}
-          <Scroller>
-            <svelte:component
-              this={components[searchType].component}
-              withHeader={false}
-              bind:search={userSearch_}
-              {...components[searchType].props}
-            />
-          </Scroller>
-        {/if}
-      </div>
-    </div>
-    <div class="p-3 bar">
-      <div class="w-32 flex-center"><FilterButton _class={components[searchType].filterClass} /></div>
-      <div class="flex-center w-full mr-32 buttons">
-        <div class="ml-1 p-1 btn">
-          <Button
-            label={plugin.string.Messages}
-            selected={searchType === SearchType.Messages}
-            kind="ghost"
-            on:click={() => {
-              searchType = SearchType.Messages
-            }}
-          />
-        </div>
-        <div class="ml-1 p-1 btn">
-          <Button
-            label={attachment.string.Files}
-            kind="ghost"
-            selected={searchType === SearchType.Files}
-            on:click={() => {
-              searchType = SearchType.Files
-            }}
-          />
-        </div>
-        <div class="ml-1 p-1 btn">
-          <Button
-            kind="ghost"
-            label={contact.string.Contacts}
-            selected={searchType === SearchType.Contacts}
-            on:click={() => {
-              searchType = SearchType.Contacts
-            }}
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<Header
+  icon={plugin.icon.ChunterBrowser}
+  intlLabel={plugin.string.ChunterBrowser}
+  titleKind={'breadcrumbs'}
+  bind:searchValue
+  adaptive={'freezeActions'}
+>
+  <svelte:fragment slot="search">
+    <FilterButton _class={components[searchType].filterClass} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <Switcher
+      name={'browser_group'}
+      kind={'subtle'}
+      selected={searchType}
+      items={[
+        {
+          id: SearchType.Messages,
+          icon: chunter.icon.Messages,
+          labelIntl: plugin.string.Messages,
+          tooltip: plugin.string.Messages
+        },
+        {
+          id: SearchType.Files,
+          icon: attachment.icon.FileBrowser,
+          labelIntl: attachment.string.Files,
+          tooltip: attachment.string.Files
+        },
+        {
+          id: SearchType.Contacts,
+          icon: contact.icon.Contacts,
+          labelIntl: contactPlg.string.Contacts,
+          tooltip: contactPlg.string.Contacts
+        }
+      ]}
+      on:select={(result) => {
+        if (result !== undefined && result.detail.id !== undefined) searchType = result.detail.id
+      }}
+    />
+  </svelte:fragment>
+</Header>
+{#if components[searchType].filterClass !== undefined}
+  <FilterBar
+    _class={components[searchType].filterClass}
+    space={undefined}
+    query={{ $search: searchValue }}
+    hideSaveButtons
+  />
+{/if}
+
+{#if components[searchType].component}
+  <Scroller>
+    <svelte:component
+      this={components[searchType].component}
+      withHeader={false}
+      search={userSearch_}
+      {...components[searchType].props}
+    />
+  </Scroller>
+{/if}
 
 <style lang="scss">
   .browser {
@@ -114,7 +124,7 @@
     display: flex;
     justify-content: flex-start;
     flex-direction: column-reverse;
-    background-color: var(--theme-popup-color);
+    background-color: var(--theme-panel-color);
   }
 
   .bar {

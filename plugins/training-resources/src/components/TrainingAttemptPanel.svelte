@@ -157,7 +157,16 @@
   {#key object._id}
     <ActionContext context={{ mode: 'editor' }} />
 
-    <Panel {object} {embedded} isHeader={false} isSub={false} on:close withoutActivity contentClasses="h-full">
+    <Panel
+      {object}
+      {embedded}
+      isHeader={false}
+      isSub={false}
+      on:close
+      withoutActivity
+      contentClasses="h-full"
+      adaptive={'default'}
+    >
       <svelte:fragment slot="title">
         <PanelTitle training={trainingObject}>
           <TrainingAttemptNumberPresenter slot="extra" value={object} showLabel />

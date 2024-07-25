@@ -181,6 +181,7 @@ export function createModel (builder: Builder): void {
               query: {
                 [documents.mixin.DocumentTemplate]: { $exists: false }
               },
+              icon: documents.icon.Library,
               title: documents.string.Documents,
               config: [
                 ['effective', documents.string.Effective, {}],

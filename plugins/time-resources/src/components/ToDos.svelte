@@ -284,7 +284,7 @@
 </script>
 
 <div class="toDos-container">
-  <Header type={'type-panel'} hideSeparator>
+  <Header type={'type-panel'} hideSeparator adaptive={'disabled'}>
     <ButtonIcon
       icon={$deviceInfo.navigator.visible ? MenuClose : MenuOpen}
       kind={'tertiary'}

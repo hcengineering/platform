@@ -39,7 +39,7 @@
       labelIntl: getEmbeddedLabel('Users')
     }
   ]
-  let selectedTab: string = tabs[0].id
+  let selectedTab: string | number = tabs[0].id
 </script>
 
 <Panel on:close isFullSize useMaxWidth={true}>

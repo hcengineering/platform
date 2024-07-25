@@ -8,7 +8,7 @@ export class CategoriesPage extends CalendarPage {
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.buttonCreateCategory = page.locator('div[slot="header-tools"] button[type="submit"]', { hasText: 'Category' })
+    this.buttonCreateCategory = page.getByRole('button', { name: 'Category' })
   }
 
   async openCategory (categoryTitle: string): Promise<void> {

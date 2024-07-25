@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Document } from '@hcengineering/controlled-documents'
   import { Class, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { IModeSelector } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import { ViewletPanelHeader } from '@hcengineering/view-resources'
@@ -12,6 +12,7 @@
   export let _class: Ref<Class<Document>> = document.class.Document
   export let query: DocumentQuery<Document> = {}
   export let title: IntlString
+  export let icon: Asset | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
   export let panelWidth: number = 0
   export let modeSelectorProps: IModeSelector | undefined = undefined
@@ -40,6 +41,8 @@
   bind:preference
   {_class}
   {title}
+  {icon}
+  adaptive={'doubleRow'}
   {modeSelectorProps}
   {query}
   bind:resultQuery

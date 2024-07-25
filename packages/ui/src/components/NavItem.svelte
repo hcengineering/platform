@@ -256,7 +256,7 @@
       background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
     &.selected {
-      cursor: auto;
+      cursor: default;
       background-color: var(--global-ui-highlight-BackgroundColor);
 
       // &:not(.type-anchor-link) .hulyNavItem-label:not(.description) {

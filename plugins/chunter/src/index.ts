@@ -86,7 +86,10 @@ export default plugin(chunterId, {
     Thread: '' as Asset,
     Lock: '' as Asset,
     ChannelBrowser: '' as Asset,
-    Copy: '' as Asset
+    ChunterBrowser: '' as Asset,
+    Copy: '' as Asset,
+    Messages: '' as Asset,
+    Bookmarks: '' as Asset
   },
   component: {
     DmHeader: '' as AnyComponent,
