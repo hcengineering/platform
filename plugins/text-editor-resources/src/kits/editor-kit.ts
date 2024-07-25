@@ -21,7 +21,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 import { getBlobRef, getClient } from '@hcengineering/presentation'
 import { CodeBlockExtension, codeBlockOptions, CodeExtension, codeOptions } from '@hcengineering/text'
-import textEditor, { type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
+import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
 import { HardBreakExtension } from '../components/extension/hardBreak'
@@ -247,6 +247,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                     element: this.options.toolbar?.element,
                     isHidden: this.options.toolbar?.isHidden,
                     ctx: {
+                      mode,
                       objectId: this.options.objectId,
                       objectClass: this.options.objectClass,
                       objectSpace: this.options.objectSpace
@@ -272,4 +273,8 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
 
 export async function isEditable (editor: Editor): Promise<boolean> {
   return editor.isEditable
+}
+
+export async function isHeadingVisible (editor: Editor, ctx: ActionContext): Promise<boolean> {
+  return (await isEditable(editor)) && ctx.mode === 'full'
 }

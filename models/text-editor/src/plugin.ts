@@ -30,6 +30,7 @@ export default mergeIds(textEditorId, textEditor, {
     MoreImageActions: '' as Resource<TextActionFunction>,
 
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
-    IsEditable: '' as Resource<TextActionVisibleFunction>
+    IsEditable: '' as Resource<TextActionVisibleFunction>,
+    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>
   }
 })
