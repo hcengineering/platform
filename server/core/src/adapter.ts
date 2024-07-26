@@ -112,6 +112,8 @@ export interface DbAdapter {
   upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
+  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
+
   // Bulk update operations
   update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>
 }

@@ -67,6 +67,9 @@ export interface LowLevelStorage {
 
   // Remove a list of documents.
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  // Low level direct group API
+  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
 }
 
 export interface Branding {
