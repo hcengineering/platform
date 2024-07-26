@@ -1188,7 +1188,8 @@ export async function upgradeWorkspace (
   db: Db,
   workspaceUrl: string,
   logger: ModelLogger = consoleModelLogger,
-  forceUpdate: boolean = true
+  forceUpdate: boolean = true,
+  forceIndexes: boolean = false
 ): Promise<string> {
   const ws = await getWorkspaceByUrl(db, productId, workspaceUrl)
   if (ws === null) {
@@ -1218,7 +1219,8 @@ export async function upgradeWorkspace (
     migrationOperation,
     logger,
     false,
-    async (value) => {}
+    async (value) => {},
+    forceIndexes
   )
 
   await db.collection(WORKSPACE_COLLECTION).updateOne(

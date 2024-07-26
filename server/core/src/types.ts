@@ -48,6 +48,10 @@ import { type Readable } from 'stream'
 import { type ServiceAdaptersManager } from './service'
 import { type StorageAdapter } from './storage'
 
+export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
+  domain?: Domain // Allow to find for Doc's in specified domain only.
+  prefix?: string
+}
 /**
  * @public
  */
@@ -58,10 +62,7 @@ export interface ServerStorage extends LowLevelStorage {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-      prefix?: string
-    }
+    options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
   tx: (ctx: SessionOperationContext, tx: Tx) => Promise<TxResult>

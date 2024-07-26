@@ -21,10 +21,15 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import notification, { notificationId, type DocNotifyContext } from '@hcengineering/notification'
+import notification, {
+  notificationId,
+  NotificationStatus,
+  type BrowserNotification,
+  type DocNotifyContext
+} from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
-import { DOMAIN_NOTIFICATION } from './index'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 
 export async function removeNotifications (
   client: MigrationClient,
@@ -127,8 +132,46 @@ export const notificationOperation: MigrateOperation = {
       {
         state: 'migrate-setting',
         func: migrateSettings
+      },
+      {
+        state: 'move-doc-notify',
+        func: async (client) => {
+          await client.move(DOMAIN_NOTIFICATION, { _class: notification.class.DocNotifyContext }, DOMAIN_DOC_NOTIFY)
+        }
+      },
+      {
+        state: 'remove-last-view',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:LastView' as any })
+        }
+      },
+      {
+        state: 'remove-notification',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:Notification' as any })
+        }
+      },
+      {
+        state: 'remove-email-notification',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:EmailNotification' as any })
+        }
+      },
+      {
+        state: 'move-user',
+        func: async (client) => {
+          await client.move(
+            DOMAIN_NOTIFICATION,
+            { _class: { $in: [notification.class.BrowserNotification, notification.class.PushSubscription] } },
+            DOMAIN_USER_NOTIFY
+          )
+        }
       }
     ])
+    await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
+      _class: notification.class.BrowserNotification,
+      status: NotificationStatus.Notified
+    })
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

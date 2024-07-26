@@ -362,8 +362,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             {
               keys: {
                 ['stages.' + st.stageId]: 1
-              },
-              sparse: true
+              }
             }
           ]
         })

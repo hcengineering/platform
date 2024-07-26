@@ -97,6 +97,7 @@ describe('mongo operations', () => {
   })
 
   afterAll(async () => {
+    mongoClient.close()
     await shutdown()
   })
 
@@ -135,6 +136,8 @@ describe('mongo operations', () => {
     for (const t of txes) {
       await txStorage.tx(mctx, t)
     }
+
+    await txStorage.close()
 
     const conf: DbConfiguration = {
       domains: {
@@ -223,13 +226,18 @@ describe('mongo operations', () => {
 
   it('check add', async () => {
     jest.setTimeout(500000)
+    const times: number[] = []
     for (let i = 0; i < 50; i++) {
+      const t = Date.now()
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
         description: `${i * i}`,
         rate: 20 + i
       })
+      times.push(Date.now() - t)
     }
+
+    console.log('createDoc times', times)
 
     const r = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(r.length).toEqual(50)
