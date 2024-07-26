@@ -12,4 +12,20 @@ export class LeftSideMenuPage {
     this.buttonTeam = page.locator('button[id$="Team"]')
     this.buttonDocuments = page.locator('button[id$="documents:string:DocumentApplication"]')
   }
+
+  async clickButtonOnTheLeft (buttonName: 'Planning' | 'Team' | 'Documents'): Promise<void> {
+    switch (buttonName) {
+      case 'Planning':
+        await this.buttonPlanning.click()
+        break
+      case 'Team':
+        await this.buttonTeam.click()
+        break
+      case 'Documents':
+        await this.buttonDocuments.click()
+        break
+      default:
+        throw new Error('Unknown button')
+    }
+  }
 }

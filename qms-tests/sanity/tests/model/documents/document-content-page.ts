@@ -59,6 +59,14 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly documentHeader: Locator
   readonly leaveFolder: Locator
   readonly textContainer: Locator
+  readonly myDocument: Locator
+  readonly library: Locator
+  readonly templates: Locator
+  readonly categories: Locator
+  readonly addCategoryButton: Locator
+  readonly categoryTitle: Locator
+  readonly description: Locator
+  readonly categoryCode: Locator
 
   constructor (page: Page) {
     super(page)
@@ -126,6 +134,14 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.documentHeader = page.getByRole('button', { name: 'Complete document' })
     this.leaveFolder = page.getByRole('button', { name: 'Leave' })
     this.textContainer = page.locator('.tiptap')
+    this.myDocument = page.getByRole('button', { name: 'Categories' })
+    this.library = page.getByRole('button', { name: 'Library' })
+    this.templates = page.getByRole('button', { name: 'Templates' })
+    this.categories = page.getByRole('button', { name: 'Categories' })
+    this.addCategoryButton = page.getByRole('button', { name: 'Category', exact: true })
+    this.categoryTitle = page.getByPlaceholder('Title')
+    this.description = page.getByRole('paragraph')
+    this.categoryCode = page.getByPlaceholder('Code')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -142,6 +158,40 @@ export class DocumentContentPage extends DocumentCommonPage {
       .locator('xpath=..')
       .locator('span.label input')
       .fill(title)
+  }
+
+  async clickOnAddCategoryButton (): Promise<void> {
+    await this.addCategoryButton.click()
+  }
+
+  async selectControlDocumentSubcategory (
+    buttonName: 'My Document' | 'Library' | 'Templates' | 'Categories'
+  ): Promise<void> {
+    switch (buttonName) {
+      case 'My Document':
+        await this.myDocument.click()
+        break
+      case 'Library':
+        await this.library.click()
+        break
+      case 'Templates':
+        await this.templates.click()
+        break
+      case 'Categories':
+        await this.categories.click()
+        break
+      default:
+        throw new Error('Unknown button')
+    }
+  }
+
+  async fillCategoryForm (categoryTitle: string, description: string, categoryCode: string): Promise<void> {
+    await this.categoryTitle.fill(categoryTitle)
+    await this.description.fill(description)
+    await this.categoryCode.fill(categoryCode)
+    await this.createButton.click()
+    await expect(this.page.getByText(categoryTitle)).toBeVisible()
+    await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
   }
 
   async checkIfTextExists (text: string): Promise<void> {
