@@ -845,6 +845,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         let d = await ctx.with('next', { mode }, async () => await iterator.next())
         if (d == null && mode === 'hashed') {
           mode = 'non-hashed'
+          await iterator.close()
           iterator = coll.find({ '%hash%': { $in: ['', null] } })
           d = await ctx.with('next', { mode }, async () => await iterator.next())
         }
