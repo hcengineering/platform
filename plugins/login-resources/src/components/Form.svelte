@@ -23,7 +23,7 @@
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     navigate,
-    themeStore
+    themeStore, Popup
   } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
 
@@ -45,6 +45,7 @@
       rule: RegExp
       notMatch: boolean
       ruleDescr: IntlString
+      disabled: boolean
     }[]
   }
 
@@ -66,6 +67,8 @@
   export let subtitle: string | undefined = undefined
 
   $: $themeStore.language && validate($themeStore.language)
+
+  let passwordStrength: string = ''; 
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
@@ -94,8 +97,15 @@
       if (f.rules !== undefined) {
         for (const rule of f.rules) {
           if (rule.rule.test(v) === rule.notMatch) {
-            status = new Status(Severity.INFO, rule.ruleDescr, {})
-            return false
+            const passwordField = fields.find(f => f.name === 'password');
+
+          if (passwordField) {
+            const password = object[passwordField.name] as string;
+            passwordStrength = calculatePasswordStrength(password);
+          }
+
+            status = OK
+            return true 
           }
         }
       }
@@ -104,6 +114,8 @@
     return true
   })
   validate($themeStore.language)
+
+  let contentPanelElement: HTMLElement | undefined;
 
   let inAction = false
 
@@ -129,6 +141,44 @@
     navigate(loc)
   }
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
+
+  let rulesList: { description: string }[] = []
+
+  async function fetchRules() {
+    const language = $themeStore.language
+    const rulePromises = fields.flatMap(field =>
+  field.rules ? field.rules.filter(rule => !rule.disabled).map(rule =>
+    translate(rule.ruleDescr, {}, language).then(description => ({
+      description
+    }))
+  ) : []
+);
+    rulesList = await Promise.all(rulePromises)
+  }
+
+  function calculatePasswordStrength(password: string): string {
+    if(caption === login.string.SignUp){
+      const  passwordValidationRules = fields.find(f => f.rules);
+      const satisfiedRulesCount = passwordValidationRules.rules.filter(rule =>  !rule.disabled && rule.rule.test(password) !== rule.notMatch).length;
+
+      if (satisfiedRulesCount <= 1) {
+      return login.string.PasswordWeak;
+    } else if (satisfiedRulesCount === 2) {
+      return login.string.PasswordModerate;
+    } else if(satisfiedRulesCount === 3) {
+      return login.string.PasswordStrong;
+    }else if(satisfiedRulesCount === 4) {
+      return login.string.PasswordVeryStrong;
+    } else {
+      return ''
+    }
+    }
+
+  }
+
+  $:$themeStore.language, fetchRules()
+
+  let isVisible : boolean = false
 </script>
 
 <form
@@ -188,13 +238,44 @@
           name={field.id}
           password={field.password}
           bind:value={object[field.name]}
-          on:input={() => validate($themeStore.language)}
+          on:input={() => { 
+            if(field.name === 'password'){
+              isVisible = object[field.name] !== ''
+            }
+           
+            validate($themeStore.language);
+            if (field.password) {
+              
+              passwordStrength = calculatePasswordStrength(object[field.name]);
+              
+            }
+          }}
           on:blur={() => {
             trim(field.name)
           }}
         />
       </div>
     {/each}
+
+    <Popup contentPanel={contentPanelElement} />
+
+
+
+{#if isVisible && caption === login.string.SignUp}
+
+    <div class={'password-strength'}>
+      <Label label={passwordStrength}/>
+    </div>
+   
+    <div class={'password-suggestion-wrapper'}>
+      <div class={'password-suggestion'}><Label label={login.string.PasswordSuggestion}/></div>
+      <div bind:this={contentPanelElement} class='info-text' >
+          {#each rulesList as rule}
+          <div><Label label={rule.description}/></div>
+          {/each}
+      </div>
+    </div>
+{/if}
 
     <div class="status">
       <StatusControl {status} />
@@ -292,6 +373,8 @@
       column-gap: 0.75rem;
       row-gap: 1.5rem;
       margin-top: 1.5rem;
+      position: relative;
+
 
       .form-row {
         grid-column-start: 1;
@@ -323,6 +406,39 @@
         text-decoration: underline;
         color: var(--theme-content-color);
       }
+    }
+    
+    .info-text {
+      font-size: 0.75rem;
+      color: var(--theme-info-color);
+      padding: 0.875rem 1.25rem;
+      width: 100%; 
+      grid-column: 1 / span 2; 
+      background-color: var(--theme-button-default);
+      border: 1px solid var(--theme-button-border);
+      border-radius: 0.75rem;
+      caret-color: var(--theme-caret-color);
+    }
+
+    .password-strength{
+      font-size: 0.75rem;
+      color: var(--theme-info-color); 
+      background-color: var(--theme-info-bg-color); 
+      position:absolute;
+      top: 13rem;
+      padding-left: 1.25rem;
+    }
+
+    .password-suggestion-wrapper{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      grid-column: 1 / span 2; 
+    }
+
+    .password-suggestion{
+      margin-bottom: 0.5rem;
     }
   }
 </style>

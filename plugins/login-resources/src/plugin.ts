@@ -24,7 +24,11 @@ export default mergeIds(loginId, login, {
     RequiredField: '' as StatusCode<{ field: string }>,
     FieldsDoNotMatch: '' as StatusCode<{ field: string, field2: string }>,
     ConnectingToServer: '' as StatusCode,
-    IncorrectValue: '' as StatusCode<{ field: string }>
+    IncorrectValue: '' as StatusCode<{ field: string }>,
+    PasswordLength: '' as StatusCode,
+    PasswordNumber: '' as StatusCode,
+    PasswordLowercase: '' as StatusCode,
+    PasswordUppercase: '' as StatusCode
   },
   string: {
     CreateWorkspace: '' as IntlString,
@@ -59,6 +63,11 @@ export default mergeIds(loginId, login, {
     ConfirmationSent: '' as IntlString,
     ConfirmationSent2: '' as IntlString,
     Slogan: '' as IntlString,
-    ContinueWith: '' as IntlString
+    ContinueWith: '' as IntlString,
+    PasswordSuggestion: '' as IntlString,
+    PasswordWeak: '' as IntlString,
+    PasswordModerate: '' as IntlString,
+    PasswordStrong: '' as IntlString,
+    PasswordVeryStrong: '' as IntlString
   }
 })

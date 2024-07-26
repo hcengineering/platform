@@ -3,7 +3,11 @@
     "RequiredField": "Champ requis {field}",
     "FieldsDoNotMatch": "{field} ne correspond pas à {field2}",
     "ConnectingToServer": "Connexion au serveur...",
-    "IncorrectValue": "Valeur incorrecte {field}"
+    "IncorrectValue": "Valeur incorrecte {field}",
+    "PasswordLength": "Le mot de passe doit comporter au moins 8 caractères",
+    "PasswordNumber": "Le mot de passe doit contenir au moins un chiffre",
+    "PasswordLowercase": "Le mot de passe doit contenir au moins une lettre minuscule",
+    "PasswordUppercase": "Le mot de passe doit contenir au moins une lettre majuscule"
   },
   "string": {
     "LogIn": "Connexion",
@@ -42,6 +46,11 @@
     "ConfirmationSent": "Un message a été envoyé à votre adresse e-mail contenant un lien pour confirmer votre adresse.",
     "ConfirmationSent2": "Veuillez suivre le lien pour compléter votre inscription.",
     "Slogan": "Un lieu unique pour gérer tout votre travail\nBienvenue sur la plateforme",
-    "ContinueWith": "Continuer avec {provider}"
+    "ContinueWith": "Continuer avec {provider}",
+    "PasswordSuggestion": "Conseil Général pour un Mot de Passe Sécurisé",
+    "PasswordWeak": "Faible",
+    "PasswordModerate": "Modéré",
+    "PasswordStrong": "Fort",
+    "PasswordVeryStrong": "Très Fort"
   }
 }

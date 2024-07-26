@@ -3,7 +3,11 @@
     "RequiredField": "Требуется заполнить {field}",
     "FieldsDoNotMatch": "{field} не совпадает {field2}",
     "ConnectingToServer": "Подключение к серверу....",
-    "IncorrectValue": "Неправильное значение {field}"
+    "IncorrectValue": "Неправильное значение {field}",
+    "PasswordLength": "Пароль должен быть длиной не менее 8 символов",
+    "PasswordNumber": "Пароль должен содержать хотя бы одну цифру",
+    "PasswordLowercase": "Пароль должен содержать хотя бы одну строчную букву",
+    "PasswordUppercase": "Пароль должен содержать хотя бы одну заглавную букву"
   },
   "string": {
     "LogIn": "Вход",
@@ -42,6 +46,11 @@
     "ConfirmationSent": "На Вашу почту отправлено сообщение, c ссылкой для подтверждения email.",
     "ConfirmationSent2": "Пожалуйста, перейдите по ссылке для завершения регистрации.",
     "Slogan": "Уникальное место для организации всей вашей работы\nДобро пожаловать в Платформу",
-    "ContinueWith": "Войти через {provider}"
+    "ContinueWith": "Войти через {provider}",
+    "PasswordSuggestion": "Общий Совет по Паролям для Улучшения Безопасности",
+    "PasswordWeak": "Слабый пароль",
+  "PasswordModerate": "Умеренный пароль",
+  "PasswordStrong": "Надежный пароль",
+  "PasswordVeryStrong": "Очень Надежный пароль"
   }
 }

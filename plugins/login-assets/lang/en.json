@@ -3,7 +3,11 @@
     "RequiredField": "Required field {field}",
     "FieldsDoNotMatch": "{field} don't match {field2}",
     "ConnectingToServer": "Connecting to server....",
-    "IncorrectValue": "Incorrect value {field}"
+    "IncorrectValue": "Incorrect value {field}",
+    "PasswordLength": "Password must be at least 8 characters long",
+      "PasswordNumber": "Password must contain at least one number",
+      "PasswordLowercase": "Password must contain at least one lowercase letter",
+      "PasswordUppercase": "Password must contain at least one uppercase letter"
   },
   "string": {
     "LogIn": "Log In",
@@ -42,6 +46,11 @@
     "ConfirmationSent": "A message has been sent to your email containing a link to confirm your address.",
     "ConfirmationSent2": "Please follow the link to complete your sign up.",
     "Slogan": "A unique place to manage all of your work\nWelcome to the Platform",
-    "ContinueWith": "Continue with {provider}"
+    "ContinueWith": "Continue with {provider}",
+    "PasswordSuggestion": "General Password Suggestion for Improved Security",
+    "PasswordWeak": "Password is Weak",
+    "PasswordModerate": "Password is Moderate",
+    "PasswordStrong": "Password is Strong",
+    "PasswordVeryStrong": "Password is Very Strong"
   }
 }

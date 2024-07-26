@@ -3,7 +3,11 @@
     "RequiredField": "Campo obligatorio: {field}",
     "FieldsDoNotMatch": "{field} no coincide con {field2}",
     "ConnectingToServer": "Conectando al servidor...",
-    "IncorrectValue": "Valor incorrecto para {field}"
+    "IncorrectValue": "Valor incorrecto para {field}",
+    "PasswordLength": "La contraseña debe tener al menos 8 caracteres",
+    "PasswordNumber": "La contraseña debe contener al menos un número",
+    "PasswordLowercase": "La contraseña debe contener al menos una letra minúscula",
+    "PasswordUppercase": "La contraseña debe contener al menos una letra mayúscula"
   },
   "string": {
     "LogIn": "Iniciar sesión",
@@ -42,6 +46,11 @@
     "ConfirmationSent": "Se ha enviado un mensaje a su correo electrónico con un enlace para confirmar su dirección.",
     "ConfirmationSent2": "Por favor, siga el enlace para completar su registro.",
     "Slogan": "Un lugar único para gestionar todo tu trabajo\nBienvenido/a a la Plataforma",
-    "ContinueWith": "Continuar com {provider}"
+    "ContinueWith": "Continuar com {provider}",
+    "PasswordSuggestion": "Sugerencia General de Contraseña para una Mejor Seguridad",
+    "PasswordWeak": "Débil",
+  "PasswordModerate": "Moderado",
+  "PasswordStrong": "Fuerte",
+  "PasswordVeryStrong": "Muy Fuerte"
   }
 }

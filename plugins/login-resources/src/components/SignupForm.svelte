@@ -21,11 +21,38 @@
   import { goTo, signUp } from '../utils'
   import Form from './Form.svelte'
 
+  const passwordValidationRules = [
+    {
+      rule: /.{8,}/,
+      notMatch: false,
+      ruleDescr: login.status.PasswordLength,
+      disabled: true
+    },
+    {
+      rule: /[0-9]/,
+      notMatch: false,
+      ruleDescr: login.status.PasswordNumber,
+      disabled: false
+    },
+    {
+      rule: /[a-z]/,
+      notMatch: false,
+      ruleDescr: login.status.PasswordLowercase,
+      disabled: false
+    },
+    {
+      rule: /[A-Z]/,
+      notMatch: false,
+      ruleDescr: login.status.PasswordUppercase,
+      disabled: false
+    }
+  ]
+
   const fields = [
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
     { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
     { id: 'email', name: 'username', i18n: login.string.Email },
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
+    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true, rules: passwordValidationRules },
     { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
   ]
 

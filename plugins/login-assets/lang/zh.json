@@ -3,7 +3,11 @@
     "RequiredField": "必填字段 {field}",
     "FieldsDoNotMatch": "{field} 与 {field2} 不匹配",
     "ConnectingToServer": "正在连接服务器....",
-    "IncorrectValue": "不正确的值 {field}"
+    "IncorrectValue": "不正确的值 {field}",
+    "PasswordLength": "密码长度必须至少为8个字符",
+    "PasswordNumber": "密码必须包含至少一个数字",
+    "PasswordLowercase": "密码必须包含至少一个小写字母",
+    "PasswordUppercase": "密码必须包含至少一个大写字母"
   },
   "string": {
     "LogIn": "登录",
@@ -42,6 +46,11 @@
     "ConfirmationSent": "已发送确认邮件到您的邮箱，包含一个确认地址的链接。",
     "ConfirmationSent2": "请点击链接完成注册。",
     "Slogan": "一个独特的地方来管理你所有的工作\n欢迎来到平台",
-    "ContinueWith": "继续使用 {provider}"
+    "ContinueWith": "继续使用 {provider}",
+    "PasswordSuggestion": "提高安全性的密码一般建议",
+    "PasswordWeak": "弱",
+  "PasswordModerate": "中等",
+  "PasswordStrong": "强",
+  "PasswordVeryStrong": "非常强"
   }
 }
