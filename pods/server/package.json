@@ -21,7 +21,7 @@
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/transactor staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/transactor",
     "build:watch": "compile",
-    "format": "format src",    
+    "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
     "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
