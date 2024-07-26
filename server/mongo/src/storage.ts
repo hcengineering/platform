@@ -66,6 +66,7 @@ import {
   updateHashForDoc,
   type DbAdapter,
   type DomainHelperOperations,
+  type ServerFindOptions,
   type StorageAdapter,
   type TxAdapter
 } from '@hcengineering/server-core'
@@ -75,6 +76,7 @@ import {
   type AbstractCursor,
   type AnyBulkWriteOperation,
   type Collection,
+  type CreateIndexesOptions,
   type Db,
   type Document,
   type Filter,
@@ -153,9 +155,15 @@ abstract class MongoAdapterBase implements DbAdapter {
     for (const value of config.indexes) {
       try {
         if (typeof value === 'string') {
-          await this.collection(domain).createIndex(value, { sparse: true })
+          await this.collection(domain).createIndex(value)
         } else {
-          await this.collection(domain).createIndex(value.keys, { sparse: value.sparse ?? true })
+          const opt: CreateIndexesOptions = {}
+          if (value.filter !== undefined) {
+            opt.partialFilterExpression = value.filter
+          } else if (value.sparse === true) {
+            opt.sparse = true
+          }
+          await this.collection(domain).createIndex(value.keys, opt)
         }
       } catch (err: any) {
         console.error('failed to create index', domain, value, err)
@@ -171,7 +179,7 @@ abstract class MongoAdapterBase implements DbAdapter {
           const name: string = existingIndex.name
           if (
             deletePattern.some((it) => it.test(name)) &&
-            (existingIndex.sparse !== true || !keepPattern.some((it) => it.test(name)))
+            (existingIndex.sparse === true || !keepPattern.some((it) => it.test(name)))
           ) {
             await this.collection(domain).dropIndex(name)
           }
@@ -469,9 +477,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-    }
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     const pipeline: any[] = []
     const match = { $match: this.translateQuery(clazz, query) }
@@ -506,10 +512,8 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     // const domain = this.hierarchy.getDomain(clazz)
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
-    const cursor = this.collection(domain).aggregate<WithLookup<T>>(pipeline, {
-      checkKeys: false,
-      enableUtf8Validation: false
-    })
+
+    const cursor = this.collection(domain).aggregate<WithLookup<T>>(pipeline)
     let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
@@ -662,12 +666,12 @@ abstract class MongoAdapterBase implements DbAdapter {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-    }
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
+    const stTime = Date.now()
     return await this.findRateLimit.exec(async () => {
-      return await this.collectOps(
+      const st = Date.now()
+      const result = await this.collectOps(
         this.globalCtx,
         this.hierarchy.findDomain(_class),
         'find',
@@ -737,6 +741,17 @@ abstract class MongoAdapterBase implements DbAdapter {
           options
         }
       )
+      const edTime = Date.now()
+      if (edTime - st > 1000 || st - stTime > 1000) {
+        ctx.error('FindAll', {
+          time: edTime - st,
+          _class,
+          query: cutObjectArray(query),
+          options,
+          queueTime: st - stTime
+        })
+      }
+      return result
     })
   }
 
@@ -1027,97 +1042,101 @@ class MongoAdapter extends MongoAdapterBase {
       return undefined
     })
 
-    for (const [domain, txs] of byDomain) {
-      if (domain === undefined) {
-        continue
-      }
-      const domainBulk: OperationBulk = {
-        add: [],
-        update: new Map(),
-        bulkOperations: [],
-        findUpdate: new Set(),
-        raw: []
-      }
-      for (const t of txs) {
-        this.updateBulk(domainBulk, t)
-      }
-      if (
-        domainBulk.add.length === 0 &&
-        domainBulk.update.size === 0 &&
-        domainBulk.bulkOperations.length === 0 &&
-        domainBulk.findUpdate.size === 0 &&
-        domainBulk.raw.length === 0
-      ) {
-        continue
-      }
-      await this.rateLimit.exec(async () => {
-        await this.collectOps(
-          this.globalCtx,
-          domain,
-          'tx',
-          async (ctx) => {
-            const coll = this.db.collection<Doc>(domain)
-
-            // Minir optimizations
-            // Add Remove optimization
-
-            if (domainBulk.add.length > 0) {
-              await ctx.with('insertMany', {}, async () => {
-                await coll.insertMany(domainBulk.add, { ordered: false })
-              })
-            }
-            if (domainBulk.update.size > 0) {
-              // Extract similar update to update many if possible
-              // TODO:
-              await ctx.with('updateMany-bulk', {}, async () => {
-                await coll.bulkWrite(
-                  Array.from(domainBulk.update.entries()).map((it) => ({
-                    updateOne: {
-                      filter: { _id: it[0] },
-                      update: {
-                        $set: it[1]
-                      }
-                    }
-                  })),
-                  {
-                    ordered: false
-                  }
-                )
-              })
-            }
-            if (domainBulk.bulkOperations.length > 0) {
-              await ctx.with('bulkWrite', {}, async () => {
-                await coll.bulkWrite(domainBulk.bulkOperations, {
-                  ordered: false
-                })
-              })
-            }
-            if (domainBulk.findUpdate.size > 0) {
-              await ctx.with('find-result', {}, async () => {
-                const docs = await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray()
-                result.push(...docs)
-              })
-            }
-
-            if (domainBulk.raw.length > 0) {
-              await ctx.with('raw', {}, async () => {
-                for (const r of domainBulk.raw) {
-                  result.push({ object: await r() })
-                }
-              })
-            }
-          },
-          {
+    await this.rateLimit.exec(async () => {
+      const domains: Promise<void>[] = []
+      for (const [domain, txs] of byDomain) {
+        if (domain === undefined) {
+          continue
+        }
+        const domainBulk: OperationBulk = {
+          add: [],
+          update: new Map(),
+          bulkOperations: [],
+          findUpdate: new Set(),
+          raw: []
+        }
+        for (const t of txs) {
+          this.updateBulk(domainBulk, t)
+        }
+        if (
+          domainBulk.add.length === 0 &&
+          domainBulk.update.size === 0 &&
+          domainBulk.bulkOperations.length === 0 &&
+          domainBulk.findUpdate.size === 0 &&
+          domainBulk.raw.length === 0
+        ) {
+          continue
+        }
+        domains.push(
+          this.collectOps(
+            this.globalCtx,
             domain,
-            add: domainBulk.add.length,
-            update: domainBulk.update.size,
-            bulk: domainBulk.bulkOperations.length,
-            find: domainBulk.findUpdate.size,
-            raw: domainBulk.raw.length
-          }
+            'tx',
+            async (ctx) => {
+              const coll = this.db.collection<Doc>(domain)
+
+              // Minir optimizations
+              // Add Remove optimization
+
+              if (domainBulk.add.length > 0) {
+                await ctx.with('insertMany', {}, async () => {
+                  await coll.insertMany(domainBulk.add, { ordered: false })
+                })
+              }
+              if (domainBulk.update.size > 0) {
+                // Extract similar update to update many if possible
+                // TODO:
+                await ctx.with('updateMany-bulk', {}, async () => {
+                  await coll.bulkWrite(
+                    Array.from(domainBulk.update.entries()).map((it) => ({
+                      updateOne: {
+                        filter: { _id: it[0] },
+                        update: {
+                          $set: it[1]
+                        }
+                      }
+                    })),
+                    {
+                      ordered: false
+                    }
+                  )
+                })
+              }
+              if (domainBulk.bulkOperations.length > 0) {
+                await ctx.with('bulkWrite', {}, async () => {
+                  await coll.bulkWrite(domainBulk.bulkOperations, {
+                    ordered: false
+                  })
+                })
+              }
+              if (domainBulk.findUpdate.size > 0) {
+                await ctx.with('find-result', {}, async () => {
+                  const docs = await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray()
+                  result.push(...docs)
+                })
+              }
+
+              if (domainBulk.raw.length > 0) {
+                await ctx.with('raw', {}, async () => {
+                  for (const r of domainBulk.raw) {
+                    result.push({ object: await r() })
+                  }
+                })
+              }
+            },
+            {
+              domain,
+              add: domainBulk.add.length,
+              update: domainBulk.update.size,
+              bulk: domainBulk.bulkOperations.length,
+              find: domainBulk.findUpdate.size,
+              raw: domainBulk.raw.length
+            }
+          )
         )
-      })
-    }
+      }
+      await Promise.all(domains)
+    })
     return result
   }
 
@@ -1385,18 +1404,20 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const cursor = await ctx.with('find', {}, async () =>
-      this.db.collection<Tx>(DOMAIN_TX).find(
-        { objectSpace: core.space.Model },
-        {
-          sort: {
-            _id: 1,
-            modifiedOn: 1
-          },
-          projection: {
-            '%hash%': 0
+      this.db
+        .collection<Tx>(DOMAIN_TX)
+        .find(
+          { objectSpace: core.space.Model },
+          {
+            sort: {
+              _id: 1,
+              modifiedOn: 1
+            },
+            projection: {
+              '%hash%': 0
+            }
           }
-        }
-      )
+        )
     )
     const model = await ctx.with('to-array', {}, async () => await toArray<Tx>(cursor))
     // We need to put all core.account.System transactions first

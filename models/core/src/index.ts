@@ -310,8 +310,7 @@ export function createModel (builder: Builder): void {
             stages: 1,
             _id: 1,
             modifiedOn: 1
-          },
-          sparse: true
+          }
         }
       ]
     }

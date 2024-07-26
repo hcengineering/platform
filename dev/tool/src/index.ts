@@ -372,7 +372,8 @@ export function devTool (
     .command('upgrade-workspace <name>')
     .description('upgrade workspace')
     .option('-f|--force [force]', 'Force update', true)
-    .action(async (workspace, cmd: { force: boolean }) => {
+    .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
+    .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const info = await getWorkspaceById(db, productId, workspace)
@@ -391,7 +392,8 @@ export function devTool (
           db,
           info.workspaceUrl ?? info.workspace,
           consoleModelLogger,
-          cmd.force
+          cmd.force,
+          cmd.indexes
         )
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60), {})
         console.log('upgrade done')

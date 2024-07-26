@@ -27,6 +27,7 @@ describe('s3 operations', () => {
   }
   const toolCtx = new MeasureMetricsContext('test', {})
   it('check root bucket', async () => {
+    jest.setTimeout(50000)
     const minioService = new S3Service({ ...(config.storages[0] as S3Config), rootBucket: 'haiodo-test-bucket' })
 
     let existingTestBuckets = await minioService.listBuckets(toolCtx, '')
