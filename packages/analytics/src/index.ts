@@ -5,7 +5,6 @@
 import { addEventListener, PlatformEvent, Severity, Status, translate } from '@hcengineering/platform'
 
 export const providers: AnalyticProvider[] = []
-
 export interface AnalyticProvider {
   init: (config: Record<string, any>) => boolean
   setUser: (email: string) => void

@@ -52,6 +52,6 @@
     "@hcengineering/chunter": "^0.6.20"
   },
   "publishConfig": {
-    "@uberflow:registry": "https://npm.pkg.github.com"
+    "@hcengineering:registry": "https://npm.pkg.github.com"
   }
 }

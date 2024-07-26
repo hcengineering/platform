@@ -1,0 +1,418 @@
+10/21/21, 8:31 AM
+
+Sergey Ushnurtsev
+
+     
+
+ 
+
+ 2722
+
+Inno.tech, QA Automation Engineer ·
+
+Город:
+
+Москва
+
+Опыт работы
+
+8 лет и 5 месяцев
+
+Возраст:
+
+≈ 38 лет
+
+E-mail:
+
+ oceanite@yandex.ru
+
+
+
+Sergey Ushnurtsev
+Senior
+
+Соц.сети:
+
+ https://github.com/sergggio
+
+Навыки:
+
+test automation
+devops
+junit
+
+Опыт работы:
+
+qa
+
+automation qa
+
+continuous integration
+gitlab
+
+maven
+
+salesforce
+
+node.js
+
+databases
+
+tfs
+
+erp
+
+pip
+
+python
+
+test cases
+
+jenkins
+
+ux/ui
+
+testrail
+
+project management
+
+analysis
+
+kibana
+
+sql
+
+web design
+
+deployment
+
+logstash
+
+git
+
+elasticsearch
+
+bash
+elk
+
+ https://www.linkedin.com/in/sergey-ushnurtsev-33a989120
+
+autocad
+
+crm
+
+jmeter
+
+soapui
+ios
+
+java
+
+javascript
+android
+
+babel
+
+selenium
+groovy
+
+redmine
+
+bitbucket
+
+manual qa
+
+jira
+
+regression testing
+cucumber
+
+mysql
+
+rest
+
+teamcity
+json
+
+confluence
+
+soap
+
+selenide
+
+3d modeling
+
+mocha
+
+php
+
+английский
+
+Inno.tech
+
+Сентябрь 2020 - по настоящее
+
+QA Automation Engineer
+
+время
+1 год и 2 месяца
+
+Иннотех
+
+Сентябрь 2020 - по настоящее
+
+QA Automation Engineer
+
+время
+1 год и 2 месяца
+
+Current duties are:
+Development of testing framework. Environment is: Java, Selenide, Maven, Cucumber, JUnit, RestAssured, Allure, Selenoid;
+Developing and supporting UI and API tests;
+Test documentation support, adding and updating test cases (TestIT, Confluence);
+Continuous integration support: TeamCity;
+Mocks: Soap UI, Mountebank.
+ux/ui
+
+qa
+
+java
+
+selenide
+
+maven
+
+cucumber
+
+junit
+
+test cases
+
+confluence
+
+teamcity
+
+soapui
+
+soap
+
+Cashwagon
+
+Декабрь 2019 - Август 2020
+
+QA Automation Engineer
+
+9 месяцев
+
+Current duties are:
+Development of testing framework. Stack is: NodeJS, WebdriverIO v.5, GitLab, Jenkins, TestRail, BrowserStack, Selenoid, Slack alerts.
+Develop and support for UI, E2E tests (website, CRM, API, PostgreDB).
+TestRail integration for WebdriverIO, JMeter tests.
+Test documentation support, adding and updating test cases (TestRail, Confluence).
+Continuous integration support (Jenkins): pipelines.
+Online courses passed:
+https://www.udemy.com/course/automation-testing-javascript-webdriverio-selenium-more/
+selenium
+
+jenkins
+
+testrail
+
+qa
+
+node.js
+
+gitlab
+
+ux/ui
+
+crm
+
+jmeter
+
+test cases
+
+confluence
+
+BPC Banking Technologies
+
+Июль 2018 - Октябрь 2019
+
+QA Test Engineer
+
+1 год и 4 месяца
+
+Current duties are:
+Functional testing;
+Work with bug-tracking system JIRA: creating and re-testing defects;
+Test environment deployment;
+Test documentation support, adding and updating test cases (Zephyr, Confluence);
+Continuous integration duties (Jenkins): jobs and multijobs configuration, bash scripts coding;
+Regression automation tests support: defects localization, logs analysis, creating JIRA tickets, updating tests due to version compatibility;
+Creating new regression automation test requests using JMeter and SOAP UI.
+Work with ELK (ElasticSearch+Logstash+Kibana): installing, updating, configuring. Creating Kibana's visualizations and dashboards;
+Perfomance testing using JMeter: environment preparation, analysis of results and reports generation;
+Python's scripts coding for generating test data;
+Work with GitLab repository;
+ISO 8583 protocol and messages testing;
+Integration test interaction with other company's systems.
+Achievements:
+Implementation support at customer in Indonesia (march - may 2019): invironment preparation and configuration, Skype-trainings and business trip to Jakarta.
+https://app.podbor.io/search-profile.php?id=c1c4116d186a02a0587f09057df79b97
+
+1/2
+
+10/21/21, 8:31 AM
+
+Sergey Ushnurtsev
+
+qa
+
+bash
+
+kibana
+
+elasticsearch
+
+analysis
+
+logstash
+
+jmeter
+
+jira
+
+confluence
+
+jenkins
+
+test cases
+
+deployment
+
+bug tracking
+
+soapui
+
+soap
+
+ux/ui
+
+elk
+
+gitlab
+
+Утконос
+
+Июль 2017 - Июль 2018
+
+QA Tester
+
+1 год и 1 месяц
+
+Forming testing process at developer team. I worked as a single test engineer in team.
+My duties were:
+Functional, integration, regression testing of web-site utkonos.ru (front-end + back-end);
+API testing for mobile version site, Android and iOS apps;
+Functional, exploratory and regression testing of mobile version, Android and iOS apps;
+Work with incoming tickets from IT Support team;
+Work with bug-tracking system JIRA (creating, solving, testing, closing defects);
+Writing internal documentation for company departments: instructions, API-method descriptions;
+Work with MySQL database (SQL requests for testing);
+Jenkins administration and configuration.
+Achievements:
+CI implementation (Jenkins);
+Automation tests implementation (API tests - REST-assured, UI tests - Selenium/Selenide + Java + Maven + JUnit + Bitbucket + Jenkins).
+qa
+junit
+
+regression testing
+
+jenkins
+
+ios
+
+android
+
+bug tracking
+
+jira
+
+mysql
+
+sql
+
+rest
+
+ux/ui
+
+selenium
+
+selenide
+
+java
+
+maven
+
+bitbucket
+
+Moscow City Telephone Network (MGTS)
+
+Сентябрь 2016 - Июль 2017
+
+QA Tester
+
+11 месяцев
+
+Functional, integration and regression testing of company products: CRM, billing, address systems;
+Work in bug-tracking systems (TFS, Redmine);
+Adding new test cases, updating existing test cases based on requirements and documentation;
+Creating SQL requests for regression test cases.
+test cases
+
+redmine
+
+regression testing
+
+crm
+
+bug tracking
+
+tfs
+
+sql
+
+Тион
+
+Январь 2013 - Август 2016
+
+Technical Support Engineering
+
+3 года и 8 месяцев
+
+CRM administrator: Salesforce CRM, AVA ERP;
+Autocad 2D/3D modeling: design of ventilation and air cleaning systems.
+crm
+
+Образование:
+
+salesforce
+
+3d modeling
+
+erp
+
+autocad
+
+Национальный Исследовательский Технологический Университет - «МИСиС» (бывший Московский
+
+2000 - 2005
+
+Государственный Институт Стали и Сплавов)
+Диплом специалиста по инженерной специальности
+
+https://app.podbor.io/search-profile.php?id=c1c4116d186a02a0587f09057df79b97
+
+2/2
+
+
