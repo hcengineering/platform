@@ -249,7 +249,8 @@ export async function upgradeModel (
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   skipTxUpdate: boolean = false,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  forceIndexes: boolean = false
 ): Promise<Tx[]> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
@@ -347,6 +348,25 @@ export async function upgradeModel (
       workspaceId
     )
 
+    const upgradeIndexes = async (): Promise<void> => {
+      ctx.info('Migrate to sparse indexes')
+      // Create update indexes
+      await createUpdateIndexes(
+        ctx,
+        hierarchy,
+        modelDb,
+        db,
+        logger,
+        async (value) => {
+          await progress(90 + (Math.min(value, 100) / 100) * 10)
+        },
+        workspaceId
+      )
+    }
+    if (forceIndexes) {
+      await upgradeIndexes()
+    }
+
     await ctx.with('migrate', {}, async (ctx) => {
       let i = 0
       for (const op of migrateOperations) {
@@ -366,22 +386,8 @@ export async function upgradeModel (
 
       await tryMigrate(migrateClient, coreId, [
         {
-          state: '#sparse',
-          func: async () => {
-            ctx.info('Migrate to sparse indexes')
-            // Create update indexes
-            await createUpdateIndexes(
-              ctx,
-              hierarchy,
-              modelDb,
-              db,
-              logger,
-              async (value) => {
-                await progress(90 + (Math.min(value, 100) / 100) * 10)
-              },
-              workspaceId
-            )
-          }
+          state: 'sparse',
+          func: upgradeIndexes
         }
       ])
     })

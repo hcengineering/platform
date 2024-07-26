@@ -49,7 +49,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
               keys: {
                 [a.name]: a.index === IndexKind.Indexed ? IndexOrder.Ascending : IndexOrder.Descending
               },
-              sparse: true // Default to sparse indexes
+              sparse: false // Default to non sparse indexes
             })
           }
         }
@@ -59,7 +59,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
           const config = hierarchy.as(c, core.mixin.IndexConfiguration)
           for (const attr of config.indexes) {
             if (typeof attr === 'string') {
-              domainAttrs.add({ keys: { [attr]: IndexOrder.Ascending }, sparse: true })
+              domainAttrs.add({ keys: { [attr]: IndexOrder.Ascending }, sparse: false })
             } else {
               domainAttrs.add(attr)
             }

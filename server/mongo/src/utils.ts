@@ -131,7 +131,6 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
       MongoClient.connect(uri, {
         appName: 'transactor',
         ...options,
-        enableUtf8Validation: false,
         ...extraOptions
       }),
       () => {
@@ -208,11 +207,10 @@ export class DBCollectionHelper implements DomainHelperOperations {
       if (value.filter !== undefined) {
         await this.collection(domain).createIndex(value.keys, {
           ...options,
-          sparse: false,
           partialFilterExpression: value.filter
         })
       } else {
-        await this.collection(domain).createIndex(value.keys, { ...options, sparse: value.sparse ?? true })
+        await this.collection(domain).createIndex(value.keys, { ...options, sparse: value.sparse ?? false })
       }
     }
   }

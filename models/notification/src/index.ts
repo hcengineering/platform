@@ -28,12 +28,12 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type IndexingConfiguration,
   type Markup,
   type Ref,
   type Space,
   type Timestamp,
-  type Tx,
-  type IndexingConfiguration
+  type Tx
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -69,15 +69,15 @@ import {
   type NotificationObjectPresenter,
   type NotificationPreferencesGroup,
   type NotificationPreview,
+  type NotificationProvider,
+  type NotificationProviderDefaults,
+  type NotificationProviderSetting,
   type NotificationStatus,
   type NotificationTemplate,
   type NotificationType,
-  type PushSubscription,
-  type PushSubscriptionKeys,
-  type NotificationProvider,
-  type NotificationProviderSetting,
   type NotificationTypeSetting,
-  type NotificationProviderDefaults
+  type PushSubscription,
+  type PushSubscriptionKeys
 } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -91,7 +91,11 @@ export { notification as default }
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
-@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_NOTIFICATION)
+export const DOMAIN_DOC_NOTIFY = 'notification-dnc' as Domain
+
+export const DOMAIN_USER_NOTIFY = 'notification-user' as Domain
+
+@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_USER_NOTIFY)
 export class TBrowserNotification extends TDoc implements BrowserNotification {
   senderId?: Ref<Account> | undefined
   tag!: Ref<Doc<Space>>
@@ -102,7 +106,7 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
   status!: NotificationStatus
 }
 
-@Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_NOTIFICATION)
+@Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_USER_NOTIFY)
 export class TPushSubscription extends TDoc implements PushSubscription {
   user!: Ref<Account>
   endpoint!: string
@@ -185,7 +189,7 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
   labelPresenter?: AnyComponent
 }
 
-@Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_NOTIFICATION)
+@Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_DOC_NOTIFY)
 export class TDocNotifyContext extends TDoc implements DocNotifyContext {
   @Prop(TypeRef(core.class.Account), core.string.Account)
   @Index(IndexKind.Indexed)
@@ -624,6 +628,49 @@ export function createModel (builder: Builder): void {
     domain: DOMAIN_NOTIFICATION,
     indexes: [{ keys: { user: 1, archived: 1 } }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_DOC_NOTIFY,
+    indexes: [{ keys: { user: 1 } }],
+    disabled: [
+      { _class: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { isViewed: 1 },
+      { hidden: 1 },
+      { createdOn: -1 },
+      { attachedTo: 1 }
+    ]
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_USER_NOTIFY,
+    indexes: [{ keys: { user: 1 } }],
+    disabled: [
+      { _class: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { isViewed: 1 },
+      { hidden: 1 },
+      { createdOn: -1 },
+      { attachedTo: 1 }
+    ]
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_USER_NOTIFY,
+    indexes: [],
+    disabled: [
+      { _class: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { isViewed: 1 },
+      { hidden: 1 },
+      { createdOn: -1 },
+      { attachedTo: 1 }
+    ]
   })
 
   builder.mixin<Class<DocNotifyContext>, IndexingConfiguration<DocNotifyContext>>(

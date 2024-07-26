@@ -27,6 +27,7 @@ describe('minio operations', () => {
   }
   const toolCtx = new MeasureMetricsContext('test', {})
   it('check root bucket', async () => {
+    jest.setTimeout(50000)
     const minioService = new MinioService({ ...(config.storages[0] as MinioConfig), rootBucket: 'test-bucket' })
 
     let existingTestBuckets = await minioService.listBuckets(toolCtx, '')
