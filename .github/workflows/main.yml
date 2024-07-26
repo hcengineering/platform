@@ -63,6 +63,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Cheking model is updated...
+        run: node common/scripts/check_model_version.js
+
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
