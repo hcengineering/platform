@@ -137,14 +137,5 @@ services:
       resources:
         limits:
           memory: 1024M
-  # qms-workers:
-  #   image: hardcoreeng/qms-workers
-  #   restart: always
-  #   links:
-  #     - transactor
-  #     - account
-  #   environment:
-  #     - SECRET=secret
-  #     - ACCOUNTS_URL=http://account:3003
 volumes:
   files:
