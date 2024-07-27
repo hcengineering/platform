@@ -4,7 +4,7 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
-  "author": "Uberflow Contributors",
+  "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/model-package",
   "license": "EPL-2.0",
   "scripts": {

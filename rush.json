@@ -467,6 +467,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/analytics-service",
+      "projectFolder": "packages/analytics-service",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/storage",
       "projectFolder": "packages/storage",
       "shouldPublish": false
@@ -1910,6 +1915,166 @@
     {
       "packageName": "@hcengineering/model-server-training",
       "projectFolder": "models/server-training",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop",
+      "projectFolder": "desktop",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "desktop",
+      "projectFolder": "desktop-package",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/diffview",
+      "projectFolder": "plugins/diffview",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/diffview-assets",
+      "projectFolder": "plugins/diffview-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/diffview-resources",
+      "projectFolder": "plugins/diffview-resources",
+      "shouldPublish": false
+    },  
+    {
+      "packageName": "@hcengineering/github",
+      "projectFolder": "services/github/github",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/github-assets",
+      "projectFolder": "services/github/github-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/github-resources",
+      "projectFolder": "services/github/github-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-github",
+      "projectFolder": "services/github/model-github",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-github",
+      "projectFolder": "services/github/pod-github",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-github",
+      "projectFolder": "services/github/server-github",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-github-resources",
+      "projectFolder": "services/github/server-github-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-github-model",
+      "projectFolder": "services/github/server-github-model",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-preferences",
+      "projectFolder": "plugins/desktop-preferences",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-preferences-assets",
+      "projectFolder": "plugins/desktop-preferences-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/desktop-preferences-resources",
+      "projectFolder": "plugins/desktop-preferences-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-desktop-preferences",
+      "projectFolder": "models/desktop-preferences",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-ses",
+      "projectFolder": "services/ses/pod-ses",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-telegram",
+      "projectFolder": "services/telegram/pod-telegram",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-gmail",
+      "projectFolder": "services/gmail/pod-gmail",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-calendar",
+      "projectFolder": "services/calendar/pod-calendar",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/qms-doc-import-tool",
+      "projectFolder": "dev/doc-import-tool",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-love",
+      "projectFolder": "services/love",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-print",
+      "projectFolder": "services/print/pod-print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-sign",
+      "projectFolder": "services/sign/pod-sign",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/rekoni-service",
+      "projectFolder": "services/rekoni",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-analytics-collector",
+      "projectFolder": "services/analytics-collector/pod-analytics-collector",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/analytics-collector",
+      "projectFolder": "plugins/analytics-collector",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/analytics-collector-assets",
+      "projectFolder": "plugins/analytics-collector-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-analytics-collector",
+      "projectFolder": "models/analytics-collector",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-analytics-collector",
+      "projectFolder": "server-plugins/analytics-collector",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-analytics-collector-resources",
+      "projectFolder": "server-plugins/analytics-collector-resources",
       "shouldPublish": false
     }
   ]
