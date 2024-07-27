@@ -31,7 +31,7 @@ import core, {
 } from '@hcengineering/core'
 import { type IntlString, getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, { copyDocumentContent, getClient } from '@hcengineering/presentation'
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
+import { type Person, type Employee, type PersonAccount } from '@hcengineering/contact'
 import request, { RequestStatus } from '@hcengineering/request'
 import textEditor from '@hcengineering/text-editor'
 import { isEmptyMarkup } from '@hcengineering/text'
@@ -313,16 +313,6 @@ export async function sendReviewRequest (
   controlledDoc: ControlledDocument,
   reviewers: Array<Ref<Employee>>
 ): Promise<void> {
-  const reviewersAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: reviewers } })
-
-  if (reviewersAccounts.length === 0) {
-    return
-  }
-
-  if (reviewersAccounts.length < reviewers.length) {
-    console.warn('Number of user accounts is less than requested for document review request')
-  }
-
   const approveTx = client.txFactory.createTxUpdateDoc(controlledDoc._class, controlledDoc.space, controlledDoc._id, {
     controlledState: ControlledDocumentState.Reviewed
   })
@@ -338,7 +328,7 @@ export async function sendReviewRequest (
     controlledDoc._class,
     documents.class.DocumentReviewRequest,
     controlledDoc.space,
-    reviewersAccounts.map((u) => u._id),
+    reviewers,
     approveTx,
     undefined,
     true
@@ -350,16 +340,6 @@ export async function sendApprovalRequest (
   controlledDoc: ControlledDocument,
   approvers: Array<Ref<Employee>>
 ): Promise<void> {
-  const approversAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: approvers } })
-
-  if (approversAccounts.length === 0) {
-    return
-  }
-
-  if (approversAccounts.length < approvers.length) {
-    console.warn('Number of user accounts is less than requested for document approval request')
-  }
-
   const approveTx = client.txFactory.createTxUpdateDoc(controlledDoc._class, controlledDoc.space, controlledDoc._id, {
     controlledState: ControlledDocumentState.Approved
   })
@@ -379,7 +359,7 @@ export async function sendApprovalRequest (
     controlledDoc._class,
     documents.class.DocumentApprovalRequest,
     controlledDoc.space,
-    approversAccounts.map((u) => u._id),
+    approvers,
     approveTx,
     rejectTx,
     true
@@ -392,7 +372,7 @@ async function createRequest<T extends Doc> (
   attachedToClass: Ref<Class<T>>,
   reqClass: Ref<Class<Request>>,
   space: Ref<DocumentSpace>,
-  users: Array<Ref<PersonAccount>>,
+  users: Array<Ref<Person>>,
   approveTx: Tx,
   rejectedTx?: Tx,
   areAllApprovesRequired = true
@@ -429,7 +409,7 @@ export async function completeRequest (
 ): Promise<void> {
   const req = await getActiveRequest(client, reqClass, controlledDoc)
 
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const me = (getCurrentAccount() as PersonAccount).person
 
   if (req == null || !req.requested.includes(me) || req.approved.includes(me)) {
     return
@@ -465,7 +445,7 @@ export async function rejectRequest (
     return
   }
 
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const me = (getCurrentAccount() as PersonAccount).person
 
   await saveComment(rejectionNote, req)
 

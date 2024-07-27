@@ -56,8 +56,8 @@ async function getDocumentStateForCurrentUser (
       return ControlledDocumentState.InReview
     }
 
-    const currentAccount = getCurrentAccount()._id as Ref<PersonAccount>
-    if (reviewRequest.approved?.includes(currentAccount)) {
+    const me = (getCurrentAccount() as PersonAccount).person
+    if (reviewRequest.approved?.includes(me)) {
       return ControlledDocumentState.Reviewed
     }
   }
