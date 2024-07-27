@@ -32,14 +32,16 @@
 
   const client = getClient()
   const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const myPerson = (getCurrentAccount() as PersonAccount).person
 
-  const approvable = value.requested.filter((a) => a === me).length > value.approved.filter((a) => a === me).length
+  const approvable =
+    value.requested.filter((a) => a === myPerson).length > value.approved.filter((a) => a === myPerson).length
 
   async function approve () {
     await saveComment()
     await client.update(value, {
       $push: {
-        approved: me
+        approved: myPerson
       }
     })
   }
@@ -49,7 +51,7 @@
   async function reject () {
     await saveComment()
     await client.update(value, {
-      rejected: me,
+      rejected: myPerson,
       status: RequestStatus.Rejected
     })
   }

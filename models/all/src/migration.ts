@@ -49,6 +49,7 @@ import { questionsOperation } from '@hcengineering/model-questions'
 import { trainingOperation } from '@hcengineering/model-training'
 import { documentsOperation } from '@hcengineering/model-controlled-documents'
 import { productsOperation } from '@hcengineering/model-products'
+import { requestOperation } from '@hcengineering/model-request'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -72,6 +73,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['documents', documentsOperation],
   ['questions', questionsOperation],
   ['training', trainingOperation],
+  ['request', requestOperation],
   ['products', productsOperation],
   ['board', boardOperation],
   ['hr', hrOperation],
