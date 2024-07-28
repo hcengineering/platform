@@ -29,7 +29,7 @@ export type UploadFilesPopupFn = (
 
 /** @public */
 export type UploadFilesFn = (
-  files: File[] | FileList | DataTransfer,
+  files: File[] | FileList,
   target: FileUploadTarget,
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback

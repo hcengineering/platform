@@ -18,7 +18,6 @@ import {
   type FileUploadCallback,
   type FileUploadOptions,
   type FileUploadTarget,
-  getDataTransferFiles,
   toFileWithPath
 } from '@hcengineering/uploader'
 
@@ -44,13 +43,12 @@ export async function showFilesUploadPopup (
 
 /** @public */
 export async function uploadFiles (
-  files: File[] | FileList | DataTransfer,
+  files: File[] | FileList,
   target: FileUploadTarget,
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  const items =
-    files instanceof DataTransfer ? await getDataTransferFiles(files) : Array.from(files, (p) => toFileWithPath(p))
+  const items = Array.from(files, (p) => toFileWithPath(p))
 
   if (items.length === 0) return
 
