@@ -57,6 +57,7 @@
   export let title: string | undefined = undefined
   export let borderStyle: 'solid' | 'dashed' | 'none' = 'solid'
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
   export let input: HTMLButtonElement | undefined = undefined
   export let showTooltip: LabelAndProps | undefined = undefined
   export let short: boolean = false
@@ -154,6 +155,7 @@
   on:mousemove
   on:mouseleave
   {id}
+  data-id={dataId}
 >
   {#if icon && !loading}
     <div class="btn-icon pointer-events-none" class:resetIconSize={resetIconSize === 'icon'}>

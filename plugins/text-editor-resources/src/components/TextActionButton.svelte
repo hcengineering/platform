@@ -66,6 +66,7 @@
   class:selected
   use:tooltip={{ label: action.label }}
   tabindex="0"
+  data-id={'btn' + action.label.split(':').pop()}
   on:click|preventDefault|stopPropagation={handleClick}
 >
   <Icon icon={action.icon} {size} />
