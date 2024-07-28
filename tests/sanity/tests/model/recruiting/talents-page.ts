@@ -12,7 +12,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   pageHeader = (): Locator => this.page.locator('span[class*="header"]', { hasText: 'Talents' })
-  buttonCreateTalent = (): Locator => this.page.locator('div[class*="ac-header"] button > span', { hasText: 'Talent' })
+  buttonCreateTalent = (): Locator => this.page.getByRole('button', { name: 'Talent', exact: true })
 
   textVacancyMatchingTalent = (): Locator =>
     this.page.locator(
@@ -22,7 +22,8 @@ export class TalentsPage extends CommonRecruitingPage {
   textVacancyMatchingScore = (): Locator =>
     this.page.locator('form[id="recruit:string:VacancyMatching"] table > tbody > tr > td:nth-child(2)')
 
-  inputSearchTalent = (): Locator => this.page.locator('div[class*="header"] input')
+  inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  inputSearchTalent = (): Locator => this.page.getByPlaceholder('Search')
   andreyTalet = (): Locator => this.page.locator('text=P. Andrey')
 
   readonly addApplicationButton = (): Locator => this.page.locator('button[id="appls.add"]')
@@ -217,6 +218,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   async searchTalentByTalentName (talentName: TalentName): Promise<void> {
+    await this.inputSearchIcon().click()
     await this.inputSearchTalent().fill(`${talentName.lastName} ${talentName.firstName}`)
     await this.inputSearchTalent().press('Enter')
     await expect(this.page.locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })).toBeVisible()

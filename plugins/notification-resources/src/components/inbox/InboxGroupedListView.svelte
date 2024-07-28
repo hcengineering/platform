@@ -133,5 +133,8 @@
     &:focus {
       outline: 0;
     }
+    :global(.list-item) {
+      border-radius: 0;
+    }
   }
 </style>

@@ -24,7 +24,6 @@
   import Spinner from './Spinner.svelte'
 
   export let contentPanel: HTMLElement | undefined
-  export let kind: 'default' | 'modern' = 'default'
   export let embedded: boolean = false
   export let readonly: boolean = false
 
@@ -181,7 +180,6 @@
         _class={props._class}
         rightSection={props.rightSection}
         position={props.element}
-        {kind}
         {readonly}
         {embedded}
         bind:popupOptions={options}

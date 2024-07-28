@@ -169,6 +169,8 @@
     }
     showPopup(createComponent, { date, withTime }, 'top')
   }
+
+  $: isToday = areDatesEqual(currentDate, new Date($ticker))
 </script>
 
 <div
@@ -177,7 +179,7 @@
     showLabel = showLabel ? element.clientWidth > rem(3.5) + 399 : element.clientWidth > rem(3.5) + 400
   }}
 >
-  <Header noResize>
+  <Header adaptive={'disabled'}>
     <div class="heading-medium-20 line-height-auto overflow-label">
       <Label label={time.string.Schedule} />: <Label label={getTitle(currentDate, $ticker)} />
     </div>
@@ -199,6 +201,7 @@
         size={'small'}
         inheritFont
         hasMenu
+        disabled={isToday}
         on:click={() => {
           inc(0)
         }}

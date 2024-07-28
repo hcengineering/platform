@@ -115,9 +115,12 @@ test.describe('Tracker tests', () => {
     await issuesPage.createAndOpenIssue(name, assignee, status)
     // await page.click('.close-button > .antiButton')
     // We need to fait for indexer to complete indexing.
+    await page.locator('#btnPClose').click()
     await fillSearch(page, name)
     const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.openSubIssueByName(name)
     await issuesDetailsPage.waitDetailsOpened(name)
+    await page.locator('#btnPClose').click()
     let count = 0
     for (let j = 0; j < 5; j++) {
       const random = Math.floor(Math.random() * values.length)

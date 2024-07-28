@@ -54,7 +54,6 @@
   export let _id: Ref<Issue> | string
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
   export let readonly: boolean = false
 
   let lastId: Ref<Issue> | undefined
@@ -193,9 +192,9 @@
     isAside={true}
     isSub={false}
     {embedded}
-    {kind}
     withoutActivity={false}
     printAside={true}
+    adaptive={'default'}
     bind:content
     bind:innerWidth
     on:open

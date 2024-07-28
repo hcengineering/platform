@@ -19,7 +19,7 @@
   import love, { Floor as FloorType, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import { deviceOptionsStore as deviceInfo, getCurrentLocation, navigate } from '@hcengineering/ui'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms } from '../stores'
   import { tryConnect } from '../utils'
   import Floor from './Floor.svelte'
@@ -40,6 +40,7 @@
     .map((p) => (p as Office).person) as Ref<Person>[]
 
   $: $deviceInfo.replacedPanel = replacedPanel
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 
   onMount(async () => {
     const loc = getCurrentLocation()

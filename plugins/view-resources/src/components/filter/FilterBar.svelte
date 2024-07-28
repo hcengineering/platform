@@ -27,7 +27,7 @@
   import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
   import { getViewOptions, viewOptionStore } from '../../viewOptions'
 
-  export let _class: Ref<Class<Doc>>
+  export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
   export let query: DocumentQuery<Doc>
   export let viewOptions: ViewOptions | undefined = undefined
@@ -145,8 +145,12 @@
 
   $: makeQuery(query, $filterStore)
 
-  $: clazz = hierarchy.getClass(_class)
-  $: visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+  let clazz: Class<Doc<Space>>
+  let visible: boolean = false
+  $: if (_class) {
+    clazz = hierarchy.getClass(_class)
+    visible = hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
+  }
 
   const me = getCurrentAccount()._id
 
@@ -222,7 +226,7 @@
     grid-template-columns: auto auto;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 2.25rem;
+    padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--spacing-2);
     width: 100%;
     min-width: 0;
     background-color: var(--theme-comp-header-color);

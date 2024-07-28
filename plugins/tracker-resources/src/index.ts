@@ -37,7 +37,7 @@ import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { type Status, translate, type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
-import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
+import { closePanel, getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -268,6 +268,7 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
         await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => {
           console.error(err)
         })
+        closePanel()
       }
     }
   )

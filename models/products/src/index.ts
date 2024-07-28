@@ -455,6 +455,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: products.class.Product,
+              icon: products.icon.Product,
               label: products.string.Products
             },
             position: 'top'
@@ -466,6 +467,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: products.class.ProductVersion,
+              icon: products.icon.ProductVersion,
               label: products.string.ProductVersions
             },
             position: 'top'

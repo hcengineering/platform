@@ -39,7 +39,9 @@ export const drivePlugin = plugin(driveId, {
     DefaultDriveTypeData: '' as Ref<Mixin<Drive>>
   },
   icon: {
+    DriveApplication: '' as Asset,
     Drive: '' as Asset,
+    Drives: '' as Asset,
     Grid: '' as Asset,
     File: '' as Asset,
     Folder: '' as Asset,

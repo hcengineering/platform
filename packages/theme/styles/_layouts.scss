@@ -189,7 +189,7 @@ input.search {
 .inline-flex { display: inline-flex; }
 .flex-grow { flex-grow: 1; }
 .flex-no-shrink { flex-shrink: 0; }
-.flex-shrink { flex-shrink: 1; }
+.flex-shrink { flex-shrink: 1 !important; }
 .flex-wrap { flex-wrap: wrap !important; }
 .flex-nowrap { flex-wrap: nowrap !important; }
 .flex-baseline {
@@ -270,7 +270,7 @@ input.search {
   flex-direction: column;
   align-items: stretch;
 }
-.justify-between { justify-content: space-between; }
+.justify-between { justify-content: space-between !important; }
 .justify-start { justify-content: flex-start; }
 .justify-end { justify-content: flex-end !important; }
 .justify-center { justify-content: center; }
@@ -309,6 +309,7 @@ input.search {
   .icon {
     color: var(--theme-dark-color);
 
+    &.primary { color: var(--button-primary-BackgroundColor); }
     &.circle {
       padding: .25rem;
       background-color: var(--avatar-bg-color);
@@ -345,7 +346,11 @@ input.search {
     margin-left: .75rem;
   }
   &:hover {
-    .icon { color: var(--theme-caption-color); }
+    .icon {
+      color: var(--theme-caption-color);
+
+      &.primary { color: var(--button-primary-hover-BackgroundColor); }
+    }
     .label {
       color: var(--theme-caption-color);
 
@@ -483,6 +488,7 @@ input.search {
 }
 
 /* Margins & Paddings */
+.ml-0 { margin-left: 0 !important; }
 .ml-0-5 { margin-left: .125rem; }
 .ml-1 { margin-left: .25rem; }
 .ml-1-5 { margin-left: .375rem; }
@@ -508,6 +514,7 @@ input.search {
 .mr-8 { margin-right: 2rem; }
 .mr-10 { margin-right: 2.5rem; }
 .mr-32 { margin-right: 8rem }
+.mt--1 { margin-top: -.25rem; }
 .mt-0-5 { margin-top: .125rem; }
 .mt-1 { margin-top: .25rem; }
 .mt-2 { margin-top: .5rem; }
@@ -731,6 +738,7 @@ input.search {
 .min-h-9 { min-height: 2.25rem; }
 .min-h-11 { min-height: 2.75rem; }
 .min-h-12 { min-height: 3rem; }
+.min-h-13 { min-height: 3.25rem; }
 .min-h-16 { min-height: 4rem; }
 .min-h-30 { min-height: 7.5rem; }
 .min-h-60 { min-height: 15rem; }
@@ -958,6 +966,7 @@ a.no-line {
   &.bordered { border-color: var(--theme-button-border); }
 }
 
+.overflow-hidden { overflow: hidden; }
 .overflow-x-auto { overflow-x: auto; }
 .overflow-y-auto { overflow-y: auto; }
 .overflow-x-auto,

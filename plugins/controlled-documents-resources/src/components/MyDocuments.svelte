@@ -22,6 +22,7 @@
 
 <DocumentsContainer
   query={resultQuery}
+  icon={documents.icon.Document}
   title={documents.string.MyDocuments}
   {config}
   on:action={(event) => dispatch('action', event.detail)}

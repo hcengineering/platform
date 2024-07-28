@@ -44,5 +44,5 @@
 {#if threadId}
   <ThreadView _id={threadId} on:close />
 {:else if object}
-  <ChannelView {object} {context} allowClose embedded on:close />
+  <ChannelView {object} {context} embedded on:close />
 {/if}

@@ -19,7 +19,7 @@ export class TemplatesPage extends CalendarPage {
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.buttonCreateTemplate = page.locator('div[slot="header-tools"] button[type="submit"]')
+    this.buttonCreateTemplate = page.getByRole('button', { name: 'Template', exact: true })
     this.buttonSpaceSelector = page.locator('button[id="space.selector"]')
     this.buttonPopupNextStep = page.locator('div.popup button[type="submit"]')
     this.inputNewTemplateTitle = page.locator('div[id="doc-title"] input')

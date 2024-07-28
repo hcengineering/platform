@@ -259,7 +259,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: calendar.string.Calendar,
-      icon: calendar.icon.Calendar,
+      icon: calendar.icon.CalendarView,
       component: calendar.component.CalendarView
     },
     calendar.viewlet.Calendar

@@ -29,6 +29,7 @@
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let selected: boolean = false
   export let showMenu: boolean = false
+  export let noDivider: boolean = false
   export let empty: boolean = false
   export let bold: boolean = false
   export let indent: boolean = false
@@ -59,6 +60,7 @@
   {collapsedPrefix}
   {level}
   {showMenu}
+  {noDivider}
   {forciblyСollapsed}
   on:click
 >
