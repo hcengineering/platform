@@ -10,6 +10,11 @@ export class DocumentsPage extends CalendarPage {
   readonly inputNewDocumentTitle: Locator
   readonly inputNewDocumentDescription: Locator
   readonly inputNewDocumentCreateDaft: Locator
+  readonly category: Locator
+  readonly search: Locator
+  readonly nextStep: Locator
+  readonly addMember: Locator
+  readonly newMember: Locator
 
   constructor (page: Page) {
     super(page)
@@ -23,6 +28,13 @@ export class DocumentsPage extends CalendarPage {
     this.inputNewDocumentTitle = page.locator('div[id="doc-title"] input')
     this.inputNewDocumentDescription = page.locator('div[id="doc-description"] input')
     this.inputNewDocumentCreateDaft = page.locator('div.footer div.footerButtons button[type="button"]')
+    this.category = page.locator(
+      "xpath=//button[@class='antiButton no-border small jf-center sh-no-shape bs-solid gap-medium iconR']"
+    )
+    this.search = page.getByPlaceholder('Search...')
+    this.nextStep = page.getByRole('button', { name: 'Next step' })
+    this.addMember = page.getByText('Add member')
+    this.newMember = page.getByRole('button', { name: 'AJ Appleseed John' })
   }
 
   async createDocument (data: NewDocument, startSecondStep: boolean = false): Promise<void> {
@@ -51,6 +63,20 @@ export class DocumentsPage extends CalendarPage {
     // team
     await this.buttonPopupNextStep.click()
 
+    await this.inputNewDocumentCreateDaft.click()
+  }
+
+  async createTemplate (title: string, description: string, category: string): Promise<void> {
+    await this.buttonPopupNextStep.click()
+    await this.inputNewDocumentTitle.fill(title)
+    await this.inputNewDocumentDescription.fill(description)
+    await this.category.click()
+    await this.search.fill(category)
+    await this.page.keyboard.press('Escape')
+    await this.nextStep.click()
+    await this.addMember.nth(2).click()
+    await this.newMember.click()
+    await this.page.keyboard.press('Escape')
     await this.inputNewDocumentCreateDaft.click()
   }
 

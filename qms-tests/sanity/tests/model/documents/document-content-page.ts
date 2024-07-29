@@ -68,6 +68,8 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly description: Locator
   readonly categoryCode: Locator
   readonly generalDocumentation: Locator
+  readonly newDocumentArrow: Locator
+  readonly newTemplate: Locator
 
   constructor (page: Page) {
     super(page)
@@ -144,6 +146,8 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.description = page.getByRole('paragraph')
     this.categoryCode = page.getByPlaceholder('Code')
     this.generalDocumentation = page.getByRole('button', { name: 'General documentation' })
+    this.newDocumentArrow = page.locator('.w-full > button:nth-child(2)')
+    this.newTemplate = page.getByRole('button', { name: 'New template', exact: true })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -164,6 +168,14 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async clickOnAddCategoryButton (): Promise<void> {
     await this.addCategoryButton.click()
+  }
+
+  async clickNewDocumentArrow (): Promise<void> {
+    await this.newDocumentArrow.click()
+  }
+
+  async clickNewTemplate (): Promise<void> {
+    await this.newTemplate.click()
   }
 
   async selectControlDocumentSubcategory (
@@ -201,6 +213,10 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async checkIfTextExists (text: string): Promise<void> {
     await expect(this.textContainer).toContainText(text)
+  }
+
+  async hoverOverGeneralDocumentation (): Promise<void> {
+    await this.generalDocumentation.hover()
   }
 
   async addReasonAndImpactToTheDocument (description: string, reason: string): Promise<void> {
