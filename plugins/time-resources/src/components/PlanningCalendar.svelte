@@ -35,8 +35,8 @@
     return new Date(date).setHours(0, 0, 0, 0)
   }
 
-  function getTo (date: Date): Timestamp {
-    return new Date(date).setDate(date.getDate() + 3)
+  function getTo (date: Date, days: number = 3): Timestamp {
+    return new Date(date).setDate(date.getDate() + days)
   }
 
   let dayCalendar: DayCalendar
@@ -58,7 +58,7 @@
   })
 
   $: from = getFrom(currentDate)
-  $: to = getTo(currentDate)
+  $: to = getTo(currentDate, displayedDaysCount)
 
   function update (calendars: Calendar[]): void {
     q.query<Event>(
@@ -220,7 +220,7 @@
     <DayCalendar
       bind:this={dayCalendar}
       events={objects}
-      {displayedDaysCount}
+      bind:displayedDaysCount
       startFromWeekStart={false}
       clearCells={dragItem !== null}
       {dragItemId}
