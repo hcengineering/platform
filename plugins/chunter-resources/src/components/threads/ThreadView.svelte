@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumbs, IconClose, Label, location as locationStore, Header } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { Breadcrumbs, Label, location as locationStore, Header } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
@@ -30,8 +30,6 @@
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let showHeader: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -74,7 +72,14 @@
     })
 
   $: if (message !== undefined && dataProvider === undefined) {
-    dataProvider = new ChannelDataProvider(message._id, chunter.class.ThreadMessage, undefined, selectedMessageId, true)
+    dataProvider = new ChannelDataProvider(
+      undefined,
+      message.space,
+      message._id,
+      chunter.class.ThreadMessage,
+      selectedMessageId,
+      true
+    )
   }
 
   $: message &&

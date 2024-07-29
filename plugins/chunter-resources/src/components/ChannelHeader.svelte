@@ -74,9 +74,10 @@
   {canOpen}
   {withAside}
   {isAsideShown}
-  hideBefore
   on:aside-toggled
   on:close
 >
-  <PinnedMessages {_id} {_class} on:select />
+  {#if object}
+    <PinnedMessages {_id} {_class} space={object.space} on:select />
+  {/if}
 </Header>

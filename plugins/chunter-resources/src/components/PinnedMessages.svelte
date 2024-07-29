@@ -17,13 +17,15 @@
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import { createQuery } from '@hcengineering/presentation'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import view from '@hcengineering/view'
   import { ThreadMessage } from '@hcengineering/chunter'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../plugin'
+  import { getChannelSpace } from '../utils'
 
+  export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let _id: Ref<Doc>
 
@@ -34,29 +36,35 @@
   let pinnedMessagesCount = 0
   let pinnedThreadsCount = 0
 
+  $: channelSpace = getChannelSpace(_class, _id, space)
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
-    { attachedTo: _id, isPinned: true },
+    { attachedTo: _id, isPinned: true, space: channelSpace },
     (res: ActivityMessage[]) => {
       pinnedMessagesCount = res.length
     },
-    { projection: { _id: 1, attachedTo: 1, isPinned: 1 } }
+    { projection: { _id: 1, space: 1, attachedTo: 1, isPinned: 1 } }
   )
 
   $: pinnedThreadsQuery.query(
     chunter.class.ThreadMessage,
-    { objectId: _id, isPinned: true },
+    { objectId: _id, isPinned: true, space: channelSpace },
     (res: ThreadMessage[]) => {
       pinnedThreadsCount = res.length
     },
-    { projection: { _id: 1, objectId: 1, isPinned: 1 } }
+    { projection: { _id: 1, space: 1, objectId: 1, isPinned: 1 } }
   )
 
-  function openMessagesPopup (ev: MouseEvent) {
-    showPopup(PinnedMessagesPopup, { attachedTo: _id, attachedToClass: _class }, eventToHTMLElement(ev), (result) => {
-      if (result == null) return
-      dispatch('select', result)
-    })
+  function openMessagesPopup (ev: MouseEvent): void {
+    showPopup(
+      PinnedMessagesPopup,
+      { attachedTo: _id, attachedToClass: _class, space: channelSpace },
+      eventToHTMLElement(ev),
+      (result) => {
+        if (result == null) return
+        dispatch('select', result)
+      }
+    )
   }
 
   $: count = pinnedMessagesCount + pinnedThreadsCount
