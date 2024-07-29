@@ -67,6 +67,7 @@
   const dateSelectorHeight = 30
   const headerHeight = 52
   const minMsgHeightRem = 2
+  const loadMoreThreshold = 40
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -244,7 +245,7 @@
       return false
     }
 
-    return scrollElement.scrollTop === 0
+    return scrollElement.scrollTop <= loadMoreThreshold
   }
 
   function shouldLoadMoreDown (): boolean {
@@ -254,10 +255,11 @@
 
     const { scrollHeight, scrollTop, clientHeight } = scrollElement
 
-    return scrollHeight - Math.ceil(scrollTop + clientHeight) <= 0
+    return scrollHeight - Math.ceil(scrollTop + clientHeight) <= loadMoreThreshold
   }
 
   let scrollToRestore = 0
+  let backwardRequested = false
 
   function loadMore (): void {
     if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement || isInitialScrolling) {
@@ -268,10 +270,15 @@
     const maxMsgPerScreen = Math.ceil(scrollElement.clientHeight / minMsgHeightPx)
     const limit = Math.max(maxMsgPerScreen, provider.limit)
 
-    if (shouldLoadMoreUp()) {
+    if (!shouldLoadMoreUp()) {
+      backwardRequested = false
+    }
+
+    if (shouldLoadMoreUp() && !backwardRequested) {
       shouldScrollToNew = false
       scrollToRestore = scrollElement?.scrollHeight ?? 0
       provider.addNextChunk('backward', messages[0]?.createdOn, limit)
+      backwardRequested = true
     } else if (shouldLoadMoreDown()) {
       scrollToRestore = 0
       shouldScrollToNew = false
@@ -670,7 +677,6 @@
     }
   }
 
-  const canLoadNextBackwardStore = provider.canLoadNextBackwardStore
   const canLoadNextForwardStore = provider.canLoadNextForwardStore
 </script>
 
@@ -698,10 +704,11 @@
       bind:divScroll={scrollElement}
       bind:divBox={scrollContentBox}
       noStretch={false}
+      disableOverscroll
       onScroll={handleScroll}
       onResize={handleResize}
     >
-      {#if loadMoreAllowed && $canLoadNextBackwardStore}
+      {#if loadMoreAllowed}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
       <slot name="header" />

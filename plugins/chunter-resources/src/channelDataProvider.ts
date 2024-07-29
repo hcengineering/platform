@@ -103,18 +103,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly isBackwardLoading = writable(false)
   private readonly isForwardLoading = writable(false)
 
+  private nextChunkAdding = false
+
   public messagesStore = derived([this.chunksStore, this.tailStore], ([chunks, tail]) => {
     return [...chunks.map(({ data }) => data).flat(), ...tail]
   })
-
-  public canLoadNextBackwardStore = derived(
-    [this.messagesStore, this.backwardNextStore],
-    ([messages, backwardNext]) => {
-      if (backwardNext !== undefined) return false
-
-      return this.canLoadMore('backward', messages[0]?.createdOn)
-    }
-  )
 
   public canLoadNextForwardStore = derived([this.messagesStore, this.forwardNextStore], ([messages, forwardNext]) => {
     if (forwardNext !== undefined) return false
@@ -387,9 +380,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
   }
 
   public async addNextChunk (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
-    if (loadAfter === undefined) {
+    if (loadAfter === undefined || this.nextChunkAdding) {
       return
     }
+
+    this.nextChunkAdding = true
 
     if (this.forwardNextPromise instanceof Promise && mode === 'forward') {
       await this.forwardNextPromise
@@ -415,8 +410,10 @@ export class ChannelDataProvider implements IChannelDataProvider {
         }
       }
     } else {
-      void this.loadMore(mode, loadAfter, limit)
+      await this.loadMore(mode, loadAfter, limit)
     }
+
+    this.nextChunkAdding = false
   }
 
   private async loadMore (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
