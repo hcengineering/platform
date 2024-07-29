@@ -28,7 +28,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
     this.lastRequest = Date.now()
     try {
-      const result = await this.ops.loadChunk(_ctx.ctx, domain)
+      const result = await this.ops.loadChunk(_ctx.ctx, domain, idx, recheck)
       await _ctx.sendResponse(result)
     } catch (err: any) {
       await _ctx.sendResponse({ error: err.message })
