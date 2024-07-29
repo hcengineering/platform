@@ -67,6 +67,8 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly categoryTitle: Locator
   readonly description: Locator
   readonly categoryCode: Locator
+  readonly generalDocumentation: Locator
+  readonly member: Locator
 
   constructor (page: Page) {
     super(page)
@@ -142,6 +144,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.categoryTitle = page.getByPlaceholder('Title')
     this.description = page.getByRole('paragraph')
     this.categoryCode = page.getByPlaceholder('Code')
+    this.generalDocumentation = page.getByRole('button', { name: 'General documentation' })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -165,7 +168,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   async selectControlDocumentSubcategory (
-    buttonName: 'My Document' | 'Library' | 'Templates' | 'Categories'
+    buttonName: 'My Document' | 'Library' | 'Templates' | 'Categories' | 'General documentation'
   ): Promise<void> {
     switch (buttonName) {
       case 'My Document':
@@ -179,6 +182,9 @@ export class DocumentContentPage extends DocumentCommonPage {
         break
       case 'Categories':
         await this.categories.click()
+        break
+      case 'General documentation':
+        await this.generalDocumentation.click()
         break
       default:
         throw new Error('Unknown button')
@@ -258,8 +264,12 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.roleSelector.nth(2).click()
     await this.selectRoleMember.nth(2).click()
     await this.page.keyboard.press('Escape')
+    await this.selectRoleMember.nth(1).click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
+    await this.page.keyboard.press('Escape')
     await this.page.waitForTimeout(1000)
     await this.createButton.click()
+    await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
   }
 
   async createNewDocumentInsideFolder (folderName: string): Promise<void> {

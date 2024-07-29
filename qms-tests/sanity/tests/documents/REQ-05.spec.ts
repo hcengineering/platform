@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
@@ -33,5 +33,22 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     })
 
     await attachScreenshot('TESTS-298_category_created.png', page)
+  })
+
+  test('TESTS-381. As a workspace user, I can create a new space and label it External Doc', async ({ page }) => {
+    await allure.description('Requirement\nUsers need to create a new category')
+    await allure.tms('TESTS-381', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-381')
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    const folderName = generateId(5)
+
+    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
+    await test.step('2. Create a new workspace', async () => {
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.clickAddFolderButton()
+      await documentContentPage.fillDocumentSpaceForm(folderName)
+      await documentContentPage.clickLeaveFolder(folderName)
+    })
+
+    await attachScreenshot('TESTS-381_workspace_created.png', page)
   })
 })
