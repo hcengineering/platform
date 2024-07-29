@@ -25,17 +25,16 @@
 
   const dispatch = createEventDispatcher()
 
-  $: oldChecked = checked
+  let oldChecked = checked
 
-  const handleValueChanged = (event: Event): void => {
+  const handleValueChanged = (event: Event, oldState: boolean): void => {
+    const eventTarget = event.target as HTMLInputElement
+    const isChecked = eventTarget.checked
+    oldChecked = isChecked
     if (readonly) {
       return
     }
-    const eventTarget = event.target as HTMLInputElement
-    const isChecked = eventTarget.checked
-
-    if (oldChecked !== isChecked) {
-      oldChecked = isChecked
+    if (oldState !== isChecked) {
       dispatch('value', isChecked)
     }
   }
@@ -52,7 +51,15 @@
   class:checked
   on:click|stopPropagation
 >
-  <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change|capture={handleValueChanged} />
+  <input
+    class="chBox"
+    disabled={readonly}
+    type="checkbox"
+    bind:checked
+    on:change|capture={(ev) => {
+      handleValueChanged(ev, oldChecked)
+    }}
+  />
   <div class="checkSVG" />
 </label>
 
