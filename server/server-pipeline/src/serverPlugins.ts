@@ -9,6 +9,7 @@ import { serverContactId } from '@hcengineering/server-contact'
 import { serverDocumentsId } from '@hcengineering/server-controlled-documents'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverDriveId } from '@hcengineering/server-drive'
+import { serverGithubId } from '@hcengineering/server-github'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverGuestId } from '@hcengineering/server-guest'
 import { serverHrId } from '@hcengineering/server-hr'
@@ -55,4 +56,5 @@ export function registerServerPlugins (): void {
   addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))
   addLocation(serverDocumentsId, () => import('@hcengineering/server-controlled-documents-resources'))
   addLocation(serverTrainingId, () => import('@hcengineering/server-training-resources'))
+  addLocation(serverGithubId, () => import('@hcengineering/server-github-resources'))
 }

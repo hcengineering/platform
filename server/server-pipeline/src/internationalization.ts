@@ -10,6 +10,7 @@ import { contactId } from '@hcengineering/contact'
 import { documentsId } from '@hcengineering/controlled-documents'
 import { documentId } from '@hcengineering/document'
 import { driveId } from '@hcengineering/drive'
+import { githubId } from '@hcengineering/github'
 import { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { inventoryId } from '@hcengineering/inventory'
@@ -44,6 +45,7 @@ import contactEn from '@hcengineering/contact-assets/lang/en.json'
 import documentsEn from '@hcengineering/controlled-documents-assets/lang/en.json'
 import documentEn from '@hcengineering/document-assets/lang/en.json'
 import driveEn from '@hcengineering/drive-assets/lang/en.json'
+import githubEn from '@hcengineering/github-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
 import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
@@ -100,4 +102,5 @@ export function registerStringLoaders (): void {
   addStringsLoader(documentsId, async (lang: string) => documentsEn)
   addStringsLoader(productsId, async (lang: string) => productsEn)
   addStringsLoader(trainingId, async (lang: string) => trainingEn)
+  addStringsLoader(githubId, async (lang: string) => githubEn)
 }

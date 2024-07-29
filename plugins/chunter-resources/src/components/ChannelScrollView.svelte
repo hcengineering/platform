@@ -67,6 +67,7 @@
   const dateSelectorHeight = 30
   const headerHeight = 52
   const minMsgHeightRem = 2
+  const loadMoreThreshold = 40
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -244,7 +245,7 @@
       return false
     }
 
-    return scrollElement.scrollTop === 0
+    return scrollElement.scrollTop <= loadMoreThreshold
   }
 
   function shouldLoadMoreDown (): boolean {
@@ -254,10 +255,11 @@
 
     const { scrollHeight, scrollTop, clientHeight } = scrollElement
 
-    return scrollHeight - Math.ceil(scrollTop + clientHeight) <= 0
+    return scrollHeight - Math.ceil(scrollTop + clientHeight) <= loadMoreThreshold
   }
 
   let scrollToRestore = 0
+  let backwardRequested = false
 
   function loadMore (): void {
     if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement || isInitialScrolling) {
@@ -268,18 +270,24 @@
     const maxMsgPerScreen = Math.ceil(scrollElement.clientHeight / minMsgHeightPx)
     const limit = Math.max(maxMsgPerScreen, provider.limit)
 
-    if (shouldLoadMoreUp() && scrollElement && provider.canLoadMore('backward', messages[0]?.createdOn)) {
+    if (!shouldLoadMoreUp()) {
+      backwardRequested = false
+    }
+
+    if (shouldLoadMoreUp() && !backwardRequested) {
       shouldScrollToNew = false
-      scrollToRestore = scrollElement.scrollHeight
-      void provider.loadMore('backward', messages[0]?.createdOn, limit)
-    } else if (shouldLoadMoreDown() && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)) {
+      scrollToRestore = scrollElement?.scrollHeight ?? 0
+      provider.addNextChunk('backward', messages[0]?.createdOn, limit)
+      backwardRequested = true
+    } else if (shouldLoadMoreDown()) {
+      scrollToRestore = 0
       shouldScrollToNew = false
-      void provider.loadMore('forward', messages[messages.length - 1]?.createdOn, limit)
       isScrollAtBottom = false
+      provider.addNextChunk('forward', messages[messages.length - 1]?.createdOn, limit)
     }
   }
 
-  function handleScroll ({ autoScrolling }: ScrollParams): void {
+  async function handleScroll ({ autoScrolling }: ScrollParams): Promise<void> {
     saveScrollPosition()
     updateDownButtonVisibility($metadataStore, displayMessages, scrollElement)
     if (autoScrolling) {
@@ -668,6 +676,8 @@
       scrollToBottom()
     }
   }
+
+  const canLoadNextForwardStore = provider.canLoadNextForwardStore
 </script>
 
 {#if isLoading}
@@ -694,10 +704,11 @@
       bind:divScroll={scrollElement}
       bind:divBox={scrollContentBox}
       noStretch={false}
+      disableOverscroll
       onScroll={handleScroll}
       onResize={handleResize}
     >
-      {#if loadMoreAllowed && provider.canLoadMore('backward', messages[0]?.createdOn)}
+      {#if loadMoreAllowed}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
       <slot name="header" />
@@ -736,7 +747,7 @@
         />
       {/each}
 
-      {#if loadMoreAllowed && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)}
+      {#if loadMoreAllowed && $canLoadNextForwardStore}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
     </Scroller>

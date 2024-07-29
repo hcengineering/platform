@@ -17,8 +17,8 @@ import { showPopup } from '@hcengineering/ui'
 import {
   type FileUploadCallback,
   type FileUploadOptions,
+  type FileUploadPopupOptions,
   type FileUploadTarget,
-  getDataTransferFiles,
   toFileWithPath
 } from '@hcengineering/uploader'
 
@@ -31,11 +31,12 @@ import { getUppy } from './uppy'
 export async function showFilesUploadPopup (
   target: FileUploadTarget,
   options: FileUploadOptions,
+  popupOptions: FileUploadPopupOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
   const uppy = getUppy(options, onFileUploaded)
 
-  showPopup(FileUploadPopup, { uppy, target }, undefined, (res) => {
+  showPopup(FileUploadPopup, { uppy, target, options: popupOptions }, undefined, (res) => {
     if (res === true && options.hideProgress !== true) {
       dockFileUpload(target, uppy)
     }
@@ -44,13 +45,12 @@ export async function showFilesUploadPopup (
 
 /** @public */
 export async function uploadFiles (
-  files: File[] | FileList | DataTransfer,
+  files: File[] | FileList,
   target: FileUploadTarget,
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  const items =
-    files instanceof DataTransfer ? await getDataTransferFiles(files) : Array.from(files, (p) => toFileWithPath(p))
+  const items = Array.from(files, (p) => toFileWithPath(p))
 
   if (items.length === 0) return
 
