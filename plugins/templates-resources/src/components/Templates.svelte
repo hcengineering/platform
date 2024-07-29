@@ -162,7 +162,7 @@
 
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column">
-      <div id="create-template" class="flex-between trans-title m-3">
+      <div id="create-template" class="flex-between trans-title flex-no-shrink bottom-divider p-3">
         <Button
           icon={templatesPlugin.icon.Template}
           label={templatesPlugin.string.CreateTemplate}
@@ -179,6 +179,7 @@
             label={getEmbeddedLabel(space.name)}
             actions={async () => await getSpaceActions(space)}
             isFold
+            noDivider
             empty={getTemps.length === 0}
           >
             {#each getTemps as t (t._id)}

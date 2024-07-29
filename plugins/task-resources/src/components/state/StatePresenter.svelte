@@ -41,12 +41,12 @@
   export let shouldShowAvatar = true
   export let inline: boolean = false
   export let disabled: boolean = false
-  export let oneLine: boolean = false
+  export let oneLine: boolean = true
   export let shouldShowName: boolean = true
   export let shouldShowTooltip: boolean = false
   export let noUnderline: boolean = false
   export let accent: boolean = false
-  export let shrink: number = 0
+  export let shrink: number = 1
   export let space: Ref<Project> | undefined = undefined
   export let projectType: Ref<ProjectType> | undefined = $selectedTypeStore
   export let taskType: Ref<TaskType> | undefined = undefined

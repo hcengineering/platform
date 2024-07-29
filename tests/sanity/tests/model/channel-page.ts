@@ -14,17 +14,33 @@ export class ChannelPage {
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.getByRole('table')
   readonly channel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
+  readonly channelNameOnDetail = (channel: string): Locator =>
+    this.page
+      .locator('span.labelOnPanel', { hasText: 'Name' })
+      .locator('xpath=following-sibling::div[1]')
+      .locator('button', { hasText: channel })
+
   readonly chooseChannel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
-  readonly closePopupWindow = (): Locator => this.page.locator('.root > div > .antiButton').first()
+  readonly closePopupWindow = (): Locator => this.page.locator('.notifyPopup button[data-id="btnNotifyClose"]')
   readonly openAddMemberToChannel = (userName: string): Locator => this.page.getByRole('button', { name: userName })
   readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByText(userName)
   readonly joinChannelButton = (): Locator => this.page.getByRole('button', { name: 'Join' })
-  readonly addEmojiButton = (): Locator => this.page.locator('.root > button').first()
+  readonly addEmojiButton = (): Locator =>
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="AddReactionAction"]')
+
   readonly selectEmoji = (emoji: string): Locator => this.page.getByText(emoji)
-  readonly saveMessageButton = (): Locator => this.page.locator('.root > button:nth-child(2)')
-  readonly pinMessageButton = (): Locator => this.page.locator('.root > button:nth-child(3)')
-  readonly replyButton = (): Locator => this.page.locator('.root > button:nth-child(4)')
-  readonly openMoreButton = (): Locator => this.page.locator('.root > button:nth-child(5)')
+  readonly saveMessageButton = (): Locator =>
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="SaveForLaterAction"]')
+
+  readonly pinMessageButton = (): Locator =>
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]')
+
+  readonly replyButton = (): Locator =>
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]')
+
+  readonly openMoreButton = (): Locator =>
+    this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]')
+
   readonly messageSaveMarker = (): Locator => this.page.locator('.saveMarker')
   readonly saveMessageTab = (): Locator => this.page.getByRole('button', { name: 'Saved' })
   readonly pinnedMessageButton = (): Locator => this.page.getByRole('button', { name: 'pinned' })
@@ -36,7 +52,7 @@ export class ChannelPage {
   readonly deleteMessageButton = (): Locator => this.page.getByRole('button', { name: 'Delete' })
   readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
   readonly openChannelDetails = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > .antiButton')
-  readonly changeChannelNameConfirm = (): Locator => this.page.locator('.ml-2 > .antiButton')
+  readonly changeChannelNameConfirm = (): Locator => this.page.locator('.selectPopup button')
   readonly privateOrPublicChangeButton = (change: string, autoJoin: boolean): Locator =>
     this.page
       .locator('span.labelOnPanel', { hasText: autoJoin ? 'Auto join' : 'Private' })
@@ -64,7 +80,7 @@ export class ChannelPage {
   }
 
   async changeChannelName (channel: string): Promise<void> {
-    await this.channel(channel).nth(2).click()
+    await this.channelNameOnDetail(channel).click()
     await this.page.keyboard.type('New Channel Name')
     await this.changeChannelNameConfirm().click()
   }
