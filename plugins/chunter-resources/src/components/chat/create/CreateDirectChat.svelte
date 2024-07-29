@@ -81,7 +81,6 @@
     })
 
     if (context !== undefined) {
-      await client.diffUpdate(context, { hidden: false })
       openChannel(dmId, chunter.class.DirectMessage)
 
       return
@@ -90,8 +89,7 @@
     await client.createDoc(notification.class.DocNotifyContext, dmId, {
       user: myAccId,
       attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage,
-      hidden: false
+      attachedToClass: chunter.class.DirectMessage
     })
 
     openChannel(dmId, chunter.class.DirectMessage)

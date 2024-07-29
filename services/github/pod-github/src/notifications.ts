@@ -14,7 +14,6 @@ export async function createNotification (
     const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, forDoc.space, {
       attachedTo: forDoc._id,
       attachedToClass: forDoc._class,
-      hidden: false,
       user: data.user,
       isPinned: false
     })

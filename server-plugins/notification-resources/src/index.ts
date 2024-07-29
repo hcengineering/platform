@@ -349,9 +349,6 @@ export async function pushInboxNotifications (
   }
   const context = getDocNotifyContext(contexts, account._id, attachedTo, res)
 
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  const isHidden = !!context?.hidden
-
   let docNotifyContextId: Ref<DocNotifyContext>
 
   if (context === undefined) {
@@ -359,7 +356,6 @@ export async function pushInboxNotifications (
       user: account._id,
       attachedTo,
       attachedToClass,
-      hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
     await control.apply([createContextTx])
@@ -389,18 +385,16 @@ export async function pushInboxNotifications (
     docNotifyContextId = context._id
   }
 
-  if (!isHidden) {
-    const notificationData = {
-      user: account._id,
-      isViewed: false,
-      docNotifyContext: docNotifyContextId,
-      ...data
-    }
-    const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
-    res.push(notificationTx)
-
-    return notificationTx
+  const notificationData = {
+    user: account._id,
+    isViewed: false,
+    docNotifyContext: docNotifyContextId,
+    ...data
   }
+  const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
+  res.push(notificationTx)
+
+  return notificationTx
 }
 
 async function activityInboxNotificationToText (

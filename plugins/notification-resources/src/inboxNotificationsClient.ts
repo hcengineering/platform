@@ -73,7 +73,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       return inboxNotifications.reduce((result, notification) => {
         const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
 
-        if (notifyContext === undefined || notifyContext.hidden) {
+        if (notifyContext === undefined) {
           return result
         }
 
@@ -207,13 +207,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         }
       )
     }
-
-    await client.createDoc(notification.class.DocNotifyContext, doc.space, {
-      attachedTo: _id,
-      attachedToClass: _class,
-      user: getCurrentAccount()._id,
-      hidden: true
-    })
   }
 
   async readNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {

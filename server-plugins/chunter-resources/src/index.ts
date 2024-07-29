@@ -411,14 +411,12 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
         attachedTo: tx.objectId,
         attachedToClass: tx.objectClass,
         user: addedMember,
-        hidden: false,
         lastViewedTimestamp: tx.modifiedOn
       })
 
       await control.apply([createTx])
     } else {
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        hidden: false,
         lastViewedTimestamp: tx.modifiedOn
       })
 

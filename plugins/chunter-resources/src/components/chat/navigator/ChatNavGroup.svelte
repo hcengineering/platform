@@ -55,7 +55,6 @@
     notification.class.DocNotifyContext,
     {
       ...model.query,
-      hidden: false,
       user: getCurrentAccount()._id
     },
     (res: DocNotifyContext[]) => {
