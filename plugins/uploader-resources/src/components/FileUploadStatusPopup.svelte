@@ -70,6 +70,10 @@
     }
   }
 
+  function handleCancelAll (): void {
+    upload.uppy.cancelAll()
+  }
+
   function handleCancelFile (file: UppyFile<any, any>): void {
     upload.uppy.removeFile(file.id)
   }
@@ -123,6 +127,17 @@
         noUnderline
       />
     </div>
+    {#if state.error}
+      <Button
+        kind={'icon'}
+        icon={IconClose}
+        iconProps={{ size: 'small' }}
+        showTooltip={{ label: uploader.string.Cancel }}
+        on:click={() => {
+          handleCancelAll()
+        }}
+      />
+    {/if}
   </div>
   <Scroller>
     <div class="upload-popup__content flex-col flex-no-shrink flex-gap-4">
@@ -209,6 +224,8 @@
 
     .upload-popup__header {
       padding-bottom: 1rem;
+      margin-left: 0.5rem;
+      margin-right: 0.625rem;
     }
 
     .upload-popup__content {
