@@ -21,12 +21,8 @@ export class PlanningPage extends CalendarPage {
   readonly inputPopupCreateTitle = (): Locator => this.popup().locator('input[type="text"]')
   readonly inputPopupCreateDescription = (): Locator => this.popup().locator('div.tiptap')
   readonly inputPanelCreateDescription = (): Locator => this.panel().locator('div.tiptap')
-  readonly buttonPopupCreateDueDate = (): Locator =>
-    this.popup().locator('div.block:first-child div.flex-row-center button:nth-child(3)')
-
-  readonly buttonPanelCreateDueDate = (): Locator =>
-    this.panel().locator('div.slots-content div.flex-row-top.justify-between div.flex-row-center button:first-child')
-
+  readonly buttonPopupCreateDueDate = (): Locator => this.popup().locator('button#dueDateButton')
+  readonly buttonPanelCreateDueDate = (): Locator => this.panel().locator('button#dueDateButton')
   readonly buttonPopupCreatePriority = (): Locator => this.popup().locator('button#priorityButton')
   readonly buttonPanelCreatePriority = (): Locator => this.panel().locator('button#priorityButton')
   readonly buttonPopupCreateVisible = (): Locator => this.popup().locator('button#visibleButton')

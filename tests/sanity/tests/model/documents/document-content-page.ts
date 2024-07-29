@@ -11,7 +11,7 @@ export class DocumentContentPage extends CommonPage {
 
   readonly buttonDocumentTitle = (): Locator => this.page.locator('div[class*="main-content"] div.title input')
   readonly inputContent = (): Locator => this.page.locator('div.textInput div.tiptap')
-  readonly buttonToolbarLink = (): Locator => this.page.locator('div.text-editor-toolbar button:nth-child(10)')
+  readonly buttonToolbarLink = (): Locator => this.page.locator('div.text-editor-toolbar button[data-id="btnLink"]')
   readonly inputFormLink = (): Locator => this.page.locator('form[id="text-editor:string:Link"] input')
   readonly buttonFormLinkSave = (): Locator =>
     this.page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
