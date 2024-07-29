@@ -73,6 +73,8 @@
     "@hcengineering/server-tags-resources": "^0.6.0",
     "@hcengineering/server-calendar": "^0.6.0",
     "@hcengineering/server-calendar-resources": "^0.6.0",
+    "@hcengineering/server-github": "^0.6.0",
+    "@hcengineering/server-github-resources": "^0.6.0",
     "@hcengineering/server-gmail": "^0.6.0",
     "@hcengineering/server-gmail-resources": "^0.6.0",
     "@hcengineering/server-preference": "^0.6.0",
@@ -166,6 +168,8 @@
     "@hcengineering/server-love-resources": "^0.6.0",
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/products": "^0.1.0",
-    "@hcengineering/training": "^0.1.0"
+    "@hcengineering/training": "^0.1.0",
+    "@hcengineering/github": "^0.6.0",
+    "@hcengineering/github-assets": "^0.6.0"
   }
 }
