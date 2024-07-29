@@ -95,7 +95,6 @@ export default plugin(loginId, {
     >,
     FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
-    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,
-    GetEndpoint: '' as Resource<() => Promise<string>>
+    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>
   }
 })

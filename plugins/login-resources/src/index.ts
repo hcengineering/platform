@@ -23,7 +23,6 @@ import {
   leaveWorkspace,
   selectWorkspace,
   sendInvite,
-  getEnpoint,
   fetchWorkspace,
   createMissingEmployee,
   getInviteLink
@@ -48,7 +47,6 @@ export default async () => ({
     CreateEmployee: createMissingEmployee,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
-    GetEndpoint: getEnpoint,
     GetInviteLink: getInviteLink
   }
 })
