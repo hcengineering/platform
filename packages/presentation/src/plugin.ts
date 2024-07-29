@@ -132,6 +132,7 @@ export default plugin(presentationId, {
     CollaboratorUrl: '' as Metadata<string>,
     CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
+    Endpoint: '' as Metadata<string>,
     FrontUrl: '' as Asset,
     PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
     ClientHook: '' as Metadata<ClientHook>
