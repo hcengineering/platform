@@ -68,7 +68,6 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly description: Locator
   readonly categoryCode: Locator
   readonly generalDocumentation: Locator
-  readonly member: Locator
 
   constructor (page: Page) {
     super(page)
