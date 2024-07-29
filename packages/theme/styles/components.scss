@@ -391,6 +391,8 @@
   }
   .hulyHeader-titleGroup {
     flex-grow: 1;
+    user-select: text;
+    cursor: auto;
 
     &.withDescription { flex-direction: column; }
     &:not(.withDescription) {

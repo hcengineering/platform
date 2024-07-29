@@ -27,7 +27,8 @@
     location,
     navigate,
     showPopup,
-    Scroller
+    Scroller,
+    closePanel
   } from '@hcengineering/ui'
   import {
     ParticipantInfo,
@@ -104,6 +105,7 @@
   }
 
   function back (): void {
+    closePanel()
     const loc = getCurrentLocation()
     loc.path[2] = loveId
     loc.path.length = 3
