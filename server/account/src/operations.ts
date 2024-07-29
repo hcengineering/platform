@@ -148,6 +148,28 @@ const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: Endpoi
   return transactors[Math.abs(hash % transactors.length)]
 }
 
+export function getAllTransactors (kind: EndpointKind): string[] {
+  const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
+  if (transactorsUrl === undefined) {
+    throw new Error('Please provide transactor endpoint url')
+  }
+  const endpoints = transactorsUrl
+    .split(',')
+    .map((it) => it.trim())
+    .filter((it) => it.length > 0)
+
+  if (endpoints.length === 0) {
+    throw new Error('Please provide transactor endpoint url')
+  }
+
+  const toTransactor = (line: string): { internalUrl: string, group: string, externalUrl: string } => {
+    const [internalUrl, externalUrl, group] = line.split(';')
+    return { internalUrl, group: group ?? '', externalUrl: externalUrl ?? internalUrl }
+  }
+
+  return endpoints.map(toTransactor).map((it) => (kind === EndpointKind.External ? it.externalUrl : it.internalUrl))
+}
+
 /**
  * @public
  */
