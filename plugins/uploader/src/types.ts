@@ -24,6 +24,7 @@ export interface FileWithPath extends File {
 export type UploadFilesPopupFn = (
   target: FileUploadTarget,
   options: FileUploadOptions,
+  popupOptions: FileUploadPopupOptions,
   onFileUploaded: FileUploadCallback
 ) => Promise<void>
 
@@ -47,6 +48,11 @@ export interface FileUploadOptions {
   maxNumberOfFiles?: number
   allowedFileTypes?: string[] | null
   hideProgress?: boolean
+}
+
+/** @public */
+export interface FileUploadPopupOptions {
+  fileManagerSelectionType?: 'files' | 'folders' | 'both'
 }
 
 /** @public */

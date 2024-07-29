@@ -17,6 +17,7 @@ import { showPopup } from '@hcengineering/ui'
 import {
   type FileUploadCallback,
   type FileUploadOptions,
+  type FileUploadPopupOptions,
   type FileUploadTarget,
   toFileWithPath
 } from '@hcengineering/uploader'
@@ -30,11 +31,12 @@ import { getUppy } from './uppy'
 export async function showFilesUploadPopup (
   target: FileUploadTarget,
   options: FileUploadOptions,
+  popupOptions: FileUploadPopupOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
   const uppy = getUppy(options, onFileUploaded)
 
-  showPopup(FileUploadPopup, { uppy, target }, undefined, (res) => {
+  showPopup(FileUploadPopup, { uppy, target, options: popupOptions }, undefined, (res) => {
     if (res === true && options.hideProgress !== true) {
       dockFileUpload(target, uppy)
     }
