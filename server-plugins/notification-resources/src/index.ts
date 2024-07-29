@@ -368,20 +368,6 @@ export async function pushInboxNotifications (
     }
     docNotifyContextId = createContextTx.objectId
   } else {
-    if (shouldUpdateTimestamp && context.lastUpdateTimestamp !== modifiedOn) {
-      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastUpdateTimestamp: modifiedOn
-      })
-      await control.apply([updateTx])
-      if (target.account?.email !== undefined) {
-        control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
-          if (it._id === updateTx._id) {
-            return [target.account?.email as string]
-          }
-        }
-      }
-    }
-
     docNotifyContextId = context._id
   }
 
@@ -756,6 +742,38 @@ export async function getNotificationTxes (
   return res
 }
 
+async function updateContextsTimestamp (
+  contexts: DocNotifyContext[],
+  timestamp: Timestamp,
+  control: TriggerControl
+): Promise<void> {
+  if (contexts.length === 0) return
+
+  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+    _id: { $in: contexts.map((it) => it.user as Ref<PersonAccount>) }
+  })
+  const res: Tx[] = []
+
+  for (const context of contexts) {
+    const account = accounts.find(({ _id }) => _id === context.user)
+    const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+      lastUpdateTimestamp: timestamp
+    })
+
+    res.push(updateTx)
+
+    if (account?.email !== undefined) {
+      control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
+        if (it._id === updateTx._id) {
+          return [account.email]
+        }
+      }
+    }
+  }
+
+  await control.apply(res)
+}
+
 export async function createCollabDocInfo (
   collaborators: Ref<PersonAccount>[],
   control: TriggerControl,
@@ -771,6 +789,10 @@ export async function createCollabDocInfo (
   if (originTx.space === core.space.DerivedTx) {
     return res
   }
+
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: object._id })
+
+  await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control)
 
   const docMessages = activityMessages.filter((message) => message.attachedTo === object._id)
   if (docMessages.length === 0) {
@@ -790,10 +812,6 @@ export async function createCollabDocInfo (
   if (targets.size === 0) {
     return res
   }
-
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-    attachedTo: object._id
-  })
 
   const usersInfo = await getUsersInfo([...Array.from(targets), originTx.modifiedBy as Ref<PersonAccount>], control)
   const sender = usersInfo.find(({ _id }) => _id === originTx.modifiedBy) ?? {

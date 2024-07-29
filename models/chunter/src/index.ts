@@ -22,10 +22,12 @@ import {
   type ChatMessageViewlet,
   type ChunterSpace,
   type ObjectChatPanel,
-  type ThreadMessage
+  type ThreadMessage,
+  type ChatInfo,
+  type ChannelInfo
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
-import contact from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import {
   type Class,
   type Doc,
@@ -50,11 +52,12 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
-import notification, { notificationActionTemplates } from '@hcengineering/model-notification'
+import notification, { notificationActionTemplates, TDocNotifyContext } from '@hcengineering/model-notification'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import type { IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
+import { type DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
 
@@ -133,6 +136,19 @@ export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
 }
 
+@Mixin(chunter.mixin.ChannelInfo, notification.class.DocNotifyContext)
+export class TChannelInfo extends TDocNotifyContext implements ChannelInfo {
+  @Hidden()
+    hidden!: boolean
+}
+
+@Model(chunter.class.ChatInfo, core.class.Doc, DOMAIN_CHUNTER)
+export class TChatInfo extends TDoc implements ChatInfo {
+  user!: Ref<Person>
+  hidden!: Ref<DocNotifyContext>[]
+  timestamp!: Timestamp
+}
+
 const actionTemplates = template({
   removeChannel: {
     action: chunter.actionImpl.RemoveChannel,
@@ -154,7 +170,9 @@ export function createModel (builder: Builder): void {
     TChatMessage,
     TThreadMessage,
     TChatMessageViewlet,
-    TObjectChatPanel
+    TObjectChatPanel,
+    TChatInfo,
+    TChannelInfo
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

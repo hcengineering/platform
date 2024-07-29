@@ -55,6 +55,7 @@
     notification.class.DocNotifyContext,
     {
       ...model.query,
+      [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
       user: getCurrentAccount()._id
     },
     (res: DocNotifyContext[]) => {

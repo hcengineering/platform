@@ -28,9 +28,6 @@ export async function createNotification (
     props: data.props
   })
   if (existing !== undefined) {
-    await client.update(docNotifyContext as DocNotifyContext, {
-      lastUpdateTimestamp: Date.now()
-    })
     await client.update(existing, {
       isViewed: false
     })
