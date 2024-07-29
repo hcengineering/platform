@@ -824,36 +824,6 @@ export async function afterConfirm (): Promise<void> {
   }
 }
 
-export async function getEnpoint (): Promise<string | undefined> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-
-  const params: [] = []
-
-  const request = {
-    method: 'getEndpoint',
-    params
-  }
-
-  try {
-    const response = await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(request)
-    })
-    const result = await response.json()
-    return result.result
-  } catch (err: any) {
-    console.error('get endpoint error', err)
-    Analytics.handleError(err)
-  }
-}
-
 export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | undefined> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
