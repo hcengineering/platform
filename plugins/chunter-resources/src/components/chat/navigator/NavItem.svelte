@@ -35,6 +35,7 @@
   export let isSelected: boolean = false
   export let isSecondary: boolean = false
   export let count: number | null = null
+  export let secondaryNotifyMarker: boolean = false
   export let title: string | undefined = undefined
   export let intlTitle: IntlString | undefined = undefined
   export let description: string | undefined = undefined
@@ -98,6 +99,10 @@
     {#if count != null && count > 0}
       <div class="antiHSpacer" />
       <NotifyMarker {count} />
+      <div class="antiHSpacer" />
+    {:else if secondaryNotifyMarker}
+      <div class="antiHSpacer" />
+      <NotifyMarker count={0} kind="secondary" size="x-small" />
       <div class="antiHSpacer" />
     {/if}
   </svelte:fragment>

@@ -32,6 +32,7 @@
   import { Loading, ModernButton, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'
+  import { DocNotifyContext } from '@hcengineering/notification'
 
   import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
   import {
@@ -52,7 +53,7 @@
   export let objectClass: Ref<Class<Doc>>
   export let objectId: Ref<Doc>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
-  export let scrollElement: HTMLDivElement | undefined = undefined
+  export let scrollElement: HTMLDivElement | undefined | null = undefined
   export let startFromBottom = false
   export let selectedFilters: Ref<ActivityMessagesFilter>[] = []
   export let embedded = false
@@ -70,9 +71,9 @@
   const loadMoreThreshold = 40
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
+  const notificationsByContextStore = inboxClient.inboxNotificationsByContext
 
   let filters: ActivityMessagesFilter[] = []
   const filterResources = new Map<
@@ -83,6 +84,7 @@
   const messagesStore = provider.messagesStore
   const isLoadingStore = provider.isLoadingStore
   const isLoadingMoreStore = provider.isLoadingMoreStore
+  const isTailLoadedStore = provider.isTailLoaded
   const newTimestampStore = provider.newTimestampStore
   const datesStore = provider.datesStore
   const metadataStore = provider.metadataStore
@@ -91,7 +93,7 @@
   let displayMessages: DisplayActivityMessage[] = []
   let extensions: ActivityExtension[] = []
 
-  let scroller: Scroller | undefined = undefined
+  let scroller: Scroller | undefined | null = undefined
   let separatorElement: HTMLDivElement | undefined = undefined
   let scrollContentBox: HTMLDivElement | undefined = undefined
 
@@ -137,7 +139,7 @@
   })
 
   function scrollToBottom (afterScrollFn?: () => void): void {
-    if (scroller !== undefined && scrollElement !== undefined) {
+    if (scroller != null && scrollElement != null) {
       scroller.scrollBy(scrollElement.scrollHeight)
       updateSelectedDate()
       afterScrollFn?.()
@@ -279,7 +281,7 @@
       scrollToRestore = scrollElement?.scrollHeight ?? 0
       provider.addNextChunk('backward', messages[0]?.createdOn, limit)
       backwardRequested = true
-    } else if (shouldLoadMoreDown()) {
+    } else if (shouldLoadMoreDown() && !$isTailLoadedStore) {
       scrollToRestore = 0
       shouldScrollToNew = false
       isScrollAtBottom = false
@@ -637,7 +639,7 @@
   function updateDownButtonVisibility (
     metadata: MessageMetadata[],
     displayMessages: DisplayActivityMessage[],
-    element?: HTMLDivElement
+    element?: HTMLDivElement | null
   ): void {
     if (metadata.length === 0 || displayMessages.length === 0) {
       showScrollDownButton = false
@@ -674,6 +676,22 @@
       reinitializeScroll()
     } else {
       scrollToBottom()
+    }
+  }
+
+  $: forceReadContext(isScrollAtBottom, notifyContext)
+
+  function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): void {
+    if (context === undefined || !isScrollAtBottom) return
+    const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
+
+    if (lastViewedTimestamp >= lastUpdateTimestamp) return
+
+    const notifications = $notificationsByContextStore.get(context._id) ?? []
+    const unViewed = notifications.filter(({ isViewed }) => !isViewed)
+
+    if (unViewed.length === 0) {
+      void inboxClient.readDoc(client, objectId)
     }
   }
 
@@ -808,5 +826,17 @@
     display: flex;
     justify-content: center;
     bottom: -0.75rem;
+    animation: 1s fadeIn;
+    animation-fill-mode: forwards;
+    visibility: hidden;
+  }
+
+  @keyframes fadeIn {
+    99% {
+      visibility: hidden;
+    }
+    100% {
+      visibility: visible;
+    }
   }
 </style>

@@ -84,6 +84,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly isInitialLoadedStore = writable(false)
   private readonly isTailLoading = writable(false)
 
+  readonly isTailLoaded = writable(false)
+
   public datesStore = writable<Timestamp[]>([])
   public newTimestampStore = writable<Timestamp | undefined>(undefined)
 
@@ -264,6 +266,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
           this.tailStore.set(res.reverse())
         }
 
+        this.isTailLoaded.set(true)
         this.isTailLoading.set(false)
       },
       {
@@ -557,6 +560,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(false)
     this.tailQuery.unsubscribe()
     this.tailStart = undefined
+    this.isTailLoaded.set(false)
     this.backwardNextPromise = undefined
     this.forwardNextPromise = undefined
     this.forwardNextStore.set(undefined)
