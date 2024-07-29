@@ -203,7 +203,7 @@
     "electron-windows-badge": "^1.1.0",
     "svelte": "^4.2.12",
     "commander": "^8.1.0",
-    "electron-store": "^10.0.0",
+    "electron-store": "^8.2.0",
     "electron-log": "^5.1.7",
     "electron-updater": "^6.2.1",
     "livekit-client": "^2.0.10"
