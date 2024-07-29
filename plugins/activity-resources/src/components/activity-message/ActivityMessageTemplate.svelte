@@ -304,6 +304,7 @@
       display: flex;
       justify-content: end;
       width: 2.5rem;
+      min-width: 2.5rem;
       visibility: hidden;
       margin-top: 0.125rem;
     }
