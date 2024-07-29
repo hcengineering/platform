@@ -29,15 +29,13 @@
     closeTooltip,
     deviceOptionsStore as deviceInfo,
     day as getDay,
-    getEventPositionElement,
     getMonday,
     getWeekDayName,
     resizeObserver,
-    showPopup,
     ticker,
     isWeekend
   } from '@hcengineering/ui'
-  import { Menu, showMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import type {
     CalendarADGrid,
@@ -630,6 +628,7 @@
   function mouseDownElement (e: MouseEvent, event: Event, direction: 'top' | 'bottom'): void {
     if (e.buttons !== 1) return
     e.stopPropagation()
+    closeTooltip()
     resizeId = event._id
     directionResize = direction
     originDate = event.date
