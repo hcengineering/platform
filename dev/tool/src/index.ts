@@ -238,6 +238,42 @@ export function devTool (
     })
 
   program
+    .command('compact-db')
+    .description('compact all db collections')
+    .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
+    .action(async (cmd: { workspace: string }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        console.log('compacting db ...')
+        let gtotal: number = 0
+        try {
+          const workspaces = await listWorkspacesPure(db, productId)
+          for (const workspace of workspaces) {
+            if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+              continue
+            }
+            let total: number = 0
+            const wsDb = getWorkspaceDB(client, { name: workspace.workspace, productId })
+            const collections = wsDb.listCollections()
+            while (true) {
+              const collInfo = await collections.next()
+              if (collInfo === null) {
+                break
+              }
+              const result = await wsDb.command({ compact: collInfo.name })
+              total += result.bytesFreed
+            }
+            gtotal += total
+            console.log('total feed for db', workspace.workspaceName, Math.round(total / (1024 * 1024)))
+          }
+          console.log('global total feed', Math.round(gtotal / (1024 * 1024)))
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+
+  program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
     .action(async (email: string, workspace: string, cmd) => {
@@ -372,7 +408,8 @@ export function devTool (
     .command('upgrade-workspace <name>')
     .description('upgrade workspace')
     .option('-f|--force [force]', 'Force update', true)
-    .action(async (workspace, cmd: { force: boolean }) => {
+    .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
+    .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const info = await getWorkspaceById(db, productId, workspace)
@@ -391,7 +428,8 @@ export function devTool (
           db,
           info.workspaceUrl ?? info.workspace,
           consoleModelLogger,
-          cmd.force
+          cmd.force,
+          cmd.indexes
         )
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60), {})
         console.log('upgrade done')

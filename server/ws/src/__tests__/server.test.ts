@@ -72,6 +72,7 @@ describe('server', () => {
       close: async () => {},
       storage: {} as unknown as ServerStorage,
       domains: async () => [],
+      groupBy: async () => new Set(),
       find: (ctx: MeasureContext, domain: Domain) => ({
         next: async (ctx: MeasureContext) => undefined,
         close: async (ctx: MeasureContext) => {}
@@ -170,6 +171,7 @@ describe('server', () => {
           return toFindResult([d as unknown as T])
         },
         tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
+        groupBy: async () => new Set(),
         close: async () => {},
         storage: {} as unknown as ServerStorage,
         domains: async () => [],

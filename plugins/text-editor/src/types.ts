@@ -99,6 +99,7 @@ export type TextEditorCommand = (props: TextEditorCommandProps) => boolean
  * @public
  */
 export interface ActionContext {
+  mode: TextEditorMode
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
   objectSpace?: Ref<Space>

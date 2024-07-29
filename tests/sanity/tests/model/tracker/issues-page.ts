@@ -113,7 +113,12 @@ export class IssuesPage extends CommonTrackerPage {
   createdTab = (): Locator => this.page.locator('[data-id="tab-created"]')
   subscribedTab = (): Locator => this.page.locator('[data-id="tab-subscribed"]')
   issueListPanel = (): Locator => this.page.locator('.hulyComponent')
-  notTrackButton = (): Locator => this.page.locator('button:has-text("Appleseed John") >> nth=1')
+  notTrackButton = (): Locator =>
+    this.page
+      .locator('span.labelOnPanel', { hasText: 'Collaborators' })
+      .locator('xpath=following-sibling::div[1]')
+      .locator('button')
+
   selectPopup = (): Locator => this.page.locator('.selectPopup >> button:has-text("Appleseed John")')
   notificationTimeoutSetting = (timeout: string): Promise<void> => {
     return this.page.evaluate((timeout) => {
@@ -136,7 +141,7 @@ export class IssuesPage extends CommonTrackerPage {
   issueName = (name: string): Locator => this.page.locator(`text="${name}"`)
   issuesButton = (): Locator => this.page.locator('text="Issues"')
   viewButton = (): Locator => this.page.locator('button[data-id="btn-viewOptions"]')
-  orderingButton = (): Locator => this.page.locator('.ordering >> nth=0')
+  orderingButton = (): Locator => this.page.locator('.ordering button')
   modifiedDateMenuItem = (): Locator => this.page.locator('button.menu-item', { hasText: 'Modified date' })
   estimationContainer = (): Locator => this.page.locator('.estimation-container').first()
   addTimeReportButton = (): Locator => this.page.locator('button:has-text("Add time report")')
@@ -158,7 +163,7 @@ export class IssuesPage extends CommonTrackerPage {
   dueDateButton = (): Locator => this.page.locator('button:has-text("Due date")')
   specificDay = (day: string): Locator => this.page.locator(`.date-popup-container div.day >> text=${day}`).first()
   inputTextPlaceholder = (): Locator => this.page.getByPlaceholder('Type text...')
-  confirmInput = (): Locator => this.page.locator('.ml-2 > .antiButton')
+  confirmInput = (): Locator => this.page.locator('.selectPopup button')
 
   async navigateToIssues (): Promise<void> {
     await this.page.click('text="Issues"')

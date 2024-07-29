@@ -33,6 +33,7 @@ import {
   type WorkspaceId
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
+import type { ServerFindOptions } from './types'
 
 export interface DomainHelperOperations {
   create: (domain: Domain) => Promise<void>
@@ -101,9 +102,7 @@ export interface DbAdapter {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-    }
+    options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
@@ -112,6 +111,8 @@ export interface DbAdapter {
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
   upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
 
   // Bulk update operations
   update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>

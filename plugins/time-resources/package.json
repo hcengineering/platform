@@ -2,7 +2,7 @@
   "name": "@hcengineering/time-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
-  "author": "Uberflow Contributors",
+  "author": "Copyright © Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile ui",

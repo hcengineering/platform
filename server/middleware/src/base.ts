@@ -23,7 +23,9 @@ import {
   SearchOptions,
   SearchQuery,
   SearchResult,
-  Tx
+  Tx,
+  type Domain,
+  type MeasureContext
 } from '@hcengineering/core'
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 
@@ -43,6 +45,17 @@ export abstract class BaseMiddleware {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     return await this.provideFindAll(ctx, _class, query, options)
+  }
+
+  async providerGroupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    if (this.next !== undefined) {
+      return await this.next.groupBy(ctx, domain, field)
+    }
+    return await this.storage.groupBy(ctx, domain, field)
+  }
+
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return await this.providerGroupBy(ctx, domain, field)
   }
 
   async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {

@@ -22,7 +22,6 @@ import core, {
   DOMAIN_TX,
   TxFactory,
   TxProcessor,
-  cutObjectArray,
   toFindResult,
   type Account,
   type AttachedDoc,
@@ -72,6 +71,7 @@ import { type Triggers } from '../triggers'
 import type {
   FullTextAdapter,
   ObjectDDParticipant,
+  ServerFindOptions,
   ServerStorage,
   ServerStorageOptions,
   SessionContext,
@@ -96,7 +96,7 @@ export class TServerStorage implements ServerStorage {
   Domain,
   {
     exists: boolean
-    checkPromise: Promise<boolean>
+    checkPromise: Promise<boolean> | undefined
     lastCheck: number
   }
   >()
@@ -196,7 +196,17 @@ export class TServerStorage implements ServerStorage {
     const helper = adapter.helper?.()
     if (helper !== undefined) {
       let info = this.domainInfo.get(domain)
-      if (info == null || Date.now() - info.lastCheck > 5 * 60 * 1000) {
+      if (info == null) {
+        // For first time, lets assume all is fine
+        info = {
+          exists: true,
+          lastCheck: Date.now(),
+          checkPromise: undefined
+        }
+        this.domainInfo.set(domain, info)
+        return adapter
+      }
+      if (Date.now() - info.lastCheck > 5 * 60 * 1000) {
         // Re-check every 5 minutes
         const exists = helper.exists(domain)
         // We will create necessary indexes if required, and not touch collection if not required.
@@ -430,14 +440,15 @@ export class TServerStorage implements ServerStorage {
     return this.model.filter((it) => it.modifiedOn > lastModelTx)
   }
 
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return await this.getAdapter(domain, false).groupBy(ctx, domain, field)
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-      prefix?: string
-    }
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     const p = options?.prefix ?? 'client'
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
@@ -447,7 +458,6 @@ export class TServerStorage implements ServerStorage {
     if (domain === DOMAIN_MODEL) {
       return this.modelDb.findAllSync(clazz, query, options)
     }
-    const st = Date.now()
     const result = await ctx.with(
       p + '-find-all',
       { _class: clazz },
@@ -456,9 +466,6 @@ export class TServerStorage implements ServerStorage {
       },
       { clazz, query, options }
     )
-    if (Date.now() - st > 1000) {
-      ctx.error('FindAll', { time: Date.now() - st, clazz, query: cutObjectArray(query), options })
-    }
     return result
   }
 

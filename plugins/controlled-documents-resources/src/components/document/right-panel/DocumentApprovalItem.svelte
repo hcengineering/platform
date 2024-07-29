@@ -2,8 +2,8 @@
   import { slide } from 'svelte/transition'
   import documents, { DocumentRequest } from '@hcengineering/controlled-documents'
   import chunter from '@hcengineering/chunter'
-  import { type Person, type PersonAccount } from '@hcengineering/contact'
-  import { PersonAccountRefPresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { type Person } from '@hcengineering/contact'
+  import { PersonRefPresenter, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Chevron, Label, tooltip } from '@hcengineering/ui'
@@ -20,7 +20,6 @@
   export let initiallyExpanded: boolean = false
 
   interface PersonalApproval {
-    account: Ref<PersonAccount>
     person?: Ref<Person>
     approved: 'approved' | 'rejected' | 'cancelled' | 'waiting'
     timestamp?: number
@@ -61,16 +60,14 @@
       req.rejected !== undefined
         ? [
             {
-              account: req.rejected,
-              person: accountById.get(req.rejected)?.person,
+              person: req.rejected,
               approved: 'rejected',
               timestamp: req.modifiedOn
             }
           ]
         : []
     const approvedBy: PersonalApproval[] = req.approved.map((id, idx) => ({
-      account: id,
-      person: accountById.get(id)?.person,
+      person: id,
       approved: 'approved',
       timestamp: req.approvedDates?.[idx] ?? req.modifiedOn
     }))
@@ -79,8 +76,7 @@
       .filter((p) => !(req?.approved as string[]).includes(p))
       .map(
         (id): PersonalApproval => ({
-          account: id,
-          person: accountById.get(id)?.person,
+          person: id,
           approved: req?.rejected !== undefined ? 'cancelled' : 'waiting'
         })
       )
@@ -125,7 +121,7 @@
   <div class="section" transition:slide|local>
     {#each approvals as approver}
       <div class="approver">
-        <PersonAccountRefPresenter value={approver.account} avatarSize="x-small" />
+        <PersonRefPresenter value={approver.person} avatarSize="x-small" />
         {#key approver.timestamp}
           <!-- For some reason tooltip is not interactive w/o remount -->
           <span

@@ -92,3 +92,11 @@ tests/db_dump
 .build
 .format
 tools/apm/apm.js
+deploy
+metrics.txt
+services/github/pod-github/src/github.graphql
+.build
+.format
+dev/tool/report.csv
+bundle/*
+bundle.js.map
