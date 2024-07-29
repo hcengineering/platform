@@ -16,21 +16,28 @@
 import { getResource } from '@hcengineering/platform'
 
 import uploader from './plugin'
-import type { FileUploadCallback, FileUploadOptions, FileUploadTarget, FileWithPath } from './types'
+import type {
+  FileUploadCallback,
+  FileUploadOptions,
+  FileUploadPopupOptions,
+  FileUploadTarget,
+  FileWithPath
+} from './types'
 
 /** @public */
 export async function showFilesUploadPopup (
   target: FileUploadTarget,
   options: FileUploadOptions,
+  popupOptions: FileUploadPopupOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
   const fn = await getResource(uploader.function.ShowFilesUploadPopup)
-  await fn(target, options, onFileUploaded)
+  await fn(target, options, popupOptions, onFileUploaded)
 }
 
 /** @public */
 export async function uploadFiles (
-  files: File[] | FileList | DataTransfer,
+  files: File[] | FileList,
   target: FileUploadTarget,
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
@@ -63,6 +70,9 @@ export async function getDataTransferFiles (dataTransfer: DataTransfer): Promise
 /** @public */
 export function toFileWithPath (file: File, path?: string): FileWithPath {
   const { webkitRelativePath } = file
+  if ('relativePath' in file) {
+    return file as FileWithPath
+  }
   Object.defineProperty(file, 'relativePath', {
     value:
       typeof path === 'string'
