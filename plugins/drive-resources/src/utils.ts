@@ -19,7 +19,12 @@ import drive, { createFile } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
-import { uploadFiles } from '@hcengineering/uploader'
+import {
+  type FileUploadCallback,
+  getDataTransferFiles,
+  showFilesUploadPopup,
+  uploadFiles
+} from '@hcengineering/uploader'
 import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDrive from './components/CreateDrive.svelte'
@@ -154,7 +159,38 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   return parents.reverse()
 }
 
-export async function uploadFilesToDrive (files: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const files = await getDataTransferFiles(dt)
+
+  const onFileUploaded = await fileUploadCallback(space, parent)
+
+  const target =
+    parent !== drive.ids.Root
+      ? { objectId: parent, objectClass: drive.class.Folder }
+      : { objectId: space, objectClass: drive.class.Drive }
+
+  await uploadFiles(files, target, {}, onFileUploaded)
+}
+
+export async function uploadFilesToDrivePopup (space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const onFileUploaded = await fileUploadCallback(space, parent)
+
+  const target =
+    parent !== drive.ids.Root
+      ? { objectId: parent, objectClass: drive.class.Folder }
+      : { objectId: space, objectClass: drive.class.Drive }
+
+  await showFilesUploadPopup(
+    target,
+    {},
+    {
+      fileManagerSelectionType: 'both'
+    },
+    onFileUploaded
+  )
+}
+
+async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Promise<FileUploadCallback> {
   const client = getClient()
 
   const query = parent !== drive.ids.Root ? { space, path: parent } : { space }
@@ -190,12 +226,7 @@ export async function uploadFilesToDrive (files: DataTransfer, space: Ref<Drive>
     return current
   }
 
-  const target =
-    parent !== drive.ids.Root
-      ? { objectId: parent, objectClass: drive.class.Folder }
-      : { objectId: space, objectClass: drive.class.Drive }
-
-  await uploadFiles(files, target, {}, async (uuid, name, file, path, metadata) => {
+  const callback: FileUploadCallback = async (uuid, name, file, path, metadata) => {
     const folder = await findParent(path)
     try {
       const data = {
@@ -211,5 +242,7 @@ export async function uploadFilesToDrive (files: DataTransfer, space: Ref<Drive>
     } catch (err) {
       void setPlatformStatus(unknownError(err))
     }
-  })
+  }
+
+  return callback
 }

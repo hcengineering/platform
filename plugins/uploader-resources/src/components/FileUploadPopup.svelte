@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { themeStore } from '@hcengineering/ui'
+  import { type FileUploadPopupOptions } from '@hcengineering/uploader'
 
   import { type Uppy } from '@uppy/core'
   import Dashboard from '@uppy/dashboard'
@@ -25,6 +26,7 @@
   const dispatch = createEventDispatcher()
 
   export let uppy: Uppy<any, any>
+  export let options: FileUploadPopupOptions
 
   let container: HTMLElement
 
@@ -46,7 +48,8 @@
       width: 750,
       disableInformer: true,
       proudlyDisplayPoweredByUppy: false,
-      theme: dark ? 'dark' : 'light'
+      theme: dark ? 'dark' : 'light',
+      fileManagerSelectionType: options.fileManagerSelectionType
     })
   })
 

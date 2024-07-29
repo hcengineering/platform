@@ -14,22 +14,19 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { createFile, type Drive } from '@hcengineering/drive'
-  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { type Drive } from '@hcengineering/drive'
+  import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
-  import { showFilesUploadPopup } from '@hcengineering/uploader'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { showCreateDrivePopup, showCreateFolderPopup } from '../utils'
+  import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
   const me = getCurrentAccount()
 
-  const client = getClient()
   const query = createQuery()
 
   let loading = true
@@ -66,27 +63,7 @@
 
   async function handleUploadFile (): Promise<void> {
     if (currentSpace !== undefined) {
-      const space = currentSpace
-      const target =
-        parent !== drive.ids.Root
-          ? { objectId: parent, objectClass: drive.class.Folder }
-          : { objectId: space, objectClass: drive.class.Drive }
-      await showFilesUploadPopup(target, {}, async (uuid, name, file, path, metadata) => {
-        try {
-          const data = {
-            file: uuid,
-            size: file.size,
-            type: file.type,
-            lastModified: file instanceof File ? file.lastModified : Date.now(),
-            name,
-            metadata
-          }
-
-          await createFile(client, space, parent, data)
-        } catch (err) {
-          void setPlatformStatus(unknownError(err))
-        }
-      })
+      await uploadFilesToDrivePopup(currentSpace, parent)
     }
   }
 
@@ -95,12 +72,10 @@
         { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
         { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
         { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-        // { id: drive.string.UploadFolder, label: drive.string.UploadFolder }
       ]
     : [
         { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
         { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-        // { id: drive.string.UploadFolder, label: drive.string.UploadFolder }
       ]
 </script>
 
