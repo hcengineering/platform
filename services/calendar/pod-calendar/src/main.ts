@@ -18,12 +18,12 @@ import { decode64 } from './base64'
 import { CalendarClient } from './calendar'
 import { CalendarController } from './calendarController'
 import config from './config'
-import { decode } from './jwt'
 import { createServer, listen } from './server'
 import { closeDB, getDB } from './storage'
 import { type Endpoint, type State } from './types'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
   try {
@@ -36,6 +36,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+  setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const db = await getDB()
   const calendarController = CalendarController.getCalendarController(db)
@@ -54,9 +55,9 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { email, workspace } = decode(token)
-          const userId = await calendarController.getUserId(email, workspace)
-          const url = CalendarClient.getAutUrl(redirectURL, workspace, userId, token)
+          const { email, workspace } = decodeToken(token)
+          const userId = await calendarController.getUserId(email, workspace.name)
+          const url = CalendarClient.getAutUrl(redirectURL, workspace.name, userId, token)
           res.send(url)
         } catch (err) {
           console.log('signin error', err)
@@ -93,8 +94,8 @@ export const main = async (): Promise<void> => {
 
           const value = req.query.value as string
 
-          const { workspace } = decode(token)
-          await calendarController.signout(workspace, value)
+          const { workspace } = decodeToken(token)
+          await calendarController.signout(workspace.name, value)
         } catch (err) {
           console.log('signout error', err)
         }

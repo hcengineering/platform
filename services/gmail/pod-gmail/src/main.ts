@@ -16,11 +16,11 @@
 
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
 import { decode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
-import { decode } from './jwt'
 import { createServer, listen } from './server'
 import { closeDB, getDB } from './storage'
 import { type Endpoint, type State } from './types'
@@ -36,6 +36,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+  setMetadata(serverToken.metadata.Secret, config.Secret)
   const db = await getDB()
   const gmailController = GmailController.getGmailController(db)
   await gmailController.startAll()
@@ -53,8 +54,8 @@ export const main = async (): Promise<void> => {
           }
           const redirectURL = req.query.redirectURL as string
 
-          const { email, workspace } = decode(token)
-          const gmail = await gmailController.getGmailClient(email, workspace, token)
+          const { email, workspace } = decodeToken(token)
+          const gmail = await gmailController.getGmailClient(email, workspace.name, token)
           const url = gmail.getAutUrl(redirectURL)
           res.send(url)
         } catch (err) {
@@ -86,8 +87,8 @@ export const main = async (): Promise<void> => {
             return
           }
 
-          const { email, workspace } = decode(token)
-          await gmailController.signout(workspace, email)
+          const { email, workspace } = decodeToken(token)
+          await gmailController.signout(workspace.name, email)
         } catch (err) {
           console.log('signout error', JSON.stringify(err))
         }
