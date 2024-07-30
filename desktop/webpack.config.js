@@ -67,7 +67,8 @@ module.exports = [
       ...(doValidate ? [new ForkTsCheckerWebpackPlugin()] : []),
       new Dotenv({ path: prod ? '.env' : '.env-dev' }),
       new DefinePlugin({
-        'process.env.MODEL_VERSION': JSON.stringify(process.env.MODEL_VERSION)
+        'process.env.MODEL_VERSION': JSON.stringify(process.env.MODEL_VERSION),
+        'process.env.VERSION': JSON.stringify(process.env.VERSION)
       })
     ],
     module: {

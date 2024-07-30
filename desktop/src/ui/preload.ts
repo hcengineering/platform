@@ -47,7 +47,8 @@ const expose: IPCMainExposed = {
               ...mainConfig,
               INITIAL_URL: openArg ?? '',
               UPLOAD_URL: concatLink(mainConfig.FRONT_URL, serverConfig.UPLOAD_URL),
-              MODEL_VERSION: mainConfig.MODEL_VERSION
+              MODEL_VERSION: mainConfig.MODEL_VERSION,
+              VERSION: mainConfig.VERSION
             }
 
             ipcRenderer.send('set-combined-config', combinedConfig)

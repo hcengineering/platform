@@ -1,7 +1,7 @@
 #!/bin/bash
 endpoint=https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com
 bucket=desktop-distro
-rawVersion=$(node common/scripts/show_version.js)
+rawVersion=$(node common/scripts/show_tag.js)
 version=${rawVersion:1:${#rawVersion}-2}
 
 cd desktop-package/deploy
