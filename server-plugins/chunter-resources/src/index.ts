@@ -515,7 +515,6 @@ async function hideOldActivityChannels (
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastUpdateTimestamp > lastViewedTimestamp) continue
-    console.log({ diff: date - lastUpdateTimestamp, delay: hideChannelDelay })
     if (date - lastUpdateTimestamp < hideChannelDelay) continue
 
     const params = hierarchy.as(context, chunter.mixin.ChannelInfo)
