@@ -18,16 +18,10 @@ import { generateToken } from '@hcengineering/server-token'
 import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import chunter, { ThreadMessage } from '@hcengineering/chunter'
 import contact, { PersonAccount } from '@hcengineering/contact'
-import clientResources from '@hcengineering/client-resources'
-import { setMetadata } from '@hcengineering/platform'
-import client from '@hcengineering/client'
+import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import activity, { ActivityMessage } from '@hcengineering/activity'
 
 import { NotificationRecord } from './types'
-import config from './config'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const WebSocket = require('ws')
 
 export class WorkspaceClient {
   private constructor (
@@ -146,13 +140,6 @@ export class WorkspaceClient {
 }
 
 async function connectPlatform (token: string): Promise<Client> {
-  // We need to override default factory with 'ws' one.
-  setMetadata(client.metadata.ClientSocketFactory, (url) => {
-    return new WebSocket(url, {
-      headers: {
-        'User-Agent': config.ServiceId
-      }
-    })
-  })
-  return await (await clientResources()).function.GetClient(token, config.TransactorUrl)
+  const endpoint = await getTransactorEndpoint(token)
+  return await createClient(endpoint, token)
 }

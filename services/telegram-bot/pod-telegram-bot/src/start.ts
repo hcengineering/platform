@@ -16,6 +16,7 @@
 import { MeasureMetricsContext } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
+import serverClient from '@hcengineering/server-client'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -25,6 +26,8 @@ import { registerLoaders } from './loaders'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
+  setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
   const ctx = new MeasureMetricsContext('telegram-bot', {})

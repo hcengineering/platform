@@ -19,7 +19,6 @@ export interface Config {
   FrontUrl: string
   MongoURL: string
   MongoDB: string
-  TransactorUrl: string
   ServiceId: string
   Secret: string
   Domain: string
@@ -27,6 +26,7 @@ export interface Config {
   App: string
   OtpTimeToLiveSec: number
   OtpRetryDelaySec: number
+  AccountsUrl: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -38,7 +38,7 @@ const config: Config = (() => {
     FrontUrl: process.env.FRONT_URL,
     MongoURL: process.env.MONGO_URL,
     MongoDB: process.env.MONGO_DB,
-    TransactorUrl: process.env.TRANSACTOR_URL,
+    AccountsUrl: process.env.ACCOUNTS_URL,
     ServiceId: process.env.SERVICE_ID,
     Secret: process.env.SECRET,
     Domain: process.env.DOMAIN,
