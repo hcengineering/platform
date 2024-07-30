@@ -3,7 +3,6 @@
   "COLLABORATOR_URL": "ws://localhost:3078",
   "COLLABORATOR_API_URL": "http://localhost:3078",
   "UPLOAD_URL":"/files",
-  "MODEL_VERSION": null,
   "TELEGRAM_URL": "http://localhost:8086",
   "GMAIL_URL": "http://localhost:8088",
   "CALENDAR_URL": "http://localhost:8095",
@@ -15,5 +14,7 @@
   "PRINT_URL": "http://localhost:4005",
   "SIGN_URL": "http://localhost:4006",
   "ANALYTICS_COLLECTOR_URL": "http://localhost:4077",
-  "BRANDING_URL": "/branding.json"
+  "BRANDING_URL": "/branding.json",
+  "VERSION": "0.6.266",
+  "MODEL_VERSION": "0.6.266"
 }

@@ -126,7 +126,8 @@ export default plugin(presentationId, {
     FilePreviewExtension: '' as ComponentExtensionId
   },
   metadata: {
-    RequiredVersion: '' as Metadata<string>,
+    ModelVersion: '' as Metadata<string>,
+    FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,

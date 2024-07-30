@@ -241,6 +241,7 @@ export function start (
     accountsUrl: string
     uploadUrl: string
     modelVersion: string
+    version: string
     rekoniUrl: string
     telegramUrl: string
     gmailUrl: string
@@ -290,6 +291,7 @@ export function start (
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
       MODEL_VERSION: config.modelVersion,
+      VERSION: config.version,
       REKONI_URL: config.rekoniUrl,
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
