@@ -16,23 +16,16 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { OK, Severity, Status, translate } from '@hcengineering/platform'
-  import {
-    Button,
-    Label,
-    StylishEdit,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
-    navigate,
-    themeStore
-  } from '@hcengineering/ui'
+  import { Button, Label, StylishEdit, deviceOptionsStore as deviceInfo, themeStore } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
 
-  import { NavLink } from '@hcengineering/presentation'
   import { onMount } from 'svelte'
-  import { BottomAction, getHref } from '..'
+  import { BottomAction } from '..'
   import login from '../plugin'
   import { makeSequential } from '../mutex'
   import Providers from './Providers.svelte'
+  import Tabs from './Tabs.svelte'
+  import BottomActionComponent from './BottomAction.svelte'
 
   interface Field {
     id?: string
@@ -122,12 +115,7 @@
     object[field] = (object[field] as string).trim()
   }
 
-  const goTab = (path: string) => {
-    const loc = getCurrentLocation()
-    loc.path[1] = path
-    loc.path.length = 2
-    navigate(loc)
-  }
+  let loginState: 'login' | 'signup' | 'none' = 'none'
   $: loginState = caption === login.string.LogIn ? 'login' : caption === login.string.SignUp ? 'signup' : 'none'
 </script>
 
@@ -150,28 +138,7 @@
   }}
 >
   {#if loginState !== 'none'}
-    <div class="flex-row-center caption">
-      <a
-        class="title"
-        class:selected={loginState === 'signup'}
-        href="."
-        on:click|preventDefault={() => {
-          if (loginState !== 'signup') goTab('signup')
-        }}
-      >
-        <Label label={login.string.SignUp} />
-      </a>
-      <a
-        class="title"
-        class:selected={loginState === 'login'}
-        href="."
-        on:click|preventDefault={() => {
-          if (loginState !== 'login') goTab('login')
-        }}
-      >
-        <Label label={login.string.LogIn} />
-      </a>
-    </div>
+    <Tabs {loginState} />
   {:else}
     {#if subtitle !== undefined}
       <div class="fs-title">
@@ -234,14 +201,7 @@
   {#if bottomActions.length}
     <div class="footer">
       {#each bottomActions as action}
-        <div>
-          <span><Label label={action.caption} /></span>
-          {#if action.page}
-            <NavLink href={getHref(action.page)}><Label label={action.i18n} /></NavLink>
-          {:else}
-            <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
-          {/if}
-        </div>
+        <BottomActionComponent {action} />
       {/each}
     </div>
   {/if}
@@ -257,28 +217,6 @@
       font-weight: 500;
       font-size: 1.25rem;
       color: var(--theme-caption-color);
-    }
-    .caption a {
-      padding-bottom: 0.375rem;
-      border-bottom: 2px solid var(--theme-caption-color);
-
-      &:not(.selected) {
-        color: var(--theme-dark-color);
-        border-bottom-color: transparent;
-
-        &:hover {
-          color: var(--theme-caption-color);
-        }
-      }
-      &.selected {
-        cursor: default;
-      }
-      &:first-child {
-        margin-right: 1.75rem;
-      }
-      &:hover {
-        text-decoration: none;
-      }
     }
     .status {
       padding-top: 1rem;

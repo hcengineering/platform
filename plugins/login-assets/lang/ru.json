@@ -42,6 +42,20 @@
     "ConfirmationSent": "На Вашу почту отправлено сообщение, c ссылкой для подтверждения email.",
     "ConfirmationSent2": "Пожалуйста, перейдите по ссылке для завершения регистрации.",
     "Slogan": "Уникальное место для организации всей вашей работы\nДобро пожаловать в Платформу",
-    "ContinueWith": "Войти через {provider}"
+    "ContinueWith": "Войти через {provider}",
+    "HaventReceivedCode": "Не получили код?",
+    "ResendCode": "Отправить код повторно",
+    "WrongEmail": "Неверный email?",
+    "ChangeEmail": "Изменить email",
+    "SentTo": "Мы отправили код на ",
+    "CanFindCode": "Не нашли код? Проверьте папку со спамом.",
+    "LoginWithPassword": "Войти с паролем",
+    "LoginWithCode": "Войти с кодом",
+    "FillInProfile": "Заполните профиль",
+    "SetUpPassword": "Установите пароль",
+    "Next": "Дальше",
+    "Skip": "Пропустить",
+    "SignUpCompleted": "Регистрация завершена",
+    "StartUsingHuly": "Начать использовать Huly"
   }
 }
