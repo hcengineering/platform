@@ -41,7 +41,7 @@
   $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
   $: query.query(
     chunter.class.ChatMessage,
-    { attachedTo: objectId, sapce: getChannelSpace(object._class, object._id, object.space) },
+    { attachedTo: objectId, space: getChannelSpace(object._class, object._id, object.space) },
     (res) => {
       messages = res.sort((message) => (message?.isPinned ? -1 : 1))
       loading = false
