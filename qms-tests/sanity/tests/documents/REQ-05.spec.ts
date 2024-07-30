@@ -84,15 +84,21 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     const description = faker.lorem.sentence(1)
     const code = faker.word.words(2)
     const leftSideMenuPage = new LeftSideMenuPage(page)
+    const category = faker.word.words(2)
 
     await leftSideMenuPage.clickButtonOnTheLeft('Documents')
-    await test.step('2. Create a new category', async () => {
+    await test.step('2. Create a new category and template', async () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.selectControlDocumentSubcategory('Categories')
       await documentContentPage.clickOnAddCategoryButton()
-      await documentContentPage.fillCategoryForm(title, description, code)
+      await documentContentPage.fillCategoryForm(category, description, code)
+      await documentContentPage.clickNewDocumentArrow()
+      await documentContentPage.clickNewTemplate()
+      await createTemplateStep(page, title, description, category)
+      await documentContentPage.selectControlDocumentSubcategory('Templates')
+      await documentContentPage.chooseFilter(title, code)
     })
 
-    await attachScreenshot('TESTS-383_workspace_created.png', page)
+    await attachScreenshot('TESTS-383_Template_created.png', page)
   })
 })

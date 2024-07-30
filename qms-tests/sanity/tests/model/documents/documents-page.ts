@@ -72,7 +72,7 @@ export class DocumentsPage extends CalendarPage {
     await this.inputNewDocumentDescription.fill(description)
     await this.category.click()
     await this.search.fill(category)
-    await this.page.keyboard.press('Escape')
+    await this.page.getByRole('button', { name: category }).click()
     await this.nextStep.click()
     await this.addMember.nth(2).click()
     await this.newMember.click()

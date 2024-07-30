@@ -70,6 +70,8 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly generalDocumentation: Locator
   readonly newDocumentArrow: Locator
   readonly newTemplate: Locator
+  readonly filter: Locator
+  readonly filterCategory: Locator
 
   constructor (page: Page) {
     super(page)
@@ -148,6 +150,8 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.generalDocumentation = page.getByRole('button', { name: 'General documentation' })
     this.newDocumentArrow = page.locator('.w-full > button:nth-child(2)')
     this.newTemplate = page.getByRole('button', { name: 'New template', exact: true })
+    this.filter = page.getByRole('button', { name: 'Filter' })
+    this.filterCategory = page.locator('span').filter({ hasText: /^Category$/ })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -272,6 +276,15 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async clickAddFolderButton (): Promise<void> {
     await this.addSpaceButton.click()
+  }
+
+  async chooseFilter (code: string, category: string): Promise<void> {
+    await this.filter.click()
+    await this.filterCategory.hover()
+    await this.page.getByRole('button', { name: 'Category', exact: true }).click()
+    await this.page.getByText(category).click({ force: true })
+    await this.page.keyboard.press('Escape')
+    await expect(this.page.getByText(code, { exact: true })).toBeVisible()
   }
 
   async fillDocumentSpaceForm (spaceName: string): Promise<void> {
