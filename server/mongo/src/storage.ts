@@ -749,10 +749,14 @@ abstract class MongoAdapterBase implements DbAdapter {
                 }
 
                 const doc = await coll.findOne(mongoQuery, findOptions)
-                if (doc != null) {
-                  return toFindResult([doc as unknown as T])
+                let total = -1
+                if (options.total === true) {
+                  total = await coll.countDocuments(mongoQuery)
                 }
-                return toFindResult([])
+                if (doc != null) {
+                  return toFindResult([doc as unknown as T], total)
+                }
+                return toFindResult([], total)
               },
               { mongoQuery }
             )
