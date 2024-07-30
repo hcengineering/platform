@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Menu } from '@hcengineering/ui'
+  import { Action, Menu, Loading } from '@hcengineering/ui'
   import { ActionGroup, ViewContextType } from '@hcengineering/view'
   import { getActions, invokeAction } from '../actions'
 
@@ -42,39 +42,57 @@
     remove: 7
   }
 
-  void getActions(client, object, baseMenuClass, mode).then((result) => {
-    const filtered = result.filter((a) => {
-      if (excludedActions.includes(a._id)) {
-        return false
-      }
-      if (includedActions.length > 0 && !includedActions.includes(a._id)) {
-        return false
-      }
-      if (a.override && a.override.filter((o) => excludedActions.includes(o)).length > 0) {
-        return false
-      }
-      return true
-    })
-    const newActions: Action[] = filtered.map((a) => ({
-      label: a.label,
-      icon: a.icon as Asset,
-      inline: a.inline,
-      group: a.context.group ?? 'other',
-      action: async (_: any, evt: Event) => {
-        invokeAction(object, evt, a)
-      },
-      component: a.actionPopup,
-      props: { ...a.actionProps, value: object }
-    }))
-    resActions = [...newActions, ...actions].sort(
-      (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
-    )
-    if (resActions.length > 0) {
-      loaded = true
+  const findAllObjects = async (object: Doc | Doc[]) => {
+    const objArray = Array.isArray(object) ? object : [object]
+    const objClass = objArray.map((obj) => obj._class).filter((it, idx, arr) => arr.indexOf(it) === idx)
+    if (objClass.length === 1) {
+      const obj = (await client.findAll(objClass[0], { _id: { $in: objArray.map((it) => it._id) } })) as Array<Doc>
+      return obj.length === 1 ? obj[0] : obj
     }
+    return object
+  }
+
+  void findAllObjects(object).then((res) => {
+    void getActions(client, res, baseMenuClass, mode).then((result) => {
+      const filtered = result.filter((a) => {
+        if (excludedActions.includes(a._id)) {
+          return false
+        }
+        if (includedActions.length > 0 && !includedActions.includes(a._id)) {
+          return false
+        }
+        if (a.override && a.override.filter((o) => excludedActions.includes(o)).length > 0) {
+          return false
+        }
+        return true
+      })
+      const newActions: Action[] = filtered.map((a) => ({
+        label: a.label,
+        icon: a.icon as Asset,
+        inline: a.inline,
+        group: a.context.group ?? 'other',
+        action: async (_: any, evt: Event) => {
+          invokeAction(object, evt, a)
+        },
+        component: a.actionPopup,
+        props: { ...a.actionProps, value: object }
+      }))
+      resActions = [...newActions, ...actions].sort(
+        (a, b) => (order as any)[a.group ?? 'other'] - (order as any)[b.group ?? 'other']
+      )
+      if (resActions.length > 0) {
+        loaded = true
+      }
+    })
   })
 </script>
 
 {#if loaded}
   <Menu actions={resActions} on:close on:changeContent />
+{:else}
+  <div class="antiPopup">
+    <div class="min-w-28 min-h-12 flex-center">
+      <Loading />
+    </div>
+  </div>
 {/if}
