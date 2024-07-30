@@ -90,8 +90,7 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         // )
         res.push(
           control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastUpdateTimestamp: tx.modifiedOn,
-            hidden: false
+            lastUpdateTimestamp: tx.modifiedOn
           })
         )
       }
@@ -101,7 +100,6 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
             user: tx.modifiedBy,
             attachedTo: channel._id,
             attachedToClass: channel._class,
-            hidden: false,
             lastUpdateTimestamp: tx.modifiedOn
             // TODO: push inbox notifications
             // txes: [

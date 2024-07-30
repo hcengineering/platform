@@ -14,8 +14,15 @@
 //
 
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
-import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
-import { Person, PersonAccount } from '@hcengineering/contact'
+import chunter, {
+  Channel,
+  ChannelInfo,
+  ChatMessage,
+  chunterId,
+  ChunterSpace,
+  ThreadMessage
+} from '@hcengineering/chunter'
+import contact, { Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   AttachedDoc,
@@ -27,6 +34,7 @@ import core, {
   FindResult,
   Hierarchy,
   Ref,
+  Timestamp,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -34,9 +42,10 @@ import core, {
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  UserStatus
 } from '@hcengineering/core'
-import notification, { Collaborators, NotificationContent } from '@hcengineering/notification'
+import notification, { Collaborators, DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
@@ -49,6 +58,9 @@ import { workbenchId } from '@hcengineering/workbench'
 
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { encodeObjectURI } from '@hcengineering/view'
+
+const updateChatInfoDelay = 12 * 60 * 60 * 1000 // 12 hours
+const hideChannelDelay = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 /**
  * @public
@@ -411,14 +423,12 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
         attachedTo: tx.objectId,
         attachedToClass: tx.objectClass,
         user: addedMember,
-        hidden: false,
         lastViewedTimestamp: tx.modifiedOn
       })
 
       await control.apply([createTx])
     } else {
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        hidden: false,
         lastViewedTimestamp: tx.modifiedOn
       })
 
@@ -455,13 +465,201 @@ async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control:
   return res
 }
 
+async function hideOldDirects (
+  directs: DocNotifyContext[],
+  control: TriggerControl,
+  date: Timestamp
+): Promise<TxMixin<DocNotifyContext, ChannelInfo>[]> {
+  const visibleDirects = directs.filter((context) => {
+    const hasMixin = control.hierarchy.hasMixin(context, chunter.mixin.ChannelInfo)
+    if (!hasMixin) return true
+    const info = control.hierarchy.as(context, chunter.mixin.ChannelInfo)
+
+    return !info.hidden
+  })
+
+  const minVisibleDirects = 10
+
+  if (visibleDirects.length <= minVisibleDirects) return []
+  const canHide = visibleDirects.length - minVisibleDirects
+
+  let toHide: DocNotifyContext[] = []
+
+  for (const context of directs) {
+    const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
+
+    if (lastUpdateTimestamp > lastViewedTimestamp) continue
+    if (date - lastUpdateTimestamp < hideChannelDelay) continue
+
+    toHide.push(context)
+  }
+
+  if (toHide.length > canHide) {
+    toHide = toHide.splice(0, toHide.length - canHide)
+  }
+
+  return await hideOldChannels(toHide, control)
+}
+
+async function hideOldActivityChannels (
+  contexts: DocNotifyContext[],
+  control: TriggerControl,
+  date: Timestamp
+): Promise<TxMixin<DocNotifyContext, ChannelInfo>[]> {
+  if (contexts.length === 0) return []
+
+  const { hierarchy } = control
+  const toHide: DocNotifyContext[] = []
+
+  for (const context of contexts) {
+    const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
+
+    if (lastUpdateTimestamp > lastViewedTimestamp) continue
+    console.log({ diff: date - lastUpdateTimestamp, delay: hideChannelDelay })
+    if (date - lastUpdateTimestamp < hideChannelDelay) continue
+
+    const params = hierarchy.as(context, chunter.mixin.ChannelInfo)
+    if (params.hidden) continue
+
+    toHide.push(context)
+  }
+
+  return await hideOldChannels(toHide, control)
+}
+
+async function hideOldChannels (
+  contexts: DocNotifyContext[],
+  control: TriggerControl
+): Promise<TxMixin<DocNotifyContext, ChannelInfo>[]> {
+  const res: TxMixin<DocNotifyContext, ChannelInfo>[] = []
+
+  for (const context of contexts) {
+    const tx = control.txFactory.createTxMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, {
+      hidden: true
+    })
+    res.push(tx)
+  }
+
+  return res
+}
+
+async function updateChatInfo (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
+  const account = await control.modelDb.findOne(contact.class.PersonAccount, { _id: status.user as Ref<PersonAccount> })
+  if (account === undefined) return
+
+  const chatUpdates = await control.queryFind(chunter.class.ChatInfo, {})
+  const update = chatUpdates.find(({ user }) => user === account.person)
+  const shouldUpdate = update === undefined || date - update.timestamp > updateChatInfoDelay
+
+  if (!shouldUpdate) return
+
+  const contexts = await control.findAll(notification.class.DocNotifyContext, {
+    user: account._id,
+    isPinned: { $ne: true }
+  })
+
+  if (contexts.length === 0) return
+
+  const { hierarchy } = control
+  const res: Tx[] = []
+
+  const directContexts = contexts.filter(({ attachedToClass }) =>
+    hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage)
+  )
+  const activityContexts = contexts.filter(
+    ({ attachedToClass }) =>
+      !hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage) &&
+      !hierarchy.isDerived(attachedToClass, chunter.class.Channel) &&
+      !hierarchy.isDerived(attachedToClass, chunter.class.Channel)
+  )
+
+  const directTxes = await hideOldDirects(directContexts, control, date)
+  const activityTxes = await hideOldActivityChannels(activityContexts, control, date)
+  const mixinTxes = directTxes.concat(activityTxes)
+  const hidden: Ref<DocNotifyContext>[] = mixinTxes.map((tx) => tx.objectId)
+
+  res.push(...mixinTxes)
+
+  if (update === undefined) {
+    res.push(
+      control.txFactory.createTxCreateDoc(chunter.class.ChatInfo, core.space.Workspace, {
+        user: account.person,
+        hidden,
+        timestamp: date
+      })
+    )
+  } else {
+    res.push(
+      control.txFactory.createTxUpdateDoc(update._class, update.space, update._id, {
+        hidden: Array.from(new Set(update.hidden.concat(hidden))),
+        timestamp: date
+      })
+    )
+  }
+
+  const txIds = res.map((tx) => tx._id)
+
+  await control.apply(res)
+
+  control.operationContext.derived.targets.docNotifyContext = (it) => {
+    if (txIds.includes(it._id)) {
+      return [account.email]
+    }
+  }
+}
+
+async function OnUserStatus (originTx: TxCUD<UserStatus>, control: TriggerControl): Promise<Tx[]> {
+  const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
+  if (tx.objectClass !== core.class.UserStatus) return []
+  if (tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<UserStatus>
+    const { online } = createTx.attributes
+    if (online) {
+      const status = TxProcessor.createDoc2Doc(createTx)
+      await updateChatInfo(control, status, originTx.modifiedOn)
+    }
+  } else if (tx._class === core.class.TxUpdateDoc) {
+    const updateTx = tx as TxUpdateDoc<UserStatus>
+    const { online } = updateTx.operations
+    if (online === true) {
+      const status = (await control.findAll(core.class.UserStatus, { _id: updateTx.objectId }))[0]
+      await updateChatInfo(control, status, originTx.modifiedOn)
+    }
+  }
+
+  return []
+}
+
+async function OnContextUpdate (tx: TxUpdateDoc<DocNotifyContext>, control: TriggerControl): Promise<Tx[]> {
+  const hasUpdate = 'lastUpdateTimestamp' in tx.operations && tx.operations.lastUpdateTimestamp !== undefined
+  if (!hasUpdate) return []
+
+  const chatUpdates = await control.queryFind(chunter.class.ChatInfo, {})
+  for (const update of chatUpdates) {
+    if (update.hidden.includes(tx.objectId)) {
+      return [
+        control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, chunter.mixin.ChannelInfo, {
+          hidden: false
+        }),
+        control.txFactory.createTxUpdateDoc(update._class, update.space, update._id, {
+          hidden: update.hidden.filter((id) => id !== tx.objectId)
+        })
+      ]
+    }
+  }
+
+  return []
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     ChunterTrigger,
     OnChatMessageRemoved,
     OnChannelMembersChanged,
-    ChatNotificationsHandler
+    ChatNotificationsHandler,
+    OnUserStatus,
+    OnContextUpdate
   },
   function: {
     CommentRemove,

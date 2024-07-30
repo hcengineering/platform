@@ -20,6 +20,7 @@ import chunter from '@hcengineering/chunter'
 import serverNotification from '@hcengineering/server-notification'
 import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
+import notification from '@hcengineering/notification'
 
 export { serverChunterId } from '@hcengineering/server-chunter'
 
@@ -58,6 +59,22 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxUpdateDoc,
       objectClass: chunter.class.Channel
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnUserStatus,
+    txMatch: {
+      objectClass: core.class.UserStatus
+    },
+    isAsync: true
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnContextUpdate,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: notification.class.DocNotifyContext
     }
   })
 
