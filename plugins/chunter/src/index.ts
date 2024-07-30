@@ -171,7 +171,12 @@ export default plugin(chunterId, {
     UnstarChannel: '' as IntlString,
     UnstarConversation: '' as IntlString,
     NoMessagesInChannel: '' as IntlString,
-    SendMessagesInChannel: '' as IntlString
+    SendMessagesInChannel: '' as IntlString,
+    Joined: '' as IntlString,
+    Left: '' as IntlString,
+    Added: '' as IntlString,
+    Removed: '' as IntlString,
+    CreatedChannelOn: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

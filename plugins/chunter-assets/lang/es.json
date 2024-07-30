@@ -111,6 +111,11 @@
     "JoinChannelText": "Una vez que se haya unido, podrá leer todos los mensajes y contribuir a la discusión.",
     "NoMessagesInChannel": "No hay mensajes en este canal todavía.",
     "SendMessagesInChannel": "Envíe mensajes en este canal para comenzar la conversación.",
-    "LatestMessages": "↓ Últimos mensajes"
+    "LatestMessages": "↓ Últimos mensajes",
+    "Joined": "Unido",
+    "Left": "Abandonado",
+    "Added": "Añadido",
+    "Removed": "Eliminado",
+    "CreatedChannelOn": "Creó este canal el {date}"
   }
 }

@@ -88,7 +88,6 @@ export default mergeIds(viewId, view, {
     AfterDate: '' as IntlString,
     BetweenDates: '' as IntlString,
     SaveAs: '' as IntlString,
-    And: '' as IntlString,
     Between: '' as IntlString,
     ShowColors: '' as IntlString,
     Show: '' as IntlString,

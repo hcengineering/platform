@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { ButtonIcon, IconDelete, ModernButton, Scroller } from '@hcengineering/ui'
+  import { ButtonIcon, IconDelete, Lazy, ModernButton, Scroller } from '@hcengineering/ui'
   import { IconAddMember, personByIdStore, UserDetails } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
@@ -48,22 +48,24 @@
   </div>
   <Scroller>
     {#each persons as person, index}
-      <div class="item" class:withoutBorder={index === persons.length - 1}>
-        <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
-          <UserDetails {person} showStatus />
-          {#if !disableRemoveFor.includes(person._id)}
-            <div class="item__action">
-              <ButtonIcon
-                icon={IconDelete}
-                size="small"
-                on:click={() => {
-                  dispatch('remove', person._id)
-                }}
-              />
-            </div>
-          {/if}
+      <Lazy>
+        <div class="item" class:withoutBorder={index === persons.length - 1}>
+          <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
+            <UserDetails {person} showStatus />
+            {#if !disableRemoveFor.includes(person._id)}
+              <div class="item__action">
+                <ButtonIcon
+                  icon={IconDelete}
+                  size="small"
+                  on:click={() => {
+                    dispatch('remove', person._id)
+                  }}
+                />
+              </div>
+            {/if}
+          </div>
         </div>
-      </div>
+      </Lazy>
     {/each}
   </Scroller>
 </div>

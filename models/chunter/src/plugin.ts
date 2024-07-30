@@ -51,6 +51,10 @@ export default mergeIds(chunterId, chunter, {
   category: {
     Chunter: '' as Ref<ActionCategory>
   },
+  activity: {
+    ChannelCreatedMessage: '' as AnyComponent,
+    MembersChangedMessage: '' as AnyComponent
+  },
   string: {
     ApplicationLabelChunter: '' as IntlString,
     MentionedIn: '' as IntlString,

@@ -224,7 +224,14 @@
         />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
-      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} {space} />
+      <DocUpdateMessageAttributes
+        attributeUpdates={value.attributeUpdates}
+        {attributeModel}
+        {viewlet}
+        {space}
+        {object}
+        message={value}
+      />
     {/if}
   </svelte:fragment>
 </ActivityMessageTemplate>

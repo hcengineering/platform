@@ -50,6 +50,7 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
   export let type: ObjectPresenterType = 'link'
+  export let overflowLabel = true
 
   const client = getClient()
 
@@ -93,6 +94,7 @@
         {type}
         {maxWidth}
         {showStatus}
+        {overflowLabel}
       />
       <span class="status">
         <Label label={statusLabel} />
@@ -116,6 +118,7 @@
       {type}
       {maxWidth}
       {showStatus}
+      {overflowLabel}
     />
   {/if}
 {:else if shouldShowPlaceholder}

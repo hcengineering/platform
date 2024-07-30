@@ -245,13 +245,17 @@ export async function getTxAttributesUpdates (
   const hierarchy = control.hierarchy
 
   const filterSet = new Set<string>()
+  const allowedFields: string[] = controlRules?.flatMap((it) => it.allowedFields as string[]) ?? []
+
   for (const c of controlRules ?? []) {
     for (const f of c.skipFields ?? []) {
       filterSet.add(f)
     }
   }
 
-  const keys = getAvailableAttributesKeys(tx, hierarchy).filter((it) => !filterSet.has(it))
+  const keys = getAvailableAttributesKeys(tx, hierarchy).filter(
+    (it) => !filterSet.has(it) && (allowedFields.length === 0 || allowedFields.includes(it))
+  )
 
   if (keys.length === 0) {
     return []

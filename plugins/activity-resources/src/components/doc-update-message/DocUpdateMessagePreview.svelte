@@ -124,6 +124,8 @@
         {attributeModel}
         {space}
         {viewlet}
+        {object}
+        message={value}
         preview
       />
     {/if}

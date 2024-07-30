@@ -246,16 +246,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Organization, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: contact.class.Contact,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
   builder.mixin(contact.class.Channel, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectIcon, {

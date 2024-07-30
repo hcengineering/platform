@@ -58,16 +58,11 @@
   })
 
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: void updateDataProvider(object._id, _class, selectedMessageId)
+  $: void updateDataProvider(object._id, selectedMessageId)
 
-  async function updateDataProvider (
-    attachedTo: Ref<Doc>,
-    _class: Ref<Class<ActivityMessage>>,
-    selectedMessageId?: Ref<ActivityMessage>
-  ): Promise<void> {
+  async function updateDataProvider (attachedTo: Ref<Doc>, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
@@ -80,7 +75,14 @@
         }))
 
       const space = isSpace(object) ? object._id : object.space
-      dataProvider = new ChannelDataProvider(ctx, space, attachedTo, _class, selectedMessageId, loadAll)
+      dataProvider = new ChannelDataProvider(
+        ctx,
+        space,
+        attachedTo,
+        activity.class.ActivityMessage,
+        selectedMessageId,
+        loadAll
+      )
     }
   }
 </script>

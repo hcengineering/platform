@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import activity, { type ActivityMessage, type ActivityMessageControl } from '@hcengineering/activity'
 import {
   type Channel,
   chunterId,
@@ -419,11 +419,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
-    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description', 'members', 'owners']
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
-    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description', 'members', 'owners']
   })
 
   builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
@@ -458,6 +458,48 @@ export function createModel (builder: Builder): void {
     provider: notification.providers.PushNotificationProvider,
     ignoredTypes: [],
     enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
+  })
+
+  builder.createDoc<ActivityMessageControl<ChunterSpace>>(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: chunter.class.Channel,
+    skip: [
+      { _class: core.class.TxMixin },
+      { _class: core.class.TxCreateDoc, objectClass: { $ne: chunter.class.Channel } },
+      { _class: core.class.TxRemoveDoc }
+    ],
+    allowedFields: ['members']
+  })
+
+  builder.createDoc<ActivityMessageControl<ChunterSpace>>(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: chunter.class.DirectMessage,
+    skip: [{ _class: core.class.TxMixin }, { _class: core.class.TxCreateDoc }, { _class: core.class.TxRemoveDoc }],
+    allowedFields: ['members']
+  })
+
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: chunter.class.Channel,
+    action: 'create',
+    component: chunter.activity.ChannelCreatedMessage
+  })
+
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: chunter.class.Channel,
+    action: 'update',
+    config: {
+      members: {
+        presenter: chunter.activity.MembersChangedMessage
+      }
+    }
+  })
+
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: chunter.class.DirectMessage,
+    action: 'update',
+    config: {
+      members: {
+        presenter: chunter.activity.MembersChangedMessage
+      }
+    }
   })
 
   defineActions(builder)

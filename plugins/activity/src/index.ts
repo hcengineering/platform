@@ -67,6 +67,7 @@ export interface ActivityMessageControl<T extends Doc = Doc> extends Doc {
 
   // Skip field activity operations.
   skipFields?: (keyof T)[]
+  allowedFields?: (keyof T)[]
 }
 
 /**

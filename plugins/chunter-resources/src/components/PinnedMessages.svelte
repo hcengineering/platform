@@ -40,19 +40,19 @@
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
     { attachedTo: _id, isPinned: true, space: channelSpace },
-    (res: ActivityMessage[]) => {
-      pinnedMessagesCount = res.length
+    (res) => {
+      pinnedMessagesCount = res.total
     },
-    { projection: { _id: 1, space: 1, attachedTo: 1, isPinned: 1 } }
+    { total: true, limit: 1 }
   )
 
   $: pinnedThreadsQuery.query(
     chunter.class.ThreadMessage,
     { objectId: _id, isPinned: true, space: channelSpace },
-    (res: ThreadMessage[]) => {
-      pinnedThreadsCount = res.length
+    (res) => {
+      pinnedThreadsCount = res.total
     },
-    { projection: { _id: 1, space: 1, objectId: 1, isPinned: 1 } }
+    { total: true, limit: 1 }
   )
 
   function openMessagesPopup (ev: MouseEvent): void {

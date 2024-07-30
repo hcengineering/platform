@@ -218,7 +218,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     if (loadAll) {
       this.isTailLoading.set(true)
-      this.loadTail(undefined, combineActivityMessages)
+      this.loadTail()
     } else if (isLoadingLatest) {
       const startIndex = Math.max(0, count - this.limit)
       this.isTailLoading.set(true)
@@ -237,11 +237,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(true)
   }
 
-  private loadTail (
-    start?: Timestamp,
-    afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>,
-    query?: DocumentQuery<ActivityMessage>
-  ): void {
+  private loadTail (start?: Timestamp, query?: DocumentQuery<ActivityMessage>): void {
     if (this.chatId === undefined) {
       this.isTailLoading.set(false)
       return
@@ -260,12 +256,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
       async (res) => {
-        if (afterLoad !== undefined) {
-          const result = await afterLoad(res.reverse())
-          this.tailStore.set(result)
-        } else {
-          this.tailStore.set(res.reverse())
-        }
+        const result = await combineActivityMessages(res.reverse())
+        this.tailStore.set(result)
 
         this.isTailLoaded.set(true)
         this.isTailLoading.set(false)
@@ -328,7 +320,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return {
       from: from.createdOn ?? from.modifiedOn,
       to: to.createdOn ?? to.modifiedOn,
-      data: isBackward ? messages.reverse() : messages
+      data: isBackward ? await combineActivityMessages(messages.reverse()) : await combineActivityMessages(messages)
     }
   }
 
@@ -444,7 +436,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
       if (tailAfter !== undefined) {
         const skipIds = chunks[chunks.length - 1]?.data.map(({ _id }) => _id) ?? []
-        this.loadTail(tailAfter, undefined, { _id: { $nin: skipIds } })
+        this.loadTail(tailAfter, { _id: { $nin: skipIds } })
         this.isLoadingMoreStore.set(false)
         return
       }
