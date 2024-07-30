@@ -87,7 +87,7 @@
       const ids = ctx.map(({ attachedTo }) => attachedTo)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
-        limit: model.maxSectionItems ?? 5
+        limit: hierarchy.isDerived(_class, chunter.class.ChunterSpace) ? -1 : model.maxSectionItems ?? 5
       }
 
       objectsQueryByClass.set(_class, { query, limit: limit ?? model.maxSectionItems ?? 5 })
