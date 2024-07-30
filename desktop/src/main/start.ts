@@ -73,7 +73,7 @@ if (require('electron-squirrel-startup') === true) {
   app.quit()
 }
 
-console.log('Running Huly', process.env.MODEL_VERSION, isMac, isDev, process.env.NODE_ENV)
+console.log('Running Huly', process.env.MODEL_VERSION, process.env.VERSION, isMac, isDev, process.env.NODE_ENV)
 
 function hookOpenWindow (window: BrowserWindow): void {
   window.webContents.setWindowOpenHandler(({ url }) => {
@@ -226,7 +226,8 @@ ipcMain.handle('get-main-config', (event, path) => {
     CONFIG_URL: process.env.CONFIG_URL ?? '',
     FRONT_URL,
     INITIAL_URL: process.env.INITIAL_URL ?? '',
-    MODEL_VERSION: process.env.MODEL_VERSION ?? ''
+    MODEL_VERSION: process.env.MODEL_VERSION ?? '',
+    VERSION: process.env.VERSION ?? '',
   }
   return cfg
 })

@@ -93,6 +93,12 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  const version = process.env.VERSION
+  if (version === undefined) {
+    console.error('please provide version requirement')
+    process.exit(1)
+  }
+
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
@@ -118,6 +124,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     accountsUrl,
     uploadUrl,
     modelVersion,
+    version,
     gmailUrl,
     telegramUrl,
     rekoniUrl,

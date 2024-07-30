@@ -10,6 +10,7 @@ export interface Config {
   FRONT_URL: string
   UPLOAD_URL: string
   MODEL_VERSION?: string
+  VERSION?: string
   TELEGRAM_URL: string
   GMAIL_URL: string
   CALENDAR_URL: string
