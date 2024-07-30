@@ -14,7 +14,15 @@
 -->
 <script lang="ts">
   import activity from '@hcengineering/activity'
-  import { Class, Doc, getCurrentAccount, groupByArray, reduceCalls, Ref, SortingOrder } from '@hcengineering/core'
+  import core, {
+    Class,
+    Doc,
+    getCurrentAccount,
+    groupByArray,
+    reduceCalls,
+    Ref,
+    SortingOrder
+  } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString } from '@hcengineering/platform'
@@ -85,16 +93,24 @@
 
     for (const [_class, ctx] of contextsByClass.entries()) {
       const ids = ctx.map(({ attachedTo }) => attachedTo)
+      const isChunterSpace = hierarchy.isDerived(_class, chunter.class.ChunterSpace)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
-        limit: hierarchy.isDerived(_class, chunter.class.ChunterSpace) ? -1 : model.maxSectionItems ?? 5
+        limit: isChunterSpace ? -1 : model.maxSectionItems ?? 5
       }
 
       objectsQueryByClass.set(_class, { query, limit: limit ?? model.maxSectionItems ?? 5 })
 
-      query.query(_class, { _id: { $in: limit !== -1 ? ids.slice(0, limit) : ids } }, (res: Doc[]) => {
-        objectsByClass = objectsByClass.set(_class, { docs: res, total: ids.length })
-      })
+      query.query(
+        _class,
+        {
+          _id: { $in: limit !== -1 ? ids.slice(0, limit) : ids },
+          space: isChunterSpace ? core.space.Space : undefined
+        },
+        (res: Doc[]) => {
+          objectsByClass = objectsByClass.set(_class, { docs: res, total: ids.length })
+        }
+      )
     }
 
     for (const [classRef, query] of objectsQueryByClass.entries()) {
