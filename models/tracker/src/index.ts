@@ -324,6 +324,7 @@ function defineApplication (
             icon: tracker.icon.MyIssues,
             component: tracker.component.MyIssues,
             componentProps: {
+              icon: tracker.icon.MyIssues,
               config: [
                 ['assigned', view.string.Assigned, {}],
                 ['active', tracker.string.Active, {}],
@@ -341,6 +342,7 @@ function defineApplication (
             component: tracker.component.Issues,
             componentProps: {
               space: undefined,
+              icon: tracker.icon.Issues,
               title: tracker.string.AllIssues,
               config: [
                 ['all', tracker.string.All, {}],
@@ -360,6 +362,7 @@ function defineApplication (
             spaceClass: tracker.class.Project,
             componentProps: {
               _class: tracker.class.Project,
+              icon: view.icon.List,
               label: tracker.string.AllProjects
             }
           }
@@ -380,6 +383,7 @@ function defineApplication (
                 icon: tracker.icon.Issues,
                 component: tracker.component.Issues,
                 componentProps: {
+                  icon: tracker.icon.Issues,
                   title: tracker.string.Issues,
                   config: [
                     ['all', tracker.string.All, {}],

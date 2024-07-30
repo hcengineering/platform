@@ -18,7 +18,9 @@ import drive from '@hcengineering/drive'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(drive.icon, {
+  DriveApplication: `${icons}#driveapplication`,
   Drive: `${icons}#drive`,
+  Drives: `${icons}#drives`,
   Grid: `${icons}#grid`,
   File: `${icons}#file`,
   Folder: `${icons}#folder`,

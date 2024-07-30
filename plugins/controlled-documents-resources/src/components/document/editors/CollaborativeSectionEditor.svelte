@@ -17,13 +17,12 @@
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import { CollaborativeDocumentSection } from '@hcengineering/controlled-documents'
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import chunter from '@hcengineering/chunter'
   import { navigate } from '@hcengineering/ui'
   import { CollaborativeDoc, Ref, generateId, Blob } from '@hcengineering/core'
   import view from '@hcengineering/view'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Heading, TextNodeAction } from '@hcengineering/text-editor'
+  import { Editor, Heading } from '@hcengineering/text-editor'
   import {
     CollaboratorEditor,
     FocusExtension,
@@ -31,7 +30,8 @@
     IsEmptyContentExtension,
     NodeHighlightExtension,
     NodeHighlightType,
-    highlightUpdateCommand
+    highlightUpdateCommand,
+    getNodeElement
   } from '@hcengineering/text-editor-resources'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
 
@@ -46,8 +46,7 @@
     $isEditable as isEditable,
     documentCommentsDisplayRequested,
     documentCommentsHighlightUpdated,
-    documentCommentsLocationNavigateRequested,
-    showAddCommentPopupFx
+    documentCommentsLocationNavigateRequested
   } from '../../../stores/editors/document'
 
   export let value: CollaborativeDocumentSection
@@ -61,6 +60,7 @@
   let textEditor: CollaboratorEditor
   let isFocused = false
   let isEmpty = true
+  let editor: Editor
 
   const handleRefreshHighlight = () => {
     if (!textEditor) {
@@ -90,27 +90,13 @@
 
       await tick()
 
-      const element = textEditor.getNodeElement(nodeId)
+      const element = getNodeElement(editor, nodeId)
 
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' })
       }
     }
   })
-
-  const handleGetNodeId = () => {
-    if (isEmpty || !textEditor) {
-      return null
-    }
-    if (!selectedNodeId) {
-      const nodeId = generateId()
-      if (textEditor.setNodeUuid(nodeId)) {
-        selectedNodeId = nodeId
-      }
-    }
-
-    return selectedNodeId
-  }
 
   const handleNodeHighlight = (id: string) => {
     if ($highlighted) {
@@ -127,30 +113,6 @@
     return null
   }
 
-  const handleCommentAction = (): void => {
-    if (isEmpty) {
-      return
-    }
-
-    if (!$canAddDocumentComments) {
-      return
-    }
-
-    if (!selectedNodeId) {
-      selectedNodeId = handleGetNodeId()
-    }
-
-    if (selectedNodeId) {
-      showAddCommentPopupFx({
-        element: textEditor.getNodeElement(selectedNodeId),
-        nodeId: selectedNodeId,
-        sectionKey: value.key
-      })
-
-      textEditor.selectNode(selectedNodeId)
-    }
-  }
-
   const handleShowDocumentComments = (uuid: string) => {
     if (!uuid) {
       return
@@ -161,7 +123,7 @@
     }
 
     documentCommentsDisplayRequested({
-      element: textEditor.getNodeElement(uuid),
+      element: getNodeElement(editor, uuid),
       nodeId: uuid,
       sectionKey: value.key
     })
@@ -247,13 +209,6 @@
     }
   }
 
-  const commentAction: TextNodeAction = {
-    id: '#comment',
-    icon: chunter.icon.Chunter,
-    label: chunter.string.Message,
-    action: handleCommentAction
-  }
-
   onDestroy(() => {
     unsubscribeHighlightRefresh()
     unsubscribeNavigateToLocation()
@@ -274,19 +229,19 @@
   {#key value._id}
     <CollaboratorEditor
       bind:this={textEditor}
-      objectId={value.attachedTo}
-      objectClass={value.attachedToClass}
+      objectId={value._id}
+      objectClass={value._class}
       objectSpace={value.space}
       {collaborativeDoc}
       {initialCollaborativeDoc}
       {user}
       readonly={!$isEditable}
       field={value.collaboratorSectionId}
-      textNodeActions={$canAddDocumentComments && !isEmpty ? [commentAction] : []}
       editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
       overflow="none"
       canShowPopups={!$arePopupsOpened}
       onExtensions={handleExtensions}
+      on:editor={(e) => (editor = e.detail)}
       on:open-document={async (event) => {
         const doc = await client.findOne(event.detail._class, { _id: event.detail._id })
         if (doc != null) {

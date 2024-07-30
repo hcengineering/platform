@@ -39,6 +39,7 @@ import core, {
   MixinUpdate,
   Ref,
   RefTo,
+  SortingOrder,
   Space,
   Timestamp,
   toIdMap,
@@ -169,6 +170,7 @@ export async function getCommonNotificationTxes (
 
 async function getTextPart (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const TextPresenter = getTextPresenter(doc._class, control.hierarchy)
+
   if (TextPresenter === undefined) return
   return await (
     await getResource(TextPresenter.presenter)
@@ -348,9 +350,6 @@ export async function pushInboxNotifications (
   }
   const context = getDocNotifyContext(contexts, account._id, attachedTo, res)
 
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  const isHidden = !!context?.hidden
-
   let docNotifyContextId: Ref<DocNotifyContext>
 
   if (context === undefined) {
@@ -358,7 +357,6 @@ export async function pushInboxNotifications (
       user: account._id,
       attachedTo,
       attachedToClass,
-      hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
     await control.apply([createContextTx])
@@ -371,35 +369,19 @@ export async function pushInboxNotifications (
     }
     docNotifyContextId = createContextTx.objectId
   } else {
-    if (shouldUpdateTimestamp && context.lastUpdateTimestamp !== modifiedOn) {
-      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastUpdateTimestamp: modifiedOn
-      })
-      await control.apply([updateTx])
-      if (target.account?.email !== undefined) {
-        control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
-          if (it._id === updateTx._id) {
-            return [target.account?.email as string]
-          }
-        }
-      }
-    }
-
     docNotifyContextId = context._id
   }
 
-  if (!isHidden) {
-    const notificationData = {
-      user: account._id,
-      isViewed: false,
-      docNotifyContext: docNotifyContextId,
-      ...data
-    }
-    const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
-    res.push(notificationTx)
-
-    return notificationTx
+  const notificationData = {
+    user: account._id,
+    isViewed: false,
+    docNotifyContext: docNotifyContextId,
+    ...data
   }
+  const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
+  res.push(notificationTx)
+
+  return notificationTx
 }
 
 async function activityInboxNotificationToText (
@@ -761,6 +743,46 @@ export async function getNotificationTxes (
   return res
 }
 
+async function updateContextsTimestamp (
+  contexts: DocNotifyContext[],
+  timestamp: Timestamp,
+  control: TriggerControl,
+  modifiedBy: Ref<Account>
+): Promise<void> {
+  if (contexts.length === 0) return
+
+  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+    _id: { $in: contexts.map((it) => it.user as Ref<PersonAccount>) }
+  })
+  const res: Tx[] = []
+
+  for (const context of contexts) {
+    const account = accounts.find(({ _id }) => _id === context.user)
+    const isViewed =
+      context.lastViewedTimestamp !== undefined && (context.lastUpdateTimestamp ?? 0) <= context.lastViewedTimestamp
+    const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+      lastUpdateTimestamp: timestamp,
+      ...(isViewed && modifiedBy === context.user
+        ? {
+            lastViewedTimestamp: timestamp
+          }
+        : {})
+    })
+
+    res.push(updateTx)
+
+    if (account?.email !== undefined) {
+      control.operationContext.derived.targets['docNotifyContext' + updateTx._id] = (it) => {
+        if (it._id === updateTx._id) {
+          return [account.email]
+        }
+      }
+    }
+  }
+
+  await control.apply(res)
+}
+
 export async function createCollabDocInfo (
   collaborators: Ref<PersonAccount>[],
   control: TriggerControl,
@@ -776,6 +798,10 @@ export async function createCollabDocInfo (
   if (originTx.space === core.space.DerivedTx) {
     return res
   }
+
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: object._id })
+
+  await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control, originTx.modifiedBy)
 
   const docMessages = activityMessages.filter((message) => message.attachedTo === object._id)
   if (docMessages.length === 0) {
@@ -795,10 +821,6 @@ export async function createCollabDocInfo (
   if (targets.size === 0) {
     return res
   }
-
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-    attachedTo: object._id
-  })
 
   const usersInfo = await getUsersInfo([...Array.from(targets), originTx.modifiedBy as Ref<PersonAccount>], control)
   const sender = usersInfo.find(({ _id }) => _id === originTx.modifiedBy) ?? {
@@ -1466,12 +1488,65 @@ export async function getCollaborators (
   }
 }
 
-async function OnDocRemove (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const etx = TxProcessor.extractTx(tx)
+async function OnActivityMessageRemove (message: ActivityMessage, control: TriggerControl): Promise<Tx[]> {
+  if (control.removedMap.has(message.attachedTo)) {
+    return []
+  }
 
-  if (etx._class !== core.class.TxRemoveDoc) return []
+  const contexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: message.attachedTo })
+  if (contexts.length === 0) return []
 
-  return await removeCollaboratorDoc(etx as TxRemoveDoc<Doc>, control)
+  const isLastUpdate = contexts.some((context) => {
+    const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
+    return lastUpdateTimestamp === message.createdOn && lastViewedTimestamp < lastUpdateTimestamp
+  })
+
+  if (!isLastUpdate) return []
+
+  const lastMessage = (
+    await control.findAll(
+      activity.class.ActivityMessage,
+      { attachedTo: message.attachedTo, space: message.space },
+      { sort: { createdOn: SortingOrder.Descending }, limit: 1 }
+    )
+  )[0]
+  if (lastMessage === undefined) return []
+
+  const res: Tx[] = []
+
+  for (const context of contexts) {
+    if (context.lastUpdateTimestamp === message.createdOn) {
+      const tx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+        lastUpdateTimestamp: lastMessage.createdOn ?? lastMessage.modifiedOn
+      })
+
+      res.push(tx)
+    }
+  }
+
+  return res
+}
+
+async function OnDocRemove (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const tx = TxProcessor.extractTx(originTx) as TxRemoveDoc<Doc>
+
+  if (tx._class !== core.class.TxRemoveDoc) return []
+
+  const res: Tx[] = []
+
+  if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
+    const message = control.removedMap.get(tx.objectId) as ActivityMessage | undefined
+
+    if (message !== undefined) {
+      const txes = await OnActivityMessageRemove(message, control)
+      res.push(...txes)
+    }
+  }
+
+  const txes = await removeCollaboratorDoc(tx, control)
+
+  res.push(...txes)
+  return res
 }
 
 export * from './types'

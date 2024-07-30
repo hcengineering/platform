@@ -14,7 +14,13 @@
 //
 
 import { showPopup } from '@hcengineering/ui'
-import type { FileUploadCallback, FileUploadOptions, FileUploadTarget } from '@hcengineering/uploader'
+import {
+  type FileUploadCallback,
+  type FileUploadOptions,
+  type FileUploadPopupOptions,
+  type FileUploadTarget,
+  toFileWithPath
+} from '@hcengineering/uploader'
 
 import FileUploadPopup from './components/FileUploadPopup.svelte'
 
@@ -25,11 +31,12 @@ import { getUppy } from './uppy'
 export async function showFilesUploadPopup (
   target: FileUploadTarget,
   options: FileUploadOptions,
+  popupOptions: FileUploadPopupOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
   const uppy = getUppy(options, onFileUploaded)
 
-  showPopup(FileUploadPopup, { uppy, target }, undefined, (res) => {
+  showPopup(FileUploadPopup, { uppy, target, options: popupOptions }, undefined, (res) => {
     if (res === true && options.hideProgress !== true) {
       dockFileUpload(target, uppy)
     }
@@ -43,14 +50,15 @@ export async function uploadFiles (
   options: FileUploadOptions,
   onFileUploaded: FileUploadCallback
 ): Promise<void> {
-  if (files.length === 0) return
+  const items = Array.from(files, (p) => toFileWithPath(p))
+
+  if (items.length === 0) return
 
   const uppy = getUppy(options, onFileUploaded)
 
-  for (let index = 0; index < files.length; index++) {
-    const data = files[index]
-    const { name, type } = data
-    uppy.addFile({ name, type, data })
+  for (const data of items) {
+    const { name, type, relativePath } = data
+    uppy.addFile({ name, type, data, meta: { relativePath } })
   }
 
   if (options.hideProgress !== true) {

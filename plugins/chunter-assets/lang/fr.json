@@ -110,6 +110,7 @@
     "JoinChannelHeader": "Cliquez sur \"Rejoindre\" pour commencer.",
     "JoinChannelText": "Une fois que vous avez rejoint, vous pourrez lire tous les messages et participer à la discussion.",
     "NoMessagesInChannel": "Il n'y a pas encore de messages dans ce canal.",
-    "SendMessagesInChannel": "Envoyez des messages pour commencer la conversation."
+    "SendMessagesInChannel": "Envoyez des messages pour commencer la conversation.",
+    "LatestMessages": "↓ Derniers messages"
   }
 }

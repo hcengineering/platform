@@ -100,7 +100,15 @@
 {#if object !== undefined}
   <ActionContext context={{ mode: 'editor' }} />
 
-  <Panel {object} isHeader={false} isAside={true} isSub={false} on:close={() => dispatch('close')} useMaxWidth>
+  <Panel
+    {object}
+    isHeader={false}
+    isAside={true}
+    isSub={false}
+    on:close={() => dispatch('close')}
+    useMaxWidth
+    adaptive={'default'}
+  >
     <svelte:fragment slot="title">
       <div class="flex-row-center no-word-wrap">
         <div class="flex-row-center flex-gap-1-5">

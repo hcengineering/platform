@@ -33,7 +33,6 @@
     getTotal,
     weekDays
   } from '../../utils'
-  import ExportPopup from './ExportPopup.svelte'
   import HolidayPresenter from './HolidayPresenter.svelte'
   import ReportPresenter from './ReportPresenter.svelte'
   import StatPresenter from './StatPresenter.svelte'
@@ -42,6 +41,9 @@
 
   export let departmentStaff: Staff[]
   export let types: Map<Ref<RequestType>, RequestType>
+  export let preference: ViewletPreference | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
+  export let loading: boolean = false
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
@@ -296,11 +298,6 @@
     ])
   }
 
-  let preference: ViewletPreference | undefined
-  let viewlet: Viewlet | undefined
-
-  let loading = false
-
   async function createConfig (
     descr: Viewlet,
     preference: ViewletPreference | undefined,
@@ -319,83 +316,21 @@
     }
     return result
   }
-  function exportTable (evt: Event) {
-    interface ExportPopupItem extends DropdownIntlItem {
-      separator: ',' | ';'
-    }
-    const items: ExportPopupItem[] = [
-      {
-        id: '0',
-        label: getEmbeddedLabel(', (csv)'),
-        separator: ','
-      },
-      {
-        id: '1',
-        label: getEmbeddedLabel('; (MS Excel)'),
-        separator: ';'
-      }
-    ]
-    showPopup(
-      ExportPopup,
-      {
-        items
-      },
-      evt.target as HTMLElement,
-      (res) => {
-        if (res != null) {
-          const filename = 'exportStaff' + new Date().toLocaleDateString() + '.csv'
-          const link = document.createElement('a')
-          link.style.display = 'none'
-          link.setAttribute('target', '_blank')
-          link.setAttribute(
-            'href',
-            'data:text/csv;charset=utf-8,%EF%BB%BF' +
-              encodeURIComponent(tableToCSV('exportableData', items[res].separator))
-          )
-          link.setAttribute('download', filename)
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-        }
-      }
-    )
-  }
 </script>
 
 {#if departmentStaff.length}
   {#if loading}
     <Loading />
-  {:else}
-    <div class="ac-header full divide">
-      <div class="clear-mins" />
-      <div class="ac-header-full small-gap">
-        <Button
-          label={getEmbeddedLabel('Export')}
-          on:click={(evt) => {
-            exportTable(evt)
-          }}
-        />
-        <ViewletSelector
-          hidden
-          bind:viewlet
-          bind:preference
-          bind:loading
-          viewletQuery={{ _id: hr.viewlet.StaffStats }}
-        />
-        <ViewletSettingButton bind:viewlet />
-      </div>
-    </div>
-    {#if viewlet}
-      {#await createConfig(viewlet, preference, month) then config}
-        <TableBrowser
-          tableId={'exportableData'}
-          _class={hr.mixin.Staff}
-          query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
-          {config}
-          options={viewlet.options}
-        />
-      {/await}
-    {/if}
+  {:else if viewlet}
+    {#await createConfig(viewlet, preference, month) then config}
+      <TableBrowser
+        tableId={'exportableData'}
+        _class={hr.mixin.Staff}
+        query={{ _id: { $in: departmentStaff.map((it) => it._id) } }}
+        {config}
+        options={viewlet.options}
+      />
+    {/await}
   {/if}
 {:else}
   <div class="flex-center h-full w-full flex-grow fs-title">

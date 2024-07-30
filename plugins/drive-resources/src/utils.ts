@@ -14,11 +14,17 @@
 //
 
 import { type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
-import type { Drive, FileVersion, Folder, Resource } from '@hcengineering/drive'
-import drive from '@hcengineering/drive'
-import { type Asset } from '@hcengineering/platform'
+import { type Drive, type FileVersion, type Folder, type Resource, createFolder } from '@hcengineering/drive'
+import drive, { createFile } from '@hcengineering/drive'
+import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
+import {
+  type FileUploadCallback,
+  getDataTransferFiles,
+  showFilesUploadPopup,
+  uploadFiles
+} from '@hcengineering/uploader'
 import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDrive from './components/CreateDrive.svelte'
@@ -43,7 +49,11 @@ export function formatFileVersion (version: number): string {
   return `v${version}`
 }
 
-export async function createFolder (space: Ref<Drive> | undefined, parent: Ref<Folder>, open = false): Promise<void> {
+export async function showCreateFolderPopup (
+  space: Ref<Drive> | undefined,
+  parent: Ref<Folder>,
+  open = false
+): Promise<void> {
   showPopup(CreateFolder, { space, parent }, 'top', async (id) => {
     if (open && id !== undefined && id !== null) {
       await navigateToDoc(id, drive.class.Folder)
@@ -51,7 +61,7 @@ export async function createFolder (space: Ref<Drive> | undefined, parent: Ref<F
   })
 }
 
-export async function createDrive (open = false): Promise<void> {
+export async function showCreateDrivePopup (open = false): Promise<void> {
   showPopup(CreateDrive, {}, 'top', async (id) => {
     if (open && id !== undefined && id !== null) {
       await navigateToDoc(id, drive.class.Folder)
@@ -59,11 +69,11 @@ export async function createDrive (open = false): Promise<void> {
   })
 }
 
-export async function editDrive (drive: Drive): Promise<void> {
+export async function showEditDrivePopup (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
 }
 
-export async function renameResource (resource: Resource): Promise<void> {
+export async function showRenameResourcePopup (resource: Resource): Promise<void> {
   showPopup(RenamePopup, { value: resource.name, format: 'text' }, undefined, async (res) => {
     if (res != null && res !== resource.name) {
       const client = getClient()
@@ -147,4 +157,92 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   }
 
   return parents.reverse()
+}
+
+export async function uploadFilesToDrive (dt: DataTransfer, space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const files = await getDataTransferFiles(dt)
+
+  const onFileUploaded = await fileUploadCallback(space, parent)
+
+  const target =
+    parent !== drive.ids.Root
+      ? { objectId: parent, objectClass: drive.class.Folder }
+      : { objectId: space, objectClass: drive.class.Drive }
+
+  await uploadFiles(files, target, {}, onFileUploaded)
+}
+
+export async function uploadFilesToDrivePopup (space: Ref<Drive>, parent: Ref<Folder>): Promise<void> {
+  const onFileUploaded = await fileUploadCallback(space, parent)
+
+  const target =
+    parent !== drive.ids.Root
+      ? { objectId: parent, objectClass: drive.class.Folder }
+      : { objectId: space, objectClass: drive.class.Drive }
+
+  await showFilesUploadPopup(
+    target,
+    {},
+    {
+      fileManagerSelectionType: 'both'
+    },
+    onFileUploaded
+  )
+}
+
+async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Promise<FileUploadCallback> {
+  const client = getClient()
+
+  const query = parent !== drive.ids.Root ? { space, path: parent } : { space }
+  const folders = await client.findAll(drive.class.Folder, query)
+  const foldersByName = new Map(folders.map((folder) => [folder.name, folder]))
+
+  const findParent = async (path: string | undefined): Promise<Ref<Folder>> => {
+    if (path == null || path.length === 0) {
+      return parent
+    }
+
+    const segments = path.split('/').filter((p) => p.length > 0)
+    if (segments.length <= 1) {
+      return parent
+    }
+
+    let current = parent
+    while (segments.length > 1) {
+      const name = segments.shift()
+      if (name !== undefined) {
+        let folder = foldersByName.get(name)
+        if (folder !== undefined) {
+          current = folder._id
+        } else {
+          current = await createFolder(client, space, { name, parent: current })
+          folder = await client.findOne(drive.class.Folder, { _id: current })
+          if (folder !== undefined) {
+            foldersByName.set(folder.name, folder)
+          }
+        }
+      }
+    }
+    return current
+  }
+
+  const callback: FileUploadCallback = async (uuid, name, file, path, metadata) => {
+    const folder = await findParent(path)
+    try {
+      const data = {
+        file: uuid,
+        size: file.size,
+        type: file.type,
+        lastModified: file instanceof File ? file.lastModified : Date.now(),
+        name,
+        metadata
+      }
+
+      await createFile(client, space, folder, data)
+    } catch (err) {
+      void setPlatformStatus(unknownError(err))
+    }
+  }
+
+  return callback
 }

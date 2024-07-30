@@ -180,13 +180,6 @@
       {onPaste}
       on:update
       placeholder={placeholder ?? textEditor.string.EditorPlaceholder}
-      textFormatCategories={[
-        TextFormatCategory.TextDecoration,
-        TextFormatCategory.Link,
-        TextFormatCategory.List,
-        TextFormatCategory.Quote,
-        TextFormatCategory.Code
-      ]}
     />
   </div>
   {#if showActions || showSend}

@@ -244,16 +244,12 @@
           if (isConnected) {
             await disconnect()
           }
-        } else if (!isConnected) {
-          const person = $personByIdStore.get(me)
-          if (person === undefined) return
-          await connectRoom(0, 0, myInfo, person, myOffice)
         }
       }
     }
   }
 
-  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $isConnected)
+  $: checkOwnRoomConnection($infos, $myInfo, $myOffice, $isCurrentInstanceConnected)
 
   const myInvitesCategory = 'myInvites'
 
@@ -350,6 +346,18 @@
       participantClickHandler(e, participant)
     }
   }
+
+  onDestroy(() => {
+    removeEventListener('beforeunload', beforeUnloadListener)
+  })
+
+  const beforeUnloadListener = () => {
+    if ($myInfo !== undefined && $isCurrentInstanceConnected) {
+      leaveRoom($myInfo, $myOffice)
+    }
+  }
+
+  window.addEventListener('beforeunload', beforeUnloadListener)
 </script>
 
 <div class="flex-row-center flex-gap-2">

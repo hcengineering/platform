@@ -50,7 +50,7 @@ export class DummyDbAdapter implements DbAdapter {
   async init (): Promise<void> {}
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
+  async removeOldIndex (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]): Promise<void> {}
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
@@ -74,6 +74,10 @@ export class DummyDbAdapter implements DbAdapter {
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
+
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return new Set()
+  }
 }
 
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {

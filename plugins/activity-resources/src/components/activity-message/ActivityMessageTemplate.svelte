@@ -174,7 +174,7 @@
           <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
         </span>
       {:else}
-        <div class="min-w-6 mt-1 relative">
+        <div class="min-w-6 mt-1 relative flex-no-shrink">
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
@@ -304,6 +304,7 @@
       display: flex;
       justify-content: end;
       width: 2.5rem;
+      min-width: 2.5rem;
       visibility: hidden;
       margin-top: 0.125rem;
     }

@@ -19,7 +19,7 @@ import {
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
-  type FieldIndex,
+  type FieldIndexConfig,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -33,11 +33,12 @@ import {
   type WorkspaceId
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
+import type { ServerFindOptions } from './types'
 
 export interface DomainHelperOperations {
   create: (domain: Domain) => Promise<void>
   exists: (domain: Domain) => boolean
-  createIndex: (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }) => Promise<void>
+  createIndex: (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }) => Promise<void>
   dropIndex: (domain: Domain, name: string) => Promise<void>
   listIndexes: (domain: Domain) => Promise<{ name: string }[]>
   hasDocuments: (domain: Domain, count: number) => Promise<boolean>
@@ -94,16 +95,14 @@ export interface DbAdapter {
 
   helper?: () => DomainHelperOperations
   createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
-  removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
+  removeOldIndex: (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]) => Promise<void>
 
   close: () => Promise<void>
   findAll: <T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> & {
-      domain?: Domain // Allow to find for Doc's in specified domain only.
-    }
+    options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
@@ -112,6 +111,8 @@ export interface DbAdapter {
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
   upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
 
   // Bulk update operations
   update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>

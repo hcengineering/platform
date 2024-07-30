@@ -14,8 +14,23 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
-// Import plugin directly to prevent .svelte components to being exposed to type typescript.
-import textEditor, { textEditorId } from '@hcengineering/text-editor'
+import { mergeIds, type Resource } from '@hcengineering/platform'
+import textEditor, {
+  type TextActionFunction,
+  type TextActionVisibleFunction,
+  textEditorId
+} from '@hcengineering/text-editor'
 
-export default mergeIds(textEditorId, textEditor, {})
+export default mergeIds(textEditorId, textEditor, {
+  function: {
+    FormatLink: '' as Resource<TextActionFunction>,
+    OpenTableOptions: '' as Resource<TextActionFunction>,
+    OpenImage: '' as Resource<TextActionFunction>,
+    ExpandImage: '' as Resource<TextActionFunction>,
+    MoreImageActions: '' as Resource<TextActionFunction>,
+
+    IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
+    IsEditable: '' as Resource<TextActionVisibleFunction>,
+    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>
+  }
+})

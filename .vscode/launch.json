@@ -39,9 +39,7 @@
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
-        "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "SERVER_SECRET": "secret",
         "COLLABORATOR_URL": "ws://localhost:3078",
         "COLLABORATOR_API_URL": "http://localhost:3078",
@@ -85,6 +83,36 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/account",
       "protocol": "inspector"
+    },
+    {
+      "name": "Debug Front",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "ELASTIC_URL": "http://localhost:9200",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "METRICS_CONSOLE": "false",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "SERVER_SECRET": "secret",
+        "REKONI_URL": "http://localhost:4004",
+        "FRONT_URL": "http://localhost:8080",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "UPLOAD_URL": "/files",
+        "SERVER_PORT": "8087",
+        "COLLABORATOR_URL": "ws://localhost:3078",
+        "COLLABORATOR_API_URL": "http://localhost:3078",
+        "CALENDAR_URL": "http://localhost:8095",
+        "GMAIL_URL": "http://localhost:8088",
+        "TELEGRAM_URL": "http://localhost:8086",
+        "MODEL_VERSION": ""
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/front",
+      "protocol": "inspector",
+      "outputCapture": "std"
     },
     {
       "name": "Debug Collaborator",
@@ -192,5 +220,170 @@
       "cwd": "${workspaceRoot}/pods/backup",
       "protocol": "inspector"
     },
+    {
+      "name": "Debug Github integration",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "MONGO_URL": "mongodb://localhost:27017",
+        "SERVER_SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "APP_ID": "${env:POD_GITHUB_APPID}",
+        "CLIENT_ID": "${env:POD_GITHUB_CLIENTID}",
+        "CLIENT_SECRET": "${env:POD_GITHUB_CLIENT_SECRET}",
+        "PRIVATE_KEY": "${env:POD_GITHUB_PRIVATE_KEY}",
+        "COLLABORATOR_API_URL": "http://localhost:3078",
+        "SYSTEM_EMAIL": "anticrm@hc.engineering",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "FRONT_URL": "http://localhost:8080",
+        "PORT": "3500",
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/github/pod-github",
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "name": "Debug qms workers",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "SYSTEM_EMAIL": "anticrm@hc.engineering",
+        "SECRET": "secret",
+        "DOCS_RELEASE_INTERVAL": "10000",
+        "DOCS_IN_REVIEW_CHECK_INTERVAL": "10000",
+        "DOCS_REVIEW_PERIOD_IN_MONTHS": "1"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/workers"
+    },
+    {
+      "name": "Debug doc import tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "import", "--spec", "toc.json", "docx", "ws", "person-owner"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "COLLABORATOR_API_URL": "http://localhost:3078",
+        "FRONT_URL": "http://localhost:8080"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/dev/doc-import-tool",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug print",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4005",
+        "SECRET": "secret",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/print/pod-print"
+    },
+    {
+      "name": "Debug sign",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4006",
+        "SECRET": "secret",
+        "CERTIFICATE_PATH": "${workspaceRoot}/services/sign/pod-sign/debug/certificate.p12",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "SERVICE_ID": "sign-service",
+        "SYSTEM_EMAIL": "",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "BRANDING_PATH": "${workspaceRoot}/services/sign/pod-sign/debug/branding.json"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/sign/pod-sign"
+    },
+    {
+      "name": "Debug rekoni",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4004",
+        "SERVICE_ID": "rekoni-service",
+        "SECRET": "secret"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/rekoni",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug AI bot",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "PORT": "4008",
+        "SERVER_SECRET": "secret",
+        "SUPPORT_WORKSPACE": "support",
+        "FIRST_NAME": "Jolie",
+        "LAST_NAME": "AI",
+        "AVATAR_PATH": "./assets/avatar.png",
+        "AVATAR_CONTENT_TYPE": ".png"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "name": "Debug analytics collector",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4077",
+        "SECRET": "secret",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "SERVER_SECRET": "secret",
+        "SERVICE_ID": "analytics-collector",
+        "SUPPORT_WORKSPACE": "support",
+        "ACCOUNTS_URL": "http://localhost:3000"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/services/analytics-collector/pod-analytics-collector"
+    }
   ]
 }

@@ -83,7 +83,7 @@
 
   let categoryQueryOptions: Partial<FindOptions<Doc>>
   $: categoryQueryOptions = {
-    ...noLookupOptions(resultOptions),
+    ...noLookupSortingOptions(resultOptions),
     projection: {
       ...resultOptions.projection,
       _id: 1,
@@ -151,8 +151,8 @@
     return newQuery
   }
 
-  function noLookupOptions (options: FindOptions<Doc>): FindOptions<Doc> {
-    const { lookup, ...resultOptions } = options
+  function noLookupSortingOptions (options: FindOptions<Doc>): FindOptions<Doc> {
+    const { lookup, sort, ...resultOptions } = options
     return resultOptions
   }
 

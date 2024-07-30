@@ -83,6 +83,7 @@ export function generateId (len = 100): string {
  * @returns {Promise<Locator>}
  */
 export async function fillSearch (page: Page, search: string): Promise<Locator> {
+  await page.locator('.searchInput-icon').click()
   const searchBox = page.locator('input[placeholder="Search"]')
 
   await searchBox.fill(search)

@@ -298,12 +298,19 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
   switch (cud._class) {
     case core.class.TxCreateDoc: {
       const ccud = cud as TxCreateDoc<TimeSpendReport>
-      const res = [
-        control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-          $inc: { reportedTime: ccud.attributes.value }
-        })
-      ]
       const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+      const res = [
+        control.txFactory.createTxUpdateDoc<Issue>(
+          parentTx.objectClass,
+          parentTx.objectSpace,
+          parentTx.objectId,
+          {
+            $inc: { reportedTime: ccud.attributes.value }
+          },
+          false,
+          currentIssue.modifiedOn
+        )
+      ]
       currentIssue.reportedTime += ccud.attributes.value
       currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
       updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
@@ -325,9 +332,16 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
         const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
         if (doc !== undefined) {
           res.push(
-            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-              $inc: { reportedTime: upd.operations.value - doc.value }
-            })
+            control.txFactory.createTxUpdateDoc<Issue>(
+              parentTx.objectClass,
+              parentTx.objectSpace,
+              parentTx.objectId,
+              {
+                $inc: { reportedTime: upd.operations.value - doc.value }
+              },
+              false,
+              currentIssue.modifiedOn
+            )
           )
           currentIssue.reportedTime -= doc.value
           currentIssue.reportedTime += upd.operations.value
@@ -350,13 +364,19 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
         ).map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
         if (doc !== undefined) {
-          const res = [
-            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-              $inc: { reportedTime: -1 * doc.value }
-            })
-          ]
-
           const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+          const res = [
+            control.txFactory.createTxUpdateDoc<Issue>(
+              parentTx.objectClass,
+              parentTx.objectSpace,
+              parentTx.objectId,
+              {
+                $inc: { reportedTime: -1 * doc.value }
+              },
+              false,
+              currentIssue.modifiedOn
+            )
+          ]
           currentIssue.reportedTime -= doc.value
           currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
           updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)

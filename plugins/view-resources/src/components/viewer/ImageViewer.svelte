@@ -32,7 +32,7 @@
 
 {#await p then blobRef}
   {#if loading}
-    <div class="flex justify-center">
+    <div class="flex-center w-full h-full clear-mins">
       <Loading />
     </div>
   {/if}
@@ -44,7 +44,6 @@
     style:max-width={width}
     style:max-height={height}
     src={blobRef.src}
-    srcset={blobRef.srcset}
     alt={name}
     style:height={loading ? '0' : ''}
   />

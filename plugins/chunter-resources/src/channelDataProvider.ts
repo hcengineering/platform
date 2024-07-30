@@ -22,6 +22,7 @@ import {
   isOtherDay,
   type Ref,
   SortingOrder,
+  type Space,
   type Timestamp
 } from '@hcengineering/core'
 
@@ -29,10 +30,10 @@ import { derived, get, type Readable, writable } from 'svelte/store'
 import { type ActivityMessage } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages } from '@hcengineering/activity-resources'
+import { type ChatMessage } from '@hcengineering/chunter'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
-import { type ChatMessage } from '@hcengineering/chunter'
-import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -60,7 +61,6 @@ interface IChannelDataProvider {
   datesStore: Readable<Timestamp[]>
   metadataStore: Readable<MessageMetadata[]>
 
-  loadMore: (mode: LoadMode, loadAfter: Timestamp) => Promise<void>
   canLoadMore: (mode: LoadMode, loadAfter: Timestamp) => boolean
   jumpToDate: (date: Timestamp) => Promise<void>
 }
@@ -72,7 +72,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly tailQuery = createQuery(true)
 
   private chatId: Ref<Doc> | undefined = undefined
-  private readonly context: DocNotifyContext | undefined = undefined
   private readonly msgClass: Ref<Class<ActivityMessage>>
   private selectedMsgId: Ref<ActivityMessage> | undefined = undefined
   private tailStart: Timestamp | undefined = undefined
@@ -85,6 +84,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly isInitialLoadedStore = writable(false)
   private readonly isTailLoading = writable(false)
 
+  readonly isTailLoaded = writable(false)
+
   public datesStore = writable<Timestamp[]>([])
   public newTimestampStore = writable<Timestamp | undefined>(undefined)
 
@@ -95,19 +96,36 @@ export class ChannelDataProvider implements IChannelDataProvider {
     ([initialLoaded, tailLoading]) => !initialLoaded || tailLoading
   )
 
+  private readonly backwardNextStore = writable<Chunk | undefined>(undefined)
+  private readonly forwardNextStore = writable<Chunk | undefined>(undefined)
+
+  private backwardNextPromise: Promise<void> | undefined = undefined
+  private forwardNextPromise: Promise<void> | undefined = undefined
+
+  private readonly isBackwardLoading = writable(false)
+  private readonly isForwardLoading = writable(false)
+
+  private nextChunkAdding = false
+
   public messagesStore = derived([this.chunksStore, this.tailStore], ([chunks, tail]) => {
     return [...chunks.map(({ data }) => data).flat(), ...tail]
   })
 
+  public canLoadNextForwardStore = derived([this.messagesStore, this.forwardNextStore], ([messages, forwardNext]) => {
+    if (forwardNext !== undefined) return false
+
+    return this.canLoadMore('forward', messages[messages.length - 1]?.createdOn)
+  })
+
   constructor (
+    readonly context: DocNotifyContext | undefined,
+    readonly space: Ref<Space>,
     chatId: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
-    context: DocNotifyContext | undefined,
-    selectedMsgId?: Ref<ActivityMessage>,
+    selectedMsgId: Ref<ActivityMessage> | undefined,
     loadAll = false
   ) {
     this.chatId = chatId
-    this.context = context
     this.msgClass = _class
     this.selectedMsgId = selectedMsgId
     void this.loadData(loadAll)
@@ -139,20 +157,15 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
   private clearData (): void {
     this.metadataStore.set([])
-    this.tailStore.set([])
-    this.chunksStore.set([])
-
     this.isInitialLoadingStore.set(false)
-    this.isInitialLoadedStore.set(false)
     this.isTailLoading.set(false)
-
     this.datesStore.set([])
     this.newTimestampStore.set(undefined)
     this.isLoadingMoreStore.set(false)
-
-    this.tailStart = undefined
     this.chatId = undefined
     this.selectedMsgId = undefined
+
+    this.clearMessages()
   }
 
   private async loadData (loadAll = false): Promise<void> {
@@ -162,20 +175,24 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     this.metadataQuery.query(
       this.msgClass,
-      { attachedTo: this.chatId },
+      { attachedTo: this.chatId, space: this.space },
       (res) => {
         this.updatesDates(res)
         this.metadataStore.set(res)
         void this.loadInitialMessages(undefined, loadAll)
       },
       {
-        projection: { _id: 1, _class: 1, createdOn: 1, createdBy: 1, attachedTo: 1, modifiedOn: 1 },
+        projection: { _id: 1, _class: 1, space: 1, createdOn: 1, createdBy: 1, attachedTo: 1, modifiedOn: 1 },
         sort: { createdOn: SortingOrder.Ascending }
       }
     )
   }
 
-  private async loadInitialMessages (selectedMsg?: Ref<ActivityMessage>, loadAll = false): Promise<void> {
+  private async loadInitialMessages (
+    selectedMsg?: Ref<ActivityMessage>,
+    loadAll = false,
+    ignoreNew = false
+  ): Promise<void> {
     const isLoading = get(this.isInitialLoadingStore)
     const isLoaded = get(this.isInitialLoadedStore)
 
@@ -183,28 +200,15 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return
     }
 
-    const client = getClient()
     this.isInitialLoadingStore.set(true)
-    const firstNotification =
-      this.context !== undefined
-        ? await client.findOne(
-          notification.class.InboxNotification,
-          {
-            _class: {
-              $in: [notification.class.MentionInboxNotification, notification.class.ActivityInboxNotification]
-            },
-            docNotifyContext: this.context._id,
-            isViewed: false
-          },
-          { sort: { createdOn: SortingOrder.Ascending } }
-        )
-        : undefined
 
     const metadata = get(this.metadataStore)
-    const firstNewMsgIndex = this.getFirstNewMsgIndex(firstNotification)
+    const firstNewMsgIndex = ignoreNew ? undefined : await this.getFirstNewMsgIndex()
 
     if (get(this.newTimestampStore) === undefined) {
       this.newTimestampStore.set(firstNewMsgIndex !== undefined ? metadata[firstNewMsgIndex]?.createdOn : undefined)
+    } else if (ignoreNew) {
+      this.newTimestampStore.set(undefined)
     }
 
     const startPosition = this.getStartPosition(selectedMsg ?? this.selectedMsgId, firstNewMsgIndex)
@@ -220,9 +224,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.isTailLoading.set(true)
       const tailStart = metadata[startIndex]?.createdOn
       this.loadTail(tailStart)
+      this.backwardNextPromise = this.loadNext('backward', metadata[startIndex]?.createdOn, this.limit)
     } else {
       const newStart = Math.max(startPosition - this.limit / 2, 0)
       await this.loadMore('forward', metadata[newStart]?.createdOn, this.limit)
+      if (newStart > 0) {
+        this.backwardNextPromise = this.loadNext('backward', metadata[newStart]?.createdOn, this.limit)
+      }
     }
 
     this.isInitialLoadingStore.set(false)
@@ -247,6 +255,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.msgClass,
       {
         attachedTo: this.chatId,
+        space: this.space,
         ...query,
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
@@ -258,6 +267,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
           this.tailStore.set(res.reverse())
         }
 
+        this.isTailLoaded.set(true)
         this.isTailLoading.set(false)
       },
       {
@@ -269,45 +279,33 @@ export class ChannelDataProvider implements IChannelDataProvider {
     )
   }
 
-  public async loadMore (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
-    if (this.chatId === undefined || loadAfter === undefined) {
-      return
-    }
+  isNextLoading (mode: LoadMode): boolean {
+    return mode === 'forward' ? get(this.isForwardLoading) : get(this.isBackwardLoading)
+  }
 
-    if (!this.canLoadMore(mode, loadAfter) || get(this.isLoadingMoreStore)) {
-      return
-    }
+  isNextLoaded (mode: LoadMode): boolean {
+    return mode === 'forward' ? get(this.forwardNextStore) !== undefined : get(this.backwardNextStore) !== undefined
+  }
 
-    this.isLoadingMoreStore.set(true)
+  setNextLoading (mode: LoadMode, value: boolean): void {
+    mode === 'forward' ? this.isForwardLoading.set(value) : this.isBackwardLoading.set(value)
+  }
 
-    const isBackward = mode === 'backward'
-    const isForward = mode === 'forward'
+  getTailStartIndex (metadata: MessageMetadata[], loadAfter: Timestamp): number {
+    const index = metadata.slice(-this.limit - 1).findIndex(({ createdOn }) => createdOn === loadAfter)
 
-    const chunks = get(this.chunksStore)
-    const tail = get(this.tailStore)
-    const lastChunk: Chunk | undefined = isBackward ? chunks[0] : chunks[chunks.length - 1]
-    const skipIds = (lastChunk?.data ?? [])
-      .concat(tail)
-      .filter(({ createdOn }) => createdOn === loadAfter)
-      .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+    return index !== -1 ? metadata.length - index : -1
+  }
 
-    if (isForward) {
-      const metadata = get(this.metadataStore)
-      const metaIndex = metadata.findIndex(({ createdOn }) => createdOn === loadAfter)
-      const shouldLoadTail = metaIndex >= 0 && metaIndex + this.limit >= metadata.length
-
-      if (shouldLoadTail) {
-        this.loadTail(metadata[metaIndex + 1]?.createdOn, undefined, { _id: { $nin: skipIds } })
-        this.isLoadingMoreStore.set(false)
-        return
-      }
-    }
-
+  async loadChunk (isBackward: boolean, loadAfter: Timestamp, limit?: number): Promise<Chunk | undefined> {
     const client = getClient()
+    const skipIds = this.getChunkSkipIds(loadAfter)
+
     const messages = await client.findAll(
       chunter.class.ChatMessage,
       {
         attachedTo: this.chatId,
+        space: this.space,
         _id: { $nin: skipIds },
         createdOn: isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
       },
@@ -321,20 +319,149 @@ export class ChannelDataProvider implements IChannelDataProvider {
     )
 
     if (messages.length === 0) {
-      this.isLoadingMoreStore.set(false)
       return
     }
 
     const from = isBackward ? messages[0] : messages[messages.length - 1]
     const to = isBackward ? messages[messages.length - 1] : messages[0]
 
-    const chunk: Chunk = {
+    return {
       from: from.createdOn ?? from.modifiedOn,
       to: to.createdOn ?? to.modifiedOn,
       data: isBackward ? messages.reverse() : messages
     }
+  }
 
-    this.chunksStore.set(isBackward ? [chunk, ...chunks] : [...chunks, chunk])
+  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ChatMessage>> {
+    const chunks = get(this.chunksStore)
+    const metadata = get(this.metadataStore)
+    const tail = get(this.tailStore)
+    const tailData = tail.length > 0 ? get(this.tailStore) : metadata.slice(-this.limit)
+
+    return chunks
+      .filter(({ to, from }) => from >= after || to <= after)
+      .map(({ data }) => data as MessageMetadata[])
+      .flat()
+      .concat(loadTail ? [] : tailData)
+      .filter(({ createdOn }) => createdOn === after)
+      .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+  }
+
+  async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
+    if (this.chatId === undefined || loadAfter === undefined) {
+      return
+    }
+
+    if (this.isNextLoading(mode) || this.isNextLoaded(mode)) {
+      return
+    }
+
+    if (!this.canLoadMore(mode, loadAfter)) {
+      return
+    }
+
+    this.setNextLoading(mode, true)
+
+    const isBackward = mode === 'backward'
+    const isForward = mode === 'forward'
+
+    const metadata = get(this.metadataStore)
+
+    if (isForward && this.getTailStartIndex(metadata, loadAfter) !== -1) {
+      this.setNextLoading(mode, false)
+      return
+    }
+
+    const chunk = await this.loadChunk(isBackward, loadAfter, limit)
+
+    if (chunk !== undefined && isBackward) {
+      this.backwardNextStore.set(chunk)
+    }
+    if (chunk !== undefined && isForward) {
+      this.forwardNextStore.set(chunk)
+    }
+
+    this.setNextLoading(mode, false)
+  }
+
+  public async addNextChunk (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
+    if (loadAfter === undefined || this.nextChunkAdding) {
+      return
+    }
+
+    this.nextChunkAdding = true
+
+    if (this.forwardNextPromise instanceof Promise && mode === 'forward') {
+      await this.forwardNextPromise
+      this.forwardNextPromise = undefined
+    }
+
+    if (this.backwardNextPromise instanceof Promise && mode === 'backward') {
+      await this.backwardNextPromise
+      this.backwardNextPromise = undefined
+    }
+
+    if (this.isNextLoaded(mode)) {
+      const next = mode === 'forward' ? get(this.forwardNextStore) : get(this.backwardNextStore)
+      if (next !== undefined) {
+        if (mode === 'forward') {
+          this.forwardNextStore.set(undefined)
+          this.chunksStore.set([...get(this.chunksStore), next])
+          this.forwardNextPromise = this.loadNext('forward', next.from, limit)
+        } else {
+          this.backwardNextStore.set(undefined)
+          this.chunksStore.set([next, ...get(this.chunksStore)])
+          this.backwardNextPromise = this.loadNext('backward', next.to, limit)
+        }
+      }
+    } else {
+      await this.loadMore(mode, loadAfter, limit)
+    }
+
+    this.nextChunkAdding = false
+  }
+
+  private async loadMore (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
+    if (get(this.isLoadingMoreStore) || loadAfter === undefined) {
+      return
+    }
+
+    if (!this.canLoadMore(mode, loadAfter)) {
+      return
+    }
+
+    this.isLoadingMoreStore.set(true)
+
+    const isBackward = mode === 'backward'
+    const isForward = mode === 'forward'
+
+    const chunks = get(this.chunksStore)
+    const metadata = get(this.metadataStore)
+
+    if (isForward) {
+      const index = this.getTailStartIndex(metadata, loadAfter)
+      const tailAfter = metadata[index]?.createdOn
+
+      if (tailAfter !== undefined) {
+        const skipIds = chunks[chunks.length - 1]?.data.map(({ _id }) => _id) ?? []
+        this.loadTail(tailAfter, undefined, { _id: { $nin: skipIds } })
+        this.isLoadingMoreStore.set(false)
+        return
+      }
+    }
+
+    const chunk = await this.loadChunk(isBackward, loadAfter, limit)
+
+    if (chunk !== undefined) {
+      this.chunksStore.set(isBackward ? [chunk, ...chunks] : [...chunks, chunk])
+
+      if (isBackward) {
+        this.forwardNextPromise = this.loadNext('backward', chunk.to, limit)
+      } else {
+        this.forwardNextPromise = this.loadNext('forward', chunk.from, limit)
+      }
+    }
+
     this.isLoadingMoreStore.set(false)
   }
 
@@ -351,7 +478,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return firsNewMsgIndex
   }
 
-  private getFirstNewMsgIndex (firstNotification: InboxNotification | undefined): number | undefined {
+  private async getFirstNewMsgIndex (): Promise<number | undefined> {
     const metadata = get(this.metadataStore)
 
     if (metadata.length === 0) {
@@ -363,6 +490,19 @@ export class ChannelDataProvider implements IChannelDataProvider {
     }
 
     const lastViewedTimestamp = this.context.lastViewedTimestamp
+    const client = getClient()
+    const firstNotification = await client.findOne(
+      notification.class.InboxNotification,
+      {
+        _class: {
+          $in: [notification.class.MentionInboxNotification, notification.class.ActivityInboxNotification]
+        },
+        space: this.context.space,
+        docNotifyContext: this.context._id,
+        isViewed: false
+      },
+      { sort: { createdOn: SortingOrder.Ascending } }
+    )
 
     if (lastViewedTimestamp === undefined && firstNotification === undefined) {
       return -1
@@ -423,6 +563,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(false)
     this.tailQuery.unsubscribe()
     this.tailStart = undefined
+    this.isTailLoaded.set(false)
+    this.backwardNextPromise = undefined
+    this.forwardNextPromise = undefined
+    this.forwardNextStore.set(undefined)
+    this.backwardNextStore.set(undefined)
+    this.isBackwardLoading.set(false)
+    this.isForwardLoading.set(false)
   }
 
   public async jumpToDate (date: Timestamp): Promise<void> {
@@ -436,7 +583,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     await this.loadInitialMessages(msg._id)
   }
 
-  public jumpToMessage (message: ActivityMessage): boolean {
+  public jumpToMessage (message: MessageMetadata): boolean {
     const metadata = get(this.metadataStore).find(({ _id }) => _id === message._id)
 
     if (metadata === undefined) {
@@ -455,7 +602,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return true
   }
 
-  public jumpToEnd (): boolean {
+  public jumpToEnd (ignoreNew = false): boolean {
     const last = get(this.metadataStore)[get(this.metadataStore).length - 1]
 
     if (last === undefined) {
@@ -468,8 +615,9 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return false
     }
 
+    this.selectedMsgId = undefined
     this.clearMessages()
-    void this.loadInitialMessages()
+    void this.loadInitialMessages(this.selectedMsgId, false, ignoreNew)
 
     return true
   }

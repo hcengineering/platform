@@ -63,7 +63,6 @@
   export let _id: Ref<Document>
   export let readonly: boolean = false
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
   $: locked = doc?.lockedBy != null
   $: readonly = $restrictionStore.readonly || locked
@@ -240,7 +239,7 @@
     useMaxWidth={false}
     printHeader={false}
     {embedded}
-    {kind}
+    adaptive={'default'}
     bind:content
     bind:innerWidth
     floatAside={false}

@@ -24,10 +24,9 @@
   import { makeRank } from '@hcengineering/task'
   import ToDoProjectGroup from './ToDoProjectGroup.svelte'
   import ToDoDraggable from './ToDoDraggable.svelte'
-  import ToDoDuration from './ToDoDuration.svelte'
   import ToDoElement from './ToDoElement.svelte'
   import { dragging } from '../dragging'
-  import time from '../plugin'
+  import { calculateEventsDuration } from '../utils'
 
   export let mode: ToDosMode
   export let title: IntlString
@@ -89,6 +88,9 @@
     const newRank = makeRank(previousItem?.rank, nextItem?.rank)
     await client.update(draggingItem, { rank: newRank })
   }
+
+  $: events = getAllWorkslots(todos)
+  $: duration = calculateEventsDuration(events)
 </script>
 
 {#if showTitle}
@@ -98,13 +100,10 @@
     size={'large'}
     bottomSpace={false}
     counter={todos.length}
-    duration={showDuration}
+    duration={showDuration ? duration : false}
     fixHeader
     background={'var(--theme-navpanel-color)'}
   >
-    <svelte:fragment slot="duration">
-      <ToDoDuration events={getAllWorkslots(todos)} />
-    </svelte:fragment>
     {#if groups}
       {#each groups as group}
         <ToDoProjectGroup

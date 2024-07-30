@@ -1,9 +1,9 @@
 <script lang="ts">
-  import core, { RateLimiter } from '@hcengineering/core'
+  import core, { RateLimiter, concatLink } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, isAdminUser } from '@hcengineering/presentation'
-  import { Button, IconArrowRight, fetchMetadataLocalStorage } from '@hcengineering/ui'
+  import { Button, IconArrowLeft, IconArrowRight, fetchMetadataLocalStorage } from '@hcengineering/ui'
   import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
@@ -56,11 +56,12 @@
       ops = 0
     }, 1000)
     const rate = new RateLimiter(commandsToSendParallel)
+    const client = getClient()
 
     const doOp = async () => {
       const st = Date.now()
       active++
-      await getClient().createDoc(core.class.BenchmarkDoc, core.space.Configuration, {
+      await client.createDoc(core.class.BenchmarkDoc, core.space.Configuration, {
         source: genData(dataSize),
         request: {
           documents: 1,
@@ -106,9 +107,15 @@
         icon={IconArrowRight}
         label={getEmbeddedLabel('Set maintenance warning')}
         on:click={() => {
-          void fetch(endpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`, {
-            method: 'PUT'
-          })
+          const endpoint = getMetadata(login.metadata.AccountsUrl) ?? ''
+          if (endpoint !== '') {
+            void fetch(
+              concatLink(endpoint, `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`),
+              {
+                method: 'PUT'
+              }
+            )
+          }
         }}
       />
       <div class="flex-col p-1">
@@ -116,6 +123,18 @@
           <EditBox kind={'underline'} format={'number'} bind:value={warningTimeout} /> min
         </div>
       </div>
+      <Button
+        icon={IconArrowLeft}
+        label={getEmbeddedLabel('Clear warning')}
+        on:click={() => {
+          const endpoint = getMetadata(login.metadata.AccountsUrl) ?? ''
+          if (endpoint !== '') {
+            void fetch(concatLink(endpoint, `/api/v1/manage?token=${token}&operation=maintenance&timeout=-1`), {
+              method: 'PUT'
+            })
+          }
+        }}
+      />
     </div>
     <div class="flex-col p-1">
       <div class="flex-row-center p-1">

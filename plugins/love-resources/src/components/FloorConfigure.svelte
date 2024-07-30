@@ -290,7 +290,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header>
+  <Header allowFullsize adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       <ButtonIcon icon={IconAdd} size={'small'} on:click={addRoom} />

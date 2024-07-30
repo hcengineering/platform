@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { AggregateValue, Ref } from '@hcengineering/core'
-  import { IconSize } from '@hcengineering/ui'
+  import core, { AggregateValue, Ref } from '@hcengineering/core'
+  import { IconSize, Label } from '@hcengineering/ui'
   import { personAccountByIdStore } from '../utils'
   import PersonAccountPresenter from './PersonAccountPresenter.svelte'
   import { personStore } from '..'
@@ -48,4 +48,6 @@
     {compact}
     on:accent-color
   />
+{:else}
+  <Label label={core.string.System} />
 {/if}

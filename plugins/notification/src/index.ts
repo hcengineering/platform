@@ -280,7 +280,6 @@ export interface DocNotifyContext extends Doc {
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
 
-  hidden: boolean
   isPinned?: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp

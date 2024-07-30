@@ -533,6 +533,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: document.class.Teamspace,
+              icon: view.icon.List,
               label: document.string.Teamspaces
             },
             position: 'top'

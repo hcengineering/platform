@@ -76,11 +76,13 @@
     bind:viewOptions
     bind:preference
     {_class}
+    icon={documents.icon.Library}
     title={documents.string.DocumentTemplates}
     query={srcQuery}
     bind:resultQuery
+    hideActions={!canAddTemplate}
   >
-    <div slot="header-tools">
+    <svelte:fragment slot="actions">
       {#if canAddTemplate}
         <Button
           icon={IconAdd}
@@ -90,7 +92,7 @@
           on:click={showCreateDialog}
         />
       {/if}
-    </div>
+    </svelte:fragment>
   </ViewletPanelHeader>
 
   {#if loading}

@@ -117,6 +117,7 @@ import {
   createDocument,
   createTemplate
 } from './utils'
+import { comment, isCommentVisible } from './text'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 
@@ -372,7 +373,9 @@ export default async (): Promise<Resources> => ({
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
     IsLatestDraftDoc: isLatestDraftDoc,
     DocumentIdentifierProvider: documentIdentifierProvider,
-    ControlledDocumentTitleProvider: getControlledDocumentTitle
+    ControlledDocumentTitleProvider: getControlledDocumentTitle,
+    Comment: comment,
+    IsCommentVisible: isCommentVisible
   },
   actionImpl: {
     AddCollaborativeSectionAbove: addCollaborativeSectionAbove,

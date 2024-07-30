@@ -657,7 +657,7 @@ function defineApplication (builder: Builder): void {
     core.space.Model,
     {
       label: drive.string.Drive,
-      icon: drive.icon.Drive,
+      icon: drive.icon.DriveApplication,
       alias: driveId,
       hidden: false,
       locationResolver: drive.resolver.Location,
@@ -667,7 +667,7 @@ function defineApplication (builder: Builder): void {
             id: 'browser',
             accessLevel: AccountRole.User,
             label: drive.string.Drives,
-            icon: view.icon.List,
+            icon: drive.icon.Drives,
             component: workbench.component.SpecialView,
             componentProps: {
               _class: drive.class.Drive,

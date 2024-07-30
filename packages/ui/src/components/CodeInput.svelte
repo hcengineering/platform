@@ -70,11 +70,13 @@
       background-color: transparent;
       border: none;
       border-radius: 0.75rem;
+
       &.small {
         width: 1.5rem;
         height: 2rem;
         font-size: 1rem;
       }
+
       &.medium {
         width: 3.125rem;
         height: 4.375rem;

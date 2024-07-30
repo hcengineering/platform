@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, ButtonKind, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import view from '../plugin'
   import { getViewOptions, viewOptionStore } from '../viewOptions'
@@ -21,15 +21,20 @@
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
 
-  export let kind: ButtonKind = 'regular'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let viewOptions: ViewOptions | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let disabled: boolean = false
 
   let btn: HTMLButtonElement
+  let pressed: boolean = false
 
   function clickHandler () {
-    showPopup(ViewletSetting, { viewlet }, btn)
+    pressed = true
+    closeTooltip()
+    showPopup(ViewletSetting, { viewlet }, btn, () => {
+      pressed = false
+    })
   }
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
@@ -38,20 +43,18 @@
 </script>
 
 {#if viewlet}
-  <div class="flex-row-center gap-2 reverse">
-    {#if viewOptions}
-      <ViewOptionsButton {viewlet} {kind} {viewOptions} />
-    {/if}
-    <Button
-      icon={view.icon.Configure}
-      label={view.string.Show}
-      {disabled}
-      {kind}
-      shrink={1}
-      adaptiveShrink={'sm'}
-      showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
-      bind:input={btn}
-      on:click={clickHandler}
-    />
-  </div>
+  {#if viewOptions}
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} />
+  {/if}
+  <ButtonIcon
+    icon={view.icon.Configure}
+    {disabled}
+    {kind}
+    size={'small'}
+    {pressed}
+    tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+    dataId={'btn-viewSetting'}
+    bind:element={btn}
+    on:click={clickHandler}
+  />
 {/if}

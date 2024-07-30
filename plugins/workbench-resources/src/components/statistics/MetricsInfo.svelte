@@ -1,7 +1,9 @@
 <script lang="ts">
   import { Metrics } from '@hcengineering/core'
-  import { Expandable } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Button, Expandable, showPopup } from '@hcengineering/ui'
   import { FixedColumn } from '@hcengineering/view-resources'
+  import Params from './Params.svelte'
 
   export let metrics: Metrics
   export let level = 0
@@ -28,8 +30,18 @@
   contentColor
 >
   <svelte:fragment slot="title">
+    {@const params = JSON.stringify(metrics.namedParams ?? {})}
     <div class="flex-row-center flex-between flex-grow ml-2">
       {name}
+      {#if params !== '{}'}
+        <Button
+          label={getEmbeddedLabel('*')}
+          on:click={() => {
+            showPopup(Params, { params: metrics.namedParams ?? {} })
+          }}
+          kind={'ghost'}
+        />
+      {/if}
     </div>
   </svelte:fragment>
   <svelte:fragment slot="tools">

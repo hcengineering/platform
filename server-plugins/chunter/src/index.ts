@@ -31,7 +31,9 @@ export default plugin(serverChunterId, {
     ChunterTrigger: '' as Resource<TriggerFunc>,
     OnChatMessageRemoved: '' as Resource<TriggerFunc>,
     OnChannelMembersChanged: '' as Resource<TriggerFunc>,
-    ChatNotificationsHandler: '' as Resource<TriggerFunc>
+    ChatNotificationsHandler: '' as Resource<TriggerFunc>,
+    OnUserStatus: '' as Resource<TriggerFunc>,
+    OnContextUpdate: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<ObjectDDParticipantFunc>,

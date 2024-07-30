@@ -46,7 +46,7 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 
@@ -238,19 +238,71 @@ export function devTool (
     })
 
   program
+    .command('compact-db')
+    .description('compact all db collections')
+    .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
+    .action(async (cmd: { workspace: string }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        console.log('compacting db ...')
+        let gtotal: number = 0
+        try {
+          const workspaces = await listWorkspacesPure(db, productId)
+          for (const workspace of workspaces) {
+            if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+              continue
+            }
+            let total: number = 0
+            const wsDb = getWorkspaceDB(client, { name: workspace.workspace, productId })
+            const collections = wsDb.listCollections()
+            while (true) {
+              const collInfo = await collections.next()
+              if (collInfo === null) {
+                break
+              }
+              const result = await wsDb.command({ compact: collInfo.name })
+              total += result.bytesFreed
+            }
+            gtotal += total
+            console.log('total feed for db', workspace.workspaceName, Math.round(total / (1024 * 1024)))
+          }
+          console.log('global total feed', Math.round(gtotal / (1024 * 1024)))
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+
+  program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
     .action(async (email: string, workspace: string, cmd) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         console.log(`assigning user ${email} to ${workspace}...`)
-        const workspaceInfo = await getWorkspaceById(db, productId, workspace)
-        if (workspaceInfo === null) {
-          throw new Error(`workspace ${workspace} not found`)
-        }
-        console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(toolCtx, db, productId, null, email, workspaceInfo.workspace, AccountRole.User)
+          const workspaceInfo = await getWorkspaceById(db, productId, workspace)
+          if (workspaceInfo === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace, productId })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          console.log('assigning to workspace', workspaceInfo, endpoint)
+          const client = await createClient(endpoint, token)
+          console.log('assigning to workspace connected', workspaceInfo, endpoint)
+          await assignWorkspace(
+            toolCtx,
+            db,
+            productId,
+            null,
+            email,
+            workspaceInfo.workspace,
+            AccountRole.User,
+            undefined,
+            undefined,
+            client
+          )
+          await client.close()
         } catch (err: any) {
           console.error(err)
         }
@@ -328,7 +380,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       console.log(`set user ${email} role for ${workspace}...`)
       await withDatabase(mongodbUri, async (db) => {
-        await setRole(toolCtx, db, email, workspace, productId, role)
+        const workspaceInfo = await getWorkspaceById(db, productId, workspace)
+        if (workspaceInfo === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+        console.log('assigning to workspace', workspaceInfo)
+        const token = generateToken(systemAccountEmail, { name: workspaceInfo.workspace, productId })
+        const endpoint = await getTransactorEndpoint(token, 'external')
+        const client = await createClient(endpoint, token)
+        await setRole(toolCtx, db, email, workspace, productId, role, client)
+        await client.close()
       })
     })
 
@@ -347,7 +408,8 @@ export function devTool (
     .command('upgrade-workspace <name>')
     .description('upgrade workspace')
     .option('-f|--force [force]', 'Force update', true)
-    .action(async (workspace, cmd: { force: boolean }) => {
+    .option('-i|--indexes [indexes]', 'Force indexes rebuild', false)
+    .action(async (workspace, cmd: { force: boolean, indexes: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const info = await getWorkspaceById(db, productId, workspace)
@@ -366,7 +428,8 @@ export function devTool (
           db,
           info.workspaceUrl ?? info.workspace,
           consoleModelLogger,
-          cmd.force
+          cmd.force,
+          cmd.indexes
         )
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60), {})
         console.log('upgrade done')

@@ -149,6 +149,7 @@ const calendarPlugin = plugin(calendarId, {
   },
   icon: {
     Calendar: '' as Asset,
+    CalendarView: '' as Asset,
     Location: '' as Asset,
     Reminder: '' as Asset,
     Notifications: '' as Asset,

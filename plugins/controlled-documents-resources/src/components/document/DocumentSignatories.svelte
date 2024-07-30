@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { Label, Scroller, getUserTimezone } from '@hcengineering/ui'
+  import { Label, Scroller } from '@hcengineering/ui'
   import { createQuery } from '@hcengineering/presentation'
   import documents, { DocumentApprovalRequest, DocumentReviewRequest } from '@hcengineering/controlled-documents'
-  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { employeeByIdStore } from '@hcengineering/contact-resources'
   import { Employee, Person, formatName } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
 
   import documentsRes from '../../plugin'
   import { $controlledDocument as controlledDocument } from '../../stores/editors/document/editor'
+  import { formatSignatureDate } from '../../utils'
 
   interface Signer {
     id?: Ref<Person>
@@ -38,7 +39,6 @@
 
   const reviewQuery = createQuery()
   const approvalQuery = createQuery()
-  const timeZone: string = getUserTimezone()
 
   $: if ($controlledDocument !== undefined) {
     reviewQuery.query(
@@ -92,50 +92,35 @@
         id: $controlledDocument.author,
         role: 'author',
         name: getNameByEmployeeId($controlledDocument.author),
-        date: $controlledDocument.createdOn !== undefined ? formatDate($controlledDocument.createdOn) : ''
+        date: $controlledDocument.createdOn !== undefined ? formatSignatureDate($controlledDocument.createdOn) : ''
       }
     ]
 
     if (reviewRequest !== undefined) {
       reviewRequest.approved.forEach((reviewer, idx) => {
-        const rAcc = $personAccountByIdStore.get(reviewer)
         const date = reviewRequest.approvedDates?.[idx]
 
         signers.push({
-          id: rAcc?.person,
+          id: reviewer,
           role: 'reviewer',
-          name: getNameByEmployeeId(rAcc?.person),
-          date: formatDate(date ?? reviewRequest.modifiedOn)
+          name: getNameByEmployeeId(reviewer),
+          date: formatSignatureDate(date ?? reviewRequest.modifiedOn)
         })
       })
     }
 
     if (approvalRequest !== undefined) {
       approvalRequest.approved.forEach((approver, idx) => {
-        const aAcc = $personAccountByIdStore.get(approver)
         const date = approvalRequest.approvedDates?.[idx]
 
         signers.push({
-          id: aAcc?.person,
+          id: approver,
           role: 'approver',
-          name: getNameByEmployeeId(aAcc?.person),
-          date: formatDate(date ?? approvalRequest.modifiedOn)
+          name: getNameByEmployeeId(approver),
+          date: formatSignatureDate(date ?? approvalRequest.modifiedOn)
         })
       })
     }
-  }
-
-  function formatDate (date: number): string {
-    return new Date(date).toLocaleDateString('default', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      timeZone,
-      timeZoneName: 'short',
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric'
-    })
   }
 
   function getSignerLabel (role: 'author' | 'reviewer' | 'approver'): IntlString {

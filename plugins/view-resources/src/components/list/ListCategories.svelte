@@ -371,127 +371,125 @@
 {#each categories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
   {@const categoryDocKeys = getGroupByKey(docKeys, category, resultQuery)}
-  {#if items.length !== 0}
-    <ListCategory
-      bind:this={listListCategory[i]}
-      {extraHeaders}
-      {space}
-      {selectedObjectIds}
-      {headerComponent}
-      {baseMenuClass}
-      {level}
-      {viewOptions}
-      {groupByKey}
-      {lookup}
-      {config}
-      {configurations}
-      {configurationsVersion}
-      {itemModels}
-      {_class}
-      parentCategories={categories.length}
-      groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
-      singleCat={level === 0 && categories.length === 1}
-      oneCat={viewOptions.groupBy.length === 1}
-      lastCat={i === categories.length - 1}
-      {category}
-      itemProj={items}
-      docKeys={categoryDocKeys}
-      {newObjectProps}
-      {createItemDialog}
-      {createItemDialogProps}
-      {createItemLabel}
-      {viewOptionsConfig}
-      {compactMode}
-      {resultQuery}
-      {resultOptions}
-      {limiter}
-      {listProvider}
-      on:check
-      on:uncheckAll
-      on:row-focus
-      on:dragstart={(e) => {
-        dispatch('dragstart', {
-          target: e.detail.target,
-          index: e.detail.index + getInitIndex(categories, i)
-        })
-      }}
-      on:collapsed
-      {flatHeaders}
-      {disableHeader}
-      {props}
-      {listDiv}
-      bind:dragItem
+  <ListCategory
+    bind:this={listListCategory[i]}
+    {extraHeaders}
+    {space}
+    {selectedObjectIds}
+    {headerComponent}
+    {baseMenuClass}
+    {level}
+    {viewOptions}
+    {groupByKey}
+    {lookup}
+    {config}
+    {configurations}
+    {configurationsVersion}
+    {itemModels}
+    {_class}
+    parentCategories={categories.length}
+    groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
+    singleCat={level === 0 && categories.length === 1}
+    oneCat={viewOptions.groupBy.length === 1}
+    lastCat={i === categories.length - 1}
+    {category}
+    itemProj={items}
+    docKeys={categoryDocKeys}
+    {newObjectProps}
+    {createItemDialog}
+    {createItemDialogProps}
+    {createItemLabel}
+    {viewOptionsConfig}
+    {compactMode}
+    {resultQuery}
+    {resultOptions}
+    {limiter}
+    {listProvider}
+    on:check
+    on:uncheckAll
+    on:row-focus
+    on:dragstart={(e) => {
+      dispatch('dragstart', {
+        target: e.detail.target,
+        index: e.detail.index + getInitIndex(categories, i)
+      })
+    }}
+    on:collapsed
+    {flatHeaders}
+    {disableHeader}
+    {props}
+    {listDiv}
+    bind:dragItem
+  >
+    <svelte:fragment
+      slot="category"
+      let:docs
+      let:_class
+      let:space
+      let:lookup
+      let:baseMenuClass
+      let:config
+      let:selectedObjectIds
+      let:createItemDialog
+      let:createItemLabel
+      let:viewOptions
+      let:newObjectProps
+      let:flatHeaders
+      let:props
+      let:level
+      let:viewOptionsConfig
+      let:listDiv
+      let:dragstart
     >
-      <svelte:fragment
-        slot="category"
-        let:docs
-        let:_class
-        let:space
-        let:lookup
-        let:baseMenuClass
-        let:config
-        let:selectedObjectIds
-        let:createItemDialog
-        let:createItemLabel
-        let:viewOptions
-        let:newObjectProps
-        let:flatHeaders
-        let:props
-        let:level
-        let:viewOptionsConfig
-        let:listDiv
-        let:dragstart
-      >
-        <svelte:self
-          {docs}
-          bind:this={listCategory[i]}
-          {_class}
-          {space}
-          {lookup}
-          {baseMenuClass}
-          {config}
-          {selectedObjectIds}
-          {createItemDialog}
-          {createItemLabel}
-          {viewOptions}
-          {newObjectProps}
-          {flatHeaders}
-          {props}
-          {level}
-          docKeys={categoryDocKeys}
-          groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
-          {initIndex}
-          {viewOptionsConfig}
-          {listDiv}
-          {resultQuery}
-          {resultOptions}
-          {limiter}
-          {listProvider}
-          bind:dragItem
-          on:dragItem
-          on:check
-          on:uncheckAll
-          on:row-focus
-          on:dragstart={dragstart}
-          on:select={(evt) => {
-            select(0, evt.detail)
-          }}
-          on:select-next={(evt) => {
-            if (level !== 0) {
-              dispatch('select-next', evt.detail)
-            } else {
-              select(2, evt.detail)
-            }
-          }}
-          on:select-prev={(evt) => {
-            if (level !== 0) {
-              dispatch('select-prev', evt.detail)
-            } else {
-              select(-2, evt.detail)
-            }
-          }}
-        />
-      </svelte:fragment>
-    </ListCategory>
-  {/if}
+      <svelte:self
+        {docs}
+        bind:this={listCategory[i]}
+        {_class}
+        {space}
+        {lookup}
+        {baseMenuClass}
+        {config}
+        {selectedObjectIds}
+        {createItemDialog}
+        {createItemLabel}
+        {viewOptions}
+        {newObjectProps}
+        {flatHeaders}
+        {props}
+        {level}
+        docKeys={categoryDocKeys}
+        groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
+        {initIndex}
+        {viewOptionsConfig}
+        {listDiv}
+        {resultQuery}
+        {resultOptions}
+        {limiter}
+        {listProvider}
+        bind:dragItem
+        on:dragItem
+        on:check
+        on:uncheckAll
+        on:row-focus
+        on:dragstart={dragstart}
+        on:select={(evt) => {
+          select(0, evt.detail)
+        }}
+        on:select-next={(evt) => {
+          if (level !== 0) {
+            dispatch('select-next', evt.detail)
+          } else {
+            select(2, evt.detail)
+          }
+        }}
+        on:select-prev={(evt) => {
+          if (level !== 0) {
+            dispatch('select-prev', evt.detail)
+          } else {
+            select(-2, evt.detail)
+          }
+        }}
+      />
+    </svelte:fragment>
+  </ListCategory>
 {/each}

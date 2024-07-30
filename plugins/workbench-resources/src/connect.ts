@@ -2,6 +2,7 @@ import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import core, {
   ClientConnectEvent,
+  concatLink,
   getCurrentAccount,
   MeasureMetricsContext,
   metricsToString,
@@ -211,6 +212,15 @@ export async function connect (title: string): Promise<Client | undefined> {
                   }
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
+
+                const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
+                const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
+                if (currentFrontVersion !== undefined) {
+                  const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+                  if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                    location.reload()
+                  }
+                }
               }
             })()
           } catch (err) {
@@ -265,7 +275,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     )
     console.log('Model version', version)
 
-    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    const requiredVersion = getMetadata(presentation.metadata.ModelVersion)
     if (requiredVersion !== undefined && version !== undefined && requiredVersion !== '') {
       console.log('checking min model version', requiredVersion)
       const versionStr = versionToString(version)
@@ -278,7 +288,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   } catch (err: any) {
     console.error(err)
     Analytics.handleError(err)
-    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    const requiredVersion = getMetadata(presentation.metadata.ModelVersion)
     console.log('checking min model version', requiredVersion)
     if (requiredVersion !== undefined) {
       versionError.set(`'unknown' => ${requiredVersion}`)

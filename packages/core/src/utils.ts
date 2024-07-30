@@ -365,11 +365,15 @@ export class RateLimiter {
     this.rate = rate
   }
 
+  notify: (() => void)[] = []
+
   async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
     const processingId = this.idCounter++
 
-    while (this.processingQueue.size > this.rate) {
-      await Promise.race(this.processingQueue.values())
+    while (this.processingQueue.size >= this.rate) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
     }
     try {
       const p = op(args)
@@ -377,6 +381,10 @@ export class RateLimiter {
       return await p
     } finally {
       this.processingQueue.delete(processingId)
+      const n = this.notify.shift()
+      if (n !== undefined) {
+        n()
+      }
     }
   }
 
@@ -384,10 +392,7 @@ export class RateLimiter {
     if (this.processingQueue.size < this.rate) {
       void this.exec(op, args)
     } else {
-      while (this.processingQueue.size > this.rate) {
-        await Promise.race(this.processingQueue.values())
-      }
-      void this.exec(op, args)
+      await this.exec(op, args)
     }
   }
 

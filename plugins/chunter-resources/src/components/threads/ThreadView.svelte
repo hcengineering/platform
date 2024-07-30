@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumbs, IconClose, Label, location as locationStore } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { Breadcrumbs, Label, location as locationStore, Header } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { getMessageFromLoc } from '@hcengineering/activity-resources'
+  import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
 
   import chunter from '../../plugin'
@@ -30,8 +30,6 @@
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let showHeader: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -45,8 +43,23 @@
   let channelName: string | undefined = undefined
   let dataProvider: ChannelDataProvider | undefined = undefined
 
-  locationStore.subscribe((newLocation) => {
-    selectedMessageId = getMessageFromLoc(newLocation)
+  const unsubscribe = messageInFocus.subscribe((id) => {
+    if (id !== undefined && id !== selectedMessageId) {
+      selectedMessageId = id
+    }
+
+    messageInFocus.set(undefined)
+  })
+
+  const unsubscribeLocation = locationStore.subscribe((newLocation) => {
+    const id = getMessageFromLoc(newLocation)
+    selectedMessageId = id
+    messageInFocus.set(id)
+  })
+
+  onDestroy(() => {
+    unsubscribe()
+    unsubscribeLocation()
   })
 
   $: messageQuery.query(activity.class.ActivityMessage, { _id }, (result: ActivityMessage[]) => {
@@ -59,7 +72,14 @@
     })
 
   $: if (message !== undefined && dataProvider === undefined) {
-    dataProvider = new ChannelDataProvider(message._id, chunter.class.ThreadMessage, undefined, selectedMessageId, true)
+    dataProvider = new ChannelDataProvider(
+      undefined,
+      message.space,
+      message._id,
+      chunter.class.ThreadMessage,
+      selectedMessageId,
+      true
+    )
   }
 
   $: message &&
@@ -90,72 +110,41 @@
   }
 </script>
 
-<div class="popupPanel panel">
-  {#if showHeader}
-    <div class="ac-header divide full caption-height" style="padding: 0.5rem 1rem">
-      <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="close"
-        on:click={() => {
-          dispatch('close')
-        }}
-      >
-        <IconClose size="medium" />
-      </div>
-    </div>
-  {/if}
+{#if showHeader}
+  <Header type={'type-aside'} adaptive={'disabled'} on:close>
+    <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} currentOnly />
+  </Header>
+{/if}
 
-  <div class="popupPanel-body">
-    <div class="container">
-      {#if message && dataProvider !== undefined}
-        <ChannelScrollView
-          {selectedMessageId}
-          withDates={false}
-          skipLabels
-          object={message}
-          objectId={message._id}
-          objectClass={message._class}
-          provider={dataProvider}
-          loadMoreAllowed={false}
-        >
-          <svelte:fragment slot="header">
-            <div class="mt-3">
-              <ThreadParentMessage {message} />
+<div class="hulyComponent-content hulyComponent-content__container noShrink">
+  {#if message && dataProvider !== undefined}
+    <ChannelScrollView
+      bind:selectedMessageId
+      embedded
+      skipLabels
+      object={message}
+      objectId={message._id}
+      objectClass={message._class}
+      provider={dataProvider}
+    >
+      <svelte:fragment slot="header">
+        <div class="mt-3">
+          <ThreadParentMessage {message} />
+        </div>
+        <div class="separator">
+          {#if message.replies && message.replies > 0}
+            <div class="label lower">
+              <Label label={activity.string.RepliesCount} params={{ replies: message.replies }} />
             </div>
-            <div class="separator">
-              {#if message.replies && message.replies > 0}
-                <div class="label lower">
-                  <Label label={activity.string.RepliesCount} params={{ replies: message.replies }} />
-                </div>
-              {/if}
-              <div class="line" />
-            </div>
-          </svelte:fragment>
-        </ChannelScrollView>
-      {/if}
-    </div>
-  </div>
+          {/if}
+          <div class="line" />
+        </div>
+      </svelte:fragment>
+    </ChannelScrollView>
+  {/if}
 </div>
 
 <style lang="scss">
-  .container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .close {
-    margin-left: 0.75rem;
-    opacity: 0.4;
-    cursor: pointer;
-
-    &:hover {
-      opacity: 1;
-    }
-  }
-
   .separator {
     display: flex;
     align-items: center;

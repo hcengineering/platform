@@ -27,7 +27,7 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'medium'
   export let shouldShowName: boolean = true
-  export let shrink: number = 0
+  export let shrink: number = 1
   export let disabled: boolean = false
 
   import { selectedTaskTypeStore, selectedTypeStore } from '../../index'

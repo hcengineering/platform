@@ -2,6 +2,7 @@ import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import core, {
   ClientConnectEvent,
+  concatLink,
   setCurrentAccount,
   versionToString,
   type AccountClient,
@@ -46,6 +47,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   setMetadata(presentation.metadata.Token, token)
+  setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   if (_token !== token && _client !== undefined) {
     await _client.close()
@@ -104,6 +106,15 @@ export async function connect (title: string): Promise<Client | undefined> {
               }
               versionError.set(`${currentVersionStr} => ${reconnectVersionStr}`)
             }
+
+            const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
+            const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
+            if (currentFrontVersion !== undefined) {
+              const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+              if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                location.reload()
+              }
+            }
           }
         })()
       } catch (err) {
@@ -126,7 +137,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     version = await _client.findOne<Version>(core.class.Version, {})
     console.log('Model version', version)
 
-    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    const requiredVersion = getMetadata(presentation.metadata.ModelVersion)
     if (requiredVersion !== undefined && version !== undefined) {
       console.log('checking min model version', requiredVersion)
       const versionStr = versionToString(version)
@@ -139,7 +150,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   } catch (err: any) {
     Analytics.handleError(err)
     console.error(err)
-    const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
+    const requirdVersion = getMetadata(presentation.metadata.ModelVersion)
     console.log('checking min model version', requirdVersion)
     if (requirdVersion !== undefined) {
       versionError.set(`'unknown' => ${requirdVersion}`)

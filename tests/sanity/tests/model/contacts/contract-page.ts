@@ -23,7 +23,7 @@ export class ContractPage {
     this.page.locator(`.hulyNavItem-container:has-text("${Employee}")`)
 
   readonly employeeButton = (Employee: string): Locator =>
-    this.page.locator(`button:not(.hulyNavItem-container):has-text("${Employee}")`)
+    this.page.locator(`button:not(.hulyNavItem-container, .hulyBreadcrumb-container):has-text("${Employee}")`)
 
   readonly firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]')
   readonly lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]')

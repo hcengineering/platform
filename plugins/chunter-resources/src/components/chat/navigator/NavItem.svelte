@@ -35,6 +35,7 @@
   export let isSelected: boolean = false
   export let isSecondary: boolean = false
   export let count: number | null = null
+  export let secondaryNotifyMarker: boolean = false
   export let title: string | undefined = undefined
   export let intlTitle: IntlString | undefined = undefined
   export let description: string | undefined = undefined
@@ -99,6 +100,10 @@
       <div class="antiHSpacer" />
       <NotifyMarker {count} />
       <div class="antiHSpacer" />
+    {:else if secondaryNotifyMarker}
+      <div class="antiHSpacer" />
+      <NotifyMarker count={0} kind="secondary" size="x-small" />
+      <div class="antiHSpacer" />
     {/if}
   </svelte:fragment>
 </NavItem>
@@ -109,7 +114,6 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-left: var(--spacing-1);
     padding: var(--spacing-0_5);
     color: var(--global-tertiary-TextColor);
     border: none;

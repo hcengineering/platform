@@ -34,6 +34,7 @@ import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import print from '@hcengineering/model-print'
+import textEditor from '@hcengineering/text-editor'
 
 import documents from './plugin'
 import { definePermissions } from './permissions'
@@ -180,6 +181,7 @@ export function createModel (builder: Builder): void {
               query: {
                 [documents.mixin.DocumentTemplate]: { $exists: false }
               },
+              icon: documents.icon.Library,
               title: documents.string.Documents,
               config: [
                 ['effective', documents.string.Effective, {}],
@@ -866,6 +868,7 @@ export function createModel (builder: Builder): void {
   definePermissions(builder)
   defineNotifications(builder)
   defineSearch(builder)
+  defineTextActions(builder)
 }
 
 export function defineNotifications (builder: Builder): void {
@@ -1016,6 +1019,18 @@ export function defineSearch (builder: Builder): void {
     },
     documents.completion.DocumentMetaCategory
   )
+}
+
+export function defineTextActions (builder: Builder): void {
+  // Comment category
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: documents.function.Comment,
+    icon: chunter.icon.Chunter,
+    visibilityTester: documents.function.IsCommentVisible,
+    label: chunter.string.Message,
+    category: 100,
+    index: 5
+  })
 }
 
 export { documentsOperation } from './migration'

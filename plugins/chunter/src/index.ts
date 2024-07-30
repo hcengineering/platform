@@ -15,11 +15,12 @@
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
+import { DocNotifyContext, NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
+import { Person } from '@hcengineering/contact'
 
 /**
  * @public
@@ -72,6 +73,16 @@ export interface ChatMessageViewlet extends ActivityMessageViewlet {
   label?: IntlString
 }
 
+export interface ChatInfo extends Doc {
+  user: Ref<Person>
+  hidden: Ref<DocNotifyContext>[]
+  timestamp: Timestamp
+}
+
+export interface ChannelInfo extends DocNotifyContext {
+  hidden: boolean
+}
+
 /**
  * @public
  */
@@ -86,7 +97,10 @@ export default plugin(chunterId, {
     Thread: '' as Asset,
     Lock: '' as Asset,
     ChannelBrowser: '' as Asset,
-    Copy: '' as Asset
+    ChunterBrowser: '' as Asset,
+    Copy: '' as Asset,
+    Messages: '' as Asset,
+    Bookmarks: '' as Asset
   },
   component: {
     DmHeader: '' as AnyComponent,
@@ -107,10 +121,12 @@ export default plugin(chunterId, {
     Channel: '' as Ref<Class<Channel>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
-    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>
+    ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
+    ChatInfo: '' as Ref<Class<ChatInfo>>
   },
   mixin: {
-    ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
+    ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>,
+    ChannelInfo: '' as Ref<Mixin<ChannelInfo>>
   },
   string: {
     Reactions: '' as IntlString,

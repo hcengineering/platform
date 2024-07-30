@@ -76,4 +76,40 @@ test.describe('Registration tests', () => {
     })
     await attachScreenshot('TESTS-144_duplicate_email.png', page)
   })
+
+  test('TESTS-396. Correct email and wrong password: I cannot log in ', async ({ page }) => {
+    await allure.description('Requirement\nThe system should reject the wrong password')
+    await allure.tms('TESTS-396', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-396')
+    await test.step('1. Try to login with wrong password', async () => {
+      const loginPage = new LoginPage(page)
+      await loginPage.loginWithPassword.click()
+      await loginPage.login('user1', 'wrongPassword')
+      await loginPage.checkIfUserIsLoggedIn('wrong-password')
+    })
+    await attachScreenshot('TESTS-396_empty_fields.png', page)
+  })
+
+  test('TESTS-397. Wrong email and correct password: I cannot log in ', async ({ page }) => {
+    await allure.description('Requirement\nThe system should reject the registration with wrong email')
+    await allure.tms('TESTS-397', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-397')
+    await test.step('1. Try to login with wrong email', async () => {
+      const loginPage = new LoginPage(page)
+      await loginPage.loginWithPassword.click()
+      await loginPage.login('wrongEmail', '1234')
+      await loginPage.checkIfUserIsLoggedIn('wrong-email')
+    })
+    await attachScreenshot('TESTS-397_empty_fields.png', page)
+  })
+
+  test('TESTS-398. Correct email and correct password: I can log in ', async ({ page }) => {
+    await allure.description('Requirement\nUser is able to login with correct credentials')
+    await allure.tms('TESTS-398', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-397')
+    await test.step('1. Try to login with working credentials', async () => {
+      const loginPage = new LoginPage(page)
+      await loginPage.loginWithPassword.click()
+      await loginPage.login('user1', '1234')
+      await loginPage.checkIfUserIsLoggedIn('correct-credentials')
+    })
+    await attachScreenshot('TESTS-398_empty_fields.png', page)
+  })
 })

@@ -50,6 +50,7 @@
   export let bold: boolean = false
   export let shouldTooltip: boolean = false
   export let showMenu: boolean = false
+  export let noDivider: boolean = false
   export let showNotify: boolean = false
   export let forciblyСollapsed: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
@@ -100,6 +101,7 @@
     {forciblyСollapsed}
     {shouldTooltip}
     showMenu={showMenu || pressed}
+    {noDivider}
     on:click
     on:toggle={(ev) => {
       if (ev.detail !== undefined) collapsed = !ev.detail

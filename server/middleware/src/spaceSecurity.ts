@@ -450,27 +450,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   async loadDomainSpaces (ctx: MeasureContext, domain: Domain): Promise<Set<Ref<Space>>> {
-    const map = new Set<Ref<Space>>()
     const field = this.getKey(domain)
-    while (true) {
-      const spaces = await this.storage.findAll(
-        ctx,
-        core.class.Doc,
-        {
-          [field]: { $nin: Array.from(map.values()) }
-        },
-        {
-          projection: { [field]: 1 },
-          limit: 1000,
-          domain
-        }
-      )
-      if (spaces.length === 0) {
-        break
-      }
-      spaces.forEach((p) => map.add((p as any)[field] as Ref<Space>))
-    }
-    return map
+    return await this.storage.groupBy<Ref<Space>>(ctx, domain, field)
   }
 
   async getDomainSpaces (domain: Domain): Promise<Set<Ref<Space>>> {

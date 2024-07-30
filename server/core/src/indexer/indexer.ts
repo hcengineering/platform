@@ -335,25 +335,34 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (!this.indexesCreated) {
       this.indexesCreated = true
       // We need to be sure we have individual indexes per stage.
-      const oldStagesRegex = [/fld-v.*/, /cnt-v.*/, /fts-v.*/, /sum-v.*/]
+      const oldStagesRegex = [/fld-v.*/, /cnt-v.*/, /fts-v.*/, /sum-v.*/, /emb-v.*/]
+
+      const deletePattern: RegExp[] = []
+      const keepPattern: RegExp[] = []
       for (const st of this.stages) {
         if (this.cancelling) {
           return
         }
         const regexp = oldStagesRegex.find((r) => r.test(st.stageId))
         if (regexp !== undefined) {
-          await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, regexp, new RegExp(st.stageId))
+          deletePattern.push(regexp)
+          keepPattern.push(new RegExp(st.stageId))
+        }
+      }
+      if (deletePattern.length > 0) {
+        await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, deletePattern, keepPattern)
+      }
+
+      for (const st of this.stages) {
+        if (this.cancelling) {
+          return
         }
         await this.storage.createIndexes(DOMAIN_DOC_INDEX_STATE, {
           indexes: [
             {
-              ['stages.' + st.stageId]: 1
-            },
-            {
-              _class: 1,
-              _id: 1,
-              ['stages.' + st.stageId]: 1,
-              removed: 1
+              keys: {
+                ['stages.' + st.stageId]: 1
+              }
             }
           ]
         })
@@ -459,23 +468,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               .filter((it) => it[1] > 3)
               .map((it) => it[0])
 
+            const q: DocumentQuery<DocIndexState> = {
+              [`stages.${st.stageId}`]: { $ne: st.stageValue },
+              removed: false
+            }
+            if (toSkip.length > 0) {
+              q._id = { $nin: toSkip }
+            }
             let result = await ctx.with(
               'get-to-index',
               {},
               async (ctx) =>
-                await this.storage.findAll(
-                  ctx,
-                  core.class.DocIndexState,
-                  {
-                    [`stages.${st.stageId}`]: { $ne: st.stageValue },
-                    _id: { $nin: toSkip },
-                    removed: false
-                  },
-                  {
-                    sort: { modifiedOn: SortingOrder.Descending },
-                    limit: globalIndexer.processingSize
-                  }
-                )
+                await this.storage.findAll(ctx, core.class.DocIndexState, q, {
+                  sort: { modifiedOn: SortingOrder.Descending },
+                  limit: globalIndexer.processingSize
+                })
             )
             const toRemove: DocIndexState[] = []
             // Check and remove missing class documents.

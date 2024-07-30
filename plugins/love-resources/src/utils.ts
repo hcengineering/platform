@@ -1,11 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import core, { concatLink, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
-import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
-import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
-import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
   RequestStatus,
   RoomAccess,
@@ -18,15 +13,20 @@ import {
   type ParticipantInfo,
   type Room
 } from '@hcengineering/love'
+import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
+import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
+import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
+import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
   ConnectionState,
   Room as LKRoom,
   LocalAudioTrack,
-  type LocalTrack,
   LocalVideoTrack,
   RoomEvent,
   Track,
   type AudioCaptureOptions,
+  type LocalTrack,
   type LocalTrackPublication,
   type RemoteParticipant,
   type RemoteTrack,
@@ -568,7 +568,10 @@ export async function tryConnect (
   const currentPerson = personByIdStore.get((me as PersonAccount).person)
   if (currentPerson === undefined) return
   const client = getClient()
+
+  // guests can't join without invite
   if (!client.getHierarchy().hasMixin(currentPerson, contact.mixin.Employee)) return
+
   if (room._id === currentInfo?.room) return
   if (room.access === RoomAccess.DND) return
   const thisRoomRequest = currentRequests.find((p) => p.room === room._id)

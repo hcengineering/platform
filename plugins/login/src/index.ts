@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref, Doc, AccountRole } from '@hcengineering/core'
+import { AccountRole, Doc, Ref, Timestamp } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -56,6 +56,11 @@ export interface LoginInfo {
   email: string
 }
 
+export interface OtpInfo {
+  sent: boolean
+  retryOn: Timestamp
+}
+
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
@@ -80,7 +85,13 @@ export default plugin(loginId, {
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
     GetInviteLink: '' as Resource<
-    (expHours: number, mask: string, limit: number | undefined, role: AccountRole) => Promise<string>
+    (
+      expHours: number,
+      mask: string,
+      limit: number | undefined,
+      role: AccountRole,
+      navigateUrl?: string
+    ) => Promise<string>
     >,
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
@@ -89,7 +100,6 @@ export default plugin(loginId, {
     >,
     FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
-    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,
-    GetEndpoint: '' as Resource<() => Promise<string>>
+    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>
   }
 })

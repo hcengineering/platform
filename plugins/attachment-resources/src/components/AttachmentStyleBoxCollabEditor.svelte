@@ -142,7 +142,7 @@
       list,
       { objectId: object._id, objectClass: object._class },
       {},
-      async (uuid, name, file, metadata) => {
+      async (uuid, name, file, path, metadata) => {
         await createAttachment(uuid, name, file, metadata)
       }
     )
@@ -158,7 +158,7 @@
         files,
         { objectId: object._id, objectClass: object._class },
         {},
-        async (uuid, name, file, metadata) => {
+        async (uuid, name, file, path, metadata) => {
           await createAttachment(uuid, name, file, metadata)
         }
       )

@@ -4,10 +4,13 @@
 
 import account, {
   ACCOUNT_DB,
+  EndpointKind,
   UpgradeWorker,
   accountId,
   cleanInProgressWorkspaces,
-  getMethods
+  getMethods,
+  cleanExpiredOtp,
+  getAllTransactors
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -86,6 +89,8 @@ export function serveAccount (
   setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
+  setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
+  setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
 
@@ -103,10 +108,17 @@ export function serveAccount (
 
   let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
 
+  let worker: UpgradeWorker | undefined
+
   const app = new Koa()
   const router = new Router()
 
-  let worker: UpgradeWorker | undefined
+  app.use(
+    cors({
+      credentials: true
+    })
+  )
+  app.use(bodyParser())
 
   void client.then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
@@ -114,6 +126,13 @@ export function serveAccount (
 
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)
+
+    setInterval(
+      () => {
+        void cleanExpiredOtp(db)
+      },
+      3 * 60 * 1000
+    )
 
     const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
     if (performUpgrade) {
@@ -166,6 +185,44 @@ export function serveAccount (
     }
   })
 
+  router.put('/api/v1/manage', async (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      if (payload.extra?.admin !== 'true') {
+        req.res.writeHead(404, {})
+        req.res.end()
+        return
+      }
+
+      const operation = req.query.operation
+
+      switch (operation) {
+        case 'maintenance': {
+          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+          const transactors = getAllTransactors(EndpointKind.Internal)
+          for (const tr of transactors) {
+            const serverEndpoint = tr.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+            await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${timeMinutes}`, {
+              method: 'PUT'
+            })
+          }
+
+          req.res.writeHead(200)
+          req.res.end()
+          return
+        }
+      }
+
+      req.res.writeHead(404, {})
+      req.res.end()
+    } catch (err: any) {
+      Analytics.handleError(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
+
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
 
@@ -201,12 +258,6 @@ export function serveAccount (
     ctx.body = result
   })
 
-  app.use(
-    cors({
-      credentials: true
-    })
-  )
-  app.use(bodyParser())
   app.use(router.routes()).use(router.allowedMethods())
 
   const server = app.listen(ACCOUNT_PORT, () => {

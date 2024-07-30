@@ -73,7 +73,7 @@
   }
 </script>
 
-<div class="hulyNavPanel-header withButton">
+<div class="hulyNavPanel-header" class:withButton={hasAccountRole(getCurrentAccount(), AccountRole.User)}>
   <span class="overflow-label">
     <Label label={chunter.string.Chat} />
   </span>

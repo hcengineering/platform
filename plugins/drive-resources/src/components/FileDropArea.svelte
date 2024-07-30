@@ -14,16 +14,12 @@
 -->
 <script lang="ts">
   import { type Ref } from '@hcengineering/core'
-  import drive, { createFile, type Drive, type Folder } from '@hcengineering/drive'
-  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import { uploadFiles } from '@hcengineering/uploader'
+  import { type Drive, type Folder } from '@hcengineering/drive'
+  import { uploadFilesToDrive } from '../utils'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
   export let canDrop: ((e: DragEvent) => boolean) | undefined = undefined
-
-  const client = getClient()
 
   let dragover = false
   let counter = 0
@@ -66,28 +62,8 @@
     e.preventDefault()
     e.stopPropagation()
 
-    const list = e.dataTransfer?.files
-    if (list !== undefined && list.length !== 0) {
-      const target =
-        parent !== drive.ids.Root
-          ? { objectId: parent, objectClass: drive.class.Folder }
-          : { objectId: space, objectClass: drive.class.Drive }
-      await uploadFiles(list, target, {}, async (uuid, name, file, metadata) => {
-        try {
-          const data = {
-            file: uuid,
-            size: file.size,
-            type: file.type,
-            lastModified: file instanceof File ? file.lastModified : Date.now(),
-            name,
-            metadata
-          }
-
-          await createFile(client, space, parent, data)
-        } catch (err) {
-          void setPlatformStatus(unknownError(err))
-        }
-      })
+    if (e.dataTransfer != null) {
+      await uploadFilesToDrive(e.dataTransfer, space, parent)
     }
   }
 </script>

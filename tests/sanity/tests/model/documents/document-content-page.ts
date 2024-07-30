@@ -11,12 +11,14 @@ export class DocumentContentPage extends CommonPage {
 
   readonly buttonDocumentTitle = (): Locator => this.page.locator('div[class*="main-content"] div.title input')
   readonly inputContent = (): Locator => this.page.locator('div.textInput div.tiptap')
-  readonly buttonToolbarLink = (): Locator => this.page.locator('div.text-editor-toolbar button:nth-child(10)')
+  readonly buttonToolbarLink = (): Locator => this.page.locator('div.text-editor-toolbar button[data-id="btnLink"]')
   readonly inputFormLink = (): Locator => this.page.locator('form[id="text-editor:string:Link"] input')
   readonly buttonFormLinkSave = (): Locator =>
     this.page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
 
-  readonly buttonMoreActions = (): Locator => this.page.locator('div.popupPanel-title button#btn-doc-title-open-more')
+  readonly buttonMoreActions = (): Locator =>
+    this.page.locator('div.hulyHeader-buttonsGroup button#btn-doc-title-open-more')
+
   readonly popupPanel = (): Locator => this.page.locator('div.popupPanel-title')
   readonly popupPanelH1 = (): Locator => this.page.locator('div.antiPopup > h1')
 

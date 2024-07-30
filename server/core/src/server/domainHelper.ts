@@ -3,7 +3,7 @@ import type {
   Doc,
   Domain,
   DomainIndexConfiguration,
-  FieldIndex,
+  FieldIndexConfig,
   Hierarchy,
   MeasureContext,
   ModelDb,
@@ -14,7 +14,7 @@ import { deepEqual } from 'fast-equals'
 import type { DomainHelper, DomainHelperOperations } from '../adapter'
 
 export class DomainIndexHelperImpl implements DomainHelper {
-  domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
+  domains = new Map<Domain, Set<FieldIndexConfig<Doc>>>()
   domainConfigurations: DomainIndexConfiguration[] = []
   constructor (
     readonly ctx: MeasureContext,
@@ -33,7 +33,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
       ctx.error('failed to find domain index configuration', { err })
     }
 
-    this.domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
+    this.domains = new Map<Domain, Set<FieldIndexConfig<Doc>>>()
     // Find all domains and indexed fields inside
     for (const c of classes) {
       try {
@@ -42,14 +42,15 @@ export class DomainIndexHelperImpl implements DomainHelper {
           continue
         }
         const attrs = hierarchy.getAllAttributes(c._id)
-        const domainAttrs = this.domains.get(domain) ?? new Set<string | FieldIndex<Doc>>()
+        const domainAttrs = this.domains.get(domain) ?? new Set<FieldIndexConfig<Doc>>()
         for (const a of attrs.values()) {
-          if (a.index !== undefined && (a.index === IndexKind.Indexed || a.index === IndexKind.IndexedDsc)) {
-            if (a.index === IndexKind.Indexed) {
-              domainAttrs.add(a.name)
-            } else {
-              domainAttrs.add({ [a.name]: IndexOrder.Descending })
-            }
+          if (a.index !== undefined && a.index !== IndexKind.FullText) {
+            domainAttrs.add({
+              keys: {
+                [a.name]: a.index === IndexKind.Indexed ? IndexOrder.Ascending : IndexOrder.Descending
+              },
+              sparse: false // Default to non sparse indexes
+            })
           }
         }
 
@@ -57,7 +58,11 @@ export class DomainIndexHelperImpl implements DomainHelper {
         if (hierarchy.hasMixin(c, core.mixin.IndexConfiguration)) {
           const config = hierarchy.as(c, core.mixin.IndexConfiguration)
           for (const attr of config.indexes) {
-            domainAttrs.add(attr)
+            if (typeof attr === 'string') {
+              domainAttrs.add({ keys: { [attr]: IndexOrder.Ascending }, sparse: false })
+            } else {
+              domainAttrs.add(attr)
+            }
           }
         }
 
@@ -97,7 +102,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
       // Do not need to create, since not force and no documents.
       return false
     }
-    const bb: (string | FieldIndex<Doc>)[] = []
+    const bb: (string | FieldIndexConfig<Doc>)[] = []
     const added = new Set<string>()
 
     try {
@@ -107,18 +112,26 @@ export class DomainIndexHelperImpl implements DomainHelper {
       if (has50Documents) {
         for (const vv of [...(domainInfo?.values() ?? []), ...(cfg?.indexes ?? [])]) {
           try {
-            const name =
-              typeof vv === 'string'
-                ? `${vv}_1`
-                : Object.entries(vv)
-                  .map(([key, val]) => `${key}_${val}`)
-                  .join('_')
+            let name: string
+            if (typeof vv === 'string') {
+              name = `${vv}_sp_1`
+            } else {
+              let pfix = ''
+              if (vv.filter !== undefined) {
+                pfix += '_fi'
+              } else if (vv.sparse === true) {
+                pfix += '_sp'
+              }
+              name = Object.entries(vv.keys)
+                .map(([key, val]) => `${key + pfix}_${val}`)
+                .join('_')
+            }
 
             // Check if index is disabled or not
             const isDisabled =
               cfg?.disabled?.some((it) => {
                 const _it = typeof it === 'string' ? { [it]: 1 } : it
-                const _vv = typeof vv === 'string' ? { [vv]: 1 } : vv
+                const _vv = typeof vv === 'string' ? { [vv]: 1 } : vv.keys
                 return deepEqual(_it, _vv)
               }) ?? false
             if (isDisabled) {

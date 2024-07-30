@@ -22,7 +22,7 @@ import activity, {
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import { PersonIcon, employeeByIdStore } from '@hcengineering/contact-resources'
-import {
+import core, {
   generateId,
   getCurrentAccount,
   type Account,
@@ -35,10 +35,9 @@ import {
   type Timestamp,
   type WithLookup
 } from '@hcengineering/core'
-import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
+import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
   InboxNotificationsClientImpl,
-  archiveContextNotifications,
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
@@ -343,7 +342,12 @@ export async function joinChannel (channel: Channel, value: Ref<Account> | Array
   }
 }
 
-export async function leaveChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+export async function leaveChannel (
+  channel: Channel | undefined,
+  value: Ref<Account> | Array<Ref<Account>>
+): Promise<void> {
+  if (channel === undefined) return
+
   const client = getClient()
 
   if (Array.isArray(value)) {
@@ -351,10 +355,8 @@ export async function leaveChannel (channel: Channel, value: Ref<Account> | Arra
       await client.update(channel, { $pull: { members: { $in: value } } })
     }
   } else {
-    const context = await client.findOne(notification.class.DocNotifyContext, { attachedTo: channel._id })
-
     await client.update(channel, { $pull: { members: value } })
-    await removeChannelAction(context, undefined, { object: channel })
+    await resetChunterLocIfEqual(channel._id, channel._class, channel)
   }
 }
 
@@ -499,13 +501,33 @@ export async function removeChannelAction (
   }
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  await archiveContextNotifications(context)
-  await client.remove(context)
+  if (hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)) {
+    const channel = await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> })
+    await leaveChannel(channel, getCurrentAccount()._id)
+  } else {
+    const object = await client.findOne(context.attachedToClass, { _id: context.attachedTo })
+    const account = getCurrentAccount() as PersonAccount
 
-  await resetChunterLocIfEqual(context.attachedTo, context.attachedToClass, props?.object)
+    await client.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
+
+    const chatInfo = await client.findOne(chunter.class.ChatInfo, { user: account.person })
+
+    if (chatInfo !== undefined) {
+      await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
+    }
+    await resetChunterLocIfEqual(context.attachedTo, context.attachedToClass, object)
+  }
+
+  void inboxClient.readDoc(client, context.attachedTo)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {
   return message._class === chunter.class.ThreadMessage
+}
+
+export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: Ref<Space>): Ref<Space> {
+  return getClient().getHierarchy().isDerived(_class, core.class.Space) ? (_id as Ref<Space>) : space
 }

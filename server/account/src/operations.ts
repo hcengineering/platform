@@ -45,6 +45,7 @@ import core, {
   Version,
   versionToString,
   WorkspaceId,
+  Timestamp,
   WorkspaceIdWithUrl,
   type Branding
 } from '@hcengineering/core'
@@ -62,6 +63,7 @@ import toolPlugin, {
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
+import otpGenerator from 'otp-generator'
 import {
   DummyFullTextAdapter,
   Pipeline,
@@ -76,10 +78,12 @@ import {
   registerServerPlugins,
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
+
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
+const OTP_COLLECTION = 'otp'
 const INVITE_COLLECTION = 'invite'
 /**
  * @public
@@ -148,6 +152,28 @@ const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: Endpoi
   return transactors[Math.abs(hash % transactors.length)]
 }
 
+export function getAllTransactors (kind: EndpointKind): string[] {
+  const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
+  if (transactorsUrl === undefined) {
+    throw new Error('Please provide transactor endpoint url')
+  }
+  const endpoints = transactorsUrl
+    .split(',')
+    .map((it) => it.trim())
+    .filter((it) => it.length > 0)
+
+  if (endpoints.length === 0) {
+    throw new Error('Please provide transactor endpoint url')
+  }
+
+  const toTransactor = (line: string): { internalUrl: string, group: string, externalUrl: string } => {
+    const [internalUrl, externalUrl, group] = line.split(';')
+    return { internalUrl, group: group ?? '', externalUrl: externalUrl ?? internalUrl }
+  }
+
+  return endpoints.map(toTransactor).map((it) => (kind === EndpointKind.External ? it.externalUrl : it.internalUrl))
+}
+
 /**
  * @public
  */
@@ -176,6 +202,18 @@ export interface Workspace extends BaseWorkspaceInfo {
   accounts: ObjectId[]
 
   transactor?: string // Transactor group name
+}
+
+export interface OtpRecord {
+  account: ObjectId
+  otp: string
+  expires: Timestamp
+  createdOn: Timestamp
+}
+
+export interface OtpInfo {
+  sent: boolean
+  retryOn: Timestamp
 }
 
 /**
@@ -321,7 +359,36 @@ async function getAccountInfo (
   return toAccountInfo(account)
 }
 
-async function getAccountInfoByToken (
+async function sendOtpEmail (branding: Branding | null, otp: string, email: string): Promise<void> {
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    console.info('Please provide email service url to enable email otp.')
+    return
+  }
+
+  const lang = branding?.language
+  const app = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
+
+  const text = await translate(accountPlugin.string.OtpText, { code: otp, app }, lang)
+  const html = await translate(accountPlugin.string.OtpHTML, { code: otp, app }, lang)
+  const subject = await translate(accountPlugin.string.OtpSubject, { code: otp, app }, lang)
+
+  const to = email
+  await fetch(concatLink(sesURL, '/send'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to
+    })
+  })
+}
+
+export async function getAccountInfoByToken (
   ctx: MeasureContext,
   db: Db,
   productId: string,
@@ -383,6 +450,117 @@ export async function login (
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('login failed', { email, productId, _email, err })
+    throw err
+  }
+}
+
+async function getNewOtp (db: Db): Promise<string> {
+  let otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    lowerCaseAlphabets: false,
+    specialChars: false
+  })
+
+  let exist = await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ otp })
+
+  while (exist != null) {
+    otp = otpGenerator.generate(6, {
+      lowerCaseAlphabets: false
+    })
+    exist = await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ otp })
+  }
+
+  return otp
+}
+
+export async function sendOtp (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  _email: string
+): Promise<OtpInfo> {
+  const email = cleanEmail(_email)
+  const account = await getAccount(db, email)
+
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  const now = Date.now()
+  const otpData = (
+    await db
+      .collection<OtpRecord>(OTP_COLLECTION)
+      .find({ account: account._id })
+      .sort({ createdOn: -1 })
+      .limit(1)
+      .toArray()
+  )[0]
+
+  const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
+  const isValid = otpData !== undefined && otpData.expires > now && otpData.createdOn + retryDelay * 1000 > now
+
+  if (isValid) {
+    return { sent: true, retryOn: otpData.createdOn + retryDelay * 1000 }
+  }
+  const secs = getMetadata(accountPlugin.metadata.OtpTimeToLiveSec) ?? 60
+  const timeToLive = secs * 1000
+  const expires = now + timeToLive
+  const otp = await getNewOtp(db)
+
+  await sendOtpEmail(branding, otp, email)
+  await db.collection<OtpRecord>(OTP_COLLECTION).insertOne({ account: account._id, otp, expires, createdOn: now })
+
+  return { sent: true, retryOn: now + retryDelay * 1000 }
+}
+
+async function isOtpValid (db: Db, account: Account, otp: string): Promise<boolean> {
+  const now = Date.now()
+  const otpData = (await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ account: account._id, otp })) ?? undefined
+
+  return otpData !== undefined && otpData.expires > now
+}
+
+export async function validateOtp (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  _email: string,
+  otp: string
+): Promise<LoginInfo> {
+  const email = cleanEmail(_email)
+  const account = await getAccount(db, email)
+
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  const isValid = await isOtpValid(db, account, otp)
+
+  if (!isValid) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
+  }
+
+  try {
+    const info = toAccountInfo(account)
+
+    if (account.confirmed !== true) {
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
+    }
+
+    const result = {
+      endpoint: '',
+      email,
+      confirmed: true,
+      token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
+    }
+    await db.collection<OtpRecord>(OTP_COLLECTION).deleteMany({ account: account._id })
+    ctx.info('otp login success', { email, productId })
+    return result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    ctx.error('otp login failed', { email, productId, _email, err })
     throw err
   }
 }
@@ -805,6 +983,25 @@ export async function createAccount (
 /**
  * @public
  */
+export async function signUpOtp (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  _email: string
+): Promise<OtpInfo> {
+  const email = cleanEmail(_email)
+  const first = email.split('@', 1)[0] ?? ''
+  const last = ''
+
+  await createAcc(ctx, db, productId, branding, email, null, first, last, false)
+
+  return await sendOtp(ctx, db, productId, branding, _email)
+}
+
+/**
+ * @public
+ */
 export async function listWorkspaces (
   ctx: MeasureContext,
   db: Db,
@@ -870,6 +1067,10 @@ export async function cleanInProgressWorkspaces (db: Db, productId: string): Pro
   for (const d of toDelete) {
     await dropWorkspace(ctx, db, productId, null, d.workspace)
   }
+}
+
+export async function cleanExpiredOtp (db: Db): Promise<void> {
+  await db.collection<OtpRecord>(OTP_COLLECTION).deleteMany({ expires: { $lte: Date.now() } })
 }
 
 /**
@@ -1188,7 +1389,8 @@ export async function upgradeWorkspace (
   db: Db,
   workspaceUrl: string,
   logger: ModelLogger = consoleModelLogger,
-  forceUpdate: boolean = true
+  forceUpdate: boolean = true,
+  forceIndexes: boolean = false
 ): Promise<string> {
   const ws = await getWorkspaceByUrl(db, productId, workspaceUrl)
   if (ws === null) {
@@ -1218,7 +1420,8 @@ export async function upgradeWorkspace (
     migrationOperation,
     logger,
     false,
-    async (value) => {}
+    async (value) => {},
+    forceIndexes
   )
 
   await db.collection(WORKSPACE_COLLECTION).updateOne(
@@ -2404,6 +2607,29 @@ export async function loginWithProvider (
 /**
  * @public
  */
+export async function changeUsername (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string,
+  first: string,
+  last: string
+): Promise<void> {
+  const { email } = decodeToken(token)
+  const account = await getAccount(db, email)
+
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { first, last } })
+  ctx.info('change-username success', { email })
+}
+
+/**
+ * @public
+ */
 export function getMethods (
   version: Data<Version>,
   txes: Tx[],
@@ -2412,6 +2638,9 @@ export function getMethods (
   return {
     login: wrap(login),
     join: wrap(join),
+    sendOtp: wrap(sendOtp),
+    validateOtp: wrap(validateOtp),
+    signUpOtp: wrap(signUpOtp),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),
@@ -2431,7 +2660,8 @@ export function getMethods (
     sendInvite: wrap(sendInvite),
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
-    createMissingEmployee: wrap(createMissingEmployee)
+    createMissingEmployee: wrap(createMissingEmployee),
+    changeUsername: wrap(changeUsername)
     // updateAccount: wrap(updateAccount)
   }
 }

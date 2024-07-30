@@ -55,7 +55,7 @@
     notification.class.DocNotifyContext,
     {
       ...model.query,
-      hidden: false,
+      [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
       user: getCurrentAccount()._id
     },
     (res: DocNotifyContext[]) => {
@@ -87,7 +87,7 @@
       const ids = ctx.map(({ attachedTo }) => attachedTo)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
-        limit: model.maxSectionItems ?? 5
+        limit: hierarchy.isDerived(_class, chunter.class.ChunterSpace) ? -1 : model.maxSectionItems ?? 5
       }
 
       objectsQueryByClass.set(_class, { query, limit: limit ?? model.maxSectionItems ?? 5 })

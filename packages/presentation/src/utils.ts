@@ -534,17 +534,17 @@ export async function getBlobURL (blob: Blob): Promise<string> {
 /**
  * @public
  */
-export async function copyTextToClipboard (text: string): Promise<void> {
+export async function copyTextToClipboard (text: string | Promise<string>): Promise<void> {
   try {
     // Safari specific behavior
     // see https://bugs.webkit.org/show_bug.cgi?id=222262
     const clipboardItem = new ClipboardItem({
-      'text/plain': Promise.resolve(text)
+      'text/plain': text instanceof Promise ? text : Promise.resolve(text)
     })
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    await navigator.clipboard.writeText(text)
+    await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
   }
 }
 

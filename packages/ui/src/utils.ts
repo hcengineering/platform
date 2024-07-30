@@ -15,11 +15,12 @@
 
 import { generateId } from '@hcengineering/core'
 import type { IntlString, Metadata } from '@hcengineering/platform'
-import { setMetadata } from '@hcengineering/platform'
+import { setMetadata, translate } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
 import { NotificationPosition, NotificationSeverity, notificationsStore, type Notification } from '.'
 import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
+import ui, { DAY, HOUR, MINUTE } from '..'
 
 /**
  * @public
@@ -297,3 +298,23 @@ export class ThrottledCaller {
 export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'
 
 export const rootBarExtensions = writable<Array<['left' | 'right', AnyComponent]>>([])
+
+export async function formatDuration (duration: number, language: string): Promise<string> {
+  let text = ''
+  const days = Math.floor(duration / DAY)
+  if (days > 0) {
+    text += await translate(ui.string.DaysShort, { value: days }, language)
+  }
+  const hours = Math.floor((duration % DAY) / HOUR)
+  if (hours > 0) {
+    text += ' '
+    text += await translate(ui.string.HoursShort, { value: hours }, language)
+  }
+  const minutes = Math.floor((duration % HOUR) / MINUTE)
+  if (minutes > 0) {
+    text += ' '
+    text += await translate(ui.string.MinutesShort, { value: minutes }, language)
+  }
+  text = text.trim()
+  return text
+}

@@ -3,10 +3,10 @@ import { NewMilestone } from './types'
 import { CommonTrackerPage } from './common-tracker-page'
 
 export class MilestonesPage extends CommonTrackerPage {
-  modelSelectorAll = (): Locator => this.page.locator('div[data-id="tab-all"]')
-  modelSelectorPlanned = (): Locator => this.page.locator('div[data-id="tab-planned"]')
-  modelSelectorActive = (): Locator => this.page.locator('div[data-id="tab-active"]')
-  buttonCreateNewMilestone = (): Locator => this.page.locator('div.ac-header-full button[type="submit"]')
+  modelSelectorAll = (): Locator => this.page.locator('label[data-id="tab-all"]')
+  modelSelectorPlanned = (): Locator => this.page.locator('label[data-id="tab-planned"]')
+  modelSelectorActive = (): Locator => this.page.locator('label[data-id="tab-active"]')
+  buttonCreateNewMilestone = (): Locator => this.page.getByRole('button', { name: 'Milestone', exact: true })
   inputNewMilestoneName = (): Locator =>
     this.page.locator('form[id="tracker:string:NewMilestone"] input[placeholder="Milestone name"]')
 

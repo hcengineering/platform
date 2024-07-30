@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   mongodb:
     image: 'mongo:7-jammy'
@@ -48,42 +47,21 @@ services:
       - minio
     ports:
       - 3000:3000
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
     environment:
-      - SERVER_PORT=3000
+      - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
       - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
+      - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://front:8080
-      - INIT_WORKSPACE=demo-tracker
+      - FRONT_URL=http://localhost:8087
+      - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
+      - LAST_NAME_FIRST=true
       - ACCOUNTS_URL=http://localhost:3000
-    restart: unless-stopped
-  front:
-    image: hardcoreeng/front
-    links:
-      - mongodb
-      - minio
-      - elastic
-      - collaborator
-      - transactor
-    ports:
-      - 8087:8080
-    environment:
-      - SERVER_PORT=8080
-      - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017
-      - ACCOUNTS_URL=http://localhost:3000
-      - REKONI_URL=http://localhost:4004
-      - CALENDAR_URL=http://localhost:8095
-      - GMAIL_URL=http://localhost:8088
-      - TELEGRAM_URL=http://localhost:8086
-      - UPLOAD_URL=/files
-      - ELASTIC_URL=http://elastic:9200
-      - COLLABORATOR_URL=ws://localhost:3078
-      - COLLABORATOR_API_URL=http://localhost:3078
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - BRANDING_URL=http://localhost:8087/branding.json
+      - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
@@ -98,26 +76,43 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3000
       - UPLOAD_URL=/files
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
-  # tracker-front:
-  #   image: hardcoreeng/tracker-front
-  #   links:
-  #     - mongodb
-  #     - minio
-  #     - elastic
-  #     - transactor
-  #   ports:
-  #     - 8084:8080
-  #   environment:
-  #     - SERVER_PORT=8080
-  #     - SERVER_SECRET=secret
-  #     - ACCOUNTS_URL=http://localhost:3000
-  #     - FRONT_URL=http://localhost:8084
-  #     - UPLOAD_URL=/files
-  #     - ELASTIC_URL=http://elastic:9200
-  #     - STORAGE_CONFIG=${STORAGE_CONFIG}
+  front:
+    image: hardcoreeng/front
+    links:
+      - mongodb
+      - minio
+      - elastic
+      - transactor
+      - collaborator
+    ports:
+      - 8087:8080
+      - 8088:8080
+    environment:
+      - UV_THREADPOOL_SIZE=10
+      - SERVER_PORT=8080
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - ACCOUNTS_URL=http://localhost:3000
+      - UPLOAD_URL=/files      
+      - ELASTIC_URL=http://elastic:9200
+      - GMAIL_URL=http://localhost:8088
+      - CALENDAR_URL=http://localhost:8095
+      - TELEGRAM_URL=http://localhost:8086
+      - REKONI_URL=http://localhost:4004
+      - COLLABORATOR_URL=ws://localhost:3078
+      - COLLABORATOR_API_URL=http://localhost:3078
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - GITHUB_URL=http://localhost:3500
+      - PRINT_URL=http://localhost:4005
+      - SIGN_URL=http://localhost:4006
+      - ANALYTICS_COLLECTOR_URL=http://localhost:4077
+      - DESKTOP_UPDATES_URL=https://dist.huly.io
+      - DESKTOP_UPDATES_CHANNEL=dev
+      - BRANDING_URL=http://localhost:8087/branding.json
+    restart: unless-stopped    
   transactor:
     image: hardcoreeng/transactor
     links:
@@ -129,12 +124,17 @@ services:
       # - apm-server
     ports:
       - 3333:3333
+    volumes:
+      - ./branding.json:/var/cfg/branding.json      
     environment:
+      # - SERVER_PROVIDER=uweb
+      # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
+      - UV_THREADPOOL_SIZE=10    
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
-      - SERVER_CURSOR_MAXTIMEMS=30000
+      - ENABLE_COMPRESSION=true
       - ELASTIC_URL=http://elastic:9200
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -142,34 +142,73 @@ services:
       - FRONT_URL=http://localhost:8087
       - UPLOAD_URL=http://localhost:8087/files
       # - APM_SERVER_URL=http://apm-server:8200
-      - SERVER_PROVIDER=ws
+      - SES_URL=''
       - ACCOUNTS_URL=http://account:3000
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
+      - BRANDING_PATH=/var/cfg/branding.json      
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service
+    restart: unless-stopped
     ports:
       - 4004:4004
     deploy:
       resources:
         limits:
-          memory: 500M
+          memory: 1024M
+  print:
+    image: hardcoreeng/print
     restart: unless-stopped
-  # etcd:
-  #   container_name: milvus-etcd
-  #   image: quay.io/coreos/etcd:v3.5.0
-  #   environment:
-  #     - ETCD_AUTO_COMPACTION_MODE=revision
-  #     - ETCD_AUTO_COMPACTION_RETENTION=1000
-  #     - ETCD_QUOTA_BACKEND_BYTES=4294967296
-  #     - ETCD_SNAPSHOT_COUNT=50000
-  #   volumes:
-  #     - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
-  #   command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
-  #   restart: unless-stopped
+    ports:
+      - 4005:4005
+    environment:
+      - SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+  sign:
+    image: hardcoreeng/sign
+    restart: unless-stopped
+    ports:
+      - 4006:4006
+    volumes:
+      - ../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
+      - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
+    environment:
+      - SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - ACCOUNTS_URL=http://account:3000
+      - MINIO_SECRET_KEY=minioadmin
+      - CERTIFICATE_PATH=/var/cfg/certificate.p12
+      - SERVICE_ID=sign-service      
+      - BRANDING_PATH=/var/cfg/branding.json
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+  analytics:
+    image: hardcoreeng/analytics-collector
+    restart: unless-stopped
+    ports:
+      - 4077:4007
+    environment:
+      - SECRET=secret
+      - PORT=4007
+      - MONGO_URL=mongodb://mongodb:27017
+      - SERVICE_ID=analytics-collector-service
+      - ACCOUNTS_URL=http://account:3000
+      - SUPPORT_WORKSPACE=support
+    deploy:
+      resources:
+        limits:
+          memory: 300M          
 volumes:
   db:
   files:
   elastic:
-  etcd:

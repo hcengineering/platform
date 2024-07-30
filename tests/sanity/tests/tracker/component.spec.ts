@@ -32,6 +32,7 @@ test.describe('Tracker component tests', () => {
     await commonTrackerPage.navigateToComponents(PlatformURI)
     const componentName = 'component-' + generateId()
     await commonTrackerPage.createComponent(componentName)
+    await page.locator('#btnPClose').click()
     await fillSearch(page, componentName)
     await commonTrackerPage.createIssueForComponent(componentName)
   })

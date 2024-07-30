@@ -265,7 +265,8 @@ export const contactPlugin = plugin(contactId, {
     Whatsapp: '' as Asset,
     ComponentMembers: '' as Asset,
     Profile: '' as Asset,
-    KickUser: '' as Asset
+    KickUser: '' as Asset,
+    Contacts: '' as Asset
   },
   space: {
     Contacts: '' as Ref<Space>

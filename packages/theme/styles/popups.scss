@@ -194,7 +194,6 @@
     height: max-content;
     overflow-x: hidden;
     overflow-y: auto;
-    scrollbar-width: thin;
 
     &::-webkit-scrollbar { width: 0; }
     .box {
@@ -223,16 +222,15 @@
       margin-right: .5rem;
     }
     .icon,
-    .check {
+    div.check {
       width: 1rem;
       height: 1rem;
       color: var(--theme-dark-color);
     }
-    .check {
+    div.check {
       flex-shrink: 0;
-      margin-left: .5rem;
 
-      &.ml-3 { margin-left: .75rem; }
+      &:not(.ml-0) { margin-left: .5rem; }
     }
     .color {
       width: .875rem;
