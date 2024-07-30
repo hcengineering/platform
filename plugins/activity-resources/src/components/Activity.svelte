@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, isSpace } from '@hcengineering/presentation'
   import { Grid, Label, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
@@ -168,7 +168,7 @@
 
     const res = activityMessagesQuery.query(
       activity.class.ActivityMessage,
-      { attachedTo: objectId },
+      { attachedTo: objectId, space: isSpace(object) ? object._id : object.space },
       (result: ActivityMessage[]) => {
         void combineActivityMessages(result, order).then((messages) => {
           activityMessages = messages

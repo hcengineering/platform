@@ -170,7 +170,7 @@ export async function getCommonNotificationTxes (
 
 async function getTextPart (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const TextPresenter = getTextPresenter(doc._class, control.hierarchy)
-  console.log({ _class: doc._class, presenter: TextPresenter })
+
   if (TextPresenter === undefined) return
   return await (
     await getResource(TextPresenter.presenter)

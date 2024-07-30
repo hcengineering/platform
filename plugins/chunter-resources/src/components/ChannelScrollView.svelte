@@ -726,7 +726,7 @@
       onScroll={handleScroll}
       onResize={handleResize}
     >
-      {#if loadMoreAllowed}
+      {#if loadMoreAllowed && !embedded}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
       <slot name="header" />

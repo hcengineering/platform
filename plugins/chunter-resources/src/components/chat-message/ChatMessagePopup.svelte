@@ -25,6 +25,7 @@
 
   import ChatMessageInput from './ChatMessageInput.svelte'
   import ChatMessagePresenter from './ChatMessagePresenter.svelte'
+  import { getChannelSpace } from '../../utils'
 
   export let objectId: Ref<Doc>
   export let object: Doc
@@ -40,7 +41,7 @@
   $: localStorage.setItem('activity-newest-first', JSON.stringify(activityOrderNewestFirst))
   $: query.query(
     chunter.class.ChatMessage,
-    { attachedTo: objectId },
+    { attachedTo: objectId, space: getChannelSpace(object._class, object._id, object.space) },
     (res) => {
       messages = res.sort((message) => (message?.isPinned ? -1 : 1))
       loading = false
