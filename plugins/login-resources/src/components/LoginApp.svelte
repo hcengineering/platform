@@ -51,7 +51,6 @@
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
   import login from '../plugin'
-  import OnboardForm from './OnboardForm.svelte'
 
   export let page: Pages = 'signup'
 
@@ -138,8 +137,6 @@
             <LoginForm {navigateUrl} />
           {:else if page === 'signup'}
             <SignupForm />
-          {:else if page === 'onboard'}
-            <OnboardForm />
           {:else if page === 'createWorkspace'}
             <CreateWorkspaceForm />
           {:else if page === 'password'}

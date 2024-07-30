@@ -28,6 +28,7 @@ import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
 import notification, { notificationId } from '@hcengineering/notification'
+import onboard, { onboardId } from '@hcengineering/onboard'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
@@ -143,6 +144,7 @@ function configureI18n (): void {
     notificationId,
     async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`)
   )
+  addStringsLoader(onboardId, async (lang: string) => await import(`@hcengineering/onboard-assets/lang/${lang}.json`))
   addStringsLoader(
     preferenceId,
     async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`)
@@ -240,6 +242,7 @@ export async function configurePlatform (): Promise<void> {
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
       [loginId, login.component.LoginApp],
+      [onboardId, onboard.component.OnboardApp],
       [calendarId, calendar.component.ConnectApp],
       [guestId, guest.component.GuestApp]
     ])
@@ -250,6 +253,7 @@ export async function configurePlatform (): Promise<void> {
 
   addLocation(clientId, async () => await import('@hcengineering/client-resources'))
   addLocation(loginId, async () => await import('@hcengineering/login-resources'))
+  addLocation(onboardId, async () => await import('@hcengineering/onboard-resources'))
   addLocation(workbenchId, async () => await import('@hcengineering/workbench-resources'))
   addLocation(viewId, async () => await import('@hcengineering/view-resources'))
   addLocation(taskId, async () => await import('@hcengineering/task-resources'))

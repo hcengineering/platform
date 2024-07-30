@@ -32,6 +32,7 @@ import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
 import notification, { notificationId } from '@hcengineering/notification'
+import onboard, { onboardId } from '@hcengineering/onboard'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
@@ -192,6 +193,7 @@ function configureI18n(): void {
    addStringsLoader(leadId, async (lang: string) => await import(`@hcengineering/lead-assets/lang/${lang}.json`))
    addStringsLoader(loginId, async (lang: string) => await import(`@hcengineering/login-assets/lang/${lang}.json`))
    addStringsLoader(notificationId, async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`))
+   addStringsLoader(onboardId, async (lang: string) => await import(`@hcengineering/onboard-assets/lang/${lang}.json`))
    addStringsLoader(preferenceId, async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`))
    addStringsLoader(recruitId, async (lang: string) => await import(`@hcengineering/recruit-assets/lang/${lang}.json`))
    addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
@@ -326,6 +328,7 @@ export async function configurePlatform() {
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
       [loginId, login.component.LoginApp],
+      [onboardId, onboard.component.OnboardApp],
       [githubId, github.component.ConnectApp],
       [calendarId, calendar.component.ConnectApp],
       [guestId, guest.component.GuestApp]
@@ -337,6 +340,7 @@ export async function configurePlatform() {
 
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@hcengineering/login-resources'))
+  addLocation(onboardId, () => import(/* webpackChunkName: "onboard" */ '@hcengineering/onboard-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@hcengineering/workbench-resources'))
   addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@hcengineering/view-resources'))
   addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@hcengineering/task-resources'))

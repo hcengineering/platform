@@ -18,6 +18,7 @@ import { leadId } from '@hcengineering/lead'
 import { loginId } from '@hcengineering/login'
 import { loveId } from '@hcengineering/love'
 import { notificationId } from '@hcengineering/notification'
+import { onboardId } from '@hcengineering/onboard'
 import { preferenceId } from '@hcengineering/preference'
 import { productsId } from '@hcengineering/products'
 import { recruitId } from '@hcengineering/recruit'
@@ -52,6 +53,7 @@ import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
 import leadEn from '@hcengineering/lead-assets/lang/en.json'
 import loveEn from '@hcengineering/love-assets/lang/en.json'
 import notificationEn from '@hcengineering/notification-assets/lang/en.json'
+import onboardEn from '@hcengineering/onboard-assets/lang/en.json'
 import preferenceEn from '@hcengineering/preference-assets/lang/en.json'
 import productsEn from '@hcengineering/products-assets/lang/en.json'
 import recruitEn from '@hcengineering/recruit-assets/lang/en.json'
@@ -70,6 +72,7 @@ import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
 export function registerStringLoaders (): void {
   addStringsLoader(coreId, async (lang: string) => coreEng)
   addStringsLoader(loginId, async (lang: string) => loginEng)
+  addStringsLoader(onboardId, async (lang: string) => onboardEn)
   addStringsLoader(platformId, async (lang: string) => platformEng)
 
   addStringsLoader(taskId, async (lang: string) => taskEn)
