@@ -42,6 +42,20 @@
     "ConfirmationSent": "已发送确认邮件到您的邮箱，包含一个确认地址的链接。",
     "ConfirmationSent2": "请点击链接完成注册。",
     "Slogan": "一个独特的地方来管理你所有的工作\n欢迎来到平台",
-    "ContinueWith": "继续使用 {provider}"
+    "ContinueWith": "继续使用 {provider}",
+    "HaventReceivedCode": "没有收到验证码？",
+    "ResendCode": "重新发送验证码",
+    "WrongEmail": "错误的电子邮件？",
+    "ChangeEmail": "更改电子邮件",
+    "SentTo": "我们已发送验证码到 ",
+    "CanFindCode": "找不到验证码？请检查您的垃圾邮件文件夹。",
+    "LoginWithPassword": "使用密码登录",
+    "LoginWithCode": "使用代码登录",
+    "FillInProfile": "填写您的个人资料",
+    "SetUpPassword": "设置您的密码",
+    "Next": "下一个",
+    "Skip": "跳过",
+    "SignUpCompleted": "注册完成",
+    "StartUsingHuly": "开始使用 Huly"
   }
 }

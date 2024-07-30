@@ -61,16 +61,33 @@ export const pages = [
   'join',
   'confirm',
   'confirmationSend',
-  'auth'
+  'auth',
+  'login-password',
+  'onboard'
 ] as const
 
+export enum OnboardSteps {
+  Workspace = 'workspace',
+  User = 'user',
+  Finish = 'finish'
+}
+
+export enum OtpLoginSteps {
+  Email = 'email',
+  Otp = 'otp'
+}
+
+export enum LoginMethods {
+  Password = 'password',
+  Otp = 'otp'
+}
 export type Pages = (typeof pages)[number]
 
 export interface BottomAction {
   i18n: IntlString
   page?: Pages
   func: () => void
-  caption: IntlString
+  caption?: IntlString
 }
 
 export * from './utils'

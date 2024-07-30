@@ -48,7 +48,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./branding.json:/var/cfg/branding.json      
+      - ./branding.json:/var/cfg/branding.json
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
@@ -56,12 +56,12 @@ services:
       - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://front:8080
+      - FRONT_URL=http://localhost:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
       - ACCOUNTS_URL=http://localhost:3000
-      - BRANDING_PATH=/var/cfg/branding.json      
+      - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator

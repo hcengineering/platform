@@ -5,6 +5,7 @@ import session from 'koa-session'
 import { Db } from 'mongodb'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
+import { registerToken } from './token'
 import { BrandingMap, MeasureContext } from '@hcengineering/core'
 
 export type Passport = typeof passport
@@ -58,6 +59,8 @@ export function registerProviders (
       cb(null, user)
     })
   })
+
+  registerToken(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
 
   const res: string[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub]

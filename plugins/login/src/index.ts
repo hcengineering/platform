@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole, Doc, Ref } from '@hcengineering/core'
+import { AccountRole, Doc, Ref, Timestamp } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -54,6 +54,11 @@ export interface LoginInfo {
   endpoint: string
   confirmed: boolean
   email: string
+}
+
+export interface OtpInfo {
+  sent: boolean
+  retryOn: Timestamp
 }
 
 export default plugin(loginId, {

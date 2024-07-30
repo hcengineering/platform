@@ -7,6 +7,7 @@ export class LoginPage {
   readonly inputPassword: Locator
   readonly buttonLogin: Locator
   readonly buttonSignUp: Locator
+  readonly loginWithPassword: Locator
 
   constructor (page: Page) {
     this.page = page
@@ -14,6 +15,7 @@ export class LoginPage {
     this.inputPassword = page.locator('input[name=current-password]')
     this.buttonLogin = page.locator('button', { hasText: 'Log In' })
     this.buttonSignUp = page.locator('a.title', { hasText: 'Sign Up' })
+    this.loginWithPassword = page.locator('a', { hasText: 'Login with password' })
   }
 
   async goto (): Promise<void> {
