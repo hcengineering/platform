@@ -203,10 +203,6 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
   @Index(IndexKind.Indexed)
     attachedToClass!: Ref<Class<Doc>>
 
-  @Prop(TypeBoolean(), core.string.Archived)
-  @Index(IndexKind.Indexed)
-    hidden!: boolean
-
   @Prop(TypeDate(), core.string.Date)
     lastViewedTimestamp?: Timestamp
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import {
   generateId,
   type Ref,
@@ -353,8 +353,8 @@ function getActivityActions (contexts: DocNotifyContext[]): Action[] {
       }
     },
     {
-      icon: view.icon.CheckCircle,
-      label: notification.string.ArchiveAll,
+      icon: view.icon.EyeCrossed,
+      label: view.string.Hide,
       action: async () => {
         archiveActivityChannels(contexts)
       }
@@ -400,18 +400,18 @@ export function loadSavedAttachments (): void {
 }
 
 export async function removeActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const client = InboxNotificationsClientImpl.getClient()
-  const notificationsByContext = get(client.inboxNotificationsByContext)
   const ops = getClient().apply(generateId(), 'removeActivityChannels')
 
   try {
     for (const context of contexts) {
-      const notifications = notificationsByContext.get(context._id) ?? []
-      await client.archiveNotifications(
-        ops,
-        notifications.map(({ _id }: InboxNotification) => _id)
-      )
-      await ops.remove(context)
+      await ops.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
+    }
+    const hidden = contexts.map(({ _id }) => _id)
+    const account = getCurrentAccount() as PersonAccount
+    const chatInfo = await ops.findOne(chunter.class.ChatInfo, { user: account.person })
+
+    if (chatInfo !== undefined) {
+      await ops.update(chatInfo, { hidden: chatInfo.hidden.concat(hidden) })
     }
   } finally {
     await ops.commit()

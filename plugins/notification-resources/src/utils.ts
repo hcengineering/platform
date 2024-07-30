@@ -87,16 +87,10 @@ export function loadNotificationSettings (): void {
 loadNotificationSettings()
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  if (docNotifyContext.hidden) {
-    return false
-  }
   return docNotifyContext.isPinned !== true
 }
 
 export async function hasDocNotifyContextUnpinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  if (docNotifyContext.hidden) {
-    return false
-  }
   return docNotifyContext.isPinned === true
 }
 

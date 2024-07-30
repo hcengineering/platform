@@ -91,7 +91,7 @@
   ): boolean {
     const context = notifyContextByDoc.get(space._id)
 
-    if (context === undefined || context.hidden) {
+    if (context === undefined) {
       return false
     }
 

@@ -128,6 +128,7 @@
   {count}
   title={item.title}
   description={item.description}
+  secondaryNotifyMarker={(context?.lastViewedTimestamp ?? 0) < (context?.lastUpdateTimestamp ?? 0)}
   {actions}
   {type}
   on:click={() => {

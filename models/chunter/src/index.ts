@@ -22,10 +22,12 @@ import {
   type ChatMessageViewlet,
   type ChunterSpace,
   type ObjectChatPanel,
-  type ThreadMessage
+  type ThreadMessage,
+  type ChatInfo,
+  type ChannelInfo
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
-import contact from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import {
   type Class,
   type Doc,
@@ -46,17 +48,20 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
-  UX
+  UX,
+  Hidden
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
-import notification, { notificationActionTemplates } from '@hcengineering/model-notification'
-import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import notification, { TDocNotifyContext } from '@hcengineering/model-notification'
+import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import type { IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
+import { type DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
+import { defineActions } from './actions'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
@@ -133,18 +138,18 @@ export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
 }
 
-const actionTemplates = template({
-  removeChannel: {
-    action: chunter.actionImpl.RemoveChannel,
-    label: view.string.Archive,
-    icon: view.icon.Delete,
-    input: 'focus',
-    keyBinding: ['Backspace'],
-    category: chunter.category.Chunter,
-    target: notification.class.DocNotifyContext,
-    context: { mode: ['context', 'browser'], group: 'remove' }
-  }
-})
+@Mixin(chunter.mixin.ChannelInfo, notification.class.DocNotifyContext)
+export class TChannelInfo extends TDocNotifyContext implements ChannelInfo {
+  @Hidden()
+    hidden!: boolean
+}
+
+@Model(chunter.class.ChatInfo, core.class.Doc, DOMAIN_CHUNTER)
+export class TChatInfo extends TDoc implements ChatInfo {
+  user!: Ref<Person>
+  hidden!: Ref<DocNotifyContext>[]
+  timestamp!: Timestamp
+}
 
 export function createModel (builder: Builder): void {
   builder.createModel(
@@ -154,7 +159,9 @@ export function createModel (builder: Builder): void {
     TChatMessage,
     TThreadMessage,
     TChatMessageViewlet,
-    TObjectChatPanel
+    TObjectChatPanel,
+    TChatInfo,
+    TChannelInfo
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 
@@ -236,26 +243,6 @@ export function createModel (builder: Builder): void {
     chunter.category.Chunter
   )
 
-  createAction(
-    builder,
-    {
-      action: chunter.actionImpl.ArchiveChannel,
-      label: chunter.string.ArchiveChannel,
-      icon: view.icon.Archive,
-      input: 'focus',
-      category: chunter.category.Chunter,
-      target: chunter.class.Channel,
-      query: {
-        archived: false
-      },
-      context: {
-        mode: 'context',
-        group: 'tools'
-      }
-    },
-    chunter.action.ArchiveChannel
-  )
-
   builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
@@ -269,43 +256,6 @@ export function createModel (builder: Builder): void {
       props: { enableChecking: false }
     },
     chunter.viewlet.Channels
-  )
-
-  createAction(
-    builder,
-    {
-      action: chunter.actionImpl.UnarchiveChannel,
-      label: chunter.string.UnarchiveChannel,
-      icon: view.icon.Archive,
-      input: 'focus',
-      category: chunter.category.Chunter,
-      target: chunter.class.Channel,
-      query: {
-        archived: true
-      },
-      context: {
-        mode: 'context',
-        group: 'tools'
-      }
-    },
-    chunter.action.UnarchiveChannel
-  )
-
-  createAction(
-    builder,
-    {
-      action: chunter.actionImpl.ConvertDmToPrivateChannel,
-      label: chunter.string.ConvertToPrivate,
-      icon: chunter.icon.Lock,
-      input: 'focus',
-      category: chunter.category.Chunter,
-      target: chunter.class.DirectMessage,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    chunter.action.ConvertToPrivate
   )
 
   builder.createDoc(
@@ -329,28 +279,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.LinkProvider, {
     encode: chunter.function.GetThreadLink
   })
-
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: chunter.function.GetLink
-      },
-      label: chunter.string.CopyLink,
-      icon: chunter.icon.Copy,
-      input: 'none',
-      category: chunter.category.Chunter,
-      target: activity.class.ActivityMessage,
-      visibilityTester: chunter.function.CanCopyMessageLink,
-      context: {
-        mode: ['context', 'browser'],
-        application: chunter.app.Chunter,
-        group: 'copy'
-      }
-    },
-    chunter.action.CopyChatMessageLink
-  )
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: []
@@ -428,19 +356,6 @@ export function createModel (builder: Builder): void {
     chunter.ids.ThreadNotification
   )
 
-  createAction(builder, {
-    ...viewTemplates.open,
-    target: chunter.class.Channel,
-    context: {
-      mode: ['browser', 'context'],
-      group: 'create'
-    },
-    action: workbench.actionImpl.Navigate,
-    actionProps: {
-      mode: 'space'
-    }
-  })
-
   builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: chunter.string.Comments,
     position: 60,
@@ -477,105 +392,6 @@ export function createModel (builder: Builder): void {
     },
     chunter.ids.ThreadMessageViewlet
   )
-
-  createAction(
-    builder,
-    {
-      action: chunter.actionImpl.DeleteChatMessage,
-      label: view.string.Delete,
-      icon: view.icon.Delete,
-      input: 'focus',
-      keyBinding: ['Backspace'],
-      category: chunter.category.Chunter,
-      target: chunter.class.ChatMessage,
-      visibilityTester: chunter.function.CanDeleteMessage,
-      context: { mode: ['context', 'browser'], group: 'remove' }
-    },
-    chunter.action.DeleteChatMessage
-  )
-
-  createAction(
-    builder,
-    {
-      ...actionTemplates.removeChannel,
-      query: {
-        attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
-      }
-    },
-    chunter.action.RemoveChannel
-  )
-
-  createAction(
-    builder,
-    {
-      ...actionTemplates.removeChannel,
-      label: chunter.string.CloseConversation,
-      query: {
-        attachedToClass: chunter.class.DirectMessage
-      }
-    },
-    chunter.action.CloseConversation
-  )
-
-  createAction(
-    builder,
-    {
-      ...actionTemplates.removeChannel,
-      action: chunter.actionImpl.LeaveChannel,
-      label: chunter.string.LeaveChannel,
-      query: {
-        attachedToClass: chunter.class.Channel
-      }
-    },
-    chunter.action.LeaveChannel
-  )
-
-  createAction(builder, {
-    ...notificationActionTemplates.pinContext,
-    label: chunter.string.StarChannel,
-    query: {
-      attachedToClass: chunter.class.Channel
-    },
-    override: [notification.action.PinDocNotifyContext]
-  })
-
-  createAction(builder, {
-    ...notificationActionTemplates.unpinContext,
-    label: chunter.string.UnstarChannel,
-    query: {
-      attachedToClass: chunter.class.Channel
-    }
-  })
-
-  createAction(builder, {
-    ...notificationActionTemplates.pinContext,
-    label: chunter.string.StarConversation,
-    query: {
-      attachedToClass: chunter.class.DirectMessage
-    }
-  })
-
-  createAction(builder, {
-    ...notificationActionTemplates.unpinContext,
-    label: chunter.string.UnstarConversation,
-    query: {
-      attachedToClass: chunter.class.DirectMessage
-    }
-  })
-
-  createAction(builder, {
-    ...notificationActionTemplates.pinContext,
-    query: {
-      attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
-    }
-  })
-
-  createAction(builder, {
-    ...notificationActionTemplates.unpinContext,
-    query: {
-      attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
-    }
-  })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: chunter.class.Channel,
@@ -627,25 +443,6 @@ export function createModel (builder: Builder): void {
     function: chunter.function.ReplyToThread
   })
 
-  createAction(
-    builder,
-    {
-      action: chunter.actionImpl.ReplyToThread,
-      label: chunter.string.ReplyToThread,
-      icon: chunter.icon.Thread,
-      input: 'focus',
-      category: chunter.category.Chunter,
-      target: activity.class.ActivityMessage,
-      visibilityTester: chunter.function.CanReplyToThread,
-      inline: true,
-      context: {
-        mode: 'context',
-        group: 'edit'
-      }
-    },
-    chunter.action.ReplyToThreadAction
-  )
-
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: ['name', 'topic', 'private', 'archived', 'members'],
     strict: true
@@ -662,6 +459,8 @@ export function createModel (builder: Builder): void {
     ignoredTypes: [],
     enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
   })
+
+  defineActions(builder)
 }
 
 export default chunter
