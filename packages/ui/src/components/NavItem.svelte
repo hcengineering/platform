@@ -148,7 +148,7 @@
   {/if}
   {#if count !== null}
     <span class="hulyNavItem-count font-regular-12">
-      {count}
+      {count > 99 ? '99+' : count}
     </span>
   {/if}
   <slot name="notify" />

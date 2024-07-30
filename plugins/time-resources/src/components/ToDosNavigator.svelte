@@ -95,7 +95,7 @@
     },
     {
       total: true,
-      limit: 1
+      limit: 100
     }
   )
 
