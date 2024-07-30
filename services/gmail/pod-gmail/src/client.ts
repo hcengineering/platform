@@ -19,5 +19,6 @@ import { createClient, getTransactorEndpoint } from '@hcengineering/server-clien
 
 export async function getClient (token: string): Promise<Client> {
   const endpoint = await getTransactorEndpoint(token)
-  return await createClient(token, endpoint)
+  console.log('connecting to', endpoint)
+  return await createClient(endpoint, token)
 }

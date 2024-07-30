@@ -28,12 +28,12 @@ import core, {
   type TxUpdateDoc
 } from '@hcengineering/core'
 import gmailP, { type NewMessage } from '@hcengineering/gmail'
+import { generateToken } from '@hcengineering/server-token'
 import { type Db } from 'mongodb'
 import { getClient } from './client'
 import config from './config'
 import { GmailClient } from './gmail'
-import { encode } from './jwt'
-import { type ProjectCredentials, type User, type Channel } from './types'
+import { type Channel, type ProjectCredentials, type User } from './types'
 
 export class WorkspaceClient {
   private messageSubscribed: boolean = false
@@ -106,10 +106,8 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = encode({
-      email: config.SystemEmail,
-      workspace
-    })
+    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
+    console.log('token', token, workspace)
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {
       void this.txHandler(...tx)
