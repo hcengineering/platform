@@ -50,7 +50,6 @@
   export let withFilters: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'default'
-  export let hideBefore: boolean = false
   export let hideActions: boolean = false
 
   const client = getClient()
@@ -63,7 +62,7 @@
 <Header
   {allowFullsize}
   type={allowClose ? 'type-aside' : 'type-component'}
-  hideBefore={$$slots.default === undefined || hideBefore}
+  hideBefore={false}
   hideActions={!((canOpen && object) || withAside || $$slots.actions) || hideActions}
   hideDescription={!description}
   adaptive={adaptive !== 'default' ? adaptive : withFilters ? 'freezeActions' : 'disabled'}

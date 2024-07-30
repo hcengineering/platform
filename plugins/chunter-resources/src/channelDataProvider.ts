@@ -22,6 +22,7 @@ import {
   isOtherDay,
   type Ref,
   SortingOrder,
+  type Space,
   type Timestamp
 } from '@hcengineering/core'
 
@@ -71,7 +72,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly tailQuery = createQuery(true)
 
   private chatId: Ref<Doc> | undefined = undefined
-  private readonly context: DocNotifyContext | undefined = undefined
   private readonly msgClass: Ref<Class<ActivityMessage>>
   private selectedMsgId: Ref<ActivityMessage> | undefined = undefined
   private tailStart: Timestamp | undefined = undefined
@@ -118,14 +118,14 @@ export class ChannelDataProvider implements IChannelDataProvider {
   })
 
   constructor (
+    readonly context: DocNotifyContext | undefined,
+    readonly space: Ref<Space>,
     chatId: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
-    context: DocNotifyContext | undefined,
-    selectedMsgId?: Ref<ActivityMessage>,
+    selectedMsgId: Ref<ActivityMessage> | undefined,
     loadAll = false
   ) {
     this.chatId = chatId
-    this.context = context
     this.msgClass = _class
     this.selectedMsgId = selectedMsgId
     void this.loadData(loadAll)
@@ -175,14 +175,14 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     this.metadataQuery.query(
       this.msgClass,
-      { attachedTo: this.chatId },
+      { attachedTo: this.chatId, space: this.space },
       (res) => {
         this.updatesDates(res)
         this.metadataStore.set(res)
         void this.loadInitialMessages(undefined, loadAll)
       },
       {
-        projection: { _id: 1, _class: 1, createdOn: 1, createdBy: 1, attachedTo: 1, modifiedOn: 1 },
+        projection: { _id: 1, _class: 1, space: 1, createdOn: 1, createdBy: 1, attachedTo: 1, modifiedOn: 1 },
         sort: { createdOn: SortingOrder.Ascending }
       }
     )
@@ -255,6 +255,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.msgClass,
       {
         attachedTo: this.chatId,
+        space: this.space,
         ...query,
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
@@ -304,6 +305,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       chunter.class.ChatMessage,
       {
         attachedTo: this.chatId,
+        space: this.space,
         _id: { $nin: skipIds },
         createdOn: isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
       },
@@ -495,6 +497,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
         _class: {
           $in: [notification.class.MentionInboxNotification, notification.class.ActivityInboxNotification]
         },
+        space: this.context.space,
         docNotifyContext: this.context._id,
         isViewed: false
       },

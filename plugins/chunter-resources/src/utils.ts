@@ -22,7 +22,7 @@ import activity, {
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import { PersonIcon, employeeByIdStore } from '@hcengineering/contact-resources'
-import {
+import core, {
   generateId,
   getCurrentAccount,
   type Account,
@@ -526,4 +526,8 @@ export async function removeChannelAction (
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {
   return message._class === chunter.class.ThreadMessage
+}
+
+export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: Ref<Space>): Ref<Space> {
+  return getClient().getHierarchy().isDerived(_class, core.class.Space) ? (_id as Ref<Space>) : space
 }

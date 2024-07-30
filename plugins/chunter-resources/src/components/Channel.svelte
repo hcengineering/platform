@@ -16,7 +16,7 @@
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
 
@@ -79,7 +79,8 @@
           user: getCurrentAccount()._id
         }))
 
-      dataProvider = new ChannelDataProvider(attachedTo, _class, ctx, selectedMessageId, loadAll)
+      const space = isSpace(object) ? object._id : object.space
+      dataProvider = new ChannelDataProvider(ctx, space, attachedTo, _class, selectedMessageId, loadAll)
     }
   }
 </script>

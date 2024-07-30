@@ -17,11 +17,12 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
-  import { PersonAccount } from '@hcengineering/contact'
-  import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
+  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
+
+  import { getChannelSpace } from '../../utils'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
@@ -42,7 +43,6 @@
     ? chunter.class.ThreadMessage
     : chunter.class.ChatMessage
   const createdMessageQuery = createQuery()
-  const account = getCurrentAccount() as PersonAccount
 
   const draftKey = `${object._id}_${_class}`
   const draftController = new DraftController<MessageDraft>(draftKey)
@@ -59,12 +59,16 @@
   let inputContent = currentMessage.message
 
   $: if (currentDraft != null) {
-    createdMessageQuery.query(_class, { _id }, (result: ChatMessage[]) => {
-      if (result.length > 0 && _id !== chatMessage?._id) {
-        // Ouch we have got comment with same id created already.
-        clear()
+    createdMessageQuery.query(
+      _class,
+      { _id, space: getChannelSpace(object._class, object._id, object.space) },
+      (result: ChatMessage[]) => {
+        if (result.length > 0 && _id !== chatMessage?._id) {
+          // Ouch we have got comment with same id created already.
+          clear()
+        }
       }
-    })
+    )
   } else {
     createdMessageQuery.unsubscribe()
   }
@@ -188,7 +192,7 @@
   bind:this={inputRef}
   bind:content={inputContent}
   {_class}
-  space={isSpace(object) ? object._id : object.space}
+  space={getChannelSpace(object._class, object._id, object.space)}
   skipAttachmentsPreload={(currentMessage.attachments ?? 0) === 0}
   bind:objectId={_id}
   {shouldSaveDraft}

@@ -20,6 +20,7 @@
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
   import chunterResources from '../plugin'
+  import { getChannelSpace } from '../utils'
 
   export let object: DirectMessage
 
@@ -29,7 +30,7 @@
   const messagesQuery = createQuery()
   $: messagesQuery.query(
     chunter.class.ChatMessage,
-    { attachedTo: object._id },
+    { attachedTo: object._id, space: getChannelSpace(object._class, object._id, object.space) },
     (res) => {
       if (res !== undefined) {
         messages = res.sort((a, b) => (a.createdOn ?? 0) - (b.createdOn ?? 0))
