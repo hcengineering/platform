@@ -1,5 +1,5 @@
 <script lang="ts">
-  import core, { RateLimiter } from '@hcengineering/core'
+  import core, { RateLimiter, concatLink } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, isAdminUser } from '@hcengineering/presentation'
@@ -109,9 +109,12 @@
         on:click={() => {
           const endpoint = getMetadata(login.metadata.AccountsUrl) ?? ''
           if (endpoint !== '') {
-            void fetch(endpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`, {
-              method: 'PUT'
-            })
+            void fetch(
+              concatLink(endpoint, `/api/v1/manage?token=${token}&operation=maintenance&timeout=${warningTimeout}`),
+              {
+                method: 'PUT'
+              }
+            )
           }
         }}
       />
@@ -126,7 +129,7 @@
         on:click={() => {
           const endpoint = getMetadata(login.metadata.AccountsUrl) ?? ''
           if (endpoint !== '') {
-            void fetch(endpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=-1`, {
+            void fetch(concatLink(endpoint, `/api/v1/manage?token=${token}&operation=maintenance&timeout=-1`), {
               method: 'PUT'
             })
           }
