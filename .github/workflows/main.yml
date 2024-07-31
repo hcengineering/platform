@@ -464,14 +464,11 @@ jobs:
       #     path: ./tests/db_dump
   docker-build:
     # needs: [build, test, svelte-check, uitest]
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Setup docker
-        run: |
-          brew install docker colima
-          sudo curl -L -o /opt/homebrew/Cellar/lima/0.22.0/bin/limactl https://github.com/mikekazakov/lima-nohvf/raw/master/limactl && sudo chmod +x /opt/homebrew/Cellar/lima/0.22.0/bin/limactl
-          brew services start colima
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
       - name: Configure docker
         uses: crazy-max/ghaction-setup-docker@v3
         with:
