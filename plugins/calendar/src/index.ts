@@ -17,7 +17,7 @@ import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
+import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 /**
  * @public
@@ -211,6 +211,9 @@ const calendarPlugin = plugin(calendarId, {
   },
   metadata: {
     CalendarServiceURL: '' as Metadata<string>
+  },
+  extensions: {
+    EditEventExtensions: '' as ComponentExtensionId
   },
   ids: {
     ReminderNotification: '' as Ref<NotificationType>,

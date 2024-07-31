@@ -40,6 +40,7 @@
     "@hcengineering/platform": "^0.6.11",
     "svelte": "^4.2.12",
     "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/view-resources": "^0.6.0",

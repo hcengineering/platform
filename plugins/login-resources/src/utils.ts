@@ -521,7 +521,7 @@ export async function getInviteLinkId (
 ): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
-  const exp = expHours * 1000 * 60 * 60
+  const exp = expHours < 0 ? -1 : expHours * 1000 * 60 * 60
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')

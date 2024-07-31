@@ -59,6 +59,7 @@
     "FullscreenMode": "Full-screen mode",
     "ExitingFullscreenMode": "Exiting fullscreen mode",
     "Select": "Select",
-    "ChooseShare": "Choose what to share"
+    "ChooseShare": "Choose what to share",
+    "CreateMeeting": "Create meeting"
   }
 }

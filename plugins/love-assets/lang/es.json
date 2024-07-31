@@ -59,6 +59,7 @@
     "FullscreenMode": "Modo de pantalla completa",
     "ExitingFullscreenMode": "Salir del modo de pantalla completa",
     "Select": "Seleccionar",
-    "ChooseShare": "Elija qué compartir"
+    "ChooseShare": "Elija qué compartir",
+    "CreateMeeting": "Crear reunión"
   }
 }
