@@ -1,5 +1,5 @@
 import { parseDocument } from 'htmlparser2'
-import { Document } from 'domhandler'
+import { AnyNode, Document } from 'domhandler'
 
 import { FileSpec, FileSpecType, TocFileSpec } from './types'
 import { createMetadataExtractor } from './meta'
@@ -28,10 +28,10 @@ class TocContentExtractor implements ContentExtractor {
     readonly type = FileSpecType.TOC
   ) {}
 
-  extract (doc: Document): ExtractedFile {
+  extract (doc: Document, headerRoot?: AnyNode): ExtractedFile {
     const metadataExtractor = createMetadataExtractor(this.spec.metadata)
-    const title = metadataExtractor.extractName(doc)
-    const oldId = metadataExtractor.extractId(doc)
+    const title = metadataExtractor.extractName(doc, headerRoot)
+    const oldId = metadataExtractor.extractId(doc, headerRoot)
 
     const docSpec = this.spec.spec
 
@@ -59,10 +59,10 @@ class TocContentExtractor implements ContentExtractor {
  * @public
  * Extracts HTML file contents
  */
-export async function extract (contents: string, spec: FileSpec): Promise<ExtractedFile> {
+export async function extract (contents: string, spec: FileSpec, headerRoot?: AnyNode): Promise<ExtractedFile> {
   const extractor = new TocContentExtractor(spec)
   const doc = parseDocument(contents)
-  return extractor.extract(doc)
+  return extractor.extract(doc, headerRoot)
 }
 
 export default extract

@@ -28,16 +28,16 @@ import { getBackend } from './convert/convert'
 /**
  * @public
  */
-export function docImportTool (productId: string): void {
+export function docImportTool (): void {
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.error('please provide server secret')
     process.exit(1)
   }
 
-  const accountUrl = process.env.ACCOUNT_URL
+  const accountUrl = process.env.ACCOUNTS_URL
   if (accountUrl === undefined) {
-    console.error('please provide transactor url')
+    console.error('please provide account url')
     process.exit(1)
   }
 
@@ -64,7 +64,7 @@ export function docImportTool (productId: string): void {
   program
     .command('import <doc> <workspace> <owner>')
     .description('import doc into workspace')
-    .option('-s|--spec <specFile>', 'Specification file')
+    .option('-s|--spec <spec>', 'Specification file')
     .option('-b|--backend <backend>', 'Conversion backend', 'pandoc')
     .option('--space <space>', 'Doc space ID', documents.space.QualityDocuments)
     .action(
@@ -72,22 +72,22 @@ export function docImportTool (productId: string): void {
         doc: string,
         workspace: string,
         owner: Ref<Employee>,
-        cmd: { backend: string, space: Ref<DocumentSpace>, specFile?: string }
+        cmd: { backend: string, space: Ref<DocumentSpace>, spec?: string }
       ) => {
         console.log(
           `Importing document '${doc}' into workspace '${workspace}', owner: ${JSON.stringify(owner)}, spec: ${
-            cmd.specFile
+            cmd.spec
           }, space: ${cmd.space}, backend: ${cmd.backend}`
         )
         try {
-          const workspaceId = getWorkspaceId(workspace, productId)
+          const workspaceId = getWorkspaceId(workspace)
 
           const config: Config = {
             doc,
             workspaceId,
             owner,
             backend: getBackend(cmd.backend),
-            specFile: cmd.specFile,
+            specFile: cmd.spec,
             space: cmd.space,
             uploadURL: uploadUrl,
             collaboratorApiURL: collaboratorApiUrl,
