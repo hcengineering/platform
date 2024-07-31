@@ -116,6 +116,8 @@
     "Left": "Left",
     "Added": "Added",
     "Removed": "Removed",
-    "CreatedChannelOn": "Created this channel on {date}"
+    "CreatedChannelOn": "Created this channel on {date}",
+    "ChannelMessages": "Channel messages",
+    "JoinChannel": "Join channel"
   }
 }

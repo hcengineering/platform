@@ -55,20 +55,21 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.OnChannelMembersChanged,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
-      objectClass: chunter.class.Channel
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnUserStatus,
     txMatch: {
       objectClass: core.class.UserStatus
     },
     isAsync: true
   })
+
+  builder.mixin(
+    chunter.ids.JoinChannelNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverChunter.function.JoinChannelTypeMatch
+    }
+  )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnContextUpdate,

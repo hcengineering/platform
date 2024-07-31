@@ -182,6 +182,7 @@ export default plugin(chunterId, {
     DMNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
     ChannelNotification: '' as Ref<NotificationType>,
+    JoinChannelNotification: '' as Ref<NotificationType>,
     ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   app: {

@@ -116,6 +116,8 @@
     "Left": "Покинул",
     "Added": "Добавил(а)",
     "Removed": "Исключил(а)",
-    "CreatedChannelOn": "Создал этот канал {date}"
+    "CreatedChannelOn": "Создал этот канал {date}",
+    "ChannelMessages": "Сообщения каналов",
+    "JoinChannel": "Приссоединение к каналу"
   }
 }

@@ -116,6 +116,8 @@
     "Left": "已离开",
     "Added": "已添加",
     "Removed": "已移除",
-    "CreatedChannelOn": "于 {date} 创建此频道"
+    "CreatedChannelOn": "于 {date} 创建此频道",
+    "ChannelMessages": "频道消息",
+    "JoinChannel": "加入频道"
   }
 }

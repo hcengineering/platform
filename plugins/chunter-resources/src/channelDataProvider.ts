@@ -30,10 +30,7 @@ import { derived, get, type Readable, writable } from 'svelte/store'
 import { type ActivityMessage } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages } from '@hcengineering/activity-resources'
-import { type ChatMessage } from '@hcengineering/chunter'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-
-import chunter from './plugin'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -294,7 +291,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const skipIds = this.getChunkSkipIds(loadAfter)
 
     const messages = await client.findAll(
-      chunter.class.ChatMessage,
+      this.msgClass,
       {
         attachedTo: this.chatId,
         space: this.space,
@@ -324,7 +321,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     }
   }
 
-  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ChatMessage>> {
+  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ActivityMessage>> {
     const chunks = get(this.chunksStore)
     const metadata = get(this.metadataStore)
     const tail = get(this.tailStore)
@@ -336,7 +333,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       .flat()
       .concat(loadTail ? [] : tailData)
       .filter(({ createdOn }) => createdOn === after)
-      .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+      .map(({ _id }) => _id)
   }
 
   async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {

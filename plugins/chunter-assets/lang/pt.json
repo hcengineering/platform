@@ -116,6 +116,8 @@
     "Left": "Saiu",
     "Added": "Adicionado(a)",
     "Removed": "Removido(a)",
-    "CreatedChannelOn": "Criou este canal em {date}"
+    "CreatedChannelOn": "Criou este canal em {date}",
+    "ChannelMessages": "Mensagens do canal",
+    "JoinChannel": "Participar no canal"
   }
 }

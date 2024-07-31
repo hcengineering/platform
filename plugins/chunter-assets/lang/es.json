@@ -116,6 +116,8 @@
     "Left": "Abandonado",
     "Added": "Añadido",
     "Removed": "Eliminado",
-    "CreatedChannelOn": "Creó este canal el {date}"
+    "CreatedChannelOn": "Creó este canal el {date}",
+    "ChannelMessages": "Mensajes del canal",
+    "JoinChannel": "Unirse"
   }
 }

@@ -380,71 +380,6 @@ function combineAttributes (attributes: any[], key: string, operator: string, ar
   ).filter((v) => v != null)
 }
 
-async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: TriggerControl): Promise<Tx[]> {
-  const changedAttributes = Object.entries(tx.operations)
-    .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
-    .filter((id) => !id.startsWith('$'))
-
-  if (!changedAttributes.includes('members')) {
-    return []
-  }
-
-  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
-  const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
-
-  const res: Tx[] = []
-  const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
-
-  if (removed.length > 0) {
-    res.push(
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-        $pull: {
-          collaborators: { $in: removed }
-        }
-      })
-    )
-  }
-
-  if (added.length > 0) {
-    res.push(
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-        $push: {
-          collaborators: { $each: added, $position: 0 }
-        }
-      })
-    )
-  }
-
-  for (const addedMember of added) {
-    const context = allContexts.find(({ user }) => user === addedMember)
-
-    if (context === undefined) {
-      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-        attachedTo: tx.objectId,
-        attachedToClass: tx.objectClass,
-        user: addedMember,
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      await control.apply([createTx])
-    } else {
-      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      res.push(updateTx)
-    }
-  }
-
-  const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
-
-  for (const context of contextsToRemove) {
-    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-  }
-
-  return res
-}
-
 async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control: TriggerControl): Promise<Tx[]> {
   if (tx._class !== core.class.TxMixin || tx.mixin !== notification.mixin.Collaborators) return []
 
@@ -651,12 +586,21 @@ async function OnContextUpdate (tx: TxUpdateDoc<DocNotifyContext>, control: Trig
   return []
 }
 
+async function JoinChannelTypeMatch (originTx: Tx, _: Doc, user: Ref<Account>): Promise<boolean> {
+  if (originTx.modifiedBy === user) return false
+  if (originTx._class !== core.class.TxUpdateDoc) return false
+
+  const tx = originTx as TxUpdateDoc<Channel>
+  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
+
+  return added.includes(user)
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     ChunterTrigger,
     OnChatMessageRemoved,
-    OnChannelMembersChanged,
     ChatNotificationsHandler,
     OnUserStatus,
     OnContextUpdate
@@ -666,6 +610,7 @@ export default async () => ({
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
     ChunterNotificationContentProvider: getChunterNotificationContent,
-    ChatMessageTextPresenter
+    ChatMessageTextPresenter,
+    JoinChannelTypeMatch
   }
 })

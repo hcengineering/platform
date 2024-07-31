@@ -75,7 +75,9 @@ export default mergeIds(chunterId, chunter, {
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
     Reacted: '' as IntlString,
-    RepliedToThread: '' as IntlString
+    RepliedToThread: '' as IntlString,
+    ChannelMessages: '' as IntlString,
+    JoinChannel: '' as IntlString
   },
   viewlet: {
     Chat: '' as Ref<ViewletDescriptor>,

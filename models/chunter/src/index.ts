@@ -62,6 +62,7 @@ import { type DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
 import { defineActions } from './actions'
+import { defineNotifications } from './notifications'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
@@ -197,35 +198,12 @@ export function createModel (builder: Builder): void {
     titleProvider: chunter.function.ChannelTitleProvider
   })
 
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['members']
-  })
-
-  builder.mixin(chunter.class.Channel, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['members']
-  })
-
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.DmPresenter
   })
 
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.NotificationPreview, {
-    presenter: chunter.component.ChannelPreview
-  })
-
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ChannelPresenter
-  })
-
-  builder.mixin(chunter.class.ChatMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
-    labelPresenter: chunter.component.ChatMessageNotificationLabel
-  })
-
-  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
-    messageMatch: {
-      _class: chunter.class.ThreadMessage
-    },
-    presenter: chunter.component.ThreadNotificationPresenter
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
@@ -283,78 +261,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: []
   })
-
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: chunter.string.ApplicationLabelChunter,
-      icon: chunter.icon.Chunter
-    },
-    chunter.ids.ChunterNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: chunter.string.DM,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: chunter.class.ChatMessage,
-      attachedToClass: chunter.class.DirectMessage,
-      defaultEnabled: false,
-      group: chunter.ids.ChunterNotificationGroup,
-      templates: {
-        textTemplate: '{sender} has sent you a message: {doc} {message}',
-        htmlTemplate: '<p><b>{sender}</b> has sent you a message {doc}</p> {message}',
-        subjectTemplate: 'You have new direct message in {doc}'
-      }
-    },
-    chunter.ids.DMNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: chunter.string.Message,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: chunter.class.ChatMessage,
-      attachedToClass: chunter.class.Channel,
-      defaultEnabled: false,
-      group: chunter.ids.ChunterNotificationGroup,
-      templates: {
-        textTemplate: '{sender} has sent a message in {doc}: {message}',
-        htmlTemplate: '<p><b>{sender}</b> has sent a message in {doc}</p> {message}',
-        subjectTemplate: 'You have new message in {doc}'
-      }
-    },
-    chunter.ids.ChannelNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: chunter.string.ThreadMessage,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: chunter.class.ThreadMessage,
-      defaultEnabled: false,
-      group: chunter.ids.ChunterNotificationGroup,
-      templates: {
-        textTemplate: '{body}',
-        htmlTemplate: '<p>{body}</p>',
-        subjectTemplate: '{title}'
-      }
-    },
-    chunter.ids.ThreadNotification
-  )
 
   builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
     label: chunter.string.Comments,
@@ -448,18 +354,6 @@ export function createModel (builder: Builder): void {
     strict: true
   })
 
-  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
-    provider: notification.providers.InboxNotificationProvider,
-    ignoredTypes: [],
-    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
-  })
-
-  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
-    provider: notification.providers.PushNotificationProvider,
-    ignoredTypes: [],
-    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ChannelNotification, chunter.ids.ThreadNotification]
-  })
-
   builder.createDoc<ActivityMessageControl<ChunterSpace>>(activity.class.ActivityMessageControl, core.space.Model, {
     objectClass: chunter.class.Channel,
     skip: [
@@ -503,6 +397,7 @@ export function createModel (builder: Builder): void {
   })
 
   defineActions(builder)
+  defineNotifications(builder)
 }
 
 export default chunter
