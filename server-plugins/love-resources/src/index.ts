@@ -31,7 +31,6 @@ import love, {
   ParticipantInfo,
   RequestStatus,
   RoomAccess,
-  RoomInfo,
   isOffice,
   loveId
 } from '@hcengineering/love'
