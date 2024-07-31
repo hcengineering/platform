@@ -470,7 +470,8 @@ jobs:
       - name: Setup docker
         run: |
           brew install docker colima
-          colima start --arch aarch64
+          sudo curl -L -o /opt/homebrew/Cellar/lima/0.22.0/bin/limactl https://github.com/mikekazakov/lima-nohvf/raw/master/limactl && sudo chmod +x /opt/homebrew/Cellar/lima/0.22.0/bin/limactl
+          brew services start colima
       - name: Configure docker
         uses: crazy-max/ghaction-setup-docker@v3
         with:
