@@ -16,11 +16,11 @@
   import { Contact, Person } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import love, { Floor as FloorType, Meeting, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
+  import love, { Floor as FloorType, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import { deviceOptionsStore as deviceInfo, getCurrentLocation, navigate } from '@hcengineering/ui'
-  import { onMount, onDestroy } from 'svelte'
-  import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms } from '../stores'
+  import { onDestroy, onMount } from 'svelte'
+  import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms, storePromise } from '../stores'
   import { connectToMeeting, tryConnect } from '../utils'
   import Floor from './Floor.svelte'
   import FloorConfigure from './FloorConfigure.svelte'
@@ -64,9 +64,11 @@
     loc.query = Object.keys(query).length === 0 ? undefined : query
     navigate(loc, true)
     if (sessionId != null) {
+      await $storePromise
       await connectToSession(sessionId)
     } else if (meetId != null) {
-      await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, $rooms, meetId)
+      await $storePromise
+      await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
     }
   })
 </script>

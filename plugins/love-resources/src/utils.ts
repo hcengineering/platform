@@ -573,19 +573,21 @@ export async function connectToMeeting (
   info: ParticipantInfo[],
   currentRequests: JoinRequest[],
   currentInvites: Invite[],
-  rooms: Room[],
   meetId: string
 ): Promise<void> {
   const client = getClient()
   const meeting = await client.findOne(love.mixin.Meeting, { _id: meetId as Ref<Meeting> })
   if (meeting === undefined) return
-  const room = rooms.find((p) => p._id === meeting.room)
+  const room = await client.findOne(love.class.Room, { _id: meeting.room })
   if (room === undefined) return
 
   // check time (it should be 10 minutes before the meeting or active in roomInfo)
   const now = new Date()
   const res = getAllEvents([meeting], now.setMinutes(now.getMinutes() - 10), new Date().getTime())
-  if (res.length === 0) return
+  if (res.length === 0) {
+    console.log('Meeting is not active')
+    return
+  }
 
   await tryConnect(
     personByIdStore,
@@ -778,6 +780,7 @@ export async function createMeeting (
     const event = await client.findOne(calendar.class.Event, { _id })
     if (event === undefined) return
     const navigateUrl = getCurrentLocation()
+    navigateUrl.path[2] = loveId
     navigateUrl.query = {
       meetId: _id
     }
