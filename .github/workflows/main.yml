@@ -457,9 +457,18 @@ jobs:
       #     path: ./tests/db_dump
   docker-build:
     needs: [build, test, svelte-check, uitest]
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - uses: crazy-max/ghaction-setup-docker@v3
+        with:
+          daemon-config: |
+            {
+              "debug" : false,
+              "features": {
+                "containerd-snapshotter": true
+              }
+            }
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
