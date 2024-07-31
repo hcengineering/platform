@@ -28,7 +28,8 @@ const config: PlaywrightTestConfig = {
         contextOptions: {
           reducedMotion: 'reduce'
         }
-      }
+      },
+      fullyParallel: false
     }
   ],
   retries: 2,

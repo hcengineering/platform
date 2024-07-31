@@ -58,6 +58,20 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly buttonHistoryTab: Locator
   readonly documentHeader: Locator
   readonly leaveFolder: Locator
+  readonly textContainer: Locator
+  readonly myDocument: Locator
+  readonly library: Locator
+  readonly templates: Locator
+  readonly categories: Locator
+  readonly addCategoryButton: Locator
+  readonly categoryTitle: Locator
+  readonly description: Locator
+  readonly categoryCode: Locator
+  readonly generalDocumentation: Locator
+  readonly newDocumentArrow: Locator
+  readonly newTemplate: Locator
+  readonly filter: Locator
+  readonly filterCategory: Locator
 
   constructor (page: Page) {
     super(page)
@@ -126,6 +140,20 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.buttonHistoryTab = page.getByText('History')
     this.documentHeader = page.getByRole('button', { name: 'Complete document' })
     this.leaveFolder = page.getByRole('button', { name: 'Leave' })
+    this.textContainer = page.locator('.tiptap')
+    this.myDocument = page.getByRole('button', { name: 'Categories' })
+    this.library = page.getByRole('button', { name: 'Library' })
+    this.templates = page.getByRole('button', { name: 'Templates' })
+    this.categories = page.getByRole('button', { name: 'Categories' })
+    this.addCategoryButton = page.getByRole('button', { name: 'Category', exact: true })
+    this.categoryTitle = page.getByPlaceholder('Title')
+    this.description = page.getByRole('paragraph')
+    this.categoryCode = page.getByPlaceholder('Code')
+    this.generalDocumentation = page.getByRole('button', { name: 'General documentation' })
+    this.newDocumentArrow = page.locator('.w-full > button:nth-child(2)')
+    this.newTemplate = page.getByRole('button', { name: 'New template', exact: true })
+    this.filter = page.getByRole('button', { name: 'Filter' })
+    this.filterCategory = page.locator('span').filter({ hasText: /^Category$/ })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -142,6 +170,62 @@ export class DocumentContentPage extends DocumentCommonPage {
       .locator('xpath=..')
       .locator('span.label input')
       .fill(title)
+  }
+
+  async clickOnAddCategoryButton (): Promise<void> {
+    await this.addCategoryButton.click()
+  }
+
+  async clickNewDocumentArrow (): Promise<void> {
+    await this.newDocumentArrow.click()
+  }
+
+  async clickNewTemplate (): Promise<void> {
+    await this.newTemplate.click()
+  }
+
+  async selectControlDocumentSubcategory (
+    buttonName: 'My Document' | 'Library' | 'Templates' | 'Categories' | 'General documentation'
+  ): Promise<void> {
+    switch (buttonName) {
+      case 'My Document':
+        await this.myDocument.click()
+        break
+      case 'Library':
+        await this.library.click()
+        break
+      case 'Templates':
+        await this.templates.click()
+        break
+      case 'Categories':
+        await this.categories.click()
+        break
+      case 'General documentation':
+        await this.generalDocumentation.click()
+        break
+      default:
+        throw new Error('Unknown button')
+    }
+  }
+
+  async fillCategoryForm (categoryTitle: string, description: string, categoryCode: string): Promise<void> {
+    await this.categoryTitle.fill(categoryTitle)
+    await this.description.fill(description)
+    await this.categoryCode.fill(categoryCode)
+    await this.createButton.click()
+  }
+
+  async checkIfCategoryIsCreated (categoryTitle: string, categoryCode: string): Promise<void> {
+    await expect(this.page.getByText(categoryTitle)).toBeVisible()
+    await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
+  }
+
+  async checkIfTextExists (text: string): Promise<void> {
+    await expect(this.textContainer).toContainText(text)
+  }
+
+  async hoverOverGeneralDocumentation (): Promise<void> {
+    await this.generalDocumentation.hover()
   }
 
   async addReasonAndImpactToTheDocument (description: string, reason: string): Promise<void> {
@@ -199,13 +283,32 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.addSpaceButton.click()
   }
 
+  async chooseFilter (category: string): Promise<void> {
+    await this.filter.click()
+    await this.filterCategory.hover()
+    await this.page.getByRole('button', { name: 'Category', exact: true }).click()
+    await this.page.getByText(category).click({ force: true })
+    await this.page.keyboard.press('Escape')
+  }
+
+  async checkIfFilterIsApplied (code: string): Promise<void> {
+    await expect(this.page.getByText(code, { exact: true })).toBeVisible()
+  }
+
   async fillDocumentSpaceForm (spaceName: string): Promise<void> {
     await this.inputSpaceName.fill(spaceName)
     await this.roleSelector.nth(2).click()
     await this.selectRoleMember.nth(2).click()
     await this.page.keyboard.press('Escape')
+    await this.selectRoleMember.nth(1).click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
+    await this.page.keyboard.press('Escape')
     await this.page.waitForTimeout(1000)
     await this.createButton.click()
+  }
+
+  async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
+    await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
   }
 
   async createNewDocumentInsideFolder (folderName: string): Promise<void> {
