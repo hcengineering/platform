@@ -120,15 +120,26 @@ export class PlatformWorker {
       }
     }
 
-    for (const workspace of workspacesToCheck) {
-      // We need to connect to workspace and verify all installations and clean if required
-      try {
-        ctx.info('check clean', { workspace })
-        await this.cleanWorkspaceInstallations(ctx, workspace)
-      } catch (err: any) {
-        ctx.error('failed to clean workspace', { err, workspace })
+    const checkClean = async (): Promise<void> => {
+      const rateLimit = new RateLimiter(10)
+      for (const workspace of workspacesToCheck) {
+        // We need to connect to workspace and verify all installations and clean if required
+        try {
+          await rateLimit.add(async () => {
+            ctx.info('check clean', { workspace })
+            try {
+              await this.cleanWorkspaceInstallations(ctx, workspace)
+            } catch (err: any) {
+              ctx.error('failed to check clean', { workspace })
+            }
+          })
+        } catch (err: any) {
+          ctx.error('failed to clean workspace', { err, workspace })
+        }
       }
+      await rateLimit.waitProcessing()
     }
+    void checkClean()
 
     void this.doSyncWorkspaces().catch((err) => {
       ctx.error('error during sync workspaces', { err })
@@ -220,7 +231,7 @@ export class PlatformWorker {
     try {
       workspaceInfo = await getWorkspaceInfo(token)
     } catch (err: any) {
-      this.ctx.error('Workspace not found:', { workspace })
+      ctx.error('Workspace not found:', { workspace })
       return
     }
     if (workspaceInfo === undefined) {
