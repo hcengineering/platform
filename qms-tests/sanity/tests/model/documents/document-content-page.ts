@@ -211,6 +211,9 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.description.fill(description)
     await this.categoryCode.fill(categoryCode)
     await this.createButton.click()
+  }
+
+  async checkIfCategoryIsCreated (categoryTitle: string, categoryCode: string): Promise<void> {
     await expect(this.page.getByText(categoryTitle)).toBeVisible()
     await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
   }
@@ -278,12 +281,15 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.addSpaceButton.click()
   }
 
-  async chooseFilter (code: string, category: string): Promise<void> {
+  async chooseFilter (category: string): Promise<void> {
     await this.filter.click()
     await this.filterCategory.hover()
     await this.page.getByRole('button', { name: 'Category', exact: true }).click()
     await this.page.getByText(category).click({ force: true })
     await this.page.keyboard.press('Escape')
+  }
+
+  async checkIfFilterIsApplied (code: string): Promise<void> {
     await expect(this.page.getByText(code, { exact: true })).toBeVisible()
   }
 
@@ -297,6 +303,9 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.keyboard.press('Escape')
     await this.page.waitForTimeout(1000)
     await this.createButton.click()
+  }
+
+  async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
     await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
   }
 

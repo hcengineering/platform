@@ -31,6 +31,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.selectControlDocumentSubcategory('Categories')
       await documentContentPage.clickOnAddCategoryButton()
       await documentContentPage.fillCategoryForm(title, description, code)
+      await documentContentPage.checkIfCategoryIsCreated(title, code)
     })
 
     await attachScreenshot('TESTS-298_category_created.png', page)
@@ -43,14 +44,15 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     const folderName = generateId(5)
 
     await leftSideMenuPage.clickButtonOnTheLeft('Documents')
-    await test.step('2. Create a new workspace', async () => {
+    await test.step('2. Create a new document space', async () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.clickAddFolderButton()
       await documentContentPage.fillDocumentSpaceForm(folderName)
+      await documentContentPage.checkSpaceFormIsCreated(folderName)
       await documentContentPage.clickLeaveFolder(folderName)
     })
 
-    await attachScreenshot('TESTS-381_workspace_created.png', page)
+    await attachScreenshot('TESTS-381_document_space_created.png', page)
   })
 
   test('TESTS-382. Create new a new Effective Template with category External', async ({ page }) => {
@@ -68,6 +70,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.selectControlDocumentSubcategory('Categories')
       await documentContentPage.clickOnAddCategoryButton()
       await documentContentPage.fillCategoryForm(category, description, code)
+      await documentContentPage.checkIfCategoryIsCreated(category, code)
       await documentContentPage.clickNewDocumentArrow()
       await documentContentPage.clickNewTemplate()
       await createTemplateStep(page, title, description, category)
@@ -87,18 +90,23 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     const category = faker.word.words(2)
 
     await leftSideMenuPage.clickButtonOnTheLeft('Documents')
-    await test.step('2. Create a new category and template', async () => {
+    await test.step('2. Create a new category', async () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.selectControlDocumentSubcategory('Categories')
       await documentContentPage.clickOnAddCategoryButton()
       await documentContentPage.fillCategoryForm(category, description, code)
-      await documentContentPage.clickNewDocumentArrow()
-      await documentContentPage.clickNewTemplate()
-      await createTemplateStep(page, title, description, category)
-      await documentContentPage.selectControlDocumentSubcategory('Templates')
-      await documentContentPage.chooseFilter(title, code)
+      await documentContentPage.checkIfCategoryIsCreated(category, code)
+      await test.step('3. Create a new template', async () => {
+        await documentContentPage.clickNewDocumentArrow()
+        await documentContentPage.clickNewTemplate()
+        await createTemplateStep(page, title, description, category)
+      })
+      await test.step('4. Check if templates exists in template category', async () => {
+        await documentContentPage.selectControlDocumentSubcategory('Templates')
+        await documentContentPage.chooseFilter(code)
+        await documentContentPage.checkIfFilterIsApplied(title)
+      })
     })
-
     await attachScreenshot('TESTS-383_Template_created.png', page)
   })
 })
