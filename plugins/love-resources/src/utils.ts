@@ -1,5 +1,5 @@
 import { Analytics } from '@hcengineering/analytics'
-import calendar, { type Event } from '@hcengineering/calendar'
+import calendar, { getAllEvents, type Event } from '@hcengineering/calendar'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import core, {
   AccountRole,
@@ -583,6 +583,9 @@ export async function connectToMeeting (
   if (room === undefined) return
 
   // check time (it should be 10 minutes before the meeting or active in roomInfo)
+  const now = new Date()
+  const res = getAllEvents([meeting], now.setMinutes(now.getMinutes() - 10), new Date().getTime())
+  if (res.length === 0) return
 
   await tryConnect(
     personByIdStore,
