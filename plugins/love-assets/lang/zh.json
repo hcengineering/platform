@@ -59,6 +59,7 @@
     "FullscreenMode": "全屏模式",
     "ExitingFullscreenMode": "退出全屏模式",
     "Select": "选择",
-    "ChooseShare": "选择共享内容"
+    "ChooseShare": "选择共享内容",
+    "CreateMeeting": "创建会议"
   }
 }

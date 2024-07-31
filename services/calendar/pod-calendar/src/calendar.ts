@@ -27,7 +27,10 @@ import core, {
   AttachedData,
   Client,
   Data,
+  Doc,
+  DocData,
   DocumentUpdate,
+  Mixin,
   Ref,
   TxOperations,
   TxUpdateDoc,
@@ -42,10 +45,10 @@ import type { Collection, Db } from 'mongodb'
 import { encode64 } from './base64'
 import { CalendarController } from './calendarController'
 import config from './config'
+import { RateLimiter } from './rateLimiter'
 import type { CalendarHistory, EventHistory, EventWatch, ProjectCredentials, State, Token, User, Watch } from './types'
 import { encodeReccuring, isToken, parseRecurrenceStrings } from './utils'
 import type { WorkspaceClient } from './workspaceClient'
-import { RateLimiter } from './rateLimiter'
 
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.calendars.readonly',
@@ -703,7 +706,7 @@ export class CalendarClient {
     }
     const data: Partial<AttachedData<Event>> = await this.parseUpdateData(event)
     if (event.recurringEventId != null) {
-      const diff = this.getEventDiff<ReccuringInstance>(
+      const diff = this.getDiff<ReccuringInstance>(
         {
           ...data,
           recurringEventId: event.recurringEventId as Ref<ReccuringEvent>,
@@ -719,7 +722,7 @@ export class CalendarClient {
     } else {
       if (event.recurrence != null) {
         const parseRule = parseRecurrenceStrings(event.recurrence)
-        const diff = this.getEventDiff<ReccuringEvent>(
+        const diff = this.getDiff<ReccuringEvent>(
           {
             ...data,
             rules: parseRule.rules,
@@ -733,10 +736,67 @@ export class CalendarClient {
           await this.client.update(current, diff)
         }
       } else {
-        const diff = this.getEventDiff(data, current)
+        const diff = this.getDiff(data, current)
         if (Object.keys(diff).length > 0) {
           console.log('UPDATE EVENT DIFF', JSON.stringify(diff), JSON.stringify(current))
           await this.client.update(current, diff)
+        }
+      }
+    }
+    await this.updateMixins(event, current)
+  }
+
+  private async updateMixins (event: calendar_v3.Schema$Event, current: Event): Promise<void> {
+    const mixins = this.parseMixins(event)
+    if (mixins !== undefined) {
+      for (const mixin in mixins) {
+        const attr = mixins[mixin]
+        if (typeof attr === 'object' && Object.keys(attr).length > 0) {
+          if (this.client.getHierarchy().hasMixin(current, mixin as Ref<Mixin<Doc>>)) {
+            const diff = this.getDiff(attr, this.client.getHierarchy().as(current, mixin as Ref<Mixin<Doc>>))
+            if (Object.keys(diff).length > 0) {
+              await this.client.updateMixin(
+                current._id,
+                current._class,
+                calendar.space.Calendar,
+                mixin as Ref<Mixin<Doc>>,
+                diff
+              )
+            }
+          } else {
+            await this.client.createMixin(
+              current._id,
+              current._class,
+              calendar.space.Calendar,
+              mixin as Ref<Mixin<Doc>>,
+              attr
+            )
+          }
+        }
+      }
+    }
+  }
+
+  private parseMixins (event: calendar_v3.Schema$Event): Record<string, any> | undefined {
+    if (event.extendedProperties?.shared?.mixins !== undefined) {
+      const mixins = JSON.parse(event.extendedProperties.shared.mixins)
+      return mixins
+    }
+  }
+
+  private async saveMixins (event: calendar_v3.Schema$Event, _id: Ref<Event>): Promise<void> {
+    const mixins = this.parseMixins(event)
+    if (mixins !== undefined) {
+      for (const mixin in mixins) {
+        const attr = mixins[mixin]
+        if (typeof attr === 'object' && Object.keys(attr).length > 0) {
+          await this.client.createMixin(
+            _id,
+            calendar.class.Event,
+            calendar.space.Calendar,
+            mixin as Ref<Mixin<Doc>>,
+            attr
+          )
         }
       }
     }
@@ -767,6 +827,7 @@ export class CalendarClient {
           timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT'
         }
       )
+      await this.saveMixins(event, id)
       console.log('SAVE INSTANCE', id, JSON.stringify(event))
     } else if (event.status !== 'cancelled') {
       if (event.recurrence != null) {
@@ -786,6 +847,7 @@ export class CalendarClient {
             timeZone: event.start?.timeZone ?? event.end?.timeZone ?? 'Etc/GMT'
           }
         )
+        await this.saveMixins(event, id)
         console.log('SAVE REC EVENT', id, JSON.stringify(event))
       } else {
         const id = await this.client.addCollection(
@@ -796,12 +858,13 @@ export class CalendarClient {
           'events',
           data
         )
+        await this.saveMixins(event, id)
         console.log('SAVE EVENT', id, JSON.stringify(event))
       }
     }
   }
 
-  private getEventDiff<T extends Event>(data: Partial<AttachedData<T>>, current: T): Partial<AttachedData<T>> {
+  private getDiff<T extends Doc>(data: Partial<DocData<T>>, current: T): Partial<DocData<T>> {
     const res = {}
     for (const key in data) {
       if (!deepEqual((data as any)[key], (current as any)[key])) {
@@ -1120,6 +1183,24 @@ export class CalendarClient {
     return false
   }
 
+  private getMixinFields (event: Event): Record<string, any> {
+    const res = {}
+    const h = this.client.getHierarchy()
+    for (const [k, v] of Object.entries(event)) {
+      if (typeof v === 'object' && h.isMixin(k as Ref<Mixin<Doc>>)) {
+        for (const [key, value] of Object.entries(v)) {
+          if (value !== undefined) {
+            const obj = (res as any)[k] ?? {}
+            obj[key] = value
+            ;(res as any)[k] = obj
+          }
+        }
+      }
+    }
+
+    return res
+  }
+
   private convertBody (event: Event): calendar_v3.Schema$Event {
     const res: calendar_v3.Schema$Event = {
       start: convertDate(event.date, event.allDay, getTimezone(event)),
@@ -1138,6 +1219,16 @@ export class CalendarClient {
       res.extendedProperties = {
         private: {
           visibility: 'freeBusy'
+        }
+      }
+    }
+    const mixin = this.getMixinFields(event)
+    if (Object.keys(mixin).length > 0) {
+      res.extendedProperties = {
+        ...res.extendedProperties,
+        shared: {
+          ...res.extendedProperties?.shared,
+          mixin: JSON.stringify(mixin)
         }
       }
     }
