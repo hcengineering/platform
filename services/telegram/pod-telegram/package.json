@@ -66,6 +66,7 @@
     "@hcengineering/telegram": "^0.6.21",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-client": "^0.6.0",
+    "@hcengineering/mongo": "^0.6.1",
     "big-integer": "^1.6.51",
     "dotenv": "~16.0.0",
     "cors": "^2.8.5",
