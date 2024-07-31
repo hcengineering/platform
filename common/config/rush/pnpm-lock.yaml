@@ -30,11 +30,11 @@ dependencies:
     specifier: ^2.11.0
     version: 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12)
   '@hocuspocus/server':
-    specifier: ^2.9.0
-    version: 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12)
+    specifier: ^2.13.5
+    version: 2.13.5(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12)
   '@hocuspocus/transformer':
-    specifier: ^2.9.0
-    version: 2.11.2(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
+    specifier: ^2.13.5
+    version: 2.13.5(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
   '@koa/cors':
     specifier: ^5.0.0
     version: 5.0.0
@@ -4727,6 +4727,12 @@ packages:
       lib0: 0.2.89
     dev: false
 
+  /@hocuspocus/common@2.13.5:
+    resolution: {integrity: sha512-8D9FzhZFlt0WsgXw5yT2zwSxi6z9d4V2vUz6co2vo3Cj+Y2bvGZsdDiTvU/MerGcCLME5k/w6PwLPojLYH/4pg==}
+    dependencies:
+      lib0: 0.2.89
+    dev: false
+
   /@hocuspocus/provider@2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12):
     resolution: {integrity: sha512-h6/2KZC8Z3Wz+rP17WQ5eqxdgtsq5JZ4iC72WSXdIOJn3RO4sv63ZvT+EWc4aA1YM7UVDBYVjdOjMtEYZF0Flg==}
     peerDependencies:
@@ -4744,17 +4750,17 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@hocuspocus/server@2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12):
-    resolution: {integrity: sha512-/djaNUSS9vYmz5H/bformB9BXKVhSXS10WIURT1OqFLnN0dZnOB0gxL/IyGCZgXCNyiD8U03n7FIgad9MckV8g==}
+  /@hocuspocus/server@2.13.5(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12):
+    resolution: {integrity: sha512-gDYax5ruaj30mMtFjq5+o5USXQD31hDOxBVU8eTAzezS6hpVllaP7HmM8iRda+UmQoeybHxzqsWAf74JCmYDug==}
     peerDependencies:
       y-protocols: ^1.0.6
       yjs: ^13.6.8
     dependencies:
-      '@hocuspocus/common': 2.11.2
+      '@hocuspocus/common': 2.13.5
       async-lock: 1.4.1
       kleur: 4.1.5
       lib0: 0.2.89
-      uuid: 9.0.1
+      uuid: 10.0.0
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       y-protocols: 1.0.6(yjs@13.6.12)
       yjs: 13.6.12
@@ -4763,8 +4769,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@hocuspocus/transformer@2.11.2(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12):
-    resolution: {integrity: sha512-xR46lVsxZoODZ33ZvGhrRAw+JTXPbq7IFpQ/DGHvIp9rdijr6buQlDYCZv9A9L1rAqDhwRtsMbwFj7jOpzKHHA==}
+  /@hocuspocus/transformer@2.13.5(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12):
+    resolution: {integrity: sha512-G5QWvV4K7lussF4lSWPFjtqSTZjiq1tkU4WEn1u8OdKQUF0GtfNcnrGWMlCeJdz5Ucpp4qJHWt4TTPI1Lpw/9Q==}
     peerDependencies:
       '@tiptap/pm': ^2.1.12
       y-prosemirror: ^1.2.1
@@ -22668,6 +22674,11 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: false
 
+  /uuid@10.0.0:
+    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    hasBin: true
+    dev: false
+
   /uuid@3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
@@ -24714,13 +24725,13 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-PNTgV2uVlKqXedhCD+Yq4pN+lDtT6b4g9O6UZ7C98Q7dJcAsb22WduinT84/y0gU7JPEbljzyrrAv8Jvj8PnCQ==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-2kBYCHIIHeDD99Oj4ViM3+h4CPlelHbpP+HOtuYXSxNeM+hsIhmqdQJrSBoLA3u5LGTsHHapjg94S4sgaMz60Q==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
     dependencies:
-      '@hocuspocus/server': 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12)
-      '@hocuspocus/transformer': 2.11.2(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
+      '@hocuspocus/server': 2.13.5(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      '@hocuspocus/transformer': 2.13.5(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
       '@tiptap/html': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
       '@types/body-parser': 1.19.5
