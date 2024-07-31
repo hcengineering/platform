@@ -131,4 +131,21 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.rightClickAction(talentName, 'Match to vacancy')
     await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0')
   })
+
+  test('Filtering talents by skills', async ({ page }) => {
+    const skillName = `Skill-${generateId(4)}`
+    const talentName = 'P. Andrey'
+
+    await navigationMenuPage.clickButtonTalents()
+    await talentsPage.checkRowsInTableExist(talentName)
+    const talentsCount = await talentsPage.linesFromTable().count()
+    await talentsPage.openRowInTableByText(talentName)
+    await talentDetailsPage.addSkill(skillName, 'Skill Description')
+    await talentDetailsPage.buttonClosePanel().click()
+    await talentsPage.selectFilter('Skills', skillName)
+    await talentsPage.checkRowsInTableExist(talentName)
+    await talentsPage.filterOppositeCondition('Skill', 'is', 'is not')
+    await talentsPage.checkRowsInTableNotExist(talentName)
+    await talentsPage.checkRowsInTableExist('', talentsCount - 1)
+  })
 })

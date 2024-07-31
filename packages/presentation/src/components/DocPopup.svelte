@@ -190,6 +190,7 @@
             {size}
             icon={IconAdd}
             showTooltip={{ label: create.label }}
+            dataId={'btnAdd'}
             on:click={onCreate}
             disabled={readonly || loading}
           />
