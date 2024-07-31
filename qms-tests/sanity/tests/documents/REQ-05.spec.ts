@@ -71,9 +71,11 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.clickOnAddCategoryButton()
       await documentContentPage.fillCategoryForm(category, description, code)
       await documentContentPage.checkIfCategoryIsCreated(category, code)
-      await documentContentPage.clickNewDocumentArrow()
-      await documentContentPage.clickNewTemplate()
-      await createTemplateStep(page, title, description, category)
+      await test.step('3. Create a new template', async () => {
+        await documentContentPage.clickNewDocumentArrow()
+        await documentContentPage.clickNewTemplate()
+        await createTemplateStep(page, title, description, category)
+      })
     })
 
     await attachScreenshot('TESTS-382_Template_created.png', page)
