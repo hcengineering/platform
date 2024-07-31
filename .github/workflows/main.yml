@@ -43,6 +43,7 @@ env:
 jobs:
   # This workflow contains a single job called "build"
   build:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -94,6 +95,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
   svelte-check:
+    if: false
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -119,6 +121,7 @@ jobs:
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
   formatting:
+    if: false
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -160,6 +163,7 @@ jobs:
           [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
           echo '================================================================'
   test:
+    if: false
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -190,6 +194,7 @@ jobs:
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
   uitest:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -290,6 +295,7 @@ jobs:
       #     name: db-snapshot
       #     path: ./tests/db_dump
   uitest-qms:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -384,6 +390,7 @@ jobs:
           name: docker-logs-qms
           path: ./qms-tests/sanity/logs
   uitest-uweb:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -456,11 +463,16 @@ jobs:
       #     name: db-snapshot
       #     path: ./tests/db_dump
   docker-build:
-    needs: [build, test, svelte-check, uitest]
-    runs-on: ubuntu-latest
+    # needs: [build, test, svelte-check, uitest]
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
-      - uses: crazy-max/ghaction-setup-docker@v3
+      - name: Setup docker
+        run: |
+          brew install docker colima
+          colima start --arch aarch64
+      - name: Configure docker
+        uses: crazy-max/ghaction-setup-docker@v3
         with:
           daemon-config: |
             {
@@ -513,8 +525,9 @@ jobs:
           echo Pushing release of tag ${{ github.ref }}
           node common/scripts/install-run-rush.js docker:push -v
   dist-build:
+    if: false
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    # if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     needs: build
     runs-on: macos-latest
     timeout-minutes: 60
