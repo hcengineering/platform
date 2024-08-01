@@ -1403,6 +1403,9 @@ dependencies:
   diff2html:
     specifier: ~3.4.35
     version: 3.4.48
+  docx4js:
+    specifier: ^3.2.20
+    version: 3.2.20
   domhandler:
     specifier: ^5.0.3
     version: 5.0.3
@@ -11414,6 +11417,15 @@ packages:
       - debug
     dev: false
 
+  /cfb@0.12.1:
+    resolution: {integrity: sha512-cP+4A0tTqtyza5gJwNwDetZ8FPjl0gPLE7mIxGKyUzOS6HkM23WaAWW/l3t7jIQSMqVXroa09Ey0lo7gV8LNxw==}
+    engines: {node: '>=0.8'}
+    hasBin: true
+    dependencies:
+      commander: 2.11.0
+      printj: 1.1.2
+    dev: false
+
   /chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
     engines: {node: '>=4'}
@@ -11434,6 +11446,28 @@ packages:
   /char-regex@1.0.2:
     resolution: {integrity: sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==}
     engines: {node: '>=10'}
+    dev: false
+
+  /cheerio@0.22.0:
+    resolution: {integrity: sha512-8/MzidM6G/TgRelkzDG13y3Y9LxBjCb+8yOEZ9+wwq5gVF2w2pV0wmHvjfT0RvuxGyR7UEuK36r+yYMbT4uKgA==}
+    engines: {node: '>= 0.6'}
+    dependencies:
+      css-select: 1.2.0
+      dom-serializer: 0.1.1
+      entities: 1.1.2
+      htmlparser2: 3.10.1
+      lodash.assignin: 4.2.0
+      lodash.bind: 4.2.1
+      lodash.defaults: 4.2.0
+      lodash.filter: 4.6.0
+      lodash.flatten: 4.4.0
+      lodash.foreach: 4.5.0
+      lodash.map: 4.6.0
+      lodash.merge: 4.6.2
+      lodash.pick: 4.4.0
+      lodash.reduce: 4.6.0
+      lodash.reject: 4.6.0
+      lodash.some: 4.6.0
     dev: false
 
   /chokidar@3.6.0:
@@ -11684,6 +11718,10 @@ packages:
   /commander@10.0.1:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
+    dev: false
+
+  /commander@2.11.0:
+    resolution: {integrity: sha512-b0553uYA5YAEGgyYIGYROzKQ7X5RAqedkfjiZxwi0kL1g3bOaBNNZfYkzt/CL0umgD5wc9Jec2FbB98CjkMRvQ==}
     dev: false
 
   /commander@2.20.3:
@@ -12110,6 +12148,15 @@ packages:
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
     dev: false
 
+  /css-select@1.2.0:
+    resolution: {integrity: sha512-dUQOBoqdR7QwV90WysXPLXG5LO7nhYBgiWVfxF80DKPF8zx1t/pUd2FYy73emg3zrjtM6dzmYgbHKfV2rxiHQA==}
+    dependencies:
+      boolbase: 1.0.0
+      css-what: 2.1.3
+      domutils: 1.5.1
+      nth-check: 1.0.2
+    dev: false
+
   /css-select@4.3.0:
     resolution: {integrity: sha512-wPpOYtnsVontu2mODhA19JrqWxNsfdatRKd64kmpRbQgh1KtItko5sTnEpPdpSaJszTOhEMlF/RPz28qj4HqhQ==}
     dependencies:
@@ -12134,6 +12181,10 @@ packages:
     dependencies:
       mdn-data: 2.0.30
       source-map-js: 1.0.2
+    dev: false
+
+  /css-what@2.1.3:
+    resolution: {integrity: sha512-a+EPoD+uZiNfh+5fxw2nO9QwFa6nJe2Or35fGY6Ipw1R3R4AGz1d1TEZrCegvw2YTmZ0jXirGYlzxxpYSHwpEg==}
     dev: false
 
   /css-what@6.1.0:
@@ -12636,6 +12687,16 @@ packages:
       esutils: 2.0.3
     dev: false
 
+  /docx4js@3.2.20:
+    resolution: {integrity: sha512-u7kfMRYAHsczusgnrRAnZ0bXSF1HqiQmKtAI5LNIoQfrYXUHmaukcXnJR98KEFW3fSVdYKuLyHP9vKhrJKzetw==}
+    dependencies:
+      cfb: 0.12.1
+      cheerio: 0.22.0
+      color: 3.2.1
+      htmlparser2: 3.10.1
+      jszip: 2.7.0
+    dev: false
+
   /dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
     dev: false
@@ -12644,6 +12705,20 @@ packages:
     resolution: {integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==}
     dependencies:
       utila: 0.4.0
+    dev: false
+
+  /dom-serializer@0.1.1:
+    resolution: {integrity: sha512-l0IU0pPzLWSHBcieZbpOKgkIn3ts3vAh7ZuFyXNwJxJXk/c4Gwj9xaTJwIDVQCXawWD0qb3IzMGH5rglQaO0XA==}
+    dependencies:
+      domelementtype: 1.3.1
+      entities: 1.1.2
+    dev: false
+
+  /dom-serializer@0.2.2:
+    resolution: {integrity: sha512-2/xPb3ORsQ42nHYiSunXkDjPLBaEj/xTwUO4B7XCZQTRk7EBtTOPaygh10YAAh2OI1Qrp6NWfpAhzswj0ydt9g==}
+    dependencies:
+      domelementtype: 2.3.0
+      entities: 2.2.0
     dev: false
 
   /dom-serializer@1.4.1:
@@ -12707,6 +12782,20 @@ packages:
     engines: {node: '>= 4'}
     dependencies:
       domelementtype: 2.3.0
+    dev: false
+
+  /domutils@1.5.1:
+    resolution: {integrity: sha512-gSu5Oi/I+3wDENBsOWBiRK1eoGxcywYSqg3rR960/+EfY0CF4EX1VPkgHOZ3WiS/Jg2DtliF6BhWcHlfpYUcGw==}
+    dependencies:
+      dom-serializer: 0.1.1
+      domelementtype: 1.3.1
+    dev: false
+
+  /domutils@1.7.0:
+    resolution: {integrity: sha512-Lgd2XcJ/NjEw+7tFvfKxOzCYKZsdct5lczQ2ZaQY8Djz7pfAD3Gbp8ySJWtreII/vDlMVmxwa6pHmdxIYgttDg==}
+    dependencies:
+      dom-serializer: 0.2.2
+      domelementtype: 1.3.1
     dev: false
 
   /domutils@2.8.0:
@@ -13054,6 +13143,10 @@ packages:
     dependencies:
       ansi-colors: 4.1.3
       strip-ansi: 6.0.1
+    dev: false
+
+  /entities@1.1.2:
+    resolution: {integrity: sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==}
     dev: false
 
   /entities@2.2.0:
@@ -15402,6 +15495,17 @@ packages:
       entities: 2.2.0
     dev: false
 
+  /htmlparser2@3.10.1:
+    resolution: {integrity: sha512-IgieNijUMbkDovyoKObU1DUhm1iwNYE/fuifEoEHfd1oZKZDaONBSkal7Y01shxsM49R4XaMdGez3WnF9UfiCQ==}
+    dependencies:
+      domelementtype: 1.3.1
+      domhandler: 2.4.2
+      domutils: 1.7.0
+      entities: 1.1.2
+      inherits: 2.0.4
+      readable-stream: 3.6.2
+    dev: false
+
   /htmlparser2@6.1.0:
     resolution: {integrity: sha512-gyyPk6rgonLFEDGoeRgQNaEUvdJ4ktTmmUh/h2t7s+M8oPpIPxgNACWa+6ESR57kXstwqPiCut0V8NRpcwgU7A==}
     dependencies:
@@ -16991,6 +17095,12 @@ packages:
       object.values: 1.2.0
     dev: false
 
+  /jszip@2.7.0:
+    resolution: {integrity: sha512-JIsRKRVC3gTRo2vM4Wy9WBC3TRcfnIZU8k65Phi3izkvPH975FowRYtKGT6PxevA0XnJ/yO8b0QwV0ydVyQwfw==}
+    dependencies:
+      pako: 1.0.11
+    dev: false
+
   /jszip@3.10.1:
     resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
     dependencies:
@@ -17384,12 +17494,36 @@ packages:
       p-locate: 6.0.0
     dev: false
 
+  /lodash.assignin@4.2.0:
+    resolution: {integrity: sha512-yX/rx6d/UTVh7sSVWVSIMjfnz95evAgDFdb1ZozC35I9mSFCkmzptOzevxjgbQUsc78NR44LVHWjsoMQXy9FDg==}
+    dev: false
+
+  /lodash.bind@4.2.1:
+    resolution: {integrity: sha512-lxdsn7xxlCymgLYo1gGvVrfHmkjDiyqVv62FAeF2i5ta72BipE1SLxw8hPEPLhD4/247Ijw07UQH7Hq/chT5LA==}
+    dev: false
+
   /lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
     dev: false
 
+  /lodash.defaults@4.2.0:
+    resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==}
+    dev: false
+
   /lodash.escaperegexp@4.1.2:
     resolution: {integrity: sha512-TM9YBvyC84ZxE3rgfefxUWiQKLilstD6k7PTGt6wfbtXF8ixIJLOL3VYyV/z+ZiPLsVxAsKAFVwWlWeb2Y8Yyw==}
+    dev: false
+
+  /lodash.filter@4.6.0:
+    resolution: {integrity: sha512-pXYUy7PR8BCLwX5mgJ/aNtyOvuJTdZAo9EQFUvMIYugqmJxnrYaANvTbgndOzHSCSR0wnlBBfRXJL5SbWxo3FQ==}
+    dev: false
+
+  /lodash.flatten@4.4.0:
+    resolution: {integrity: sha512-C5N2Z3DgnnKr0LOpv/hKCgKdb7ZZwafIrsesve6lmzvZIRZRGaZ/l6Q8+2W7NaT+ZwO3fFlSCzCzrDCFdJfZ4g==}
+    dev: false
+
+  /lodash.foreach@4.5.0:
+    resolution: {integrity: sha512-aEXTF4d+m05rVOAUG3z4vZZ4xVexLKZGF0lIxuHZ1Hplpk/3B6Z1+/ICICYRLm7c41Z2xiejbkCkJoTlypoXhQ==}
     dev: false
 
   /lodash.includes@4.3.0:
@@ -17420,6 +17554,10 @@ packages:
     resolution: {integrity: sha512-0wJxfxH1wgO3GrbuP+dTTk7op+6L41QCXbGINEmD+ny/G/eCqGzxyCsh7159S+mgDDcoarnBw6PC1PS5+wUGgw==}
     dev: false
 
+  /lodash.map@4.6.0:
+    resolution: {integrity: sha512-worNHGKLDetmcEYDvh2stPCrrQRkP20E4l0iIS7F8EvzMqBBi7ltvFN5m1HvTf1P7Jk1txKhvFcmYsCr8O2F1Q==}
+    dev: false
+
   /lodash.memoize@4.1.2:
     resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==}
     dev: false
@@ -17430,6 +17568,22 @@ packages:
 
   /lodash.once@4.1.1:
     resolution: {integrity: sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==}
+    dev: false
+
+  /lodash.pick@4.4.0:
+    resolution: {integrity: sha512-hXt6Ul/5yWjfklSGvLQl8vM//l3FtyHZeuelpzK6mm99pNvN9yTDruNZPEJZD1oWrqo+izBmB7oUfWgcCX7s4Q==}
+    dev: false
+
+  /lodash.reduce@4.6.0:
+    resolution: {integrity: sha512-6raRe2vxCYBhpBu+B+TtNGUzah+hQjVdu3E17wfusjyrXBka2nBS8OH/gjVZ5PvHOhWmIZTYri09Z6n/QfnNMw==}
+    dev: false
+
+  /lodash.reject@4.6.0:
+    resolution: {integrity: sha512-qkTuvgEzYdyhiJBx42YPzPo71R1aEr0z79kAv7Ixg8wPFEjgRgJdUsGMG3Hf3OYSF/kHI79XhNlt+5Ar6OzwxQ==}
+    dev: false
+
+  /lodash.some@4.6.0:
+    resolution: {integrity: sha512-j7MJE+TuT51q9ggt4fSgVqro163BEFjAt3u97IqU+JA2DkWl80nFTrowzLpZ/BnpN7rrl0JA/593NAdd8p/scQ==}
     dev: false
 
   /lodash@4.17.21:
@@ -18269,6 +18423,12 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       path-key: 4.0.0
+    dev: false
+
+  /nth-check@1.0.2:
+    resolution: {integrity: sha512-WeBOdju8SnzPN5vTUJYxYUxLeXpCaVP5i5e0LF8fg7WORF2Wd7wFX/pk0tYZk7s8T+J7VLy0Da6J1+wCT0AtHg==}
+    dependencies:
+      boolbase: 1.0.0
     dev: false
 
   /nth-check@2.1.1:
@@ -19356,6 +19516,12 @@ packages:
   /pretty-hrtime@1.0.3:
     resolution: {integrity: sha512-66hKPCr+72mlfiSjlEB1+45IjXSqvVAIy6mocupoww4tBFE9R9IhwwUGoI4G++Tc9Aq+2rxOt0RFU6gPcrte0A==}
     engines: {node: '>= 0.8'}
+    dev: false
+
+  /printj@1.1.2:
+    resolution: {integrity: sha512-zA2SmoLaxZyArQTOPj5LXecR+RagfPSU5Kw1qP+jkWeNlrq+eJZyY2oS68SU1Z/7/myXM4lo9716laOFAVStCQ==}
+    engines: {node: '>=0.8'}
+    hasBin: true
     dev: false
 
   /process-nextick-args@2.0.1:
@@ -28764,7 +28930,7 @@ packages:
     dev: false
 
   file:projects/pod-calendar.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-a3IO+LV4RLUrLCIwlzK6HfwU0q4QkepgRaQi4/ybG+He0Oqy/eWvZnHHXry0FjArSrZjr2QOnxOlYsipXv/zfg==, tarball: file:projects/pod-calendar.tgz}
+    resolution: {integrity: sha512-DOvMMTPpDOAuO8Vi8gEBTXBMQATYdZgtNWxvUyG0xbCArW9jEmKbrOVBV1ydZGOJqfqhennjv09+uWR/YUR+SQ==, tarball: file:projects/pod-calendar.tgz}
     id: file:projects/pod-calendar.tgz
     name: '@rush-temp/pod-calendar'
     version: 0.0.0
@@ -28994,7 +29160,7 @@ packages:
     dev: false
 
   file:projects/pod-gmail.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-EgPrNV5SyE8PVkKfTc30asvvzcTaDEZnQ1krUOi8rIzQcgLuPIRgMwTc6yuqu3SAzC2zPrwudTMqzDPpwJTRxw==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-ybpB+uVlKzWvEVZnrp6iPuDYR7OwWBEsHl3ivSmte8BhfH9Q5QfzBm/FrEUsyEBIN4KS/cGDUoNGv5Us5OVWVw==, tarball: file:projects/pod-gmail.tgz}
     id: file:projects/pod-gmail.tgz
     name: '@rush-temp/pod-gmail'
     version: 0.0.0
@@ -29056,7 +29222,7 @@ packages:
     dev: false
 
   file:projects/pod-love.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-h64U5de7eDYWI5zbLFQtUEArWz+OVeQ3BWtCd2yy9Yw3uzgPOE+etmib6KtcC0MEcDSl3ZNN0UOrV1IDQzy+nQ==, tarball: file:projects/pod-love.tgz}
+    resolution: {integrity: sha512-g12q7ZxpvWr3/5nAZazdcKgw2rC4LVpWLPYs7qYtm4avIIGeu4FIT8WfV0E4wXPVdjdV4CX2WwZ7+1zSgDxYCA==, tarball: file:projects/pod-love.tgz}
     id: file:projects/pod-love.tgz
     name: '@rush-temp/pod-love'
     version: 0.0.0
@@ -29282,7 +29448,7 @@ packages:
     dev: false
 
   file:projects/pod-telegram.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-qt/UwzvrmgaVI2yI5vdGPHaghv5JF+ysgUY9GwwarkzqlZNBScnUo262CYNWy26iPdhVqNbvGYPrAgVecGHBFg==, tarball: file:projects/pod-telegram.tgz}
+    resolution: {integrity: sha512-mBbMXZhgRl0R9gvFN+uxfdFHgXdF9cFyC200rXnS4PgGkGVm9jRmE8lJQTxiOOJyX8rPDm8qlLhCrlKyof+pEQ==, tarball: file:projects/pod-telegram.tgz}
     id: file:projects/pod-telegram.tgz
     name: '@rush-temp/pod-telegram'
     version: 0.0.0
@@ -29733,7 +29899,7 @@ packages:
     dev: false
 
   file:projects/qms-doc-import-tool.tgz:
-    resolution: {integrity: sha512-s2EDYV09exzo01lbGDlzMq9D0cx2OILHS8bqQCgntVVWEK9nQypMd4gi/nCbmVhyHRapQih7D81Nf6zuSUohJg==, tarball: file:projects/qms-doc-import-tool.tgz}
+    resolution: {integrity: sha512-jxeLHsk5jNj+ABvXoCiX9VTv7ovVKEdkwddcmwpdTGjt7hBgtYsirnVxkryV8tfWMs5y99wjroKGfwSqtyzzOg==, tarball: file:projects/qms-doc-import-tool.tgz}
     name: '@rush-temp/qms-doc-import-tool'
     version: 0.0.0
     dependencies:
@@ -29747,6 +29913,7 @@ packages:
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       commander: 8.3.0
       cross-env: 7.0.3
+      docx4js: 3.2.20
       domhandler: 5.0.3
       domutils: 3.1.0
       esbuild: 0.20.1

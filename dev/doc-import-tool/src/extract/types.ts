@@ -114,7 +114,8 @@ export type TocSectionSpec = z.infer<typeof tocSection>
 
 export enum MetadataContainer {
   MetaTags = 'meta-tags',
-  TableRow = 'table-row'
+  TableRow = 'table-row',
+  PageHeaderTableRow = 'page-header-table-row'
 }
 
 const metaTagsMetadata = z.object({
@@ -126,9 +127,16 @@ const metaTagsMetadata = z.object({
 const metadataTableCell = z.object({
   extract: z.object({
     row: z.number().min(0),
-    col: z.number().min(0)
+    col: z.number().min(0),
+    slice: z
+      .object({
+        start: z.number().min(0).optional(),
+        end: z.number().min(0).optional()
+      })
+      .optional()
   })
 })
+export type MetadataTableCell = z.infer<typeof metadataTableCell>
 
 const tableRowMetadata = z.object({
   in: z.literal(MetadataContainer.TableRow),
@@ -137,11 +145,19 @@ const tableRowMetadata = z.object({
   docId: metadataTableCell
 })
 
-const docMetadata = z.union([metaTagsMetadata, tableRowMetadata])
+const pageHeaderTableRowMetadata = z.object({
+  in: z.literal(MetadataContainer.PageHeaderTableRow),
+  headerIdx: z.number().min(1).optional(),
+  docName: metadataTableCell,
+  docId: metadataTableCell
+})
+
+const docMetadata = z.union([metaTagsMetadata, tableRowMetadata, pageHeaderTableRowMetadata])
 
 export type DocMetadataSpec = z.infer<typeof docMetadata>
 export type DocMetaTagsMetadata = z.infer<typeof metaTagsMetadata>
 export type DocTableRowMetadata = z.infer<typeof tableRowMetadata>
+export type PageHeaderTableRowMetadata = z.infer<typeof pageHeaderTableRowMetadata>
 
 // #endregion
 

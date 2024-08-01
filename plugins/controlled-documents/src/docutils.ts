@@ -206,7 +206,7 @@ export async function createDocumentTemplate (
   parent: Ref<ProjectDocument> | undefined,
   templateId: Ref<ControlledDocument>,
   prefix: string,
-  spec: AttachedData<ControlledDocument>,
+  spec: Omit<AttachedData<ControlledDocument>, 'prefix'>,
   category: Ref<DocumentCategory>,
   author?: Ref<Employee>,
   defaultSection?: { title: string }
@@ -224,6 +224,7 @@ export async function createDocumentTemplate (
   )
   const seqNumber = (incResult as any).object.sequence as number
   const collaborativeDocId = getCollaborativeDocForDocument('TPL-DOC', seqNumber, 0, 1)
+  const code = spec.code === '' ? `${TEMPLATE_PREFIX}-${seqNumber}` : spec.code
 
   let path: Array<Ref<DocumentMeta>> = []
 
@@ -239,7 +240,7 @@ export async function createDocumentTemplate (
   })
 
   ops.notMatch(documents.class.Document, {
-    code: spec.code
+    code
   })
 
   ops.notMatch(documents.mixin.DocumentTemplate, {
@@ -280,6 +281,7 @@ export async function createDocumentTemplate (
     'documents',
     {
       ...spec,
+      code,
       seqNumber,
       category,
       prefix: TEMPLATE_PREFIX,
