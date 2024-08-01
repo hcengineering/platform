@@ -815,6 +815,39 @@ async function updateContextsTimestamp (
   await control.apply(res)
 }
 
+async function removeContexts (
+  contexts: DocNotifyContext[],
+  unsubscribe: Ref<PersonAccount>[],
+  control: TriggerControl
+): Promise<void> {
+  if (contexts.length === 0) return
+  if (unsubscribe.length === 0) return
+
+  const unsubscribeAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+    _id: { $in: unsubscribe }
+  })
+  const res: Tx[] = []
+
+  for (const context of contexts) {
+    const account = unsubscribeAccounts.find(({ _id }) => _id === context.user)
+    if (account === undefined) continue
+
+    const removeTx = control.txFactory.createTxRemoveDoc(context._class, context.space, context._id)
+
+    res.push(removeTx)
+
+    if (account.email !== undefined) {
+      control.operationContext.derived.targets['docNotifyContext' + removeTx._id] = (it) => {
+        if (it._id === removeTx._id) {
+          return [account.email]
+        }
+      }
+    }
+  }
+
+  await control.apply(res)
+}
+
 export async function createCollabDocInfo (
   collaborators: Ref<PersonAccount>[],
   control: TriggerControl,
@@ -823,7 +856,7 @@ export async function createCollabDocInfo (
   object: Doc,
   activityMessages: ActivityMessage[],
   params: NotifyParams,
-  cache: Map<Ref<Doc>, Doc>
+  unsubscribe: Ref<PersonAccount>[] = []
 ): Promise<Tx[]> {
   let res: Tx[] = []
 
@@ -834,6 +867,7 @@ export async function createCollabDocInfo (
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: object._id })
 
   await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control, originTx.modifiedBy)
+  await removeContexts(notifyContexts, unsubscribe, control)
 
   const docMessages = activityMessages.filter((message) => message.attachedTo === object._id)
   if (docMessages.length === 0) {
@@ -982,8 +1016,7 @@ async function getSpaceCollabTxes (
         originTx,
         doc,
         activityMessages,
-        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true },
-        cache
+        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true }
       )
     }
   }
@@ -1016,8 +1049,7 @@ async function createCollaboratorDoc (
     originTx,
     doc,
     activityMessage,
-    { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
-    cache
+    { isOwn: true, isSpace: false, shouldUpdateTimestamp: true }
   )
   res.push(mixinTx)
   res.push(...notificationTxes)
@@ -1154,16 +1186,11 @@ async function collectionCollabDoc (
   const collaborators = await getCollaborators(doc, control, tx, res)
 
   res = res.concat(
-    await createCollabDocInfo(
-      collaborators as Ref<PersonAccount>[],
-      control,
-      actualTx,
-      tx,
-      doc,
-      activityMessages,
-      { isOwn: false, isSpace: false, shouldUpdateTimestamp: true },
-      cache
-    )
+    await createCollabDocInfo(collaborators as Ref<PersonAccount>[], control, actualTx, tx, doc, activityMessages, {
+      isOwn: false,
+      isSpace: false,
+      shouldUpdateTimestamp: true
+    })
   )
 
   return res
@@ -1331,7 +1358,7 @@ async function updateCollaboratorDoc (
         doc,
         activityMessages,
         params,
-        cache
+        collabsInfo.removed as Ref<PersonAccount>[]
       )
     )
   } else {
@@ -1345,8 +1372,7 @@ async function updateCollaboratorDoc (
         originTx,
         doc,
         activityMessages,
-        params,
-        cache
+        params
       )
     )
   }

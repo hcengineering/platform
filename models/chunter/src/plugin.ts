@@ -30,7 +30,8 @@ export default mergeIds(chunterId, chunter, {
     ChannelsPanel: '' as AnyComponent,
     Chat: '' as AnyComponent,
     ChatMessageNotificationLabel: '' as AnyComponent,
-    ThreadNotificationPresenter: '' as AnyComponent
+    ThreadNotificationPresenter: '' as AnyComponent,
+    JoinChannelNotificationPresenter: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,

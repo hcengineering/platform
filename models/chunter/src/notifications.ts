@@ -16,6 +16,7 @@
 import { type Builder } from '@hcengineering/model'
 import notification from '@hcengineering/model-notification'
 import core from '@hcengineering/model-core'
+import activity from '@hcengineering/activity'
 
 import chunter from './plugin'
 
@@ -156,5 +157,15 @@ export function defineNotifications (builder: Builder): void {
       chunter.ids.ThreadNotification,
       chunter.ids.JoinChannelNotification
     ]
+  })
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: chunter.class.Channel,
+      action: 'update',
+      'attributeUpdates.attrKey': 'members'
+    },
+    presenter: chunter.component.JoinChannelNotificationPresenter
   })
 }

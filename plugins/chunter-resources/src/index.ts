@@ -50,6 +50,7 @@ import ThreadMessagePreview from './components/threads/ThreadMessagePreview.svel
 import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
 import ChannelCreatedMessage from './components/activity/ChannelCreatedMessage.svelte'
 import MembersChangedMessage from './components/activity/MembersChangedMessage.svelte'
+import JoinChannelNotificationPresenter from './components/notification/JoinChannelNotificationPresenter.svelte'
 
 import {
   ChannelTitleProvider,
@@ -179,7 +180,8 @@ export default async (): Promise<Resources> => ({
     ThreadNotificationPresenter,
     ChatAside,
     ThreadMessagePreview,
-    ChatMessagePreview
+    ChatMessagePreview,
+    JoinChannelNotificationPresenter
   },
   activity: {
     ChannelCreatedMessage,

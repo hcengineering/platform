@@ -118,6 +118,7 @@
     "Removed": "Supprimé",
     "CreatedChannelOn": "A créé ce canal le {date}",
     "ChannelMessages": "Messages du canal",
-    "JoinChannel": "Rejoindre"
+    "JoinChannel": "Rejoindre",
+    "YouJoinedChannel": "Vous avez rejoint le canal"
   }
 }

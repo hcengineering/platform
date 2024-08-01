@@ -1,4 +1,11 @@
-import { getCurrentLocation, getCurrentResolvedLocation, getLocation, type Location, navigate } from '@hcengineering/ui'
+import {
+  closePanel,
+  getCurrentLocation,
+  getCurrentResolvedLocation,
+  getLocation,
+  type Location,
+  navigate
+} from '@hcengineering/ui'
 import { type Ref, type Doc, type Class } from '@hcengineering/core'
 import type { ActivityMessage } from '@hcengineering/activity'
 import { chunterId, type ChunterSpace, type ThreadMessage } from '@hcengineering/chunter'
@@ -184,5 +191,6 @@ export async function resetChunterLocIfEqual (_id: Ref<Doc>, _class: Ref<Class<D
   loc.path[4] = ''
   loc.query = {}
   loc.path.length = 3
+  closePanel()
   navigate(loc)
 }

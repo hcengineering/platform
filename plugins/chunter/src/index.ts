@@ -176,7 +176,8 @@ export default plugin(chunterId, {
     Left: '' as IntlString,
     Added: '' as IntlString,
     Removed: '' as IntlString,
-    CreatedChannelOn: '' as IntlString
+    CreatedChannelOn: '' as IntlString,
+    YouJoinedChannel: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

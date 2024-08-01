@@ -93,7 +93,9 @@
   {#if removedPersons.length > 0}
     <span class="inline-flex flex-gap-1">
       {#if isLeave}
-        <Label label={chunter.string.Left} />
+        <span class="lower">
+          <Label label={chunter.string.Left} />
+        </span>
         <span class="inline-flex"><ChannelIcon value={object} size="x-small" /> {object?.name}</span>
       {:else}
         <span class:lower={differentActions}>

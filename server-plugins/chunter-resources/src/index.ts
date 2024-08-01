@@ -45,7 +45,7 @@ import core, {
   TxUpdateDoc,
   UserStatus
 } from '@hcengineering/core'
-import notification, { Collaborators, DocNotifyContext, NotificationContent } from '@hcengineering/notification'
+import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
@@ -289,13 +289,6 @@ export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): 
     ...(await control.ctx.with('OnThreadMessageDeleted', {}, async (ctx) => await OnThreadMessageDeleted(tx, control)))
   )
   res.push(
-    ...(await control.ctx.with(
-      'OnCollaboratorsChanged',
-      {},
-      async (ctx) => await OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control)
-    ))
-  )
-  res.push(
     ...(await control.ctx.with('OnChatMessageCreated', {}, async (ctx) => await OnChatMessageCreated(tx, control)))
   )
   return res
@@ -380,26 +373,6 @@ function combineAttributes (attributes: any[], key: string, operator: string, ar
   ).filter((v) => v != null)
 }
 
-async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxMixin || tx.mixin !== notification.mixin.Collaborators) return []
-
-  if (!control.hierarchy.isDerived(tx.objectClass, chunter.class.Channel)) return []
-
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0] as Channel | undefined
-
-  if (doc === undefined) return []
-  if (doc.private) return []
-
-  const added = combineAttributes([tx.attributes], 'collaborators', '$push', '$each')
-  const res: Tx[] = []
-
-  for (const addedMember of added) {
-    res.push(...joinChannel(control, doc, addedMember))
-  }
-
-  return res
-}
-
 async function hideOldDirects (
   directs: DocNotifyContext[],
   control: TriggerControl,
@@ -450,7 +423,6 @@ async function hideOldActivityChannels (
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastUpdateTimestamp > lastViewedTimestamp) continue
-    console.log({ diff: date - lastUpdateTimestamp, delay: hideChannelDelay })
     if (date - lastUpdateTimestamp < hideChannelDelay) continue
 
     const params = hierarchy.as(context, chunter.mixin.ChannelInfo)
@@ -505,7 +477,7 @@ async function updateChatInfo (control: TriggerControl, status: UserStatus, date
     ({ attachedToClass }) =>
       !hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage) &&
       !hierarchy.isDerived(attachedToClass, chunter.class.Channel) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel)
+      !hierarchy.isDerived(attachedToClass, activity.class.ActivityMessage)
   )
 
   const directTxes = await hideOldDirects(directContexts, control, date)

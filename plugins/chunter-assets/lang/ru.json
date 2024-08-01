@@ -118,6 +118,7 @@
     "Removed": "Исключил(а)",
     "CreatedChannelOn": "Создал этот канал {date}",
     "ChannelMessages": "Сообщения каналов",
-    "JoinChannel": "Приссоединение к каналу"
+    "JoinChannel": "Приссоединение к каналу",
+    "YouJoinedChannel": "Вы присоединились к каналу"
   }
 }

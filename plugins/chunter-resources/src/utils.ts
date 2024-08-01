@@ -488,6 +488,7 @@ export async function leaveChannelAction (
   }
 
   await leaveChannel(channel, getCurrentAccount()._id)
+  await client.remove(context)
   await resetChunterLocIfEqual(channel._id, channel._class, channel)
 }
 
@@ -519,9 +520,8 @@ export async function removeChannelAction (
       await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
     }
     await resetChunterLocIfEqual(context.attachedTo, context.attachedToClass, object)
+    void inboxClient.readDoc(client, context.attachedTo)
   }
-
-  void inboxClient.readDoc(client, context.attachedTo)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {

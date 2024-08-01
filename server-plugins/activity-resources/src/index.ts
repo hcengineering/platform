@@ -142,8 +142,7 @@ export async function createReactionNotifications (
       tx,
       parentMessage,
       [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false },
-      new Map()
+      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
     )
   )
 
@@ -394,7 +393,8 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
     async (ctx) => await createCollaboratorNotifications(ctx, tx, control, messages)
   )
 
-  return [...txes, ...notificationTxes]
+  await control.apply([...txes, ...notificationTxes])
+  return []
 }
 
 async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {

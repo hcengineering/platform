@@ -118,6 +118,7 @@
     "Removed": "Removed",
     "CreatedChannelOn": "Created this channel on {date}",
     "ChannelMessages": "Channel messages",
-    "JoinChannel": "Join channel"
+    "JoinChannel": "Join channel",
+    "YouJoinedChannel": "You have been joined to channel"
   }
 }
