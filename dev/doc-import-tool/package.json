@@ -65,6 +65,7 @@
     "form-data": "^4.0.0",
     "htmlparser2": "^9.0.0",
     "mammoth": "^1.6.0",
+    "docx4js": "^3.2.20",
     "node-fetch": "^2.6.6",
     "zod": "^3.22.4"
   }

@@ -416,6 +416,7 @@
             toolbar: {
               element: imageToolbarElement,
               boundary,
+              appendTo: () => boundary ?? element,
               isHidden: () => !showToolbar
             }
           }

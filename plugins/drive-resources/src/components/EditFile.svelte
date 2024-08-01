@@ -50,7 +50,7 @@
 
 {#if object !== undefined && version !== undefined}
   {#if blob !== undefined}
-    <FilePreview file={blob} name={version.name} metadata={version.metadata} />
+    <FilePreview file={blob} name={version.name} metadata={version.metadata} fit />
   {/if}
 
   {#if object.versions > 1}

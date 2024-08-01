@@ -15,21 +15,13 @@
 
 import contact, { type Employee, type Person } from '@hcengineering/contact'
 import { AccountRole, DOMAIN_TRANSIENT, IndexKind, type Domain, type Ref } from '@hcengineering/core'
-import { Index, Model, Prop, TypeRef, type Builder } from '@hcengineering/model'
-import core, { TDoc } from '@hcengineering/model-core'
-import preference, { TPreference } from '@hcengineering/model-preference'
-import presentation from '@hcengineering/model-presentation'
-import view, { createAction } from '@hcengineering/model-view'
-import notification from '@hcengineering/notification'
-import { getEmbeddedLabel } from '@hcengineering/platform'
-import setting from '@hcengineering/setting'
-import workbench from '@hcengineering/workbench'
 import {
   loveId,
   type DevicesPreference,
   type Floor,
   type Invite,
   type JoinRequest,
+  type Meeting,
   type Office,
   type ParticipantInfo,
   type RequestStatus,
@@ -38,6 +30,16 @@ import {
   type RoomInfo,
   type RoomType
 } from '@hcengineering/love'
+import { Index, Mixin, Model, Prop, TypeRef, type Builder } from '@hcengineering/model'
+import calendar, { TEvent } from '@hcengineering/model-calendar'
+import core, { TDoc } from '@hcengineering/model-core'
+import preference, { TPreference } from '@hcengineering/model-preference'
+import presentation from '@hcengineering/model-presentation'
+import view, { createAction } from '@hcengineering/model-view'
+import notification from '@hcengineering/notification'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import setting from '@hcengineering/setting'
+import workbench from '@hcengineering/workbench'
 import love from './plugin'
 
 export { loveId } from '@hcengineering/love'
@@ -127,10 +129,25 @@ export class TRoomInfo extends TDoc implements RoomInfo {
   isOffice!: boolean
 }
 
+@Mixin(love.mixin.Meeting, calendar.class.Event)
+export class TMeeting extends TEvent implements Meeting {
+  room!: Ref<Room>
+}
+
 export default love
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TRoom, TFloor, TOffice, TParticipantInfo, TJoinRequest, TDevicesPreference, TRoomInfo, TInvite)
+  builder.createModel(
+    TRoom,
+    TFloor,
+    TOffice,
+    TParticipantInfo,
+    TJoinRequest,
+    TDevicesPreference,
+    TRoomInfo,
+    TInvite,
+    TMeeting
+  )
 
   builder.createDoc(
     workbench.class.Application,
@@ -149,6 +166,19 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: workbench.extensions.WorkbenchExtensions,
     component: love.component.WorkbenchExtension
+  })
+
+  builder.createDoc(presentation.class.DocCreateExtension, core.space.Model, {
+    ofClass: calendar.class.Event,
+    apply: love.function.CreateMeeting,
+    components: {
+      body: love.component.MeetingData
+    }
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: calendar.extensions.EditEventExtensions,
+    component: love.component.EditMeetingData
   })
 
   builder.createDoc(

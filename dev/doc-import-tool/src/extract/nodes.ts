@@ -103,7 +103,7 @@ export class TableNodeExtractor implements NodeExtractor {
   private parseRows (table: AnyDomNode): AnyNode[][] {
     const header = findOne((n) => n.tagName === 'thead', [table])
     const body = findOne((n) => n.tagName === 'tbody', [table])
-    const bodyRows =
+    let bodyRows =
       body != null
         ? getChildren(body).filter((n) => clean(innerText(n)) !== '')
         : findAll((n) => n.tagName === 'tr' && clean(innerText(n)) !== '', [table])
@@ -111,14 +111,28 @@ export class TableNodeExtractor implements NodeExtractor {
     if (header != null) {
       const firstRow = findOne((n) => n.tagName === 'tr', [header])
 
+      if (bodyRows.length > 0) {
+        if (getChildren(bodyRows[0]).find((n) => n.type === ElementType.Tag && n.tagName === 'th') != null) {
+          bodyRows = bodyRows.slice(1)
+        }
+      }
+
       return [
         findAll((n) => n.tagName === 'th', firstRow != null ? [firstRow] : []),
-        ...bodyRows.map((r) => getChildren(r).filter((n) => n.type === ElementType.Tag && n.tagName === 'td'))
+        ...bodyRows.map((r) =>
+          getChildren(r).filter((n) => n.type === ElementType.Tag && (n.tagName === 'td' || n.tagName === 'th'))
+        )
       ]
     } else if (bodyRows.length > 0) {
       return [
-        getChildren(bodyRows[0]).filter((n) => n.type === ElementType.Tag && n.tagName === 'td'),
-        ...bodyRows.slice(1).map((r) => getChildren(r).filter((n) => n.type === ElementType.Tag && n.tagName === 'td'))
+        getChildren(bodyRows[0]).filter(
+          (n) => n.type === ElementType.Tag && (n.tagName === 'td' || n.tagName === 'th')
+        ),
+        ...bodyRows
+          .slice(1)
+          .map((r) =>
+            getChildren(r).filter((n) => n.type === ElementType.Tag && (n.tagName === 'td' || n.tagName === 'th'))
+          )
       ]
     }
 

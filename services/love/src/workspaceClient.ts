@@ -15,9 +15,9 @@
 import core, { Client, Ref, TxOperations, type Blob } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
 import love from '@hcengineering/love'
+import { generateToken } from '@hcengineering/server-token'
 import { getClient } from './client'
 import config from './config'
-import { encode } from './jwt'
 
 export class WorkspaceClient {
   private client!: TxOperations
@@ -35,10 +35,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = encode({
-      email: config.SystemEmail,
-      workspace
-    })
+    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client
@@ -70,7 +67,13 @@ export class WorkspaceClient {
         name,
         size: blob.size,
         type: blob.contentType,
-        lastModified: blob.modifiedOn
+        lastModified: blob.modifiedOn,
+        // hardcoded values from preset we use
+        // https://docs.livekit.io/realtime/egress/overview/#EncodingOptionsPreset
+        metadata: {
+          originalHeight: 720,
+          originalWidth: 1280
+        }
       }
       await createFile(this.client, love.space.Drive, drive.ids.Root, data)
     }

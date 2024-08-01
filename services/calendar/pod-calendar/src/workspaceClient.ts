@@ -33,9 +33,9 @@ import { Collection, type Db } from 'mongodb'
 import { CalendarClient } from './calendar'
 import { getClient } from './client'
 import config from './config'
-import { encode } from './jwt'
 import { SyncHistory, type ProjectCredentials, type User } from './types'
 import { CalendarController } from './calendarController'
+import { generateToken } from '@hcengineering/server-token'
 
 export class WorkspaceClient {
   private readonly txHandlers: ((...tx: Tx[]) => Promise<void>)[] = []
@@ -157,10 +157,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = encode({
-      email: config.SystemEmail,
-      workspace
-    })
+    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {
       void this.txHandler(...tx)

@@ -7,6 +7,7 @@ import account, {
   EndpointKind,
   UpgradeWorker,
   accountId,
+  cleanExpiredOtp,
   cleanInProgressWorkspaces,
   getMethods,
   cleanExpiredOtp,
@@ -25,6 +26,7 @@ import {
   type Version
 } from '@hcengineering/core'
 import { type MigrateOperation } from '@hcengineering/model'
+import { getMongoClient, type MongoClientReference } from '@hcengineering/mongo'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
@@ -34,7 +36,7 @@ import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
-import { MongoClient } from 'mongodb'
+import type { MongoClient } from 'mongodb'
 import os from 'os'
 
 /**
@@ -106,7 +108,10 @@ export function serveAccount (
   }
   setMetadata(serverClientPlugin.metadata.UserAgent, 'AccountService')
 
-  let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
+  const client: MongoClientReference = getMongoClient(dbUri)
+  let _client: MongoClient | Promise<MongoClient> = client.getClient()
+
+  let worker: UpgradeWorker | undefined
 
   let worker: UpgradeWorker | undefined
 
@@ -120,7 +125,7 @@ export function serveAccount (
   )
   app.use(bodyParser())
 
-  void client.then(async (p: MongoClient) => {
+  void client.getClient().then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
     registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL, brandings)
 
@@ -237,10 +242,10 @@ export function serveAccount (
       ctx.body = JSON.stringify(response)
     }
 
-    if (client instanceof Promise) {
-      client = await client
+    if (_client instanceof Promise) {
+      _client = await _client
     }
-    const db = client.db(ACCOUNT_DB)
+    const db = _client.db(ACCOUNT_DB)
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
@@ -269,7 +274,7 @@ export function serveAccount (
     if (client instanceof Promise) {
       void client.then((c) => c.close())
     } else {
-      void client.close()
+      client.close()
     }
     server.close()
   }

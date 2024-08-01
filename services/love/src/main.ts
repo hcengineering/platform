@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, WorkspaceId, getWorkspaceId, newMetrics, toWorkspaceString } from '@hcengineering/core'
+import { MeasureMetricsContext, WorkspaceId, newMetrics, toWorkspaceString } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import { StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express from 'express'
 import { IncomingHttpHeaders } from 'http'
@@ -32,7 +33,6 @@ import {
 } from 'livekit-server-sdk'
 import { v4 as uuid } from 'uuid'
 import config from './config'
-import { decode } from './jwt'
 import { WorkspaceClient } from './workspaceClient'
 
 const extractToken = (header: IncomingHttpHeaders): any => {
@@ -46,6 +46,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+  setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const storageConfigs: StorageConfiguration = storageConfigFromEnv()
   const ctx = new MeasureMetricsContext('love', {}, {}, newMetrics())
@@ -120,14 +121,13 @@ export const main = async (): Promise<void> => {
 
     const roomName = req.body.roomName
     const room = req.body.room
-    const { workspace, productId } = decode(token)
-    const workspaceId = getWorkspaceId(workspace, productId)
+    const { workspace } = decodeToken(token)
 
     try {
       const dateStr = new Date().toISOString().replace('T', '_').slice(0, 19)
       const name = `${room}_${dateStr}.mp4`
-      const id = await startRecord(storageConfig, egressClient, roomClient, roomName, workspaceId)
-      dataByUUID.set(id, { name, workspace, workspaceId })
+      const id = await startRecord(storageConfig, egressClient, roomClient, roomName, workspace)
+      dataByUUID.set(id, { name, workspace: workspace.name, workspaceId: workspace })
       res.send()
     } catch (e) {
       console.error(e)
@@ -144,7 +144,7 @@ export const main = async (): Promise<void> => {
       return
     }
     // just check token
-    decode(token)
+    decodeToken(token)
     await roomClient.updateRoomMetadata(req.body.roomName, JSON.stringify({ recording: false }))
     void stopEgress(egressClient, req.body.roomName)
     res.send()

@@ -18,6 +18,19 @@ export async function prepareDocumentStep (page: Page, document: NewDocument, st
   })
 }
 
+export async function createTemplateStep (
+  page: Page,
+  title: string,
+  description: string,
+  category: string
+): Promise<void> {
+  await test.step('2. Create a new template', async () => {
+    const documentsPage = new DocumentsPage(page)
+
+    await documentsPage.createTemplate(title, description, category)
+  })
+}
+
 export async function prepareCategoryStep (page: Page, newCategory: NewCategory): Promise<void> {
   await test.step('1. Create a new category', async () => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
