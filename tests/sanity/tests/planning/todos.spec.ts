@@ -13,7 +13,7 @@ test.describe('Planning ToDo tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
   })
 
-  test('New ToDo', async ({ page }) => {
+  test('New ToDo and checking notifications about unplanned tasks', async ({ page }) => {
     const dateEnd = new Date()
     dateEnd.setDate(dateEnd.getDate() + 1)
 
@@ -40,9 +40,11 @@ test.describe('Planning ToDo tests', () => {
     }
 
     const planningPage = new PlanningPage(page)
-    await planningPage.createNewToDo(newToDo)
-
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
+    await planningNavigationMenuPage.clickOnButtonUnplanned()
+    await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    await planningPage.createNewToDo(newToDo)
+    await planningNavigationMenuPage.compareCountersUnplannedToDos()
     await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.checkToDoExist(newToDo.title)

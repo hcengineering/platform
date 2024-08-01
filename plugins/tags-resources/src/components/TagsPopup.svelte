@@ -146,12 +146,15 @@
         kind={'ghost'}
         size={'large'}
         icon={show ? IconView : IconViewHide}
+        dataId={`btn${show ? 'Collapse' : 'Expand'}`}
         on:click={() => {
           show = !show
         }}
       />
     {/if}
-    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElementPopup} />{/if}
+    {#if !hideAdd}
+      <Button kind={'ghost'} size={'large'} icon={IconAdd} dataId={'btnAdd'} on:click={createTagElementPopup} />
+    {/if}
   </div>
   <div class="scroll">
     <div class="box">

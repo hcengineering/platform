@@ -58,6 +58,7 @@
       icon={IconChevronLeft}
       kind={'secondary'}
       size={'small'}
+      dataId={'btnPrev'}
       on:click={() => {
         inc(-1)
       }}
@@ -69,6 +70,7 @@
       type={!doubleRow ? 'type-button' : 'type-button-icon'}
       kind={'secondary'}
       size={'small'}
+      dataId={'btnToday'}
       inheritFont
       hasMenu
       disabled={isToday}
@@ -80,6 +82,7 @@
       icon={IconChevronRight}
       kind={'secondary'}
       size={'small'}
+      dataId={'btnNext'}
       on:click={() => {
         inc(1)
       }}
