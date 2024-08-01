@@ -26,7 +26,7 @@
   const dispatch = createEventDispatcher()
 
   $: items = $rooms
-    .filter((p) => !isOffice(p))
+    .filter((p) => !isOffice(p) && p._id !== love.ids.Reception)
     .map((p) => {
       return {
         _id: p._id,
