@@ -31,7 +31,7 @@
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, invites, myInfo, myRequests } from '../stores'
+  import { storePromise, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
     awaitConnect,
     isConnected,
@@ -220,6 +220,8 @@
     }
 
     configured = true
+
+    await $storePromise
 
     if (!$isConnected && !$isCurrentInstanceConnected) {
       const info = $infos.filter((p) => p.room === room._id)
