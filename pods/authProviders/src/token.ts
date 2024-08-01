@@ -55,7 +55,7 @@ export function registerToken (
 
         measureCtx.info('Success auth, redirect', { email: user.email, type: 'token' })
         // Successful authentication, redirect to your application
-        ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login/auth'))
+        ctx.redirect(concatLink(branding?.front ?? frontUrl, '/onboard/auth'))
       }
       await next()
     }

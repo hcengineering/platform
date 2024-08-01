@@ -521,7 +521,7 @@ export async function getInviteLinkId (
 ): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
-  const exp = expHours * 1000 * 60 * 60
+  const exp = expHours < 0 ? -1 : expHours * 1000 * 60 * 60
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
@@ -872,10 +872,10 @@ export function getHref (path: Pages): string {
   return host + url
 }
 
-export async function afterConfirm (wspage: 'onboard' | 'createWorkspace' = 'createWorkspace'): Promise<void> {
+export async function afterConfirm (): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo(wspage)
+    goTo('createWorkspace')
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
@@ -1041,15 +1041,6 @@ export async function doLoginNavigate (
     if (navigateUrl !== undefined) {
       loc.query = { ...loc.query, navigateUrl }
     }
-    navigate(loc)
-  }
-}
-
-export async function ensureConfirmed (account: LoginInfo): Promise<void> {
-  if (!account.confirmed) {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'confirmationSend'
-    loc.path.length = 2
     navigate(loc)
   }
 }

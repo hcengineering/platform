@@ -9,9 +9,8 @@ import account, {
   accountId,
   cleanExpiredOtp,
   cleanInProgressWorkspaces,
-  getMethods,
-  cleanExpiredOtp,
-  getAllTransactors
+  getAllTransactors,
+  getMethods
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -110,8 +109,6 @@ export function serveAccount (
 
   const client: MongoClientReference = getMongoClient(dbUri)
   let _client: MongoClient | Promise<MongoClient> = client.getClient()
-
-  let worker: UpgradeWorker | undefined
 
   let worker: UpgradeWorker | undefined
 
