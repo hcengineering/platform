@@ -41,6 +41,7 @@ export interface EditorKitOptions extends DefaultKitOptions {
     toolbar?: {
       element: HTMLElement
       boundary?: HTMLElement
+      appendTo?: HTMLElement | (() => HTMLElement)
       isHidden?: () => boolean
     }
   })
@@ -232,7 +233,10 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 if (this.options.image?.toolbar !== undefined) {
                   imageOptions.toolbar = {
                     ...this.options.image?.toolbar,
-                    tippyOptions: getTippyOptions(this.options.image?.toolbar?.boundary)
+                    tippyOptions: getTippyOptions(
+                      this.options.image?.toolbar?.boundary,
+                      this.options.image?.toolbar?.appendTo
+                    )
                   }
                 }
 
