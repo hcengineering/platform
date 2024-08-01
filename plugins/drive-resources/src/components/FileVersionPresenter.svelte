@@ -15,13 +15,16 @@
 //
 -->
 <script lang="ts">
+  import { WithLookup } from '@hcengineering/core'
   import { type FileVersion } from '@hcengineering/drive'
+  import { FilePreviewPopup } from '@hcengineering/presentation'
+  import { showPopup } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
   import { formatFileVersion } from '../utils'
 
-  export let value: FileVersion
+  export let value: WithLookup<FileVersion>
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
@@ -29,13 +32,36 @@
   export let type: ObjectPresenterType = 'link'
 
   $: version = formatFileVersion(value.version)
+
+  function handleClick (): void {
+    if (disabled) {
+      return
+    }
+
+    if (value.$lookup?.file === undefined) {
+      return
+    }
+
+    const blob = value.$lookup?.file
+
+    showPopup(
+      FilePreviewPopup,
+      {
+        file: blob._id,
+        contentType: blob.contentType,
+        name: value.name,
+        metadata: value.metadata
+      },
+      'centered'
+    )
+  }
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
-    <DocNavLink object={value} {disabled} {accent} {noUnderline}>
+    <DocNavLink object={value} onClick={handleClick} {disabled} {accent} {noUnderline}>
       <div class="flex-presenter">
         <div class="label nowrap flex flex-gap-2" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
           {version}
