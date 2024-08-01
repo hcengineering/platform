@@ -16,7 +16,7 @@
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support, { docsLink, reportBugLink, supportLink } from '@hcengineering/support'
+  import support, { docsLink, reportBugLink, supportLink, privacyPolicyLink } from '@hcengineering/support'
   import {
     AnySvelteComponent,
     Button,
@@ -199,6 +199,13 @@
     </Scroller>
   {/if}
   <div class="footer">
+    <a href={privacyPolicyLink} target="_blank">
+      <Button 
+        id="privacy-policy" 
+        kind={'ghost'} 
+        label={support.string.PrivacyPolicy} 
+        stopPropagation={false} />
+    </a>
     <a href={reportBugLink} target="_blank">
       <Button id="report-a-bug" kind={'primary'} label={support.string.ReportBug} stopPropagation={false} />
     </a>
