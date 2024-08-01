@@ -121,11 +121,6 @@
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
-        },
-        {
-          lookup: {
-            file: core.class.Blob
-          }
         }
       )
     } else {

@@ -24,7 +24,6 @@
   export let readonly: boolean = false
 
   const options: FindOptions<FileVersion> = {
-    lookup: { file: core.class.Blob },
     sort: { version: SortingOrder.Descending }
   }
 </script>

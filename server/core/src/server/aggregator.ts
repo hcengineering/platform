@@ -4,19 +4,15 @@ import core, {
   toIdMap,
   withContext,
   type Blob,
-  type BlobLookup,
-  type Branding,
   type MeasureContext,
   type Ref,
   type StorageIterator,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceId
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type RawDBAdapter } from '../adapter'
 
 import {
-  type BlobLookupResult,
   type BlobStorageIterator,
   type BucketInfo,
   type ListBlobResult,
@@ -308,16 +304,6 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
         provider: forceProvider
       }
     }
-    // try select provider based on content type matching.
-    for (const [provider, adapter] of this.adapters.entries()) {
-      if (adapter.contentTypes === undefined) {
-        continue
-      }
-      if (adapter.contentTypes.some((it) => contentType.includes(it))) {
-        // we have matched content type for adapter.
-        return { adapter, provider }
-      }
-    }
 
     return { adapter: this.adapters.get(this.defaultAdapter) as StorageAdapter, provider: this.defaultAdapter }
   }
@@ -366,31 +352,6 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
     await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [blobDoc])
     return result
-  }
-
-  @withContext('aggregator-lookup', {})
-  async lookup (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null,
-    docs: Blob[]
-  ): Promise<BlobLookupResult> {
-    const result: BlobLookup[] = []
-
-    const byProvider = groupByArray(docs, (it) => it.provider)
-    for (const [k, v] of byProvider.entries()) {
-      const provider = this.adapters.get(k)
-      if (provider?.lookup !== undefined) {
-        const upd = await provider.lookup(ctx, workspaceId, branding, v)
-        if (upd.updates !== undefined) {
-          await this.dbAdapter.update(ctx, workspaceId, DOMAIN_BLOB, upd.updates)
-        }
-        result.push(...upd.lookups)
-      }
-    }
-    // Check if we need to perform diff update for blobs
-
-    return { lookups: result }
   }
 }
 

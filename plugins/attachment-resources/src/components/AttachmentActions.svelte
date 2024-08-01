@@ -18,7 +18,7 @@
   import {
     FilePreviewPopup,
     canPreviewFile,
-    getBlobHref,
+    getFileUrl,
     getPreviewAlignment,
     previewTypes
   } from '@hcengineering/presentation'
@@ -71,7 +71,8 @@
     showPopup(
       FilePreviewPopup,
       {
-        file: attachment.$lookup?.file ?? attachment.file,
+        file: attachment.file,
+        contentType: attachment.type,
         name: attachment.name,
         metadata: attachment.metadata
       },
@@ -130,32 +131,30 @@
 </script>
 
 <div class="flex">
-  {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then href}
-    <a
-      class="mr-1 flex-row-center gap-2 p-1"
-      {href}
-      download={attachment.name}
-      bind:this={download}
-      use:tooltip={{ label: getEmbeddedLabel(attachment.name) }}
-      on:click|stopPropagation
-    >
-      {#if canPreview}
-        <ActionIcon
-          icon={IconOpen}
-          size={'medium'}
-          action={(evt) => {
-            showPreview(evt)
-          }}
-        />
-      {/if}
+  <a
+    class="mr-1 flex-row-center gap-2 p-1"
+    href={getFileUrl(attachment.file, attachment.name)}
+    download={attachment.name}
+    bind:this={download}
+    use:tooltip={{ label: getEmbeddedLabel(attachment.name) }}
+    on:click|stopPropagation
+  >
+    {#if canPreview}
       <ActionIcon
-        icon={FileDownload}
+        icon={IconOpen}
         size={'medium'}
-        action={() => {
-          download.click()
+        action={(evt) => {
+          showPreview(evt)
         }}
       />
-    </a>
-  {/await}
+    {/if}
+    <ActionIcon
+      icon={FileDownload}
+      size={'medium'}
+      action={() => {
+        download.click()
+      }}
+    />
+  </a>
   <ActionIcon icon={IconMoreH} size={'medium'} action={showMenu} />
 </div>
