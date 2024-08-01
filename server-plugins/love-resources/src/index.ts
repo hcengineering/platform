@@ -171,10 +171,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
   }
 }
 
-async function rejectJoinRequests (
-  info: ParticipantInfo,
-  control: TriggerControl
-): Promise<Tx[]> {
+async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const roomInfos = await control.queryFind(love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
