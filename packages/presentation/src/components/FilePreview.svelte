@@ -82,7 +82,7 @@
   use:resizeObserver={(element) => (parentWidth = element.clientWidth)}
   class="content w-full h-full"
   class:flex-center={fit && !audio}
-  style:min-height={fit ? '100%' : `${minHeight ?? 0}px`}
+  style:min-height={fit ? '0' : `${minHeight ?? 0}px`}
 >
   {#await srcRef then src}
     {#if src === ''}
