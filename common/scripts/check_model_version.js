@@ -1,6 +1,6 @@
 const exec = require('child_process').exec
 
-exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
+exec('git describe --tags `git rev-list --tags --max-count=1`', (err, stdout, stderr) => {
   if (err !== null) {
     process.exit(1)
   }
