@@ -68,7 +68,7 @@
       await connectToSession(sessionId)
     } else if (meetId != null) {
       await $storePromise
-      await connectToMeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
+      await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
     }
   })
 </script>
