@@ -200,11 +200,7 @@
   {/if}
   <div class="footer">
     <a href={privacyPolicyLink} target="_blank">
-      <Button 
-        id="privacy-policy" 
-        kind={'ghost'} 
-        label={support.string.PrivacyPolicy} 
-        stopPropagation={false} />
+      <Button id="privacy-policy" kind={'ghost'} label={support.string.PrivacyPolicy} stopPropagation={false} />
     </a>
     <a href={reportBugLink} target="_blank">
       <Button id="report-a-bug" kind={'primary'} label={support.string.ReportBug} stopPropagation={false} />
