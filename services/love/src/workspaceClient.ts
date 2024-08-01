@@ -67,7 +67,13 @@ export class WorkspaceClient {
         name,
         size: blob.size,
         type: blob.contentType,
-        lastModified: blob.modifiedOn
+        lastModified: blob.modifiedOn,
+        // hardcoded values from preset we use
+        // https://docs.livekit.io/realtime/egress/overview/#EncodingOptionsPreset
+        metadata: {
+          originalHeight: 720,
+          originalWidth: 1280
+        }
       }
       await createFile(this.client, love.space.Drive, drive.ids.Root, data)
     }
