@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page, expect } from '@playwright/test'
 
 export class PlanningNavigationMenuPage {
   readonly page: Page
@@ -20,6 +20,9 @@ export class PlanningNavigationMenuPage {
   readonly buttonToDoPlanned = (): Locator =>
     this.page.locator('button[class*="hulyNavItem-container"] span[class*="hulyNavItem-label"]:text-is("Planned")')
 
+  readonly accordionContainerToDoUnplanned = (): Locator =>
+    this.page.locator('div.toDos-container div.hulyAccordionItem-container', { hasText: 'Unplanned' })
+
   async clickOnButtonToDoAll (): Promise<void> {
     await this.buttonToDoAll().click()
   }
@@ -30,5 +33,14 @@ export class PlanningNavigationMenuPage {
 
   async clickOnButtonToDoPlanned (): Promise<void> {
     await this.buttonToDoPlanned().click()
+  }
+
+  async compareCountersUnplannedToDos (): Promise<void> {
+    const navCount = parseInt(
+      await this.buttonToDoUnplanned().locator('xpath=..').locator('span.hulyNavItem-count').innerText(),
+      10
+    )
+    const accCount = await this.accordionContainerToDoUnplanned().locator('button.hulyToDoLine-container').count()
+    expect(accCount).toBe(navCount)
   }
 }
