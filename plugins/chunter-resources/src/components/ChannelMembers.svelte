@@ -48,22 +48,22 @@
   </div>
   <Scroller>
     {#each persons as person, index (person._id)}
-        <div class="item" class:withoutBorder={index === persons.length - 1}>
-          <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
-            <UserDetails {person} showStatus />
-            {#if !disableRemoveFor.includes(person._id)}
-              <div class="item__action">
-                <ButtonIcon
-                  icon={IconDelete}
-                  size="small"
-                  on:click={() => {
-                    dispatch('remove', person._id)
-                  }}
-                />
-              </div>
-            {/if}
-          </div>
+      <div class="item" class:withoutBorder={index === persons.length - 1}>
+        <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
+          <UserDetails {person} showStatus />
+          {#if !disableRemoveFor.includes(person._id)}
+            <div class="item__action">
+              <ButtonIcon
+                icon={IconDelete}
+                size="small"
+                on:click={() => {
+                  dispatch('remove', person._id)
+                }}
+              />
+            </div>
+          {/if}
         </div>
+      </div>
     {/each}
   </Scroller>
 </div>
