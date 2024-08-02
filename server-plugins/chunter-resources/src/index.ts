@@ -542,7 +542,7 @@ async function hideOldChannels (
   return res
 }
 
-async function updateChatInfo (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
+export async function updateChatInfo (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
   const account = await control.modelDb.findOne(contact.class.PersonAccount, { _id: status.user as Ref<PersonAccount> })
   if (account === undefined) return
 

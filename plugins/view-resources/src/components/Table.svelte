@@ -165,7 +165,7 @@
   $: if (totalQuery !== undefined) {
     totalQueryQ.query(
       _class,
-      totalQuery ?? query,
+      totalQuery,
       (result) => {
         gtotal = result.total === -1 ? 0 : result.total
       },
