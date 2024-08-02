@@ -46,6 +46,7 @@ import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
+import { isReactionMessage } from '@hcengineering/activity-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -439,7 +440,16 @@ export async function readChannelMessages (
     const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
 
     const notifications = get(inboxClient.activityInboxNotifications)
-      .filter(({ _id, attachedTo }) => allIds.includes(attachedTo))
+      .filter(({ attachedTo, $lookup, isViewed }) => {
+        if (isViewed) return false
+        const includes = allIds.includes(attachedTo)
+        if (includes) return true
+        const msg = $lookup?.attachedTo
+        if (isReactionMessage(msg)) {
+          return allIds.includes(msg.attachedTo as Ref<ActivityMessage>)
+        }
+        return false
+      })
       .map((n) => n._id)
 
     const relatedMentions = get(inboxClient.otherInboxNotifications)
