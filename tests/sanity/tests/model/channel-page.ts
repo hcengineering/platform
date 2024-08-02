@@ -62,7 +62,7 @@ export class ChannelPage {
   readonly privateOrPublicPopupButton = (change: string): Locator =>
     this.page.locator('div.popup div.menu-item', { hasText: change })
 
-  readonly userAdded = (user: string): Locator => this.page.getByText(user).nth(1)
+  readonly userAdded = (user: string): Locator => this.page.locator('.members').getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
