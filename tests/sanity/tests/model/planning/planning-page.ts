@@ -2,6 +2,8 @@ import { type Locator, type Page, expect } from '@playwright/test'
 import { NewToDo, Slot } from './types'
 import { CalendarPage } from '../calendar-page'
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
+
 export class PlanningPage extends CalendarPage {
   readonly page: Page
 
@@ -81,14 +83,17 @@ export class PlanningPage extends CalendarPage {
 
   async dragdropTomorrow (title: string, time: string): Promise<void> {
     await this.toDosContainer().getByRole('button', { name: title }).hover()
-    await this.page.mouse.down()
-    const boundingBox = await this.selectTomorrow(time).boundingBox()
-    expect(boundingBox).toBeTruthy()
-    if (boundingBox != null) {
-      await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
-      await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 20)
-      await this.page.mouse.up()
-    }
+
+    await expect(async () => {
+      await this.page.mouse.down()
+      const boundingBox = await this.selectTomorrow(time).boundingBox()
+      expect(boundingBox).toBeTruthy()
+      if (boundingBox != null) {
+        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
+        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 20)
+        await this.page.mouse.up()
+      }
+    }).toPass(retryOptions)
   }
 
   async checkInSchedule (title: string): Promise<void> {
