@@ -1,7 +1,6 @@
 import Koa from 'koa'
 import passport from 'koa-passport'
 import Router from 'koa-router'
-import session from 'koa-session'
 import { Db } from 'mongodb'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
@@ -43,10 +42,8 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  app.use(session({}, app))
 
   app.use(passport.initialize())
-  app.use(passport.session())
 
   passport.serializeUser(function (user: any, cb) {
     process.nextTick(function () {
@@ -68,12 +65,6 @@ export function registerProviders (
     const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
     if (value !== undefined) res.push(value)
   }
-
-  router.get('auth', '/auth', (ctx) => {
-    if (ctx.session?.loginInfo != null) {
-      ctx.body = JSON.stringify(ctx.session.loginInfo)
-    }
-  })
 
   router.get('providers', '/providers', (ctx) => {
     ctx.body = JSON.stringify(res)

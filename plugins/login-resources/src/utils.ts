@@ -867,7 +867,7 @@ export function goTo (path: Pages, clearQuery: boolean = false): void {
   if (clearQuery) {
     loc.query = undefined
   }
-  navigate(loc)
+  navigate(loc, clearQuery)
 }
 
 export function getHref (path: Pages): string {
@@ -928,26 +928,6 @@ export async function getLoginInfoFromQuery (): Promise<LoginInfo | undefined> {
     }
     return result.result
   } catch (err: any) {
-    Analytics.handleError(err)
-  }
-}
-
-export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | undefined> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-
-  try {
-    const response = await fetch(concatLink(accountsUrl, '/auth'), {
-      method: 'GET',
-      credentials: 'include'
-    })
-    const result = await response.json()
-    return result
-  } catch (err: any) {
-    console.error('login error', err)
     Analytics.handleError(err)
   }
 }
