@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
   import { ActivityMessagePresenter, sortActivityMessages } from '@hcengineering/activity-resources'
   import { ActionIcon, IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -26,14 +26,17 @@
   export let attachedTo: Ref<Doc>
   export let attachedToClass: Ref<Class<Doc>>
   export let space: Ref<Space>
+  export let withRefs = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
   const pinnedQuery = createQuery()
   const pinnedThreadsQuery = createQuery()
+  const pinnedRefsQuery = createQuery()
 
   let pinnedMessages: ActivityMessage[] = []
   let pinnedThreads: ThreadMessage[] = []
+  let pinnedRefs: ActivityReference[] = []
 
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
@@ -51,6 +54,16 @@
     }
   )
 
+  $: if (withRefs) {
+    pinnedRefsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo, isPinned: true, space: { $ne: space } },
+      (res) => {
+        pinnedRefs = res
+      }
+    )
+  }
+
   $: if (pinnedMessages.length === 0 && pinnedThreads.length === 0) {
     dispatch('close', undefined)
   }
@@ -59,7 +72,10 @@
     await client.update(message, { isPinned: false })
   }
 
-  $: displayMessages = sortActivityMessages(pinnedMessages.concat(pinnedThreads), SortingOrder.Descending)
+  $: displayMessages = sortActivityMessages(
+    pinnedMessages.concat(pinnedThreads).concat(pinnedRefs),
+    SortingOrder.Descending
+  )
 </script>
 
 <div class="antiPopup vScroll popup">

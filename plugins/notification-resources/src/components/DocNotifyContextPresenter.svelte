@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { DocNotifyContext } from '@hcengineering/notification'
-  import { Doc } from '@hcengineering/core'
+  import core, { Doc } from '@hcengineering/core'
   import { getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, isSpaceClass } from '@hcengineering/presentation'
   import chunter from '@hcengineering/chunter'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
 
@@ -27,9 +27,13 @@
 
   let object: Doc | undefined
 
-  $: objectQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
-    object = res[0]
-  })
+  $: objectQuery.query(
+    value.attachedToClass,
+    { _id: value.attachedTo, space: isSpaceClass(value.attachedToClass) ? core.space.Space : value.space },
+    (res) => {
+      object = res[0]
+    }
+  )
 
   async function getTitle (object: Doc) {
     if (object._class === chunter.class.DirectMessage) {
@@ -41,7 +45,7 @@
 
 {#if object}
   <div class="flex-presenter">
-    <NotifyContextIcon {value} size="small" />
+    <NotifyContextIcon {value} {object} size="small" />
     <div class="mr-4" />
 
     {#await getTitle(object) then title}

@@ -646,10 +646,7 @@
       return
     }
 
-    const lastMetadata = metadata[metadata.length - 1]
-    const lastMessage = displayMessages[displayMessages.length - 1]
-
-    if (lastMetadata._id !== lastMessage._id) {
+    if (!$isTailLoadedStore) {
       showScrollDownButton = true
     } else if (element != null) {
       const { scrollHeight, scrollTop, offsetHeight } = element

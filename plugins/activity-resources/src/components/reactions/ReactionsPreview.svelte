@@ -37,7 +37,7 @@
   $: if (message && hasReactions) {
     reactionsQuery.query(
       activity.class.Reaction,
-      { attachedTo: message._id },
+      { attachedTo: message._id, space: message.space },
       (res: Reaction[]) => {
         reactions = res
 
