@@ -73,7 +73,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly filter: Locator
   readonly filterCategory: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super(page)
     this.page = page
     this.buttonDocumentTitle = page.locator('button.version-item span.name')
@@ -156,15 +156,15 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.filterCategory = page.locator('span').filter({ hasText: /^Category$/ })
   }
 
-  async checkDocumentTitle (title: string): Promise<void> {
+  async checkDocumentTitle(title: string): Promise<void> {
     await expect(this.buttonDocumentTitle).toContainText(title)
   }
 
-  async clickDocumentHeader (name: string): Promise<void> {
+  async clickDocumentHeader(name: string): Promise<void> {
     await this.page.getByRole('button', { name }).click()
   }
 
-  async updateSectionTitle (sectionId: string, title: string): Promise<void> {
+  async updateSectionTitle(sectionId: string, title: string): Promise<void> {
     await this.page
       .locator('span.hdr-alignment:not([class*="label"])', { hasText: sectionId })
       .locator('xpath=..')
@@ -172,19 +172,19 @@ export class DocumentContentPage extends DocumentCommonPage {
       .fill(title)
   }
 
-  async clickOnAddCategoryButton (): Promise<void> {
+  async clickOnAddCategoryButton(): Promise<void> {
     await this.addCategoryButton.click()
   }
 
-  async clickNewDocumentArrow (): Promise<void> {
+  async clickNewDocumentArrow(): Promise<void> {
     await this.newDocumentArrow.click()
   }
 
-  async clickNewTemplate (): Promise<void> {
+  async clickNewTemplate(): Promise<void> {
     await this.newTemplate.click()
   }
 
-  async selectControlDocumentSubcategory (
+  async selectControlDocumentSubcategory(
     buttonName: 'My Document' | 'Library' | 'Templates' | 'Categories' | 'General documentation'
   ): Promise<void> {
     switch (buttonName) {
@@ -208,34 +208,34 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async fillCategoryForm (categoryTitle: string, description: string, categoryCode: string): Promise<void> {
+  async fillCategoryForm(categoryTitle: string, description: string, categoryCode: string): Promise<void> {
     await this.categoryTitle.fill(categoryTitle)
     await this.description.fill(description)
     await this.categoryCode.fill(categoryCode)
     await this.createButton.click()
   }
 
-  async checkIfCategoryIsCreated (categoryTitle: string, categoryCode: string): Promise<void> {
+  async checkIfCategoryIsCreated(categoryTitle: string, categoryCode: string): Promise<void> {
     await expect(this.page.getByText(categoryTitle)).toBeVisible()
     await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
   }
 
-  async checkIfTextExists (text: string): Promise<void> {
+  async checkIfTextExists(text: string): Promise<void> {
     await expect(this.textContainer).toContainText(text)
   }
 
-  async hoverOverGeneralDocumentation (): Promise<void> {
+  async hoverOverGeneralDocumentation(): Promise<void> {
     await this.generalDocumentation.hover()
   }
 
-  async addReasonAndImpactToTheDocument (description: string, reason: string): Promise<void> {
+  async addReasonAndImpactToTheDocument(description: string, reason: string): Promise<void> {
     await this.page.getByText('Reason & Impact').click()
     await this.page.getByPlaceholder('Describe what was changed...').fill(description)
     await this.page.getByPlaceholder('Describe why it was changed...').click()
     await this.page.getByPlaceholder('Describe why it was changed...').fill(reason)
   }
 
-  async selectRelease (version: string): Promise<void> {
+  async selectRelease(version: string): Promise<void> {
     await this.page.getByText('Release').click()
     if (version === 'Major') {
       await this.page.getByText('Major').click()
@@ -245,7 +245,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async addContentToTheSection (content: Content): Promise<void> {
+  async addContentToTheSection(content: Content): Promise<void> {
     const section = await this.getSectionLocator(content.sectionTitle)
     await section
       .locator('xpath=../../../../../../../..')
@@ -258,7 +258,7 @@ export class DocumentContentPage extends DocumentCommonPage {
       .fill(content.content)
   }
 
-  async checkContentForTheSection (content: Content): Promise<void> {
+  async checkContentForTheSection(content: Content): Promise<void> {
     const section = await this.getSectionLocator(content.sectionTitle)
     const parentLocator =
       (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
@@ -270,20 +270,20 @@ export class DocumentContentPage extends DocumentCommonPage {
     )
   }
 
-  async executeMoreActions (action: string): Promise<void> {
+  async executeMoreActions(action: string): Promise<void> {
     await this.buttonMoreActions.click()
     await this.selectFromDropdown(this.page, action)
   }
 
-  async checkIfFolderExists (folderName: string): Promise<void> {
+  async checkIfFolderExists(folderName: string): Promise<void> {
     await expect(this.page.getByRole('button', { name: folderName })).toBeVisible()
   }
 
-  async clickAddFolderButton (): Promise<void> {
+  async clickAddFolderButton(): Promise<void> {
     await this.addSpaceButton.click()
   }
 
-  async chooseFilter (category: string): Promise<void> {
+  async chooseFilter(category: string): Promise<void> {
     await this.filter.click()
     await this.filterCategory.hover()
     await this.page.getByRole('button', { name: 'Category', exact: true }).click()
@@ -291,11 +291,11 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.keyboard.press('Escape')
   }
 
-  async checkIfFilterIsApplied (code: string): Promise<void> {
+  async checkIfFilterIsApplied(code: string): Promise<void> {
     await expect(this.page.getByText(code, { exact: true })).toBeVisible()
   }
 
-  async fillDocumentSpaceForm (spaceName: string): Promise<void> {
+  async fillDocumentSpaceForm(spaceName: string): Promise<void> {
     await this.inputSpaceName.fill(spaceName)
     await this.roleSelector.nth(2).click()
     await this.selectRoleMember.nth(2).click()
@@ -307,23 +307,23 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
-  async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
+  async checkSpaceFormIsCreated(spaceName: string): Promise<void> {
     await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
   }
 
-  async createNewDocumentInsideFolder (folderName: string): Promise<void> {
+  async createNewDocumentInsideFolder(folderName: string): Promise<void> {
     await this.page.getByRole('button', { name: folderName }).hover()
     await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
     await this.createNewDocument.click()
   }
 
-  async clickLeaveFolder (folderName: string): Promise<void> {
+  async clickLeaveFolder(folderName: string): Promise<void> {
     await this.page.getByRole('button', { name: folderName }).hover()
     await this.page.getByRole('button', { name: folderName }).getByRole('button').click()
     await this.leaveFolder.click()
   }
 
-  async createNewDocumentFromFolder (
+  async createNewDocumentFromFolder(
     title: string,
     custom: boolean = false,
     specificReason: string = ''
@@ -339,29 +339,29 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createDraft.click()
   }
 
-  async clickSendForApproval (): Promise<void> {
+  async clickSendForApproval(): Promise<void> {
     await this.buttonSendForApproval.click()
   }
 
-  async clickDraftNewVersion (): Promise<void> {
+  async clickDraftNewVersion(): Promise<void> {
     await this.buttonDraftNewVersion.click()
   }
 
-  async clickHistoryTab (): Promise<void> {
+  async clickHistoryTab(): Promise<void> {
     await this.buttonHistoryTab.first().click()
   }
 
-  async checkIfHistoryVersionExists (description: string): Promise<void> {
+  async checkIfHistoryVersionExists(description: string): Promise<void> {
     await this.page.waitForTimeout(200)
     await expect(this.page.getByText(description)).toBeVisible()
     await expect(this.page.getByText('v0.1', { exact: true })).toBeVisible()
   }
 
-  async checkDocumentStatus (status: DocumentStatus): Promise<void> {
+  async checkDocumentStatus(status: DocumentStatus): Promise<void> {
     await expect(this.textDocumentStatus).toHaveText(status)
   }
 
-  async checkDocument (data: DocumentDetails): Promise<void> {
+  async checkDocument(data: DocumentDetails): Promise<void> {
     if (data.type != null && data.type !== 'N/A') {
       await expect(this.textType).toHaveText(data.type)
     }
@@ -385,13 +385,13 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async fillChangeDocumentOwnerPopup (newOwner: string): Promise<void> {
+  async fillChangeDocumentOwnerPopup(newOwner: string): Promise<void> {
     await this.buttonSelectNewOwner.click()
     await this.selectListItemWithSearch(this.page, newOwner)
     await this.buttonSelectNewOwnerChange.click()
   }
 
-  async fillSelectReviewersForm (reviewers: Array<string>): Promise<void> {
+  async fillSelectReviewersForm(reviewers: Array<string>): Promise<void> {
     await this.buttonAddMembers.click()
     for (const reviewer of reviewers) {
       await this.selectListItemWithSearch(this.page, reviewer)
@@ -400,7 +400,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.buttonSelectMemberSubmit.click()
   }
 
-  async fillSelectApproversForm (approvers: Array<string>): Promise<void> {
+  async fillSelectApproversForm(approvers: Array<string>): Promise<void> {
     await this.buttonAddMembers.click()
     for (const approver of approvers) {
       await this.selectListItemWithSearch(this.page, approver)
@@ -409,11 +409,11 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.buttonSelectMemberSubmit.click()
   }
 
-  async checkCurrentRights (right: DocumentRights): Promise<void> {
+  async checkCurrentRights(right: DocumentRights): Promise<void> {
     await expect(this.buttonCurrentRights).toHaveText(right)
   }
 
-  async addMessageToTheText (text: string, message: string, closePopup: boolean = true): Promise<void> {
+  async addMessageToTheText(text: string, message: string, closePopup: boolean = true): Promise<void> {
     await this.page.getByText(text).click()
     await this.page.getByText(text).dblclick()
 
@@ -425,7 +425,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async sendForApproval (
+  async sendForApproval(
     releaseType: string,
     version: string,
     reason: string,
@@ -459,7 +459,12 @@ export class DocumentContentPage extends DocumentCommonPage {
     await documentHistoryPage.checkHistoryEventExist(reason)
   }
 
-  async addMessageToTheSectionTitle (title: string, message: string, closePopup: boolean = true): Promise<void> {
+  async clickPreviousVersionHeader(userPage: Page, completeDocument: NewDocument, prevVersion: string): Promise<void> {
+    const documentContentPageSecond = new DocumentContentPage(userPage)
+    await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + prevVersion)
+  }
+
+  async addMessageToTheSectionTitle(title: string, message: string, closePopup: boolean = true): Promise<void> {
     const locator = await this.getSectionLocator(title)
     const parentLocator =
       (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING ? '../../../../..' : '../..'
@@ -473,31 +478,31 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async closeNewMessagePopup (): Promise<void> {
+  async closeNewMessagePopup(): Promise<void> {
     await this.textPageHeader.press('Escape', { delay: 300 })
     await this.textPageHeader.click({ force: true, delay: 300, position: { x: 1, y: 1 } })
   }
 
-  async completeReview (): Promise<void> {
+  async completeReview(): Promise<void> {
     await this.buttonCompleteReview.click()
     await this.inputPassword.fill(PlatformPassword)
     await this.buttonSubmit.click()
   }
 
-  async confirmRejection (rejectionReason: string): Promise<void> {
+  async confirmRejection(rejectionReason: string): Promise<void> {
     await this.buttonReject.click()
     await this.inputPassword.fill(PlatformPassword)
     await this.inputRejectionReason.fill(rejectionReason)
     await this.buttonSubmit.click()
   }
 
-  async confirmApproval (): Promise<void> {
+  async confirmApproval(): Promise<void> {
     await this.buttonApprove.click()
     await this.inputPassword.fill(PlatformPassword)
     await this.buttonSubmit.click()
   }
 
-  async addNewSection (startSectionId: string, direction: 'above' | 'below'): Promise<void> {
+  async addNewSection(startSectionId: string, direction: 'above' | 'below'): Promise<void> {
     await this.page.locator('span.hdr-alignment:not([class*="label"])', { hasText: startSectionId }).hover()
 
     await this.page
@@ -509,31 +514,31 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.selectFromDropdown(this.page, `Add new section ${direction}`)
   }
 
-  async changeCurrentRight (newRight: DocumentRights): Promise<void> {
+  async changeCurrentRight(newRight: DocumentRights): Promise<void> {
     await this.buttonCurrentRights.click()
     await this.selectMenuItem(this.page, newRight)
   }
 
-  async checkComparingTextAdded (text: string): Promise<void> {
+  async checkComparingTextAdded(text: string): Promise<void> {
     await expect(this.page.locator('span.text-editor-highlighted-node-add', { hasText: text }).first()).toBeVisible()
   }
 
-  async checkComparingTextDeleted (text: string): Promise<void> {
+  async checkComparingTextDeleted(text: string): Promise<void> {
     await expect(this.page.locator('span.text-editor-highlighted-node-delete', { hasText: text }).first()).toBeVisible()
   }
 
-  async openApprovals (): Promise<void> {
+  async openApprovals(): Promise<void> {
     await expect(this.buttonDocumentApprovals).toBeVisible()
     await this.buttonDocumentApprovals.click({ position: { x: 1, y: 1 }, force: true })
   }
 
-  async fillChangeDocumentOwnerPopupByQaraManager (newOwner: string): Promise<void> {
+  async fillChangeDocumentOwnerPopupByQaraManager(newOwner: string): Promise<void> {
     await this.buttonSelectNewOwner.click()
     await this.selectListItemWithSearch(this.page, newOwner)
     await this.buttonSelectNewOwnerChangeByQaraManager.click()
   }
 
-  private async getSectionLocator (title: string): Promise<Locator> {
+  private async getSectionLocator(title: string): Promise<Locator> {
     let result: Locator | null = null
     const sectionsLocator = iterateLocator(
       (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
