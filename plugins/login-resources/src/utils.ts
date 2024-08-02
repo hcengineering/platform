@@ -421,7 +421,12 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
 }
 
-export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLoginInfo, navigateUrl?: string): void {
+export function navigateToWorkspace (
+  workspace: string,
+  loginInfo?: WorkspaceLoginInfo,
+  navigateUrl?: string,
+  replace = false
+): void {
   if (loginInfo == null) {
     return
   }
@@ -432,7 +437,7 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
     try {
       const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
       if (loc.path[1] === workspace) {
-        navigate(loc)
+        navigate(loc, replace)
         return
       }
     } catch (err: any) {
@@ -441,9 +446,9 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   }
   const last = localStorage.getItem(`${locationStorageKeyId}_${workspace}`)
   if (last !== null) {
-    navigate(JSON.parse(last))
+    navigate(JSON.parse(last), replace)
   } else {
-    navigate({ path: [workbenchId, workspace] })
+    navigate({ path: [workbenchId, workspace] }, replace)
   }
 }
 
@@ -872,10 +877,10 @@ export function getHref (path: Pages): string {
   return host + url
 }
 
-export async function afterConfirm (): Promise<void> {
+export async function afterConfirm (clearQuery = false): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('createWorkspace')
+    goTo('createWorkspace', clearQuery)
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
@@ -883,10 +888,47 @@ export async function afterConfirm (): Promise<void> {
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setLoginInfo(result)
 
-      navigateToWorkspace(joinedWS[0].workspace, result)
+      navigateToWorkspace(joinedWS[0].workspace, result, undefined, clearQuery)
     }
   } else {
-    goTo('selectWorkspace')
+    goTo('selectWorkspace', clearQuery)
+  }
+}
+
+export async function getLoginInfoFromQuery (): Promise<LoginInfo | undefined> {
+  const token = getCurrentLocation().query?.token
+
+  if (token === undefined) {
+    return undefined
+  }
+
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'getAccountInfoByToken',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error != null) {
+      throw new PlatformError(result.error)
+    }
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
   }
 }
 
