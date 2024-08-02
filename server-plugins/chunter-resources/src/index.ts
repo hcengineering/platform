@@ -201,7 +201,7 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
       )
     }
   } else {
-    const collaborators = await getDocCollaborators(targetDoc, mixin, control)
+    const collaborators = await getDocCollaborators(control.ctx, targetDoc, mixin, control)
     if (!collaborators.includes(message.modifiedBy)) {
       collaborators.push(message.modifiedBy)
     }
@@ -546,8 +546,7 @@ async function updateChatInfo (control: TriggerControl, status: UserStatus, date
   const account = await control.modelDb.findOne(contact.class.PersonAccount, { _id: status.user as Ref<PersonAccount> })
   if (account === undefined) return
 
-  const chatUpdates = await control.queryFind(chunter.class.ChatInfo, {})
-  const update = chatUpdates.find(({ user }) => user === account.person)
+  const update = (await control.findAll(chunter.class.ChatInfo, { user: account.person })).shift()
   const shouldUpdate = update === undefined || date - update.timestamp > updateChatInfoDelay
 
   if (!shouldUpdate) return
@@ -633,18 +632,16 @@ async function OnContextUpdate (tx: TxUpdateDoc<DocNotifyContext>, control: Trig
   const hasUpdate = 'lastUpdateTimestamp' in tx.operations && tx.operations.lastUpdateTimestamp !== undefined
   if (!hasUpdate) return []
 
-  const chatUpdates = await control.queryFind(chunter.class.ChatInfo, {})
-  for (const update of chatUpdates) {
-    if (update.hidden.includes(tx.objectId)) {
-      return [
-        control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, chunter.mixin.ChannelInfo, {
-          hidden: false
-        }),
-        control.txFactory.createTxUpdateDoc(update._class, update.space, update._id, {
-          hidden: update.hidden.filter((id) => id !== tx.objectId)
-        })
-      ]
-    }
+  const update = (await control.findAll(chunter.class.ChatInfo, { hidden: tx.objectId }, { limit: 1 })).shift()
+  if (update !== undefined) {
+    return [
+      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, chunter.mixin.ChannelInfo, {
+        hidden: false
+      }),
+      control.txFactory.createTxUpdateDoc(update._class, update.space, update._id, {
+        hidden: update.hidden.filter((id) => id !== tx.objectId)
+      })
+    ]
   }
 
   return []

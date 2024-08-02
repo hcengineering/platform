@@ -12,14 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, {
-  BaseNotificationType,
-  CommonNotificationType,
-  NotificationContent,
-  NotificationProvider,
-  NotificationType
-} from '@hcengineering/notification'
-import type { TriggerControl } from '@hcengineering/server-core'
+import { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
+import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   Class,
@@ -29,14 +24,25 @@ import core, {
   matchQuery,
   MixinUpdate,
   Ref,
+  toIdMap,
   Tx,
   TxCreateDoc,
   TxCUD,
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  type MeasureContext
 } from '@hcengineering/core'
+import notification, {
+  BaseNotificationType,
+  CommonNotificationType,
+  NotificationContent,
+  NotificationProvider,
+  NotificationType
+} from '@hcengineering/notification'
+import { getResource, IntlString, translate } from '@hcengineering/platform'
+import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   getPersonAccountById,
   HTMLPresenter,
@@ -44,10 +50,6 @@ import serverNotification, {
   TextPresenter,
   UserInfo
 } from '@hcengineering/server-notification'
-import { getResource, IntlString, translate } from '@hcengineering/platform'
-import contact, { formatName, PersonAccount } from '@hcengineering/contact'
-import { DocUpdateMessage } from '@hcengineering/activity'
-import { Analytics } from '@hcengineering/analytics'
 
 import { NotifyResult } from './types'
 
@@ -134,7 +136,9 @@ export async function isAllowed (
   type: BaseNotificationType,
   provider: NotificationProvider
 ): Promise<boolean> {
-  const providersSettings = await control.queryFind(notification.class.NotificationProviderSetting, {})
+  const providersSettings = await control.queryFind(notification.class.NotificationProviderSetting, {
+    space: core.space.Workspace
+  })
   const providerSetting = providersSettings.find(
     ({ attachedTo, modifiedBy }) => attachedTo === provider._id && modifiedBy === receiver
   )
@@ -446,13 +450,23 @@ export async function getNotificationContent (
   return content
 }
 
-export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerControl): Promise<UserInfo[]> {
+export async function getUsersInfo (
+  ctx: MeasureContext,
+  ids: Ref<PersonAccount>[],
+  control: TriggerControl
+): Promise<UserInfo[]> {
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
-  const persons = await control.queryFind(contact.class.Person, {})
+  const persons = toIdMap(
+    await ctx.with(
+      'query-find',
+      {},
+      async () => await control.findAll(contact.class.Person, { _id: { $in: accounts.map((it) => it.person) } })
+    )
+  )
 
   return accounts.map((account) => ({
     _id: account._id,
     account,
-    person: persons.find(({ _id }) => _id === account.person)
+    person: persons.get(account.person)
   }))
 }

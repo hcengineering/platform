@@ -146,7 +146,7 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
     attachedTo: doc._id
   })
-  const usersInfo = await getUsersInfo([...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
+  const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
   const senderInfo = usersInfo.find(({ _id }) => _id === tx.modifiedBy) ?? {
     _id: tx.modifiedBy
   }

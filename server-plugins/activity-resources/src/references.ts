@@ -248,7 +248,7 @@ async function checkSpace (
   control: TriggerControl,
   res: Tx[]
 ): Promise<boolean> {
-  const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }))[0]
+  const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }, { limit: 1 }))[0]
   const isMember = space.members.includes(user._id)
   if (space.private) {
     return isMember
