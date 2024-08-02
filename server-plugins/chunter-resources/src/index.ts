@@ -607,23 +607,23 @@ async function updateChatInfo (control: TriggerControl, status: UserStatus, date
 }
 
 async function OnUserStatus (originTx: TxCUD<UserStatus>, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
-  if (tx.objectClass !== core.class.UserStatus) return []
-  if (tx._class === core.class.TxCreateDoc) {
-    const createTx = tx as TxCreateDoc<UserStatus>
-    const { online } = createTx.attributes
-    if (online) {
-      const status = TxProcessor.createDoc2Doc(createTx)
-      await updateChatInfo(control, status, originTx.modifiedOn)
-    }
-  } else if (tx._class === core.class.TxUpdateDoc) {
-    const updateTx = tx as TxUpdateDoc<UserStatus>
-    const { online } = updateTx.operations
-    if (online === true) {
-      const status = (await control.findAll(core.class.UserStatus, { _id: updateTx.objectId }))[0]
-      await updateChatInfo(control, status, originTx.modifiedOn)
-    }
-  }
+  // const tx = TxProcessor.extractTx(originTx) as TxCUD<UserStatus>
+  // if (tx.objectClass !== core.class.UserStatus) return []
+  // if (tx._class === core.class.TxCreateDoc) {
+  //   const createTx = tx as TxCreateDoc<UserStatus>
+  //   const { online } = createTx.attributes
+  //   if (online) {
+  //     const status = TxProcessor.createDoc2Doc(createTx)
+  //     await updateChatInfo(control, status, originTx.modifiedOn)
+  //   }
+  // } else if (tx._class === core.class.TxUpdateDoc) {
+  //   const updateTx = tx as TxUpdateDoc<UserStatus>
+  //   const { online } = updateTx.operations
+  //   if (online === true) {
+  //     const status = (await control.findAll(core.class.UserStatus, { _id: updateTx.objectId }))[0]
+  //     await updateChatInfo(control, status, originTx.modifiedOn)
+  //   }
+  // }
 
   return []
 }
@@ -632,17 +632,17 @@ async function OnContextUpdate (tx: TxUpdateDoc<DocNotifyContext>, control: Trig
   const hasUpdate = 'lastUpdateTimestamp' in tx.operations && tx.operations.lastUpdateTimestamp !== undefined
   if (!hasUpdate) return []
 
-  const update = (await control.findAll(chunter.class.ChatInfo, { hidden: tx.objectId }, { limit: 1 })).shift()
-  if (update !== undefined) {
-    return [
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, chunter.mixin.ChannelInfo, {
-        hidden: false
-      }),
-      control.txFactory.createTxUpdateDoc(update._class, update.space, update._id, {
-        hidden: update.hidden.filter((id) => id !== tx.objectId)
-      })
-    ]
-  }
+  // const update = (await control.findAll(notification.class.DocNotifyContext, { _id: tx.objectId }, { limit: 1 })).shift()
+  // if (update !== undefined) {
+  //   const as = control.hierarchy.as(update, chunter.mixin.ChannelInfo)
+  //   if (as.hidden) {
+  //     return [
+  //       control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, chunter.mixin.ChannelInfo, {
+  //         hidden: false
+  //       })
+  //     ]
+  //   }
+  // }
 
   return []
 }
