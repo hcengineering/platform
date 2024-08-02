@@ -77,6 +77,7 @@ services:
       - ACCOUNTS_URL=http://account:3000
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName":"collaborator","maxPoolSize":2}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   front:
@@ -95,6 +96,7 @@ services:
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files      
       - ELASTIC_URL=http://elastic:9200
@@ -135,6 +137,7 @@ services:
       - ENABLE_COMPRESSION=true
       - ELASTIC_URL=http://elastic:9200
       - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 1}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -165,6 +168,7 @@ services:
     environment:
       - SECRET=secret
       - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     deploy:
       resources:
@@ -181,6 +185,7 @@ services:
     environment:
       - SECRET=secret
       - MONGO_URL=mongodb://mongodb:27017
+      - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - ACCOUNTS_URL=http://account:3000
@@ -201,6 +206,7 @@ services:
       - SECRET=secret
       - PORT=4007
       - MONGO_URL=mongodb://mongodb:27017
+      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
       - SERVICE_ID=analytics-collector-service
       - ACCOUNTS_URL=http://account:3000
       - SUPPORT_WORKSPACE=support

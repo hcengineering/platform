@@ -76,9 +76,13 @@ const providerSettingsQuery = createQuery(true)
 const typeSettingsQuery = createQuery(true)
 
 export function loadNotificationSettings (): void {
-  providerSettingsQuery.query(notification.class.NotificationProviderSetting, {}, (res) => {
-    providersSettings.set(res)
-  })
+  providerSettingsQuery.query(
+    notification.class.NotificationProviderSetting,
+    { space: core.space.Workspace },
+    (res) => {
+      providersSettings.set(res)
+    }
+  )
   typeSettingsQuery.query(notification.class.NotificationTypeSetting, {}, (res) => {
     typesSettings.set(res)
   })

@@ -9,6 +9,7 @@ import {
   type FindResult,
   type Hierarchy,
   type ModelDb,
+  type QuerySelector,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -330,6 +331,22 @@ export class OptimizeQueryMiddleware extends BasePresentationMiddleware implemen
     const fQuery = { ...query }
     const fOptions = { ...options }
     this.optimizeQuery<T>(fQuery, fOptions)
+
+    // Immidiate response queries, if have some $in with empty list.
+
+    for (const [k, v] of Object.entries(fQuery)) {
+      if (typeof v === 'object' && v != null) {
+        const vobj = v as QuerySelector<any>
+        if (vobj.$in != null && vobj.$in.length === 0) {
+          // Emopty in, will always return []
+          return toFindResult([], 0)
+        } else if (vobj.$in != null && vobj.$in.length === 1 && Object.keys(vobj).length === 1) {
+          ;(fQuery as any)[k] = vobj.$in[0]
+        } else if (vobj.$nin != null && vobj.$nin.length === 1 && Object.keys(vobj).length === 1) {
+          ;(fQuery as any)[k] = { $ne: vobj.$nin[0] }
+        }
+      }
+    }
     return await this.provideFindAll(_class, fQuery, fOptions)
   }
 

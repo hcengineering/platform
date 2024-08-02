@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { ModernButton, showPopup, closeTooltip } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -72,6 +72,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

@@ -474,7 +474,10 @@ export function buildConfigLookup<T extends Doc> (
       ...((existingLookup as ReverseLookups)._id ?? {}),
       ...((res as ReverseLookups)._id ?? {})
     }
-    res = { ...existingLookup, ...res, _id }
+    res = { ...existingLookup, ...res }
+    if (Object.keys(_id).length > 0) {
+      ;(res as any)._id = _id
+    }
   }
   return res
 }

@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { AnyComponent, Component, Loading } from '@hcengineering/ui'
@@ -42,6 +43,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {
