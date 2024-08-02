@@ -31,10 +31,7 @@ test.describe('QMS. Documents tests', () => {
     }
   })
 
-  test('TESTS-384. Create a new doc version and previous one then marked to “Obsolete”', async ({
-    page,
-    browser
-  }) => {
+  test('TESTS-384. Create a new doc version and previous one then marked to “Obsolete”', async ({ page, browser }) => {
     await allure.description('Requirement\nUsers need to create a new document')
     await allure.tms('TESTS-384', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-384')
     const userSecondPage = await getSecondPage(browser)
