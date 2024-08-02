@@ -1042,18 +1042,19 @@ export function devTool (
     })
 
   program
-    .command('move-files <provider>')
-    .option('-w, --workspace <workspace>', 'A selected workspace only', '')
-    .option('--remove', 'Remove original blobs', false)
-    .action(async (provider: string, cmd: { workspace: string, remove: boolean }) => {
+    .command('move-files')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .action(async (cmd: { workspace: string }) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
           try {
             const exAdapter = adapter as StorageAdapterEx
-            if (exAdapter.adapters?.has(provider) !== true) {
-              throw new Error(`storage provider ${provider} not found`)
+            if (exAdapter.adapters === undefined || exAdapter.adapters.size < 2) {
+              throw new Error('bad storage config, at least two storage providers are required')
             }
+
+            console.log('moving files to storage provider', exAdapter.defaultAdapter)
 
             const workspaces = await listWorkspacesPure(db, productId)
             for (const workspace of workspaces) {
@@ -1062,8 +1063,7 @@ export function devTool (
               }
 
               const wsId = getWorkspaceId(workspace.workspace, productId)
-              const wsDb = getWorkspaceDB(client, { name: workspace.workspace, productId })
-              await moveFiles(toolCtx, wsDb, wsId, exAdapter, provider, cmd.remove)
+              await moveFiles(toolCtx, wsId, exAdapter)
             }
           } catch (err: any) {
             console.error(err)

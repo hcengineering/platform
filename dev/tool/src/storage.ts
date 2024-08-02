@@ -13,47 +13,48 @@
 // limitations under the License.
 //
 
-import { type Blob, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceId } from '@hcengineering/core'
 import { type StorageAdapterEx } from '@hcengineering/server-core'
-import { type Db } from 'mongodb'
 import { PassThrough } from 'stream'
 
 export async function moveFiles (
   ctx: MeasureContext,
-  db: Db,
   workspaceId: WorkspaceId,
-  exAdapter: StorageAdapterEx,
-  provider: string,
-  remove: boolean
+  exAdapter: StorageAdapterEx
 ): Promise<void> {
-  const adapter = exAdapter.adapters?.get(provider)
-  if (adapter === undefined) {
-    throw new Error(`storage provider ${provider} not found`)
-  }
-
-  // Ensure the workspace exists in the storage
-  await adapter.make(ctx, workspaceId)
-
-  const collection = db.collection<Blob>('blob')
-  const blobs = await collection.find({ provider: { $ne: provider } }).toArray()
+  if (exAdapter.adapters === undefined) return
 
   let count = 0
-  for (const blob of blobs) {
-    const readable = await exAdapter.get(ctx, workspaceId, blob._id)
-    const passThrough = new PassThrough()
-    readable.pipe(passThrough)
-    const info = await adapter.put(ctx, workspaceId, blob._id, passThrough, blob.contentType, blob.size)
 
-    await collection.updateOne({ _id: blob._id }, { $set: { provider, ...info } })
-    if (remove) {
-      await exAdapter.adapters?.get(blob.provider)?.remove(ctx, workspaceId, [blob._id])
-    }
+  console.log('start', workspaceId.name)
 
-    count += 1
-    if (count % 100 === 0) {
-      console.log('...moved: ', count, '/', blobs.length)
+  // We assume that the adapter moves all new files to the default adapter
+  const target = exAdapter.defaultAdapter
+  await exAdapter.adapters.get(target)?.make(ctx, workspaceId)
+
+  for (const [name, adapter] of exAdapter.adapters.entries()) {
+    if (name === target) continue
+
+    const iterator = await adapter.listStream(ctx, workspaceId)
+    while (true) {
+      const data = await iterator.next()
+      if (data === undefined) break
+
+      const blob = await exAdapter.stat(ctx, workspaceId, data._id)
+      if (blob === undefined) continue
+      if (blob.provider === target) continue
+
+      const readable = await exAdapter.get(ctx, workspaceId, data._id)
+      const stream = readable.pipe(new PassThrough())
+      await exAdapter.put(ctx, workspaceId, data._id, stream, blob.contentType, blob.size)
+
+      count += 1
+      if (count % 100 === 0) {
+        console.log('...moved: ', count)
+      }
     }
+    await iterator.close()
   }
 
-  console.log('files moved for workspace', workspaceId.name, count)
+  console.log('...done', workspaceId.name, count)
 }
