@@ -17,11 +17,11 @@
   import type { Blob, Ref } from '@hcengineering/core'
   import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import presentation, { getBlobSrcFor } from '..'
+  import presentation, { getFileUrl } from '..'
   import ActionContext from './ActionContext.svelte'
   import Download from './icons/Download.svelte'
 
-  export let file: Blob | Ref<Blob> | undefined
+  export let file: Ref<Blob> | undefined
   export let name: string
   export let contentType: string | undefined
   // export let popupOptions: PopupOptions
@@ -45,7 +45,7 @@
   })
   let download: HTMLAnchorElement
 
-  $: srcRef = getBlobSrcFor(file, name)
+  $: srcRef = file !== undefined ? getFileUrl(file, name) : undefined
 
   $: isImage = contentType !== undefined && contentType.startsWith('image/')
 

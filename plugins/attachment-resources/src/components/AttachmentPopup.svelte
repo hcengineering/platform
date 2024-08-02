@@ -43,11 +43,6 @@
     },
     (res) => {
       docs = res
-    },
-    {
-      lookup: {
-        file: core.class.Blob
-      }
     }
   )
 

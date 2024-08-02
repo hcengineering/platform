@@ -127,11 +127,6 @@
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
           dispatch('attach', { action: 'saved', value: attachments.size })
-        },
-        {
-          lookup: {
-            file: core.class.Blob
-          }
         }
       )
     }

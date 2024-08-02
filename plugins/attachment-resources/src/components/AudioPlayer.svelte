@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getBlobHref, getFileUrl } from '@hcengineering/presentation'
-  import { CircleButton, Progress } from '@hcengineering/ui'
-  import Play from './icons/Play.svelte'
-  import Pause from './icons/Pause.svelte'
   import type { WithLookup } from '@hcengineering/core'
+  import { getFileUrl } from '@hcengineering/presentation'
+  import { CircleButton, Progress } from '@hcengineering/ui'
+  import Pause from './icons/Pause.svelte'
+  import Play from './icons/Play.svelte'
 
   export let value: WithLookup<Attachment>
   export let fullSize = false
@@ -48,9 +48,7 @@
   </div>
 </div>
 <audio bind:duration bind:currentTime={time} bind:paused>
-  {#await getBlobHref(value.$lookup?.file, value.file, value.name) then href}
-    <source src={href} type={value.type} />
-  {/await}
+  <source src={getFileUrl(value.file, value.name)} type={value.type} />
 </audio>
 
 <style lang="scss">

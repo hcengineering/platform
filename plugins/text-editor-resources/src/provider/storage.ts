@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import core, {
-  collaborativeDocParse,
-  type Blob,
-  type BlobLookup,
-  type CollaborativeDoc,
-  type Ref
-} from '@hcengineering/core'
-import { getBlobHref, getClient } from '@hcengineering/presentation'
+import { collaborativeDocParse, type Blob, type CollaborativeDoc, type Ref } from '@hcengineering/core'
+import { getFileUrl } from '@hcengineering/presentation'
 import { ObservableV2 as Observable } from 'lib0/observable'
 import { applyUpdate, type Doc as YDoc } from 'yjs'
 
@@ -39,11 +33,7 @@ async function fetchContent (blob: Ref<Blob>, doc: YDoc): Promise<boolean> {
 
 async function fetchBlobContent (_id: Ref<Blob>): Promise<Uint8Array | undefined> {
   try {
-    const blob = (await getClient().findOne(core.class.Blob, { _id })) as BlobLookup
-    if (blob === undefined || blob.size === 0) {
-      return undefined
-    }
-    const href = await getBlobHref(blob, _id)
+    const href = getFileUrl(_id)
     const res = await fetch(href)
 
     if (res.ok) {

@@ -38,7 +38,7 @@
 
   $: if (empValue === undefined) {
     void getClient()
-      .findOne(contact.class.Contact, { _id }, { lookup: { avatar: core.class.Blob } })
+      .findOne(contact.class.Contact, { _id })
       .then((c) => {
         _contact = c
       })
