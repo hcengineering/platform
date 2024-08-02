@@ -46,7 +46,7 @@
 
   let filteredMessages: DisplayActivityMessage[] = []
   let allMessages: ActivityMessage[] = []
-  const messages: ActivityMessage[] = []
+  let messages: ActivityMessage[] = []
   let refs: ActivityReference[] = []
 
   let isMessagesLoading = false
@@ -203,8 +203,8 @@
       activity.class.ActivityMessage,
       { attachedTo: objectId, space: getSpace(object) },
       (result: ActivityMessage[]) => {
-        void combineActivityMessages(result, order).then((messages) => {
-          messages = messages
+        void combineActivityMessages(result, order).then((res) => {
+          messages = res
           isMessagesLoading = false
         })
       },
