@@ -49,9 +49,3 @@ export interface NewComponent {
   description?: string
   lead?: string
 }
-
-export interface DateDivided {
-  day: string
-  month: string
-  year: string
-}

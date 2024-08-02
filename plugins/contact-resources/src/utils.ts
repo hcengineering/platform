@@ -320,19 +320,10 @@ function fillStores (): void {
     const accountPersonQuery = createQuery(true)
 
     const query = createQuery(true)
-    query.query(
-      contact.mixin.Employee,
-      {},
-      (res) => {
-        employeesStore.set(res)
-        employeeByIdStore.set(toIdMap(res))
-      },
-      {
-        lookup: {
-          avatar: core.class.Blob
-        }
-      }
-    )
+    query.query(contact.mixin.Employee, {}, (res) => {
+      employeesStore.set(res)
+      employeeByIdStore.set(toIdMap(res))
+    })
 
     const accountQ = createQuery(true)
     accountQ.query(contact.class.PersonAccount, {}, (res) => {
@@ -345,11 +336,6 @@ function fillStores (): void {
         { _id: { $in: persons }, [contact.mixin.Employee]: { $exists: false } },
         (res) => {
           personAccountPersonByIdStore.set(toIdMap(res))
-        },
-        {
-          lookup: {
-            avatar: core.class.Blob
-          }
         }
       )
     })

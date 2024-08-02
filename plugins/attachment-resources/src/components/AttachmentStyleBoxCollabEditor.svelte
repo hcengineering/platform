@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment, { Attachment, BlobMetadata } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import core, { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
+  import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     FileOrBlob,
@@ -25,7 +25,6 @@
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
-  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
   import textEditor, { type RefAction, type TextEditorHandler } from '@hcengineering/text-editor'
   import {
     AttachIcon,
@@ -38,6 +37,7 @@
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
   import { uploadFiles } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
+  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
@@ -106,11 +106,6 @@
     },
     (res) => {
       attachments = res
-    },
-    {
-      lookup: {
-        file: core.class.Blob
-      }
     }
   )
 

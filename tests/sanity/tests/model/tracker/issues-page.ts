@@ -63,7 +63,6 @@ export class IssuesPage extends CommonTrackerPage {
   buttonCollapsedCategories = (): Locator => this.page.locator('div.categoryHeader.collapsed')
   pupupTagsPopup = (): Locator => this.page.locator('.popup#TagsPopup')
   issueNotExist = (issueName: string): Locator => this.page.locator('tr', { hasText: issueName })
-  filterRowExists = (issueName: string): Locator => this.page.locator('div.row span', { hasText: issueName })
   issueListGrid = (): Locator => this.page.locator('div.listGrid')
   issueList = (): Locator => this.page.locator('div[class*="square"] > div')
   issueByName = (issueName: string): Locator => this.page.locator('a', { hasText: issueName })
@@ -512,11 +511,11 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkFilteredIssueExist (issueName: string): Promise<void> {
-    await expect(this.filterRowExists(issueName)).toHaveCount(1)
+    await expect(this.linesFromList(issueName)).toHaveCount(1)
   }
 
   async checkFilteredIssueNotExist (issueName: string): Promise<void> {
-    await expect(this.filterRowExists(issueName)).toHaveCount(0)
+    await expect(this.linesFromList(issueName)).toHaveCount(0)
   }
 
   async checkAllIssuesInStatus (statusId?: string, statusName?: string): Promise<void> {

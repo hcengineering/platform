@@ -151,12 +151,14 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
 
             const fileId = node.attrs['file-id'] ?? node.attrs.src
             const fileName = node.attrs.alt ?? ''
+            const fileType = node.attrs['data-file-type'] ?? ''
 
             showPopup(
               FilePreviewPopup,
               {
                 file: fileId,
                 name: fileName,
+                contentType: fileType,
                 fullSize: true,
                 showIcon: false
               },
@@ -209,10 +211,22 @@ export async function openImage (editor: Editor): Promise<void> {
   const attributes = editor.getAttributes('image')
   const fileId = attributes['file-id'] ?? attributes.src
   const fileName = attributes.alt ?? ''
+  const fileType = attributes['data-file-type'] ?? ''
   await new Promise<void>((resolve) => {
-    showPopup(FilePreviewPopup, { file: fileId, name: fileName, fullSize: true, showIcon: false }, 'centered', () => {
-      resolve()
-    })
+    showPopup(
+      FilePreviewPopup,
+      {
+        file: fileId,
+        name: fileName,
+        contentType: fileType,
+        fullSize: true,
+        showIcon: false
+      },
+      'centered',
+      () => {
+        resolve()
+      }
+    )
   })
 }
 

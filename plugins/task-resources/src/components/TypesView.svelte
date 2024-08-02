@@ -120,6 +120,7 @@
       resultQuery = mergeQueries(query, e.detail)
     }}
   />
+
   <Component
     is={viewlet.$lookup.descriptor.component}
     props={{

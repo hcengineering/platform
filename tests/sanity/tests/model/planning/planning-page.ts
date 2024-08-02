@@ -30,6 +30,9 @@ export class PlanningPage extends CalendarPage {
   readonly buttonPopupVisibleToEveryone = (): Locator =>
     this.popup().getByRole('button', { name: 'Visible to everyone' })
 
+  readonly buttonPopupOnlyVisibleToYou = (): Locator =>
+    this.popup().getByRole('button', { name: 'Only visible to you' })
+
   readonly buttonPopupSave = (): Locator => this.popup().getByRole('button', { name: 'Save' })
   readonly buttonPopupCreateAddLabel = (): Locator =>
     this.popup().locator('button.antiButton', { hasText: 'Add label' })

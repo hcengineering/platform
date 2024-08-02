@@ -15,11 +15,11 @@
 //
 
 import {
-  type Channel,
-  type AvatarInfo,
-  type Contact,
   getGravatarUrl,
   getName,
+  type AvatarInfo,
+  type Channel,
+  type Contact,
   type Person,
   type PersonAccount
 } from '@hcengineering/contact'
@@ -49,6 +49,7 @@ import {
   type ColorDefinition,
   type TooltipAlignment
 } from '@hcengineering/ui'
+import { AggregationManager } from '@hcengineering/view-resources'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
@@ -122,7 +123,6 @@ import NameChangedActivityMessage from './components/activity/NameChangedActivit
 import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
-import { AggregationManager } from '@hcengineering/view-resources'
 
 import { get, writable } from 'svelte/store'
 import contact from './plugin'
@@ -408,7 +408,7 @@ export default async (): Promise<Resources> => ({
           color: getPersonColor(person, name)
         }
       }
-      const blobRef = await getBlobRef(person.$lookup?.avatar, person.avatar, undefined, width)
+      const blobRef = await getBlobRef(person.avatar, undefined, width)
       return {
         url: blobRef.src,
         srcSet: blobRef.srcset,

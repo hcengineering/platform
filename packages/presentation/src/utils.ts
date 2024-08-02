@@ -24,7 +24,6 @@ import core, {
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
-  type BlobLookup,
   type Class,
   type Client,
   type Collection,
@@ -448,18 +447,6 @@ export class LiveQuery {
  */
 export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
-}
-
-export async function getBlobHref (
-  _blob: PlatformBlob | undefined,
-  file: Ref<PlatformBlob>,
-  filename?: string
-): Promise<string> {
-  let blob = _blob as BlobLookup
-  if (blob?.downloadUrl === undefined) {
-    blob = (await getClient().findOne(core.class.Blob, { _id: file })) as BlobLookup
-  }
-  return blob?.downloadUrl ?? getFileUrl(file, filename)
 }
 
 export function getCurrentWorkspaceUrl (): string {

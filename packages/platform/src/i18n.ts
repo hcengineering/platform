@@ -31,8 +31,8 @@ export type Loader = (locale: string) => Promise<Record<string, string | Record<
 type Messages = Record<string, IntlString | Record<string, IntlString>>
 
 const loaders = new Map<Plugin, Loader>()
-const translations = new Map<Plugin, Messages | Status>()
-const cache = new Map<IntlString, IntlMessageFormat | Status>()
+const translations = new Map<string, Map<Plugin, Messages | Status>>()
+const cache = new Map<string, Map<IntlString, IntlMessageFormat | Status>>()
 const englishTranslationsForMissing = new Map<Plugin, Messages | Status>()
 /**
  * @public
@@ -52,10 +52,14 @@ export async function loadPluginStrings (locale: string, force: boolean = false)
     cache.clear()
   }
   for (const [plugin] of loaders) {
-    let messages = translations.get(plugin)
+    const localtTanslations = translations.get(locale) ?? new Map<Plugin, Messages | Status<any>>()
+    if (!translations.has(locale)) {
+      translations.set(locale, localtTanslations)
+    }
+    let messages = localtTanslations.get(plugin)
     if (messages === undefined || force) {
       messages = await loadTranslationsForComponent(plugin, locale)
-      translations.set(plugin, messages)
+      localtTanslations.set(plugin, messages)
     }
   }
 }
@@ -83,10 +87,14 @@ async function loadTranslationsForComponent (plugin: Plugin, locale: string): Pr
 
 async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString | Status | undefined> {
   try {
-    let messages = translations.get(id.component)
+    const localtTanslations = translations.get(locale) ?? new Map<Plugin, Messages | Status<any>>()
+    if (!translations.has(locale)) {
+      translations.set(locale, localtTanslations)
+    }
+    let messages = localtTanslations.get(id.component)
     if (messages === undefined) {
       messages = await loadTranslationsForComponent(id.component, locale)
-      translations.set(id.component, messages)
+      localtTanslations.set(id.component, messages)
     }
     if (messages instanceof Status) {
       return messages
@@ -127,7 +135,11 @@ export async function translate<P extends Record<string, any>> (
   language?: string
 ): Promise<string> {
   const locale = language ?? getMetadata(platform.metadata.locale) ?? 'en'
-  const compiled = cache.get(message)
+  const localCache = cache.get(locale) ?? new Map<IntlString, IntlMessageFormat | Status>()
+  if (!cache.has(locale)) {
+    cache.set(locale, localCache)
+  }
+  const compiled = localCache.get(message)
 
   if (compiled !== undefined) {
     if (compiled instanceof Status) {
@@ -142,16 +154,16 @@ export async function translate<P extends Record<string, any>> (
       }
       const translation = (await getTranslation(id, locale)) ?? message
       if (translation instanceof Status) {
-        cache.set(message, translation)
+        localCache.set(message, translation)
         return message
       }
       const compiled = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
-      cache.set(message, compiled)
+      localCache.set(message, compiled)
       return compiled.format(params)
     } catch (err) {
       const status = unknownError(err)
       await setPlatformStatus(status)
-      cache.set(message, status)
+      localCache.set(message, status)
       return message
     }
   }

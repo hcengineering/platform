@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { type Blob, type WithLookup } from '@hcengineering/core'
+  import { type Blob, type Ref, type WithLookup } from '@hcengineering/core'
   import drive, { type File, type FileVersion } from '@hcengineering/drive'
   import { FilePreview, createQuery } from '@hcengineering/presentation'
 
@@ -26,32 +26,23 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
-  let blob: Blob | undefined = undefined
+  let blob: Ref<Blob> | undefined = undefined
   let version: WithLookup<FileVersion> | undefined = undefined
+  let contentType: string | undefined
 
-  $: query.query(
-    drive.class.FileVersion,
-    { _id: object.file },
-    (res) => {
-      ;[version] = res
-      blob = version?.$lookup?.file
-    },
-    {
-      lookup: {
-        file: core.class.Blob
-      }
-    }
-  )
+  $: query.query(drive.class.FileVersion, { _id: object.file }, (res) => {
+    ;[version] = res
+    blob = version.file
+    contentType = version.type
+  })
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['parent', 'path', 'version', 'versions'] })
   })
 </script>
 
-{#if object !== undefined && version !== undefined}
-  {#if blob !== undefined}
-    <FilePreview file={blob} name={version.name} metadata={version.metadata} fit />
-  {/if}
+{#if object !== undefined && version !== undefined && blob !== undefined && contentType !== undefined}
+  <FilePreview file={blob} {contentType} name={version.name} metadata={version.metadata} fit />
 
   {#if object.versions > 1}
     <div class="w-full mt-6">

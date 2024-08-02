@@ -16,7 +16,7 @@
   // import { Doc } from '@hcengineering/core'
   import type { Attachment } from '@hcengineering/attachment'
   import type { WithLookup } from '@hcengineering/core'
-  import presentation, { ActionContext, IconDownload, getBlobHref, getBlobRef } from '@hcengineering/presentation'
+  import presentation, { ActionContext, getFileUrl, IconDownload } from '@hcengineering/presentation'
   import { Button, Dialog } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import { getType } from '../utils'
@@ -40,7 +40,7 @@
   })
   let download: HTMLAnchorElement
   $: type = getType(value.type)
-  $: srcRef = getBlobHref(value.$lookup?.file, value.file, value.name)
+  $: srcRef = getFileUrl(value.file, value.name)
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />

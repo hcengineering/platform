@@ -38,17 +38,11 @@
       return
     }
 
-    if (value.$lookup?.file === undefined) {
-      return
-    }
-
-    const blob = value.$lookup?.file
-
     showPopup(
       FilePreviewPopup,
       {
-        file: blob._id,
-        contentType: blob.contentType,
+        file: value.file,
+        contentType: value.type,
         name: value.name,
         metadata: value.metadata
       },

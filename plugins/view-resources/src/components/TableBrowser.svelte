@@ -88,6 +88,7 @@
     mode: 'browser'
   }}
 />
+
 <Scroller {fade} horizontal={true}>
   <Table
     bind:this={table}
