@@ -15,6 +15,6 @@
   "SIGN_URL": "http://localhost:4006",
   "ANALYTICS_COLLECTOR_URL": "http://localhost:4077",
   "BRANDING_URL": "/branding.json",
-  "VERSION": "0.6.266",
-  "MODEL_VERSION": "0.6.266"
+  "VERSION": null,
+  "MODEL_VERSION": null
 }

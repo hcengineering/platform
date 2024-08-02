@@ -24,7 +24,6 @@ import core, {
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
-  type BlobLookup,
   type Class,
   type Client,
   type Collection,
@@ -450,18 +449,6 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
-export async function getBlobHref (
-  _blob: PlatformBlob | undefined,
-  file: Ref<PlatformBlob>,
-  filename?: string
-): Promise<string> {
-  let blob = _blob as BlobLookup
-  if (blob?.downloadUrl === undefined) {
-    blob = (await getClient().findOne(core.class.Blob, { _id: file })) as BlobLookup
-  }
-  return blob?.downloadUrl ?? getFileUrl(file, filename)
-}
-
 export function getCurrentWorkspaceUrl (): string {
   const wsId = get(workspaceId)
   if (wsId == null) {
@@ -700,7 +687,11 @@ export function isAdminUser (): boolean {
 }
 
 export function isSpace (space: Doc): space is Space {
-  return getClient().getHierarchy().isDerived(space._class, core.class.Space)
+  return isSpaceClass(space._class)
+}
+
+export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
+  return getClient().getHierarchy().isDerived(_class, core.class.Space)
 }
 
 export function setPresentationCookie (token: string, workspaceId: string): void {

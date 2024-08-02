@@ -3,9 +3,7 @@ import core, {
   ModelDb,
   TxProcessor,
   toFindResult,
-  type Branding,
   type Blob,
-  type BlobLookup,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -15,22 +13,14 @@ import core, {
   type FindResult,
   type MeasureContext,
   type Ref,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceId
 } from '@hcengineering/core'
 import { genMinModel } from '@hcengineering/core/src/__tests__/minmodel'
-import type {
-  BlobLookupResult,
-  BlobStorageIterator,
-  BucketInfo,
-  StorageAdapter,
-  UploadedObjectInfo
-} from '@hcengineering/storage'
+import type { BlobStorageIterator, BucketInfo, StorageAdapter, UploadedObjectInfo } from '@hcengineering/storage'
 import { Readable } from 'stream'
 import type { RawDBAdapter, RawDBAdapterStream } from '../adapter'
 
 export class MemStorageAdapter implements StorageAdapter {
-  contentTypes?: string[] | undefined
   files = new Map<string, Blob & { content: Buffer, workspace: string }>()
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -156,15 +146,6 @@ export class MemStorageAdapter implements StorageAdapter {
   ): Promise<Readable> {
     // Partial are not supported by
     throw new Error('NoSuchKey')
-  }
-
-  async lookup (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null,
-    docs: Blob[]
-  ): Promise<BlobLookupResult> {
-    return { lookups: docs as unknown as BlobLookup[] }
   }
 }
 

@@ -28,6 +28,7 @@ import core, {
   type DocumentUpdate,
   type Ref,
   type Space,
+  type Status,
   type StatusCategory,
   type TxCollectionCUD,
   type TxCreateDoc,
@@ -52,7 +53,7 @@ import {
 import { PaletteColorIndexes, areDatesEqual, isWeekend } from '@hcengineering/ui'
 import { type KeyFilter, type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, ListSelectionProvider, statusStore, type SelectDirection } from '@hcengineering/view-resources'
-import { derived, get } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultMilestoneStatuses, defaultPriorities } from './types'
 
@@ -570,3 +571,44 @@ export async function getMilestoneTitle (client: TxOperations, ref: Ref<Mileston
 
   return object?.label ?? ''
 }
+
+export interface IssueRef {
+  status: Ref<Status>
+  _id: Ref<Issue>
+}
+export type IssueReverseRevMap = Map<Ref<Doc>, IssueRef[]>
+export const relatedIssues = writable<IssueReverseRevMap>(new Map())
+
+function fillStores (): void {
+  const client = getClient()
+
+  if (client !== undefined) {
+    const relatedIssuesQuery = createQuery(true)
+
+    relatedIssuesQuery.query(
+      tracker.class.Issue,
+      { 'relations._id': { $exists: true } },
+      (res) => {
+        const nMap: IssueReverseRevMap = new Map()
+        for (const r of res) {
+          for (const rr of r.relations ?? []) {
+            nMap.set(rr._id, [...(nMap.get(rr._id) ?? []), { _id: r._id, status: r.status }])
+          }
+        }
+        relatedIssues.set(nMap)
+      },
+      {
+        projection: {
+          relations: 1,
+          status: 1
+        }
+      }
+    )
+  } else {
+    setTimeout(() => {
+      fillStores()
+    }, 50)
+  }
+}
+
+fillStores()

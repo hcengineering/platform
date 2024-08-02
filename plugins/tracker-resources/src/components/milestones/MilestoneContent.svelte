@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { Milestone } from '@hcengineering/tracker'
   import { Component, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
@@ -22,6 +22,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

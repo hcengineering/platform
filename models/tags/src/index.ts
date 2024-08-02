@@ -148,6 +148,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_TAGS,
     disabled: [
+      { _class: 1 },
       { modifiedOn: 1 },
       { modifiedBy: 1 },
       { createdBy: 1 },

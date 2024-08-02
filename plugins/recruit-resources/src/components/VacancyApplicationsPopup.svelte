@@ -51,6 +51,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

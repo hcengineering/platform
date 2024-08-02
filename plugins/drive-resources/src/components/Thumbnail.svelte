@@ -44,7 +44,7 @@
 {#if isFolder}
   <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--global-no-priority-PriorityColor)'} />
 {:else if previewRef != null && isImage && !isError}
-  {#await getBlobRef(undefined, previewRef, object.name, sizeToWidth(size)) then blobSrc}
+  {#await getBlobRef(previewRef, object.name, sizeToWidth(size)) then blobSrc}
     <img
       draggable="false"
       class="img-fit"

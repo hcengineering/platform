@@ -166,7 +166,10 @@ async function getCollaboratorsDiff (
     prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []
   } else if (prevDoc !== undefined) {
     const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
-    prevValue = mixin !== undefined ? await getDocCollaborators(prevDoc, mixin, control as TriggerControl) : []
+    prevValue =
+      mixin !== undefined
+        ? await getDocCollaborators((control as TriggerControl).ctx, prevDoc, mixin, control as TriggerControl)
+        : []
   }
 
   const added = value.filter((item) => !prevValue.includes(item)) as DocAttributeUpdates['added']

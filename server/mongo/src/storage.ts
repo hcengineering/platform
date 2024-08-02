@@ -128,11 +128,10 @@ export interface DbAdapterOptions {
 abstract class MongoAdapterBase implements DbAdapter {
   _db: DBCollectionHelper
 
-  findRateLimit = new RateLimiter(parseInt(process.env.FIND_RLIMIT ?? '10'))
-  rateLimit = new RateLimiter(parseInt(process.env.TX_RLIMIT ?? '1'))
+  findRateLimit = new RateLimiter(parseInt(process.env.FIND_RLIMIT ?? '1000'))
+  rateLimit = new RateLimiter(parseInt(process.env.TX_RLIMIT ?? '5'))
 
   constructor (
-    readonly globalCtx: MeasureContext,
     protected readonly db: Db,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
@@ -216,14 +215,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     const baseClass = this.hierarchy.getBaseClass(clazz)
     if (baseClass !== core.class.Doc) {
-      const classes = this.hierarchy.getDescendants(baseClass)
+      const classes = this.hierarchy.getDescendants(baseClass).filter((it) => !this.hierarchy.isMixin(it))
 
       // Only replace if not specified
       if (translated._class === undefined) {
         translated._class = { $in: classes }
       } else if (typeof translated._class === 'string') {
         if (!classes.includes(translated._class)) {
-          translated._class = { $in: classes.filter((it) => !this.hierarchy.isMixin(it)) }
+          translated._class = classes.length === 1 ? classes[0] : { $in: classes }
         }
       } else if (typeof translated._class === 'object' && translated._class !== null) {
         let descendants: Ref<Class<Doc>>[] = classes
@@ -238,7 +237,8 @@ abstract class MongoAdapterBase implements DbAdapter {
           descendants = descendants.filter((c) => !excludedClassesIds.has(c))
         }
 
-        translated._class = { $in: descendants.filter((it: any) => !this.hierarchy.isMixin(it as Ref<Class<Doc>>)) }
+        const desc = descendants.filter((it: any) => !this.hierarchy.isMixin(it as Ref<Class<Doc>>))
+        translated._class = desc.length === 1 ? desc[0] : { $in: desc }
       }
 
       if (baseClass !== clazz) {
@@ -279,8 +279,7 @@ abstract class MongoAdapterBase implements DbAdapter {
             from: domain,
             localField: fullKey,
             foreignField: '_id',
-            as: fullKey.split('.').join('') + '_lookup',
-            pipeline: [{ $project: { '%hash%': 0 } }]
+            as: fullKey.split('.').join('') + '_lookup'
           })
         }
         await this.getLookupValue(_class, nested, result, fullKey + '_lookup')
@@ -294,8 +293,7 @@ abstract class MongoAdapterBase implements DbAdapter {
             from: domain,
             localField: fullKey,
             foreignField: '_id',
-            as: fullKey.split('.').join('') + '_lookup',
-            pipeline: [{ $project: { '%hash%': 0 } }]
+            as: fullKey.split('.').join('') + '_lookup'
           })
         }
       }
@@ -333,10 +331,9 @@ abstract class MongoAdapterBase implements DbAdapter {
           pipeline: [
             {
               $match: {
-                _class: { $in: desc }
+                _class: desc.length === 1 ? desc[0] : { $in: desc }
               }
-            },
-            { $project: { '%hash%': 0 } }
+            }
           ],
           as: asVal
         }
@@ -483,7 +480,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     const pipeline: any[] = []
     const match = { $match: this.translateQuery(clazz, query) }
     const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
-    const steps = await this.getLookups(clazz, options?.lookup)
+    const steps = await ctx.with('get-lookups', {}, async () => await this.getLookups(clazz, options?.lookup))
     if (slowPipeline) {
       for (const step of steps) {
         pipeline.push({ $lookup: step })
@@ -507,8 +504,6 @@ abstract class MongoAdapterBase implements DbAdapter {
         projection[ckey] = options.projection[key]
       }
       pipeline.push({ $project: projection })
-    } else {
-      pipeline.push({ $project: { '%hash%': 0 } })
     }
 
     // const domain = this.hierarchy.getDomain(clazz)
@@ -519,15 +514,16 @@ abstract class MongoAdapterBase implements DbAdapter {
     let total = options?.total === true ? 0 : -1
     try {
       await ctx.with(
-        'toArray',
-        {},
+        'aggregate',
+        { clazz },
         async (ctx) => {
           result = await toArray(cursor)
         },
         () => ({
           size: result.length,
           domain,
-          pipeline
+          pipeline,
+          clazz
         })
       )
     } catch (e) {
@@ -538,6 +534,11 @@ abstract class MongoAdapterBase implements DbAdapter {
       await ctx.with('fill-lookup', {}, async (ctx) => {
         await this.fillLookupValue(ctx, clazz, options?.lookup, row)
       })
+      if (row.$lookup !== undefined) {
+        for (const [, v] of Object.entries(row.$lookup)) {
+          this.stripHash(v)
+        }
+      }
       this.clearExtraLookups(row)
     }
     if (options?.total === true) {
@@ -545,10 +546,19 @@ abstract class MongoAdapterBase implements DbAdapter {
       const totalCursor = this.collection(domain).aggregate(totalPipeline, {
         checkKeys: false
       })
-      const arr = await toArray(totalCursor)
+      const arr = await ctx.with(
+        'aggregate-total',
+        {},
+        async (ctx) => await toArray(totalCursor),
+        () => ({
+          domain,
+          pipeline,
+          clazz
+        })
+      )
       total = arr?.[0]?.total ?? 0
     }
-    return toFindResult(this.stripHash(result), total)
+    return toFindResult(this.stripHash(result) as T[], total)
   }
 
   private translateKey<T extends Doc>(key: string, clazz: Ref<Class<T>>): string {
@@ -634,7 +644,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   @withContext('groupBy')
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    const result = await this.globalCtx.with(
+    const result = await ctx.with(
       'groupBy',
       { domain },
       async (ctx) => {
@@ -697,7 +707,6 @@ abstract class MongoAdapterBase implements DbAdapter {
     return result
   }
 
-  @withContext('find-all')
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
@@ -708,26 +717,17 @@ abstract class MongoAdapterBase implements DbAdapter {
     return await this.findRateLimit.exec(async () => {
       const st = Date.now()
       const result = await this.collectOps(
-        this.globalCtx,
+        ctx,
         this.hierarchy.findDomain(_class),
         'find',
         async (ctx) => {
+          const domain = options?.domain ?? this.hierarchy.getDomain(_class)
           if (
             options != null &&
             (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))
           ) {
-            return await ctx.with(
-              'pipeline',
-              {},
-              async (ctx) => await this.findWithPipeline(ctx, _class, query, options),
-              {
-                _class,
-                query,
-                options
-              }
-            )
+            return await this.findWithPipeline(ctx, _class, query, options)
           }
-          const domain = options?.domain ?? this.hierarchy.getDomain(_class)
           const coll = this.collection(domain)
           const mongoQuery = this.translateQuery(_class, query)
 
@@ -735,7 +735,7 @@ abstract class MongoAdapterBase implements DbAdapter {
             // Skip sort/projection/etc.
             return await ctx.with(
               'find-one',
-              {},
+              { domain },
               async (ctx) => {
                 const findOptions: MongoFindOptions = {}
 
@@ -744,8 +744,6 @@ abstract class MongoAdapterBase implements DbAdapter {
                 }
                 if (options?.projection !== undefined) {
                   findOptions.projection = this.calcProjection<T>(options, _class)
-                } else {
-                  findOptions.projection = { '%hash%': 0 }
                 }
 
                 const doc = await coll.findOne(mongoQuery, findOptions)
@@ -758,7 +756,7 @@ abstract class MongoAdapterBase implements DbAdapter {
                 }
                 return toFindResult([], total)
               },
-              { mongoQuery }
+              { domain, mongoQuery }
             )
           }
 
@@ -769,8 +767,6 @@ abstract class MongoAdapterBase implements DbAdapter {
             if (projection != null) {
               cursor = cursor.project(projection)
             }
-          } else {
-            cursor = cursor.project({ '%hash%': 0 })
           }
           let total: number = -1
           if (options != null) {
@@ -792,7 +788,7 @@ abstract class MongoAdapterBase implements DbAdapter {
           try {
             let res: T[] = []
             await ctx.with(
-              'toArray',
+              'find-all',
               {},
               async (ctx) => {
                 res = await toArray(cursor)
@@ -807,7 +803,7 @@ abstract class MongoAdapterBase implements DbAdapter {
             if (options?.total === true && options?.limit === undefined) {
               total = res.length
             }
-            return toFindResult(this.stripHash(res), total)
+            return toFindResult(this.stripHash(res) as T[], total)
           } catch (e) {
             console.error('error during executing cursor in findAll', _class, cutObjectArray(query), options, e)
             throw e
@@ -882,13 +878,19 @@ abstract class MongoAdapterBase implements DbAdapter {
     return projection
   }
 
-  stripHash<T extends Doc>(docs: T[]): T[] {
-    docs.forEach((it) => {
-      if ('%hash%' in it) {
-        delete it['%hash%']
+  stripHash<T extends Doc>(docs: T | T[]): T | T[] {
+    if (Array.isArray(docs)) {
+      docs.forEach((it) => {
+        if ('%hash%' in it) {
+          delete it['%hash%']
+        }
+        return it
+      })
+    } else if (typeof docs === 'object' && docs != null) {
+      if ('%hash%' in docs) {
+        delete docs['%hash%']
       }
-      return it
-    })
+    }
     return docs
   }
 
@@ -1000,7 +1002,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
       const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } }, { limit: docs.length })
       const result = await toArray(cursor)
-      return this.stripHash(result)
+      return this.stripHash(result) as Doc[]
     })
   }
 
@@ -1108,7 +1110,6 @@ class MongoAdapter extends MongoAdapterBase {
     }
   }
 
-  @withContext('tx')
   async tx (ctx: MeasureContext, ...txes: Tx[]): Promise<TxResult[]> {
     const result: TxResult[] = []
 
@@ -1147,7 +1148,7 @@ class MongoAdapter extends MongoAdapterBase {
         }
         domains.push(
           this.collectOps(
-            this.globalCtx,
+            ctx,
             domain,
             'tx',
             async (ctx) => {
@@ -1454,13 +1455,12 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     await this._db.init(DOMAIN_TX)
   }
 
-  @withContext('tx')
   override async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     if (tx.length === 0) {
       return []
     }
     await this.collectOps(
-      this.globalCtx,
+      ctx,
       DOMAIN_TX,
       'tx',
       async () => {
@@ -1490,9 +1490,6 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
           sort: {
             _id: 1,
             modifiedOn: 1
-          },
-          projection: {
-            '%hash%': 0
           }
         }
       )
@@ -1650,7 +1647,7 @@ export async function createMongoAdapter (
   const client = getMongoClient(url)
   const db = getWorkspaceDB(await client.getClient(), workspaceId)
 
-  return new MongoAdapter(ctx.newChild('mongoDb', {}), db, hierarchy, modelDb, client, options)
+  return new MongoAdapter(db, hierarchy, modelDb, client, options)
 }
 
 /**
@@ -1666,5 +1663,5 @@ export async function createMongoTxAdapter (
   const client = getMongoClient(url)
   const db = getWorkspaceDB(await client.getClient(), workspaceId)
 
-  return new MongoTxAdapter(ctx.newChild('mongoDbTx', {}), db, hierarchy, modelDb, client)
+  return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

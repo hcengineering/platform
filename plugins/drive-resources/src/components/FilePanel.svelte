@@ -16,7 +16,7 @@
   import { type Ref, type WithLookup } from '@hcengineering/core'
   import { createFileVersion, type File as DriveFile, type FileVersion } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
-  import { createQuery, getBlobHref, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, getFileUrl } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
   import { showFilesUploadPopup } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
@@ -108,17 +108,15 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#await getBlobHref(undefined, version.file, object.name) then href}
-        <a class="no-line" {href} download={object.name} bind:this={download}>
-          <Button
-            icon={IconDownload}
-            iconProps={{ size: 'medium' }}
-            kind={'icon'}
-            showTooltip={{ label: drive.string.Download }}
-            on:click={handleDownloadFile}
-          />
-        </a>
-      {/await}
+      <a class="no-line" href={getFileUrl(version.file, object.name)} download={object.name} bind:this={download}>
+        <Button
+          icon={IconDownload}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          showTooltip={{ label: drive.string.Download }}
+          on:click={handleDownloadFile}
+        />
+      </a>
       <Button
         icon={IconUpload}
         iconProps={{ size: 'medium' }}

@@ -1,7 +1,6 @@
 // Basic performance metrics suite.
 
 import { MetricsData } from '.'
-import { cutObjectArray } from '../utils'
 import { FullParamsType, Metrics, ParamsType } from './types'
 
 /**
@@ -35,7 +34,7 @@ function getUpdatedTopResult (
 
   const newValue = {
     value: time,
-    params: cutObjectArray(params)
+    params
   }
 
   if (result.length > 6) {

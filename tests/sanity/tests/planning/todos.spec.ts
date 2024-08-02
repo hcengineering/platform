@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
@@ -8,12 +8,14 @@ test.use({
   storageState: PlatformSetting
 })
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
+
 test.describe('Planning ToDo tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
   })
 
-  test('New ToDo', async ({ page }) => {
+  test('New ToDo and checking notifications about unplanned tasks', async ({ page }) => {
     const dateEnd = new Date()
     dateEnd.setDate(dateEnd.getDate() + 1)
 
@@ -40,9 +42,15 @@ test.describe('Planning ToDo tests', () => {
     }
 
     const planningPage = new PlanningPage(page)
-    await planningPage.createNewToDo(newToDo)
-
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
+    await planningNavigationMenuPage.clickOnButtonUnplanned()
+    await expect(async () => {
+      await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    }).toPass(retryOptions)
+    await planningPage.createNewToDo(newToDo)
+    await expect(async () => {
+      await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    }).toPass(retryOptions)
     await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.checkToDoExist(newToDo.title)

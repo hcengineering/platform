@@ -484,8 +484,6 @@ export interface StorageConfig {
   kind: string
   endpoint: string
   port?: number
-
-  contentTypes?: string[]
 }
 
 export interface StorageConfiguration {

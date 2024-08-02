@@ -24,9 +24,5 @@
 
 <Scroller>
   <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
-
-  {#if object.$lookup?.file}
-    <DocAttributeBar object={object.$lookup.file} {readonly} ignoreKeys={['name', 'file', 'version', 'version']} />
-  {/if}
   <div class="space-divider bottom" />
 </Scroller>

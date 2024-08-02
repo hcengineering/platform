@@ -131,7 +131,8 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
       MongoClient.connect(uri, {
         appName: 'transactor',
         ...options,
-        ...extraOptions
+        ...extraOptions,
+        enableUtf8Validation: false
       }),
       () => {
         connections.delete(key)
