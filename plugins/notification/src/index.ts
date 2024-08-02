@@ -24,6 +24,7 @@ import {
   Markup,
   Mixin,
   Ref,
+  Space,
   Timestamp,
   Tx,
   TxOperations
