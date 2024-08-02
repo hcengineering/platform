@@ -577,6 +577,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/onboard",
+      "projectFolder": "plugins/onboard",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/onboard-assets",
+      "projectFolder": "plugins/onboard-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/onboard-resources",
+      "projectFolder": "plugins/onboard-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/workbench",
       "projectFolder": "plugins/workbench",
       "shouldPublish": true

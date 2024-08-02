@@ -24,7 +24,6 @@ import contact, {
   Person,
   PersonAccount
 } from '@hcengineering/contact'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import core, {
   AccountRole,
   BaseWorkspaceInfo,
@@ -40,30 +39,17 @@ import core, {
   Ref,
   roleOrder,
   systemAccountEmail,
+  Timestamp,
   Tx,
   TxOperations,
   Version,
   versionToString,
   WorkspaceId,
-  Timestamp,
   WorkspaceIdWithUrl,
   type Branding
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, {
-  connect,
-  initializeWorkspace,
-  initModel,
-  updateModel,
-  prepareTools,
-  upgradeModel
-} from '@hcengineering/server-tool'
-import { pbkdf2Sync, randomBytes } from 'crypto'
-import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
-import fetch from 'node-fetch'
-import otpGenerator from 'otp-generator'
 import {
   DummyFullTextAdapter,
   Pipeline,
@@ -78,6 +64,20 @@ import {
   registerServerPlugins,
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { decodeToken, generateToken } from '@hcengineering/server-token'
+import toolPlugin, {
+  connect,
+  initializeWorkspace,
+  initModel,
+  prepareTools,
+  updateModel,
+  upgradeModel
+} from '@hcengineering/server-tool'
+import { pbkdf2Sync, randomBytes } from 'crypto'
+import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
+import fetch from 'node-fetch'
+import otpGenerator from 'otp-generator'
 
 import { accountPlugin } from './plugin'
 
@@ -692,7 +692,7 @@ export async function checkInvite (ctx: MeasureContext, invite: Invite | null, e
     Analytics.handleError(new Error(`no invite or invite limit exceed ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (invite.exp < Date.now()) {
+  if (invite.exp !== -1 && invite.exp < Date.now()) {
     ctx.error('invite', { email, state: 'link expired' })
     Analytics.handleError(new Error(`invite link expired ${invite._id.toString()} ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.ExpiredLink, {}))
@@ -1577,7 +1577,7 @@ export async function getInviteLink (
   ctx.info('Getting invite link', { workspace: workspace.name, emailMask, limit })
   const data: Omit<Invite, '_id'> = {
     workspace,
-    exp: Date.now() + exp,
+    exp: exp < 0 ? -1 : Date.now() + exp,
     emailMask,
     limit,
     role: role ?? AccountRole.User

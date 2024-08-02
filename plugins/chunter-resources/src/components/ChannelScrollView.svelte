@@ -780,7 +780,7 @@
     {/if}
   </div>
   {#if object}
-    <div class="ref-input">
+    <div class="ref-input flex-col">
       <ActivityExtensionComponent
         kind="input"
         {extensions}
@@ -797,7 +797,9 @@
   }
 
   .ref-input {
+    flex-shrink: 0;
     margin: 1.25rem 1rem 1rem;
+    max-height: 18.75rem;
   }
 
   .overlay {

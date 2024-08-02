@@ -121,11 +121,6 @@
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
-        },
-        {
-          lookup: {
-            file: core.class.Blob
-          }
         }
       )
     } else {
@@ -323,7 +318,7 @@
   }
 </script>
 
-<div class="no-print" bind:this={refContainer}>
+<div class="flex-col no-print" bind:this={refContainer}>
   <input
     bind:this={inputFile}
     disabled={inputFile == null}
@@ -336,7 +331,7 @@
   />
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
-    class="container"
+    class="flex-col"
     on:dragover|preventDefault={() => {}}
     on:dragleave={() => {}}
     on:drop|preventDefault|stopPropagation={fileDrop}

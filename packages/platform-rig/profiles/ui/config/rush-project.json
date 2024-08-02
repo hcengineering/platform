@@ -3,7 +3,6 @@
     "temp/**", 
     ".build/**", 
     "coverage/**",
-    "**/*.svelte",
     ".build/**",
     ".validate/**",
     ".format/**",

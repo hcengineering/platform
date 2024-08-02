@@ -148,7 +148,6 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         approvers: [],
         coAuthors: [],
         code: `TMPL-${seq.sequence + 1}`,
-        prefix: '',
         seqNumber: 0,
         major: 0,
         minor: 1,

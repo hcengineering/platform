@@ -55,7 +55,7 @@ export class SignController {
       productId: ''
     })
     const endpoint = await getTransactorEndpoint(token)
-    const connection = await createClient(token, endpoint)
+    const connection = await createClient(endpoint, token)
 
     console.log(`Platform client has been created (workspace: ${workspace})`)
 

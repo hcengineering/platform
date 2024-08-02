@@ -16,7 +16,6 @@
 import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
 import drive, { type Drive, type File, type FileVersion, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
-import { getBlobHref } from '@hcengineering/presentation'
 import { showPopup, type Location } from '@hcengineering/ui'
 
 import CreateDrive from './components/CreateDrive.svelte'
@@ -37,8 +36,9 @@ import GridView from './components/GridView.svelte'
 import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
+import { getFileUrl } from '@hcengineering/presentation'
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
-import { showCreateFolderPopup, showRenameResourcePopup, restoreFileVersion } from './utils'
+import { restoreFileVersion, showCreateFolderPopup, showRenameResourcePopup } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
   await showCreateFolderPopup(doc._id, drive.ids.Root)
@@ -57,7 +57,7 @@ async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): P
   for (const file of files) {
     const version = file.$lookup?.file
     if (version != null) {
-      const href = await getBlobHref(undefined, version.file, version.name)
+      const href = getFileUrl(version.file, version.name)
       const link = document.createElement('a')
       link.style.display = 'none'
       link.target = '_blank'

@@ -111,7 +111,7 @@ export class GmailController {
         res = await WorkspaceClient.create(this.credentials, this.mongo, workspace)
         this.workspaces.set(workspace, res)
       } catch (err) {
-        console.error(`Couldn't create workspace worker for ${workspace}, reason: ${JSON.stringify(err)}`)
+        console.error(`Couldn't create workspace worker for ${workspace}, reason: `, err)
         throw err
       }
     }

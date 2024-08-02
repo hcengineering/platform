@@ -28,7 +28,7 @@
   import { createEventDispatcher } from 'svelte'
   import { FocusPosition } from '@tiptap/core'
   import { EditorView } from '@tiptap/pm/view'
-  import textEditor, { RefAction, TextEditorHandler, TextFormatCategory } from '@hcengineering/text-editor'
+  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
 
   import { Completion } from '../Completion'
   import TextEditor from './TextEditor.svelte'
@@ -246,13 +246,13 @@
   }
 
   .text-input {
-    max-height: 18.75rem;
     overflow: auto;
     min-height: 2.75rem;
     padding: 0.125rem 0.75rem;
   }
 
   .buttons-panel {
+    flex-shrink: 0;
     padding: 0.325rem 0.75rem;
   }
 </style>

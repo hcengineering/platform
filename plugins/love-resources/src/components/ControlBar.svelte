@@ -122,10 +122,11 @@
     if (roomInfo !== undefined) {
       const navigateUrl = getCurrentLocation()
       navigateUrl.query = {
-        meetId: roomInfo._id
+        sessionId: roomInfo._id
       }
+
       const func = await getResource(login.function.GetInviteLink)
-      return await func(24 * 30, '', -1, AccountRole.Guest, JSON.stringify(navigateUrl))
+      return await func(24, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
     }
     return ''
   }

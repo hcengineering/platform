@@ -117,7 +117,7 @@ export async function createPlatformClient (token: string): Promise<Client> {
   })
 
   const endpoint = await getTransactorEndpoint(token)
-  const connection = await createClient(token, endpoint)
+  const connection = await createClient(endpoint, token)
 
   return connection
 }

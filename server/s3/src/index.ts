@@ -13,20 +13,16 @@
 // limitations under the License.
 //
 
-import { CopyObjectCommand, GetObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
+import { CopyObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 import core, {
   toWorkspaceString,
   withContext,
   type Blob,
-  type BlobLookup,
-  type Branding,
   type MeasureContext,
   type Ref,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceId
 } from '@hcengineering/core'
 
 import {
@@ -39,7 +35,7 @@ import {
 } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
-import { removeAllObjects, type BlobLookupResult, type BucketInfo } from '@hcengineering/storage'
+import { removeAllObjects, type BucketInfo } from '@hcengineering/storage'
 import type { ReadableStream } from 'stream/web'
 
 export interface S3Config extends StorageConfig {
@@ -67,7 +63,6 @@ export class S3Service implements StorageAdapter {
   static config = 's3'
   expireTime: number
   client: S3
-  contentTypes?: string[]
   constructor (readonly opt: S3Config) {
     this.client = new S3({
       endpoint: opt.endpoint,
@@ -79,49 +74,9 @@ export class S3Service implements StorageAdapter {
     })
 
     this.expireTime = parseInt(this.opt.expireTime ?? '168') * 3600 // use 7 * 24 - hours as default value for expireF
-    this.contentTypes = opt.contentTypes
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
-
-  async lookup (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceIdWithUrl,
-    branding: Branding | null,
-    docs: Blob[]
-  ): Promise<BlobLookupResult> {
-    const result: BlobLookupResult = {
-      lookups: [],
-      updates: new Map()
-    }
-    const now = Date.now()
-    for (const d of docs) {
-      // Let's add current from URI for previews.
-      const bl = d as BlobLookup
-      const command = new GetObjectCommand({
-        Bucket: this.getBucketId(workspaceId),
-        Key: this.getDocumentKey(workspaceId, d.storageId),
-        ResponseCacheControl: 'max-age=9d'
-      })
-      if (
-        (bl.downloadUrl === undefined || (bl.downloadUrlExpire ?? 0) < now) &&
-        (this.opt.allowPresign ?? 'true') === 'true'
-      ) {
-        bl.downloadUrl = await getSignedUrl(this.client, command, {
-          expiresIn: this.expireTime
-        })
-        bl.downloadUrlExpire = now + this.expireTime * 1000
-        result.updates?.set(bl._id, {
-          downloadUrl: bl.downloadUrl,
-          downloadUrlExpire: bl.downloadUrlExpire
-        })
-      }
-
-      result.lookups.push(bl)
-    }
-    // this.client.presignedUrl(httpMethod, bucketName, objectName, callback)
-    return result
-  }
 
   /**
    * @public

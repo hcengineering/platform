@@ -258,7 +258,6 @@ export async function upgradeModel (
     throw Error('Model txes must target only core.space.Model')
   }
 
-  // const client = new MongoClient(mongodbUri)
   const _client = getMongoClient(mongodbUri)
   const client = await _client.getClient()
   const storageConfig: StorageConfiguration = storageConfigFromEnv()

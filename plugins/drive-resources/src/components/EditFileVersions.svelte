@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { FindOptions, SortingOrder } from '@hcengineering/core'
+  import core, { FindOptions, SortingOrder } from '@hcengineering/core'
   import { type File, type FileVersion } from '@hcengineering/drive'
   import { Scroller, Section } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
@@ -34,7 +34,7 @@
       <Scroller horizontal>
         <Table
           _class={drive.class.FileVersion}
-          config={['version', 'size', 'modifiedOn', 'createdBy']}
+          config={['', 'size', 'modifiedOn', 'createdBy']}
           query={{ attachedTo: object._id }}
           {readonly}
           {options}

@@ -83,7 +83,8 @@
     showPopup(
       FilePreviewPopup,
       {
-        file: value.$lookup?.file ?? value.file,
+        file: value.file,
+        contentType: value.type,
         name: value.name,
         metadata: value.metadata
       },
@@ -114,7 +115,7 @@
 {:else}
   <div class="flex-row-center attachment-container">
     {#if value}
-      {#await getBlobRef(value.$lookup?.file, value.file, value.name, sizeToWidth('large')) then valueRef}
+      {#await getBlobRef(value.file, value.name, sizeToWidth('large')) then valueRef}
         <a
           class="no-line"
           style:flex-shrink={0}

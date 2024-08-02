@@ -50,7 +50,7 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
     if (st.trim().length === 0 || !st.includes('|')) {
       throw new Error('Invalid storage config:' + st)
     }
-    let [kindName, url, contentTypes] = st.split('|')
+    let [kindName, url] = st.split('|')
     let [kind, name] = kindName.split(',')
     if (name == null) {
       name = kind
@@ -66,8 +66,7 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
       kind,
       name,
       endpoint: (hasProtocol ? uri.protocol + '//' : '') + uri.hostname, // Port should go away
-      port: uri.port !== '' ? parseInt(uri.port) : undefined,
-      contentTypes: contentTypes !== undefined ? contentTypes.split(',') : undefined
+      port: uri.port !== '' ? parseInt(uri.port) : undefined
     }
 
     // Add all extra parameters

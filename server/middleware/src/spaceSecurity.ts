@@ -17,6 +17,7 @@ import core, {
   AccountRole,
   AttachedDoc,
   Class,
+  DOMAIN_MODEL,
   Doc,
   DocumentQuery,
   Domain,
@@ -510,7 +511,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const isSpace = this.storage.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
 
-    if (!isSystem(account) && account.role !== AccountRole.DocGuest) {
+    if (!isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(account, query[field], domain, isSpace)
