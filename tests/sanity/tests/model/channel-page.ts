@@ -26,20 +26,20 @@ export class ChannelPage {
   readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByText(userName)
   readonly joinChannelButton = (): Locator => this.page.getByRole('button', { name: 'Join' })
   readonly addEmojiButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="AddReactionAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="AddReactionAction"]').last()
 
   readonly selectEmoji = (emoji: string): Locator => this.page.getByText(emoji)
   readonly saveMessageButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="SaveForLaterAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="SaveForLaterAction"]').last()
 
   readonly pinMessageButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]').last()
 
   readonly replyButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]').last()
 
   readonly openMoreButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]').last()
 
   readonly messageSaveMarker = (): Locator => this.page.locator('.saveMarker')
   readonly saveMessageTab = (): Locator => this.page.getByRole('button', { name: 'Saved' })
