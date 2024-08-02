@@ -24,7 +24,7 @@ describe('aggregator tests', () => {
     const ws1: WorkspaceId = { name: 'ws1', productId: '' }
     return { mem1, mem2, aggr, ws1, testCtx }
   }
-  it('reuse existing storage', async () => {
+  it('not reuse existing storage', async () => {
     const { mem1, aggr, ws1, testCtx } = prepare1()
 
     // Test default provider
@@ -37,7 +37,7 @@ describe('aggregator tests', () => {
     // Test content typed provider
     await aggr.put(testCtx, ws1, 'test', 'data2', 'text/plain')
     const stat2 = await aggr.stat(testCtx, ws1, 'test')
-    expect(stat2?.provider).toEqual('mem1')
+    expect(stat2?.provider).toEqual('mem2')
 
     const dta = Buffer.concat(await aggr.read(testCtx, ws1, 'test')).toString()
     expect(dta).toEqual('data2')
