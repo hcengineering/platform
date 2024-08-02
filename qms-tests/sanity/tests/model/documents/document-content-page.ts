@@ -236,7 +236,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   async selectRelease (version: string): Promise<void> {
-    await this.page.getByText('Release').click()
+    await this.page.getByText('Release', { exact: true }).click()
     if (version === 'Major') {
       await this.page.getByText('Major').click()
     }
