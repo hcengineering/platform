@@ -135,11 +135,16 @@ export async function createReactionNotifications (
   const docUpdateMessage = TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
 
   res = res.concat(
-    await createCollabDocInfo([user] as Ref<PersonAccount>[], control, tx.tx, tx, parentMessage, [docUpdateMessage], {
-      isOwn: true,
-      isSpace: false,
-      shouldUpdateTimestamp: false
-    })
+    await createCollabDocInfo(
+      control.ctx,
+      [user] as Ref<PersonAccount>[],
+      control,
+      tx.tx,
+      tx,
+      parentMessage,
+      [docUpdateMessage],
+      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
+    )
   )
 
   return res
@@ -381,7 +386,7 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
   const notificationTxes = await control.ctx.with(
-    'createNotificationTxes',
+    'createCollaboratorNotifications',
     {},
     async (ctx) =>
       await createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)

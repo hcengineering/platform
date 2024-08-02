@@ -70,6 +70,7 @@ export class TSpace extends TDoc implements Space {
     archived!: boolean
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
+  @Index(IndexKind.Indexed)
     members!: Arr<Ref<Account>>
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)

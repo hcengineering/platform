@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
@@ -7,6 +7,8 @@ import { PlanningNavigationMenuPage } from '../model/planning/planning-navigatio
 test.use({
   storageState: PlatformSetting
 })
+
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
 test.describe('Planning ToDo tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -42,9 +44,13 @@ test.describe('Planning ToDo tests', () => {
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
     await planningNavigationMenuPage.clickOnButtonUnplanned()
-    await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    await expect(async () => {
+      await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    }).toPass(retryOptions)
     await planningPage.createNewToDo(newToDo)
-    await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    await expect(async () => {
+      await planningNavigationMenuPage.compareCountersUnplannedToDos()
+    }).toPass(retryOptions)
     await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.checkToDoExist(newToDo.title)

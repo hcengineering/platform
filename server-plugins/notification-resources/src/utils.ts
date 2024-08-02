@@ -21,6 +21,9 @@ import notification, {
   NotificationType
 } from '@hcengineering/notification'
 import type { TriggerControl } from '@hcengineering/server-core'
+import { DocUpdateMessage } from '@hcengineering/activity'
+import { Analytics } from '@hcengineering/analytics'
+import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   Class,
@@ -31,14 +34,17 @@ import core, {
   MixinUpdate,
   Ref,
   Space,
+  toIdMap,
   Tx,
   TxCreateDoc,
   TxCUD,
   TxMixin,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc
+  TxUpdateDoc,
+  type MeasureContext
 } from '@hcengineering/core'
+import { getResource, IntlString, translate } from '@hcengineering/platform'
 import serverNotification, {
   getPersonAccountById,
   HTMLPresenter,
@@ -46,10 +52,6 @@ import serverNotification, {
   TextPresenter,
   UserInfo
 } from '@hcengineering/server-notification'
-import { getResource, IntlString, translate } from '@hcengineering/platform'
-import contact, { formatName, PersonAccount } from '@hcengineering/contact'
-import { DocUpdateMessage } from '@hcengineering/activity'
-import { Analytics } from '@hcengineering/analytics'
 
 import { NotifyResult } from './types'
 
@@ -452,14 +454,24 @@ export async function getNotificationContent (
   return content
 }
 
-export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerControl): Promise<UserInfo[]> {
+export async function getUsersInfo (
+  ctx: MeasureContext,
+  ids: Ref<PersonAccount>[],
+  control: TriggerControl
+): Promise<UserInfo[]> {
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
-  const persons = await control.queryFind(contact.class.Person, {})
+  const persons = toIdMap(
+    await ctx.with(
+      'query-find',
+      {},
+      async () => await control.findAll(contact.class.Person, { _id: { $in: accounts.map((it) => it.person) } })
+    )
+  )
 
   return accounts.map((account) => ({
     _id: account._id,
     account,
-    person: persons.find(({ _id }) => _id === account.person)
+    person: persons.get(account.person)
   }))
 }
 

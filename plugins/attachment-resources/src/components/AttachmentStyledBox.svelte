@@ -13,23 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
-  import core, { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap, type Blob } from '@hcengineering/core'
+  import { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap, type Blob } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     createQuery,
-    DraftController,
     deleteFile,
+    DraftController,
     draftsStore,
     getClient,
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
-  import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { EmptyMarkup } from '@hcengineering/text'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
   import { AttachIcon, StyledTextBox } from '@hcengineering/text-editor-resources'
   import { ButtonSize } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
   import attachment from '../plugin'
   import AttachmentsGrid from './AttachmentsGrid.svelte'

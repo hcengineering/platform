@@ -83,6 +83,7 @@ export function loadNotificationSettings (): void {
       providersSettings.set(res)
     }
   )
+
   typeSettingsQuery.query(notification.class.NotificationTypeSetting, { space: core.space.Workspace }, (res) => {
     typesSettings.set(res)
   })
