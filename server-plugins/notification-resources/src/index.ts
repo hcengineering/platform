@@ -86,6 +86,8 @@ import webpush, { WebPushError } from 'web-push'
 
 import { Content, NotifyParams, NotifyResult } from './types'
 import {
+  createPullCollaboratorsTx,
+  createPushCollaboratorsTx,
   getHTMLPresenter,
   getNotificationContent,
   getTextPresenter,
@@ -267,13 +269,13 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
 }
 
 async function getKeyCollaborators (
-  doc: Doc,
+  docClass: Ref<Class<Doc>>,
   value: any,
   field: string,
   control: TriggerControl
 ): Promise<Ref<Account>[] | undefined> {
   if (value !== undefined && value !== null) {
-    const attr = control.hierarchy.findAttribute(doc._class, field)
+    const attr = control.hierarchy.findAttribute(docClass, field)
     if (attr !== undefined) {
       return await getValueCollaborators(value, attr, control)
     }
@@ -291,7 +293,7 @@ export async function getDocCollaborators (
   const collaborators = new Set<Ref<Account>>()
   for (const field of mixin.fields) {
     const value = (doc as any)[field]
-    const newCollaborators = await getKeyCollaborators(doc, value, field, control)
+    const newCollaborators = await getKeyCollaborators(doc._class, value, field, control)
     if (newCollaborators !== undefined) {
       for (const newCollaborator of newCollaborators) {
         collaborators.add(newCollaborator)
@@ -974,9 +976,9 @@ async function getTxCollabs (
   if ([core.class.TxUpdateDoc, core.class.TxMixin].includes(tx._class)) {
     const collabs = new Set(hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? [])
     const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
-    const newCollaborators = (await getNewCollaborators(ops, mixin, doc, control)).filter((p) => !collabs.has(p))
+    const newCollaborators = (await getNewCollaborators(ops, mixin, doc._class, control)).filter((p) => !collabs.has(p))
     const isSpace = control.hierarchy.isDerived(doc._class, core.class.Space)
-    const removedCollabs = isSpace ? await getRemovedMembers(ops, mixin, doc as Space, control) : []
+    const removedCollabs = isSpace ? await getRemovedMembers(ops, mixin, (doc as Space)._class, control) : []
     const result = [...collabs, ...newCollaborators].filter((p) => !removedCollabs.includes(p))
 
     return { added: newCollaborators, removed: removedCollabs, result }
@@ -1250,7 +1252,7 @@ async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerCont
 async function getNewCollaborators (
   ops: DocumentUpdate<Doc> | MixinUpdate<Doc, Doc>,
   mixin: ClassCollaborators,
-  doc: Doc,
+  docClass: Ref<Class<Doc>>,
   control: TriggerControl
 ): Promise<Ref<Account>[]> {
   const newCollaborators = new Set<Ref<Account>>()
@@ -1261,7 +1263,7 @@ async function getNewCollaborators (
         if (typeof value !== 'string') {
           value = value.$each
         }
-        const newCollabs = await getKeyCollaborators(doc, value, key, control)
+        const newCollabs = await getKeyCollaborators(docClass, value, key, control)
         if (newCollabs !== undefined) {
           for (const newCollab of newCollabs) {
             newCollaborators.add(newCollab)
@@ -1274,7 +1276,7 @@ async function getNewCollaborators (
     if (key.startsWith('$')) continue
     if (mixin.fields.includes(key)) {
       const value = (ops as any)[key]
-      const newCollabs = await getKeyCollaborators(doc, value, key, control)
+      const newCollabs = await getKeyCollaborators(docClass, value, key, control)
       if (newCollabs !== undefined) {
         for (const newCollab of newCollabs) {
           newCollaborators.add(newCollab)
@@ -1288,7 +1290,7 @@ async function getNewCollaborators (
 async function getRemovedMembers (
   ops: DocumentUpdate<Space> | MixinUpdate<Space, Space>,
   mixin: ClassCollaborators,
-  doc: Space,
+  docClass: Ref<Class<Space>>,
   control: TriggerControl
 ): Promise<Ref<Account>[]> {
   const removedCollaborators: Ref<Account>[] = []
@@ -1299,7 +1301,7 @@ async function getRemovedMembers (
       if (typeof value !== 'string') {
         value = value.$in
       }
-      const collabs = await getKeyCollaborators(doc, value, key, control)
+      const collabs = await getKeyCollaborators(docClass, value, key, control)
       if (collabs !== undefined) {
         removedCollaborators.push(...collabs)
       }
@@ -1329,24 +1331,11 @@ async function updateCollaboratorDoc (
     const collabsInfo = await getTxCollabs(tx, control, doc)
 
     if (collabsInfo.added.length > 0) {
-      res.push(
-        control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-          $push: {
-            collaborators: {
-              $each: collabsInfo.added,
-              $position: 0
-            }
-          }
-        })
-      )
+      res.push(createPushCollaboratorsTx(control, tx.objectId, tx.objectClass, tx.objectSpace, collabsInfo.added))
     }
 
     if (collabsInfo.removed.length > 0) {
-      res.push(
-        control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-          $pull: { collaborators: { $in: collabsInfo.removed } }
-        })
-      )
+      res.push(createPullCollaboratorsTx(control, tx.objectId, tx.objectClass, tx.objectSpace, collabsInfo.removed))
     }
 
     res = res.concat(
@@ -1492,6 +1481,58 @@ async function applyUserTxes (
   return res
 }
 
+async function updateCollaborators (control: TriggerControl, tx: TxCUD<Doc>): Promise<Tx[]> {
+  if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxMixin) return []
+
+  const hierarchy = control.hierarchy
+
+  const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+  if (mixin === undefined) return []
+
+  const { objectClass, objectId, objectSpace } = tx
+  const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
+  const addedCollaborators = await getNewCollaborators(ops, mixin, objectClass, control)
+  const isSpace = control.hierarchy.isDerived(objectClass, core.class.Space)
+  const removedCollaborators = isSpace
+    ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control)
+    : []
+
+  if (removedCollaborators.length === 0 && addedCollaborators.length === 0) return []
+
+  const doc = (await control.findAll(objectClass, { _id: objectId }, { limit: 1 }))[0]
+  if (doc === undefined) return []
+
+  const res: Tx[] = []
+  const currentCollaborators = new Set(hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? [])
+  const toAdd = addedCollaborators.filter((p) => !currentCollaborators.has(p))
+
+  if (toAdd.length === 0 && removedCollaborators.length === 0) return []
+
+  if (toAdd.length > 0) {
+    res.push(createPushCollaboratorsTx(control, objectId, objectClass, objectSpace, toAdd))
+  }
+
+  if (removedCollaborators.length > 0) {
+    res.push(createPullCollaboratorsTx(control, objectId, objectClass, objectSpace, removedCollaborators))
+  }
+
+  if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return res
+
+  const contexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: objectId })
+
+  for (const collab of toAdd) {
+    const account = await getPersonAccountById(collab, control)
+    if (account === undefined) continue
+    const context = contexts.find(({ user }) => user === collab)
+    if (context !== undefined) continue
+    await createNotifyContext(control, objectId, objectClass, objectSpace, account)
+  }
+
+  await removeContexts(contexts, removedCollaborators as Ref<PersonAccount>[], control)
+
+  return res
+}
+
 export async function createCollaboratorNotifications (
   ctx: MeasureContext,
   tx: TxCUD<Doc>,
@@ -1501,7 +1542,12 @@ export async function createCollaboratorNotifications (
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx[]> {
   if (tx.space === core.space.DerivedTx) {
-    return []
+    // do not forgot update collaborators for derived  tx
+    return await control.ctx.with(
+      'updateDerivedCollaborators',
+      {},
+      async () => await updateCollaborators(control, TxProcessor.extractTx(tx) as TxCUD<Doc>)
+    )
   }
 
   if (activityMessages.length === 0) {

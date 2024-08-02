@@ -14,6 +14,7 @@
 //
 import notification, {
   BaseNotificationType,
+  Collaborators,
   CommonNotificationType,
   NotificationContent,
   NotificationProvider,
@@ -29,6 +30,7 @@ import core, {
   matchQuery,
   MixinUpdate,
   Ref,
+  Space,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -459,4 +461,33 @@ export async function getUsersInfo (ids: Ref<PersonAccount>[], control: TriggerC
     account,
     person: persons.find(({ _id }) => _id === account.person)
   }))
+}
+
+export function createPushCollaboratorsTx (
+  control: TriggerControl,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  space: Ref<Space>,
+  collaborators: Ref<Account>[]
+): TxMixin<Doc, Collaborators> {
+  return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
+    $push: {
+      collaborators: {
+        $each: collaborators,
+        $position: 0
+      }
+    }
+  })
+}
+
+export function createPullCollaboratorsTx (
+  control: TriggerControl,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  space: Ref<Space>,
+  collaborators: Ref<Account>[]
+): TxMixin<Doc, Collaborators> {
+  return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
+    $pull: { collaborators: { $in: collaborators } }
+  })
 }

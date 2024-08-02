@@ -107,9 +107,10 @@
           _id: { $in: limit !== -1 ? ids.slice(0, limit) : ids },
           space: isChunterSpace ? core.space.Space : undefined
         },
-        (res: Doc[]) => {
-          objectsByClass = objectsByClass.set(_class, { docs: res, total: ids.length })
-        }
+        (res) => {
+          objectsByClass = objectsByClass.set(_class, { docs: res, total: res.total })
+        },
+        { total: true }
       )
     }
 
