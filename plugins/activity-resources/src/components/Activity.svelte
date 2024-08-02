@@ -13,20 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
+  import activity, {
+    ActivityExtension,
+    ActivityMessage,
+    ActivityReference,
+    DisplayActivityMessage,
+    WithReferences
+  } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, getClient, isSpace } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Grid, Label, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
-  import { combineActivityMessages } from '../activityMessagesUtils'
-  import { canGroupMessages, getMessageFromLoc } from '../utils'
+  import { combineActivityMessages, sortActivityMessages } from '../activityMessagesUtils'
+  import { canGroupMessages, getMessageFromLoc, getSpace } from '../utils'
   import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
   import { messageInFocus } from '../activity'
 
-  export let object: Doc
+  export let object: WithReferences<Doc>
   export let showCommenInput: boolean = true
   export let transparent: boolean = false
   export let focusIndex: number = -1
@@ -34,12 +40,17 @@
 
   const client = getClient()
   const activityMessagesQuery = createQuery()
+  const refsQuery = createQuery()
 
   let extensions: ActivityExtension[] = []
 
   let filteredMessages: DisplayActivityMessage[] = []
-  let activityMessages: ActivityMessage[] = []
-  let isLoading = false
+  let allMessages: ActivityMessage[] = []
+  const messages: ActivityMessage[] = []
+  let refs: ActivityReference[] = []
+
+  let isMessagesLoading = false
+  let isRefsLoading = true
 
   let activityBox: HTMLElement | undefined
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
@@ -163,16 +174,38 @@
     extensions = res
   })
 
+  // Load references from other spaces separately because they can have any different spaces
+  $: if ((object.references ?? 0) > 0) {
+    refsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo: object._id, space: { $ne: getSpace(object) } },
+      (res) => {
+        refs = res
+        isRefsLoading = false
+      },
+      {
+        sort: {
+          createdOn: SortingOrder.Ascending
+        }
+      }
+    )
+  } else {
+    isRefsLoading = false
+    refsQuery.unsubscribe()
+  }
+
+  $: allMessages = sortActivityMessages(messages.concat(refs))
+
   async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
-    isLoading = true
+    isMessagesLoading = true
 
     const res = activityMessagesQuery.query(
       activity.class.ActivityMessage,
-      { attachedTo: objectId, space: isSpace(object) ? object._id : object.space },
+      { attachedTo: objectId, space: getSpace(object) },
       (result: ActivityMessage[]) => {
         void combineActivityMessages(result, order).then((messages) => {
-          activityMessages = messages
-          isLoading = false
+          messages = messages
+          isMessagesLoading = false
         })
       },
       {
@@ -182,10 +215,11 @@
       }
     )
     if (!res) {
-      isLoading = false
+      isMessagesLoading = false
     }
   }
 
+  $: isLoading = isMessagesLoading || isRefsLoading
   $: areMessagesLoaded = !isLoading && filteredMessages.length > 0
 
   $: if (activityBox && areMessagesLoaded) {
@@ -206,7 +240,7 @@
     {/if}
   </span>
   <ActivityFilter
-    messages={activityMessages}
+    messages={allMessages}
     {object}
     on:update={(e) => {
       filteredMessages = e.detail

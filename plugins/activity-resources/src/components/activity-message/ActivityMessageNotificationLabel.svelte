@@ -16,8 +16,8 @@
   import { Label, tooltip } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Doc } from '@hcengineering/core'
   import { getDocLinkTitle, getDocTitle, ObjectIcon } from '@hcengineering/view-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import contact from '@hcengineering/contact'
@@ -25,54 +25,44 @@
   import ActivityMessagePreview from './ActivityMessagePreview.svelte'
 
   export let context: DocNotifyContext
+  export let object: ActivityMessage
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const parentQuery = createQuery()
 
-  let parentMessage: ActivityMessage | undefined = undefined
   let title: string | undefined = undefined
-  let object: Doc | undefined = undefined
-
-  $: parentQuery.query(activity.class.ActivityMessage, { _id: context.attachedTo as Ref<ActivityMessage> }, (res) => {
-    parentMessage = res[0]
-  })
-
-  $: parentMessage &&
-    client.findOne(parentMessage.attachedToClass, { _id: parentMessage.attachedTo }).then((res) => {
-      object = res
-    })
+  let doc: Doc | undefined = undefined
 
   $: object &&
-    getDocLinkTitle(client, object._id, object._class, object).then((res) => {
+    client.findOne(object.attachedToClass, { _id: object.attachedTo, space: object.space }).then((res) => {
+      doc = res
+    })
+
+  $: doc &&
+    getDocLinkTitle(client, doc._id, doc._class, doc).then((res) => {
       title = res
     })
 </script>
 
-{#if parentMessage}
-  <span class="flex-presenter flex-gap-1 font-semi-bold">
-    <Label label={(parentMessage?.replies ?? 0) > 0 ? activity.string.Thread : activity.string.Message} />
-    {#if title}
-      <span class="lower">
-        <Label label={activity.string.In} />
-      </span>
-      {#if object}
-        {#await getDocTitle(client, object._id, object._class, object) then tooltipLabel}
-          <span
-            class="flex-presenter flex-gap-0-5"
-            use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
-          >
-            <ObjectIcon
-              value={object}
-              size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
-            />
-            {title}
-          </span>
-        {/await}
-      {/if}
+<span class="flex-presenter flex-gap-1 font-semi-bold">
+  <Label label={(object?.replies ?? 0) > 0 ? activity.string.Thread : activity.string.Message} />
+  {#if title}
+    <span class="lower">
+      <Label label={activity.string.In} />
+    </span>
+    {#if doc}
+      {#await getDocTitle(client, doc._id, doc._class, doc) then tooltipLabel}
+        <span
+          class="flex-presenter flex-gap-0-5"
+          use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
+        >
+          <ObjectIcon value={doc} size={hierarchy.isDerived(doc._class, contact.class.Person) ? 'tiny' : 'small'} />
+          {title}
+        </span>
+      {/await}
     {/if}
-  </span>
-  <span class="font-normal">
-    <ActivityMessagePreview value={parentMessage} readonly type="content-only" />
-  </span>
-{/if}
+  {/if}
+</span>
+<span class="font-normal">
+  <ActivityMessagePreview value={object} {doc} readonly type="content-only" />
+</span>

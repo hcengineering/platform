@@ -15,7 +15,7 @@
 <script lang="ts">
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { Component, Icon, IconSize } from '@hcengineering/ui'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { classIcon } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { Doc } from '@hcengineering/core'
@@ -25,21 +25,12 @@
   export let value: DocNotifyContext
   export let size: IconSize = 'medium'
   export let notifyCount: number = 0
+  export let object: Doc | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const query = createQuery()
 
-  let object: Doc | undefined = undefined
-
-  $: if (object?._id !== value.attachedTo) {
-    object = undefined
-  }
   $: iconMixin = hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectIcon)
-  $: iconMixin &&
-    query.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
-      object = res[0]
-    })
 </script>
 
 <div class="container">

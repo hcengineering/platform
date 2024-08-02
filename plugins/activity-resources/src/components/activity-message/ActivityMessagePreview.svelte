@@ -21,6 +21,7 @@
 
   import activity from '../../plugin'
 
+  export let doc: Doc | undefined
   export let value: DisplayActivityMessage
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
@@ -44,7 +45,8 @@
       type,
       readonly,
       actions,
-      space
+      space,
+      doc
     }}
     on:click
   />

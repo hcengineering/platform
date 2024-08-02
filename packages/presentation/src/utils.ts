@@ -700,7 +700,11 @@ export function isAdminUser (): boolean {
 }
 
 export function isSpace (space: Doc): space is Space {
-  return getClient().getHierarchy().isDerived(space._class, core.class.Space)
+  return isSpaceClass(space._class)
+}
+
+export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
+  return getClient().getHierarchy().isDerived(_class, core.class.Space)
 }
 
 export function setPresentationCookie (token: string, workspaceId: string): void {
