@@ -24,6 +24,7 @@
   import chunter from '../../../plugin'
   import { ChatGroup, ChatNavGroupModel } from '../types'
   import ChatNavSection from './ChatNavSection.svelte'
+  import { PersonAccount } from '@hcengineering/contact'
 
   export let object: Doc | undefined
   export let model: ChatNavGroupModel
@@ -38,6 +39,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount() as PersonAccount
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
 
@@ -55,13 +57,12 @@
     notification.class.DocNotifyContext,
     {
       ...model.query,
-      [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
-      user: getCurrentAccount()._id
+      // [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
+      person: me.person
     },
     (res: DocNotifyContext[]) => {
       contexts = res.filter(
-        ({ attachedToClass }) =>
-          hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
+        ({ objectClass }) => hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) !== undefined
       )
     },
     { sort: { createdOn: SortingOrder.Ascending } }
@@ -81,10 +82,10 @@
     object !== undefined && getObjectGroup(object) === model.id && !$contextByDocStore.has(object._id)
 
   function loadObjects (contexts: DocNotifyContext[]): void {
-    const contextsByClass = groupByArray(contexts, ({ attachedToClass }) => attachedToClass)
+    const contextsByClass = groupByArray(contexts, ({ objectClass }) => objectClass)
 
     for (const [_class, ctx] of contextsByClass.entries()) {
-      const ids = ctx.map(({ attachedTo }) => attachedTo)
+      const ids = ctx.map(({ objectId }) => objectId)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
         limit: hierarchy.isDerived(_class, chunter.class.ChunterSpace) ? -1 : model.maxSectionItems ?? 5
@@ -196,7 +197,7 @@
     if (_class === undefined) {
       return model.getActionsFn(contexts)
     } else {
-      return model.getActionsFn(contexts.filter(({ attachedToClass }) => attachedToClass === _class))
+      return model.getActionsFn(contexts.filter(({ objectClass }) => objectClass === _class))
     }
   }
 </script>

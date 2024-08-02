@@ -20,10 +20,10 @@
     DocNotifyContext,
     InboxNotification
   } from '@hcengineering/notification'
-  import { createQuery, getClient, isSpace, isSpaceClass } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import core, { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
@@ -52,15 +52,15 @@
   let object: Doc | undefined = undefined
 
   $: query.query(
-    value.attachedToClass,
-    { _id: value.attachedTo, space: isSpaceClass(value.attachedToClass) ? core.space.Space : value.space },
+    value.objectClass,
+    { _id: value.objectId, space: value.objectSpace },
     (res) => {
       object = res[0]
     },
     { limit: 1 }
   )
 
-  $: if (object?._id !== value.attachedTo) {
+  $: if (object?._id !== value.objectId) {
     object = undefined
   }
 
@@ -82,10 +82,7 @@
       title = res
     })
 
-  $: presenterMixin = hierarchy.classHierarchyMixin(
-    value.attachedToClass,
-    notification.mixin.NotificationContextPresenter
-  )
+  $: presenterMixin = hierarchy.classHierarchyMixin(value.objectClass, notification.mixin.NotificationContextPresenter)
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
@@ -213,13 +210,13 @@
           {#if idTitle}
             {idTitle}
           {:else}
-            <Label label={hierarchy.getClass(value.attachedToClass).label} />
+            <Label label={hierarchy.getClass(value.objectClass).label} />
           {/if}
           <span class="title overflow-label clear-mins" {title}>
             {#if title}
               {title}
             {:else}
-              <Label label={hierarchy.getClass(value.attachedToClass).label} />
+              <Label label={hierarchy.getClass(value.objectClass).label} />
             {/if}
           </span>
         {/if}

@@ -46,7 +46,7 @@ import {
 } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference, UserMentionInfo } from '@hcengineering/activity'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
 import {
   getCommonNotificationTxes,
   getPushCollaboratorTx,
@@ -54,7 +54,8 @@ import {
   isShouldNotifyTx,
   NotifyResult,
   applyNotificationProviders,
-  getNotificationContent
+  getNotificationContent,
+  toReceiverInfo
 } from '@hcengineering/server-notification-resources'
 
 async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
@@ -118,6 +119,14 @@ export async function getPersonNotificationTxes (
 
   const doc = (await control.findAll(reference.srcDocClass, { _id: reference.srcDocId }))[0]
 
+  const receiverPerson = (
+    await control.findAll(contact.mixin.Employee, { _id: receiver.person as Ref<Employee>, active: true }, { limit: 1 })
+  )[0]
+  if (receiverPerson === undefined) return res
+
+  const receiverSpace = (await control.findAll(contact.class.PersonSpace, { person: receiver.person }, { limit: 1 }))[0]
+  if (receiverSpace === undefined) return res
+
   const collaboratorsTx = await getCollaboratorsTxes(reference, control, receiver, doc)
 
   res.push(...collaboratorsTx)
@@ -163,17 +172,19 @@ export async function getPersonNotificationTxes (
   const sender = (
     await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId as Ref<PersonAccount> }, { limit: 1 })
   )[0]
-  const receiverPerson = (await control.findAll(contact.class.Person, { _id: receiver.person }, { limit: 1 }))[0]
+
   const senderPerson =
     sender !== undefined
       ? (await control.findAll(contact.class.Person, { _id: sender.person }, { limit: 1 }))[0]
       : undefined
 
-  const receiverInfo = {
+  const receiverInfo = toReceiverInfo(control.hierarchy, {
     _id: receiver._id,
     account: receiver,
-    person: receiverPerson
-  }
+    person: receiverPerson,
+    space: receiverSpace._id
+  })
+  if (receiverInfo === undefined) return res
 
   const senderInfo = {
     _id: senderId,

@@ -111,9 +111,13 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
 
 async function createPersonSpaces (client: TxOperations): Promise<void> {
   const accounts = await client.getModel().findAll(contact.class.PersonAccount, {})
+  const employees = await client.findAll(contact.mixin.Employee, {})
   const newSpaces = new Map<Ref<Person>, Data<PersonSpace>>()
 
   for (const account of accounts) {
+    const employee = employees.find(({ _id }) => _id === account.person)
+    if (employee === undefined) continue
+
     const space = newSpaces.get(account.person)
 
     if (space !== undefined) {

@@ -22,6 +22,7 @@
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
   import { openChannel } from '../../../navigation'
+  import { PersonAccount } from '@hcengineering/contact'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -51,19 +52,20 @@
   $: canSave = !!channelName
 
   async function save (): Promise<void> {
-    const accountId = getCurrentAccount()._id
+    const account = getCurrentAccount() as PersonAccount
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name: channelName,
       description: '',
       private: selectedVisibilityId === 'private',
       archived: false,
-      members: [accountId],
+      members: [account._id],
       topic: description
     })
     await client.createDoc(notification.class.DocNotifyContext, channelId, {
-      user: accountId,
-      attachedTo: channelId,
-      attachedToClass: chunter.class.Channel
+      person: account.person,
+      objectId: channelId,
+      objectClass: chunter.class.Channel,
+      objectSpace: core.space.Space
     })
 
     openChannel(channelId, chunter.class.Channel)

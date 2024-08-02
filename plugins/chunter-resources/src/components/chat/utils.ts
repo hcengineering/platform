@@ -150,7 +150,7 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     getActionsFn: getChannelsActions,
     query: {
       isPinned: { $ne: true },
-      attachedToClass: { $in: [chunter.class.Channel] }
+      objectClass: { $in: [chunter.class.Channel] }
     }
   },
   {
@@ -160,7 +160,7 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     getActionsFn: getDirectActions,
     query: {
       isPinned: { $ne: true },
-      attachedToClass: { $in: [chunter.class.DirectMessage] }
+      objectClass: { $in: [chunter.class.DirectMessage] }
     }
   },
   {
@@ -171,7 +171,7 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     maxSectionItems: 5,
     query: {
       isPinned: { $ne: true },
-      attachedToClass: {
+      objectClass: {
         // Ignore external channels until support is provided for them
         $nin: [chunter.class.DirectMessage, chunter.class.Channel, contact.class.Channel]
       }
@@ -262,7 +262,7 @@ function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNav
 
 function sortActivityChannels (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
   const { contexts } = option
-  const contextByDoc = new Map(contexts.map((context) => [context.attachedTo, context]))
+  const contextByDoc = new Map(contexts.map((context) => [context.objectId, context]))
 
   return items.sort((i1, i2) => {
     const context1 = contextByDoc.get(i1.id)

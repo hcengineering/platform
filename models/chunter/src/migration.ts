@@ -44,14 +44,14 @@ export const DOMAIN_COMMENT = 'comment' as Domain
 export async function createDocNotifyContexts (
   client: MigrationUpgradeClient,
   tx: TxOperations,
-  attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  objectSpace: Ref<Space>
 ): Promise<void> {
   const users = await client.findAll(core.class.Account, {})
   const docNotifyContexts = await client.findAll(notification.class.DocNotifyContext, {
     user: { $in: users.map((it) => it._id) },
-    attachedTo,
-    attachedToClass
+    objectId
   })
   for (const user of users) {
     if (user._id === core.account.System) {
@@ -62,8 +62,9 @@ export async function createDocNotifyContexts (
     if (docNotifyContext === undefined) {
       await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
         user: user._id,
-        attachedTo,
-        attachedToClass
+        objectId,
+        objectClass,
+        objectSpace
       })
     }
   }
@@ -101,7 +102,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
     }
   }
 
-  await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel)
+  await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel, core.space.Space)
 }
 
 async function getAllEmployeeAccounts (tx: TxOperations): Promise<Ref<PersonAccount>[]> {
@@ -157,7 +158,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
     }
   }
 
-  await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel)
+  await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel, core.space.Space)
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {

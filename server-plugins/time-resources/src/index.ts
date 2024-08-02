@@ -44,7 +44,7 @@ import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/t
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
 import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
-import { UserInfo } from '@hcengineering/server-notification'
+import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -186,8 +186,26 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   }
 
   const object = (await control.findAll(todo.attachedToClass, { _id: todo.attachedTo }))[0]
-
   if (object === undefined) return []
+
+  const person = (
+    await control.modelDb.findAll(
+      contact.mixin.Employee,
+      { _id: account.person as Ref<Employee>, active: true },
+      { limit: 1 }
+    )
+  )[0]
+  if (person === undefined) return []
+
+  const personSpace = (await control.findAll(contact.class.PersonSpace, { person: account.person }, { limit: 1 }))[0]
+  if (personSpace === undefined) return []
+
+  const receiverInfo: ReceiverInfo = {
+    _id: account._id,
+    account,
+    person,
+    space: personSpace._id
+  }
 
   const senderAccount = await control.modelDb.findOne(contact.class.PersonAccount, {
     _id: tx.modifiedBy as Ref<PersonAccount>
@@ -197,13 +215,12 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
       ? (await control.findAll(contact.class.Person, { _id: senderAccount.person }))[0]
       : undefined
 
-  const senderInfo: UserInfo = {
+  const senderInfo: SenderInfo = {
     _id: tx.modifiedBy,
     account: senderAccount,
     person: senderPerson
   }
 
-  const res: Tx[] = []
   const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false)
   const content = await getNotificationContent(tx, account, senderInfo, todo, control)
   const data: Partial<Data<CommonInboxNotification>> = {
@@ -215,30 +232,18 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title))))
   }
 
-  const person = (await control.modelDb.findAll(contact.class.Person, { _id: account.person }))[0]
-
-  const receiverInfo: UserInfo = {
-    _id: account._id,
-    account,
-    person
-  }
-
-  res.push(
-    ...(await getCommonNotificationTxes(
-      control,
-      object,
-      data,
-      receiverInfo,
-      senderInfo,
-      object._id,
-      object._class,
-      object.space,
-      createTx.modifiedOn,
-      notifyResult
-    ))
+  return await getCommonNotificationTxes(
+    control,
+    object,
+    data,
+    receiverInfo,
+    senderInfo,
+    object._id,
+    object._class,
+    object.space,
+    createTx.modifiedOn,
+    notifyResult
   )
-
-  return res
 }
 
 /**

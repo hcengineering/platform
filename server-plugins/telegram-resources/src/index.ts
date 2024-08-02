@@ -29,7 +29,7 @@ import {
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import telegram, { TelegramMessage } from '@hcengineering/telegram'
-import notification, { NotificationType } from '@hcengineering/notification'
+import { NotificationType } from '@hcengineering/notification'
 import setting, { Integration } from '@hcengineering/setting'
 
 /**
@@ -67,47 +67,6 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         lastMessage: message.sendOn
       })
       res.push(tx)
-    }
-
-    if (message.incoming) {
-      const docs = await control.findAll(notification.class.DocNotifyContext, {
-        attachedTo: channel._id,
-        user: message.modifiedBy
-      })
-      for (const doc of docs) {
-        // TODO: push inbox notifications
-        // res.push(
-        //   control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-        //     $push: {
-        //       txes: {
-        //         _id: tx._id as Ref<TxCUD<Doc>>,
-        //         modifiedOn: tx.modifiedOn,
-        //         modifiedBy: tx.modifiedBy,
-        //         isNew: true
-        //       }
-        //     }
-        //   })
-        // )
-        res.push(
-          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastUpdateTimestamp: tx.modifiedOn
-          })
-        )
-      }
-      if (docs.length === 0) {
-        res.push(
-          control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
-            user: tx.modifiedBy,
-            attachedTo: channel._id,
-            attachedToClass: channel._class,
-            lastUpdateTimestamp: tx.modifiedOn
-            // TODO: push inbox notifications
-            // txes: [
-            //   { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
-            // ]
-          })
-        )
-      }
     }
   }
 

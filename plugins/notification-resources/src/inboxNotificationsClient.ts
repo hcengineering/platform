@@ -34,6 +34,8 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+import { type PersonAccount } from '@hcengineering/contact'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -89,14 +91,16 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
+    const account = getCurrentAccount() as PersonAccount
+
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: getCurrentAccount()._id
+        person: account.person
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
-        this._contextByDoc = new Map(result.map((updates) => [updates.attachedTo, updates]))
+        this._contextByDoc = new Map(result.map((updates) => [updates.objectId, updates]))
         this.contextByDoc.set(this._contextByDoc)
       }
     )

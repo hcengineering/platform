@@ -36,7 +36,7 @@
   $: threadId = context ? undefined : (_id as Ref<ActivityMessage>)
 
   $: context &&
-    objectQuery.query(context.attachedToClass, { _id: context.attachedTo }, (res) => {
+    objectQuery.query(context.objectClass, { _id: context.objectId }, (res) => {
       ;[object] = res
     })
 </script>

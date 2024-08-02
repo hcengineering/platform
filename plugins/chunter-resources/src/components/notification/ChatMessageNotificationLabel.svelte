@@ -35,7 +35,7 @@
   let title: string | undefined = undefined
   let channel: Doc | undefined = undefined
 
-  $: isThread = hierarchy.isDerived(context.attachedToClass, chunter.class.ThreadMessage)
+  $: isThread = hierarchy.isDerived(context.objectClass, chunter.class.ThreadMessage)
 
   $: loadChannel(object, isThread)
   $: channel &&

@@ -188,7 +188,7 @@
 
   async function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): Promise<void> {
     const displayClasses = new Set(
-      notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ attachedToClass }) => attachedToClass)
+      notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ objectClass }) => objectClass)
     )
 
     const classes = Array.from(displayClasses)
@@ -249,8 +249,8 @@
       return
     }
 
-    const isChunterChannel = hierarchy.isDerived(selectedContext.attachedToClass, chunter.class.ChunterSpace)
-    const panelComponent = hierarchy.classHierarchyMixin(selectedContext.attachedToClass, view.mixin.ObjectPanel)
+    const isChunterChannel = hierarchy.isDerived(selectedContext.objectClass, chunter.class.ChunterSpace)
+    const panelComponent = hierarchy.classHierarchyMixin(selectedContext.objectClass, view.mixin.ObjectPanel)
 
     selectedComponent = panelComponent?.component ?? view.component.EditDoc
 
@@ -315,10 +315,10 @@
 
       if (
         selectedTabId === activity.class.ActivityMessage &&
-        hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)
+        hierarchy.isDerived(context.objectClass, activity.class.ActivityMessage)
       ) {
         result.set(key, resNotifications)
-      } else if (context.attachedToClass === selectedTabId) {
+      } else if (context.objectClass === selectedTabId) {
         result.set(key, resNotifications)
       }
     }
@@ -411,8 +411,8 @@
       <Component
         is={selectedComponent}
         props={{
-          _id: selectedContext.attachedTo,
-          _class: selectedContext.attachedToClass,
+          _id: selectedContext.objectId,
+          _class: selectedContext.objectClass,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext }

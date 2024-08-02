@@ -393,7 +393,7 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
   const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
 
   const res: Tx[] = []
-  const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+  // const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
 
   if (removed.length > 0) {
     res.push(
@@ -415,32 +415,32 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     )
   }
 
-  for (const addedMember of added) {
-    const context = allContexts.find(({ user }) => user === addedMember)
-
-    if (context === undefined) {
-      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-        attachedTo: tx.objectId,
-        attachedToClass: tx.objectClass,
-        user: addedMember,
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      await control.apply([createTx])
-    } else {
-      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      res.push(updateTx)
-    }
-  }
-
-  const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
-
-  for (const context of contextsToRemove) {
-    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-  }
+  // for (const addedMember of added) {
+  //   const context = allContexts.find(({ user }) => user === addedMember)
+  //
+  //   if (context === undefined) {
+  //     const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
+  //       attachedTo: tx.objectId,
+  //       attachedToClass: tx.objectClass,
+  //       user: addedMember,
+  //       lastViewedTimestamp: tx.modifiedOn
+  //     })
+  //
+  //     await control.apply([createTx])
+  //   } else {
+  //     const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+  //       lastViewedTimestamp: tx.modifiedOn
+  //     })
+  //
+  //     res.push(updateTx)
+  //   }
+  // }
+  //
+  // const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
+  //
+  // for (const context of contextsToRemove) {
+  //   res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
+  // }
 
   return res
 }
@@ -561,14 +561,14 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
   const { hierarchy } = control
   const res: Tx[] = []
 
-  const directContexts = contexts.filter(({ attachedToClass }) =>
-    hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage)
+  const directContexts = contexts.filter(({ objectClass }) =>
+    hierarchy.isDerived(objectClass, chunter.class.DirectMessage)
   )
   const activityContexts = contexts.filter(
-    ({ attachedToClass }) =>
-      !hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel)
+    ({ objectClass }) =>
+      !hierarchy.isDerived(objectClass, chunter.class.DirectMessage) &&
+      !hierarchy.isDerived(objectClass, chunter.class.Channel) &&
+      !hierarchy.isDerived(objectClass, chunter.class.Channel)
   )
 
   const directTxes = await hideOldDirects(directContexts, control, date)
