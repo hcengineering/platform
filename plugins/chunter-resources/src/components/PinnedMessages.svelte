@@ -28,13 +28,16 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let _id: Ref<Doc>
+  export let withRefs = false
 
   const dispatch = createEventDispatcher()
   const pinnedQuery = createQuery()
   const pinnedThreadsQuery = createQuery()
+  const pinnedRefsQuery = createQuery()
 
   let pinnedMessagesCount = 0
   let pinnedThreadsCount = 0
+  let refsCount = 0
 
   $: channelSpace = getChannelSpace(_class, _id, space)
   $: pinnedQuery.query(
@@ -55,10 +58,21 @@
     { total: true, limit: 1 }
   )
 
+  $: if (withRefs) {
+    pinnedRefsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo: _id, isPinned: true, space: { $ne: channelSpace } },
+      (res) => {
+        refsCount = res.total
+      },
+      { limit: 1, total: true }
+    )
+  }
+
   function openMessagesPopup (ev: MouseEvent): void {
     showPopup(
       PinnedMessagesPopup,
-      { attachedTo: _id, attachedToClass: _class, space: channelSpace },
+      { attachedTo: _id, attachedToClass: _class, space: channelSpace, withRefs },
       eventToHTMLElement(ev),
       (result) => {
         if (result == null) return
@@ -67,7 +81,7 @@
     )
   }
 
-  $: count = pinnedMessagesCount + pinnedThreadsCount
+  $: count = pinnedMessagesCount + pinnedThreadsCount + refsCount
 </script>
 
 {#if count > 0}

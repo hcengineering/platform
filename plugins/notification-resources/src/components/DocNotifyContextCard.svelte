@@ -20,10 +20,10 @@
     DocNotifyContext,
     InboxNotification
   } from '@hcengineering/notification'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, isSpace, isSpaceClass } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import core, { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
@@ -47,6 +47,22 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+  const query = createQuery()
+
+  let object: Doc | undefined = undefined
+
+  $: query.query(
+    value.attachedToClass,
+    { _id: value.attachedTo, space: isSpaceClass(value.attachedToClass) ? core.space.Space : value.space },
+    (res) => {
+      object = res[0]
+    },
+    { limit: 1 }
+  )
+
+  $: if (object?._id !== value.attachedTo) {
+    object = undefined
+  }
 
   let isActionMenuOpened = false
   let unreadCount = 0
@@ -56,13 +72,15 @@
   let idTitle: string | undefined
   let title: string | undefined
 
-  $: void getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
-    idTitle = res
-  })
+  $: object &&
+    getDocIdentifier(client, object._id, object._class, object).then((res) => {
+      idTitle = res
+    })
 
-  $: void getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
-    title = res
-  })
+  $: object &&
+    getDocTitle(client, object._id, object._class, object).then((res) => {
+      title = res
+    })
 
   $: presenterMixin = hierarchy.classHierarchyMixin(
     value.attachedToClass,
@@ -184,73 +202,75 @@
     dispatch('click', { context: value })
   }}
 >
-  <div class="header">
-    <NotifyContextIcon {value} notifyCount={unreadCount} />
+  {#if object}
+    <div class="header">
+      <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
 
-    <div class="labels">
-      {#if presenterMixin?.labelPresenter}
-        <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
-      {:else}
-        {#if idTitle}
-          {idTitle}
+      <div class="labels">
+        {#if presenterMixin?.labelPresenter}
+          <Component is={presenterMixin.labelPresenter} props={{ context: value, object }} />
         {:else}
-          <Label label={hierarchy.getClass(value.attachedToClass).label} />
-        {/if}
-        <span class="title overflow-label clear-mins" {title}>
-          {#if title}
-            {title}
+          {#if idTitle}
+            {idTitle}
           {:else}
             <Label label={hierarchy.getClass(value.attachedToClass).label} />
           {/if}
-        </span>
-      {/if}
-    </div>
-
-    <div class="actions clear-mins">
-      <div class="flex-center">
-        {#if archivingPromise !== undefined}
-          <Spinner size="small" />
-        {:else}
-          <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          <span class="title overflow-label clear-mins" {title}>
+            {#if title}
+              {title}
+            {:else}
+              <Label label={hierarchy.getClass(value.attachedToClass).label} />
+            {/if}
+          </span>
         {/if}
       </div>
-      <ButtonIcon
-        icon={IconMoreV}
-        size="small"
-        kind="tertiary"
-        inheritColor
-        pressed={isActionMenuOpened}
-        on:click={showMenu}
-      />
-    </div>
-  </div>
 
-  <div class="content">
-    <div class="notifications">
-      {#each groupedNotifications.slice(0, maxNotifications) as group (getKey(group))}
-        <div class="notification">
-          <!--          use:tooltip={canShowTooltip(group)-->
-          <!--            ? {-->
-          <!--                component: MessagesPopup,-->
-          <!--                props: { context: value, notifications: group }-->
-          <!--              }-->
-          <!--            : undefined}-->
-
-          <div class="embeddedMarker" />
-          <InboxNotificationPresenter
-            value={group[0]}
-            {viewlets}
-            space={value.space}
-            on:click={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              dispatch('click', { context: value, notification: group[0] })
-            }}
-          />
+      <div class="actions clear-mins">
+        <div class="flex-center">
+          {#if archivingPromise !== undefined}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          {/if}
         </div>
-      {/each}
+        <ButtonIcon
+          icon={IconMoreV}
+          size="small"
+          kind="tertiary"
+          inheritColor
+          pressed={isActionMenuOpened}
+          on:click={showMenu}
+        />
+      </div>
     </div>
-  </div>
+    <div class="content">
+      <div class="notifications">
+        {#each groupedNotifications.slice(0, maxNotifications) as group (getKey(group))}
+          <div class="notification">
+            <!--          use:tooltip={canShowTooltip(group)-->
+            <!--            ? {-->
+            <!--                component: MessagesPopup,-->
+            <!--                props: { context: value, notifications: group }-->
+            <!--              }-->
+            <!--            : undefined}-->
+
+            <div class="embeddedMarker" />
+            <InboxNotificationPresenter
+              value={group[0]}
+              {object}
+              {viewlets}
+              space={value.space}
+              on:click={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                dispatch('click', { context: value, notification: group[0] })
+              }}
+            />
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -261,6 +281,7 @@
     cursor: pointer;
     padding: var(--spacing-1_5) var(--spacing-1);
     border-bottom: 1px solid var(--global-ui-BorderColor);
+    min-height: 5.625rem;
 
     .header {
       position: relative;

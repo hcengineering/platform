@@ -25,11 +25,10 @@ import {
   type Space,
   type Timestamp
 } from '@hcengineering/core'
-
 import { derived, get, type Readable, writable } from 'svelte/store'
-import { type ActivityMessage } from '@hcengineering/activity'
+import activity, { type ActivityMessage, type ActivityReference } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
-import { combineActivityMessages } from '@hcengineering/activity-resources'
+import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 
 export type LoadMode = 'forward' | 'backward'
@@ -67,6 +66,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
   private readonly metadataQuery = createQuery(true)
   private readonly tailQuery = createQuery(true)
+  private readonly refsQuery = createQuery(true)
 
   private chatId: Ref<Doc> | undefined = undefined
   private readonly msgClass: Ref<Class<ActivityMessage>>
@@ -76,12 +76,14 @@ export class ChannelDataProvider implements IChannelDataProvider {
   public readonly metadataStore = writable<MessageMetadata[]>([])
   private readonly tailStore = writable<ActivityMessage[]>([])
   private readonly chunksStore = writable<Chunk[]>([])
+  public readonly refsStore = writable<ActivityReference[]>([])
 
   private readonly isInitialLoadingStore = writable(false)
   private readonly isInitialLoadedStore = writable(false)
   private readonly isTailLoading = writable(false)
 
   readonly isTailLoaded = writable(false)
+  readonly isRefsLoading = writable(false)
 
   public datesStore = writable<Timestamp[]>([])
   public newTimestampStore = writable<Timestamp | undefined>(undefined)
@@ -89,8 +91,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
   public isLoadingMoreStore = writable(false)
 
   public isLoadingStore = derived(
-    [this.isInitialLoadedStore, this.isTailLoading],
-    ([initialLoaded, tailLoading]) => !initialLoaded || tailLoading
+    [this.isInitialLoadedStore, this.isTailLoading, this.isRefsLoading],
+    ([initialLoaded, tailLoading, isRefsLoading]) => !initialLoaded || tailLoading || isRefsLoading
   )
 
   private readonly backwardNextStore = writable<Chunk | undefined>(undefined)
@@ -104,8 +106,9 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
   private nextChunkAdding = false
 
-  public messagesStore = derived([this.chunksStore, this.tailStore], ([chunks, tail]) => {
-    return [...chunks.map(({ data }) => data).flat(), ...tail]
+  public messagesStore = derived([this.chunksStore, this.tailStore, this.refsStore], ([chunks, tail, refs]) => {
+    const data = chunks.map(({ data, to, from }) => mergeWithRefs(data, refs, from, to))
+    return [...data.flat(), ...mergeWithRefs(tail, refs, tail[0]?.createdOn)]
   })
 
   public canLoadNextForwardStore = derived([this.messagesStore, this.forwardNextStore], ([messages, forwardNext]) => {
@@ -120,18 +123,20 @@ export class ChannelDataProvider implements IChannelDataProvider {
     chatId: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
     selectedMsgId: Ref<ActivityMessage> | undefined,
-    loadAll = false
+    loadAll = false,
+    withRefs = false
   ) {
     this.chatId = chatId
     this.msgClass = _class
     this.selectedMsgId = selectedMsgId
-    void this.loadData(loadAll)
+    void this.loadData(loadAll, withRefs)
   }
 
   public destroy (): void {
     this.clearData()
     this.metadataQuery.unsubscribe()
     this.tailQuery.unsubscribe()
+    this.refsQuery.unsubscribe()
   }
 
   public canLoadMore (mode: LoadMode, timestamp?: Timestamp): boolean {
@@ -165,9 +170,27 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.clearMessages()
   }
 
-  private async loadData (loadAll = false): Promise<void> {
+  loadRefs (): void {
+    // Load references from other spaces separately because they can have any different spaces
+    this.refsQuery.query(
+      activity.class.ActivityReference,
+      { attachedTo: this.chatId, space: { $ne: this.space } },
+      (res) => {
+        this.refsStore.set(res)
+        this.isRefsLoading.set(false)
+      },
+      { sort: { createdOn: SortingOrder.Ascending } }
+    )
+  }
+
+  private async loadData (loadAll = false, withRefs = false): Promise<void> {
     if (this.chatId === undefined) {
       return
+    }
+
+    if (withRefs && this.msgClass === activity.class.ActivityMessage) {
+      this.isRefsLoading.set(true)
+      this.loadRefs()
     }
 
     this.metadataQuery.query(
@@ -610,4 +633,22 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     return true
   }
+}
+
+function mergeWithRefs (
+  messages: ActivityMessage[],
+  refs: ActivityReference[],
+  from?: Timestamp,
+  to?: Timestamp
+): ActivityMessage[] {
+  if (from === undefined) return messages
+  if (refs.length === 0) return messages
+
+  const refsFiltered = refs.filter(
+    ({ createdOn }) => (createdOn ?? 0) >= from && (to === undefined || (createdOn ?? 0) <= to)
+  )
+
+  if (refsFiltered.length === 0) return messages
+
+  return sortActivityMessages(messages.concat(refsFiltered))
 }

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
+  import activity, { ActivityMessage, ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
@@ -57,6 +57,8 @@
     dataProvider = undefined
   })
 
+  let refsLoaded = false
+
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: collection = isDocChannel ? 'comments' : 'messages'
 
@@ -73,7 +75,8 @@
           attachedTo: object._id,
           user: getCurrentAccount()._id
         }))
-
+      const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0
+      refsLoaded = hasRefs
       const space = isSpace(object) ? object._id : object.space
       dataProvider = new ChannelDataProvider(
         ctx,
@@ -81,9 +84,15 @@
         attachedTo,
         activity.class.ActivityMessage,
         selectedMessageId,
-        loadAll
+        loadAll,
+        hasRefs
       )
     }
+  }
+
+  $: if (dataProvider && !refsLoaded && ((object as WithReferences<Doc>).references ?? 0) > 0) {
+    dataProvider.loadRefs()
+    refsLoaded = true
   }
 </script>
 

@@ -88,13 +88,17 @@
     attributeModel = model
   })
 
-  async function getParentMessage (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<ActivityMessage | undefined> {
+  async function getParentMessage (
+    _class: Ref<Class<Doc>>,
+    _id: Ref<Doc>,
+    space: Ref<Space>
+  ): Promise<ActivityMessage | undefined> {
     if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
-      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage> })
+      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage>, space })
     }
   }
 
-  $: void getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
+  $: void getParentMessage(value.attachedToClass, value.attachedTo, value.space).then((res) => {
     parentMessage = res as DisplayActivityMessage
   })
 
@@ -150,6 +154,7 @@
 
     const _id = parentMessage ? parentMessage.attachedTo : message.attachedTo
     const _class = parentMessage ? parentMessage.attachedToClass : message.attachedToClass
+    const space = parentMessage ? parentMessage.space : message.space
 
     if (doc !== undefined && doc._id === _id) {
       parentObject = doc
@@ -163,7 +168,7 @@
       return
     }
 
-    parentObjectQuery.query(_class, { _id }, (res) => {
+    parentObjectQuery.query(_class, { _id, space }, (res) => {
       parentObject = res[0]
     })
   }

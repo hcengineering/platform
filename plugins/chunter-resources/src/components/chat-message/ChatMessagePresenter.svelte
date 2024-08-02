@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
@@ -80,7 +80,7 @@
   $: person = account?.person !== undefined ? $personByIdStore.get(account.person) : undefined
 
   $: value !== undefined &&
-    getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
+    getParentMessage(value.attachedToClass, value.attachedTo, value.space).then((res) => {
       parentMessage = res as DisplayActivityMessage
     })
 
@@ -107,9 +107,13 @@
     stale = false
   }
 
-  async function getParentMessage (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<ActivityMessage | undefined> {
+  async function getParentMessage (
+    _class: Ref<Class<Doc>>,
+    _id: Ref<Doc>,
+    space: Ref<Space>
+  ): Promise<ActivityMessage | undefined> {
     if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
-      return await client.findOne<ActivityMessage>(_class, { _id: _id as Ref<ActivityMessage> })
+      return await client.findOne<ActivityMessage>(_class, { _id: _id as Ref<ActivityMessage>, space })
     }
   }
 

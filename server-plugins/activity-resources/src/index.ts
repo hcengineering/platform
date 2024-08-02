@@ -54,13 +54,13 @@ export async function OnReactionChanged (originTx: Tx, control: TriggerControl):
     const txes = await createReactionNotifications(tx, control)
 
     await control.apply(txes, true)
-    return txes
+    return []
   }
 
   if (innerTx._class === core.class.TxRemoveDoc) {
     const txes = await removeReactionNotifications(tx, control)
     await control.apply(txes, true)
-    return txes
+    return []
   }
 
   return []
