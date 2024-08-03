@@ -73,14 +73,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnActivityNotificationViewed,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
-      objectClass: notification.class.ActivityInboxNotification
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnAttributeCreate,
     txMatch: {
       objectClass: core.class.Attribute,
