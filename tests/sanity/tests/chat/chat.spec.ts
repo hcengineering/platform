@@ -409,4 +409,30 @@ test.describe('channel tests', () => {
     await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
     await page2.close()
   })
+
+  test('Checking backlinks in the Chat', async ({ browser, page }) => {
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    await leftSideMenuPage.clickOnCloseInvite()
+    const page2 = await browser.newPage()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const channelPageSecond = new ChannelPage(page2)
+    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('general')
+    const mentionName = `${newUser2.lastName} ${newUser2.firstName}`
+    await channelPage.sendMention(mentionName)
+    await channelPage.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
+
+    await leftSideMenuPageSecond.clickChunter()
+    await channelPageSecond.clickChannel('general')
+    await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
+    await page2.close()
+  })
 })
