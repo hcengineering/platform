@@ -158,6 +158,11 @@ export class DBCollectionHelper implements DomainHelperOperations {
   collections = new Map<string, Collection<any>>()
   constructor (readonly db: Db) {}
 
+  async listDomains (): Promise<Set<Domain>> {
+    const collections = await this.db.listCollections({}, { nameOnly: true }).toArray()
+    return new Set(collections.map((it) => it.name as unknown as Domain))
+  }
+
   async init (domain?: Domain): Promise<void> {
     if (domain === undefined) {
       // Init existing collecfions
@@ -224,7 +229,8 @@ export class DBCollectionHelper implements DomainHelperOperations {
     return await this.collection(domain).listIndexes().toArray()
   }
 
-  async hasDocuments (domain: Domain, count: number): Promise<boolean> {
-    return (await this.collection(domain).countDocuments({}, { limit: count })) >= count
+  async estimatedCount (domain: Domain): Promise<number> {
+    const c = this.collection(domain)
+    return await c.estimatedDocumentCount()
   }
 }

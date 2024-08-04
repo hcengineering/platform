@@ -79,6 +79,11 @@ import type {
 } from '../types'
 import { SessionContextImpl, createBroadcastEvent } from '../utils'
 
+interface DomainInfo {
+  exists: boolean
+  documents: number
+}
+
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
   hierarchy: Hierarchy
@@ -92,14 +97,8 @@ export class TServerStorage implements ServerStorage {
   liveQuery: LQ
   branding: Branding | null
 
-  domainInfo = new Map<
-  Domain,
-  {
-    exists: boolean
-    checkPromise: Promise<boolean> | undefined
-    lastCheck: number
-  }
-  >()
+  domainInfo = new Map<Domain, DomainInfo>()
+  statsCtx: MeasureContext
 
   emptyAdapter = new DummyDbAdapter()
 
@@ -126,6 +125,71 @@ export class TServerStorage implements ServerStorage {
     this.branding = options.branding
 
     this.setModel(model)
+    this.statsCtx = metrics.newChild('stats-' + this.workspaceId.name, {})
+  }
+
+  async initDomainInfo (): Promise<void> {
+    const adapterDomains = new Map<DbAdapter, Set<Domain>>()
+    for (const d of this.hierarchy.domains()) {
+      // We need to init domain info
+      const info = this.getDomainInfo(d)
+      const adapter = this.adapters.get(d) ?? this.adapters.get(this.defaultAdapter)
+      if (adapter !== undefined) {
+        const h = adapter.helper?.()
+        if (h !== undefined) {
+          const dbDomains = adapterDomains.get(adapter) ?? (await h.listDomains())
+          adapterDomains.set(adapter, dbDomains)
+          const dbIdIndex = dbDomains.has(d)
+          info.exists = dbIdIndex !== undefined
+          if (info.exists) {
+            info.documents = await h.estimatedCount(d)
+          }
+        } else {
+          info.exists = true
+        }
+      } else {
+        info.exists = false
+      }
+    }
+    for (const adapter of this.adapters.values()) {
+      adapter.on?.((domain, event, count, time, helper) => {
+        const info = this.getDomainInfo(domain)
+        const oldDocuments = info.documents
+        switch (event) {
+          case 'add':
+            info.documents += count
+            break
+          case 'update':
+            break
+          case 'delete':
+            info.documents -= count
+            break
+          case 'read':
+            break
+        }
+
+        if (oldDocuments < 50 && info.documents > 50) {
+          // We have more 50 documents, we need to check for indexes
+          void this.domainHelper.checkDomain(this.metrics, domain, info.documents, helper)
+        }
+        if (oldDocuments > 50 && info.documents < 50) {
+          // We have more 50 documents, we need to check for indexes
+          void this.domainHelper.checkDomain(this.metrics, domain, info.documents, helper)
+        }
+      })
+    }
+  }
+
+  private getDomainInfo (domain: Domain): DomainInfo {
+    let info = this.domainInfo.get(domain)
+    if (info === undefined) {
+      info = {
+        documents: -1,
+        exists: false
+      }
+      this.domainInfo.set(domain, info)
+    }
+    return info
   }
 
   private newCastClient (hierarchy: Hierarchy, modelDb: ModelDb, metrics: MeasureContext): Client {
@@ -172,13 +236,6 @@ export class TServerStorage implements ServerStorage {
 
   async close (): Promise<void> {
     await this.fulltext.close()
-    for (const [domain, info] of this.domainInfo.entries()) {
-      if (info.checkPromise !== undefined) {
-        this.metrics.info('wait for check domain', { domain })
-        // We need to be sure we wait for check to be complete
-        await info.checkPromise
-      }
-    }
     for (const o of this.adapters.values()) {
       await o.close()
     }
@@ -193,36 +250,13 @@ export class TServerStorage implements ServerStorage {
       throw new Error('adapter not provided: ' + name)
     }
 
-    const helper = adapter.helper?.()
-    if (helper !== undefined) {
-      let info = this.domainInfo.get(domain)
-      if (info == null) {
-        // For first time, lets assume all is fine
-        info = {
-          exists: true,
-          lastCheck: Date.now(),
-          checkPromise: undefined
-        }
-        this.domainInfo.set(domain, info)
-        return adapter
-      }
-      if (Date.now() - info.lastCheck > 5 * 60 * 1000) {
-        // Re-check every 5 minutes
-        const exists = helper.exists(domain)
-        // We will create necessary indexes if required, and not touch collection if not required.
-        info = {
-          exists,
-          lastCheck: Date.now(),
-          checkPromise: this.domainHelper.checkDomain(this.metrics, domain, requireExists, helper)
-        }
-        this.domainInfo.set(domain, info)
-      }
-      if (!info.exists && !requireExists) {
-        return this.emptyAdapter
-      }
-      // If we require it exists, it will be exists
-      info.exists = true
+    const info = this.getDomainInfo(domain)
+
+    if (!info.exists && !requireExists) {
+      return this.emptyAdapter
     }
+    // If we require it exists, it will be exists
+    info.exists = true
 
     return adapter
   }

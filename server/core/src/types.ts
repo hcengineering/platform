@@ -51,6 +51,9 @@ import { type StorageAdapter } from './storage'
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
   prefix?: string
+
+  skipClass?: boolean
+  skipSpace?: boolean
 }
 /**
  * @public
