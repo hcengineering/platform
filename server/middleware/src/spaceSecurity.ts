@@ -49,6 +49,8 @@ import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } fr
 import { BaseMiddleware } from './base'
 import { getUser, isOwner, isSystem } from './utils'
 
+import notification from '@hcengineering/notification'
+
 type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class'>
 
 /**
@@ -513,7 +515,12 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     if (!isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
-        if (query[field] !== undefined) {
+        if (
+          this.storage.hierarchy.isDerived(_class, notification.class.InboxNotification) ||
+          this.storage.hierarchy.isDerived(_class, notification.class.DocNotifyContext)
+        ) {
+          ;(query as any).user = account._id
+        } else if (query[field] !== undefined) {
           const res = await this.mergeQuery(account, query[field], domain, isSpace)
           ;(newQuery as any)[field] = res
           if (typeof res === 'object') {
