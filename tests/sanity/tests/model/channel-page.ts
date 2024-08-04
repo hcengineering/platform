@@ -11,7 +11,9 @@ export class ChannelPage extends CommonPage {
 
   readonly inputMessage = (): Locator => this.page.locator('div[class~="text-editor-view"]')
   readonly buttonSendMessage = (): Locator => this.page.locator('g#Send')
-  readonly textMessage = (messageText: string): Locator => this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
+  readonly textMessage = (messageText: string): Locator =>
+    this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
+
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.getByRole('table')
