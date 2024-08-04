@@ -302,4 +302,8 @@ export class CommonPage {
   async checkRowsInListExist (text: string, count: number = 1): Promise<void> {
     await expect(this.linesFromList(text)).toHaveCount(count)
   }
+
+  async pressEscape (): Promise<void> {
+    await this.page.keyboard.press('Escape')
+  }
 }

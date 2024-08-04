@@ -280,10 +280,6 @@ export class IssuesPage extends CommonTrackerPage {
     await this.modifiedDateMenuItem().click()
   }
 
-  async pressEscape (): Promise<void> {
-    await this.page.keyboard.press('Escape')
-  }
-
   async clickEstimationContainer (): Promise<void> {
     await this.estimationContainer().click()
   }

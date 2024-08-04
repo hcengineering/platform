@@ -188,6 +188,7 @@ test.describe('channel tests', () => {
     await channelPage.clickChannelTab()
     await channelPage.clickOnUser(data.lastName + ' ' + data.firstName)
     await channelPage.addMemberToChannel(newUser2.lastName + ' ' + newUser2.firstName)
+    await channelPage.pressEscape()
     await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.checkIfChannelDefaultExist(true, data.channelName)
     await channelPageSecond.clickChannelTab()
