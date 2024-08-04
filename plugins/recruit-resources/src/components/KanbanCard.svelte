@@ -111,7 +111,7 @@
           }}
         />
       {/if}
-      <!-- <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object, size: 'small' }} /> -->
+      <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object, size: 'small' }} />
       {#if enabledConfig(config, 'dueDate')}
         <DueDatePresenter
           size={'small'}
