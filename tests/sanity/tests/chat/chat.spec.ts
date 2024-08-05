@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { PlatformURI, generateTestData, attachScreenshot } from '../utils'
+import { PlatformURI, generateTestData } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ChunterPage } from '../model/chunter-page'
 import { ChannelPage } from '../model/channel-page'
