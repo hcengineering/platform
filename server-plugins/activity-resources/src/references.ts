@@ -157,7 +157,8 @@ export async function getPersonNotificationTxes (
     mentionedIn: reference.attachedDocId ?? reference.srcDocId,
     mentionedInClass: reference.attachedDocClass ?? reference.srcDocClass,
     user: receiver._id,
-    isViewed: false
+    isViewed: false,
+    archived: false
   }
 
   const sender = (
