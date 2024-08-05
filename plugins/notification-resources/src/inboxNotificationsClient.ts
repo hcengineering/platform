@@ -34,7 +34,6 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
-import contact, { type PersonAccount, type PersonSpace } from '@hcengineering/contact'
 
 import { isActivityNotification } from './utils'
 
@@ -98,7 +97,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
-        user: getCurrentAccount()._id,
+        user: getCurrentAccount()._id
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)

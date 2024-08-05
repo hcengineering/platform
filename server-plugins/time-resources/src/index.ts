@@ -189,11 +189,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   if (object === undefined) return []
 
   const person = (
-    await control.modelDb.findAll(
-      contact.mixin.Employee,
-      { _id: account.person as Ref<Employee>, active: true },
-      { limit: 1 }
-    )
+    await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee>, active: true }, { limit: 1 })
   )[0]
   if (person === undefined) return []
 
