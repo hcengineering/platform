@@ -92,6 +92,7 @@ import '@hcengineering/training-assets'
 import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/analytics-collector-assets'
+import '@hcengineering/text-editor-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'

@@ -182,8 +182,8 @@ test.describe('Planning ToDo tests', () => {
     let hour = new Date().getHours()
     const ampm = hour < 13 ? 'am' : 'pm'
     hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
-    const timeV = `${hour}${ampm}`
-    const timeI = `${hour + 1}${ampm}`
+    const time = `${hour}${ampm}`
+    // const timeI = `${hour + 1}${ampm}`
 
     const leftSideMenuPage: LeftSideMenuPage = new LeftSideMenuPage(page)
     const loginPage: LoginPage = new LoginPage(page)
@@ -201,7 +201,7 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.selectInputToDo().fill(titleV)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(titleV, timeV)
+    await planningPage.dragdropTomorrow(titleV, time)
     await planningPage.eventInSchedule(titleV).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupVisibleToEveryone().click()
@@ -209,7 +209,7 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.selectInputToDo().fill(titleI)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(titleI, timeI)
+    await planningPage.dragdropTomorrow(titleI, time, true)
     await planningPage.eventInSchedule(titleI).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupOnlyVisibleToYou().click()

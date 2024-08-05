@@ -187,7 +187,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
   try {
     const notifications = await ops.findAll(
       notification.class.InboxNotification,
-      { docNotifyContext: doc._id, archived: { $ne: true } },
+      { docNotifyContext: doc._id, archived: false },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 

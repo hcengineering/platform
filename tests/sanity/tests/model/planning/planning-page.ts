@@ -81,7 +81,7 @@ export class PlanningPage extends CalendarPage {
   readonly eventInSchedule = (title: string): Locator =>
     this.schedule().locator('div.event-container', { hasText: title })
 
-  async dragdropTomorrow (title: string, time: string): Promise<void> {
+  async dragdropTomorrow (title: string, time: string, addHalf: boolean = false): Promise<void> {
     await this.toDosContainer().getByRole('button', { name: title }).hover()
 
     await expect(async () => {
@@ -90,7 +90,7 @@ export class PlanningPage extends CalendarPage {
       expect(boundingBox).toBeTruthy()
       if (boundingBox != null) {
         await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
-        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 20)
+        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + (addHalf ? 40 : 20))
         await this.page.mouse.up()
       }
     }).toPass(retryOptions)

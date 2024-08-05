@@ -25,7 +25,8 @@ import notification, {
   notificationId,
   NotificationStatus,
   type BrowserNotification,
-  type DocNotifyContext
+  type DocNotifyContext,
+  type InboxNotification
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 
@@ -164,6 +165,26 @@ export const notificationOperation: MigrateOperation = {
             DOMAIN_NOTIFICATION,
             { _class: { $in: [notification.class.BrowserNotification, notification.class.PushSubscription] } },
             DOMAIN_USER_NOTIFY
+          )
+        }
+      },
+      {
+        state: 'fill-notification-archived-field-v1',
+        func: async (client) => {
+          await client.update<InboxNotification>(
+            DOMAIN_NOTIFICATION,
+            { _class: notification.class.ActivityInboxNotification, archived: { $exists: false } },
+            { archived: false }
+          )
+          await client.update<InboxNotification>(
+            DOMAIN_NOTIFICATION,
+            { _class: notification.class.CommonInboxNotification, archived: { $exists: false } },
+            { archived: false }
+          )
+          await client.update<InboxNotification>(
+            DOMAIN_NOTIFICATION,
+            { _class: notification.class.MentionInboxNotification, archived: { $exists: false } },
+            { archived: false }
           )
         }
       }
