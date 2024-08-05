@@ -3,6 +3,7 @@ import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { NewIssue } from '../model/tracker/types'
 import { EmployeeDetailsPage } from '../model/contacts/employee-details-page'
 
@@ -91,5 +92,42 @@ test.describe('Mentions issue tests', () => {
       firstName: mentionName.split(' ')[1],
       lastName: mentionName.split(' ')[0]
     })
+  })
+
+  test('Checking backlinks in different spaces', async ({ page }) => {
+    const backlinkIssueDefault: NewIssue = {
+      title: `Issue for Default project-${generateId()}`,
+      description: 'Description',
+      projectName: 'Default'
+    }
+    const backlinkIssueSecond: NewIssue = {
+      title: `Issue for Second project-${generateId()}`,
+      description: 'Description',
+      projectName: 'Second Project'
+    }
+    await leftSideMenuPage.clickTracker()
+    await issuesPage.createNewIssue(backlinkIssueDefault)
+    await issuesPage.createNewIssue(backlinkIssueSecond)
+    const issuesNavigationPage = new TrackerNavigationMenuPage(page)
+    await issuesNavigationPage.issuesLinkForProject(backlinkIssueDefault.projectName ?? '').click()
+    await issuesPage.clickModelSelectorAll()
+    await issuesPage.searchIssueByName(backlinkIssueDefault.title)
+    await issuesPage.checkRowsInListExist(backlinkIssueDefault.title)
+    const defaultId = await issuesPage.getIssueId(backlinkIssueDefault.title)
+    await issuesNavigationPage.issuesLinkForProject(backlinkIssueSecond.projectName ?? '').click()
+    await issuesPage.clickModelSelectorAll()
+    await issuesPage.searchIssueByName(backlinkIssueSecond.title)
+    await issuesPage.checkRowsInListExist(backlinkIssueSecond.title)
+    const secondId = await issuesPage.getIssueId(backlinkIssueSecond.title)
+    await issuesPage.openIssueByName(backlinkIssueSecond.title)
+    await issuesDetailsPage.addMentions(defaultId)
+    await issuesDetailsPage.checkCommentExist(`@${defaultId}`)
+    await issuesDetailsPage.openLinkFromActivitiesByText(`@${defaultId}`)
+    await issuesDetailsPage.checkIssue(backlinkIssueDefault)
+    await issuesDetailsPage.addMentions(secondId)
+    await issuesDetailsPage.checkCommentExist(`@${secondId}`)
+    await issuesDetailsPage.openLinkFromActivitiesByText(`@${secondId}`)
+    await issuesDetailsPage.checkIssue(backlinkIssueSecond)
+    await issuesDetailsPage.clickCloseIssueButton()
   })
 })
