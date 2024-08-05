@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { PlatformURI, generateTestData } from '../utils'
+import { PlatformURI, generateTestData, attachScreenshot } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ChunterPage } from '../model/chunter-page'
 import { ChannelPage } from '../model/channel-page'
@@ -154,7 +154,9 @@ test.describe('channel tests', () => {
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
     await channelPageSecond.clickJoinChannelButton()
+    await attachScreenshot('Chat_Channel-joined.png', page)
     await channelPageSecond.clickChooseChannel(data.channelName)
+    await attachScreenshot('Chat_Channel-opened.png', page)
     await channelPageSecond.checkMessageExist('Test message', true, 'Test message')
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
