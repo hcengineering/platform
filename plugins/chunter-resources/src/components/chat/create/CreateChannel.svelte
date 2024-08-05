@@ -18,11 +18,11 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import core, { getCurrentAccount } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import { PersonAccount } from '@hcengineering/contact'
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
   import { openChannel } from '../../../navigation'
-  import { PersonAccount } from '@hcengineering/contact'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -62,7 +62,7 @@
       topic: description
     })
     await client.createDoc(notification.class.DocNotifyContext, channelId, {
-      person: account.person,
+      user: account._id,
       objectId: channelId,
       objectClass: chunter.class.Channel,
       objectSpace: core.space.Space

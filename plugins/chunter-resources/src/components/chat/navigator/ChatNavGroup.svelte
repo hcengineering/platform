@@ -58,7 +58,7 @@
     {
       ...model.query,
       // [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
-      person: me.person
+      user: me._id
     },
     (res: DocNotifyContext[]) => {
       contexts = res.filter(

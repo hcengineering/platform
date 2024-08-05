@@ -162,6 +162,10 @@ const SendEmailNotifications: NotificationProviderFunc = async (
     return []
   }
 
+  if (!receiver.person.active) {
+    return []
+  }
+
   for (const type of types) {
     await notifyByEmail(control, type._id, object, sender, receiver, data)
   }

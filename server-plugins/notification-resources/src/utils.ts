@@ -499,7 +499,7 @@ export function toReceiverInfo (hierarchy: Hierarchy, info?: SenderInfo | Receiv
   return {
     _id: info._id,
     account: info.account,
-    person: info.person,
+    person: employee,
     space: info.space
   }
 }

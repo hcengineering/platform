@@ -87,7 +87,7 @@
     }
 
     await client.createDoc(notification.class.DocNotifyContext, dmId, {
-      person: myAcc.person,
+      user: myAcc._id,
       objectId: dmId,
       objectClass: chunter.class.DirectMessage,
       objectSpace: core.space.Space
