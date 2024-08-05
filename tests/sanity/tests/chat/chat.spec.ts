@@ -157,6 +157,8 @@ test.describe('channel tests', () => {
     await attachScreenshot('Chat_Channel-joined.png', page2)
     await channelPageSecond.clickChooseChannel(data.channelName)
     await attachScreenshot('Chat_Channel-opened.png', page2)
+    await page2.waitForTimeout(15000)
+    await attachScreenshot('Chat_Channel-timeout.png', page2)
     await channelPageSecond.checkMessageExist('Test message', true, 'Test message')
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
