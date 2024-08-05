@@ -13,14 +13,13 @@ import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { prepareDocumentStep } from './common-documents-steps'
-
 import { DocumentHistoryPage } from '../model/documents/document-history-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current revision status of and changes to documents are identified', () => {
+test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS-150', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
@@ -32,11 +31,9 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
     }
   })
 
-  test('TESTS-325. Create a Several documents with Minor & Major versions', async ({ page, browser }) => {
-    await allure.description(
-      'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
-    )
-    await allure.tms('TESTS-325', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-325')
+  test('TESTS-384. Create a new doc version and previous one then marked to “Obsolete”', async ({ page, browser }) => {
+    await allure.description('Requirement\nUsers need to create a new document and new version document')
+    await allure.tms('TESTS-384', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-384')
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
       template: 'HR (HR)',
@@ -84,7 +81,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
-      await attachScreenshot('TESTS-325_approve_document.png', page)
+      await attachScreenshot('TEST-384_approve_document.png', page)
     })
 
     await test.step('4. Check document', async () => {
@@ -96,13 +93,13 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
-      await attachScreenshot('TESTS-325_check_document.png', page)
+      await attachScreenshot('TESTS-384_check_document.png', page)
     })
     await test.step('5. Check History tab', async () => {
       await documentContentPage.buttonHistoryTab.first().click()
       const documentHistoryPage = new DocumentHistoryPage(page)
       await documentHistoryPage.checkHistoryEventExist('New document creation')
-      await attachScreenshot('TESTS-325_check_history_tab.png', page)
+      await attachScreenshot('TESTS-384_check_history_tab.png', page)
     })
     await test.step('6. Send for Approval v0.2', async () => {
       await documentContentPage.sendForApproval(
@@ -117,89 +114,16 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
         documentDetails
       )
     })
-
-    await test.step('7. Send for Approval minor v0.3', async () => {
-      await documentContentPage.sendForApproval(
-        'Minor',
-        'v0.3',
-        'Reason 0.3',
-        'impact 0.3',
-        'v0.2',
-        'v0.3',
-        userSecondPage,
-        completeDocument,
-        documentDetails
-      )
-    })
-
-    await test.step('8. Send for Approval major v1.0', async () => {
-      await documentContentPage.sendForApproval(
-        'Major',
-        'v1.0',
-        'Reason 1.0',
-        'impact 1.0',
-        'v0.3',
-        'v1.0',
-        userSecondPage,
-        completeDocument,
-        documentDetails
-      )
-    })
-
-    await test.step('9. Send for Approval major v2.0', async () => {
-      await documentContentPage.sendForApproval(
-        'Major',
-        'v2.0',
-        'Reason 2.0',
-        'impact 2.0',
-        'v1.0',
-        'v2.0',
-        userSecondPage,
-        completeDocument,
-        documentDetails
-      )
-    })
-
-    await test.step('10. Send for Approval minor v2.1', async () => {
-      await documentContentPage.sendForApproval(
-        'Minor',
-        'v2.1',
-        'Reason 2.1',
-        'impact 2.1',
-        'v2.0',
-        'v2.1',
-        userSecondPage,
-        completeDocument,
-        documentDetails
-      )
-    })
-
-    await test.step('11. Send for Approval minor v2.2', async () => {
-      await documentContentPage.sendForApproval(
-        'Minor',
-        'v2.2',
-        'Reason 2.2',
-        'impact 2.2',
-        'v2.1',
-        'v2.2',
-        userSecondPage,
-        completeDocument,
-        documentDetails
-      )
-    })
-
-    await test.step('12. Send for Approval minor v2.3', async () => {
-      await documentContentPage.sendForApproval(
-        'Minor',
-        'v2.3',
-        'Reason 2.3',
-        'impact 2.3',
-        'v2.2',
-        'v2.3',
-        userSecondPage,
-        completeDocument,
-        documentDetails
-      )
+    await test.step('7. Check archived status', async () => {
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      await documentContentPage.clickPreviousVersionHeader(userSecondPage, completeDocument, 'v0.2')
+      await documentContentPage.clickPreviousVersionHeader(userSecondPage, completeDocument, 'v0.1')
+      await documentContentPageSecond.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.ARCHIVED,
+        version: 'v0.1'
+      })
+      await attachScreenshot('TESTS-384_archived_status.png', page)
     })
   })
 })

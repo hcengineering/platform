@@ -236,7 +236,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   async selectRelease (version: string): Promise<void> {
-    await this.page.getByText('Release').click()
+    await this.page.getByText('Release', { exact: true }).click()
     if (version === 'Major') {
       await this.page.getByText('Major').click()
     }
@@ -457,6 +457,11 @@ export class DocumentContentPage extends DocumentCommonPage {
     const documentHistoryPage = new DocumentHistoryPage(this.page)
     await documentHistoryPage.checkHistoryEventExist('New document creation')
     await documentHistoryPage.checkHistoryEventExist(reason)
+  }
+
+  async clickPreviousVersionHeader (userPage: Page, completeDocument: NewDocument, prevVersion: string): Promise<void> {
+    const documentContentPageSecond = new DocumentContentPage(userPage)
+    await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + prevVersion)
   }
 
   async addMessageToTheSectionTitle (title: string, message: string, closePopup: boolean = true): Promise<void> {
