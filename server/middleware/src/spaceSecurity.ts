@@ -325,43 +325,6 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return res
   }
 
-  private async getTxTargets (ctx: SessionContext, tx: Tx): Promise<string[] | undefined> {
-    const h = this.storage.hierarchy
-    let targets: string[] | undefined
-
-    if (TxProcessor.isExtendsCUD(tx._class)) {
-      const account = await getUser(this.storage, ctx)
-      if (tx.objectSpace === (account._id as string)) {
-        targets = [account.email, systemAccountEmail]
-      } else if ([...this.systemSpaces, ...this.mainSpaces].includes(tx.objectSpace)) {
-        return
-      } else {
-        const cudTx = tx as TxCUD<Doc>
-        const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
-
-        if (isSpace) {
-          return undefined
-        }
-
-        const space = this.spacesMap.get(tx.objectSpace)
-
-        if (space !== undefined) {
-          targets = await this.getTargets(space.members)
-          if (!isOwner(account, ctx)) {
-            const allowed = this.getAllAllowedSpaces(account, true)
-            if (allowed === undefined || !allowed.includes(tx.objectSpace)) {
-              throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-            }
-          } else if (!targets.includes(account.email)) {
-            targets.push(account.email)
-          }
-        }
-      }
-    }
-
-    return targets
-  }
-
   private async processTxSpaceDomain (tx: TxCUD<Doc>): Promise<void> {
     const actualTx = TxProcessor.extractTx(tx)
     if (actualTx._class === core.class.TxCreateDoc) {
@@ -450,15 +413,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return isData ? res : [...res, ...this.publicSpaces]
   }
 
-  async loadDomainSpaces (ctx: MeasureContext, domain: Domain): Promise<Set<Ref<Space>>> {
-    const field = this.getKey(domain)
-    return await this.storage.groupBy<Ref<Space>>(ctx, domain, field)
-  }
-
   async getDomainSpaces (domain: Domain): Promise<Set<Ref<Space>>> {
     let domainSpaces = this._domainSpaces.get(domain)
     if (domainSpaces === undefined) {
-      const p = this.loadDomainSpaces(this.spaceMeasureCtx, domain)
+      const p = this.storage.groupBy<Ref<Space>>(this.spaceMeasureCtx, domain, this.getKey(domain))
       this._domainSpaces.set(domain, p)
       domainSpaces = await p
       this._domainSpaces.set(domain, domainSpaces)
@@ -466,9 +424,17 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return domainSpaces instanceof Promise ? await domainSpaces : domainSpaces
   }
 
-  private async filterByDomain (domain: Domain, spaces: Ref<Space>[]): Promise<Ref<Space>[]> {
+  private async filterByDomain (
+    domain: Domain,
+    spaces: Ref<Space>[]
+  ): Promise<{ result: Ref<Space>[], allDomainSpaces: boolean, domainSpaces: Set<Ref<Space>> }> {
     const domainSpaces = await this.getDomainSpaces(domain)
-    return spaces.filter((p) => domainSpaces.has(p))
+    const result = spaces.filter((p) => domainSpaces.has(p))
+    return {
+      result: spaces.filter((p) => domainSpaces.has(p)),
+      allDomainSpaces: result.length === domainSpaces.size,
+      domainSpaces
+    }
   }
 
   private async mergeQuery<T extends Doc>(
@@ -476,19 +442,33 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     query: ObjQueryType<T['space']>,
     domain: Domain,
     isSpace: boolean
-  ): Promise<ObjQueryType<T['space']>> {
+  ): Promise<ObjQueryType<T['space']> | undefined> {
     const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account, !isSpace))
     if (query == null) {
-      return { $in: spaces }
+      if (spaces.allDomainSpaces) {
+        return undefined
+      }
+      return { $in: spaces.result }
     }
     if (typeof query === 'string') {
-      if (!spaces.includes(query)) {
+      if (!spaces.result.includes(query)) {
         return { $in: [] }
       }
     } else if (query.$in != null) {
-      query.$in = query.$in.filter((p) => spaces.includes(p))
+      query.$in = query.$in.filter((p) => spaces.result.includes(p))
+      if (query.$in.length === spaces.domainSpaces.size) {
+        // all domain spaces
+        delete query.$in
+      }
     } else {
-      query.$in = spaces
+      if (spaces.allDomainSpaces) {
+        delete query.$in
+      } else {
+        query.$in = spaces.result
+      }
+    }
+    if (Object.keys(query).length === 0) {
+      return undefined
     }
     return query
   }
@@ -515,22 +495,31 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(account, query[field], domain, isSpace)
-          ;(newQuery as any)[field] = res
-          if (typeof res === 'object') {
-            if (Array.isArray(res.$in) && res.$in.length === 1 && Object.keys(res).length === 1) {
-              ;(newQuery as any)[field] = res.$in[0]
+          if (res === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (query as any)[field]
+          } else {
+            ;(newQuery as any)[field] = res
+            if (typeof res === 'object') {
+              if (Array.isArray(res.$in) && res.$in.length === 1 && Object.keys(res).length === 1) {
+                ;(newQuery as any)[field] = res.$in[0]
+              }
             }
           }
         } else {
           const spaces = await this.filterByDomain(domain, this.getAllAllowedSpaces(account, !isSpace))
-          if (spaces.length === 1) {
-            ;(newQuery as any)[field] = spaces[0]
+          if (spaces.allDomainSpaces) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (newQuery as any)[field]
+          } else if (spaces.result.length === 1) {
+            ;(newQuery as any)[field] = spaces.result[0]
           } else {
-            ;(newQuery as any)[field] = { $in: spaces }
+            ;(newQuery as any)[field] = { $in: spaces.result }
           }
         }
       }
     }
+
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
     if (!isOwner(account, ctx) && account.role !== AccountRole.DocGuest) {
       if (options?.lookup !== undefined) {
@@ -564,7 +553,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           }
           passedDomains.add(domain)
           const spaces = await this.filterByDomain(domain, allSpaces)
-          for (const space of spaces) {
+          for (const space of spaces.result) {
             res.add(space)
           }
         }

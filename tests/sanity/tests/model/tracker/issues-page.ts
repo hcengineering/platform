@@ -19,6 +19,7 @@ export class IssuesPage extends CommonTrackerPage {
   inputPopupCreateNewIssueDescription = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] div.tiptap')
 
+  buttonPopupCreateNewIssueProject = (): Locator => this.page.locator('[id="space\\.selector"]')
   buttonPopupCreateNewIssueStatus = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] div#status-editor button')
 
@@ -279,10 +280,6 @@ export class IssuesPage extends CommonTrackerPage {
     await this.modifiedDateMenuItem().click()
   }
 
-  async pressEscape (): Promise<void> {
-    await this.page.keyboard.press('Escape')
-  }
-
   async clickEstimationContainer (): Promise<void> {
     await this.estimationContainer().click()
   }
@@ -423,6 +420,10 @@ export class IssuesPage extends CommonTrackerPage {
   async fillNewIssueForm (data: NewIssue): Promise<void> {
     await this.inputPopupCreateNewIssueTitle().fill(data.title)
     await this.inputPopupCreateNewIssueDescription().fill(data.description)
+    if (data.projectName != null) {
+      await this.buttonPopupCreateNewIssueProject().click()
+      await this.selectMenuItem(this.page, data.projectName)
+    }
     if (data.status != null) {
       await this.buttonPopupCreateNewIssueStatus().click()
       await this.selectFromDropdown(this.page, data.status)

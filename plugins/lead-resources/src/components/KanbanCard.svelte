@@ -23,16 +23,18 @@
   import notification from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import task from '@hcengineering/task'
-  import { AssigneePresenter } from '@hcengineering/task-resources'
+  import { AssigneePresenter, StateRefPresenter } from '@hcengineering/task-resources'
   import { ActionIcon, Component, DueDatePresenter, IconMoreH } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { enabledConfig, openDoc, showMenu, statusStore } from '@hcengineering/view-resources'
+  import tracker from '@hcengineering/tracker'
 
   import lead from '../plugin'
   import LeadPresenter from './LeadPresenter.svelte'
 
   export let object: WithLookup<Lead>
   export let config: (string | BuildModelKey)[]
+  export let groupByKey: string
 
   const client = getClient()
   const assigneeAttribute = client.getHierarchy().getAttribute(lead.class.Lead, 'assignee')
@@ -69,8 +71,21 @@
       <ContactPresenter value={object.$lookup.attachedTo} avatarSize={'small'} />
     {/if}
   </div>
-  {#if enabledConfig(config, 'dueDate')}
-    <div class="card-labels labels mb-2">
+  <div class="card-labels mb-2">
+    {#if groupByKey !== 'status' && enabledConfig(config, 'status')}
+      <StateRefPresenter
+        size={'small'}
+        kind={'link-bordered'}
+        space={object.space}
+        shrink={1}
+        value={object.status}
+        onChange={(status) => {
+          client.update(object, { status })
+        }}
+      />
+    {/if}
+    <Component showLoading={false} is={tracker.component.RelatedIssueSelector} props={{ object, size: 'small' }} />
+    {#if enabledConfig(config, 'dueDate')}
       <DueDatePresenter
         size={'small'}
         kind={'link-bordered'}
@@ -82,8 +97,8 @@
           await client.update(object, { dueDate: e })
         }}
       />
-    </div>
-  {/if}
+    {/if}
+  </div>
   <div class="flex-between">
     <div class="flex-row-center gap-3 reverse mr-4">
       <LeadPresenter value={object} />
@@ -105,3 +120,17 @@
     {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .card-labels {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 0;
+
+    &.labels {
+      overflow: hidden;
+      flex-shrink: 1;
+      border-radius: 0.5rem;
+    }
+  }
+</style>

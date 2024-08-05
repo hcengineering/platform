@@ -40,26 +40,19 @@
 
   let state: UppyState<any, any> = upload.uppy.getState()
 
+  $: state = upload.uppy.getState()
   $: files = Object.values(state.files)
   $: capabilities = state.capabilities ?? {}
   $: individualCancellation = 'individualCancellation' in capabilities && capabilities.individualCancellation
+
+  function updateState (): void {
+    state = upload.uppy.getState()
+  }
 
   function handleComplete (): void {
     if (upload.uppy.getState().error === undefined) {
       dispatch('close')
     }
-  }
-
-  function handleUploadError (): void {
-    state = upload.uppy.getState()
-  }
-
-  function handleUploadProgress (): void {
-    state = upload.uppy.getState()
-  }
-
-  function handleUploadSuccess (): void {
-    state = upload.uppy.getState()
   }
 
   function handleFileRemoved (): void {
@@ -84,18 +77,18 @@
 
   onMount(() => {
     upload.uppy.on('complete', handleComplete)
-    upload.uppy.on('upload-error', handleUploadError)
-    upload.uppy.on('upload-progress', handleUploadProgress)
-    upload.uppy.on('upload-success', handleUploadSuccess)
     upload.uppy.on('file-removed', handleFileRemoved)
+    upload.uppy.on('upload-error', updateState)
+    upload.uppy.on('upload-progress', updateState)
+    upload.uppy.on('upload-success', updateState)
   })
 
   onDestroy(() => {
     upload.uppy.off('complete', handleComplete)
-    upload.uppy.off('upload-error', handleUploadError)
-    upload.uppy.off('upload-progress', handleUploadProgress)
-    upload.uppy.off('upload-success', handleUploadSuccess)
     upload.uppy.off('file-removed', handleFileRemoved)
+    upload.uppy.off('upload-error', updateState)
+    upload.uppy.off('upload-progress', updateState)
+    upload.uppy.off('upload-success', updateState)
   })
 
   function getFileError (file: UppyFile<any, any>): string | undefined {

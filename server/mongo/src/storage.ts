@@ -37,7 +37,6 @@ import core, {
   type FindResult,
   type FullParamsType,
   type Hierarchy,
-  type IndexingConfiguration,
   type Lookup,
   type MeasureContext,
   type Mixin,
@@ -65,6 +64,7 @@ import {
   estimateDocSize,
   updateHashForDoc,
   type DbAdapter,
+  type DbAdapterHandler,
   type DomainHelperOperations,
   type ServerFindOptions,
   type StorageAdapter,
@@ -76,7 +76,6 @@ import {
   type AbstractCursor,
   type AnyBulkWriteOperation,
   type Collection,
-  type CreateIndexesOptions,
   type Db,
   type Document,
   type Filter,
@@ -131,6 +130,18 @@ abstract class MongoAdapterBase implements DbAdapter {
   findRateLimit = new RateLimiter(parseInt(process.env.FIND_RLIMIT ?? '1000'))
   rateLimit = new RateLimiter(parseInt(process.env.TX_RLIMIT ?? '5'))
 
+  handlers: DbAdapterHandler[] = []
+
+  on (handler: DbAdapterHandler): void {
+    this.handlers.push(handler)
+  }
+
+  handleEvent (domain: Domain, event: 'add' | 'update' | 'delete' | 'read', count: number, time: number): void {
+    for (const handler of this.handlers) {
+      handler(domain, event, count, time, this._db)
+    }
+  }
+
   constructor (
     protected readonly db: Db,
     protected readonly hierarchy: Hierarchy,
@@ -151,45 +162,6 @@ abstract class MongoAdapterBase implements DbAdapter {
     return this._db
   }
 
-  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {
-    for (const value of config.indexes) {
-      try {
-        if (typeof value === 'string') {
-          await this.collection(domain).createIndex(value)
-        } else {
-          const opt: CreateIndexesOptions = {}
-          if (value.filter !== undefined) {
-            opt.partialFilterExpression = value.filter
-          } else if (value.sparse === true) {
-            opt.sparse = true
-          }
-          await this.collection(domain).createIndex(value.keys, opt)
-        }
-      } catch (err: any) {
-        console.error('failed to create index', domain, value, err)
-      }
-    }
-  }
-
-  async removeOldIndex (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]): Promise<void> {
-    try {
-      const existingIndexes = await this.collection(domain).indexes()
-      for (const existingIndex of existingIndexes) {
-        if (existingIndex.name !== undefined) {
-          const name: string = existingIndex.name
-          if (
-            deletePattern.some((it) => it.test(name)) &&
-            (existingIndex.sparse === true || !keepPattern.some((it) => it.test(name)))
-          ) {
-            await this.collection(domain).dropIndex(name)
-          }
-        }
-      }
-    } catch (err: any) {
-      console.error(err)
-    }
-  }
-
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
   }
@@ -198,7 +170,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     this.client.close()
   }
 
-  private translateQuery<T extends Doc>(clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
+  private translateQuery<T extends Doc>(
+    clazz: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: ServerFindOptions<T>
+  ): Filter<Document> {
     const translated: any = {}
     for (const key in query) {
       const value = (query as any)[key]
@@ -212,6 +188,13 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
       }
       translated[tkey] = value
+    }
+    if (options?.skipSpace === true) {
+      delete translated.space
+    }
+    if (options?.skipClass === true) {
+      delete translated._class
+      return translated
     }
     const baseClass = this.hierarchy.getBaseClass(clazz)
     if (baseClass !== core.class.Doc) {
@@ -473,12 +456,15 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   private async findWithPipeline<T extends Doc>(
     ctx: MeasureContext,
+    domain: Domain,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: ServerFindOptions<T>
+    options: ServerFindOptions<T>,
+    stTime: number
   ): Promise<FindResult<T>> {
+    const st = Date.now()
     const pipeline: any[] = []
-    const match = { $match: this.translateQuery(clazz, query) }
+    const match = { $match: this.translateQuery(clazz, query, options) }
     const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
     const steps = await ctx.with('get-lookups', {}, async () => await this.getLookups(clazz, options?.lookup))
     if (slowPipeline) {
@@ -505,9 +491,6 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
       pipeline.push({ $project: projection })
     }
-
-    // const domain = this.hierarchy.getDomain(clazz)
-    const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
 
     const cursor = this.collection(domain).aggregate<WithLookup<T>>(pipeline)
     let result: WithLookup<T>[] = []
@@ -558,6 +541,17 @@ abstract class MongoAdapterBase implements DbAdapter {
       )
       total = arr?.[0]?.total ?? 0
     }
+    const edTime = Date.now()
+    if (edTime - stTime > 1000 || st - stTime > 1000) {
+      ctx.error('aggregate', {
+        time: edTime - stTime,
+        clazz,
+        query: cutObjectArray(query),
+        options,
+        queueTime: st - stTime
+      })
+    }
+    this.handleEvent(domain, 'read', result.length, edTime - st)
     return toFindResult(this.stripHash(result) as T[], total)
   }
 
@@ -643,7 +637,12 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   @withContext('groupBy')
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+  async groupBy<T, D extends Doc = Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<D>
+  ): Promise<Set<T>> {
     const result = await ctx.with(
       'groupBy',
       { domain },
@@ -651,6 +650,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         const coll = this.collection(domain)
         const grResult = await coll
           .aggregate([
+            ...(query !== undefined ? [{ $match: query }] : []),
             {
               $group: {
                 _id: '$' + field
@@ -716,20 +716,20 @@ abstract class MongoAdapterBase implements DbAdapter {
     const stTime = Date.now()
     return await this.findRateLimit.exec(async () => {
       const st = Date.now()
+      const domain = options?.domain ?? this.hierarchy.getDomain(_class)
       const result = await this.collectOps(
         ctx,
-        this.hierarchy.findDomain(_class),
+        domain,
         'find',
         async (ctx) => {
-          const domain = options?.domain ?? this.hierarchy.getDomain(_class)
           if (
             options != null &&
             (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))
           ) {
-            return await this.findWithPipeline(ctx, _class, query, options)
+            return await this.findWithPipeline(ctx, domain, _class, query, options, stTime)
           }
           const coll = this.collection(domain)
-          const mongoQuery = this.translateQuery(_class, query)
+          const mongoQuery = this.translateQuery(_class, query, options)
 
           if (options?.limit === 1) {
             // Skip sort/projection/etc.
@@ -825,6 +825,7 @@ abstract class MongoAdapterBase implements DbAdapter {
           queueTime: st - stTime
         })
       }
+      this.handleEvent(domain, 'read', result.length, edTime - st)
       return result
     })
   }
@@ -1122,7 +1123,6 @@ class MongoAdapter extends MongoAdapterBase {
     })
 
     await this.rateLimit.exec(async () => {
-      const domains: Promise<void>[] = []
       for (const [domain, txs] of byDomain) {
         if (domain === undefined) {
           continue
@@ -1146,75 +1146,80 @@ class MongoAdapter extends MongoAdapterBase {
         ) {
           continue
         }
-        domains.push(
-          this.collectOps(
-            ctx,
-            domain,
-            'tx',
-            async (ctx) => {
-              const coll = this.db.collection<Doc>(domain)
+        await this.collectOps(
+          ctx,
+          domain,
+          'tx',
+          async (ctx) => {
+            const coll = this.db.collection<Doc>(domain)
 
-              // Minir optimizations
-              // Add Remove optimization
+            // Minir optimizations
+            // Add Remove optimization
 
-              if (domainBulk.add.length > 0) {
-                await ctx.with('insertMany', {}, async () => {
-                  await coll.insertMany(domainBulk.add, { ordered: false })
-                })
-              }
-              if (domainBulk.update.size > 0) {
-                // Extract similar update to update many if possible
-                // TODO:
-                await ctx.with('updateMany-bulk', {}, async () => {
-                  await coll.bulkWrite(
-                    Array.from(domainBulk.update.entries()).map((it) => ({
-                      updateOne: {
-                        filter: { _id: it[0] },
-                        update: {
-                          $set: it[1]
-                        }
-                      }
-                    })),
-                    {
-                      ordered: false
-                    }
-                  )
-                })
-              }
-              if (domainBulk.bulkOperations.length > 0) {
-                await ctx.with('bulkWrite', {}, async () => {
-                  await coll.bulkWrite(domainBulk.bulkOperations, {
-                    ordered: false
-                  })
-                })
-              }
-              if (domainBulk.findUpdate.size > 0) {
-                await ctx.with('find-result', {}, async () => {
-                  const docs = await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray()
-                  result.push(...docs)
-                })
-              }
-
-              if (domainBulk.raw.length > 0) {
-                await ctx.with('raw', {}, async () => {
-                  for (const r of domainBulk.raw) {
-                    result.push({ object: await r() })
-                  }
-                })
-              }
-            },
-            {
-              domain,
-              add: domainBulk.add.length,
-              update: domainBulk.update.size,
-              bulk: domainBulk.bulkOperations.length,
-              find: domainBulk.findUpdate.size,
-              raw: domainBulk.raw.length
+            if (domainBulk.add.length > 0) {
+              await ctx.with('insertMany', {}, async () => {
+                const st = Date.now()
+                const result = await coll.insertMany(domainBulk.add, { ordered: false })
+                this.handleEvent(domain, 'add', result.insertedCount, Date.now() - st)
+              })
             }
-          )
+            if (domainBulk.update.size > 0) {
+              // Extract similar update to update many if possible
+              // TODO:
+              await ctx.with('updateMany-bulk', {}, async () => {
+                const st = Date.now()
+                const result = await coll.bulkWrite(
+                  Array.from(domainBulk.update.entries()).map((it) => ({
+                    updateOne: {
+                      filter: { _id: it[0] },
+                      update: {
+                        $set: it[1]
+                      }
+                    }
+                  })),
+                  {
+                    ordered: false
+                  }
+                )
+                this.handleEvent(domain, 'update', result.modifiedCount, Date.now() - st)
+              })
+            }
+            if (domainBulk.bulkOperations.length > 0) {
+              await ctx.with('bulkWrite', {}, async () => {
+                const st = Date.now()
+                const result = await coll.bulkWrite(domainBulk.bulkOperations, {
+                  ordered: false
+                })
+                this.handleEvent(domain, 'update', result.modifiedCount, Date.now() - st)
+              })
+            }
+            if (domainBulk.findUpdate.size > 0) {
+              await ctx.with('find-result', {}, async () => {
+                const st = Date.now()
+                const docs = await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray()
+                result.push(...docs)
+                this.handleEvent(domain, 'read', docs.length, Date.now() - st)
+              })
+            }
+
+            if (domainBulk.raw.length > 0) {
+              await ctx.with('raw', {}, async () => {
+                for (const r of domainBulk.raw) {
+                  result.push({ object: await r() })
+                }
+              })
+            }
+          },
+          {
+            domain,
+            add: domainBulk.add.length,
+            update: domainBulk.update.size,
+            bulk: domainBulk.bulkOperations.length,
+            find: domainBulk.findUpdate.size,
+            raw: domainBulk.raw.length
+          }
         )
       }
-      await Promise.all(domains)
     })
     return result
   }
@@ -1395,6 +1400,7 @@ class MongoAdapter extends MongoAdapterBase {
 
         if (tx.retrieve === true) {
           bulk.raw.push(async () => {
+            const st = Date.now()
             const res = await this.collection(domain).findOneAndUpdate(
               { _id: tx.objectId },
               {
@@ -1407,6 +1413,9 @@ class MongoAdapter extends MongoAdapterBase {
               } as unknown as UpdateFilter<Document>,
               { returnDocument: 'after', includeResultMetadata: true }
             )
+            const dnow = Date.now() - st
+            this.handleEvent(domain, 'read', 1, dnow)
+            this.handleEvent(domain, 'update', 1, dnow)
             return res.value as TxResult
           })
         } else {
@@ -1459,6 +1468,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     if (tx.length === 0) {
       return []
     }
+    const st = Date.now()
     await this.collectOps(
       ctx,
       DOMAIN_TX,
@@ -1468,6 +1478,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       },
       { tx: tx.length }
     )
+    this.handleEvent(DOMAIN_TX, 'add', tx.length, Date.now() - st)
     return []
   }
 

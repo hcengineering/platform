@@ -1702,58 +1702,6 @@ export async function removeDocInboxNotifications (_id: Ref<ActivityMessage>, co
   )
 }
 
-async function OnActivityNotificationViewed (
-  tx: TxUpdateDoc<InboxNotification>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  if (tx.objectClass !== notification.class.ActivityInboxNotification || tx.operations.isViewed !== true) {
-    return []
-  }
-
-  const inboxNotification = (
-    await control.findAll(
-      notification.class.ActivityInboxNotification,
-      {
-        _id: tx.objectId as Ref<ActivityInboxNotification>
-      },
-      { projection: { _id: 1, attachedTo: 1, user: 1 } }
-    )
-  )[0]
-
-  if (inboxNotification === undefined) {
-    return []
-  }
-
-  // Read reactions notifications when message is read
-  const { attachedTo, user } = inboxNotification
-
-  const reactionMessages = await control.findAll(
-    activity.class.DocUpdateMessage,
-    {
-      attachedTo,
-      objectClass: activity.class.Reaction
-    },
-    { projection: { _id: 1 } }
-  )
-
-  if (reactionMessages.length === 0) {
-    return []
-  }
-
-  const reactionNotifications = await control.findAll(
-    notification.class.ActivityInboxNotification,
-    {
-      attachedTo: { $in: reactionMessages.map(({ _id }) => _id) },
-      user
-    },
-    { projection: { _id: 1, _class: 1, space: 1 } }
-  )
-
-  return reactionNotifications.map(({ _id, _class, space }) =>
-    control.txFactory.createTxUpdateDoc(_class, space, _id, { isViewed: true })
-  )
-}
-
 export async function getCollaborators (
   doc: Doc,
   control: TriggerControl,
@@ -1845,7 +1793,6 @@ export default async () => ({
   trigger: {
     OnAttributeCreate,
     OnAttributeUpdate,
-    OnActivityNotificationViewed,
     OnDocRemove
   },
   function: {

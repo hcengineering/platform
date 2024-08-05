@@ -21,6 +21,7 @@ import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
+import gmail from '@hcengineering/model-gmail'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
@@ -33,7 +34,6 @@ import { type IntlString } from '@hcengineering/platform'
 import { recruitId, type Applicant } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
-import gmail from '@hcengineering/model-gmail'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
@@ -455,6 +455,12 @@ export function createModel (builder: Builder): void {
         'status',
         'attachments',
         'comments',
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         'modifiedOn',
         '$lookup.space.company',
         {
@@ -584,6 +590,12 @@ export function createModel (builder: Builder): void {
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.space.company',

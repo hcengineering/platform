@@ -28,44 +28,30 @@
   let state: UppyState<any, any> = upload.uppy.getState()
   let progress: number = state.totalProgress
 
+  $: state = upload.uppy.getState()
+  $: progress = state.totalProgress
   $: files = Object.values(state.files)
   $: filesTotal = files.length
   $: filesComplete = files.filter((p) => p.progress?.uploadComplete).length
 
-  function handleProgress (totalProgress: number): void {
-    progress = totalProgress
-  }
-
-  function handleUploadProgress (): void {
-    state = upload.uppy.getState()
-  }
-
-  function handleUploadSuccess (): void {
-    state = upload.uppy.getState()
-  }
-
-  function handleFileRemoved (): void {
-    state = upload.uppy.getState()
-  }
-
-  function handleError (): void {
+  function updateState (): void {
     state = upload.uppy.getState()
   }
 
   onMount(() => {
-    upload.uppy.on('error', handleError)
-    upload.uppy.on('progress', handleProgress)
-    upload.uppy.on('upload-progress', handleUploadProgress)
-    upload.uppy.on('upload-success', handleUploadSuccess)
-    upload.uppy.on('file-removed', handleFileRemoved)
+    upload.uppy.on('error', updateState)
+    upload.uppy.on('progress', updateState)
+    upload.uppy.on('upload-progress', updateState)
+    upload.uppy.on('upload-success', updateState)
+    upload.uppy.on('file-removed', updateState)
   })
 
   onDestroy(() => {
-    upload.uppy.off('error', handleError)
-    upload.uppy.off('progress', handleProgress)
-    upload.uppy.off('upload-progress', handleUploadProgress)
-    upload.uppy.off('upload-success', handleUploadSuccess)
-    upload.uppy.off('file-removed', handleFileRemoved)
+    upload.uppy.off('error', updateState)
+    upload.uppy.off('progress', updateState)
+    upload.uppy.off('upload-progress', updateState)
+    upload.uppy.off('upload-success', updateState)
+    upload.uppy.off('file-removed', updateState)
   })
 
   function handleClick (ev: MouseEvent): void {

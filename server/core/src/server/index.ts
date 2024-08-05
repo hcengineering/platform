@@ -167,7 +167,7 @@ export async function createServerStorage (
 
   const domainHelper = new DomainIndexHelperImpl(metrics, hierarchy, modelDb, conf.workspace)
 
-  return new TServerStorage(
+  const serverStorage = new TServerStorage(
     conf.domains,
     conf.defaultAdapter,
     adapters,
@@ -184,6 +184,10 @@ export async function createServerStorage (
     model,
     domainHelper
   )
+  await ctx.with('init-domain-info', {}, async () => {
+    await serverStorage.initDomainInfo()
+  })
+  return serverStorage
 }
 
 /**

@@ -516,17 +516,7 @@ async function createUpdateIndexes (
     if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT || domain === DOMAIN_BENCHMARK) {
       continue
     }
-    const result = await domainHelper.checkDomain(ctx, domain, false, dbHelper)
-    if (!result && dbHelper.exists(domain)) {
-      try {
-        logger.log('dropping domain', { domain })
-        if ((await db.collection(domain).countDocuments({})) === 0) {
-          await db.dropCollection(domain)
-        }
-      } catch (err) {
-        logger.error('error: failed to delete collection', { domain, err })
-      }
-    }
+    await domainHelper.checkDomain(ctx, domain, await dbHelper.estimatedCount(domain), dbHelper)
     completed++
     await progress((100 / allDomains.length) * completed)
   }

@@ -217,6 +217,12 @@ export function createModel (builder: Builder): void {
         'status',
         'attachments',
         'comments',
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         'modifiedOn',
         {
           key: '$lookup.attachedTo.$lookup.channels',
@@ -284,6 +290,12 @@ export function createModel (builder: Builder): void {
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.attachedTo.$lookup.channels',
@@ -431,7 +443,7 @@ export function createModel (builder: Builder): void {
         groupDepth: 1
       },
       options: lookupLeadOptions,
-      config: ['attachedTo', 'attachments', 'comments', 'dueDate', 'assignee'],
+      config: ['attachedTo', 'status', 'attachments', 'comments', 'dueDate', 'assignee'],
       configOptions: {
         strict: true
       }

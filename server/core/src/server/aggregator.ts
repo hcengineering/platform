@@ -317,12 +317,11 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     contentType: string,
     size?: number | undefined
   ): Promise<UploadedObjectInfo> {
-    // We need to reuse same provider for existing documents.
     const stat = (
       await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: objectName as Ref<Blob> }, { limit: 1 })
     ).shift()
 
-    const { provider, adapter } = this.selectProvider(stat?.provider, contentType)
+    const { provider, adapter } = this.selectProvider(undefined, contentType)
 
     const result = await adapter.put(ctx, workspaceId, objectName, stream, contentType, size)
 
@@ -351,6 +350,13 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
 
     await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [blobDoc])
+
+    // If the file is already stored in different provider, we need to remove it.
+    if (stat !== undefined && stat.provider !== provider) {
+      const adapter = this.adapters.get(stat.provider)
+      await adapter?.remove(ctx, workspaceId, [stat._id])
+    }
+
     return result
   }
 }

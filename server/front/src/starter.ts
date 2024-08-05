@@ -109,7 +109,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   if (previewConfig === undefined) {
     // Use universal preview config
-    previewConfig = `*|${uploadUrl}/:workspace?file=:blobId&size=:size`
+    previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
   }
 
   const pushPublicKey = process.env.PUSH_PUBLIC_KEY
