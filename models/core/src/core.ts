@@ -329,13 +329,13 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   attributes!: Record<string, any>
 
   @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
   @Hidden()
     removed!: boolean
 
   // States for different stages
   @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
   @Hidden()
     stages!: Record<string, boolean | string>
 
