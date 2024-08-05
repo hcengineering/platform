@@ -77,7 +77,7 @@
       const ctx =
         context ??
         (await client.findOne(notification.class.DocNotifyContext, {
-          attachedTo: object._id,
+          objectId: object._id,
           user: getCurrentAccount()._id
         }))
       const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0

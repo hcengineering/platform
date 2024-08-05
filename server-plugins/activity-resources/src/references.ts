@@ -210,7 +210,7 @@ export async function getPersonNotificationTxes (
       senderInfo,
       reference.srcDocId,
       reference.srcDocClass,
-      space,
+      doc.space,
       originTx.modifiedOn,
       notifyResult,
       notification.class.MentionInboxNotification
@@ -220,7 +220,7 @@ export async function getPersonNotificationTxes (
     const context = (
       await control.findAll(
         notification.class.DocNotifyContext,
-        { attachedTo: reference.srcDocId, user: receiver._id },
+        { objectId: reference.srcDocId, user: receiver._id },
         { projection: { _id: 1 } }
       )
     )[0]

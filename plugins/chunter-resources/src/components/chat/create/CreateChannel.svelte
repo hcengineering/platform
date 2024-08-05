@@ -18,7 +18,7 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import core, { getCurrentAccount } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { PersonAccount } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
@@ -53,6 +53,12 @@
 
   async function save (): Promise<void> {
     const account = getCurrentAccount() as PersonAccount
+    const space = await client.findOne(
+      contact.class.PersonSpace,
+      { person: account.person },
+      { projection: { _id: 1 } }
+    )
+    if (!space) return
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name: channelName,
       description: '',
@@ -61,7 +67,7 @@
       members: [account._id],
       topic: description
     })
-    await client.createDoc(notification.class.DocNotifyContext, channelId, {
+    await client.createDoc(notification.class.DocNotifyContext, space._id, {
       user: account._id,
       objectId: channelId,
       objectClass: chunter.class.Channel,

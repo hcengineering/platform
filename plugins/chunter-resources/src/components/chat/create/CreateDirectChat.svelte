@@ -86,7 +86,9 @@
       return
     }
 
-    await client.createDoc(notification.class.DocNotifyContext, dmId, {
+    const space = await client.findOne(contact.class.PersonSpace, { person: myAcc.person }, { projection: { _id: 1 } })
+    if (!space) return
+    await client.createDoc(notification.class.DocNotifyContext, space._id, {
       user: myAcc._id,
       objectId: dmId,
       objectClass: chunter.class.DirectMessage,

@@ -137,7 +137,7 @@ export async function getCommonNotificationTxes (
   }
 
   const res: Tx[] = []
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo })
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: attachedTo })
 
   const notificationTx = await pushInboxNotifications(
     control,
@@ -594,7 +594,7 @@ export async function pushActivityInboxNotifications (
     receiver,
     activityMessage.attachedTo,
     activityMessage.attachedToClass,
-    activityMessage.space,
+    object.space,
     docNotifyContexts,
     data,
     notification.class.ActivityInboxNotification,
@@ -769,7 +769,7 @@ export async function createCollabDocInfo (
     return res
   }
 
-  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { attachedTo: object._id })
+  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { objectId: object._id })
 
   await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control, originTx.modifiedBy)
 
@@ -1015,7 +1015,7 @@ async function updateCollaboratorsMixin (
     if (newCollabs.length > 0) {
       const docNotifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, {
         user: { $in: newCollabs },
-        attachedTo: tx.objectId
+        objectId: tx.objectId
       })
 
       const infos = await ctx.with(
@@ -1123,7 +1123,7 @@ async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerCont
   const res: Tx[] = []
   const notifyContexts = await control.findAll(
     notification.class.DocNotifyContext,
-    { attachedTo: tx.objectId },
+    { objectId: tx.objectId },
     {
       projection: {
         _id: 1,
@@ -1514,7 +1514,7 @@ async function OnActivityMessageRemove (message: ActivityMessage, control: Trigg
     return []
   }
 
-  const contexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: message.attachedTo })
+  const contexts = await control.findAll(notification.class.DocNotifyContext, { objectId: message.attachedTo })
   if (contexts.length === 0) return []
 
   const isLastUpdate = contexts.some((context) => {

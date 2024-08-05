@@ -2,10 +2,10 @@
 
 import {
   type Class,
-  type Data,
   type Doc,
   type Domain,
   DOMAIN_TX,
+  generateId,
   type Ref,
   type Space,
   TxOperations
@@ -22,7 +22,7 @@ import {
   tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 import { AvatarType, type Contact, type Person, type PersonSpace } from '@hcengineering/contact'
 
@@ -109,11 +109,12 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
   )
 }
 
-async function createPersonSpaces (client: TxOperations): Promise<void> {
-  const accounts = await client.getModel().findAll(contact.class.PersonAccount, {})
-  const employees = await client.findAll(contact.mixin.Employee, {})
-  const newSpaces = new Map<Ref<Person>, Data<PersonSpace>>()
+async function createPersonSpaces (client: MigrationClient): Promise<void> {
+  const accounts = await client.model.findAll(contact.class.PersonAccount, {})
+  const employees = await client.find(DOMAIN_CONTACT, { [contact.mixin.Employee]: { $exists: true } })
 
+  const newSpaces = new Map<Ref<Person>, PersonSpace>()
+  const now = Date.now()
   for (const account of accounts) {
     const employee = employees.find(({ _id }) => _id === account.person)
     if (employee === undefined) continue
@@ -124,19 +125,24 @@ async function createPersonSpaces (client: TxOperations): Promise<void> {
       space.members.push(account._id)
     } else {
       newSpaces.set(account.person, {
+        _id: generateId(),
+        _class: contact.class.PersonSpace,
+        space: core.space.Space,
         name: 'Personal space',
         description: '',
         private: true,
         archived: false,
         members: [account._id],
-        person: account.person
+        person: account.person,
+        modifiedBy: core.account.System,
+        createdBy: core.account.System,
+        modifiedOn: now,
+        createdOn: now
       })
     }
   }
 
-  for (const space of newSpaces.values()) {
-    await client.createDoc(contact.class.PersonSpace, core.space.Space, space)
-  }
+  await client.create(DOMAIN_SPACE, Array.from(newSpaces.values()))
 }
 
 export const contactOperation: MigrateOperation = {
@@ -290,6 +296,10 @@ export const contactOperation: MigrateOperation = {
             { $rename: { avatarKind: 'avatarType' } }
           )
         }
+      },
+      {
+        state: 'create-person-spaces-v101',
+        func: createPersonSpaces
       }
     ])
   },
@@ -306,13 +316,6 @@ export const contactOperation: MigrateOperation = {
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
           await createEmployeeEmail(tx)
-        }
-      },
-      {
-        state: 'create-person-spaces',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createPersonSpaces(tx)
         }
       }
     ])

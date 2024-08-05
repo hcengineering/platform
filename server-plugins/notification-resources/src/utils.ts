@@ -301,10 +301,12 @@ export async function updateNotifyContextsSpace (
     return []
   }
 
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: tx.objectId })
 
   return notifyContexts.map((value) =>
-    control.txFactory.createTxUpdateDoc(value._class, value.space, value._id, { space: updateTx.operations.space })
+    control.txFactory.createTxUpdateDoc(value._class, value.space, value._id, {
+      objectSpace: updateTx.operations.space
+    })
   )
 }
 
@@ -478,7 +480,7 @@ export async function getUsersInfo (
       _id,
       account,
       person: account !== undefined ? persons.get(account.person) : undefined,
-      space: account !== undefined ? spaces.get(account.person) : undefined
+      space: account !== undefined ? spaces.get(account.person)?._id : undefined
     }
   })
 }

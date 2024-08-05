@@ -94,7 +94,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
           topic: 'General Channel',
           private: false,
           archived: false,
-          members: await getAllEmployeeAccounts(tx),
+          members: await getAllPersonAccounts(tx),
           autoJoin: true
         },
         chunter.space.General
@@ -105,7 +105,7 @@ export async function createGeneral (client: MigrationUpgradeClient, tx: TxOpera
   await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel, core.space.Space)
 }
 
-async function getAllEmployeeAccounts (tx: TxOperations): Promise<Ref<PersonAccount>[]> {
+async function getAllPersonAccounts (tx: TxOperations): Promise<Ref<PersonAccount>[]> {
   const employees = await tx.findAll(contactPlugin.mixin.Employee, { active: true })
   const accounts = await tx.findAll(contactPlugin.class.PersonAccount, {
     person: { $in: employees.map((it) => it._id) }
@@ -114,7 +114,7 @@ async function getAllEmployeeAccounts (tx: TxOperations): Promise<Ref<PersonAcco
 }
 
 async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
-  const accs = await getAllEmployeeAccounts(tx)
+  const accs = await getAllPersonAccounts(tx)
   const newMembers: Ref<Account>[] = [...current.members]
   for (const acc of accs) {
     if (!newMembers.includes(acc)) {
@@ -150,7 +150,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
           topic: 'Random Talks',
           private: false,
           archived: false,
-          members: await getAllEmployeeAccounts(tx),
+          members: await getAllPersonAccounts(tx),
           autoJoin: true
         },
         chunter.space.Random

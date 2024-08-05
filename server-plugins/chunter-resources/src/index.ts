@@ -393,7 +393,7 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
   const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
 
   const res: Tx[] = []
-  // const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+  const allContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: tx.objectId })
 
   if (removed.length > 0) {
     res.push(
@@ -415,32 +415,44 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     )
   }
 
-  // for (const addedMember of added) {
-  //   const context = allContexts.find(({ user }) => user === addedMember)
-  //
-  //   if (context === undefined) {
-  //     const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-  //       attachedTo: tx.objectId,
-  //       attachedToClass: tx.objectClass,
-  //       user: addedMember,
-  //       lastViewedTimestamp: tx.modifiedOn
-  //     })
-  //
-  //     await control.apply([createTx])
-  //   } else {
-  //     const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-  //       lastViewedTimestamp: tx.modifiedOn
-  //     })
-  //
-  //     res.push(updateTx)
-  //   }
-  // }
-  //
-  // const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
-  //
-  // for (const context of contextsToRemove) {
-  //   res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-  // }
+  const accounts =
+    added.length > 0 ? await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: added } }) : []
+  const spaces =
+    accounts.length > 0
+      ? await control.findAll(contact.class.PersonSpace, { person: { $in: accounts.map((x) => x.person) } })
+      : []
+
+  for (const addedMember of added) {
+    const context = allContexts.find(({ user }) => user === addedMember)
+
+    if (context === undefined) {
+      const account = accounts.find(({ _id }) => _id === addedMember)
+      if (account === undefined) continue
+      const space = spaces.find(({ person }) => person === account.person)
+      if (space === undefined) continue
+      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space._id, {
+        objectId: tx.objectId,
+        objectClass: tx.objectClass,
+        objectSpace: tx.objectSpace,
+        user: addedMember,
+        lastViewedTimestamp: tx.modifiedOn
+      })
+
+      await control.apply([createTx])
+    } else {
+      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+        lastViewedTimestamp: tx.modifiedOn
+      })
+
+      res.push(updateTx)
+    }
+  }
+
+  const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
+
+  for (const context of contextsToRemove) {
+    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
+  }
 
   return res
 }
