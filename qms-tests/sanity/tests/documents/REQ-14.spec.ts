@@ -19,7 +19,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('QMS. Documents tests', () => {
+test.describe('QMS. Documents tests for Control of documents ISO 13485, 4.2.4 FS-150', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
@@ -32,7 +32,7 @@ test.describe('QMS. Documents tests', () => {
   })
 
   test('TESTS-384. Create a new doc version and previous one then marked to “Obsolete”', async ({ page, browser }) => {
-    await allure.description('Requirement\nUsers need to create a new document')
+    await allure.description('Requirement\nUsers need to create a new document and new version document')
     await allure.tms('TESTS-384', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-384')
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
