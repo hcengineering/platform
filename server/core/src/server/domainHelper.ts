@@ -93,7 +93,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
       const allIndexes = (await operations.listIndexes(domain)).filter((it) => it.name !== '_id_')
       ctx.info('check indexes', { domain, has50Documents, documents })
       if (has50Documents) {
-        for (const vv of [...(domainInfo?.values() ?? []), ...(cfg?.indexes ?? [])]) {
+        async function checkIndex (vv: string | FieldIndexConfig<Doc>, checkDisabled: boolean): Promise<void> {
           try {
             let name: string
             if (typeof vv === 'string') {
@@ -111,19 +111,23 @@ export class DomainIndexHelperImpl implements DomainHelper {
             }
 
             // Check if index is disabled or not
-            const isDisabled =
+            let isDisabled =
               cfg?.disabled?.some((it) => {
                 const _it = typeof it === 'string' ? { [it]: 1 } : it
                 const _vv = typeof vv === 'string' ? { [vv]: 1 } : vv.keys
                 return deepEqual(_it, _vv)
               }) ?? false
+
+            if (!checkDisabled) {
+              isDisabled = false
+            }
             if (isDisabled) {
               // skip index since it is disabled
-              continue
+              return
             }
             if (added.has(name)) {
               // Index already added
-              continue
+              return
             }
             added.add(name)
 
@@ -133,19 +137,24 @@ export class DomainIndexHelperImpl implements DomainHelper {
             }
             const exists = existingOne !== -1
             // Check if index exists
-            if (!exists) {
-              if (!isDisabled) {
-                // Check if not disabled
-                bb.push(vv)
-                await operations.createIndex(domain, vv, {
-                  name
-                })
-              }
+            if (!exists && !isDisabled) {
+              // Check if not disabled
+              bb.push(vv)
+              await operations.createIndex(domain, vv, {
+                name
+              })
             }
           } catch (err: any) {
             Analytics.handleError(err)
             ctx.error('error: failed to create index', { domain, vv, err })
           }
+        }
+
+        for (const vv of [...(domainInfo?.values() ?? [])]) {
+          await checkIndex(vv, true)
+        }
+        for (const vv of [...(cfg?.indexes ?? [])]) {
+          await checkIndex(vv, false)
         }
       }
       if (allIndexes.length > 0) {
