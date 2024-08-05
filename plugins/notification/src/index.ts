@@ -226,7 +226,7 @@ export interface NotificationContextPresenter extends Class<Doc> {
 /**
  * @public
  */
-export interface InboxNotification extends Doc {
+export interface InboxNotification extends Doc<PersonSpace> {
   user: Ref<Account>
   isViewed: boolean
 
@@ -422,7 +422,8 @@ const notification = plugin(notificationId, {
     CommonNotificationCollectionAdded: '' as IntlString,
     CommonNotificationCollectionRemoved: '' as IntlString,
     SoundNotificationsDescription: '' as IntlString,
-    Sound: '' as IntlString
+    Sound: '' as IntlString,
+    NoAccessToObject: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,

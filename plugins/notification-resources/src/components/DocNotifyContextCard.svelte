@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, Loading, showPopup, Spinner } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
@@ -50,17 +50,19 @@
   const query = createQuery()
 
   let object: Doc | undefined = undefined
+  let isLoading = true
 
   $: query.query(
     value.objectClass,
     { _id: value.objectId, space: value.objectSpace },
     (res) => {
       object = res[0]
+      isLoading = false
     },
     { limit: 1 }
   )
 
-  $: if (object?._id !== value.objectId) {
+  $: if (object !== undefined && object?._id !== value.objectId) {
     object = undefined
   }
 
@@ -199,7 +201,11 @@
     dispatch('click', { context: value })
   }}
 >
-  {#if object}
+  {#if isLoading}
+    <div class="loading">
+      <Loading />
+    </div>
+  {:else if object}
     <div class="header">
       <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
 
@@ -266,6 +272,35 @@
           </div>
         {/each}
       </div>
+    </div>
+  {:else}
+    <div class="header">
+      <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
+
+      <div class="labels">
+        <Label label={hierarchy.getClass(value.objectClass).label} />
+      </div>
+
+      <div class="actions clear-mins">
+        <div class="flex-center">
+          {#if archivingPromise !== undefined}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          {/if}
+        </div>
+        <ButtonIcon
+          icon={IconMoreV}
+          size="small"
+          kind="tertiary"
+          inheritColor
+          pressed={isActionMenuOpened}
+          on:click={showMenu}
+        />
+      </div>
+    </div>
+    <div class="content mt-2">
+      <Label label={notification.string.NoAccessToObject} />
     </div>
   {/if}
 </div>
@@ -365,5 +400,11 @@
   .content {
     display: flex;
     width: 100%;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    flex: 1;
   }
 </style>

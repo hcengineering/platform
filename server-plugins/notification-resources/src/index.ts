@@ -311,7 +311,7 @@ export async function getDocCollaborators (
 export async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
-  receiverInfo: ReceiverInfo,
+  receiver: ReceiverInfo,
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>,
@@ -321,28 +321,24 @@ export async function pushInboxNotifications (
   modifiedOn: Timestamp,
   shouldUpdateTimestamp = true
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
-  const account = receiverInfo.account
-  const context = contexts.find((context) => context.user === receiverInfo._id && context.objectId === objectId)
+  const account = receiver.account
+  const context = contexts.find((context) => context.user === receiver._id && context.objectId === objectId)
 
   let docNotifyContextId: Ref<DocNotifyContext>
 
   if (context === undefined) {
-    const createContextTx = control.txFactory.createTxCreateDoc(
-      notification.class.DocNotifyContext,
-      receiverInfo.space,
-      {
-        user: receiverInfo._id,
-        objectId,
-        objectClass,
-        objectSpace,
-        lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
-      }
-    )
+    const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, receiver.space, {
+      user: receiver._id,
+      objectId,
+      objectClass,
+      objectSpace,
+      lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
+    })
     await control.apply([createContextTx])
-    if (receiverInfo.account?.email !== undefined) {
+    if (receiver.account?.email !== undefined) {
       control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
         if (it._id === createContextTx._id) {
-          return [receiverInfo.account?.email]
+          return [receiver.account?.email]
         }
       }
     }
@@ -357,7 +353,7 @@ export async function pushInboxNotifications (
     docNotifyContext: docNotifyContextId,
     ...data
   }
-  const notificationTx = control.txFactory.createTxCreateDoc(_class, objectSpace, notificationData)
+  const notificationTx = control.txFactory.createTxCreateDoc(_class, receiver.space, notificationData)
   res.push(notificationTx)
 
   return notificationTx
@@ -497,7 +493,7 @@ export async function createPushFromInbox (
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
   await createPushNotification(control, receiver._id as Ref<PersonAccount>, title, body, _id, senderPerson, path)
-  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, core.space.Workspace, {
+  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
     user: receiver._id,
     status: NotificationStatus.New,
     title,

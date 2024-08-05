@@ -232,7 +232,7 @@ export async function getPersonNotificationTxes (
         docNotifyContext: context._id,
         _id: generateId(),
         _class: notification.class.CommonInboxNotification,
-        space,
+        space: receiverSpace._id,
         modifiedOn: originTx.modifiedOn,
         modifiedBy: sender._id
       }

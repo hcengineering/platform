@@ -36,7 +36,7 @@
 <div class="container">
   {#if iconMixin && object}
     <Component is={iconMixin.component} props={{ value: object, size }} />
-  {:else if !iconMixin}
+  {:else}
     <Icon icon={classIcon(client, value.objectClass) ?? notification.icon.Notifications} {size} />
   {/if}
 
