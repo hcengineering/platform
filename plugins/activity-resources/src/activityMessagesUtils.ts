@@ -579,7 +579,7 @@ export function isActivityMessage (message?: Doc): message is ActivityMessage {
   return getClient().getHierarchy().isDerived(message._class, activity.class.ActivityMessage)
 }
 
-export function isReactionMessage (message?: ActivityMessage): boolean {
+export function isReactionMessage (message?: ActivityMessage): message is DocUpdateMessage {
   if (message === undefined) {
     return false
   }

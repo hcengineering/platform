@@ -38,7 +38,7 @@ export class CommonPage {
   historyBoxButtonFirst = (): Locator => this.page.locator('div.history-box button:first-child')
   inboxNotyButton = (): Locator => this.page.locator('button[id$="Inbox"] > div.noty')
   mentionPopupListItem = (mentionName: string): Locator =>
-    this.page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName })
+    this.page.locator('form.mentionPoup div.list-item', { hasText: mentionName })
 
   hulyPopupRowButton = (name: string): Locator =>
     this.page.locator('div.hulyPopup-container button.hulyPopup-row', { hasText: name })
@@ -297,5 +297,13 @@ export class CommonPage {
 
   async openRowInTableByText (text: string): Promise<void> {
     await this.linesFromTable(text).locator('a', { hasText: text }).click()
+  }
+
+  async checkRowsInListExist (text: string, count: number = 1): Promise<void> {
+    await expect(this.linesFromList(text)).toHaveCount(count)
+  }
+
+  async pressEscape (): Promise<void> {
+    await this.page.keyboard.press('Escape')
   }
 }

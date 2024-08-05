@@ -33,7 +33,7 @@ import {
   WorkspaceId
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import serverCore, { DbAdapter } from '@hcengineering/server-core'
+import serverCore, { DbAdapter, type DomainHelperOperations } from '@hcengineering/server-core'
 
 function getIndexName (): string {
   return getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
@@ -61,7 +61,24 @@ class ElasticDataAdapter implements DbAdapter {
     this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
   }
 
-  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+  helper (): DomainHelperOperations {
+    return {
+      create: async () => {},
+      exists: () => true,
+      listDomains: async () => new Set(),
+      createIndex: async () => {},
+      dropIndex: async () => {},
+      listIndexes: async () => [],
+      estimatedCount: async () => 0
+    }
+  }
+
+  async groupBy<T, D extends Doc = Doc>(
+    ctx: MeasureContext,
+    domain: Domain,
+    field: string,
+    query?: DocumentQuery<D>
+  ): Promise<Set<T>> {
     return new Set()
   }
 

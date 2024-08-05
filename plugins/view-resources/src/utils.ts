@@ -1495,59 +1495,80 @@ export const permissionsStore = writable<PermissionsStore>({
   ap: {},
   whitelist: new Set()
 })
+
+const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
+type TargetClassesProjection = Record<Ref<Class<Space>>, number>
 
-permissionsQuery.query(core.class.Space, {}, (res) => {
-  const whitelistedSpaces = new Set<Ref<Space>>()
-  const permissionsBySpace: PermissionsBySpace = {}
-  const accountsByPermission: AccountsByPermission = {}
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()
+spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
+  const targetClasses = types.reduce<TargetClassesProjection>((acc, st) => {
+    acc[st.targetClass] = 1
+    return acc
+  }, {})
 
-  for (const s of res) {
-    if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
-      const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
-      const mixin = type?.targetClass
+  permissionsQuery.query(
+    core.class.Space,
+    {},
+    (res) => {
+      const whitelistedSpaces = new Set<Ref<Space>>()
+      const permissionsBySpace: PermissionsBySpace = {}
+      const accountsByPermission: AccountsByPermission = {}
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
+      const me = getCurrentAccount()
 
-      if (mixin === undefined) {
-        permissionsBySpace[s._id] = new Set()
-        accountsByPermission[s._id] = {}
-        continue
-      }
+      for (const s of res) {
+        if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+          const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+          const mixin = type?.targetClass
 
-      const asMixin = hierarchy.as(s, mixin)
-      const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-      const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
-      permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
-
-      accountsByPermission[s._id] = {}
-
-      for (const role of roles) {
-        const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
-
-        if (assignment.length === 0) {
-          continue
-        }
-
-        for (const permissionId of role.permissions) {
-          if (accountsByPermission[s._id][permissionId] === undefined) {
-            accountsByPermission[s._id][permissionId] = new Set()
+          if (mixin === undefined) {
+            permissionsBySpace[s._id] = new Set()
+            accountsByPermission[s._id] = {}
+            continue
           }
 
-          assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
+          const asMixin = hierarchy.as(s, mixin)
+          const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+          const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
+          permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+          accountsByPermission[s._id] = {}
+
+          for (const role of roles) {
+            const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
+
+            if (assignment.length === 0) {
+              continue
+            }
+
+            for (const permissionId of role.permissions) {
+              if (accountsByPermission[s._id][permissionId] === undefined) {
+                accountsByPermission[s._id][permissionId] = new Set()
+              }
+
+              assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
+            }
+          }
+        } else {
+          whitelistedSpaces.add(s._id)
         }
       }
-    } else {
-      whitelistedSpaces.add(s._id)
-    }
-  }
 
-  permissionsStore.set({
-    ps: permissionsBySpace,
-    ap: accountsByPermission,
-    whitelist: whitelistedSpaces
-  })
+      permissionsStore.set({
+        ps: permissionsBySpace,
+        ap: accountsByPermission,
+        whitelist: whitelistedSpaces
+      })
+    },
+    {
+      projection: {
+        _id: 1,
+        type: 1,
+        ...targetClasses
+      } as any
+    }
+  )
 })
 
 export function getCollaborationUser (): CollaborationUser {

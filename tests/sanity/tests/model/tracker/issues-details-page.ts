@@ -10,6 +10,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.page = page
   }
 
+  readonly issueTitle = (): Locator => this.page.locator('div.hulyHeader-container div.title')
   readonly inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
   readonly inputDescription = (): Locator => this.page.locator('div.popupPanel-body div.textInput div.tiptap')
   readonly textIdentifier = (): Locator => this.page.locator('div.title.not-active')

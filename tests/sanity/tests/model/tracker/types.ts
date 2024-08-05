@@ -1,6 +1,7 @@
 export interface NewIssue extends Issue {
   title: string
   description: string
+  projectName?: string
 }
 
 export interface Issue {

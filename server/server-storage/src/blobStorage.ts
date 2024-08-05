@@ -34,7 +34,12 @@ import core, {
 } from '@hcengineering/core'
 import { createMongoAdapter } from '@hcengineering/mongo'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { DbAdapter, StorageAdapter, type StorageAdapterEx } from '@hcengineering/server-core'
+import {
+  DbAdapter,
+  StorageAdapter,
+  type DomainHelperOperations,
+  type StorageAdapterEx
+} from '@hcengineering/server-core'
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
@@ -51,6 +56,10 @@ class StorageBlobAdapter implements DbAdapter {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     return await this.blobAdapter.findAll(ctx, _class, query, options)
+  }
+
+  helper (): DomainHelperOperations {
+    return this.blobAdapter.helper()
   }
 
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
