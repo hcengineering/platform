@@ -12,6 +12,7 @@ import { SignInJoinPage } from '../model/signin-page'
 import { ChannelPage } from '../model/channel-page'
 import { UserProfilePage } from '../model/profile/user-profile-page'
 import { MenuItems, NotificationsPage } from '../model/profile/notifications-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 
 test.describe('Inbox tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -40,7 +41,9 @@ test.describe('Inbox tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
   })
 
   test('User is able to create a task, assign a himself and see it inside the inbox', async ({ page }) => {

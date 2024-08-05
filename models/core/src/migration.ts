@@ -155,7 +155,8 @@ export const coreOperation: MigrateOperation = {
       { objectClass: { $nin: allIndexed } },
       {
         $set: {
-          removed: true
+          removed: true,
+          needIndex: true
         }
       }
     )
@@ -182,6 +183,12 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'old-statuses-transactions',
         func: migrateStatusTransactions
+      },
+      {
+        state: 'add-need-index',
+        func: async (client: MigrationClient) => {
+          await client.update(DOMAIN_DOC_INDEX_STATE, {}, { $set: { needIndex: true } })
+        }
       }
     ])
   },

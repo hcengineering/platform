@@ -40,11 +40,8 @@ export function processRequest (
   buff: any,
   handleRequest: HandleRequestFunction
 ): void {
-  const st = Date.now()
   try {
     const request = cs.readRequest(buff, session.binaryMode)
-    const ed = Date.now()
-    context.measure('deserialize', ed - st)
     handleRequest(context, session, cs, request, workspaceId)
   } catch (err: any) {
     if (((err.message as string) ?? '').includes('Data read, but end of buffer not reached')) {

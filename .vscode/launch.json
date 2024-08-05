@@ -60,6 +60,7 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
       "showAsyncStacks": true,
+      "outputCapture": "std",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/server",
       "protocol": "inspector"
@@ -75,6 +76,7 @@
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
+        "outputCapture": "std",
         "SES_URL": "http://localhost:8091",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -186,7 +188,7 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "upgrade"],
+      "args": ["src/__start.ts", "upgrade-workspace", "platform"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",

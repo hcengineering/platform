@@ -56,8 +56,6 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
 
   textLimit = 100 * 1024
 
-  stageValue: boolean | string = true
-
   constructor (
     readonly storageAdapter: StorageAdapter | undefined,
     readonly workspace: WorkspaceId,

@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   type AttachedDoc,
   type Class,
+  type Collection,
   type Doc,
   type DocIndexState,
   type DocumentQuery,
@@ -47,7 +49,6 @@ import { createStateDoc } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type StorageAdapter } from './storage'
 import type { FullTextAdapter, IndexedDoc, ServerStorage, WithFind } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -102,7 +103,8 @@ export class FullTextIndex implements WithFind {
             attachedTo,
             attachedToClass,
             space: tx.objectSpace,
-            removed: false
+            removed: false,
+            needIndex: true
           })
           stDocs.set(cud.objectId as Ref<DocIndexState>, { create: stDoc, updated: false, removed: false })
         } else {
@@ -143,7 +145,7 @@ export class FullTextIndex implements WithFind {
 
     const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>()
     const baseClass = this.hierarchy.getBaseClass(_class)
-    let classes = this.hierarchy.getDescendants(baseClass)
+    let classes = this.hierarchy.getDescendants(baseClass).filter((it) => !this.hierarchy.isMixin(it))
 
     const attrs = this.hierarchy.getAllAttributes(_class)
 
@@ -173,7 +175,8 @@ export class FullTextIndex implements WithFind {
         }
         if (attr.type._class === core.class.Collection) {
           // we need attached documents to be in classes
-          const dsc = this.hierarchy.getDescendants(attr.attributeOf)
+          const coll = attr.type as Collection<AttachedDoc>
+          const dsc = this.hierarchy.getDescendants(coll.of).filter((it) => !this.hierarchy.isMixin(it))
           classes = classes.concat(dsc)
         }
       }
