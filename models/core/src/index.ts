@@ -283,10 +283,12 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_DOC_INDEX_STATE,
-    indexes: [{ keys: { removed: 1 }, filter: { removed: true } }],
+    indexes: [
+      { keys: { removed: 1 }, filter: { removed: true } },
+      { keys: { _class: 1 }, filter: { _class: core.class.DocIndexState } }
+    ],
     disabled: [
       { attachedToClass: 1 },
-      { objectClass: 1 },
       { stages: 1 },
       { generationId: 1 },
       { space: 1 },

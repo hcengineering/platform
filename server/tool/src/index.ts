@@ -385,7 +385,7 @@ export async function upgradeModel (
 
       await tryMigrate(migrateClient, coreId, [
         {
-          state: 'sparse',
+          state: 'indexes-v2',
           func: upgradeIndexes
         }
       ])
