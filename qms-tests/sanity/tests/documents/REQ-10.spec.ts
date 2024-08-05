@@ -19,9 +19,6 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       'Requirement\nUser is the owner of the workspace and can create roles and setup permissions'
     )
     await allure.tms('TESTS-341', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-341')
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-
-    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
     await test.step('2. Check user role', async () => {
       const settingsPage = new SettingsPage(page)
       await settingsPage.openProfileMenu()
