@@ -187,6 +187,16 @@ export const notificationOperation: MigrateOperation = {
             { archived: false }
           )
         }
+      },
+      {
+        state: 'fill-contexts-pinned-field-v1',
+        func: async (client) => {
+          await client.update<DocNotifyContext>(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, isPinned: { $exists: false } },
+            { isPinned: false }
+          )
+        }
       }
     ])
     await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {

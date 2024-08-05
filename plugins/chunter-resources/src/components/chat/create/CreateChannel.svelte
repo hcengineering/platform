@@ -63,7 +63,8 @@
     await client.createDoc(notification.class.DocNotifyContext, channelId, {
       user: accountId,
       attachedTo: channelId,
-      attachedToClass: chunter.class.Channel
+      attachedToClass: chunter.class.Channel,
+      isPinned: false
     })
 
     openChannel(channelId, chunter.class.Channel)
