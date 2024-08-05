@@ -234,7 +234,7 @@ export class TInboxNotification extends TDoc implements InboxNotification {
     isViewed!: boolean
 
   @Prop(TypeBoolean(), core.string.Boolean)
-    archived?: boolean
+    archived!: boolean
 
   declare space: Ref<PersonSpace>
 

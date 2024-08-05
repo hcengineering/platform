@@ -298,7 +298,7 @@ export const contactOperation: MigrateOperation = {
         }
       },
       {
-        state: 'create-person-spaces-v101',
+        state: 'create-person-spaces-v1',
         func: createPersonSpaces
       }
     ])

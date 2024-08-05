@@ -119,10 +119,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     )
     this.otherInboxNotificationsQuery.query(
-      notification.class.InboxNotification,
+      notification.class.CommonInboxNotification,
       {
-        _class: { $ne: notification.class.ActivityInboxNotification },
-        archived: { $ne: true },
+        archived: false,
         space: this.space,
         user: getCurrentAccount()._id
       },
@@ -139,7 +138,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.activityInboxNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
       {
-        archived: { $ne: true },
+        archived: false,
         space: this.space,
         user: getCurrentAccount()._id
       },
@@ -262,7 +261,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          archived: { $ne: true },
+          archived: false,
           space: this.space
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
@@ -288,9 +287,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          space: this.space,
-          isViewed: { $ne: true },
-          archived: { $ne: true }
+          isViewed: false,
+          archived: false,
+          space: this.space
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -315,7 +314,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         {
           user: getCurrentAccount()._id,
           isViewed: true,
-          archived: { $ne: true },
+          archived: false,
           space: this.space
         },
         {

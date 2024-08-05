@@ -351,6 +351,7 @@ export async function pushInboxNotifications (
     user: account._id,
     isViewed: false,
     docNotifyContext: docNotifyContextId,
+    archived: false,
     ...data
   }
   const notificationTx = control.txFactory.createTxCreateDoc(_class, receiver.space, notificationData)
