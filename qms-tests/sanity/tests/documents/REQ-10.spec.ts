@@ -1,7 +1,6 @@
 import { test } from '@playwright/test'
 import { attachScreenshot, HomepageURI, PlatformSettingSecond, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 import { SettingsPage } from './../model/setting-page'
 
