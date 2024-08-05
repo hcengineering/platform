@@ -242,7 +242,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          archived: { $ne: true }
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -267,8 +267,8 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          isViewed: { $ne: true },
-          archived: { $ne: true }
+          isViewed: false,
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -293,7 +293,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         {
           user: getCurrentAccount()._id,
           isViewed: true,
-          archived: { $ne: true }
+          archived: false
         },
         {
           projection: { _id: 1, _class: 1, space: 1, docNotifyContext: 1 },
