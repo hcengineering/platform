@@ -228,7 +228,7 @@ export class TInboxNotification extends TDoc implements InboxNotification {
     isViewed!: boolean
 
   @Prop(TypeBoolean(), core.string.Boolean)
-    archived?: boolean
+    archived!: boolean
 
   title?: IntlString
   body?: IntlString

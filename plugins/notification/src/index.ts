@@ -234,7 +234,7 @@ export interface InboxNotification extends Doc {
   body?: IntlString
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
-  archived?: boolean
+  archived: boolean
 }
 
 export interface ActivityInboxNotification extends InboxNotification {

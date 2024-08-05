@@ -34,6 +34,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -101,10 +102,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     )
     this.otherInboxNotificationsQuery.query(
-      notification.class.InboxNotification,
+      notification.class.CommonInboxNotification,
       {
-        _class: { $ne: notification.class.ActivityInboxNotification },
-        archived: { $ne: true },
+        archived: false,
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
@@ -120,7 +120,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.activityInboxNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
       {
-        archived: { $ne: true },
+        archived: false,
         user: getCurrentAccount()._id
       },
       (result: ActivityInboxNotification[]) => {
