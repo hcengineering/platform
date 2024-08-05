@@ -110,11 +110,18 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
 }
 
 async function createPersonSpaces (client: MigrationClient): Promise<void> {
+  const spaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace })
+
+  if (spaces.length > 0) {
+    return
+  }
+
   const accounts = await client.model.findAll(contact.class.PersonAccount, {})
   const employees = await client.find(DOMAIN_CONTACT, { [contact.mixin.Employee]: { $exists: true } })
 
   const newSpaces = new Map<Ref<Person>, PersonSpace>()
   const now = Date.now()
+
   for (const account of accounts) {
     const employee = employees.find(({ _id }) => _id === account.person)
     if (employee === undefined) continue
@@ -151,17 +158,6 @@ export const contactOperation: MigrateOperation = {
       {
         state: 'employees',
         func: async (client) => {
-          await client.update(
-            DOMAIN_TX,
-            {
-              objectClass: 'contact:class:EmployeeAccount'
-            },
-            {
-              $rename: { 'attributes.employee': 'attributes.person' },
-              $set: { objectClass: contact.class.PersonAccount }
-            }
-          )
-
           await client.update(
             DOMAIN_TX,
             {

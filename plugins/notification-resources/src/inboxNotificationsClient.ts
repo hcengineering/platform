@@ -88,7 +88,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private readonly otherInboxNotificationsQuery = createQuery(true)
   private readonly activityInboxNotificationsQuery = createQuery(true)
 
-  private space: Ref<PersonSpace> | undefined
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
@@ -96,21 +95,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   private async init (): Promise<void> {
-    const client = getClient()
-    const me = getCurrentAccount() as PersonAccount
-
-    const space = await client.findOne(contact.class.PersonSpace, { person: me.person }, { projection: { _id: 1 } })
-    this.space = space?._id
-
-    if (this.space === undefined) {
-      return
-    }
-
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
         user: getCurrentAccount()._id,
-        space: this.space
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
@@ -122,7 +110,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.CommonInboxNotification,
       {
         archived: false,
-        space: this.space,
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
@@ -139,7 +126,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.ActivityInboxNotification,
       {
         archived: false,
-        space: this.space,
         user: getCurrentAccount()._id
       },
       (result: ActivityInboxNotification[]) => {
@@ -261,8 +247,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          archived: false,
-          space: this.space
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -288,8 +273,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         {
           user: getCurrentAccount()._id,
           isViewed: false,
-          archived: false,
-          space: this.space
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -314,8 +298,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         {
           user: getCurrentAccount()._id,
           isViewed: true,
-          archived: false,
-          space: this.space
+          archived: false
         },
         {
           projection: { _id: 1, _class: 1, space: 1, docNotifyContext: 1 },
