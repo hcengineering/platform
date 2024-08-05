@@ -158,7 +158,6 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist('Test message', true, 'Test message')
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
-    await channelPage.clickOnClosePopupButton()
     await channelPage.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
     await page2.close()
   })
