@@ -1,12 +1,12 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { attachScreenshot, HomepageURI, PlatformSettingSecond, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 import { SettingsPage } from './../model/setting-page'
 
 test.use({
-  storageState: PlatformSetting
+  storageState: PlatformSettingSecond
 })
 
 test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of external origin are identified and their distribution controlled', () => {
