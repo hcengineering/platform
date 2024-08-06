@@ -84,7 +84,7 @@ export async function channelTextPresenter (doc: Doc): Promise<string> {
     return await translate(chunter.string.Direct, {})
   }
 
-  return `${channel.name}`
+  return `#${channel.name}`
 }
 
 export async function ChatMessageTextPresenter (doc: ChatMessage): Promise<string> {
@@ -343,6 +343,7 @@ export async function getChunterNotificationContent (
   return {
     title,
     body,
+    data: message,
     intlParams,
     intlParamsNotLocalized
   }
@@ -461,7 +462,7 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
 
   const contexts = await control.findAll(notification.class.DocNotifyContext, {
     user: account._id,
-    isPinned: { $ne: true }
+    isPinned: false
   })
 
   if (contexts.length === 0) return
@@ -469,14 +470,14 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
   const { hierarchy } = control
   const res: Tx[] = []
 
-  const directContexts = contexts.filter(({ attachedToClass }) =>
-    hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage)
+  const directContexts = contexts.filter(({ objectClass }) =>
+    hierarchy.isDerived(objectClass, chunter.class.DirectMessage)
   )
   const activityContexts = contexts.filter(
-    ({ attachedToClass }) =>
-      !hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel) &&
-      !hierarchy.isDerived(attachedToClass, activity.class.ActivityMessage)
+    ({ objectClass }) =>
+      !hierarchy.isDerived(objectClass, chunter.class.DirectMessage) &&
+      !hierarchy.isDerived(objectClass, chunter.class.Channel) &&
+      !hierarchy.isDerived(objectClass, activity.class.ActivityMessage)
   )
 
   const directTxes = await hideOldDirects(directContexts, control, date)

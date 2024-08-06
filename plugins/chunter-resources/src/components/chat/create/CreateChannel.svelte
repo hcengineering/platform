@@ -18,6 +18,7 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import core, { getCurrentAccount } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
+  import contact, { PersonAccount } from '@hcengineering/contact'
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
@@ -51,19 +52,28 @@
   $: canSave = !!channelName
 
   async function save (): Promise<void> {
-    const accountId = getCurrentAccount()._id
+    const account = getCurrentAccount() as PersonAccount
+    const space = await client.findOne(
+      contact.class.PersonSpace,
+      { person: account.person },
+      { projection: { _id: 1 } }
+    )
+    if (!space) return
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name: channelName,
       description: '',
       private: selectedVisibilityId === 'private',
       archived: false,
-      members: [accountId],
+      members: [account._id],
       topic: description
     })
-    await client.createDoc(notification.class.DocNotifyContext, channelId, {
-      user: accountId,
-      attachedTo: channelId,
-      attachedToClass: chunter.class.Channel
+
+    await client.createDoc(notification.class.DocNotifyContext, space._id, {
+      user: account._id,
+      objectId: channelId,
+      objectClass: chunter.class.Channel,
+      objectSpace: core.space.Space,
+      isPinned: false
     })
 
     openChannel(channelId, chunter.class.Channel)

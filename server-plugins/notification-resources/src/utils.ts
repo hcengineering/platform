@@ -21,7 +21,6 @@ import notification, {
   NotificationType
 } from '@hcengineering/notification'
 import type { TriggerControl } from '@hcengineering/server-core'
-import { DocUpdateMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import core, {
@@ -49,9 +48,11 @@ import serverNotification, {
   getPersonAccountById,
   HTMLPresenter,
   NotificationPresenter,
-  TextPresenter,
-  UserInfo
+  ReceiverInfo,
+  SenderInfo,
+  TextPresenter
 } from '@hcengineering/server-notification'
+import { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 
 import { NotifyResult } from './types'
 
@@ -304,10 +305,12 @@ export async function updateNotifyContextsSpace (
     return []
   }
 
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: tx.objectId })
 
   return notifyContexts.map((value) =>
-    control.txFactory.createTxUpdateDoc(value._class, value.space, value._id, { space: updateTx.operations.space })
+    control.txFactory.createTxUpdateDoc(value._class, value.space, value._id, {
+      objectSpace: updateTx.operations.space
+    })
   )
 }
 
@@ -323,7 +326,7 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
   return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
 }
 
-async function getSenderName (control: TriggerControl, sender: UserInfo): Promise<string> {
+async function getSenderName (control: TriggerControl, sender: SenderInfo): Promise<string> {
   if (sender._id === core.account.System) {
     return await translate(core.string.System, {})
   }
@@ -344,10 +347,13 @@ async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
   control: TriggerControl,
-  sender: UserInfo
+  sender: SenderInfo,
+  message?: ActivityMessage
 ): Promise<NotificationContent> {
   const title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = notification.string.CommonNotificationBody
+  let data: string | undefined
+
   const intlParams: Record<string, string | number> = {}
   const intlParamsNotLocalized: Record<string, IntlString> = {}
 
@@ -355,6 +361,15 @@ async function getFallbackNotificationFullfillment (
   if (textPresenter !== undefined) {
     const textPresenterFunc = await getResource(textPresenter.presenter)
     intlParams.title = await textPresenterFunc(object, control)
+  }
+
+  if (message !== undefined) {
+    const dataPresenter = getTextPresenter(message._class, control.hierarchy)
+
+    if (dataPresenter !== undefined) {
+      const textPresenterFunc = await getResource(dataPresenter.presenter)
+      data = await textPresenterFunc(message, control)
+    }
   }
 
   const tx = TxProcessor.extractTx(originTx)
@@ -401,7 +416,7 @@ async function getFallbackNotificationFullfillment (
     }
   }
 
-  return { title, body, intlParams, intlParamsNotLocalized }
+  return { title, body, data, intlParams, intlParamsNotLocalized }
 }
 
 function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): NotificationPresenter | undefined {
@@ -411,32 +426,36 @@ function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy
 export async function getNotificationContent (
   originTx: TxCUD<Doc>,
   targetUser: PersonAccount,
-  sender: UserInfo,
+  sender: SenderInfo,
   object: Doc,
-  control: TriggerControl
+  control: TriggerControl,
+  message?: ActivityMessage
 ): Promise<NotificationContent> {
-  let { title, body, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
+  let { title, body, data, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
     object,
     originTx,
     control,
-    sender
+    sender,
+    message
   )
 
-  const actualTx = TxProcessor.extractTx(originTx)
-  const notificationPresenter = getNotificationPresenter((actualTx as TxCUD<Doc>).objectClass, control.hierarchy)
+  const actualTx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
+  const notificationPresenter = getNotificationPresenter(actualTx.objectClass, control.hierarchy)
+
   if (notificationPresenter !== undefined) {
     const getFuillfillmentParams = await getResource(notificationPresenter.presenter)
-    const updateIntlParams = await getFuillfillmentParams(object, originTx, targetUser._id, control)
-    title = updateIntlParams.title
-    body = updateIntlParams.body
+    const updateParams = await getFuillfillmentParams(object, originTx, targetUser._id, control)
+    title = updateParams.title
+    body = updateParams.body
+    data = updateParams?.data ?? data
     intlParams = {
       ...intlParams,
-      ...updateIntlParams.intlParams
+      ...updateParams.intlParams
     }
-    if (updateIntlParams.intlParamsNotLocalized != null) {
+    if (updateParams.intlParamsNotLocalized != null) {
       intlParamsNotLocalized = {
         ...intlParamsNotLocalized,
-        ...updateIntlParams.intlParamsNotLocalized
+        ...updateParams.intlParamsNotLocalized
       }
     }
   }
@@ -444,6 +463,7 @@ export async function getNotificationContent (
   const content: NotificationContent = {
     title,
     body,
+    data,
     intlParams
   }
 
@@ -458,21 +478,54 @@ export async function getUsersInfo (
   ctx: MeasureContext,
   ids: Ref<PersonAccount>[],
   control: TriggerControl
-): Promise<UserInfo[]> {
+): Promise<(ReceiverInfo | SenderInfo)[]> {
+  if (ids.length === 0) return []
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
+  const personIds = accounts.map((it) => it.person)
+  const accountById = toIdMap(accounts)
   const persons = toIdMap(
     await ctx.with(
-      'query-find',
+      'find-persons',
       {},
-      async () => await control.findAll(contact.class.Person, { _id: { $in: accounts.map((it) => it.person) } })
+      async () => await control.findAll(contact.class.Person, { _id: { $in: personIds } })
     )
   )
+  const spaces = await ctx.with('find-person-spaces', {}, async () => {
+    const res = await control.findAll(contact.class.PersonSpace, { person: { $in: personIds } })
 
-  return accounts.map((account) => ({
-    _id: account._id,
-    account,
-    person: persons.get(account.person)
-  }))
+    return new Map(res.map((s) => [s.person, s]))
+  })
+
+  return ids.map((_id) => {
+    const account = accountById.get(_id)
+    return {
+      _id,
+      account,
+      person: account !== undefined ? persons.get(account.person) : undefined,
+      space: account !== undefined ? spaces.get(account.person)?._id : undefined
+    }
+  })
+}
+
+export function toReceiverInfo (hierarchy: Hierarchy, info?: SenderInfo | ReceiverInfo): ReceiverInfo | undefined {
+  if (info === undefined) return undefined
+  if (info.person === undefined) return undefined
+  if (info.account === undefined) return undefined
+  if (!('space' in info)) return undefined
+  if (info.space === undefined) return undefined
+
+  const isEmployee = hierarchy.hasMixin(info.person, contact.mixin.Employee)
+  if (!isEmployee) return undefined
+
+  const employee = hierarchy.as(info.person, contact.mixin.Employee)
+  if (!employee.active) return undefined
+
+  return {
+    _id: info._id,
+    account: info.account,
+    person: employee,
+    space: info.space
+  }
 }
 
 export function createPushCollaboratorsTx (

@@ -409,13 +409,17 @@ export class PlatformWorker {
         const person = (await client.findOne(contact.class.Person, { _id: account.person })) as Person
         if (person !== undefined) {
           if (!revoke) {
-            await createNotification(client, person, {
-              user: account._id,
-              message: github.string.AuthenticatedWithGithub,
-              props: {
-                login: update.login
-              }
-            })
+            const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
+            if (personSpace !== undefined) {
+              await createNotification(client, person, {
+                user: account._id,
+                space: personSpace._id,
+                message: github.string.AuthenticatedWithGithub,
+                props: {
+                  login: update.login
+                }
+              })
+            }
 
             const githubAccount = (await client.findOne(core.class.Account, {
               email: 'github:' + update.login
@@ -427,23 +431,31 @@ export class PlatformWorker {
 
               const dPerson = (await client.findOne(contact.class.Person, { _id: dummyPerson })) as Person
               if (person !== undefined && dPerson !== undefined) {
-                await createNotification(client, dPerson, {
-                  user: account._id,
-                  message: github.string.AuthenticatedWithGithubEmployee,
-                  props: {
-                    login: update.login
-                  }
-                })
+                const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
+                if (personSpace !== undefined) {
+                  await createNotification(client, dPerson, {
+                    user: githubAccount._id,
+                    space: personSpace._id,
+                    message: github.string.AuthenticatedWithGithubEmployee,
+                    props: {
+                      login: update.login
+                    }
+                  })
+                }
               }
             }
           } else {
-            await createNotification(client, person, {
-              user: account._id,
-              message: github.string.AuthenticationRevokedGithub,
-              props: {
-                login: update.login
-              }
-            })
+            const personSpace = await client.findOne(contact.class.PersonSpace, { person: person._id })
+            if (personSpace !== undefined) {
+              await createNotification(client, person, {
+                user: account._id,
+                space: personSpace._id,
+                message: github.string.AuthenticationRevokedGithub,
+                props: {
+                  login: update.login
+                }
+              })
+            }
           }
         }
 

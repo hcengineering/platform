@@ -26,6 +26,7 @@
   export let colorsSchema: 'default' | 'lumia' = 'default'
   export let updateOnMouse = true
   export let lazy = false
+  export let minHeight: string | null = null
   export let highlightIndex: number | undefined = undefined
   const getKey: (index: number) => string = (index) => index.toString()
 
@@ -76,35 +77,37 @@
   >
     {#each Array(count) as _, row (getKey(row))}
       {#if lazy}
-        <Lazy>
-          <ListViewItem
-            bind:element={refs[row]}
-            {colorsSchema}
-            {addClass}
-            {row}
-            {kind}
-            isHighlighted={row === highlightIndex}
-            selected={row === selection}
-            on:click={() => dispatch('click', row)}
-            on:mouseover={mouseAttractor(() => {
-              if (updateOnMouse) {
-                onRow(row)
-              }
-            })}
-            on:mouseenter={mouseAttractor(() => {
-              if (updateOnMouse) {
-                onRow(row)
-              }
-            })}
-          >
-            <svelte:fragment slot="category" let:item={itemIndex}>
-              <slot name="category" item={itemIndex} />
-            </svelte:fragment>
-            <svelte:fragment slot="item" let:item={itemIndex}>
-              <slot name="item" item={itemIndex} />
-            </svelte:fragment>
-          </ListViewItem>
-        </Lazy>
+        <div style="min-height: {minHeight}">
+          <Lazy>
+            <ListViewItem
+              bind:element={refs[row]}
+              {colorsSchema}
+              {addClass}
+              {row}
+              {kind}
+              isHighlighted={row === highlightIndex}
+              selected={row === selection}
+              on:click={() => dispatch('click', row)}
+              on:mouseover={mouseAttractor(() => {
+                if (updateOnMouse) {
+                  onRow(row)
+                }
+              })}
+              on:mouseenter={mouseAttractor(() => {
+                if (updateOnMouse) {
+                  onRow(row)
+                }
+              })}
+            >
+              <svelte:fragment slot="category" let:item={itemIndex}>
+                <slot name="category" item={itemIndex} />
+              </svelte:fragment>
+              <svelte:fragment slot="item" let:item={itemIndex}>
+                <slot name="item" item={itemIndex} />
+              </svelte:fragment>
+            </ListViewItem>
+          </Lazy>
+        </div>
       {:else}
         <ListViewItem
           bind:element={refs[row]}

@@ -135,13 +135,14 @@ export interface Config {
   GITHUB_URL: string
   SENTRY_DSN?: string
   LOVE_ENDPOINT?: string
-  LIVEKIT_WS?: string,
-  SIGN_URL?: string,
-  PRINT_URL?: string,
-  POSTHOG_API_KEY?: string,
+  LIVEKIT_WS?: string
+  SIGN_URL?: string
+  PRINT_URL?: string
+  POSTHOG_API_KEY?: string
   POSTHOG_HOST?: string
   ANALYTICS_COLLECTOR_URL?:string
   BRANDING_URL?: string
+  TELEGRAM_BOT_URL?: string
 
   // Could be defined for dev environment
   FRONT_URL?: string
@@ -301,6 +302,7 @@ export async function configurePlatform() {
     setMetadata(presentation.metadata.FrontVersion, config.VERSION)
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL)
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)

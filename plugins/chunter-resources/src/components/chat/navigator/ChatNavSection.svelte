@@ -120,7 +120,7 @@
     noDivider
   >
     {#each sortedItems as item (item.id)}
-      {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
+      {@const context = contexts.find(({ objectId }) => objectId === item.id)}
       <ChatNavItem {context} isSelected={objectId === item.id} {item} type={'type-object'} on:select />
     {/each}
     {#if canShowMore}
@@ -130,7 +130,7 @@
     {/if}
     <svelte:fragment slot="visible" let:isOpen>
       {#if visibleItem !== undefined && !isOpen}
-        {@const context = contexts.find(({ attachedTo }) => attachedTo === visibleItem?.id)}
+        {@const context = contexts.find(({ objectId }) => objectId === visibleItem?.id)}
         <ChatNavItem {context} isSelected item={visibleItem} type={'type-object'} on:select />
       {/if}
     </svelte:fragment>

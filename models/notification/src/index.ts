@@ -49,6 +49,7 @@ import {
   UX,
   type Builder
 } from '@hcengineering/model'
+import { type PersonSpace } from '@hcengineering/contact'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, template } from '@hcengineering/model-view'
@@ -79,7 +80,7 @@ import {
   type PushSubscription,
   type PushSubscriptionKeys
 } from '@hcengineering/notification'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -195,13 +196,18 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
   @Index(IndexKind.Indexed)
     user!: Ref<Account>
 
-  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
   @Index(IndexKind.Indexed)
-    attachedTo!: Ref<Doc>
+    objectId!: Ref<Doc>
 
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
+  @Prop(TypeRef(core.class.Class), core.string.Class)
   @Index(IndexKind.Indexed)
-    attachedToClass!: Ref<Class<Doc>>
+    objectClass!: Ref<Class<Doc>>
+
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+    objectSpace!: Ref<Space>
+
+  declare space: Ref<PersonSpace>
 
   @Prop(TypeDate(), core.string.Date)
     lastViewedTimestamp?: Timestamp
@@ -210,7 +216,7 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
     lastUpdateTimestamp?: Timestamp
 
   @Prop(TypeBoolean(), notification.string.Pinned)
-    isPinned?: boolean
+    isPinned!: boolean
 }
 
 @Model(notification.class.InboxNotification, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -229,6 +235,8 @@ export class TInboxNotification extends TDoc implements InboxNotification {
 
   @Prop(TypeBoolean(), core.string.Boolean)
     archived!: boolean
+
+  declare space: Ref<PersonSpace>
 
   title?: IntlString
   body?: IntlString
@@ -295,6 +303,8 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
   depends?: Ref<NotificationProvider>
   ignoreAll?: boolean
   canDisable!: boolean
+  presenter?: AnyComponent
+  isAvailableFn?: Resource<() => boolean>
 }
 
 @Model(notification.class.NotificationProviderDefaults, core.class.Doc)
@@ -723,7 +733,7 @@ export function createModel (builder: Builder): void {
       description: notification.string.InboxNotificationsDescription,
       defaultEnabled: true,
       canDisable: false,
-      order: 10
+      order: 100
     },
     notification.providers.InboxNotificationProvider
   )
@@ -738,7 +748,7 @@ export function createModel (builder: Builder): void {
       depends: notification.providers.InboxNotificationProvider,
       defaultEnabled: true,
       canDisable: true,
-      order: 20
+      order: 200
     },
     notification.providers.PushNotificationProvider
   )
@@ -754,7 +764,7 @@ export function createModel (builder: Builder): void {
       defaultEnabled: true,
       canDisable: true,
       ignoreAll: true,
-      order: 25
+      order: 250
     },
     notification.providers.SoundNotificationProvider
   )

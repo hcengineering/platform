@@ -14,16 +14,8 @@
 -->
 <script lang="ts">
   import activity from '@hcengineering/activity'
-  import core, {
-    Class,
-    Doc,
-    getCurrentAccount,
-    groupByArray,
-    reduceCalls,
-    Ref,
-    SortingOrder
-  } from '@hcengineering/core'
-  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import core, { Class, Doc, groupByArray, reduceCalls, Ref } from '@hcengineering/core'
+  import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
@@ -48,32 +40,23 @@
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
-
-  const contextsQuery = createQuery()
+  const contextsStore = inboxClient.contexts
   const objectsQueryByClass = new Map<Ref<Class<Doc>>, { query: LiveQuery, limit: number }>()
 
-  let objectsByClass = new Map<Ref<Class<Doc>>, { docs: Doc[], total: number }>()
   let contexts: DocNotifyContext[] = []
+  let objectsByClass = new Map<Ref<Class<Doc>>, { docs: Doc[], total: number }>()
 
   let shouldPushObject = false
 
   let sections: Section[] = []
 
-  $: contextsQuery.query(
-    notification.class.DocNotifyContext,
-    {
-      ...model.query,
-      [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
-      user: getCurrentAccount()._id
-    },
-    (res: DocNotifyContext[]) => {
-      contexts = res.filter(
-        ({ attachedToClass }) =>
-          hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
-      )
-    },
-    { sort: { createdOn: SortingOrder.Ascending } }
-  )
+  $: contexts = $contextsStore.filter(({ objectClass, isPinned }) => {
+    if (model.isPinned !== isPinned) return false
+    if (model._class !== undefined && model._class !== objectClass) return false
+    if (model.skipClasses !== undefined && model.skipClasses.includes(objectClass)) return false
+    if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return false
+    return true
+  })
 
   $: loadObjects(contexts)
 
@@ -89,11 +72,11 @@
     object !== undefined && getObjectGroup(object) === model.id && !$contextByDocStore.has(object._id)
 
   function loadObjects (contexts: DocNotifyContext[]): void {
-    const contextsByClass = groupByArray(contexts, ({ attachedToClass }) => attachedToClass)
+    const contextsByClass = groupByArray(contexts, ({ objectClass }) => objectClass)
 
     for (const [_class, ctx] of contextsByClass.entries()) {
-      const ids = ctx.map(({ attachedTo }) => attachedTo)
       const isChunterSpace = hierarchy.isDerived(_class, chunter.class.ChunterSpace)
+      const ids = ctx.map(({ objectId }) => objectId)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
         limit: isChunterSpace ? -1 : model.maxSectionItems ?? 5
@@ -213,7 +196,7 @@
     if (_class === undefined) {
       return model.getActionsFn(contexts)
     } else {
-      return model.getActionsFn(contexts.filter(({ attachedToClass }) => attachedToClass === _class))
+      return model.getActionsFn(contexts.filter(({ objectClass }) => objectClass === _class))
     }
   }
 </script>

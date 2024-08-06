@@ -1953,7 +1953,7 @@ async function createPersonAccount (
     const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
-    // Check if EmployeeAccount is not exists
+    // Check if PersonAccount is not exists
     if (shouldReplaceCurrent) {
       const currentAccount = await ops.findOne(contact.class.PersonAccount, {})
       if (currentAccount !== undefined) {

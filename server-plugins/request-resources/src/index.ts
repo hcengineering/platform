@@ -24,7 +24,8 @@ import {
   getNotificationTxes,
   getCollaborators,
   getTextPresenter,
-  getUsersInfo
+  getUsersInfo,
+  toReceiverInfo
 } from '@hcengineering/server-notification-resources'
 import { PersonAccount } from '@hcengineering/contact'
 
@@ -144,7 +145,7 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   if (collaborators.length === 0) return res
 
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-    attachedTo: doc._id
+    objectId: doc._id
   })
   const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
   const senderInfo = usersInfo.find(({ _id }) => _id === tx.modifiedBy) ?? {
@@ -152,7 +153,10 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   }
 
   for (const target of collaborators) {
-    const targetInfo = usersInfo.find(({ _id }) => _id === target)
+    const targetInfo = toReceiverInfo(
+      control.hierarchy,
+      usersInfo.find(({ _id }) => _id === target)
+    )
     if (targetInfo === undefined) continue
 
     const txes = await getNotificationTxes(

@@ -1520,8 +1520,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
         (tx._class === core.class.TxCreateDoc ||
           tx._class === core.class.TxUpdateDoc ||
           tx._class === core.class.TxRemoveDoc) &&
-        ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-          (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
+        (tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
       )
     }
     model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
