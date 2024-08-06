@@ -38,6 +38,7 @@
   export let maxWidth: string = ''
   export let type: ObjectPresenterType = 'link'
   export let showStatus = true
+  export let overflowLabel = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -67,14 +68,14 @@
           </span>
         {/if}
         {#if shouldShowName}
-          <span class="ap-label overflow-label" class:colorInherit class:fs-bold={accent}>
+          <span class="ap-label" class:overflow-label={overflowLabel} class:colorInherit class:fs-bold={accent}>
             {name}
           </span>
         {/if}
       </span>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={disabled ? undefined : showTooltip}>
+    <span class:overflow-label={overflowLabel} use:tooltip={disabled ? undefined : showTooltip}>
       {name}
     </span>
   {/if}

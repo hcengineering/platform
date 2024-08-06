@@ -45,7 +45,7 @@ import core, {
   TxUpdateDoc,
   UserStatus
 } from '@hcengineering/core'
-import notification, { Collaborators, DocNotifyContext, NotificationContent } from '@hcengineering/notification'
+import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
@@ -289,13 +289,6 @@ export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): 
     ...(await control.ctx.with('OnThreadMessageDeleted', {}, async (ctx) => await OnThreadMessageDeleted(tx, control)))
   )
   res.push(
-    ...(await control.ctx.with(
-      'OnCollaboratorsChanged',
-      {},
-      async (ctx) => await OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control)
-    ))
-  )
-  res.push(
     ...(await control.ctx.with('OnChatMessageCreated', {}, async (ctx) => await OnChatMessageCreated(tx, control)))
   )
   return res
@@ -379,104 +372,6 @@ function combineAttributes (attributes: any[], key: string, operator: string, ar
       )
     )
   ).filter((v) => v != null)
-}
-
-async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: TriggerControl): Promise<Tx[]> {
-  const changedAttributes = Object.entries(tx.operations)
-    .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
-    .filter((id) => !id.startsWith('$'))
-
-  if (!changedAttributes.includes('members')) {
-    return []
-  }
-
-  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
-  const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
-
-  const res: Tx[] = []
-  const allContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: tx.objectId })
-
-  if (removed.length > 0) {
-    res.push(
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-        $pull: {
-          collaborators: { $in: removed }
-        }
-      })
-    )
-  }
-
-  if (added.length > 0) {
-    res.push(
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-        $push: {
-          collaborators: { $each: added, $position: 0 }
-        }
-      })
-    )
-  }
-
-  const accounts =
-    added.length > 0 ? await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: added } }) : []
-  const spaces =
-    accounts.length > 0
-      ? await control.findAll(contact.class.PersonSpace, { person: { $in: accounts.map((x) => x.person) } })
-      : []
-
-  for (const addedMember of added) {
-    const context = allContexts.find(({ user }) => user === addedMember)
-
-    if (context === undefined) {
-      const account = accounts.find(({ _id }) => _id === addedMember)
-      if (account === undefined) continue
-      const space = spaces.find(({ person }) => person === account.person)
-      if (space === undefined) continue
-      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space._id, {
-        objectId: tx.objectId,
-        objectClass: tx.objectClass,
-        objectSpace: tx.objectSpace,
-        user: addedMember,
-        lastViewedTimestamp: tx.modifiedOn,
-        isPinned: false
-      })
-
-      await control.apply([createTx])
-    } else {
-      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      res.push(updateTx)
-    }
-  }
-
-  const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
-
-  for (const context of contextsToRemove) {
-    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-  }
-
-  return res
-}
-
-async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxMixin || tx.mixin !== notification.mixin.Collaborators) return []
-
-  if (!control.hierarchy.isDerived(tx.objectClass, chunter.class.Channel)) return []
-
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0] as Channel | undefined
-
-  if (doc === undefined) return []
-  if (doc.private) return []
-
-  const added = combineAttributes([tx.attributes], 'collaborators', '$push', '$each')
-  const res: Tx[] = []
-
-  for (const addedMember of added) {
-    res.push(...joinChannel(control, doc, addedMember))
-  }
-
-  return res
 }
 
 async function hideOldDirects (
@@ -582,7 +477,7 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
     ({ objectClass }) =>
       !hierarchy.isDerived(objectClass, chunter.class.DirectMessage) &&
       !hierarchy.isDerived(objectClass, chunter.class.Channel) &&
-      !hierarchy.isDerived(objectClass, chunter.class.Channel)
+      !hierarchy.isDerived(objectClass, activity.class.ActivityMessage)
   )
 
   const directTxes = await hideOldDirects(directContexts, control, date)
@@ -661,12 +556,21 @@ async function OnContextUpdate (tx: TxUpdateDoc<DocNotifyContext>, control: Trig
   return []
 }
 
+async function JoinChannelTypeMatch (originTx: Tx, _: Doc, user: Ref<Account>): Promise<boolean> {
+  if (originTx.modifiedBy === user) return false
+  if (originTx._class !== core.class.TxUpdateDoc) return false
+
+  const tx = originTx as TxUpdateDoc<Channel>
+  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
+
+  return added.includes(user)
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     ChunterTrigger,
     OnChatMessageRemoved,
-    OnChannelMembersChanged,
     ChatNotificationsHandler,
     OnUserStatus,
     OnContextUpdate
@@ -676,6 +580,7 @@ export default async () => ({
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
     ChunterNotificationContentProvider: getChunterNotificationContent,
-    ChatMessageTextPresenter
+    ChatMessageTextPresenter,
+    JoinChannelTypeMatch
   }
 })

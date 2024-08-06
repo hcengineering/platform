@@ -47,16 +47,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.mixin.Customer, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: lead.class.Lead,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
   builder.mixin(lead.class.Funnel, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {

@@ -150,8 +150,7 @@ export async function createReactionNotifications (
       tx,
       parentMessage,
       [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false },
-      new Map()
+      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
     )
   )
 
@@ -264,12 +263,11 @@ export async function generateDocUpdateMessages (
   originTx?: TxCUD<Doc>,
   objectCache?: DocObjectCache
 ): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
-  const { hierarchy } = control
-
   if (tx.space === core.space.DerivedTx) {
     return res
   }
 
+  const { hierarchy } = control
   const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
 
   if (
@@ -321,6 +319,7 @@ export async function generateDocUpdateMessages (
       let doc = objectCache?.docs?.get(tx.objectId)
       if (doc === undefined) {
         doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+        objectCache?.docs?.set(tx.objectId, doc)
       }
       return await ctx.with(
         'pushDocUpdateMessages',
@@ -349,6 +348,7 @@ export async function generateDocUpdateMessages (
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+          objectCache?.docs?.set(tx.objectId, doc)
         }
         if (doc !== undefined) {
           return await ctx.with(
@@ -376,33 +376,35 @@ export async function generateDocUpdateMessages (
 }
 
 async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  if (tx.space === core.space.DerivedTx) {
-    return []
-  }
-
   if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return []
   }
 
+  const cache: DocObjectCache = {
+    docs: new Map(),
+    transactions: new Map()
+  }
   const txes = await control.ctx.with(
     'generateDocUpdateMessages',
     {},
-    async (ctx) => await generateDocUpdateMessages(ctx, tx, control)
+    async (ctx) => await generateDocUpdateMessages(ctx, tx, control, [], undefined, cache)
   )
-
-  if (txes.length === 0) {
-    return []
-  }
 
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
   const notificationTxes = await control.ctx.with(
     'createCollaboratorNotifications',
     {},
-    async (ctx) => await createCollaboratorNotifications(ctx, tx, control, messages)
+    async (ctx) =>
+      await createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
   )
 
-  return [...txes, ...notificationTxes]
+  const result = [...txes, ...notificationTxes]
+
+  if (result.length > 0) {
+    await control.apply(result)
+  }
+  return []
 }
 
 async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {

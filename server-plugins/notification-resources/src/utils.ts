@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import notification, {
+  BaseNotificationType,
+  Collaborators,
+  CommonNotificationType,
+  NotificationContent,
+  NotificationProvider,
+  NotificationType
+} from '@hcengineering/notification'
+import type { TriggerControl } from '@hcengineering/server-core'
 import { Analytics } from '@hcengineering/analytics'
 import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import core, {
@@ -23,6 +32,7 @@ import core, {
   matchQuery,
   MixinUpdate,
   Ref,
+  Space,
   toIdMap,
   Tx,
   TxCreateDoc,
@@ -33,15 +43,7 @@ import core, {
   TxUpdateDoc,
   type MeasureContext
 } from '@hcengineering/core'
-import notification, {
-  BaseNotificationType,
-  CommonNotificationType,
-  NotificationContent,
-  NotificationProvider,
-  NotificationType
-} from '@hcengineering/notification'
 import { getResource, IntlString, translate } from '@hcengineering/platform'
-import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   getPersonAccountById,
   HTMLPresenter,
@@ -158,7 +160,9 @@ export async function isAllowed (
     return false
   }
 
-  const typesSettings = await control.queryFind(notification.class.NotificationTypeSetting, {})
+  const typesSettings = await control.queryFind(notification.class.NotificationTypeSetting, {
+    space: core.space.Workspace
+  })
   const setting = typesSettings.find(
     (it) => it.attachedTo === provider._id && it.type === type._id && it.modifiedBy === receiver
   )
@@ -475,6 +479,7 @@ export async function getUsersInfo (
   ids: Ref<PersonAccount>[],
   control: TriggerControl
 ): Promise<(ReceiverInfo | SenderInfo)[]> {
+  if (ids.length === 0) return []
   const accounts = await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: ids } })
   const personIds = accounts.map((it) => it.person)
   const accountById = toIdMap(accounts)
@@ -521,4 +526,33 @@ export function toReceiverInfo (hierarchy: Hierarchy, info?: SenderInfo | Receiv
     person: employee,
     space: info.space
   }
+}
+
+export function createPushCollaboratorsTx (
+  control: TriggerControl,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  space: Ref<Space>,
+  collaborators: Ref<Account>[]
+): TxMixin<Doc, Collaborators> {
+  return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
+    $push: {
+      collaborators: {
+        $each: collaborators,
+        $position: 0
+      }
+    }
+  })
+}
+
+export function createPullCollaboratorsTx (
+  control: TriggerControl,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  space: Ref<Space>,
+  collaborators: Ref<Account>[]
+): TxMixin<Doc, Collaborators> {
+  return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
+    $pull: { collaborators: { $in: collaborators } }
+  })
 }

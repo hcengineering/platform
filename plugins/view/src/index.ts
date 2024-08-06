@@ -209,7 +209,8 @@ const view = plugin(viewId, {
     Unpin: '' as IntlString,
     Join: '' as IntlString,
     Leave: '' as IntlString,
-    Copied: '' as IntlString
+    Copied: '' as IntlString,
+    And: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

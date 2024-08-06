@@ -449,46 +449,6 @@ export function createModel (builder: Builder): void {
     decode: tracker.function.GetIssueIdByIdentifier
   })
 
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: tracker.class.Issue,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: tracker.class.Milestone,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: tracker.class.Component,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: tracker.class.IssueTemplate,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: tracker.class.Issue,
     components: { input: chunter.component.ChatMessageInput }

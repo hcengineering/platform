@@ -29,10 +29,7 @@ import { derived, get, type Readable, writable } from 'svelte/store'
 import activity, { type ActivityMessage, type ActivityReference } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
-import { type ChatMessage } from '@hcengineering/chunter'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-
-import chunter from './plugin'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -241,7 +238,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     if (loadAll) {
       this.isTailLoading.set(true)
-      this.loadTail(undefined, combineActivityMessages)
+      this.loadTail()
     } else if (isLoadingLatest) {
       const startIndex = Math.max(0, count - this.limit)
       this.isTailLoading.set(true)
@@ -260,11 +257,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(true)
   }
 
-  private loadTail (
-    start?: Timestamp,
-    afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>,
-    query?: DocumentQuery<ActivityMessage>
-  ): void {
+  private loadTail (start?: Timestamp, query?: DocumentQuery<ActivityMessage>): void {
     if (this.chatId === undefined) {
       this.isTailLoading.set(false)
       return
@@ -283,12 +276,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
       async (res) => {
-        if (afterLoad !== undefined) {
-          const result = await afterLoad(res.reverse())
-          this.tailStore.set(result)
-        } else {
-          this.tailStore.set(res.reverse())
-        }
+        const result = await combineActivityMessages(res.reverse())
+        this.tailStore.set(result)
 
         this.isTailLoaded.set(true)
         this.isTailLoading.set(false)
@@ -325,7 +314,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const skipIds = this.getChunkSkipIds(loadAfter)
 
     const messages = await client.findAll(
-      chunter.class.ChatMessage,
+      this.msgClass,
       {
         attachedTo: this.chatId,
         space: this.space,
@@ -351,11 +340,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return {
       from: from.createdOn ?? from.modifiedOn,
       to: to.createdOn ?? to.modifiedOn,
-      data: isBackward ? messages.reverse() : messages
+      data: isBackward ? await combineActivityMessages(messages.reverse()) : await combineActivityMessages(messages)
     }
   }
 
-  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ChatMessage>> {
+  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ActivityMessage>> {
     const chunks = get(this.chunksStore)
     const metadata = get(this.metadataStore)
     const tail = get(this.tailStore)
@@ -367,7 +356,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       .flat()
       .concat(loadTail ? [] : tailData)
       .filter(({ createdOn }) => createdOn === after)
-      .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+      .map(({ _id }) => _id)
   }
 
   async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
@@ -467,7 +456,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
       if (tailAfter !== undefined) {
         const skipIds = chunks[chunks.length - 1]?.data.map(({ _id }) => _id) ?? []
-        this.loadTail(tailAfter, undefined, { _id: { $nin: skipIds } })
+        this.loadTail(tailAfter, { _id: { $nin: skipIds } })
         this.isLoadingMoreStore.set(false)
         return
       }
