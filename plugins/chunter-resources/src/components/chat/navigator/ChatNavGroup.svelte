@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import activity from '@hcengineering/activity'
-  import { Class, Doc, getCurrentAccount, groupByArray, reduceCalls, Ref, SortingOrder } from '@hcengineering/core'
-  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import { Class, Doc, groupByArray, reduceCalls, Ref } from '@hcengineering/core'
+  import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
@@ -24,7 +24,6 @@
   import chunter from '../../../plugin'
   import { ChatGroup, ChatNavGroupModel } from '../types'
   import ChatNavSection from './ChatNavSection.svelte'
-  import { PersonAccount } from '@hcengineering/contact'
 
   export let object: Doc | undefined
   export let model: ChatNavGroupModel
@@ -39,34 +38,25 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount() as PersonAccount
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
-
-  const contextsQuery = createQuery()
+  const contextsStore = inboxClient.contexts
   const objectsQueryByClass = new Map<Ref<Class<Doc>>, { query: LiveQuery, limit: number }>()
 
-  let objectsByClass = new Map<Ref<Class<Doc>>, { docs: Doc[], total: number }>()
   let contexts: DocNotifyContext[] = []
+  let objectsByClass = new Map<Ref<Class<Doc>>, { docs: Doc[], total: number }>()
 
   let shouldPushObject = false
 
   let sections: Section[] = []
 
-  $: contextsQuery.query(
-    notification.class.DocNotifyContext,
-    {
-      ...model.query,
-      // [`${chunter.mixin.ChannelInfo}.hidden`]: { $ne: true },
-      user: me._id
-    },
-    (res: DocNotifyContext[]) => {
-      contexts = res.filter(
-        ({ objectClass }) => hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) !== undefined
-      )
-    },
-    { sort: { createdOn: SortingOrder.Ascending } }
-  )
+  $: contexts = $contextsStore.filter(({ objectClass, isPinned }) => {
+    if (model.isPinned !== isPinned) return false
+    if (model._class !== undefined && model._class !== objectClass) return false
+    if (model.skipClasses !== undefined && model.skipClasses.includes(objectClass)) return false
+    if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return false
+    return true
+  })
 
   $: loadObjects(contexts)
 

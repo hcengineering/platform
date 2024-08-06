@@ -216,7 +216,7 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
     lastUpdateTimestamp?: Timestamp
 
   @Prop(TypeBoolean(), notification.string.Pinned)
-    isPinned?: boolean
+    isPinned!: boolean
 }
 
 @Model(notification.class.InboxNotification, core.class.Doc, DOMAIN_NOTIFICATION)

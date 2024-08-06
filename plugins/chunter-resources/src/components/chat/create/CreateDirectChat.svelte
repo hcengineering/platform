@@ -92,7 +92,8 @@
       user: myAcc._id,
       objectId: dmId,
       objectClass: chunter.class.DirectMessage,
-      objectSpace: core.space.Space
+      objectSpace: core.space.Space,
+      isPinned: false
     })
 
     openChannel(dmId, chunter.class.DirectMessage)

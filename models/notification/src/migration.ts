@@ -300,6 +300,16 @@ export const notificationOperation: MigrateOperation = {
         }
       },
       {
+        state: 'fill-contexts-pinned-field-v1',
+        func: async (client) => {
+          await client.update<DocNotifyContext>(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, isPinned: { $exists: false } },
+            { isPinned: false }
+          )
+        }
+      },
+      {
         state: 'migrate-notifications-space-v1',
         func: migrateNotificationsSpace
       }

@@ -139,29 +139,23 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     sortFn: sortAlphabetically,
     wrap: false,
     getActionsFn: getPinnedActions,
-    query: {
-      isPinned: true
-    }
+    isPinned: true
   },
   {
     id: 'channels',
     sortFn: sortAlphabetically,
     wrap: true,
     getActionsFn: getChannelsActions,
-    query: {
-      isPinned: { $ne: true },
-      objectClass: { $in: [chunter.class.Channel] }
-    }
+    isPinned: false,
+    _class: chunter.class.Channel
   },
   {
     id: 'direct',
     sortFn: sortDirects,
     wrap: true,
     getActionsFn: getDirectActions,
-    query: {
-      isPinned: { $ne: true },
-      objectClass: { $in: [chunter.class.DirectMessage] }
-    }
+    isPinned: false,
+    _class: chunter.class.DirectMessage
   },
   {
     id: 'activity',
@@ -169,13 +163,8 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     wrap: true,
     getActionsFn: getActivityActions,
     maxSectionItems: 5,
-    query: {
-      isPinned: { $ne: true },
-      objectClass: {
-        // Ignore external channels until support is provided for them
-        $nin: [chunter.class.DirectMessage, chunter.class.Channel, contact.class.Channel]
-      }
-    }
+    isPinned: false,
+    skipClasses: [chunter.class.DirectMessage, chunter.class.Channel, contact.class.Channel]
   }
 ]
 

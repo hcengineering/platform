@@ -64,7 +64,8 @@ export async function createDocNotifyContexts (
         user: user._id,
         objectId,
         objectClass,
-        objectSpace
+        objectSpace,
+        isPinned: false
       })
     }
   }

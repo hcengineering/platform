@@ -332,6 +332,7 @@ export async function pushInboxNotifications (
       objectId,
       objectClass,
       objectSpace,
+      isPinned: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
     await control.apply([createContextTx])
