@@ -98,7 +98,6 @@ export class TServerStorage implements ServerStorage {
   branding: Branding | null
 
   domainInfo = new Map<Domain, DomainInfo>()
-  statsCtx: MeasureContext
 
   emptyAdapter = new DummyDbAdapter()
 
@@ -125,7 +124,6 @@ export class TServerStorage implements ServerStorage {
     this.branding = options.branding
 
     this.setModel(model)
-    this.statsCtx = metrics.newChild('stats-' + this.workspaceId.name, {})
   }
 
   async initDomainInfo (): Promise<void> {

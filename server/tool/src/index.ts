@@ -348,7 +348,7 @@ export async function upgradeModel (
     )
 
     const upgradeIndexes = async (): Promise<void> => {
-      ctx.info('Migrate to sparse indexes')
+      ctx.info('Migrate indexes')
       // Create update indexes
       await createUpdateIndexes(
         ctx,
@@ -385,7 +385,7 @@ export async function upgradeModel (
 
       await tryMigrate(migrateClient, coreId, [
         {
-          state: 'indexes-v2',
+          state: 'indexes-v3',
           func: upgradeIndexes
         }
       ])

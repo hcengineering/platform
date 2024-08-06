@@ -35,6 +35,7 @@ import {
   FullTextPipelineStage,
   IndexedDoc,
   StorageAdapter,
+  collabStageId,
   contentStageId,
   docKey,
   docUpdKey,
@@ -46,7 +47,7 @@ import {
  */
 export class CollaborativeContentRetrievalStage implements FullTextPipelineStage {
   require = []
-  stageId = contentStageId
+  stageId = collabStageId
 
   extra = ['content', 'base64']
 
@@ -58,8 +59,6 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
   updateFields: DocUpdateHandler[] = []
 
   textLimit = 100 * 1024
-
-  stageValue: boolean | string = true
 
   constructor (
     readonly storageAdapter: StorageAdapter | undefined,

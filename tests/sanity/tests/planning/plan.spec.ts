@@ -11,6 +11,7 @@ import { ApiEndpoint } from '../API/Api'
 import { LoginPage } from '../model/login-page'
 import { SignInJoinPage } from '../model/signin-page'
 import { TeamPage } from '../model/team-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 
 test.use({
   storageState: PlatformSetting
@@ -192,7 +193,9 @@ test.describe('Planning ToDo tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
     await leftSideMenuPage.clickPlanner()
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)

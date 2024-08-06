@@ -1,13 +1,14 @@
-import { test, expect } from '@playwright/test'
-import { PlatformURI, generateTestData } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { ChunterPage } from '../model/chunter-page'
-import { ChannelPage } from '../model/channel-page'
-import { ApiEndpoint } from '../API/Api'
-import { LoginPage } from '../model/login-page'
-import { SignUpData } from '../model/common-types'
 import { faker } from '@faker-js/faker'
+import { expect, test } from '@playwright/test'
+import { ApiEndpoint } from '../API/Api'
+import { ChannelPage } from '../model/channel-page'
+import { ChunterPage } from '../model/chunter-page'
+import { SignUpData } from '../model/common-types'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { LoginPage } from '../model/login-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
+import { PlatformURI, generateTestData } from '../utils'
 
 test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -36,7 +37,9 @@ test.describe('channel tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
   })
 
   test('create new private channel and check if the messages stays on it', async ({ browser, page }) => {
