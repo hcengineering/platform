@@ -42,7 +42,7 @@ const config: Config = (() => {
     ServiceId: process.env.SERVICE_ID,
     Secret: process.env.SECRET,
     Domain: process.env.DOMAIN,
-    BotPort: parseNumber(process.env.BOT_PORT) ?? 4021,
+    BotPort: parseNumber(process.env.BOT_PORT) ?? 8443,
     // TODO: later we should get this title from branding map
     App: process.env.APP ?? 'Huly',
     OtpTimeToLiveSec: parseNumber(process.env.OTP_TIME_TO_LIVE_SEC) ?? 60,

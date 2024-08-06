@@ -158,8 +158,16 @@ export function createServer (bot: Telegraf, worker: PlatformWorker): Express {
     '/info',
     wrapRequest(async (_, res, token) => {
       const me = await bot.telegram.getMe()
+      const profilePhotos = await bot.telegram.getUserProfilePhotos(me.id)
+      const photoId = profilePhotos.photos[0]?.[0]?.file_id
+
+      let photoUrl = ''
+
+      if (photoId !== undefined) {
+        photoUrl = (await bot.telegram.getFileLink(photoId)).toString()
+      }
       res.status(200)
-      res.json({ username: me.username, name: me.first_name })
+      res.json({ username: me.username, name: me.first_name, photoUrl })
     })
   )
 

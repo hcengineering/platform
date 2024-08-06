@@ -37,10 +37,11 @@ export const start = async (): Promise<void> => {
   const app = createServer(bot, worker)
 
   void bot.launch({ webhook: { domain: config.Domain, port: config.BotPort } }).then(() => {
-    ctx.info('Webhook bot listening on', { port: config.BotPort, domain: config.Domain })
-    void bot.telegram.getWebhookInfo().then(console.log)
+    void bot.telegram.getWebhookInfo().then((info) => { ctx.info('Webhook info', info) })
   })
-
+  app.get(`/telegraf/${bot.secretPathComponent()}`, (req, res) => {
+    res.status(200).send()
+  })
   app.post(`/telegraf/${bot.secretPathComponent()}`, (req, res) => {
     void bot.handleUpdate(req.body, res)
     res.status(200).send()
