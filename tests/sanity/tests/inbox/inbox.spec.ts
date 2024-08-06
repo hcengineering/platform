@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { PlatformURI, generateTestData, getTimeForPlanner } from '../utils'
+import { PlatformURI, generateTestData, getTimeForPlanner, attachScreenshot } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ApiEndpoint } from '../API/Api'
 import { LoginPage } from '../model/login-page'
@@ -291,13 +291,18 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPageSecond.clickPlanner()
     await planningPageSecond.dragdropTomorrow(newIssue.title, getTimeForPlanner())
     await planningPageSecond.eventInSchedule(newIssue.title).isVisible()
+    await attachScreenshot('Recive_task_and_scheduled.png', page2)
 
+    await attachScreenshot('Recive_task_and_scheduled-beforeWait.png', page)
+    await page.waitForTimeout(1000)
+    await attachScreenshot('Recive_task_and_scheduled-afterWait.png', page)
     await issuesDetailsPage.checkIssue({ ...newIssue, status: 'In Progress' })
     await leftSideMenuPage.clickTeam()
     const teamPage = new TeamPage(page)
     await teamPage.checkTeamPageIsOpened()
     await teamPage.selectTeam('Default')
     await teamPage.buttonNextDay().click()
+    await attachScreenshot('Recive_task_and_scheduled-Tomorrow.png', page)
     await teamPage.getItemByText('Tomorrow', newIssue.title).isVisible()
     await page2.close()
   })
