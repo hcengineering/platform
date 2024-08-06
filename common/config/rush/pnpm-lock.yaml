@@ -26613,7 +26613,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-YFe9zCBoR5pPRxsoG3Oc9qVVHEWGDlmQrw27HY+3P0SMBXz8xWVjgM6SrL2458y83t/Xsj30krK1zEZkWORfpQ==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-DIL0rCz2r3nKYgE2fOrEdVSwLGq1Zz2MjsU1HvDxnIs4IE1Q4s8oNMBtvtunERIQ2fNnJHcE0XXijawtYilrjQ==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -29183,6 +29183,7 @@ packages:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/node-fetch': 2.6.11
+      '@types/uuid': 8.3.4
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -29210,6 +29211,7 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
+      uuid: 8.3.2
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -29472,6 +29474,7 @@ packages:
       '@types/mime': 3.0.4
       '@types/node': 20.11.19
       '@types/node-fetch': 2.6.11
+      '@types/uuid': 8.3.4
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
@@ -29499,6 +29502,7 @@ packages:
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
       ts-standard: 12.0.2(typescript@5.3.3)
       typescript: 5.3.3
+      uuid: 8.3.2
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -29510,7 +29514,6 @@ packages:
       - babel-jest
       - babel-plugin-macros
       - bufferutil
-      - encoding
       - gcp-metadata
       - kerberos
       - mongodb-client-encryption

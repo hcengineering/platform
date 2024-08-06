@@ -15,6 +15,8 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
+import type { MongoClientReference } from '@hcengineering/mongo'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus } from '@hocuspocus/server'
@@ -24,8 +26,6 @@ import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
 
-import type { MongoClientReference } from '@hcengineering/mongo'
-import type { StorageAdapter } from '@hcengineering/server-core'
 import { Config } from './config'
 import { Context } from './context'
 import { AuthenticationExtension } from './extensions/authentication'
@@ -46,7 +46,7 @@ export type Shutdown = () => Promise<void>
 export async function start (
   ctx: MeasureContext,
   config: Config,
-  minio: StorageAdapter,
+  storageAdapter: StorageAdapter,
   mongoClient: MongoClientReference
 ): Promise<Shutdown> {
   const port = config.Port
@@ -116,7 +116,7 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter({ minio }, mongo, transformer)
+        adapter: new PlatformStorageAdapter(storageAdapter, mongo, transformer)
       })
     ]
   })
@@ -179,7 +179,7 @@ export async function start (
       await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-            return await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
+            return await method(ctx, context, request.payload, { hocuspocus, storageAdapter, transformer })
           })
           res.status(200).send(response)
         } catch (err: any) {

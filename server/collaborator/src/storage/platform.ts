@@ -42,11 +42,9 @@ import { Context } from '../context'
 
 import { CollabStorageAdapter } from './adapter'
 
-export type StorageAdapters = Record<string, StorageAdapter>
-
 export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (
-    private readonly adapters: StorageAdapters,
+    private readonly storage: StorageAdapter,
     private readonly mongodb: MongoClient,
     private readonly transformer: Transformer
   ) {}
@@ -149,27 +147,16 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     }
   }
 
-  getStorageAdapter (storage: string): StorageAdapter {
-    const adapter = this.adapters[storage]
-
-    if (adapter === undefined) {
-      throw new Error(`unknown storage adapter ${storage}`)
-    }
-
-    return adapter
-  }
-
   async loadDocumentFromStorage (
     ctx: MeasureContext,
     documentId: DocumentId,
     context: Context
   ): Promise<YDoc | undefined> {
-    const { storage, collaborativeDoc } = parseDocumentId(documentId)
-    const adapter = this.getStorageAdapter(storage)
+    const { collaborativeDoc } = parseDocumentId(documentId)
 
-    return await ctx.with('load-document', { storage }, async (ctx) => {
+    return await ctx.with('load-document', {}, async (ctx) => {
       return await withRetry(ctx, 5, async () => {
-        return await loadCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, ctx)
+        return await loadCollaborativeDoc(this.storage, context.workspaceId, collaborativeDoc, ctx)
       })
     })
   }
@@ -180,12 +167,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     document: YDoc,
     context: Context
   ): Promise<void> {
-    const { storage, collaborativeDoc } = parseDocumentId(documentId)
-    const adapter = this.getStorageAdapter(storage)
+    const { collaborativeDoc } = parseDocumentId(documentId)
 
     await ctx.with('save-document', {}, async (ctx) => {
       await withRetry(ctx, 5, async () => {
-        await saveCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, document, ctx)
+        await saveCollaborativeDoc(this.storage, context.workspaceId, collaborativeDoc, document, ctx)
       })
     })
   }
@@ -197,8 +183,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     document: YDoc,
     context: Context
   ): Promise<YDocVersion | undefined> {
-    const { storage, collaborativeDoc } = parseDocumentId(documentId)
-    const adapter = this.getStorageAdapter(storage)
+    const { collaborativeDoc } = parseDocumentId(documentId)
 
     const { workspaceId } = context
 
@@ -212,7 +197,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     }
 
     await ctx.with('take-snapshot', {}, async (ctx) => {
-      await takeCollaborativeDocSnapshot(adapter, workspaceId, collaborativeDoc, document, yDocVersion, ctx)
+      await takeCollaborativeDocSnapshot(this.storage, workspaceId, collaborativeDoc, document, yDocVersion, ctx)
     })
 
     return yDocVersion
