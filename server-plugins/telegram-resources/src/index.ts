@@ -31,9 +31,9 @@ import {
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import telegram, { TelegramMessage, TelegramNotificationRecord } from '@hcengineering/telegram'
-import notification, { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
+import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
 import setting, { Integration } from '@hcengineering/setting'
-import { NotificationProviderFunc, UserInfo } from '@hcengineering/server-notification'
+import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import serverTelegram from '@hcengineering/server-telegram'
 import { getTranslatedNotificationContent, getTextPresenter } from '@hcengineering/server-notification-resources'
@@ -77,47 +77,6 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         lastMessage: message.sendOn
       })
       res.push(tx)
-    }
-
-    if (message.incoming) {
-      const docs = await control.findAll(notification.class.DocNotifyContext, {
-        attachedTo: channel._id,
-        user: message.modifiedBy
-      })
-      for (const doc of docs) {
-        // TODO: push inbox notifications
-        // res.push(
-        //   control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-        //     $push: {
-        //       txes: {
-        //         _id: tx._id as Ref<TxCUD<Doc>>,
-        //         modifiedOn: tx.modifiedOn,
-        //         modifiedBy: tx.modifiedBy,
-        //         isNew: true
-        //       }
-        //     }
-        //   })
-        // )
-        res.push(
-          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastUpdateTimestamp: tx.modifiedOn
-          })
-        )
-      }
-      if (docs.length === 0) {
-        res.push(
-          control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
-            user: tx.modifiedBy,
-            attachedTo: channel._id,
-            attachedToClass: channel._class,
-            lastUpdateTimestamp: tx.modifiedOn
-            // TODO: push inbox notifications
-            // txes: [
-            //   { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
-            // ]
-          })
-        )
-      }
     }
   }
 
@@ -227,14 +186,10 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   types: BaseNotificationType[],
   doc: Doc,
   data: InboxNotification,
-  receiver: UserInfo,
-  sender: UserInfo
+  receiver: ReceiverInfo,
+  sender: SenderInfo
 ): Promise<Tx[]> => {
   if (types.length === 0) {
-    return []
-  }
-
-  if (receiver.person === undefined || receiver.account?.email === undefined) {
     return []
   }
 
@@ -245,15 +200,7 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
     return []
   }
 
-  const isEmployee = control.hierarchy.hasMixin(receiver.person, contact.mixin.Employee)
-
-  if (!isEmployee) {
-    return []
-  }
-
-  const employee = control.hierarchy.as(receiver.person, contact.mixin.Employee)
-
-  if (!employee.active) {
+  if (!receiver.person.active) {
     return []
   }
 

@@ -13,14 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { buildRemovedDoc, checkIsObjectRemoved, DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
-  import { Component, Icon, IconAdd, IconDelete } from '@hcengineering/ui'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
-  import { Class, Doc, Ref } from '@hcengineering/core'
   import { DisplayDocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Component, Icon, IconAdd, IconDelete } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { buildRemovedDoc, checkIsObjectRemoved, DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
 
-  export let message: DisplayDocUpdateMessage
+  export let objectClass: DisplayDocUpdateMessage['objectClass']
+  export let objectId: DisplayDocUpdateMessage['objectId']
+  export let action: DisplayDocUpdateMessage['action']
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let withIcon: boolean = false
   export let hasSeparator: boolean = false
@@ -32,8 +34,8 @@
 
   let object: Doc | undefined = undefined
 
-  $: objectPanel = hierarchy.classHierarchyMixin(message.objectClass, view.mixin.ObjectPanel)
-  $: objectPresenter = hierarchy.classHierarchyMixin(message.objectClass, view.mixin.ObjectPresenter)
+  $: objectPanel = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectPanel)
+  $: objectPresenter = hierarchy.classHierarchyMixin(objectClass, view.mixin.ObjectPresenter)
 
   async function getValue (object: Doc): Promise<string | undefined> {
     if (viewlet?.valueAttr) {
@@ -48,6 +50,7 @@
 
     if (isRemoved) {
       object = await buildRemovedDoc(client, _id, _class)
+      objectQuery.unsubscribe()
     } else {
       objectQuery.query(_class, { _id }, (res) => {
         object = res[0]
@@ -55,14 +58,14 @@
     }
   }
 
-  $: void loadObject(message.objectId, message.objectClass)
+  $: void loadObject(objectId, objectClass)
 </script>
 
 {#if object}
-  {#if withIcon && message.action === 'create'}
+  {#if withIcon && action === 'create'}
     <Icon icon={IconAdd} size="x-small" />
   {/if}
-  {#if withIcon && message.action === 'remove'}
+  {#if withIcon && action === 'remove'}
     <Icon icon={IconDelete} size="x-small" />
   {/if}
 
@@ -80,7 +83,7 @@
         <DocNavLink
           {object}
           colorInherit
-          disabled={message.action === 'remove'}
+          disabled={action === 'remove'}
           component={objectPanel?.component ?? view.component.EditDoc}
           shrink={0}
         >

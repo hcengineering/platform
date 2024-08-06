@@ -47,22 +47,28 @@
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []
   let myFilteredViews: FilteredView[] = []
-  $: filteredViewsQuery.query<FilteredView>(
-    view.class.FilteredView,
-    { attachedTo: currentApplication?.alias },
-    (result) => {
-      myFilteredViews = result.filter((p) => p.users.includes(me))
-      availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
+  $: if (currentApplication?.alias !== undefined) {
+    filteredViewsQuery.query<FilteredView>(
+      view.class.FilteredView,
+      { attachedTo: currentApplication?.alias },
+      (result) => {
+        myFilteredViews = result.filter((p) => p.users.includes(me))
+        availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(me))
 
-      const location = getLocation()
-      if (location.query?.filterViewId) {
-        const targetView = result.find((view) => view._id === location.query?.filterViewId)
-        if (targetView) {
-          load(targetView)
+        const location = getLocation()
+        if (location.query?.filterViewId) {
+          const targetView = result.find((view) => view._id === location.query?.filterViewId)
+          if (targetView) {
+            load(targetView)
+          }
         }
       }
-    }
-  )
+    )
+  } else {
+    filteredViewsQuery.unsubscribe()
+    myFilteredViews = []
+    availableFilteredViews = []
+  }
 
   async function removeAction (filteredView: FilteredView): Promise<Action[]> {
     return [

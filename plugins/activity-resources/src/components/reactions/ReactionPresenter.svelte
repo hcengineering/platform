@@ -14,18 +14,19 @@
 -->
 <script lang="ts">
   import { Reaction } from '@hcengineering/activity'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, Space } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   import activity from '../../plugin'
 
   export let _id: Ref<Reaction>
+  export let space: Ref<Space>
   export let value: Reaction | undefined = undefined
 
   const query = createQuery()
 
   $: value === undefined &&
-    query.query(activity.class.Reaction, { _id }, (res) => {
+    query.query(activity.class.Reaction, { _id, space }, (res) => {
       value = res[0]
     })
 </script>

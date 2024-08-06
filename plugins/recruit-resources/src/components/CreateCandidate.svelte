@@ -366,7 +366,7 @@
       const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
         (skill) => !namedElements.has(skill)
       )
-      const refactoredSkills = []
+      const refactoredSkills: any[] = []
       if (formattedSkills.length > 0) {
         const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
         const regex = /\S+(?:[-+]\S+)+/g
@@ -755,6 +755,7 @@
                 FilePreviewPopup,
                 {
                   file: object.resumeUuid,
+                  contentType: object.resumeType,
                   name: object.resumeName
                 },
                 object.resumeType?.startsWith('image/') ? 'centered' : 'float'

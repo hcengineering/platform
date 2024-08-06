@@ -15,13 +15,13 @@
 //
 
 import { DOMAIN_TX, type MeasureContext, type Ref, type WorkspaceId } from '@hcengineering/core'
-import { type StorageAdapter } from '@hcengineering/server-core'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
-import { getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import telegram, { type SharedTelegramMessage, type SharedTelegramMessages } from '@hcengineering/telegram'
-import { type Document, MongoClient, type UpdateFilter } from 'mongodb'
+import { type Document, type UpdateFilter } from 'mongodb'
 
 const LastMessages = 'last-msgs'
 
@@ -35,11 +35,11 @@ export async function clearTelegramHistory (
   tgDb: string,
   storageAdapter: StorageAdapter
 ): Promise<void> {
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const workspaceDB = getWorkspaceDB(client, workspaceId)
-    const telegramDB = client.db(tgDb)
+    const _client = await client.getClient()
+    const workspaceDB = getWorkspaceDB(_client, workspaceId)
+    const telegramDB = _client.db(tgDb)
 
     const sharedMessages = await workspaceDB
       .collection(DOMAIN_TELEGRAM)
@@ -99,6 +99,6 @@ export async function clearTelegramHistory (
       workspace: workspaceId
     })
   } finally {
-    await client.close()
+    client.close()
   }
 }

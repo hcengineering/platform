@@ -13,9 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
+  import {
+    toIdMap,
+    type AttachedDoc,
+    type Class,
+    type Collection,
+    type Doc,
+    type IdMap,
+    type Ref
+  } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { KeyedAttribute } from '@hcengineering/presentation'
+  import { createQuery, KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import {
     Button,
@@ -37,8 +45,13 @@
   export let targetClass: Ref<Class<Doc>>
   export let key: KeyedAttribute
   export let showTitle = true
-  export let elements: Map<Ref<TagElement>, TagElement>
   export let schema: '0' | '3' | '9' = key.attr.schema ?? '0'
+
+  let elements: IdMap<TagElement> = new Map()
+  const elementQuery = createQuery()
+  $: elementQuery.query(tags.class.TagElement, { _id: { $in: items.map((it) => it.tag) } }, (result) => {
+    elements = toIdMap(result)
+  })
 
   const dispatch = createEventDispatcher()
 

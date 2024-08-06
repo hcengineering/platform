@@ -1,16 +1,16 @@
 import { IncomingHttpHeaders } from 'http'
-import { decode } from './jwt'
 import { PlatformWorker } from './platform'
 import { createServer, Handler, listen } from './server'
 import { telegram } from './telegram'
 
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import serverToken, { decodeToken, type Token } from '@hcengineering/server-token'
 import config from './config'
 
-const extractToken = (header: IncomingHttpHeaders): any => {
+const extractToken = (header: IncomingHttpHeaders): Token | undefined => {
   try {
-    return decode(header.authorization?.slice(7) ?? '')
+    return decodeToken(header.authorization?.slice(7) ?? '')
   } catch {
     return undefined
   }
@@ -19,6 +19,7 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const main = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+  setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const platformWorker = await PlatformWorker.create()
   const endpoints: Array<[string, Handler]> = [
@@ -41,7 +42,7 @@ export const main = async (): Promise<void> => {
 
         const existingRec = await platformWorker.getUserRecord({
           phone,
-          workspace
+          workspace: workspace.name
         })
 
         if (existingRec !== undefined) {
@@ -79,7 +80,7 @@ export const main = async (): Promise<void> => {
 
         const existingRec = await platformWorker.getUserRecord({
           phone,
-          workspace
+          workspace: workspace.name
         })
 
         if (existingRec !== undefined) {
@@ -102,7 +103,7 @@ export const main = async (): Promise<void> => {
           if (conn !== undefined) {
             await platformWorker.addUser({
               email,
-              workspace,
+              workspace: workspace.name,
               phone,
               conn
             })
@@ -134,7 +135,7 @@ export const main = async (): Promise<void> => {
 
         const existingRec = await platformWorker.getUserRecord({
           phone,
-          workspace
+          workspace: workspace.name
         })
 
         if (existingRec !== undefined) {
@@ -156,7 +157,7 @@ export const main = async (): Promise<void> => {
         if (conn !== undefined) {
           await platformWorker.addUser({
             email,
-            workspace,
+            workspace: workspace.name,
             phone,
             conn
           })
@@ -177,7 +178,7 @@ export const main = async (): Promise<void> => {
         }
 
         const { email, workspace } = token
-        await platformWorker.removeUser({ email, workspace })
+        await platformWorker.removeUser({ email, workspace: workspace.name })
 
         res.send()
       }

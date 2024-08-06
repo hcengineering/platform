@@ -39,6 +39,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_PREFERENCE,
-    disabled: [{ modifiedOn: 1 }, { createdOn: 1 }]
+    disabled: [{ modifiedOn: 1 }, { createdOn: 1 }, { attachedTo: 1 }, { createdOn: -1 }, { modifiedBy: 1 }]
   })
 }

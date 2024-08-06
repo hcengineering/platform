@@ -15,6 +15,8 @@
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "mkdir -p bundle && esbuild src/__start.ts --bundle --platform=node --keep-names > bundle/bundle.js",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/collaborator",
+    "docker:tbuild": "docker build -t hardcoreeng/collaborator . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/collaborator",
+    "docker:abuild": "docker build -t hardcoreeng/collaborator . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/collaborator",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator",
     "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 SECRET=secret MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ts-node src/__start.ts",

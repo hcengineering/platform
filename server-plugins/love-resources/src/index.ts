@@ -31,7 +31,6 @@ import love, {
   ParticipantInfo,
   RequestStatus,
   RoomAccess,
-  RoomInfo,
   isOffice,
   loveId
 } from '@hcengineering/love'
@@ -149,7 +148,8 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
   return []
 }
 
-async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, roomInfos: RoomInfo[]): Promise<Tx[]> {
+async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
+  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
   const roomInfo = roomInfos.find((ri) => ri.room === info.room)
   if (roomInfo !== undefined) {
     roomInfo.persons.push(info.person)
@@ -171,12 +171,9 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
   }
 }
 
-async function rejectJoinRequests (
-  info: ParticipantInfo,
-  control: TriggerControl,
-  roomInfos: RoomInfo[]
-): Promise<Tx[]> {
+async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
+  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
@@ -197,21 +194,15 @@ async function rejectJoinRequests (
   return res
 }
 
-function setDefaultRoomAccess (info: ParticipantInfo, roomInfos: RoomInfo[], control: TriggerControl): Tx[] {
+async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
+  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     oldRoomInfo.persons = oldRoomInfo.persons.filter((p) => p !== info.person)
     if (oldRoomInfo.persons.length === 0) {
       res.push(control.txFactory.createTxRemoveDoc(oldRoomInfo._class, oldRoomInfo.space, oldRoomInfo._id))
-    } else {
-      res.push(
-        control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, oldRoomInfo._id, {
-          persons: oldRoomInfo.persons
-        })
-      )
-    }
-    if (oldRoomInfo.persons.length === 0) {
+
       const resetAccessTx = control.txFactory.createTxUpdateDoc(
         oldRoomInfo.isOffice ? love.class.Office : love.class.Room,
         core.space.Workspace,
@@ -221,22 +212,27 @@ function setDefaultRoomAccess (info: ParticipantInfo, roomInfos: RoomInfo[], con
         }
       )
       res.push(resetAccessTx)
+    } else {
+      res.push(
+        control.txFactory.createTxUpdateDoc(love.class.RoomInfo, core.space.Workspace, oldRoomInfo._id, {
+          persons: oldRoomInfo.persons
+        })
+      )
     }
   }
   return res
 }
 
 export async function OnParticipantInfo (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<ParticipantInfo>
   if (actualTx._class === core.class.TxCreateDoc) {
     const info = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ParticipantInfo>)
-    return await roomJoinHandler(info, control, roomInfos)
+    return await roomJoinHandler(info, control)
   }
   if (actualTx._class === core.class.TxRemoveDoc) {
     const removedInfo = control.removedMap.get(actualTx.objectId) as ParticipantInfo
     if (removedInfo === undefined) return []
-    return setDefaultRoomAccess(removedInfo, roomInfos, control)
+    return await setDefaultRoomAccess(removedInfo, control)
   }
   if (actualTx._class === core.class.TxUpdateDoc) {
     const newRoom = (actualTx as TxUpdateDoc<ParticipantInfo>).operations.room
@@ -244,9 +240,9 @@ export async function OnParticipantInfo (tx: Tx, control: TriggerControl): Promi
     const info = (await control.findAll(love.class.ParticipantInfo, { _id: actualTx.objectId }, { limit: 1 }))[0]
     if (info === undefined) return []
     const res: Tx[] = []
-    res.push(...(await rejectJoinRequests(info, control, roomInfos)))
-    res.push(...setDefaultRoomAccess(info, roomInfos, control))
-    res.push(...(await roomJoinHandler(info, control, roomInfos)))
+    res.push(...(await rejectJoinRequests(info, control)))
+    res.push(...(await setDefaultRoomAccess(info, control)))
+    res.push(...(await roomJoinHandler(info, control)))
     return res
   }
   return []

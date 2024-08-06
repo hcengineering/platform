@@ -30,8 +30,12 @@ import {
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
 import { TriggerControl } from '@hcengineering/server-core'
-import notification, { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
-import serverNotification, { NotificationProviderFunc, UserInfo } from '@hcengineering/server-notification'
+import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
+import serverNotification, {
+  NotificationProviderFunc,
+  ReceiverInfo,
+  SenderInfo
+} from '@hcengineering/server-notification'
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
 
@@ -73,46 +77,6 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
         lastMessage: message.sendOn
       })
       res.push(tx)
-    }
-    if (message.incoming) {
-      const docs = await control.findAll(notification.class.DocNotifyContext, {
-        attachedTo: channel._id,
-        user: message.modifiedBy
-      })
-      for (const doc of docs) {
-        // TODO: push inbox notification
-        // res.push(
-        //   control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-        //     $push: {
-        //       txes: {
-        //         _id: tx._id as Ref<TxCUD<Doc>>,
-        //         modifiedOn: tx.modifiedOn,
-        //         modifiedBy: tx.modifiedBy,
-        //         isNew: true
-        //       }
-        //     }
-        //   })
-        // )
-        res.push(
-          control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-            lastUpdateTimestamp: tx.modifiedOn
-          })
-        )
-      }
-      if (docs.length === 0) {
-        res.push(
-          control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, channel.space, {
-            user: tx.modifiedBy,
-            attachedTo: channel._id,
-            attachedToClass: channel._class,
-            lastUpdateTimestamp: tx.modifiedOn
-            // TODO: push inbox notification
-            // txes: [
-            //   { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }
-            // ]
-          })
-        )
-      }
     }
   }
 
@@ -166,8 +130,8 @@ async function notifyByEmail (
   control: TriggerControl,
   type: Ref<BaseNotificationType>,
   doc: Doc | undefined,
-  sender: UserInfo,
-  receiver: UserInfo,
+  sender: SenderInfo,
+  receiver: ReceiverInfo,
   data: InboxNotification
 ): Promise<void> {
   const account = receiver.account
@@ -191,26 +155,14 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   types: BaseNotificationType[],
   object: Doc,
   data: InboxNotification,
-  receiver: UserInfo,
-  sender: UserInfo
+  receiver: ReceiverInfo,
+  sender: SenderInfo
 ): Promise<Tx[]> => {
   if (types.length === 0) {
     return []
   }
 
-  if (receiver.person === undefined) {
-    return []
-  }
-
-  const isEmployee = control.hierarchy.hasMixin(receiver.person, contact.mixin.Employee)
-
-  if (!isEmployee) {
-    return []
-  }
-
-  const employee = control.hierarchy.as(receiver.person, contact.mixin.Employee)
-
-  if (!employee.active) {
+  if (!receiver.person.active) {
     return []
   }
 

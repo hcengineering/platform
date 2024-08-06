@@ -5,22 +5,23 @@
   import { Loading, setMetadataLocalStorage } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
-  import { afterConfirm, getSessionLoginInfo, goTo, navigateToWorkspace } from '../utils'
+  import { afterConfirm, getLoginInfoFromQuery, goTo, navigateToWorkspace } from '../utils'
 
   onMount(async () => {
-    const result = await getSessionLoginInfo()
+    const result = await getLoginInfoFromQuery()
+
     if (result !== undefined) {
       if (isWorkspaceLoginInfo(result)) {
-        navigateToWorkspace(result.workspace, result)
+        navigateToWorkspace(result.workspace, result, undefined, true)
         return
       }
       setMetadata(presentation.metadata.Token, result.token)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      await afterConfirm('onboard')
+      await afterConfirm(true)
     } else {
-      goTo('login')
+      goTo('login', true)
     }
   })
 

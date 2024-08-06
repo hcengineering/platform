@@ -28,6 +28,10 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   if (options === undefined) {
     return {}
   }
+  if (options.label === undefined && options.component === undefined) {
+    // No tooltip
+    return {}
+  }
   let opt = options
   const show = (): void => {
     const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
@@ -113,7 +117,7 @@ export function showTooltip (
     props,
     anchor,
     onUpdate,
-    kind,
+    kind: kind ?? 'tooltip',
     keys,
     type: 'tooltip'
   }

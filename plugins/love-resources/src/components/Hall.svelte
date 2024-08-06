@@ -19,9 +19,9 @@
   import love, { Floor as FloorType, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import { deviceOptionsStore as deviceInfo, getCurrentLocation, navigate } from '@hcengineering/ui'
-  import { onMount, onDestroy } from 'svelte'
-  import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms } from '../stores'
-  import { tryConnect } from '../utils'
+  import { onDestroy, onMount } from 'svelte'
+  import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms, storePromise } from '../stores'
+  import { connectToMeeting, tryConnect } from '../utils'
   import Floor from './Floor.svelte'
   import FloorConfigure from './FloorConfigure.svelte'
   import Floors from './Floors.svelte'
@@ -42,25 +42,33 @@
   $: $deviceInfo.replacedPanel = replacedPanel
   onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 
+  async function connectToSession (sessionId: string): Promise<void> {
+    const client = getClient()
+    const info = await client.findOne(love.class.RoomInfo, { _id: sessionId as Ref<RoomInfo> })
+    if (info === undefined) return
+    const room = $rooms.find((p) => p._id === info.room)
+    if (room === undefined) return
+    tryConnect(
+      $personByIdStore,
+      $myInfo,
+      room,
+      $infos.filter((p) => p.room === room._id),
+      $myRequests,
+      $invites
+    )
+  }
+
   onMount(async () => {
     const loc = getCurrentLocation()
-    const { meetId, ...query } = loc.query ?? {}
-    if (meetId != null) {
-      loc.query = Object.keys(query).length === 0 ? undefined : query
-      navigate(loc, true)
-      const client = getClient()
-      const info = await client.findOne(love.class.RoomInfo, { _id: meetId as Ref<RoomInfo> })
-      if (info === undefined) return
-      const room = $rooms.find((p) => p._id === info.room)
-      if (room === undefined) return
-      tryConnect(
-        $personByIdStore,
-        $myInfo,
-        room,
-        $infos.filter((p) => p.room === room._id),
-        $myRequests,
-        $invites
-      )
+    const { sessionId, meetId, ...query } = loc.query ?? {}
+    loc.query = Object.keys(query).length === 0 ? undefined : query
+    navigate(loc, true)
+    if (sessionId != null) {
+      await $storePromise
+      await connectToSession(sessionId)
+    } else if (meetId != null) {
+      await $storePromise
+      await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
     }
   })
 </script>

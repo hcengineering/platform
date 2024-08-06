@@ -1,5 +1,6 @@
+import { Event } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { Class, Doc, Ref } from '@hcengineering/core'
+import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
@@ -58,6 +59,10 @@ export interface RoomInfo extends Doc {
   isOffice: boolean
 }
 
+export interface Meeting extends Event {
+  room: Ref<Room>
+}
+
 export enum RequestStatus {
   Pending,
   Approved,
@@ -96,6 +101,9 @@ const love = plugin(loveId, {
     DevicesPreference: '' as Ref<Class<DevicesPreference>>,
     RoomInfo: '' as Ref<Class<RoomInfo>>,
     Invite: '' as Ref<Class<Invite>>
+  },
+  mixin: {
+    Meeting: '' as Ref<Mixin<Meeting>>
   },
   action: {
     ToggleMic: '' as Ref<Action>,

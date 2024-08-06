@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Class, type Space, type Doc, type Ref } from '@hcengineering/core'
+import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
+import { getBlobRef, getClient } from '@hcengineering/presentation'
+import { CodeBlockExtension, codeBlockOptions, CodeExtension, codeOptions } from '@hcengineering/text'
+import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, type Editor, Extension } from '@tiptap/core'
 import { type Level } from '@tiptap/extension-heading'
 import ListKeymap from '@tiptap/extension-list-keymap'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
-import { getBlobRef, getClient } from '@hcengineering/presentation'
-import { CodeBlockExtension, codeBlockOptions, CodeExtension, codeOptions } from '@hcengineering/text'
-import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 
-import { DefaultKit, type DefaultKitOptions } from './default-kit'
-import { HardBreakExtension } from '../components/extension/hardBreak'
 import { FileExtension, type FileOptions } from '../components/extension/fileExt'
+import { HardBreakExtension } from '../components/extension/hardBreak'
 import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
-import { NodeUuidExtension } from '../components/extension/nodeUuid'
-import { Table, TableCell, TableRow } from '../components/extension/table'
-import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
-import { ParagraphExtension } from '../components/extension/paragraph'
 import { InlineToolbarExtension } from '../components/extension/inlineToolbar'
+import { NodeUuidExtension } from '../components/extension/nodeUuid'
+import { ParagraphExtension } from '../components/extension/paragraph'
+import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
+import { Table, TableCell, TableRow } from '../components/extension/table'
+import { DefaultKit, type DefaultKitOptions } from './default-kit'
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
@@ -41,6 +41,7 @@ export interface EditorKitOptions extends DefaultKitOptions {
     toolbar?: {
       element: HTMLElement
       boundary?: HTMLElement
+      appendTo?: HTMLElement | (() => HTMLElement)
       isHidden?: () => boolean
     }
   })
@@ -224,7 +225,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                   inline: true,
                   loadingImgSrc:
                     'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxzdmcgd2lkdGg9IjMycHgiIGhlaWdodD0iMzJweCIgdmlld0JveD0iMCAwIDE2IDE2IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPg0KICAgIDxwYXRoIGQ9Im0gNCAxIGMgLTEuNjQ0NTMxIDAgLTMgMS4zNTU0NjkgLTMgMyB2IDEgaCAxIHYgLTEgYyAwIC0xLjEwOTM3NSAwLjg5MDYyNSAtMiAyIC0yIGggMSB2IC0xIHogbSAyIDAgdiAxIGggNCB2IC0xIHogbSA1IDAgdiAxIGggMSBjIDEuMTA5Mzc1IDAgMiAwLjg5MDYyNSAyIDIgdiAxIGggMSB2IC0xIGMgMCAtMS42NDQ1MzEgLTEuMzU1NDY5IC0zIC0zIC0zIHogbSAtNSA0IGMgLTAuNTUwNzgxIDAgLTEgMC40NDkyMTkgLTEgMSBzIDAuNDQ5MjE5IDEgMSAxIHMgMSAtMC40NDkyMTkgMSAtMSBzIC0wLjQ0OTIxOSAtMSAtMSAtMSB6IG0gLTUgMSB2IDQgaCAxIHYgLTQgeiBtIDEzIDAgdiA0IGggMSB2IC00IHogbSAtNC41IDIgbCAtMiAyIGwgLTEuNSAtMSBsIC0yIDIgdiAwLjUgYyAwIDAuNSAwLjUgMC41IDAuNSAwLjUgaCA3IHMgMC40NzI2NTYgLTAuMDM1MTU2IDAuNSAtMC41IHYgLTEgeiBtIC04LjUgMyB2IDEgYyAwIDEuNjQ0NTMxIDEuMzU1NDY5IDMgMyAzIGggMSB2IC0xIGggLTEgYyAtMS4xMDkzNzUgMCAtMiAtMC44OTA2MjUgLTIgLTIgdiAtMSB6IG0gMTMgMCB2IDEgYyAwIDEuMTA5Mzc1IC0wLjg5MDYyNSAyIC0yIDIgaCAtMSB2IDEgaCAxIGMgMS42NDQ1MzEgMCAzIC0xLjM1NTQ2OSAzIC0zIHYgLTEgeiBtIC04IDMgdiAxIGggNCB2IC0xIHogbSAwIDAiIGZpbGw9IiMyZTM0MzQiIGZpbGwtb3BhY2l0eT0iMC4zNDkwMiIvPg0KPC9zdmc+DQo=',
-                  getBlobRef: async (file, name, size) => await getBlobRef(undefined, file, name, size),
+                  getBlobRef: async (file, name, size) => await getBlobRef(file, name, size),
                   HTMLAttributes: this.options.image?.HTMLAttributes ?? {},
                   ...this.options.image
                 }
@@ -232,7 +233,10 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                 if (this.options.image?.toolbar !== undefined) {
                   imageOptions.toolbar = {
                     ...this.options.image?.toolbar,
-                    tippyOptions: getTippyOptions(this.options.image?.toolbar?.boundary)
+                    tippyOptions: getTippyOptions(
+                      this.options.image?.toolbar?.boundary,
+                      this.options.image?.toolbar?.appendTo
+                    )
                   }
                 }
 

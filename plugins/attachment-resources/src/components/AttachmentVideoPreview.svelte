@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getBlobHref } from '@hcengineering/presentation'
 
   import type { WithLookup } from '@hcengineering/core'
+  import { getFileUrl } from '@hcengineering/presentation'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
   export let value: WithLookup<Attachment>
@@ -58,9 +58,7 @@
 </script>
 
 <video controls width={dimensions.width} height={dimensions.height} preload={preload ? 'auto' : 'none'}>
-  {#await getBlobHref(value.$lookup?.file, value.file, value.name) then href}
-    <source src={href} />
-  {/await}
+  <source src={getFileUrl(value.file, value.name)} />
   <track kind="captions" label={value.name} />
   <div class="container">
     <AttachmentPresenter {value} />

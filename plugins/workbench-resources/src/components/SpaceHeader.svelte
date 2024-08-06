@@ -57,9 +57,14 @@
 
   const prevSpaceId = spaceId
 
-  $: query.query(core.class.Space, { _id: spaceId }, (result) => {
-    space = result[0]
-  })
+  $: query.query(
+    core.class.Space,
+    { _id: spaceId },
+    (result) => {
+      space = result[0]
+    },
+    { limit: 1 }
+  )
 
   function showCreateDialog (ev: Event) {
     showPopup(createItemDialog as AnyComponent, { space: spaceId }, 'top')

@@ -19,6 +19,7 @@
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --platform=node --keep-names > bundle/bundle.js",
     "docker:build": "cross-env DOCKER_EXTRA=--platform=linux/amd64 ../../../common/scripts/docker_build.sh hardcoreeng/sign",
+    "docker:tbuild": "docker build -t hardcoreeng/sign . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/sign",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/sign staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/sign",
     "run-local": "cross-env ts-node src/index.ts",

@@ -17,12 +17,12 @@
   import { getBlobRef, type BlobMetadata } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 
-  $: p = typeof value === 'string' ? getBlobRef(undefined, value, name) : getBlobRef(value, value._id)
+  $: p = getBlobRef(value, name)
   $: width = metadata?.originalWidth ? `min(${metadata.originalWidth / metadata?.pixelRatio ?? 1}px, 100%)` : '100%'
   $: height = metadata?.originalHeight
     ? `min(${metadata.originalHeight / metadata?.pixelRatio ?? 1}px, ${fit ? '100%' : '80vh'})`

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { type Branding, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
-import { OpenAIEmbeddingsStage } from '@hcengineering/openai'
 import { CollaborativeContentRetrievalStage } from '@hcengineering/server-collaboration'
 import {
   ContentRetrievalStage,
@@ -65,14 +64,14 @@ export function createIndexStages (
   const pushStage = new FullTextPushStage(storage, adapter, workspace, branding)
   stages.push(pushStage)
 
-  // OpenAI prepare stage
-  const openAIStage = new OpenAIEmbeddingsStage(adapter, workspace)
-  // We depend on all available stages.
-  openAIStage.require = stages.map((it) => it.stageId)
+  // // OpenAI prepare stage
+  // const openAIStage = new OpenAIEmbeddingsStage(adapter, workspace)
+  // // We depend on all available stages.
+  // openAIStage.require = stages.map((it) => it.stageId)
 
-  openAIStage.updateSummary(summaryStage)
+  // openAIStage.updateSummary(summaryStage)
 
-  stages.push(openAIStage)
+  // stages.push(openAIStage)
 
   return stages
 }

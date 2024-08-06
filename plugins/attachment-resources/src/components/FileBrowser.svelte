@@ -92,10 +92,7 @@
       { ...nameQuery, ...senderQuery, ...spaceQuery, ...dateQuery, ...fileTypeQuery },
       {
         sort: sortModeToOptionObject(selectedSort_),
-        limit: 200,
-        lookup: {
-          file: core.class.Blob
-        }
+        limit: 200
       }
     )
     isLoading = false

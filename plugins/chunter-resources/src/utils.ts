@@ -46,6 +46,7 @@ import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
+import { isReactionMessage } from '@hcengineering/activity-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -439,7 +440,16 @@ export async function readChannelMessages (
     const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
 
     const notifications = get(inboxClient.activityInboxNotifications)
-      .filter(({ _id, attachedTo }) => allIds.includes(attachedTo))
+      .filter(({ attachedTo, $lookup, isViewed }) => {
+        if (isViewed) return false
+        const includes = allIds.includes(attachedTo)
+        if (includes) return true
+        const msg = $lookup?.attachedTo
+        if (isReactionMessage(msg)) {
+          return allIds.includes(msg.attachedTo as Ref<ActivityMessage>)
+        }
+        return false
+      })
       .map((n) => n._id)
 
     const relatedMentions = get(inboxClient.otherInboxNotifications)
@@ -481,7 +491,7 @@ export async function leaveChannelAction (
   }
   const client = getClient()
   const channel =
-    props?.object ?? (await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> }))
+    props?.object ?? (await client.findOne(chunter.class.Channel, { _id: context.objectId as Ref<Channel> }))
 
   if (channel === undefined) {
     return
@@ -491,37 +501,33 @@ export async function leaveChannelAction (
   await resetChunterLocIfEqual(channel._id, channel._class, channel)
 }
 
-export async function removeChannelAction (
-  context?: DocNotifyContext,
-  _?: Event,
-  props?: { object?: Doc }
-): Promise<void> {
+export async function removeChannelAction (context?: DocNotifyContext, _?: Event): Promise<void> {
   if (context === undefined) {
     return
   }
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const { objectId, objectClass, objectSpace } = context
 
-  if (hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)) {
-    const channel = await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> })
+  if (hierarchy.isDerived(objectClass, chunter.class.Channel)) {
+    const channel = await client.findOne(chunter.class.Channel, { _id: objectId as Ref<Channel>, space: objectSpace })
     await leaveChannel(channel, getCurrentAccount()._id)
   } else {
-    const object = await client.findOne(context.attachedToClass, { _id: context.attachedTo })
-    const account = getCurrentAccount() as PersonAccount
+    const object = await client.findOne(objectClass, { _id: objectId, space: objectSpace })
+    // const account = getCurrentAccount() as PersonAccount
 
-    await client.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
-
-    const chatInfo = await client.findOne(chunter.class.ChatInfo, { user: account.person })
-
-    if (chatInfo !== undefined) {
-      await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
-    }
-    await resetChunterLocIfEqual(context.attachedTo, context.attachedToClass, object)
+    // await client.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
+    //
+    // const chatInfo = await client.findOne(chunter.class.ChatInfo, { user: account.person })
+    //
+    // if (chatInfo !== undefined) {
+    //   await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
+    // }
+    await resetChunterLocIfEqual(objectId, objectClass, object)
   }
 
-  void inboxClient.readDoc(client, context.attachedTo)
+  await client.remove(context)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {

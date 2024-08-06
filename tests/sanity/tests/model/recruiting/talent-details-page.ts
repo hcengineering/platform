@@ -10,6 +10,7 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     this.page = page
   }
 
+  readonly buttonClosePanel = (): Locator => this.page.locator('#btnPClose')
   readonly buttonAddSkill = (): Locator => this.page.locator('button#add-tag')
   readonly textTagItem = (): Locator => this.page.locator('div.tag-item')
   readonly inputLocation = (): Locator => this.page.locator('div.location input')

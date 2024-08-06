@@ -93,7 +93,7 @@ export async function loadIndexStageStage (
   newValue: any
 ): Promise<[boolean | string, IndexStageState]> {
   if (state === undefined) {
-    ;[state] = await storage.findAll(ctx, core.class.IndexStageState, { stageId })
+    ;[state] = await storage.findAll(ctx, core.class.IndexStageState, { stageId }, { limit: 1 })
   }
   const attributes: Record<string, any> = state?.attributes ?? {}
 

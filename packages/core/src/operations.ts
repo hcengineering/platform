@@ -487,9 +487,13 @@ export class ApplyOperations extends TxOperations {
           extraNotify
         )
       )) as Promise<TxApplyResult>)
+      const dnow = Date.now()
+      if (typeof window === 'object' && window !== null) {
+        console.log(`measure ${this.measureName}`, dnow - st, 'server time', result.serverTime)
+      }
       return {
         result: result.success,
-        time: Date.now() - st,
+        time: dnow - st,
         serverTime: result.serverTime
       }
     }

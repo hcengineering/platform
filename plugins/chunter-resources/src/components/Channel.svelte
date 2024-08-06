@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
+  import activity, { ActivityMessage, ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
@@ -57,6 +57,8 @@
     dataProvider = undefined
   })
 
+  let refsLoaded = false
+
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
@@ -75,13 +77,19 @@
       const ctx =
         context ??
         (await client.findOne(notification.class.DocNotifyContext, {
-          attachedTo: object._id,
+          objectId: object._id,
           user: getCurrentAccount()._id
         }))
-
+      const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0
+      refsLoaded = hasRefs
       const space = isSpace(object) ? object._id : object.space
-      dataProvider = new ChannelDataProvider(ctx, space, attachedTo, _class, selectedMessageId, loadAll)
+      dataProvider = new ChannelDataProvider(ctx, space, attachedTo, _class, selectedMessageId, loadAll, hasRefs)
     }
+  }
+
+  $: if (dataProvider && !refsLoaded && ((object as WithReferences<Doc>).references ?? 0) > 0) {
+    dataProvider.loadRefs()
+    refsLoaded = true
   }
 </script>
 

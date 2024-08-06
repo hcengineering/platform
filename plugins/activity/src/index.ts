@@ -235,6 +235,10 @@ export interface UserMentionInfo extends AttachedDoc {
   content: string
 }
 
+export type WithReferences<T extends Doc> = T & {
+  references?: number
+}
+
 /**
  * @public
  */

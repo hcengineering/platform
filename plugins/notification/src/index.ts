@@ -24,6 +24,7 @@ import {
   Markup,
   Mixin,
   Ref,
+  Space,
   Timestamp,
   Tx,
   TxOperations
@@ -34,6 +35,8 @@ import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
+import { PersonSpace } from '@hcengineering/contact'
+
 import { Readable, Writable } from './types'
 
 export * from './types'
@@ -226,7 +229,7 @@ export interface NotificationContextPresenter extends Class<Doc> {
 /**
  * @public
  */
-export interface InboxNotification extends Doc {
+export interface InboxNotification extends Doc<PersonSpace> {
   user: Ref<Account>
   isViewed: boolean
 
@@ -238,7 +241,7 @@ export interface InboxNotification extends Doc {
   data?: Markup
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
-  archived?: boolean
+  archived: boolean
 }
 
 export interface ActivityInboxNotification extends InboxNotification {
@@ -273,14 +276,14 @@ export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxN
 /**
  * @public
  */
-export interface DocNotifyContext extends Doc {
+export interface DocNotifyContext extends Doc<PersonSpace> {
   user: Ref<Account>
-
   // Context
-  attachedTo: Ref<Doc>
-  attachedToClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+  objectSpace: Ref<Space>
 
-  isPinned?: boolean
+  isPinned: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp
 }
@@ -423,7 +426,8 @@ const notification = plugin(notificationId, {
     CommonNotificationCollectionAdded: '' as IntlString,
     CommonNotificationCollectionRemoved: '' as IntlString,
     SoundNotificationsDescription: '' as IntlString,
-    Sound: '' as IntlString
+    Sound: '' as IntlString,
+    NoAccessToObject: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,
