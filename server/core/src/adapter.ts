@@ -23,7 +23,6 @@ import {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type IndexingConfiguration,
   type MeasureContext,
   type ModelDb,
   type Ref,
@@ -38,19 +37,23 @@ import type { ServerFindOptions } from './types'
 export interface DomainHelperOperations {
   create: (domain: Domain) => Promise<void>
   exists: (domain: Domain) => boolean
+
+  listDomains: () => Promise<Set<Domain>>
   createIndex: (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }) => Promise<void>
   dropIndex: (domain: Domain, name: string) => Promise<void>
   listIndexes: (domain: Domain) => Promise<{ name: string }[]>
-  hasDocuments: (domain: Domain, count: number) => Promise<boolean>
+
+  // Could return 0 even if it has documents
+  estimatedCount: (domain: Domain) => Promise<number>
 }
 
 export interface DomainHelper {
   checkDomain: (
     ctx: MeasureContext,
     domain: Domain,
-    forceCreate: boolean,
+    documents: number,
     operations: DomainHelperOperations
-  ) => Promise<boolean>
+  ) => Promise<void>
 }
 
 export interface RawDBAdapterStream<T extends Doc> {
@@ -87,15 +90,20 @@ export interface RawDBAdapter {
   close: () => Promise<void>
 }
 
+export type DbAdapterHandler = (
+  domain: Domain,
+  event: 'add' | 'update' | 'delete' | 'read',
+  count: number,
+  time: number,
+  helper: DomainHelperOperations
+) => void
 /**
  * @public
  */
 export interface DbAdapter {
   init?: () => Promise<void>
 
-  helper?: () => DomainHelperOperations
-  createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
-  removeOldIndex: (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]) => Promise<void>
+  helper: () => DomainHelperOperations
 
   close: () => Promise<void>
   findAll: <T extends Doc>(
@@ -116,6 +124,9 @@ export interface DbAdapter {
 
   // Bulk update operations
   update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>
+
+  // Allow to register a handler to listen for domain operations
+  on?: (handler: DbAdapterHandler) => void
 }
 
 /**

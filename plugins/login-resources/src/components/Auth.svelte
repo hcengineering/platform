@@ -18,7 +18,7 @@
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      await afterConfirm('onboard')
+      await afterConfirm()
     } else {
       goTo('login')
     }

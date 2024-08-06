@@ -14,6 +14,4 @@
 //
 import { docImportTool } from '.'
 
-const productId = process.env.PRODUCT_ID ?? 'ezqms'
-
-docImportTool(productId)
+docImportTool()

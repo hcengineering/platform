@@ -3,7 +3,7 @@
   import { activeViewlet, makeViewletKey, setActiveViewletId } from '../utils'
   import { resolvedLocationStore, Switcher } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -69,6 +69,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {

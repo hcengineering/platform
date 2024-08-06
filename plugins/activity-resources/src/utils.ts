@@ -1,6 +1,13 @@
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type TxOperations } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import core, {
+  getCurrentAccount,
+  isOtherHour,
+  type Doc,
+  type Ref,
+  type TxOperations,
+  type Space
+} from '@hcengineering/core'
+import { getClient, isSpace } from '@hcengineering/presentation'
 import {
   EmojiPopup,
   closePopup,
@@ -58,7 +65,7 @@ export async function addReactionAction (
   const client = getClient()
   const reactions: Reaction[] =
     (message.reactions ?? 0) > 0
-      ? await client.findAll<Reaction>(activity.class.Reaction, { attachedTo: message._id })
+      ? await client.findAll<Reaction>(activity.class.Reaction, { attachedTo: message._id, space: message.space })
       : []
   const element = getEventPositionElement(ev)
 
@@ -168,4 +175,8 @@ export function canGroupMessages (message: MessageData, prevMessage?: MessageDat
 export function shouldScrollToActivity (): boolean {
   const loc = getCurrentResolvedLocation()
   return getMessageFromLoc(loc) !== undefined
+}
+
+export function getSpace (doc: Doc): Ref<Space> {
+  return isSpace(doc) ? doc._id : doc.space
 }

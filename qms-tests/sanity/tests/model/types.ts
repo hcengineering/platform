@@ -32,7 +32,8 @@ export enum DocumentStatus {
   REVIEWED = 'Reviewed',
   REJECTED = 'Rejected',
   APPROVED = 'Approved',
-  EFFECTIVE = 'Effective'
+  EFFECTIVE = 'Effective',
+  ARCHIVED = 'Archived'
 }
 
 export interface DocumentDetails {

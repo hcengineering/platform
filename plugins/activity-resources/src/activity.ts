@@ -1,5 +1,5 @@
 import activity, { type ActivityMessage, type SavedMessage } from '@hcengineering/activity'
-import { type Ref, SortingOrder, type WithLookup } from '@hcengineering/core'
+import core, { type Ref, SortingOrder, type WithLookup } from '@hcengineering/core'
 import { writable } from 'svelte/store'
 import { createQuery, getClient } from '@hcengineering/presentation'
 
@@ -14,7 +14,7 @@ export function loadSavedMessages (): void {
   if (client !== undefined) {
     savedMessagesQuery.query(
       activity.class.SavedMessage,
-      {},
+      { space: core.space.Workspace },
       (res) => {
         savedMessagesStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
       },

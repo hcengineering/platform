@@ -19,6 +19,7 @@ export class IssuesPage extends CommonTrackerPage {
   inputPopupCreateNewIssueDescription = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] div.tiptap')
 
+  buttonPopupCreateNewIssueProject = (): Locator => this.page.locator('[id="space\\.selector"]')
   buttonPopupCreateNewIssueStatus = (): Locator =>
     this.page.locator('form[id="tracker:string:NewIssue"] div#status-editor button')
 
@@ -63,7 +64,6 @@ export class IssuesPage extends CommonTrackerPage {
   buttonCollapsedCategories = (): Locator => this.page.locator('div.categoryHeader.collapsed')
   pupupTagsPopup = (): Locator => this.page.locator('.popup#TagsPopup')
   issueNotExist = (issueName: string): Locator => this.page.locator('tr', { hasText: issueName })
-  filterRowExists = (issueName: string): Locator => this.page.locator('div.row span', { hasText: issueName })
   issueListGrid = (): Locator => this.page.locator('div.listGrid')
   issueList = (): Locator => this.page.locator('div[class*="square"] > div')
   issueByName = (issueName: string): Locator => this.page.locator('a', { hasText: issueName })
@@ -280,10 +280,6 @@ export class IssuesPage extends CommonTrackerPage {
     await this.modifiedDateMenuItem().click()
   }
 
-  async pressEscape (): Promise<void> {
-    await this.page.keyboard.press('Escape')
-  }
-
   async clickEstimationContainer (): Promise<void> {
     await this.estimationContainer().click()
   }
@@ -424,6 +420,10 @@ export class IssuesPage extends CommonTrackerPage {
   async fillNewIssueForm (data: NewIssue): Promise<void> {
     await this.inputPopupCreateNewIssueTitle().fill(data.title)
     await this.inputPopupCreateNewIssueDescription().fill(data.description)
+    if (data.projectName != null) {
+      await this.buttonPopupCreateNewIssueProject().click()
+      await this.selectMenuItem(this.page, data.projectName)
+    }
     if (data.status != null) {
       await this.buttonPopupCreateNewIssueStatus().click()
       await this.selectFromDropdown(this.page, data.status)
@@ -512,11 +512,11 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkFilteredIssueExist (issueName: string): Promise<void> {
-    await expect(this.filterRowExists(issueName)).toHaveCount(1)
+    await expect(this.linesFromList(issueName)).toHaveCount(1)
   }
 
   async checkFilteredIssueNotExist (issueName: string): Promise<void> {
-    await expect(this.filterRowExists(issueName)).toHaveCount(0)
+    await expect(this.linesFromList(issueName)).toHaveCount(0)
   }
 
   async checkAllIssuesInStatus (statusId?: string, statusName?: string): Promise<void> {

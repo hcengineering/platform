@@ -24,9 +24,9 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 import settingP from '@hcengineering/setting'
 import telegramP, { NewTelegramMessage } from '@hcengineering/telegram'
-import { encode } from 'jwt-simple'
 import type { Collection } from 'mongodb'
 import fetch from 'node-fetch'
 import { Api } from 'telegram'
@@ -155,7 +155,7 @@ export class WorkspaceWorker {
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = encode({ email: config.SystemEmail, workspace }, config.Secret)
+    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
     const client = await createPlatformClient(token)
 
     const worker = new WorkspaceWorker(client, token, workspace, userStorage, lastMsgStorage, channelsStorage)

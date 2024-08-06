@@ -81,20 +81,26 @@
 
     if (value == null || value === '') return
 
-    const index = fields.findIndex(({ id }) => id === target.id)
-    if (index === -1) return
+    if (value.length === fields.length) {
+      pasteOtpCode(value)
+    } else {
+      const index = fields.findIndex(({ id }) => id === target.id)
+      if (index === -1) return
 
-    if (Object.values(otpData).every((v) => v !== '')) {
-      void validateOtp()
-      return
-    }
+      target.value = value[0]
 
-    const nextField = fields[index + 1]
-    if (nextField === undefined) return
+      if (Object.values(otpData).every((v) => v !== '')) {
+        void validateOtp()
+        return
+      }
 
-    const nextInput = formElement?.querySelector(`input[name="${nextField.name}"]`) as HTMLInputElement
-    if (nextInput != null) {
-      nextInput.focus()
+      const nextField = fields[index + 1]
+      if (nextField === undefined) return
+
+      const nextInput = formElement?.querySelector(`input[name="${nextField.name}"]`) as HTMLInputElement
+      if (nextInput != null) {
+        nextInput.focus()
+      }
     }
   }
 
@@ -139,9 +145,15 @@
     if (e.clipboardData == null) return
 
     const text = e.clipboardData.getData('text')
+    pasteOtpCode(text)
+  }
+
+  function pasteOtpCode (text: string): boolean {
     const digits = text.split('').filter((it) => it !== ' ')
 
-    if (digits.length !== fields.length) return
+    if (digits.length !== fields.length) {
+      return false
+    }
 
     let focusName: string | undefined = undefined
 
@@ -160,6 +172,8 @@
     if (Object.values(otpData).every((v) => v !== '')) {
       void validateOtp()
     }
+
+    return true
   }
 
   $: if (formElement != null) {

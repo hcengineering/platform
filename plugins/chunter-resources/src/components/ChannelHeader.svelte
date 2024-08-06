@@ -17,7 +17,7 @@
   import { getDocTitle } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
-  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
 
   import Header from './Header.svelte'
@@ -27,7 +27,7 @@
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
-  export let object: Doc | undefined
+  export let object: WithReferences<Doc> | undefined
   export let allowClose: boolean = false
   export let canOpen: boolean = false
   export let withAside: boolean = false
@@ -78,6 +78,6 @@
   on:close
 >
   {#if object}
-    <PinnedMessages {_id} {_class} space={object.space} on:select />
+    <PinnedMessages {_id} {_class} space={object.space} withRefs={(object.references ?? 0) > 0} on:select />
   {/if}
 </Header>

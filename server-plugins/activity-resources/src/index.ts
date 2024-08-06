@@ -61,13 +61,13 @@ export async function OnReactionChanged (originTx: Tx, control: TriggerControl):
     const txes = await createReactionNotifications(tx, control)
 
     await control.apply(txes, true)
-    return txes
+    return []
   }
 
   if (innerTx._class === core.class.TxRemoveDoc) {
     const txes = await removeReactionNotifications(tx, control)
     await control.apply(txes, true)
-    return txes
+    return []
   }
 
   return []
@@ -143,6 +143,7 @@ export async function createReactionNotifications (
 
   res = res.concat(
     await createCollabDocInfo(
+      control.ctx,
       [user] as Ref<PersonAccount>[],
       control,
       tx.tx,
@@ -396,7 +397,7 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
   const notificationTxes = await control.ctx.with(
-    'createNotificationTxes',
+    'createCollaboratorNotifications',
     {},
     async (ctx) => await createCollaboratorNotifications(ctx, tx, control, messages)
   )

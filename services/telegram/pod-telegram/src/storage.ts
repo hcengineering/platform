@@ -1,16 +1,20 @@
+import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
 import { MongoClient } from 'mongodb'
 
 import config from './config'
 
+const clientRef: MongoClientReference = getMongoClient(config.MongoURI)
+let client: MongoClient | undefined
 export const getDB = (() => {
-  let client: MongoClient | undefined
-
   return async () => {
     if (client === undefined) {
-      client = new MongoClient(config.MongoURI)
-      await client.connect()
+      client = await clientRef.getClient()
     }
 
     return client.db(config.MongoDB)
   }
 })()
+
+export const closeDB: () => Promise<void> = async () => {
+  clientRef.close()
+}

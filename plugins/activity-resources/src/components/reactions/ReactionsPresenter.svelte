@@ -16,7 +16,7 @@
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
 
-  import { updateDocReactions } from '../../utils'
+  import { getSpace, updateDocReactions } from '../../utils'
   import Reactions from './Reactions.svelte'
 
   export let object: ActivityMessage | undefined
@@ -30,9 +30,13 @@
   $: hasReactions = object?.reactions && object.reactions > 0
 
   $: if (object && hasReactions) {
-    reactionsQuery.query(activity.class.Reaction, { attachedTo: object._id }, (res: Reaction[]) => {
-      reactions = res
-    })
+    reactionsQuery.query(
+      activity.class.Reaction,
+      { attachedTo: object._id, space: getSpace(object) },
+      (res: Reaction[]) => {
+        reactions = res
+      }
+    )
   } else {
     reactionsQuery.unsubscribe()
   }

@@ -1,8 +1,16 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, generateTestData } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
+import { SignUpData } from '../model/common-types'
+import { TestData } from '../chat/types'
+import { faker } from '@faker-js/faker'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { ApiEndpoint } from '../API/Api'
+import { LoginPage } from '../model/login-page'
+import { SignInJoinPage } from '../model/signin-page'
+import { TeamPage } from '../model/team-page'
 
 test.use({
   storageState: PlatformSetting
@@ -160,22 +168,74 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkTimeSlotEndDate(1, dateEndTomorrow.getDate().toString())
   })
 
-  test("Drag'n'drop added Todo", async ({ page }) => {
+  test('Adding ToDo by dragging and checking visibility in the Team Planner', async ({ browser, page, request }) => {
+    const data: TestData = generateTestData()
+    const newUser2: SignUpData = {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: '1234'
+    }
+    const titleV = `Visible ToDo ${generateId()}`
+    const titleI = `Inisible ToDo ${generateId()}`
+
     let hour = new Date().getHours()
     const ampm = hour < 13 ? 'am' : 'pm'
     hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
     const time = `${hour}${ampm}`
-    const title = `Drag and drop ToDo ${generateId()}`
+    // const timeI = `${hour + 1}${ampm}`
+
+    const leftSideMenuPage: LeftSideMenuPage = new LeftSideMenuPage(page)
+    const loginPage: LoginPage = new LoginPage(page)
+    const api: ApiEndpoint = new ApiEndpoint(request)
+    await api.createAccount(data.userName, '1234', data.firstName, data.lastName)
+    await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
+    await (await page.goto(`${PlatformURI}`))?.finished()
+    await loginPage.login(data.userName, '1234')
+    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    await leftSideMenuPage.clickPlanner()
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
     await planningNavigationMenuPage.clickOnButtonToDoAll()
     const planningPage = new PlanningPage(page)
-    await planningPage.selectInputToDo().fill(title)
+
+    await planningPage.selectInputToDo().fill(titleV)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(title, time)
-    await planningPage.eventInSchedule(title).click()
+    await planningPage.dragdropTomorrow(titleV, time)
+    await planningPage.eventInSchedule(titleV).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupVisibleToEveryone().click()
     await planningPage.buttonPopupSave().click()
+
+    await planningPage.selectInputToDo().fill(titleI)
+    await planningPage.selectInputToDo().press('Enter')
+    await planningPage.dragdropTomorrow(titleI, time, true)
+    await planningPage.eventInSchedule(titleI).click()
+    await planningPage.buttonPopupCreateVisible().click()
+    await planningPage.buttonPopupOnlyVisibleToYou().click()
+    await planningPage.buttonPopupSave().click()
+
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    const page2 = await browser.newPage()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+
+    await leftSideMenuPageSecond.clickTeam()
+    const teamPage = new TeamPage(page2)
+    await teamPage.checkTeamPageIsOpened()
+    await teamPage.selectTeam('Default')
+    await teamPage.buttonNextDay().click()
+    await page2
+      .locator('div.hulyComponent div.item', { hasText: 'Tomorrow' })
+      .locator('div.item', { hasText: 'Busy 30m' })
+      .isVisible()
+
+    await page2.close()
   })
 })

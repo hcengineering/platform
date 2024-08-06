@@ -26,6 +26,7 @@
 
   $: void client
     .findAll(activity.class.Reaction, {
+      space: message.space,
       _id: { $in: [message.objectId, ...(message?.previousMessages?.map((a) => a.objectId) ?? [])] as Ref<Reaction>[] }
     })
     .then((res) => {

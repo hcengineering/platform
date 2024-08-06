@@ -349,23 +349,36 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           keepPattern.push(new RegExp(st.stageId))
         }
       }
+      const helper = this.storage.helper()
       if (deletePattern.length > 0) {
-        await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, deletePattern, keepPattern)
+        try {
+          const existingIndexes = await helper.listIndexes(DOMAIN_DOC_INDEX_STATE)
+          for (const existingIndex of existingIndexes) {
+            if (existingIndex.name !== undefined) {
+              const name: string = existingIndex.name
+              if (deletePattern.some((it) => it.test(name)) && !keepPattern.some((it) => it.test(name))) {
+                await helper.dropIndex(DOMAIN_DOC_INDEX_STATE, name)
+              }
+            }
+          }
+        } catch (err: any) {
+          console.error(err)
+        }
       }
 
       for (const st of this.stages) {
         if (this.cancelling) {
           return
         }
-        await this.storage.createIndexes(DOMAIN_DOC_INDEX_STATE, {
-          indexes: [
-            {
-              keys: {
-                ['stages.' + st.stageId]: 1
-              }
+        await this.storage.helper().createIndex(
+          DOMAIN_DOC_INDEX_STATE,
+          {
+            keys: {
+              ['stages.' + st.stageId]: 1
             }
-          ]
-        })
+          },
+          { name: 'stages.' + st.stageId + '_1' }
+        )
       }
     }
 
@@ -481,7 +494,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               async (ctx) =>
                 await this.storage.findAll(ctx, core.class.DocIndexState, q, {
                   sort: { modifiedOn: SortingOrder.Descending },
-                  limit: globalIndexer.processingSize
+                  limit: globalIndexer.processingSize,
+                  skipClass: true,
+                  skipSpace: true
                 })
             )
             const toRemove: DocIndexState[] = []
@@ -594,7 +609,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             _id: 1,
             stages: 1,
             objectClass: 1
-          }
+          },
+          skipSpace: true,
+          skipClass: true
         }
       )
 

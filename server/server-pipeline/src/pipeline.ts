@@ -10,7 +10,6 @@ import {
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
-  BlobLookupMiddleware,
   ConfigurationMiddleware,
   LookupMiddleware,
   ModifiedMiddleware,
@@ -58,7 +57,6 @@ export function createServerPipeline (
 ): PipelineFactory {
   const middlewares: MiddlewareCreator[] = [
     LookupMiddleware.create,
-    BlobLookupMiddleware.create,
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,

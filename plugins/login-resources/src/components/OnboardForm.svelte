@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
+  import login, { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
   import { OK } from '@hcengineering/platform'
   import { onMount } from 'svelte'
 

@@ -13,15 +13,22 @@
 // limitations under the License.
 //
 
-import { mergeIds, type IntlString } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
 import love, { loveId } from '@hcengineering/love'
+import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
+import { type DocCreateFunction } from '@hcengineering/presentation'
+import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(loveId, love, {
   component: {
-    ControlExt: '' as AnyComponent
+    ControlExt: '' as AnyComponent,
+    MeetingData: '' as AnyComponent,
+    EditMeetingData: '' as AnyComponent
+  },
+  function: {
+    CreateMeeting: '' as Resource<DocCreateFunction>
   },
   string: {
+    CreateMeeting: '' as IntlString,
     LeaveRoom: '' as IntlString,
     LeaveRoomConfirmation: '' as IntlString,
     Mute: '' as IntlString,

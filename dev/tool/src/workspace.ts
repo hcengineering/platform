@@ -16,25 +16,24 @@
 
 import contact from '@hcengineering/contact'
 import core, {
-  type Client as CoreClient,
   type BackupClient,
-  DOMAIN_TX,
-  type Tx,
-  type WorkspaceId,
-  type Ref,
+  type Client as CoreClient,
   type Doc,
-  DOMAIN_DOC_INDEX_STATE
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_TX,
+  type Ref,
+  type Tx,
+  type WorkspaceId
 } from '@hcengineering/core'
-import { getWorkspaceDB } from '@hcengineering/mongo'
-import { MongoClient } from 'mongodb'
-import { generateModelDiff, printDiff } from './mdiff'
+import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'
+import { generateModelDiff, printDiff } from './mdiff'
 
 export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, rawTxes: Tx[]): Promise<void> {
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspace)
+    const _client = await client.getClient()
+    const db = getWorkspaceDB(_client, workspace)
 
     console.log('diffing transactions...')
 
@@ -68,7 +67,7 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
       }
     }
   } finally {
-    await client.close()
+    client.close()
   }
 }
 
@@ -81,18 +80,18 @@ export async function updateField (
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   let valueToPut: string | number = cmd.value
   if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
   try {
+    const _client = await client.getClient()
     try {
-      await client.connect()
-      const db = getWorkspaceDB(client, workspaceId)
+      const db = getWorkspaceDB(_client, workspaceId)
       await db
         .collection(cmd.domain)
         .updateOne({ _id: cmd.objectId as Ref<Doc> }, { $set: { [cmd.attribute]: valueToPut } })
     } finally {
-      await client.close()
+      client.close()
     }
   } finally {
     await connection.close()
@@ -104,19 +103,19 @@ export async function recreateElastic (
   workspaceId: WorkspaceId,
   transactorUrl: string
 ): Promise<void> {
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
+  const _client = await client.getClient()
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const db = getWorkspaceDB(_client, workspaceId)
     await db
       .collection(DOMAIN_DOC_INDEX_STATE)
       .updateMany({ _class: core.class.DocIndexState }, { $set: { stages: {} } })
     await connection.sendForceClose()
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }

@@ -42,17 +42,21 @@
 
   $: if (model) {
     const classes = getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c))
-    query.query(
-      core.class.Space,
-      {
-        _class: { $in: classes },
-        members: getCurrentAccount()._id
-      },
-      (result) => {
-        spaces = result
-      },
-      { sort: { name: SortingOrder.Ascending } }
-    )
+    if (classes.length > 0) {
+      query.query(
+        core.class.Space,
+        {
+          _class: classes.length === 1 ? classes[0] : { $in: classes },
+          members: getCurrentAccount()._id
+        },
+        (result) => {
+          spaces = result
+        },
+        { sort: { name: SortingOrder.Ascending } }
+      )
+    } else {
+      query.unsubscribe()
+    }
   }
 
   let specials: SpecialNavModel[] = []

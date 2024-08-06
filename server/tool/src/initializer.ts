@@ -315,5 +315,6 @@ export class WorkspaceInitializer {
         return value
       }
     }
+    return value
   }
 }

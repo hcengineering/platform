@@ -1,6 +1,17 @@
 import { Analytics } from '@hcengineering/analytics'
+import calendar, { getAllEvents, type Event } from '@hcengineering/calendar'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
-import core, { concatLink, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
+import core, {
+  AccountRole,
+  concatLink,
+  getCurrentAccount,
+  type Data,
+  type IdMap,
+  type Ref,
+  type Space,
+  type TxOperations
+} from '@hcengineering/core'
+import login from '@hcengineering/login'
 import {
   RequestStatus,
   RoomAccess,
@@ -9,12 +20,13 @@ import {
   loveId,
   type Invite,
   type JoinRequest,
+  type Meeting,
   type Office,
   type ParticipantInfo,
   type Room
 } from '@hcengineering/love'
-import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
+import presentation, { createQuery, getClient, type DocCreatePhase } from '@hcengineering/presentation'
 import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
 import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
 import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
@@ -555,6 +567,38 @@ function checkPlace (room: Room, info: ParticipantInfo[], x: number, y: number):
   return !isOffice(room) && info.find((p) => p.x === x && p.y === y) === undefined
 }
 
+export async function connectToMeeting (
+  personByIdStore: IdMap<Person>,
+  currentInfo: ParticipantInfo | undefined,
+  info: ParticipantInfo[],
+  currentRequests: JoinRequest[],
+  currentInvites: Invite[],
+  meetId: string
+): Promise<void> {
+  const client = getClient()
+  const meeting = await client.findOne(love.mixin.Meeting, { _id: meetId as Ref<Meeting> })
+  if (meeting === undefined) return
+  const room = await client.findOne(love.class.Room, { _id: meeting.room })
+  if (room === undefined) return
+
+  // check time (it should be 10 minutes before the meeting or active in roomInfo)
+  const now = new Date()
+  const res = getAllEvents([meeting], now.setMinutes(now.getMinutes() - 10), new Date().getTime())
+  if (res.length === 0) {
+    console.log('Meeting is not active')
+    return
+  }
+
+  await tryConnect(
+    personByIdStore,
+    currentInfo,
+    room,
+    info.filter((p) => p.room === room._id),
+    currentRequests,
+    currentInvites
+  )
+}
+
 export async function tryConnect (
   personByIdStore: IdMap<Person>,
   currentInfo: ParticipantInfo | undefined,
@@ -720,3 +764,28 @@ async function checkRecordAvailable (): Promise<void> {
 }
 
 void checkRecordAvailable()
+
+export async function createMeeting (
+  client: TxOperations,
+  _id: Ref<Event>,
+  space: Space,
+  data: Data<Event>,
+  store: Record<string, any>,
+  phase: DocCreatePhase
+): Promise<void> {
+  if (phase === 'post' && store.room != null && store.isMeeting === true) {
+    await client.createMixin<Event, Meeting>(_id, calendar.class.Event, space._id, love.mixin.Meeting, {
+      room: store.room as Ref<Room>
+    })
+    const event = await client.findOne(calendar.class.Event, { _id })
+    if (event === undefined) return
+    const navigateUrl = getCurrentLocation()
+    navigateUrl.path[2] = loveId
+    navigateUrl.query = {
+      meetId: _id
+    }
+    const func = await getResource(login.function.GetInviteLink)
+    const link = await func(-1, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
+    await client.update(event, { location: link })
+  }
+}

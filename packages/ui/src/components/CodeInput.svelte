@@ -32,7 +32,6 @@
     on:change
     on:keyup
     on:input
-    maxlength={1}
     inputmode="numeric"
     autocomplete="off"
     placeholder=""

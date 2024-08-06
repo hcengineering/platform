@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "Champ requis {field}",
+    "FieldsDoNotMatch": "{field} ne correspond pas à {field2}",
+    "ConnectingToServer": "Connexion au serveur..."
+  },
+  "string": {
+    "CreateWorkspace": "Créer un espace de travail",
+    "LastName": "Nom de famille",
+    "FirstName": "Prénom",
+    "Workspace": "Nom de l'espace de travail",
+    "FillInProfile": "Remplissez votre profil",
+    "SetUpPassword": "Définir votre mot de passe",
+    "Next": "Suivant",
+    "Skip": "Passer",
+    "SignUpCompleted": "Inscription terminée",
+    "StartUsingHuly": "Commencez à utiliser Huly"
+  }
+}

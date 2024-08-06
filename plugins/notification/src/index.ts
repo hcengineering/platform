@@ -238,7 +238,7 @@ export interface InboxNotification extends Doc {
   data?: Markup
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
-  archived?: boolean
+  archived: boolean
 }
 
 export interface ActivityInboxNotification extends InboxNotification {
@@ -280,7 +280,7 @@ export interface DocNotifyContext extends Doc {
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
 
-  isPinned?: boolean
+  isPinned: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp
 }

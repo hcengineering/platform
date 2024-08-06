@@ -73,7 +73,7 @@ import task, { type ProjectType, type Task, type TaskType } from '@hcengineering
 import { updateYDocContent } from '@hcengineering/text'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
-import { type Db, MongoClient } from 'mongodb'
+import { type Db } from 'mongodb'
 
 export async function cleanWorkspace (
   ctx: MeasureContext,
@@ -157,10 +157,10 @@ export async function cleanWorkspace (
       }
     }
 
-    const client = new MongoClient(mongoUrl)
+    const client = getMongoClient(mongoUrl)
     try {
-      await client.connect()
-      const db = getWorkspaceDB(client, workspaceId)
+      const _client = await client.getClient()
+      const db = getWorkspaceDB(_client, workspaceId)
 
       if (opt.removedTx) {
         const txes = await db.collection(DOMAIN_TX).find({}).toArray()
@@ -173,7 +173,7 @@ export async function cleanWorkspace (
         }
       }
     } finally {
-      await client.close()
+      client.close()
     }
   } catch (err: any) {
     console.trace(err)
@@ -420,10 +420,10 @@ export async function fixSkills (
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceDB(_client, workspaceId)
 
     async function fixCount (): Promise<void> {
       console.log('fixing ref-count...')
@@ -664,7 +664,7 @@ export async function fixSkills (
   } catch (err: any) {
     console.trace(err)
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }
@@ -689,10 +689,10 @@ export async function restoreRecruitingTaskTypes (
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceDB(_client, workspaceId)
 
     // Query all vacancy project types creations (in Model)
     // We only update new project types in model here and not old ones in spaces
@@ -839,7 +839,7 @@ export async function restoreRecruitingTaskTypes (
   } catch (err: any) {
     console.trace(err)
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }
@@ -853,10 +853,10 @@ export async function restoreHrTaskTypesFromUpdates (
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
-  const client = new MongoClient(mongoUrl)
+  const client = getMongoClient(mongoUrl)
   try {
-    await client.connect()
-    const db = getWorkspaceDB(client, workspaceId)
+    const _client = await client.getClient()
+    const db = getWorkspaceDB(_client, workspaceId)
     const hierarchy = connection.getHierarchy()
     const descr = connection.getModel().getObject(recruit.descriptors.VacancyType)
     const knownCategories = [
@@ -1047,7 +1047,7 @@ export async function restoreHrTaskTypesFromUpdates (
   } catch (err: any) {
     console.trace(err)
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }

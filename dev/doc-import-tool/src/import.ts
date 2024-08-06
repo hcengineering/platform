@@ -41,18 +41,13 @@ import { compareStrExact, uploadFile } from './helpers'
 
 export default async function importExtractedFile (config: Config, extractedFile: ExtractedFile): Promise<void> {
   const { workspaceId } = config
-
   const token = generateToken(systemAccountEmail, workspaceId)
-
-  const transactorUrl = await getTransactorEndpoint(token)
-
+  const transactorUrl = await getTransactorEndpoint(token, 'external')
   console.log(`Connecting to transactor: ${transactorUrl} (ws: '${workspaceId.name}')`)
-
   const connection = (await createClient(transactorUrl, token)) as CoreClient & BackupClient
 
   try {
     console.log(`Connected to ${transactorUrl}`)
-
     const txops = new TxOperations(connection, core.account.System)
 
     try {
@@ -73,17 +68,18 @@ async function createDocument (
   config: Config
 ): Promise<Ref<Document>> {
   const { owner, space } = config
-
   console.log('Creating document from extracted data')
 
   const templateId = await createTemplateIfNotExist(txops, extractedFile.prefix, config)
-  const { title, prefix } = extractedFile
+  const { title, prefix, oldId } = extractedFile
 
   const docId: Ref<ControlledDocument> = generateId()
+  const ccRecordId = generateId<ChangeControl>()
+
   const data: AttachedData<ControlledDocument> = {
     title,
     prefix,
-    code: '',
+    code: oldId,
     seqNumber: 0,
     major: 0,
     minor: 1,
@@ -95,7 +91,7 @@ async function createDocument (
     reviewers: [],
     approvers: [],
     coAuthors: [],
-    changeControl: '' as Ref<ChangeControl>,
+    changeControl: ccRecordId,
     author: owner,
     owner,
     category: '' as Ref<DocumentCategory>,
@@ -103,13 +99,13 @@ async function createDocument (
     effectiveDate: 0,
     reviewInterval: DEFAULT_PERIODIC_REVIEW_INTERVAL,
     content: getCollaborativeDoc(generateId()),
-    snapshots: 0
+    snapshots: 0,
+    plannedEffectiveDate: 0
   }
 
-  const ccRecordId = generateId<ChangeControl>()
   const ccRecord: Data<ChangeControl> = {
     description: '',
-    reason: '', // TODO: move to config
+    reason: 'Imported document', // TODO: move to config
     impact: '',
     impactedDocuments: []
   }
@@ -135,29 +131,28 @@ async function createTemplateIfNotExist (
 ): Promise<Ref<DocumentTemplate>> {
   const { owner, space } = config
 
-  console.log(`Getting template ${prefix}`)
+  console.log(`Getting template with doc ${prefix}`)
 
-  const template = await txops.findOne(documents.mixin.DocumentTemplate, { prefix })
+  const template = await txops.findOne(documents.mixin.DocumentTemplate, { docPrefix: prefix })
   if (template != null) {
     return template._id
   }
 
-  console.log(`Creating template with prefix: ${prefix}`)
+  console.log(`Creating template with doc prefix: ${prefix}`)
 
   const ccRecordId = generateId<ChangeControl>()
   const ccRecord: Data<ChangeControl> = {
     description: '',
-    reason: '', // TODO: move to config
+    reason: 'Imported template', // TODO: move to config
     impact: '',
     impactedDocuments: []
   }
 
   const templateId: Ref<ControlledDocument> = generateId()
   const category = '' as Ref<DocumentCategory> // TODO: move to config
-  const data: AttachedData<ControlledDocument> = {
-    prefix: 'IMP',
+  const data = {
     title: 'Import template',
-    code: templateId,
+    code: '',
     seqNumber: 0,
     sections: 0,
     category,
@@ -172,12 +167,13 @@ async function createTemplateIfNotExist (
     coAuthors: [],
     changeControl: ccRecordId,
     content: getCollaborativeDoc(generateId()),
-    snapshots: 0
+    snapshots: 0,
+    plannedEffectiveDate: 0
   }
 
   const { success } = await createDocumentTemplate(
     txops,
-    documents.class.Document,
+    documents.class.ControlledDocument,
     space,
     documents.mixin.DocumentTemplate,
     documents.ids.NoProject,

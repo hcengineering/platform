@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "Required field {field}",
+    "FieldsDoNotMatch": "{field} don't match {field2}",
+    "ConnectingToServer": "Connecting to server...."
+  },
+  "string": {
+    "CreateWorkspace": "Create workspace",
+    "LastName": "Last name",
+    "FirstName": "First name",
+    "Workspace": "Workspace name",
+    "FillInProfile": "Fill in your profile",
+    "SetUpPassword": "Set up your password",
+    "Next": "Next",
+    "Skip": "Skip",
+    "SignUpCompleted": "Sign up completed",
+    "StartUsingHuly": "Start using Huly"
+  }
+}

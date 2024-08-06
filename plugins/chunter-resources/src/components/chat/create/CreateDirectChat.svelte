@@ -89,7 +89,8 @@
     await client.createDoc(notification.class.DocNotifyContext, dmId, {
       user: myAccId,
       attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage
+      attachedToClass: chunter.class.DirectMessage,
+      isPinned: false
     })
 
     openChannel(dmId, chunter.class.DirectMessage)

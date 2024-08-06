@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -74,7 +74,7 @@ import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
-import type { StorageAdapter } from '@hcengineering/server-core'
+import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
 import { benchmark, benchmarkWorker } from './benchmark'
@@ -95,6 +95,7 @@ import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
+import { moveFiles } from './storage'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1035,6 +1036,37 @@ export function devTool (
           },
           end: (cb) => {
             wrstream.end(cb)
+          }
+        })
+      })
+    })
+
+  program
+    .command('move-files')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .action(async (cmd: { workspace: string }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        await withStorage(mongodbUri, async (adapter) => {
+          try {
+            const exAdapter = adapter as StorageAdapterEx
+            if (exAdapter.adapters === undefined || exAdapter.adapters.size < 2) {
+              throw new Error('bad storage config, at least two storage providers are required')
+            }
+
+            console.log('moving files to storage provider', exAdapter.defaultAdapter)
+
+            const workspaces = await listWorkspacesPure(db, productId)
+            for (const workspace of workspaces) {
+              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+                continue
+              }
+
+              const wsId = getWorkspaceId(workspace.workspace, productId)
+              await moveFiles(toolCtx, wsId, exAdapter)
+            }
+          } catch (err: any) {
+            console.error(err)
           }
         })
       })

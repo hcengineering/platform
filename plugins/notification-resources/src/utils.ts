@@ -76,9 +76,13 @@ const providerSettingsQuery = createQuery(true)
 const typeSettingsQuery = createQuery(true)
 
 export function loadNotificationSettings (): void {
-  providerSettingsQuery.query(notification.class.NotificationProviderSetting, {}, (res) => {
-    providersSettings.set(res)
-  })
+  providerSettingsQuery.query(
+    notification.class.NotificationProviderSetting,
+    { space: core.space.Workspace },
+    (res) => {
+      providersSettings.set(res)
+    }
+  )
   typeSettingsQuery.query(notification.class.NotificationTypeSetting, {}, (res) => {
     typesSettings.set(res)
   })
@@ -87,11 +91,11 @@ export function loadNotificationSettings (): void {
 loadNotificationSettings()
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  return docNotifyContext.isPinned !== true
+  return !docNotifyContext.isPinned
 }
 
 export async function hasDocNotifyContextUnpinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  return docNotifyContext.isPinned === true
+  return docNotifyContext.isPinned
 }
 
 /**
@@ -182,7 +186,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
   try {
     const notifications = await ops.findAll(
       notification.class.InboxNotification,
-      { docNotifyContext: doc._id, archived: { $ne: true } },
+      { docNotifyContext: doc._id, archived: false },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 

@@ -63,7 +63,8 @@ export async function createDocNotifyContexts (
       await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {
         user: user._id,
         attachedTo,
-        attachedToClass
+        attachedToClass,
+        isPinned: false
       })
     }
   }

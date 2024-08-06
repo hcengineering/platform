@@ -110,7 +110,8 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
             user: tx.modifiedBy,
             attachedTo: channel._id,
             attachedToClass: channel._class,
-            lastUpdateTimestamp: tx.modifiedOn
+            lastUpdateTimestamp: tx.modifiedOn,
+            isPinned: false
             // TODO: push inbox notifications
             // txes: [
             //   { _id: tx._id as Ref<TxCUD<Doc>>, modifiedOn: tx.modifiedOn, modifiedBy: tx.modifiedBy, isNew: true }

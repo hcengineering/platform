@@ -27,7 +27,6 @@ import {
   type AttachedDoc,
   type Class,
   type Doc,
-  type DocIndexState,
   type IndexingConfiguration,
   type TxCollectionCUD
 } from '@hcengineering/core'
@@ -284,6 +283,10 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_DOC_INDEX_STATE,
+    indexes: [
+      { keys: { removed: 1 }, filter: { removed: true } },
+      { keys: { _class: 1 }, filter: { _class: core.class.DocIndexState } }
+    ],
     disabled: [
       { attachedToClass: 1 },
       { stages: 1 },
@@ -297,24 +300,6 @@ export function createModel (builder: Builder): void {
     ],
     skip: ['stages.']
   })
-
-  builder.mixin<Class<DocIndexState>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
-    core.class.DocIndexState,
-    core.class.Class,
-    core.mixin.IndexConfiguration,
-    {
-      indexes: [
-        {
-          keys: {
-            _class: 1,
-            stages: 1,
-            _id: 1,
-            modifiedOn: 1
-          }
-        }
-      ]
-    }
-  )
 
   builder.mixin(core.class.Space, core.class.Class, core.mixin.FullTextSearchContext, {
     childProcessingAllowed: false
