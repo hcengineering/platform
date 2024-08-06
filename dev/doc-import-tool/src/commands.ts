@@ -1,3 +1,4 @@
+import { MeasureContext } from '@hcengineering/core'
 import docx4js from 'docx4js'
 import { AnyNode } from 'domhandler'
 
@@ -7,7 +8,7 @@ import importExtractedFile from './import'
 import convert from './convert/convert'
 import { Config } from './config'
 
-export async function importDoc (config: Config): Promise<void> {
+export async function importDoc (ctx: MeasureContext, config: Config): Promise<void> {
   const { specFile, doc, backend } = config
 
   const spec = await read(specFile)
@@ -23,5 +24,5 @@ export async function importDoc (config: Config): Promise<void> {
   const contents = await convert(doc, backend)
   const extractedFile = await extract(contents, spec, headerRoot)
 
-  await importExtractedFile(config, extractedFile)
+  await importExtractedFile(ctx, config, extractedFile)
 }

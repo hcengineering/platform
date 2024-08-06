@@ -20,6 +20,7 @@ import core, {
   BackupClient,
   Client as CoreClient,
   Data,
+  MeasureContext,
   Ref,
   TxOperations,
   generateId,
@@ -27,19 +28,22 @@ import core, {
   systemAccountEmail,
   type Blob
 } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import serverCore from '@hcengineering/server-core'
-import { findAll, getOuterHTML } from 'domutils'
-import { parseDocument } from 'htmlparser2'
-
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
+import { findAll, getOuterHTML } from 'domutils'
+import { parseDocument } from 'htmlparser2'
+import { v4 as uuid } from 'uuid'
+
 import { Config } from './config'
 import { ExtractedFile } from './extract/extract'
 import { ExtractedSection } from './extract/sections'
-import { compareStrExact, uploadFile } from './helpers'
+import { compareStrExact } from './helpers'
 
-export default async function importExtractedFile (config: Config, extractedFile: ExtractedFile): Promise<void> {
+export default async function importExtractedFile (
+  ctx: MeasureContext,
+  config: Config,
+  extractedFile: ExtractedFile
+): Promise<void> {
   const { workspaceId } = config
   const token = generateToken(systemAccountEmail, workspaceId)
   const transactorUrl = await getTransactorEndpoint(token, 'external')
@@ -53,7 +57,7 @@ export default async function importExtractedFile (config: Config, extractedFile
     try {
       const docId = await createDocument(txops, extractedFile, config)
       const createdDoc = await txops.findOne(documents.class.Document, { _id: docId })
-      await createSections(txops, extractedFile, config, createdDoc)
+      await createSections(ctx, txops, extractedFile, config, createdDoc)
     } finally {
       await txops.close()
     }
@@ -199,6 +203,7 @@ async function createTemplateIfNotExist (
 }
 
 async function createSections (
+  ctx: MeasureContext,
   txops: TxOperations,
   extractedFile: ExtractedFile,
   config: Config,
@@ -263,7 +268,7 @@ async function createSections (
         prevSection = existingSection
       }
 
-      await processImages(txops, section, config)
+      await processImages(ctx, txops, section, config)
 
       const collabSectionId =
         existingSection != null && h.isDerived(existingSection._class, documents.class.CollaborativeDocumentSection)
@@ -296,13 +301,16 @@ async function createSections (
   }
 }
 
-export async function processImages (txops: TxOperations, section: ExtractedSection, config: Config): Promise<void> {
+export async function processImages (
+  ctx: MeasureContext,
+  txops: TxOperations,
+  section: ExtractedSection,
+  config: Config
+): Promise<void> {
   const dom = parseDocument(section.content)
   const imageNodes = findAll((n) => n.tagName === 'img', dom.children)
 
-  const { uploadURL, token, space } = config
-  const frontUrl = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const fullUploadURL = `${frontUrl}${uploadURL}`
+  const { storageAdapter, workspaceId, space } = config
 
   const imageUploads = imageNodes.map(async (img) => {
     const src = img.attribs.src
@@ -313,14 +321,16 @@ export async function processImages (txops: TxOperations, section: ExtractedSect
       return
     }
 
-    const fileContents = extracted[2]
-    const fileSize = Buffer.from(fileContents, 'base64').length
+    const fileContentsBase64 = extracted[2]
+    const fileContents = Buffer.from(fileContentsBase64, 'base64')
+    const fileSize = fileContents.length
     const mimeType = extracted[1]
     const ext = mimeType.split('/')[1]
     const fileName = `${generateId()}.${ext}`
 
     // upload
-    const uuid = await uploadFile(fileContents, fileName, mimeType, fullUploadURL, token)
+    const id = uuid()
+    await storageAdapter.put(ctx, workspaceId, id, fileContents, mimeType, fileSize)
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()
@@ -331,7 +341,7 @@ export async function processImages (txops: TxOperations, section: ExtractedSect
       documents.class.CollaborativeDocumentSection,
       'attachments',
       {
-        file: uuid as Ref<Blob>,
+        file: id as Ref<Blob>,
         name: fileName,
         type: mimeType,
         size: fileSize,
@@ -340,8 +350,8 @@ export async function processImages (txops: TxOperations, section: ExtractedSect
       attachmentId
     )
 
-    img.attribs['file-id'] = uuid
-    img.attribs.src = `${uploadURL}/${uuid}`
+    img.attribs['file-id'] = id
+    img.attribs.src = `/files/${uuid}`
     img.attribs['data-type'] = 'image'
   })
 
