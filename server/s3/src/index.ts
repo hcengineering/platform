@@ -360,6 +360,7 @@ export class S3Service implements StorageAdapter {
           })
           const response = await this.client.send(cmd)
           return {
+            objectName,
             etag: response.ETag ?? '',
             versionId: response.VersionId ?? null
           }
@@ -391,6 +392,7 @@ export class S3Service implements StorageAdapter {
 
           const output = await uploadTask.done()
           return {
+            objectName,
             etag: output.ETag ?? '',
             versionId: output.VersionId ?? null
           }
@@ -450,7 +452,7 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
     return 'S3_SECRET_KEY'
   }
 
-  const minioConfig: S3Config = {
+  const config: S3Config = {
     kind: 's3',
     name: 's3',
     region: 'auto',
@@ -458,6 +460,6 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
     accessKey,
     secretKey
   }
-  storageConfig.storages.push(minioConfig)
+  storageConfig.storages.push(config)
   storageConfig.default = 's3'
 }
