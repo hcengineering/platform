@@ -19,21 +19,27 @@ export function concatLink (host: string, path: string): string {
 
 async function loadServerConfig (url: string): Promise<any> {
   let retries = 5
-  let error: any
+  let res: Response | undefined
 
   do {
     try {
-      return await (await fetch(url)).json()
+      res = await fetch(url)
+      break
     } catch (e) {
-      error = e
       retries--
-      if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
+      if (retries === 0) {
+        throw new Error(`Failed to load server config: ${e}`)
       }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
     }
   } while (retries > 0)
 
-  throw new Error(`Failed to load server config: ${error}`)
+  if (res === undefined) {
+    // In theory should never get here
+    throw new Error('Failed to load server config')
+  }
+
+  return await res.json()
 }
 
 const openArg = (process.argv.find((it) => it.startsWith('--open=')) ?? '').split('--open=')[1]
