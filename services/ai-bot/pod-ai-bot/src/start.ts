@@ -22,6 +22,7 @@ import serverClient from '@hcengineering/server-client'
 import config from './config'
 import { closeDB, getDB } from './storage'
 import { AIBotController } from './controller'
+import { createBotAccount } from './account'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -31,7 +32,19 @@ export const start = async (): Promise<void> => {
 
   const ctx = new MeasureMetricsContext('ai-bot-service', {})
 
+  ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
+
   const db = await getDB(config.MongoURL, config.ConfigurationDB)
+  for (let i = 0; i < 5; i++) {
+    ctx.info('Creating bot account', { attempt: i })
+    try {
+      await createBotAccount()
+      break
+    } catch (e) {
+      ctx.error('Error during account creation', { error: e })
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+  }
   const aiController = new AIBotController(db, ctx)
 
   const onClose = (): void => {

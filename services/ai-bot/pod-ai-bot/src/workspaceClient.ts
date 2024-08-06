@@ -26,8 +26,7 @@ import core, {
   TxOperations,
   TxProcessor,
   WorkspaceId,
-  Blob,
-  systemAccountEmail
+  Blob
 } from '@hcengineering/core'
 import aiBot, { AIBotEvent, aiBotAccountEmail, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
@@ -39,16 +38,13 @@ import { deepEqual } from 'fast-equals'
 import { BlobClient } from '@hcengineering/server-client'
 import fs from 'fs'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { WorkspaceLoginInfo } from '@hcengineering/account'
 
 import config from './config'
-import { assignBotToWorkspace, createBotAccount, getWorkspaceInfo, loginBot } from './account'
+import { loginBot } from './account'
 import { AIBotController } from './controller'
 import { connectPlatform } from './platform'
 
 const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
-const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
-const MAX_ASSIGN_ATTEMPTS = 5
 
 export class WorkspaceClient {
   client: Client | undefined
@@ -59,9 +55,6 @@ export class WorkspaceClient {
 
   loginTimeout: NodeJS.Timeout | undefined
   loginDelayMs = 2 * 1000
-
-  assignTimeout: NodeJS.Timeout | undefined
-  assignAttempts = 0
 
   initializePromise: Promise<void> | undefined = undefined
 
@@ -84,77 +77,18 @@ export class WorkspaceClient {
     const token = (await loginBot())?.token
 
     if (token !== undefined) {
-      this.ctx.info('Assign to workspace..', this.workspace)
-      await this.assignToWorkspace()
-
       return token
     } else {
-      await createBotAccount()
-      this.ctx.info('Assign to workspace..', this.workspace)
-      await this.assignToWorkspace()
-
       return (await loginBot())?.token
     }
   }
 
-  private async getWorkspaceInfo (): Promise<WorkspaceLoginInfo | undefined> {
-    const systemToken = generateToken(systemAccountEmail, this.workspace)
-    for (let i = 0; i < 5; i++) {
-      try {
-        const info = await getWorkspaceInfo(systemToken)
-
-        if (info == null) {
-          this.ctx.warn('Cannot find workspace info', this.workspace)
-          await wait(ASSIGN_WORKSPACE_DELAY_MS)
-          continue
-        }
-
-        return info
-      } catch (e) {
-        this.ctx.error('Error during get workspace info:', { e })
-        await wait(ASSIGN_WORKSPACE_DELAY_MS)
-      }
-    }
-  }
-
-  private async assignToWorkspace (): Promise<void> {
-    clearTimeout(this.assignTimeout)
-    try {
-      const info = await this.getWorkspaceInfo()
-
-      if (info === undefined) {
-        void this.controller.closeWorkspaceClient(this.workspace)
-        return
-      }
-
-      if (info.creating === true) {
-        this.ctx.info('Workspace is creating -> waiting...', this.workspace)
-        this.assignTimeout = setTimeout(() => {
-          void this.assignToWorkspace()
-        }, ASSIGN_WORKSPACE_DELAY_MS)
-        return
-      }
-
-      const result = await assignBotToWorkspace(this.workspace)
-      this.ctx.info('Assign to workspace result: ', { result, workspace: this.workspace.name })
-      await this.uploadAvatarFile()
-    } catch (e) {
-      this.ctx.error('Error during assign workspace:', { e })
-      if (this.assignAttempts < MAX_ASSIGN_ATTEMPTS) {
-        this.assignAttempts++
-        this.assignTimeout = setTimeout(() => {
-          void this.assignToWorkspace()
-        }, ASSIGN_WORKSPACE_DELAY_MS)
-      } else {
-        void this.controller.closeWorkspaceClient(this.workspace)
-      }
-    }
-  }
-
-  private async uploadAvatarFile (): Promise<void> {
+  private async uploadAvatarFile (client: TxOperations): Promise<void> {
     this.ctx.info('Upload avatar file', { workspace: this.workspace.name })
 
     try {
+      await this.checkPersonData(client)
+
       const stat = fs.statSync(config.AvatarPath)
       const lastModified = stat.mtime.getTime()
 
@@ -170,6 +104,7 @@ export class WorkspaceClient {
 
       await this.blobClient.upload(this.ctx, config.AvatarName, data.length, config.AvatarContentType, data)
       await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
+      this.ctx.info('Uploaded avatar file', { workspace: this.workspace.name, path: config.AvatarPath })
     } catch (e) {
       this.ctx.error('Failed to upload avatar file', { e })
     }
@@ -235,11 +170,10 @@ export class WorkspaceClient {
     this.client = await connectPlatform(token)
 
     if (this.client === undefined) {
+      this.ctx.error('Cannot connect to platform', this.workspace)
       return
     }
-
     this.opClient = new TxOperations(this.client, aiBot.account.AIBot)
-    void this.checkPersonData(this.opClient)
     void this.opClient.findAll(aiBot.class.AIBotEvent, {}).then((res) => {
       void this.processEvents(res)
     })
@@ -249,6 +183,7 @@ export class WorkspaceClient {
     }
 
     this.ctx.info('Initialized workspace', this.workspace)
+    void this.uploadAvatarFile(this.opClient)
   }
 
   async getThreadParent (
@@ -500,12 +435,4 @@ export class WorkspaceClient {
 
     await this.processEvents(resultTxes)
   }
-}
-
-async function wait (delay: number): Promise<void> {
-  await new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, delay)
-  })
 }
