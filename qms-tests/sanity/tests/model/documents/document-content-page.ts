@@ -46,7 +46,8 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly addSpaceButton: Locator
   readonly inputSpaceName: Locator
   readonly roleSelector: Locator
-  readonly selectRoleMember: Locator
+  readonly selectRoleMemberAJ: Locator
+  readonly selectRoleMemberDK: Locator
   readonly createButton: Locator
   readonly createNewDocument: Locator
   readonly selectCustom: Locator
@@ -128,7 +129,8 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.addSpaceButton = page.locator('#tree-orgspaces')
     this.inputSpaceName = page.getByPlaceholder('New documents space')
     this.roleSelector = page.getByRole('button', { name: 'Members' })
-    this.selectRoleMember = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.selectRoleMemberAJ = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.selectRoleMemberDK = page.getByRole('button', { name: 'DK Dirak Kainin' })
     this.createButton = page.getByRole('button', { name: 'Create' })
     this.createNewDocument = page.getByRole('button', { name: 'Create new document' })
     this.selectCustom = page.getByText('Custom')
@@ -298,10 +300,19 @@ export class DocumentContentPage extends DocumentCommonPage {
   async fillDocumentSpaceForm (spaceName: string): Promise<void> {
     await this.inputSpaceName.fill(spaceName)
     await this.roleSelector.nth(2).click()
-    await this.selectRoleMember.nth(2).click()
+    await this.selectRoleMemberAJ.nth(2).click()
     await this.page.keyboard.press('Escape')
-    await this.selectRoleMember.nth(1).click()
+    await this.selectRoleMemberAJ.nth(1).click()
     await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.createButton.click()
+  }
+
+  async fillDocumentSpaceFormManager (spaceName: string): Promise<void> {
+    await this.inputSpaceName.fill(spaceName)
+    await this.roleSelector.nth(1).click()
+    await this.selectRoleMemberDK.nth(2).click()
     await this.page.keyboard.press('Escape')
     await this.page.waitForTimeout(1000)
     await this.createButton.click()
