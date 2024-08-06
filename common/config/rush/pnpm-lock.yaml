@@ -71,6 +71,9 @@ dependencies:
   '@rush-temp/activity-resources':
     specifier: file:./projects/activity-resources.tgz
     version: file:projects/activity-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
+  '@rush-temp/ai-bot':
+    specifier: file:./projects/ai-bot.tgz
+    version: file:projects/ai-bot.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/analytics':
     specifier: file:./projects/analytics.tgz
     version: file:projects/analytics.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -407,6 +410,9 @@ dependencies:
   '@rush-temp/model-server-activity':
     specifier: file:./projects/model-server-activity.tgz
     version: file:projects/model-server-activity.tgz
+  '@rush-temp/model-server-ai-bot':
+    specifier: file:./projects/model-server-ai-bot.tgz
+    version: file:projects/model-server-ai-bot.tgz
   '@rush-temp/model-server-attachment':
     specifier: file:./projects/model-server-attachment.tgz
     version: file:projects/model-server-attachment.tgz
@@ -572,6 +578,9 @@ dependencies:
   '@rush-temp/pod-account':
     specifier: file:./projects/pod-account.tgz
     version: file:projects/pod-account.tgz
+  '@rush-temp/pod-ai-bot':
+    specifier: file:./projects/pod-ai-bot.tgz
+    version: file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)
   '@rush-temp/pod-analytics-collector':
     specifier: file:./projects/pod-analytics-collector.tgz
     version: file:projects/pod-analytics-collector.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)
@@ -701,6 +710,12 @@ dependencies:
   '@rush-temp/server-activity-resources':
     specifier: file:./projects/server-activity-resources.tgz
     version: file:projects/server-activity-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/server-ai-bot':
+    specifier: file:./projects/server-ai-bot.tgz
+    version: file:projects/server-ai-bot.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/server-ai-bot-resources':
+    specifier: file:./projects/server-ai-bot-resources.tgz
+    version: file:projects/server-ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/server-analytics-collector':
     specifier: file:./projects/server-analytics-collector.tgz
     version: file:projects/server-analytics-collector.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -23971,6 +23986,37 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/ai-bot.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-TH/kDh1LKw+pJRxLZZIjR7da6BQslR9S9Uy9HHXDtvtu5es55OmjRZEWPUnkBjKRmY6hTPBmaO4veq7RiaNz7g==, tarball: file:projects/ai-bot.tgz}
+    id: file:projects/ai-bot.tgz
+    name: '@rush-temp/ai-bot'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-prettier: 8.10.0(eslint@8.56.0)
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
   file:projects/analytics-collector-assets.tgz(esbuild@0.20.1)(svelte@4.2.12)(ts-node@10.9.2):
     resolution: {integrity: sha512-ThEhCV2dJchrcM0mfUjNFdD0/qOzl3qC7glianWUl4Qsj03IrYyjbxvdsV7Fy/49UhQ+YUt46X39kgIWVBnWiw==, tarball: file:projects/analytics-collector-assets.tgz}
     id: file:projects/analytics-collector-assets.tgz
@@ -26613,7 +26659,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-YFe9zCBoR5pPRxsoG3Oc9qVVHEWGDlmQrw27HY+3P0SMBXz8xWVjgM6SrL2458y83t/Xsj30krK1zEZkWORfpQ==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-DIL0rCz2r3nKYgE2fOrEdVSwLGq1Zz2MjsU1HvDxnIs4IE1Q4s8oNMBtvtunERIQ2fNnJHcE0XXijawtYilrjQ==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -27557,6 +27603,24 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/model-server-ai-bot.tgz:
+    resolution: {integrity: sha512-eo56EIdT6JLS0upi95IDRPBEXyASWLEpUdH9cfK2lLtpslJYlJkRPSqImEA5xk1fUUwexRPqVPW+bYFoIMsUxQ==, tarball: file:projects/model-server-ai-bot.tgz}
+    name: '@rush-temp/model-server-ai-bot'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -28859,6 +28923,62 @@ packages:
       - snappy
       - socks
       - supports-color
+    dev: false
+
+  file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-5Upjw52FvxxuZY9eSN8N5FUKoNMhqME7DwEAp4TTQEKR/Rs+Fnxi7S5ZQ6G2G40RmZ0F0mWfXfWTcyhFlyio5Q==, tarball: file:projects/pod-ai-bot.tgz}
+    id: file:projects/pod-ai-bot.tgz
+    name: '@rush-temp/pod-ai-bot'
+    version: 0.0.0
+    dependencies:
+      '@tsconfig/node16': 1.0.4
+      '@types/cors': 2.8.17
+      '@types/express': 4.17.21
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@types/node-fetch': 2.6.11
+      '@types/ws': 8.5.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      cors: 2.8.5
+      dotenv: 16.0.3
+      esbuild: 0.20.1
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-node: 11.1.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      express: 4.19.2
+      fast-equals: 5.0.1
+      form-data: 4.0.0
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      mongodb: 6.8.0
+      node-fetch: 2.7.0
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
+      typescript: 5.3.3
+      ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@babel/core'
+      - '@jest/types'
+      - '@mongodb-js/zstd'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - bufferutil
+      - encoding
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - node-notifier
+      - snappy
+      - socks
+      - supports-color
+      - utf-8-validate
     dev: false
 
   file:projects/pod-analytics-collector.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
@@ -30577,6 +30697,74 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/server-ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-YOa1XOLVz87AjouR9Qn4Wkiib/9nXkIiMIW7XVzCl+lVqfdjXDRn4kjxXj363Wh8bw5Ato7kpuj0M9C1Vsh+zw==, tarball: file:projects/server-ai-bot-resources.tgz}
+    id: file:projects/server-ai-bot-resources.tgz
+    name: '@rush-temp/server-ai-bot-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      mongodb: 6.8.0
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@babel/core'
+      - '@jest/types'
+      - '@mongodb-js/zstd'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - node-notifier
+      - snappy
+      - socks
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/server-ai-bot.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-9rB0TFsDFJ2KgmJwTCJRQG/rh+NORXysidGZq8v77VEN7Sh/xQlB33k4XgHutF3U1Bd0KUdRC/pg9grlgezIdA==, tarball: file:projects/server-ai-bot.tgz}
+    id: file:projects/server-ai-bot.tgz
+    name: '@rush-temp/server-ai-bot'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:

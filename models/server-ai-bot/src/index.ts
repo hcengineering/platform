@@ -16,7 +16,7 @@
 import { type Builder, Mixin, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
 import core, { type Account, type Class, type Doc, type Domain, type Ref, type Space } from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
-import serverAiBot from '@uberflow/server-ai-bot'
+import serverAiBot from '@hcengineering/server-ai-bot'
 import { TDoc } from '@hcengineering/model-core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import aiBot, {

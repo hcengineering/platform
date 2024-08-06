@@ -34,7 +34,7 @@ import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineeri
 import contact, { AvatarType, combineName, getFirstName, getLastName, PersonAccount } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
 import notification from '@hcengineering/notification'
-import { getOrCreateAnalyticsChannel } from '@uberflow/server-analytics-collector-resources'
+import { getOrCreateAnalyticsChannel } from '@hcengineering/server-analytics-collector-resources'
 import { deepEqual } from 'fast-equals'
 import { BlobClient } from '@hcengineering/server-client'
 import fs from 'fs'
@@ -406,7 +406,7 @@ export class WorkspaceClient {
       user: aiBot.account.AIBot,
       attachedTo: id,
       attachedToClass: chunter.class.DirectMessage,
-      hidden: false
+      isPinned: false
     })
 
     return id
