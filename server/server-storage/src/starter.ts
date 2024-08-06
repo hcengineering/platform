@@ -1,3 +1,4 @@
+import { type DatalakeConfig, DatalakeService } from '@hcengineering/datalake'
 import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
 import { S3Service, type S3Config } from '@hcengineering/s3'
@@ -96,6 +97,12 @@ export function createStorageFromConfig (config: StorageConfig): StorageAdapter 
       throw new Error('One of endpoint/accessKey/secretKey values are not specified')
     }
     return new S3Service(c)
+  } else if (kind === DatalakeService.config) {
+    const c = config as DatalakeConfig
+    if (c.endpoint == null) {
+      throw new Error('Endpoint value is not specified')
+    }
+    return new DatalakeService(c)
   } else {
     throw new Error('Unsupported storage kind:' + kind)
   }

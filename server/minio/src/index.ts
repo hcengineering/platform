@@ -309,7 +309,7 @@ export class MinioService implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
-    return await this.client.putObject(
+    const result = await this.client.putObject(
       this.getBucketId(workspaceId),
       this.getDocumentKey(workspaceId, objectName),
       stream,
@@ -318,6 +318,7 @@ export class MinioService implements StorageAdapter {
         'Content-Type': contentType
       }
     )
+    return { objectName, ...result }
   }
 
   @withContext('read')

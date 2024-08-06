@@ -176,6 +176,9 @@ dependencies:
   '@rush-temp/core':
     specifier: file:./projects/core.tgz
     version: file:projects/core.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/datalake':
+    specifier: file:./projects/datalake.tgz
+    version: file:projects/datalake.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/desktop':
     specifier: file:./projects/desktop.tgz
     version: file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4)
@@ -25338,6 +25341,40 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/datalake.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-pqgfJAfjDTa3AWRK263xljvkd1GLinDFrjTGW7res8krRskMMJ3K6gj3kfnLjyKmWeAesJQ5CSnFybPnPSJq/Q==, tarball: file:projects/datalake.tgz}
+    id: file:projects/datalake.tgz
+    name: '@rush-temp/datalake'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@types/node-fetch': 2.6.11
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      form-data: 4.0.0
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      node-fetch: 2.7.0
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - encoding
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
   file:projects/desktop-1.tgz(webpack@5.90.3):
     resolution: {integrity: sha512-Fkk5uNa4NwlCVU5yJUf4X3FcGljXj0qUH7iyoCEAk8EKQ/Mi3OfG/KqK03kEeuM1KP8T1CtArtUhWDsM66/AFQ==, tarball: file:projects/desktop-1.tgz}
     id: file:projects/desktop-1.tgz
@@ -32338,7 +32375,7 @@ packages:
     dev: false
 
   file:projects/server-storage.tgz(esbuild@0.20.1):
-    resolution: {integrity: sha512-nuggpJP7L/8s3sSJ393e8cISWODMQoCKtqyewY8lN7+n8gnL7RHlVDdinb4N9qvUACoSoExtK41dqAHoTnZxlQ==, tarball: file:projects/server-storage.tgz}
+    resolution: {integrity: sha512-8Vd7+fEnqGcQHOUD4gWdMOlB6X3Ka7kOji7RfrZdlD6es58ykSk5MXH5pPXE0hWJptxlJ0DgLXAAYdptrKCFQQ==, tarball: file:projects/server-storage.tgz}
     id: file:projects/server-storage.tgz
     name: '@rush-temp/server-storage'
     version: 0.0.0
