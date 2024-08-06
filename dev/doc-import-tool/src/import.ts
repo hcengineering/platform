@@ -32,7 +32,6 @@ import { createClient, getTransactorEndpoint } from '@hcengineering/server-clien
 import { generateToken } from '@hcengineering/server-token'
 import { findAll, getOuterHTML } from 'domutils'
 import { parseDocument } from 'htmlparser2'
-import { v4 as uuid } from 'uuid'
 
 import { Config } from './config'
 import { ExtractedFile } from './extract/extract'
@@ -310,7 +309,7 @@ export async function processImages (
   const dom = parseDocument(section.content)
   const imageNodes = findAll((n) => n.tagName === 'img', dom.children)
 
-  const { storageAdapter, workspaceId, space } = config
+  const { storageAdapter, workspaceId, uploadURL, space } = config
 
   const imageUploads = imageNodes.map(async (img) => {
     const src = img.attribs.src
@@ -329,8 +328,8 @@ export async function processImages (
     const fileName = `${generateId()}.${ext}`
 
     // upload
-    const id = uuid()
-    await storageAdapter.put(ctx, workspaceId, id, fileContents, mimeType, fileSize)
+    const uuid = generateId()
+    await storageAdapter.put(ctx, workspaceId, uuid, fileContents, mimeType, fileSize)
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()
@@ -341,7 +340,7 @@ export async function processImages (
       documents.class.CollaborativeDocumentSection,
       'attachments',
       {
-        file: id as Ref<Blob>,
+        file: uuid as Ref<Blob>,
         name: fileName,
         type: mimeType,
         size: fileSize,
@@ -350,8 +349,8 @@ export async function processImages (
       attachmentId
     )
 
-    img.attribs['file-id'] = id
-    img.attribs.src = `/files/${uuid}`
+    img.attribs['file-id'] = uuid
+    img.attribs.src = `${uploadURL}/${uuid}`
     img.attribs['data-type'] = 'image'
   })
 

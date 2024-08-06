@@ -9,6 +9,7 @@ export interface Config {
   doc: string
   token: string
   collaboratorApiURL: string
+  uploadURL: string
   workspaceId: WorkspaceId
   owner: Ref<Employee>
   backend: HtmlConversionBackend

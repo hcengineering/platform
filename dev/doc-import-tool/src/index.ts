@@ -50,6 +50,8 @@ export function docImportTool (): void {
     process.exit(1)
   }
 
+  const uploadUrl = process.env.UPLOAD_URL ?? '/files'
+
   const mongodbUri = process.env.MONGO_URL
   if (mongodbUri === undefined) {
     console.log('Please provide mongodb url')
@@ -100,6 +102,7 @@ export function docImportTool (): void {
             backend: getBackend(cmd.backend),
             specFile: cmd.spec,
             space: cmd.space,
+            uploadURL: uploadUrl,
             storageAdapter,
             collaboratorApiURL: collaboratorApiUrl,
             token: generateToken(systemAccountEmail, workspaceId)
