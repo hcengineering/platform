@@ -49,7 +49,6 @@ const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
 export class WorkspaceClient {
   client: Client | undefined
   opClient: TxOperations | undefined
-  account: Ref<Account> | undefined
 
   blobClient: BlobClient
 
@@ -57,6 +56,8 @@ export class WorkspaceClient {
   loginDelayMs = 2 * 1000
 
   initializePromise: Promise<void> | undefined = undefined
+
+  aiAccount: PersonAccount | undefined
 
   constructor (
     readonly transactorUrl: string,
@@ -133,6 +134,7 @@ export class WorkspaceClient {
       this.ctx.error('Cannot find AI PersonAccount', { email: aiBotAccountEmail })
       return
     }
+    this.aiAccount = account
     const person = await client.findOne(contact.class.Person, { _id: account.person })
 
     if (person === undefined) {
@@ -182,8 +184,8 @@ export class WorkspaceClient {
       void this.txHandler(txes)
     }
 
+    await this.uploadAvatarFile(this.opClient)
     this.ctx.info('Initialized workspace', this.workspace)
-    void this.uploadAvatarFile(this.opClient)
   }
 
   async getThreadParent (
@@ -337,10 +339,14 @@ export class WorkspaceClient {
       members: accIds
     })
 
-    await this.opClient.createDoc(notification.class.DocNotifyContext, id, {
+    if (this.aiAccount === undefined) return id
+    const space = await this.opClient.findOne(contact.class.PersonSpace, { person: this.aiAccount.person })
+    if (space === undefined) return id
+    await this.opClient.createDoc(notification.class.DocNotifyContext, space._id, {
       user: aiBot.account.AIBot,
-      attachedTo: id,
-      attachedToClass: chunter.class.DirectMessage,
+      objectId: id,
+      objectClass: chunter.class.DirectMessage,
+      objectSpace: core.space.Space,
       isPinned: false
     })
 
