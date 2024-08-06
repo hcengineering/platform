@@ -394,7 +394,7 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
   const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
 
   const res: Tx[] = []
-  const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+  const allContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: tx.objectId })
 
   if (removed.length > 0) {
     res.push(
@@ -416,13 +416,25 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     )
   }
 
+  const accounts =
+    added.length > 0 ? await control.modelDb.findAll(contact.class.PersonAccount, { _id: { $in: added } }) : []
+  const spaces =
+    accounts.length > 0
+      ? await control.findAll(contact.class.PersonSpace, { person: { $in: accounts.map((x) => x.person) } })
+      : []
+
   for (const addedMember of added) {
     const context = allContexts.find(({ user }) => user === addedMember)
 
     if (context === undefined) {
-      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-        attachedTo: tx.objectId,
-        attachedToClass: tx.objectClass,
+      const account = accounts.find(({ _id }) => _id === addedMember)
+      if (account === undefined) continue
+      const space = spaces.find(({ person }) => person === account.person)
+      if (space === undefined) continue
+      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space._id, {
+        objectId: tx.objectId,
+        objectClass: tx.objectClass,
+        objectSpace: tx.objectSpace,
         user: addedMember,
         lastViewedTimestamp: tx.modifiedOn,
         isPinned: false
@@ -563,14 +575,14 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
   const { hierarchy } = control
   const res: Tx[] = []
 
-  const directContexts = contexts.filter(({ attachedToClass }) =>
-    hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage)
+  const directContexts = contexts.filter(({ objectClass }) =>
+    hierarchy.isDerived(objectClass, chunter.class.DirectMessage)
   )
   const activityContexts = contexts.filter(
-    ({ attachedToClass }) =>
-      !hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel)
+    ({ objectClass }) =>
+      !hierarchy.isDerived(objectClass, chunter.class.DirectMessage) &&
+      !hierarchy.isDerived(objectClass, chunter.class.Channel) &&
+      !hierarchy.isDerived(objectClass, chunter.class.Channel)
   )
 
   const directTxes = await hideOldDirects(directContexts, control, date)

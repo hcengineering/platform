@@ -251,7 +251,7 @@ function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNav
 
 function sortActivityChannels (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
   const { contexts } = option
-  const contextByDoc = new Map(contexts.map((context) => [context.attachedTo, context]))
+  const contextByDoc = new Map(contexts.map((context) => [context.objectId, context]))
 
   return items.sort((i1, i2) => {
     const context1 = contextByDoc.get(i1.id)

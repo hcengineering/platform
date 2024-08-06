@@ -50,11 +50,11 @@
 
   let sections: Section[] = []
 
-  $: contexts = $contextsStore.filter(({ attachedToClass, isPinned }) => {
+  $: contexts = $contextsStore.filter(({ objectClass, isPinned }) => {
     if (model.isPinned !== isPinned) return false
-    if (model._class !== undefined && model._class !== attachedToClass) return false
-    if (model.skipClasses !== undefined && model.skipClasses.includes(attachedToClass)) return false
-    if (hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) === undefined) return false
+    if (model._class !== undefined && model._class !== objectClass) return false
+    if (model.skipClasses !== undefined && model.skipClasses.includes(objectClass)) return false
+    if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return false
     return true
   })
 
@@ -72,10 +72,10 @@
     object !== undefined && getObjectGroup(object) === model.id && !$contextByDocStore.has(object._id)
 
   function loadObjects (contexts: DocNotifyContext[]): void {
-    const contextsByClass = groupByArray(contexts, ({ attachedToClass }) => attachedToClass)
+    const contextsByClass = groupByArray(contexts, ({ objectClass }) => objectClass)
 
     for (const [_class, ctx] of contextsByClass.entries()) {
-      const ids = ctx.map(({ attachedTo }) => attachedTo)
+      const ids = ctx.map(({ objectId }) => objectId)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
         limit: hierarchy.isDerived(_class, chunter.class.ChunterSpace) ? -1 : model.maxSectionItems ?? 5
@@ -187,7 +187,7 @@
     if (_class === undefined) {
       return model.getActionsFn(contexts)
     } else {
-      return model.getActionsFn(contexts.filter(({ attachedToClass }) => attachedToClass === _class))
+      return model.getActionsFn(contexts.filter(({ objectClass }) => objectClass === _class))
     }
   }
 </script>

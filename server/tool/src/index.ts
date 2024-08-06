@@ -332,7 +332,7 @@ export async function upgradeModel (
           (it) =>
             it.modifiedBy !== core.account.System ||
             (it as TxCUD<Doc>).objectClass === contact.class.Person ||
-            (it as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
+            (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
         )
       )
     ]

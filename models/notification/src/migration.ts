@@ -29,8 +29,10 @@ import notification, {
   type InboxNotification
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
+import contact, { type PersonSpace } from '@hcengineering/contact'
 
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 export async function removeNotifications (
   client: MigrationClient,
@@ -72,6 +74,115 @@ export async function removeNotifications (
       _id: { $in: ids }
     })
   }
+}
+
+export async function migrateNotificationsSpace (client: MigrationClient): Promise<void> {
+  const personSpaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace }, {})
+
+  await client.update(
+    DOMAIN_DOC_NOTIFY,
+    {
+      _class: notification.class.DocNotifyContext,
+      objectSpace: { $exists: false }
+    },
+    { $rename: { space: 'objectSpace' } }
+  )
+
+  for (const space of personSpaces) {
+    await client.update(
+      DOMAIN_DOC_NOTIFY,
+      {
+        _class: notification.class.DocNotifyContext,
+        user: { $in: space.members }
+      },
+      { space: space._id }
+    )
+    await client.update(
+      DOMAIN_NOTIFICATION,
+      {
+        _class: notification.class.ActivityInboxNotification,
+        user: { $in: space.members }
+      },
+      { space: space._id }
+    )
+    await client.update(
+      DOMAIN_NOTIFICATION,
+      {
+        _class: notification.class.CommonInboxNotification,
+        user: { $in: space.members }
+      },
+      { space: space._id }
+    )
+    await client.update(
+      DOMAIN_NOTIFICATION,
+      {
+        _class: notification.class.MentionInboxNotification,
+        user: { $in: space.members }
+      },
+      { space: space._id }
+    )
+  }
+
+  await client.deleteMany(DOMAIN_DOC_NOTIFY, { space: { $nin: personSpaces.map(({ _id }) => _id) } })
+  await client.deleteMany(DOMAIN_NOTIFICATION, {
+    _class: notification.class.ActivityInboxNotification,
+    space: { $nin: personSpaces.map(({ _id }) => _id) }
+  })
+  await client.deleteMany(DOMAIN_NOTIFICATION, {
+    _class: notification.class.CommonInboxNotification,
+    space: { $nin: personSpaces.map(({ _id }) => _id) }
+  })
+  await client.deleteMany(DOMAIN_NOTIFICATION, {
+    _class: notification.class.MentionInboxNotification,
+    space: { $nin: personSpaces.map(({ _id }) => _id) }
+  })
+
+  while (true) {
+    const contexts = await client.find<DocNotifyContext>(
+      DOMAIN_DOC_NOTIFY,
+      {
+        _class: notification.class.DocNotifyContext,
+        attachedTo: { $exists: true }
+      },
+      { limit: 500 }
+    )
+
+    if (contexts.length === 0) {
+      break
+    }
+
+    const classesOfSpace = new Set<Ref<Class<Doc>>>()
+
+    for (const context of contexts) {
+      const _class = (context as any).attachedToClass
+      if (client.hierarchy.isDerived(_class, core.class.Space)) {
+        classesOfSpace.add(_class)
+      }
+    }
+    if (classesOfSpace.size > 0) {
+      await client.update<DocNotifyContext>(
+        DOMAIN_DOC_NOTIFY,
+        { objectClass: { $in: Array.from(classesOfSpace) } },
+        { objectSpace: core.space.Space }
+      )
+      await client.update<DocNotifyContext>(
+        DOMAIN_DOC_NOTIFY,
+        { objectClass: { $in: Array.from(classesOfSpace) } },
+        { $rename: { attachedTo: 'objectId', attachedToClass: 'objectClass' } }
+      )
+    }
+    await client.update(
+      DOMAIN_DOC_NOTIFY,
+      {
+        _class: notification.class.DocNotifyContext,
+        _id: { $in: contexts.map(({ _id }) => _id) }
+      },
+      { $rename: { attachedTo: 'objectId', attachedToClass: 'objectClass' } }
+    )
+  }
+
+  await client.deleteMany(DOMAIN_NOTIFICATION, { _class: notification.class.BrowserNotification })
+  await client.deleteMany(DOMAIN_USER_NOTIFY, { _class: notification.class.BrowserNotification })
 }
 
 export async function migrateSettings (client: MigrationClient): Promise<void> {
@@ -197,8 +308,13 @@ export const notificationOperation: MigrateOperation = {
             { isPinned: false }
           )
         }
+      },
+      {
+        state: 'migrate-notifications-space-v1',
+        func: migrateNotificationsSpace
       }
     ])
+
     await client.deleteMany<BrowserNotification>(DOMAIN_USER_NOTIFY, {
       _class: notification.class.BrowserNotification,
       status: NotificationStatus.Notified

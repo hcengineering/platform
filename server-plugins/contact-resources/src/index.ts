@@ -26,7 +26,8 @@ import contact, {
   formatName,
   getFirstName,
   getLastName,
-  getName
+  getName,
+  PersonSpace
 } from '@hcengineering/contact'
 import core, {
   Account,
@@ -41,7 +42,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  concatLink
+  concatLink,
+  TxCUD
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
@@ -87,6 +89,10 @@ export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promis
   if (acc === undefined) return []
   const spaces = await control.findAll(core.class.Space, { autoJoin: true })
   const result: Tx[] = []
+
+  const txes = await createPersonSpace(acc._id, mixinTx.objectId, control)
+  result.push(...txes)
+
   for (const space of spaces) {
     if (space.members.includes(acc._id)) continue
     const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
@@ -99,6 +105,35 @@ export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promis
   return result
 }
 
+async function createPersonSpace (
+  account: Ref<Account>,
+  person: Ref<Person>,
+  control: TriggerControl
+): Promise<TxCUD<PersonSpace>[]> {
+  const personSpace = (await control.findAll(contact.class.PersonSpace, { person }, { limit: 1 })).shift()
+  if (personSpace !== undefined) {
+    if (personSpace.members.includes(account)) return []
+    return [
+      control.txFactory.createTxUpdateDoc(personSpace._class, personSpace.space, personSpace._id, {
+        $push: {
+          members: account
+        }
+      })
+    ]
+  }
+
+  return [
+    control.txFactory.createTxCreateDoc(contact.class.PersonSpace, core.space.Space, {
+      name: 'Personal space',
+      description: '',
+      private: true,
+      archived: false,
+      person,
+      members: [account]
+    })
+  ]
+}
+
 export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const acc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<PersonAccount>)
   const person = (
@@ -106,7 +141,12 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
   )[0]
   if (person === undefined) return []
   const spaces = await control.findAll(core.class.Space, { autoJoin: true })
+
   const result: Tx[] = []
+  const txes = await createPersonSpace(acc._id, person._id, control)
+
+  result.push(...txes)
+
   for (const space of spaces) {
     if (space.members.includes(acc._id)) continue
     const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {

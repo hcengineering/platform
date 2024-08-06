@@ -90,6 +90,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
+    void this.init()
+  }
+
+  private async init (): Promise<void> {
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
@@ -97,7 +101,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
-        this._contextByDoc = new Map(result.map((updates) => [updates.attachedTo, updates]))
+        this._contextByDoc = new Map(result.map((updates) => [updates.objectId, updates]))
         this.contextByDoc.set(this._contextByDoc)
       }
     )

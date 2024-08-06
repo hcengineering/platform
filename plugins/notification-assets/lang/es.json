@@ -54,6 +54,7 @@
     "Sound": "Sonido",
     "SoundNotificationsDescription": "Reciba notificaciones de sonido para eventos.",
     "CommonNotificationCollectionAdded":  "{senderName} añadió {collection}",
-    "CommonNotificationCollectionRemoved": "{senderName} eliminó {collection}"
+    "CommonNotificationCollectionRemoved": "{senderName} eliminó {collection}",
+    "NoAccessToObject": "Ya no tienes acceso a este objeto"
   }
 }
