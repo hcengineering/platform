@@ -116,6 +116,7 @@ export interface NotificationTemplate {
 export interface NotificationContent {
   title: IntlString
   body: IntlString
+  data?: Markup
   intlParams: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
 }
@@ -163,6 +164,8 @@ export interface NotificationProvider extends Doc {
   canDisable: boolean
   ignoreAll?: boolean
   order: number
+  presenter?: AnyComponent
+  isAvailableFn?: Resource<() => boolean>
 }
 
 export interface NotificationProviderDefaults extends Doc {
@@ -235,6 +238,7 @@ export interface InboxNotification extends Doc<PersonSpace> {
   // For browser notifications
   title?: IntlString
   body?: IntlString
+  data?: Markup
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
   archived: boolean

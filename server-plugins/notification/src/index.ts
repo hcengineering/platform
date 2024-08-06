@@ -163,7 +163,7 @@ export interface NotificationProviderResources extends Doc {
 }
 
 export const NOTIFICATION_BODY_SIZE = 50
-export const NOTIFICATION_TITLE_SIZE = 30
+export const NOTIFICATION_TITLE_SIZE = 50
 
 /**
  * @public

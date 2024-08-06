@@ -16,10 +16,11 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import notification, { NotificationProvider } from '@hcengineering/notification'
-  import { Icon, Label, ModernToggle } from '@hcengineering/ui'
   import core, { Ref } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
 
   import { providersSettings } from '../../utils'
+  import ProviderPreferences from './ProviderPreferences.svelte'
 
   const client = getClient()
   const providers = client
@@ -49,7 +50,10 @@
     }
   }
 
-  async function onToggle (provider: NotificationProvider): Promise<void> {
+  async function onToggle (event: CustomEvent): Promise<void> {
+    const provider = event.detail
+    if (provider == null) return
+
     const setting = $providersSettings.find(({ attachedTo }) => attachedTo === provider._id)
     const enabled = setting !== undefined ? !setting.enabled : !provider.defaultEnabled
 
@@ -69,37 +73,16 @@
   }
 </script>
 
-{#each providers as provider}
-  {@const setting = $providersSettings.find(({ attachedTo }) => attachedTo === provider._id)}
-
-  <div class="flex-row-center flex-gap-2">
-    <div class="flex-col flex-gap-1 mb-4 w-120">
-      <div class="flex-row-center flex-gap-2">
-        <Icon icon={provider.icon} size="medium" />
-        <span class="label font-semi-bold">
-          <Label label={provider.label} />
-        </span>
-      </div>
-      <span class="description">
-        <Label label={provider.description} />
-      </span>
-    </div>
-    {#if provider.canDisable}
-      <ModernToggle
-        size="small"
-        checked={setting?.enabled ?? provider.defaultEnabled}
-        on:change={() => onToggle(provider)}
-      />
+<div class="flex-col flex-gap-4">
+  {#each providers as provider (provider._id)}
+    {#if provider.isAvailableFn}
+      {#await getResource(provider.isAvailableFn) then isAvailableFn}
+        {#if isAvailableFn()}
+          <ProviderPreferences {provider} on:toggle={onToggle} />
+        {/if}
+      {/await}
+    {:else}
+      <ProviderPreferences {provider} on:toggle={onToggle} />
     {/if}
-  </div>
-{/each}
-
-<style lang="scss">
-  .label {
-    color: var(--global-primary-TextColor);
-  }
-
-  .description {
-    color: var(--global-secondary-TextColor);
-  }
-</style>
+  {/each}
+</div>

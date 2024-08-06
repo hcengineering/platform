@@ -13,24 +13,34 @@
 // limitations under the License.
 //
 
-import contact, { Channel, ChannelProvider, Contact, Employee, PersonAccount } from '@hcengineering/contact'
+import contact, { Channel, ChannelProvider, Contact, Employee, formatName, PersonAccount } from '@hcengineering/contact'
 import {
   Account,
   Class,
+  concatLink,
   Doc,
   DocumentQuery,
   FindOptions,
   FindResult,
   Hierarchy,
   Ref,
+  toWorkspaceString,
   Tx,
   TxCreateDoc,
   TxProcessor
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import telegram, { TelegramMessage } from '@hcengineering/telegram'
-import { NotificationType } from '@hcengineering/notification'
+import telegram, { TelegramMessage, TelegramNotificationRecord } from '@hcengineering/telegram'
+import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
 import setting, { Integration } from '@hcengineering/setting'
+import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
+import { getMetadata, getResource } from '@hcengineering/platform'
+import serverTelegram from '@hcengineering/server-telegram'
+import { getTranslatedNotificationContent, getTextPresenter } from '@hcengineering/server-notification-resources'
+import { generateToken } from '@hcengineering/server-token'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
+import { markupToHTML } from '@hcengineering/text'
+import activity from '@hcengineering/activity'
 
 /**
  * @public
@@ -132,6 +142,95 @@ async function getContactChannel (
   return res?.value ?? ''
 }
 
+async function getTranslatedData (
+  data: InboxNotification,
+  doc: Doc,
+  control: TriggerControl
+): Promise<{
+    title: string
+    quote: string | undefined
+    body: string
+  }> {
+  const { hierarchy } = control
+
+  let { title, body } = await getTranslatedNotificationContent(data, data._class, control)
+  let quote: string | undefined
+
+  if (hierarchy.isDerived(doc._class, chunter.class.ChatMessage)) {
+    const chatMessage = doc as ChatMessage
+    title = ''
+    quote = markupToHTML(chatMessage.message)
+  } else if (hierarchy.isDerived(doc._class, activity.class.ActivityMessage)) {
+    const resource = getTextPresenter(doc._class, control.hierarchy)
+
+    if (resource !== undefined) {
+      const fn = await getResource(resource.presenter)
+      const textData = await fn(doc, control)
+      if (textData !== undefined && textData !== '') {
+        title = ''
+        quote = markupToHTML(textData)
+      }
+    }
+  }
+  body = data.data !== undefined ? `${markupToHTML(data.data)}` : body
+
+  return {
+    title,
+    quote,
+    body
+  }
+}
+
+const SendTelegramNotifications: NotificationProviderFunc = async (
+  control: TriggerControl,
+  types: BaseNotificationType[],
+  doc: Doc,
+  data: InboxNotification,
+  receiver: ReceiverInfo,
+  sender: SenderInfo
+): Promise<Tx[]> => {
+  if (types.length === 0) {
+    return []
+  }
+
+  const botUrl = getMetadata(serverTelegram.metadata.BotUrl)
+
+  if (botUrl === undefined || botUrl === '') {
+    console.log('Please provide telegram bot service url to enable telegram notifications.')
+    return []
+  }
+
+  if (!receiver.person.active) {
+    return []
+  }
+
+  try {
+    const { title, body, quote } = await getTranslatedData(data, doc, control)
+    const record: TelegramNotificationRecord = {
+      notificationId: data._id,
+      account: receiver._id,
+      workspace: toWorkspaceString(control.workspace),
+      sender: data.intlParams?.senderName?.toString() ?? formatName(sender.person?.name ?? 'System'),
+      title,
+      quote,
+      body
+    }
+
+    await fetch(concatLink(botUrl, '/notify'), {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + generateToken(receiver.account.email, control.workspace),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([record])
+    })
+  } catch (err) {
+    console.log('Could not send telegram notification', err)
+  }
+
+  return []
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -141,6 +240,7 @@ export default async () => ({
     IsIncomingMessage,
     FindMessages,
     GetCurrentEmployeeTG,
-    GetIntegrationOwnerTG
+    GetIntegrationOwnerTG,
+    SendTelegramNotifications
   }
 })

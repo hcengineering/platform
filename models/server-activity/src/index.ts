@@ -28,6 +28,10 @@ export function createModel (builder: Builder): void {
     presenter: serverActivity.function.ReactionNotificationContentProvider
   })
 
+  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverActivity.function.DocUpdateMessageTextPresenter
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.OnReactionChanged,
     txMatch: {
