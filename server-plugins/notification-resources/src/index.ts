@@ -362,7 +362,8 @@ export async function pushInboxNotifications (
       user: account._id,
       attachedTo,
       attachedToClass,
-      lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
+      lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined,
+      isPinned: false
     })
     await control.apply([createContextTx])
     if (target.account?.email !== undefined) {

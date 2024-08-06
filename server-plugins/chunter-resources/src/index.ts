@@ -423,7 +423,8 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
         attachedTo: tx.objectId,
         attachedToClass: tx.objectClass,
         user: addedMember,
-        lastViewedTimestamp: tx.modifiedOn
+        lastViewedTimestamp: tx.modifiedOn,
+        isPinned: false
       })
 
       await control.apply([createTx])
@@ -553,7 +554,7 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
 
   const contexts = await control.findAll(notification.class.DocNotifyContext, {
     user: account._id,
-    isPinned: { $ne: true }
+    isPinned: false
   })
 
   if (contexts.length === 0) return
