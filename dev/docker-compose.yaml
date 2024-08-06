@@ -213,7 +213,24 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M          
+          memory: 300M
+  aiBot:
+    image: hardcoreeng/ai-bot
+    restart: unless-stopped
+    environment:
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017
+      - ACCOUNTS_URL=http://account:3000
+      - SUPPORT_WORKSPACE=support
+      - FIRST_NAME=Jolie
+      - LAST_NAME=AI
+      - PASSWORD=password
+      - AVATAR_PATH=./avatar.png
+      - AVATAR_CONTENT_TYPE=.png
+    deploy:
+      resources:
+        limits:
+          memory: 300M
 volumes:
   db:
   files:
