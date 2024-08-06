@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'

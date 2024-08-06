@@ -5,7 +5,6 @@ import { DocumentContentPage } from '../model/documents/document-content-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 import { faker } from '@faker-js/faker'
-import { createTemplateStep } from './common-documents-steps'
 
 test.use({
   storageState: PlatformSetting
