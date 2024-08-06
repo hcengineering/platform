@@ -133,6 +133,8 @@
     "@hcengineering/server-guest-resources": "^0.6.0",
     "@hcengineering/server-time": "^0.6.0",
     "@hcengineering/server-time-resources": "^0.6.0",
+    "@hcengineering/server-ai-bot": "^0.6.0",
+    "@hcengineering/server-ai-bot-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/tags": "^0.6.16",
     "@hcengineering/task": "^0.6.20",

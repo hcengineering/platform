@@ -38,6 +38,7 @@ import { DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
 
 import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
+import { type DocUpdateMessage } from '@hcengineering/activity'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -197,6 +198,47 @@ async function removeOldClasses (client: MigrationClient): Promise<void> {
   }
 }
 
+async function removeWrongActivity (client: MigrationClient): Promise<void> {
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.Channel,
+    action: 'update',
+    'attributeUpdates.attrKey': { $ne: 'members' }
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.Channel,
+    action: 'create',
+    objectClass: { $ne: chunter.class.Channel }
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.Channel,
+    action: 'remove'
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.DirectMessage,
+    action: 'update',
+    'attributeUpdates.attrKey': { $ne: 'members' }
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.DirectMessage,
+    action: 'create'
+  })
+
+  await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    attachedToClass: chunter.class.DirectMessage,
+    action: 'remove'
+  })
+}
+
 export const chunterOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, chunterId, [
@@ -234,6 +276,12 @@ export const chunterOperation: MigrateOperation = {
         state: 'remove-old-classes-v1',
         func: async (client) => {
           await removeOldClasses(client)
+        }
+      },
+      {
+        state: 'remove-wrong-activity-v1',
+        func: async (client) => {
+          await removeWrongActivity(client)
         }
       }
     ])

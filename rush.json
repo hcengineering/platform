@@ -2093,6 +2093,31 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-ai-bot",
+      "projectFolder": "services/ai-bot/pod-ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-bot",
+      "projectFolder": "plugins/ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-ai-bot",
+      "projectFolder": "models/server-ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-ai-bot",
+      "projectFolder": "server-plugins/ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-ai-bot-resources",
+      "projectFolder": "server-plugins/ai-bot-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-telegram-bot",
       "projectFolder": "services/telegram-bot/pod-telegram-bot",
       "shouldPublish": false

@@ -498,6 +498,7 @@ export async function leaveChannelAction (
   }
 
   await leaveChannel(channel, getCurrentAccount()._id)
+  await client.remove(context)
   await resetChunterLocIfEqual(channel._id, channel._class, channel)
 }
 

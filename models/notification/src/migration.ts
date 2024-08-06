@@ -312,6 +312,16 @@ export const notificationOperation: MigrateOperation = {
       {
         state: 'migrate-notifications-space-v1',
         func: migrateNotificationsSpace
+      },
+      {
+        state: 'migrate-employee-space-v1',
+        func: async () => {
+          await client.update<DocNotifyContext>(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, objectSpace: 'contact:space:Employee' as Ref<Space> },
+            { objectSpace: contact.space.Contacts }
+          )
+        }
       }
     ])
 

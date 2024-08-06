@@ -20,7 +20,6 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   docUpdKey,
-  IndexStageState,
   MeasureContext,
   Ref,
   WorkspaceId
@@ -37,7 +36,6 @@ import {
   FullTextPipelineStage,
   IndexedDoc,
   isIndexingRequired,
-  loadIndexStageStage,
   RateLimiter
 } from '@hcengineering/server-core'
 import got from 'got'
@@ -92,12 +90,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   rate = 5
 
-  stageValue: boolean | string = true
-
   limiter = new RateLimiter(this.rate)
-
-  indexState?: IndexStageState
-
   async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {}
 
   constructor (
@@ -156,22 +149,6 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       console.error(err)
       this.enabled = false
     }
-
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
-      ctx,
-      storage,
-      this.indexState,
-      this.stageId,
-      'config',
-      {
-        enabled: this.enabled,
-        endpoint: this.endpoint,
-        field: this.field,
-        mode: this.model,
-        copyToState: this.copyToState,
-        stripNewLines: true
-      }
-    )
   }
 
   async getEmbedding (text: string): Promise<OpenAIEmbeddingResponse> {
@@ -299,7 +276,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
     // No need to index this class, mark embeddings as empty ones.
     if (!needIndex) {
-      await pipeline.update(doc._id, this.stageValue, {})
+      await pipeline.update(doc._id, true, {})
       return
     }
 
@@ -359,13 +336,13 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       console.error(err)
     }
 
-    await pipeline.update(doc._id, this.stageValue, update)
+    await pipeline.update(doc._id, true, update)
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
     for (const doc of docs) {
-      await pipeline.update(doc._id, this.stageValue, {})
+      await pipeline.update(doc._id, true, {})
     }
   }
 }

@@ -250,14 +250,12 @@ export async function getTxAttributesUpdates (
 
   const hierarchy = control.hierarchy
 
-  const filterSet = new Set<string>()
-  for (const c of controlRules ?? []) {
-    for (const f of c.skipFields ?? []) {
-      filterSet.add(f)
-    }
-  }
+  const allowedFields = new Set<string>(controlRules?.flatMap((it) => it.allowedFields ?? []) ?? [])
+  const skipFields = new Set<string>(controlRules?.flatMap((it) => it.skipFields ?? []) ?? [])
 
-  const keys = getAvailableAttributesKeys(tx, hierarchy).filter((it) => !filterSet.has(it))
+  const keys = getAvailableAttributesKeys(tx, hierarchy).filter(
+    (it) => !skipFields.has(it) && (allowedFields.size === 0 || allowedFields.has(it))
+  )
 
   if (keys.length === 0) {
     return []
@@ -268,14 +266,7 @@ export async function getTxAttributesUpdates (
   const isMixin = hierarchy.isDerived(tx._class, core.class.TxMixin)
   const mixin = isMixin ? (tx as TxMixin<Doc, Doc>).mixin : undefined
 
-  const { doc, prevDoc } = await getDocDiff(
-    control,
-    updateObject._class,
-    updateObject._id,
-    originTx._id,
-    mixin,
-    objectCache
-  )
+  let docDiff: { doc?: Doc, prevDoc?: Doc } | undefined
 
   for (const key of keys) {
     let attrValue = modifiedAttributes[key]
@@ -302,14 +293,25 @@ export async function getTxAttributesUpdates (
       continue
     }
 
-    if (Array.isArray(attrValue) && doc != null) {
-      const diff = await getAttributeDiff(control, doc, prevDoc, key, attrClass, isMixin)
+    if (
+      hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
+      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeMarkup) ||
+      mixin === notification.mixin.Collaborators
+    ) {
+      if (docDiff === undefined) {
+        docDiff = await getDocDiff(control, updateObject._class, updateObject._id, originTx._id, mixin, objectCache)
+      }
+    }
+
+    if (Array.isArray(attrValue) && docDiff?.doc !== undefined) {
+      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, attrClass, isMixin)
       added.push(...diff.added)
       removed.push(...diff.removed)
       attrValue = []
     }
 
-    if (prevDoc !== undefined) {
+    if (docDiff?.prevDoc !== undefined) {
+      const { prevDoc } = docDiff
       const rawPrevValue = isMixin ? (hierarchy.as(prevDoc, attrClass) as any)[key] : (prevDoc as any)[key]
 
       if (Array.isArray(rawPrevValue)) {

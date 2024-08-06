@@ -42,7 +42,8 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverActivity.trigger.ActivityMessagesHandler
+    trigger: serverActivity.trigger.ActivityMessagesHandler,
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

@@ -43,6 +43,7 @@
   export let compact = false
   export let type: ObjectPresenterType = 'link'
   export let showStatus: boolean = false
+  export let overflowLabel = true
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -99,6 +100,7 @@
     {compact}
     {type}
     {showStatus}
+    {overflowLabel}
     on:accent-color
   />
 {/if}

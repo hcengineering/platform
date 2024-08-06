@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import {
+import core, {
   generateId,
   type Ref,
   SortingOrder,
@@ -375,7 +375,7 @@ export function loadSavedAttachments (): void {
 
     savedAttachmentsQuery.query(
       attachment.class.SavedAttachments,
-      {},
+      { space: core.space.Workspace },
       (res) => {
         savedAttachmentsStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
       },

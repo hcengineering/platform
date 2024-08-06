@@ -1242,7 +1242,7 @@ async function updateId (
         stages: {},
         removed: false
       })
-      await txop.update(docIndexState, { removed: true })
+      await txop.update(docIndexState, { removed: true, needIndex: true })
     }
 
     if (domain !== DOMAIN_MODEL) {

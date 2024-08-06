@@ -60,6 +60,7 @@ import { serverTelegramId, createModel as serverTelegramModel } from '@hcenginee
 import { serverTemplatesId, createModel as serverTemplatesModel } from '@hcengineering/model-server-templates'
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
+import { serverAiBotId, createModel as serverAiBotModel } from '@hcengineering/model-server-ai-bot'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
 import { driveId, createModel as driveModel } from '@hcengineering/model-drive'
 import { supportId, createModel as supportModel } from '@hcengineering/model-support'
@@ -424,7 +425,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverDriveModel, serverDriveId],
     [serverProductsModel, serverProductsId],
     [serverTrainingModel, serverTrainingId],
-    [serverDocumentsModel, serverDocumentsId]
+    [serverDocumentsModel, serverDocumentsId],
+    [serverAiBotModel, serverAiBotId]
   ]
 
   for (const [b, id, config] of builders) {

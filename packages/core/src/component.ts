@@ -32,7 +32,6 @@ import type {
   EnumOf,
   FullTextSearchContext,
   Hyperlink,
-  IndexStageState,
   IndexingConfiguration,
   Interface,
   Markup,
@@ -135,7 +134,6 @@ export default plugin(coreId, {
     UserStatus: '' as Ref<Class<UserStatus>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DocIndexState: '' as Ref<Class<DocIndexState>>,
-    IndexStageState: '' as Ref<Class<IndexStageState>>,
     DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
     Configuration: '' as Ref<Class<Configuration>>,
