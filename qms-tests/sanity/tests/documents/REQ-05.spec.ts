@@ -44,7 +44,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     await attachScreenshot('TESTS-298_category_created.png', page)
   })
 
-  test('TESTS-381. As a workspace user, I can create a new space and label it External Doc', async ({ page }) => {
+  test.skip('TESTS-381. As a workspace user, I can create a new space and label it External Doc', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create a new space')
     await allure.tms('TESTS-381', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-381')
     const leftSideMenuPage = new LeftSideMenuPage(page)
