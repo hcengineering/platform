@@ -1,7 +1,6 @@
 // preload.js
 
 import { BrandingMap, Config, IPCMainExposed, NotificationParams } from './types'
-
 import { contextBridge, ipcRenderer } from 'electron'
 
 /**
@@ -16,6 +15,25 @@ export function concatLink (host: string, path: string): string {
   } else {
     return `${host}${path}`
   }
+}
+
+async function loadServerConfig (url: string): Promise<any> {
+  let retries = 5
+  let error: any
+
+  do {
+    try {
+      return await (await fetch(url)).json()
+    } catch (e) {
+      error = e
+      retries--
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
+      }
+    }
+  } while (retries > 0)
+
+  throw new Error(`Failed to load server config: ${error}`)
 }
 
 const openArg = (process.argv.find((it) => it.startsWith('--open=')) ?? '').split('--open=')[1]
@@ -41,7 +59,7 @@ const expose: IPCMainExposed = {
       configPromise = new Promise((resolve, reject) => {
         ipcRenderer.invoke('get-main-config').then(
           async (mainConfig) => {
-            const serverConfig = await (await fetch(concatLink(mainConfig.FRONT_URL, mainConfig.CONFIG_URL))).json()
+            const serverConfig = await loadServerConfig(concatLink(mainConfig.FRONT_URL, mainConfig.CONFIG_URL))
             const combinedConfig = {
               ...serverConfig,
               ...mainConfig,
