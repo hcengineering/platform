@@ -308,7 +308,12 @@ export default plugin(activityId, {
     Messages: '' as IntlString,
     Thread: '' as IntlString,
     ReactionNotificationTitle: '' as IntlString,
-    ReactionNotificationBody: '' as IntlString
+    ReactionNotificationBody: '' as IntlString,
+    NewObject: '' as IntlString,
+    RemovedObject: '' as IntlString,
+    ChangedObject: '' as IntlString,
+    UnsetObject: '' as IntlString,
+    UpdatedObject: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

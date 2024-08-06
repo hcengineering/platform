@@ -18,9 +18,10 @@
   export let id: string | undefined = undefined
   export let name: string | undefined = undefined
   export let size: 'small' | 'medium' = 'small'
+  export let kind: 'primary' | 'secondary' = 'primary'
 </script>
 
-<div class="container">
+<div class="container {kind}">
   <input
     class={size}
     type="text"
@@ -45,14 +46,20 @@
     display: flex;
     flex-direction: column;
     padding: 0;
-
     background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
-    caret-color: var(--theme-caret-color);
+
+    &.primary {
+      caret-color: var(--theme-content-color);
+    }
+
+    &.secondary {
+      caret-color: var(--theme-caret-color);
+    }
 
     &:focus-within {
-      background-color: var(--theme-button-focused);
       border-color: var(--theme-list-divider-color);
+      background-color: var(--theme-button-focused);
     }
 
     input {

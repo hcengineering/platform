@@ -472,7 +472,7 @@ async function mentionInboxNotificationToText (
   return await commonInboxNotificationToText(doc)
 }
 
-async function getTranslatedNotificationContent (
+export async function getTranslatedNotificationContent (
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
   control: TriggerControl
@@ -617,7 +617,7 @@ export async function pushActivityInboxNotifications (
     return
   }
 
-  const content = await getNotificationContent(originTx, target.account, sender, object, control)
+  const content = await getNotificationContent(originTx, target.account, sender, object, control, activityMessage)
   const data: Partial<Data<ActivityInboxNotification>> = {
     ...content,
     attachedTo: activityMessage._id,

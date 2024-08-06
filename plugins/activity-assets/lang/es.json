@@ -44,6 +44,11 @@
     "SaveForLater": "Guardar para mas tarde",
     "RemoveFromLater": "Remover de los Guardados",
     "ReactionNotificationTitle": "Reacción sobre {title}",
-    "ReactionNotificationBody": "{senderName}: {reaction}"
+    "ReactionNotificationBody": "{senderName}: {reaction}",
+    "NewObject": "Nuevo {object}",
+    "RemovedObject": "Eliminado {object}",
+    "ChangedObject": "Cambiado {object}",
+    "UnsetObject": "No establecido {object}",
+    "UpdatedObject": "Actualizado {object}"
   }
 }

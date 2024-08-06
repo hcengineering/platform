@@ -79,7 +79,7 @@ import {
   type PushSubscription,
   type PushSubscriptionKeys
 } from '@hcengineering/notification'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -295,6 +295,8 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
   depends?: Ref<NotificationProvider>
   ignoreAll?: boolean
   canDisable!: boolean
+  presenter?: AnyComponent
+  isAvailableFn?: Resource<() => boolean>
 }
 
 @Model(notification.class.NotificationProviderDefaults, core.class.Doc)
@@ -723,7 +725,7 @@ export function createModel (builder: Builder): void {
       description: notification.string.InboxNotificationsDescription,
       defaultEnabled: true,
       canDisable: false,
-      order: 10
+      order: 100
     },
     notification.providers.InboxNotificationProvider
   )
@@ -738,7 +740,7 @@ export function createModel (builder: Builder): void {
       depends: notification.providers.InboxNotificationProvider,
       defaultEnabled: true,
       canDisable: true,
-      order: 20
+      order: 200
     },
     notification.providers.PushNotificationProvider
   )
@@ -754,7 +756,7 @@ export function createModel (builder: Builder): void {
       defaultEnabled: true,
       canDisable: true,
       ignoreAll: true,
-      order: 25
+      order: 250
     },
     notification.providers.SoundNotificationProvider
   )

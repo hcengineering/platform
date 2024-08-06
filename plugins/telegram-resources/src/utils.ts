@@ -20,6 +20,9 @@ import { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import { get } from 'svelte/store'
+import { getMetadata } from '@hcengineering/platform'
+
+import telegram from './plugin'
 
 export async function getCurrentEmployeeTG (): Promise<string | undefined> {
   const me = getCurrentAccount() as PersonAccount
@@ -43,4 +46,10 @@ export async function getIntegrationOwnerTG (provider: TemplateDataProvider): Pr
       return await getContactChannel(employee, contact.channelProvider.Telegram)
     }
   }
+}
+
+export function isTelegramNotificationsAvailable (): boolean {
+  const botEndpoint = getMetadata(telegram.metadata.BotUrl) ?? ''
+
+  return botEndpoint !== ''
 }
