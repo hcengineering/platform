@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI, generateTestData } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, generateTestData, getTimeForPlanner } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
@@ -179,12 +179,7 @@ test.describe('Planning ToDo tests', () => {
     }
     const titleV = `Visible ToDo ${generateId()}`
     const titleI = `Inisible ToDo ${generateId()}`
-
-    let hour = new Date().getHours()
-    const ampm = hour < 13 ? 'am' : 'pm'
-    hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
-    const time = `${hour}${ampm}`
-    // const timeI = `${hour + 1}${ampm}`
+    const time = getTimeForPlanner()
 
     const leftSideMenuPage: LeftSideMenuPage = new LeftSideMenuPage(page)
     const loginPage: LoginPage = new LoginPage(page)

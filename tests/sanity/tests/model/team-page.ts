@@ -16,6 +16,9 @@ export class TeamPage extends CommonPage {
   buttonNextDay = (): Locator =>
     this.page.locator('div.hulyComponent div.hulyHeader-container .actions button[data-id="btnNext"]')
 
+  getItemByText = (column: string, title: string): Locator =>
+    this.page.locator('div.hulyComponent div.item', { hasText: column }).locator('div.item', { hasText: title })
+
   async checkTeamPageIsOpened (): Promise<void> {
     await expect(this.appHeader()).toBeVisible()
   }

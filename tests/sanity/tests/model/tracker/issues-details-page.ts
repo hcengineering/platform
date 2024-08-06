@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 import { Issue, NewIssue } from './types'
+import { convertEstimation } from '../../tracker/tracker.utils'
 
 export class IssuesDetailsPage extends CommonTrackerPage {
   readonly page: Page
@@ -139,10 +140,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
       await expect(this.buttonComponent()).toHaveText(data.component)
     }
     if (data.milestone != null) {
-      await expect(this.buttonMilestone()).toHaveText(data.milestone)
+      await expect(this.buttonMilestone()).toHaveText(data.milestone === 'No Milestone' ? 'Milestone' : data.milestone)
     }
     if (data.estimation != null) {
-      await expect(this.textEstimation()).toHaveText(data.estimation)
+      await expect(this.textEstimation()).toHaveText(convertEstimation(data.estimation))
     }
     if (data.parentIssue != null) {
       await expect(this.textParentTitle()).toHaveText(data.parentIssue)

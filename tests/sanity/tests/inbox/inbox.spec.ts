@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { PlatformURI, generateTestData } from '../utils'
+import { PlatformURI, generateTestData, getTimeForPlanner } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ApiEndpoint } from '../API/Api'
 import { LoginPage } from '../model/login-page'
@@ -13,6 +13,8 @@ import { ChannelPage } from '../model/channel-page'
 import { UserProfilePage } from '../model/profile/user-profile-page'
 import { MenuItems, NotificationsPage } from '../model/profile/notifications-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
+import { PlanningPage } from '../model/planning/planning-page'
+import { TeamPage } from '../model/team-page'
 
 test.describe('Inbox tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -49,11 +51,7 @@ test.describe('Inbox tests', () => {
   test('User is able to create a task, assign a himself and see it inside the inbox', async ({ page }) => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPage.clickTracker()
 
     await leftSideMenuPage.clickNotification()
@@ -63,44 +61,28 @@ test.describe('Inbox tests', () => {
   test('User is able to create a task, assign a himself and open it from inbox', async ({ page }) => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPage.clickTracker()
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
     await inboxPage.clickOnToDo(newIssue.title)
     await inboxPage.clickLeftSidePanelOpen()
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
   })
 
   test.skip('User is able to create a task, assign a himself and close it from inbox', async ({ page }) => {
     const newIssue = createNewIssueData(data.firstName, data.lastName)
 
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPage.clickTracker()
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
     await inboxPage.clickOnToDo(newIssue.title)
     await inboxPage.clickLeftSidePanelOpen()
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await inboxPage.clickCloseLeftSidePanel()
     // ADD ASSERT ONCE THE ISSUE IS FIXED
   })
@@ -120,11 +102,7 @@ test.describe('Inbox tests', () => {
 
     const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPageSecond.clickTracker()
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
@@ -147,21 +125,13 @@ test.describe('Inbox tests', () => {
 
     const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPageSecond.clickTracker()
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
     await inboxPageSecond.clickOnToDo(newIssue.title)
     await inboxPageSecond.clickLeftSidePanelOpen()
-    await issuesDetailsPageSecond.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPageSecond.checkIssue(newIssue)
     await page2.close()
   })
   test.skip('User is able to create a task, assign a other user and close it from inbox', async ({ page, browser }) => {
@@ -180,21 +150,13 @@ test.describe('Inbox tests', () => {
 
     const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPageSecond.clickTracker()
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
     await inboxPageSecond.clickOnToDo(newIssue.title)
     await inboxPageSecond.clickLeftSidePanelOpen()
-    await issuesDetailsPageSecond.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPageSecond.checkIssue(newIssue)
     await inboxPage.clickCloseLeftSidePanel()
     // ADD ASSERT ONCE THE ISSUE IS FIXED
     await page2.close()
@@ -285,11 +247,7 @@ test.describe('Inbox tests', () => {
 
     const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
     await leftSideMenuPageSecond.clickTracker()
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.clickOnInboxFilter('Channels')
@@ -298,6 +256,49 @@ test.describe('Inbox tests', () => {
     await inboxPageSecond.clickOnInboxFilter('Issues')
     await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
     await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
+    await page2.close()
+  })
+
+  test('Checking the ability to receive a task and schedule it', async ({ page, browser }) => {
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    await leftSideMenuPage.clickOnCloseInvite()
+
+    const page2 = await browser.newPage()
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+
+    const newIssue = createNewIssueData(data.firstName, data.lastName, {
+      status: 'Todo',
+      assignee: `${newUser2.lastName} ${newUser2.firstName}`,
+      estimation: '0'
+    })
+    await prepareNewIssueWithOpenStep(page, newIssue)
+    await issuesDetailsPage.checkIssue(newIssue)
+
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const inboxPageSecond = new InboxPage(page2)
+    const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
+    const planningPageSecond = new PlanningPage(page2)
+    await leftSideMenuPageSecond.clickNotification()
+    await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
+    await inboxPageSecond.clickIssuePresentInInbox(newIssue.title)
+    await inboxPageSecond.clickLeftSidePanelOpen()
+    await issuesDetailsPageSecond.checkIssue(newIssue)
+    await leftSideMenuPageSecond.clickPlanner()
+    await planningPageSecond.dragdropTomorrow(newIssue.title, getTimeForPlanner())
+    await planningPageSecond.eventInSchedule(newIssue.title).isVisible()
+
+    await issuesDetailsPage.checkIssue({ ...newIssue, status: 'In Progress' })
+    await leftSideMenuPage.clickTeam()
+    const teamPage = new TeamPage(page)
+    await teamPage.checkTeamPageIsOpened()
+    await teamPage.selectTeam('Default')
+    await teamPage.buttonNextDay().click()
+    await teamPage.getItemByText('Tomorrow', newIssue.title).isVisible()
     await page2.close()
   })
 })

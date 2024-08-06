@@ -204,7 +204,7 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
   }
 
   if (props.estimation !== undefined) {
-    await expect(page.locator('#estimation-editor')).toHaveText(props.estimation)
+    await expect(page.locator('#estimation-editor')).toHaveText(convertEstimation(props.estimation))
   }
 
   if (props.dueDate !== undefined) {
@@ -270,4 +270,20 @@ export async function performPanelTest (page: Page, statuses: string[], panel: s
       })
     ).toContainText(getIssueName(status), { timeout: 15000 })
   }
+}
+
+export function convertEstimation (estimation: number | string): string {
+  const hoursInWorkingDay = 8
+  const value = typeof estimation === 'string' ? parseFloat(estimation) : estimation
+
+  const days = Math.floor(value / hoursInWorkingDay)
+  const hours = Math.floor(value % hoursInWorkingDay)
+  const minutes = Math.floor((value % 1) * 60)
+  const result = [
+    ...(days === 0 ? [] : [`${days}d`]),
+    ...(hours === 0 ? [] : [`${hours}h`]),
+    ...(minutes === 0 ? [] : [`${minutes}m`])
+  ].join(' ')
+
+  return result === '' ? '0h' : result
 }
