@@ -485,14 +485,16 @@ async function moveToRoom (
   y: number,
   currentInfo: ParticipantInfo | undefined,
   currentPerson: Person,
-  room: Room
+  room: Room,
+  sessionId: string | null
 ): Promise<void> {
   const client = getClient()
   if (currentInfo !== undefined) {
     await client.diffUpdate(currentInfo, {
       x,
       y,
-      room: room._id
+      room: room._id,
+      sessionId
     })
   } else {
     await client.createDoc(love.class.ParticipantInfo, core.space.Workspace, {
@@ -500,7 +502,8 @@ async function moveToRoom (
       y,
       room: room._id,
       person: currentPerson._id,
-      name: currentPerson.name
+      name: currentPerson.name,
+      sessionId
     })
   }
   const loc = getCurrentLocation()
@@ -529,7 +532,7 @@ export async function connectRoom (
   room: Room
 ): Promise<void> {
   await disconnect()
-  await moveToRoom(x, y, currentInfo, currentPerson, room)
+  await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
   await connectLK(currentPerson, room)
 }
 

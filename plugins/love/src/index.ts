@@ -51,6 +51,7 @@ export interface ParticipantInfo extends Doc {
   room: Ref<Room>
   x: number
   y: number
+  sessionId: string | null
 }
 
 export interface RoomInfo extends Doc {
