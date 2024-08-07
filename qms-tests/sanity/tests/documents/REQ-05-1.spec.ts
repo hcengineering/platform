@@ -1,11 +1,12 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 import { faker } from '@faker-js/faker'
-import { createTemplateStep } from './common-documents-steps'
+import { createTemplateStep, prepareDocumentStep } from './common-documents-steps'
+import { NewDocument } from '../model/types'
 
 test.use({
   storageState: PlatformSetting
@@ -83,5 +84,35 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.checkIfFilterIsApplied(title)
     })
     await attachScreenshot('TESTS-383_Template_created.png', page)
+  })
+
+  test('TESTS-338. Negative: as a space Member only,  I cannot be assigned as an approver to any document of this space', async ({
+    page
+  }) => {
+    await allure.description(
+      'Requirement\nUser is a space member and cannot be assigned as an approver to any document of this space'
+    )
+    await allure.tms('TESTS-338', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-338')
+    const completeDocument: NewDocument = {
+      template: 'HR (HR)',
+      title: `Complete document-${generateId()}`,
+      description: `Complete document description-${generateId()}`
+    }
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+
+    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
+    await test.step('2. Add a member to space', async () => {
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.addMemberToQualityDocument()
+    })
+    await test.step('3. Check if the member exists in approve list', async () => {
+      await prepareDocumentStep(page, completeDocument)
+
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.clickSendForApproval()
+      await documentContentPage.clickAddMember()
+      await documentContentPage.checkIfMemberDropdownHasMember('Cain Velasquez', false)
+    })
+    await attachScreenshot('TESTS-338_Member_not_in_the_list.png', page)
   })
 })
