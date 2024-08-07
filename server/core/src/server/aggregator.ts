@@ -271,7 +271,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
     const provider = this.adapters.get(stat.provider)
     if (provider === undefined) {
-      throw new NoSuchKeyError('No such provider found')
+      throw new NoSuchKeyError(`No such provider found: ${provider}`)
     }
     return { provider, stat }
   }

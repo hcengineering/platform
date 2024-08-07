@@ -120,8 +120,7 @@ export function startUWebsocketServer (
         language: '',
         email: data.payload.email,
         mode: data.payload.extra?.mode,
-        model: data.payload.extra?.model,
-        rpcHandler
+        model: data.payload.extra?.model
       }
       const cs = createWebSocketClientSocket(wrData, ws, data)
       data.connectionSocket = cs
