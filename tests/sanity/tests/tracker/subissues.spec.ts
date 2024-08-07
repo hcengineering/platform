@@ -94,8 +94,6 @@ test.describe('Tracker sub-issues tests', () => {
     await issuesDetailsPage.checkIssue({
       ...newSubIssue,
       ...editSubIssue,
-      milestone: 'Milestone',
-      estimation: '1d',
       parentIssue: newIssue.title
     })
   })

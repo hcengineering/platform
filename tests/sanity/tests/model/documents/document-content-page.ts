@@ -19,11 +19,17 @@ export class DocumentContentPage extends CommonPage {
   readonly buttonMoreActions = (): Locator =>
     this.page.locator('div.hulyHeader-buttonsGroup button#btn-doc-title-open-more')
 
+  readonly buttonLockedInTitle = (): Locator => this.page.getByRole('button', { name: 'Locked' })
+
   readonly popupPanel = (): Locator => this.page.locator('div.popupPanel-title')
   readonly popupPanelH1 = (): Locator => this.page.locator('div.antiPopup > h1')
 
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle()).toHaveValue(title)
+  }
+
+  async checkDocumentLocked (): Promise<void> {
+    await expect(this.buttonLockedInTitle()).toBeVisible({ timeout: 1000 })
   }
 
   async addContentToTheNewLine (newContent: string): Promise<string> {

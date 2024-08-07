@@ -416,6 +416,7 @@ test.describe('channel tests', () => {
   })
 
   test('Checking backlinks in the Chat', async ({ browser, page }) => {
+    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
@@ -424,10 +425,10 @@ test.describe('channel tests', () => {
     const page2 = await browser.newPage()
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
-    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     await page2.goto(linkText ?? '')
     const joinPage = new SignInJoinPage(page2)
     await joinPage.join(newUser2)
+    await leftSideMenuPageSecond.clickChunter()
 
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('general')
@@ -435,7 +436,6 @@ test.describe('channel tests', () => {
     await channelPage.sendMention(mentionName)
     await channelPage.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
 
-    await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
     await page2.close()
