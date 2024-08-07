@@ -28,7 +28,7 @@
   let isConnectionEstablished = false
   let connectionError: Error | undefined
 
-  let info: { name: string, username: string } | undefined = undefined
+  let info: { name: string, username: string, photoUrl: string } | undefined = undefined
   let isLoading = false
 
   const url = getMetadata(telegram.metadata.BotUrl) ?? ''
@@ -122,8 +122,11 @@
   {:else if info}
     <div class="flex-col mt-2">
       <div class="flex-row-center flex-gap-2">
-        <!--TODO: use telegram bot avatar-->
-        <Icon icon={TelegramColor} size="medium" />
+        {#if info.photoUrl !== ''}
+          <img class="photo" src={info.photoUrl} alt="" />
+        {:else}
+          <Icon icon={TelegramColor} size="x-large" />
+        {/if}
         {info.name} (@{info.username})
         <ModernButton
           label={telegram.string.TestConnection}
@@ -185,5 +188,11 @@
     &:visited {
       color: var(--theme-link-color);
     }
+  }
+
+  .photo {
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 </style>

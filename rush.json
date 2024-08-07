@@ -2116,6 +2116,11 @@
       "packageName": "@hcengineering/server-ai-bot-resources",
       "projectFolder": "server-plugins/ai-bot-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-telegram-bot",
+      "projectFolder": "services/telegram-bot/pod-telegram-bot",
+      "shouldPublish": false
     }
   ]
 }

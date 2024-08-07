@@ -244,7 +244,7 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "FRONT_URL": "http://localhost:8080",
-        "PORT": "3500",
+        "PORT": "3500"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -299,7 +299,7 @@
         "MONGO_URL": "mongodb://localhost:27017",
         "MINIO_ENDPOINT": "localhost",
         "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
