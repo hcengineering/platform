@@ -60,6 +60,7 @@
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
       "showAsyncStacks": true,
+      "outputCapture": "std",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/server",
       "protocol": "inspector"
@@ -75,6 +76,7 @@
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
+        "outputCapture": "std",
         "SES_URL": "http://localhost:8091",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -186,12 +188,13 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "upgrade"],
+      "args": ["src/__start.ts", "upgrade-workspace", "platform"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
+        "TRANSACTOR_URL": "ws://localhost:3333",
         "MONGO_URL": "mongodb://localhost:27017",
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
@@ -386,6 +389,29 @@
       "showAsyncStacks": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/services/analytics-collector/pod-analytics-collector"
+    },
+    {
+      "name": "Debug AI bot",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "PORT": "4008",
+        "SERVER_SECRET": "secret",
+        "SUPPORT_WORKSPACE": "support",
+        "FIRST_NAME": "Jolie",
+        "LAST_NAME": "AI",
+        "PASSWORD": "password",
+        "AVATAR_PATH": "./assets/avatar.png",
+        "AVATAR_CONTENT_TYPE": ".png"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
+      "protocol": "inspector",
+      "outputCapture": "std"
     }
   ]
 }

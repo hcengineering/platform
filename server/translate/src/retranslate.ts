@@ -19,7 +19,6 @@ import {
   DocIndexState,
   DocumentQuery,
   DocumentUpdate,
-  IndexStageState,
   MeasureContext,
   Ref,
   WorkspaceId
@@ -33,12 +32,10 @@ import {
   extractDocKey,
   fieldStateId,
   FullTextPipeline,
-  IndexedDoc,
-  loadIndexStageStage
+  IndexedDoc
 } from '@hcengineering/server-core'
 
 import got from 'got'
-import translatePlugin from './plugin'
 import { translateStateId, TranslationStage } from './types'
 
 /**
@@ -59,40 +56,9 @@ export class LibRetranslateStage implements TranslationStage {
   token: string = ''
   endpoint: string = ''
 
-  stageValue: boolean | string = true
-
-  indexState?: IndexStageState
-
   constructor (readonly workspaceId: WorkspaceId) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
-    // Just do nothing
-    try {
-      const config = await storage.findAll(ctx, translatePlugin.class.TranslateConfiguration, {})
-      if (config.length > 0) {
-        this.enabled = config[0].enabled
-        this.token = config[0].token
-        this.endpoint = config[0].endpoint
-      } else {
-        this.enabled = false
-      }
-    } catch (err: any) {
-      console.error(err)
-      this.enabled = false
-    }
-
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
-      ctx,
-      storage,
-      this.indexState,
-      this.stageId,
-      'config',
-      {
-        enabled: this.enabled,
-        endpoint: this.endpoint
-      }
-    )
-  }
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
 
   async search (
     _classes: Ref<Class<Doc>>[],
@@ -247,13 +213,13 @@ export class LibRetranslateStage implements TranslationStage {
       return
     }
 
-    await pipeline.update(doc._id, this.stageValue, update, true)
+    await pipeline.update(doc._id, true, update, true)
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
     for (const doc of docs) {
-      await pipeline.update(doc._id, this.stageValue, {})
+      await pipeline.update(doc._id, true, {})
     }
   }
 }

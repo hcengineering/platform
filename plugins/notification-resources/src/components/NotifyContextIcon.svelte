@@ -30,14 +30,14 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: iconMixin = hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectIcon)
+  $: iconMixin = hierarchy.classHierarchyMixin(value.objectClass, view.mixin.ObjectIcon)
 </script>
 
 <div class="container">
   {#if iconMixin && object}
     <Component is={iconMixin.component} props={{ value: object, size }} />
-  {:else if !iconMixin}
-    <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} {size} />
+  {:else}
+    <Icon icon={classIcon(client, value.objectClass) ?? notification.icon.Notifications} {size} />
   {/if}
 
   <div class="notifyMarker">

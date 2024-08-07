@@ -543,11 +543,15 @@ export class GithubWorker implements IntegrationManager {
     if (accountRef !== undefined) {
       const person = await this.client.findOne(contact.class.Person, { _id: accountRef.person })
       if (person !== undefined) {
-        await createNotification(this._client, person, {
-          user: account,
-          message: github.string.AuthenticatedWithGithubRequired,
-          props: {}
-        })
+        const personSpace = await this.client.findOne(contact.class.PersonSpace, { person: person._id })
+        if (personSpace !== undefined) {
+          await createNotification(this._client, person, {
+            user: account,
+            space: personSpace._id,
+            message: github.string.AuthenticatedWithGithubRequired,
+            props: {}
+          })
+        }
       }
     }
     this.ctx.info('get octokit: return bot', { account })

@@ -337,13 +337,18 @@ export class ModelDb extends MemDb {
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    const doc = this.getObject(tx.objectId) as any
-    TxProcessor.updateDoc2Doc(doc, tx)
-    return tx.retrieve === true ? { object: doc } : {}
+    try {
+      const doc = this.getObject(tx.objectId) as any
+      TxProcessor.updateDoc2Doc(doc, tx)
+      return tx.retrieve === true ? { object: doc } : {}
+    } catch (err: any) {}
+    return {}
   }
 
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    this.delDoc(tx.objectId)
+    try {
+      this.delDoc(tx.objectId)
+    } catch (err: any) {}
     return {}
   }
 

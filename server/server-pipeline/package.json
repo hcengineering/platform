@@ -172,6 +172,8 @@
     "@hcengineering/products": "^0.1.0",
     "@hcengineering/training": "^0.1.0",
     "@hcengineering/github": "^0.6.0",
-    "@hcengineering/github-assets": "^0.6.0"
+    "@hcengineering/github-assets": "^0.6.0",
+    "@hcengineering/server-ai-bot": "^0.6.0",
+    "@hcengineering/server-ai-bot-resources": "^0.6.0"
   }
 }

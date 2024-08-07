@@ -76,7 +76,8 @@ import serverNotification, {
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE,
   NOTIFICATION_TITLE_SIZE,
-  UserInfo
+  ReceiverInfo,
+  SenderInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
 import { stripTags } from '@hcengineering/text'
@@ -86,6 +87,8 @@ import webpush, { WebPushError } from 'web-push'
 
 import { Content, NotifyParams, NotifyResult } from './types'
 import {
+  createPullCollaboratorsTx,
+  createPushCollaboratorsTx,
   getHTMLPresenter,
   getNotificationContent,
   getTextPresenter,
@@ -96,6 +99,7 @@ import {
   isUserEmployeeInFieldValue,
   isUserInFieldValue,
   replaceAll,
+  toReceiverInfo,
   updateNotifyContextsSpace
 } from './utils'
 
@@ -121,8 +125,8 @@ export async function getCommonNotificationTxes (
   control: TriggerControl,
   doc: Doc,
   data: Partial<Data<CommonInboxNotification>>,
-  receiver: UserInfo,
-  sender: UserInfo,
+  receiver: ReceiverInfo,
+  sender: SenderInfo,
   attachedTo: Ref<Doc>,
   attachedToClass: Ref<Class<Doc>>,
   space: Ref<Space>,
@@ -135,7 +139,7 @@ export async function getCommonNotificationTxes (
   }
 
   const res: Tx[] = []
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo })
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { objectId: attachedTo })
 
   const notificationTx = await pushInboxNotifications(
     control,
@@ -267,13 +271,13 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
 }
 
 async function getKeyCollaborators (
-  doc: Doc,
+  docClass: Ref<Class<Doc>>,
   value: any,
   field: string,
   control: TriggerControl
 ): Promise<Ref<Account>[] | undefined> {
   if (value !== undefined && value !== null) {
-    const attr = control.hierarchy.findAttribute(doc._class, field)
+    const attr = control.hierarchy.findAttribute(docClass, field)
     if (attr !== undefined) {
       return await getValueCollaborators(value, attr, control)
     }
@@ -295,7 +299,7 @@ export async function getDocCollaborators (
     const newCollaborators = await ctx.with(
       'getKeyCollaborators',
       {},
-      async () => await getKeyCollaborators(doc, value, field, control)
+      async () => await getKeyCollaborators(doc._class, value, field, control)
     )
     if (newCollaborators !== undefined) {
       for (const newCollaborator of newCollaborators) {
@@ -306,84 +310,44 @@ export async function getDocCollaborators (
   return Array.from(collaborators.values())
 }
 
-function getDocNotifyContext (
-  docNotifyContexts: DocNotifyContext[],
-  targetUser: Ref<Account>,
-  attachedTo: Ref<Doc>,
-  res: Tx[]
-): DocNotifyContext | undefined {
-  const context = docNotifyContexts.find((context) => context.user === targetUser && context.attachedTo === attachedTo)
-
-  if (context !== undefined) {
-    return context
-  }
-
-  const contextTx = (res as TxCUD<Doc>[]).find((tx) => {
-    if (tx._class === core.class.TxCreateDoc && tx.objectClass === notification.class.DocNotifyContext) {
-      const createTx = tx as TxCreateDoc<DocNotifyContext>
-
-      return createTx.attributes.attachedTo === attachedTo && createTx.attributes.user === targetUser
-    }
-
-    return false
-  }) as TxCreateDoc<DocNotifyContext> | undefined
-
-  if (contextTx !== undefined) {
-    return TxProcessor.createDoc2Doc(contextTx)
-  }
-
-  return undefined
-}
-
 export async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
-  target: UserInfo,
-  attachedTo: Ref<Doc>,
-  attachedToClass: Ref<Class<Doc>>,
-  space: Ref<Space>,
+  receiver: ReceiverInfo,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  objectSpace: Ref<Space>,
   contexts: DocNotifyContext[],
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
   shouldUpdateTimestamp = true
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
-  const account = target.account
-
-  if (account === undefined) {
-    return
-  }
-  const context = getDocNotifyContext(contexts, account._id, attachedTo, res)
+  const context = contexts.find((context) => context.user === receiver._id && context.objectId === objectId)
 
   let docNotifyContextId: Ref<DocNotifyContext>
 
   if (context === undefined) {
-    const createContextTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, space, {
-      user: account._id,
-      attachedTo,
-      attachedToClass,
-      lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
-    })
-    await control.apply([createContextTx])
-    if (target.account?.email !== undefined) {
-      control.operationContext.derived.targets['docNotifyContext' + createContextTx._id] = (it) => {
-        if (it._id === createContextTx._id) {
-          return [target.account?.email as string]
-        }
-      }
-    }
-    docNotifyContextId = createContextTx.objectId
+    docNotifyContextId = await createNotifyContext(
+      control,
+      objectId,
+      objectClass,
+      objectSpace,
+      receiver,
+      shouldUpdateTimestamp ? modifiedOn : undefined
+    )
   } else {
     docNotifyContextId = context._id
   }
 
   const notificationData = {
-    user: account._id,
+    user: receiver._id,
     isViewed: false,
     docNotifyContext: docNotifyContextId,
+    archived: false,
     ...data
   }
-  const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
+  const notificationTx = control.txFactory.createTxCreateDoc(_class, receiver.space, notificationData)
   res.push(notificationTx)
 
   return notificationTx
@@ -470,7 +434,7 @@ async function mentionInboxNotificationToText (
   return await commonInboxNotificationToText(doc)
 }
 
-async function getTranslatedNotificationContent (
+export async function getTranslatedNotificationContent (
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
   control: TriggerControl
@@ -488,12 +452,12 @@ async function getTranslatedNotificationContent (
 
 export async function createPushFromInbox (
   control: TriggerControl,
-  target: UserInfo,
+  receiver: ReceiverInfo,
   attachedTo: Ref<Doc>,
   attachedToClass: Ref<Class<Doc>>,
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
-  sender: UserInfo,
+  sender: SenderInfo,
   _id: Ref<Doc>,
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx | undefined> {
@@ -522,9 +486,9 @@ export async function createPushFromInbox (
   }
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
-  await createPushNotification(control, target._id as Ref<PersonAccount>, title, body, _id, senderPerson, path)
-  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, core.space.Workspace, {
-    user: target._id,
+  await createPushNotification(control, receiver._id as Ref<PersonAccount>, title, body, _id, senderPerson, path)
+  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
+    user: receiver._id,
     status: NotificationStatus.New,
     title,
     body,
@@ -604,18 +568,14 @@ export async function pushActivityInboxNotifications (
   originTx: TxCUD<Doc>,
   control: TriggerControl,
   res: Tx[],
-  target: UserInfo,
-  sender: UserInfo,
+  receiver: ReceiverInfo,
+  sender: SenderInfo,
   object: Doc,
   docNotifyContexts: DocNotifyContext[],
   activityMessage: ActivityMessage,
   shouldUpdateTimestamp: boolean
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
-  if (target.account === undefined) {
-    return
-  }
-
-  const content = await getNotificationContent(originTx, target.account, sender, object, control)
+  const content = await getNotificationContent(originTx, receiver.account, sender, object, control, activityMessage)
   const data: Partial<Data<ActivityInboxNotification>> = {
     ...content,
     attachedTo: activityMessage._id,
@@ -625,10 +585,10 @@ export async function pushActivityInboxNotifications (
   return await pushInboxNotifications(
     control,
     res,
-    target,
+    receiver,
     activityMessage.attachedTo,
     activityMessage.attachedToClass,
-    activityMessage.space,
+    object.space,
     docNotifyContexts,
     data,
     notification.class.ActivityInboxNotification,
@@ -645,8 +605,8 @@ export async function applyNotificationProviders (
   control: TriggerControl,
   res: Tx[],
   object: Doc,
-  receiver: UserInfo,
-  sender: UserInfo
+  receiver: ReceiverInfo,
+  sender: SenderInfo
 ): Promise<void> {
   const resources = await control.modelDb.findAll(serverNotification.class.NotificationProviderResources, {})
   for (const [provider, types] of notifyResult.entries()) {
@@ -662,7 +622,6 @@ export async function applyNotificationProviders (
         sender,
         data._id
       )
-      // console.log('Push takes', Date.now() - now, 'ms')
       if (pushTx !== undefined) {
         res.push(pushTx)
       }
@@ -683,13 +642,40 @@ export async function applyNotificationProviders (
   }
 }
 
+async function createNotifyContext (
+  control: TriggerControl,
+  objectId: Ref<Doc>,
+  objectClass: Ref<Class<Doc>>,
+  objectSpace: Ref<Space>,
+  receiver: ReceiverInfo,
+  updateTimestamp?: Timestamp
+): Promise<Ref<DocNotifyContext>> {
+  const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, receiver.space, {
+    user: receiver._id,
+    objectId,
+    objectClass,
+    objectSpace,
+    isPinned: false,
+    lastUpdateTimestamp: updateTimestamp
+  })
+  await control.apply([createTx])
+  if (receiver.account?.email !== undefined) {
+    control.operationContext.derived.targets['docNotifyContext' + createTx._id] = (it) => {
+      if (it._id === createTx._id) {
+        return [receiver.account?.email]
+      }
+    }
+  }
+  return createTx.objectId
+}
+
 export async function getNotificationTxes (
   control: TriggerControl,
   object: Doc,
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
-  receiver: UserInfo,
-  sender: UserInfo,
+  receiver: ReceiverInfo,
+  sender: SenderInfo,
   params: NotifyParams,
   docNotifyContexts: DocNotifyContext[],
   activityMessages: ActivityMessage[]
@@ -741,6 +727,21 @@ export async function getNotificationTxes (
           sender
         )
       }
+    } else {
+      const context = docNotifyContexts.find(
+        (context) => context.objectId === message.attachedTo && context.user === receiver.account._id
+      )
+
+      if (context === undefined) {
+        await createNotifyContext(
+          control,
+          message.attachedTo,
+          message.attachedToClass,
+          message.space,
+          receiver,
+          params.shouldUpdateTimestamp ? originTx.modifiedOn : undefined
+        )
+      }
     }
   }
   return res
@@ -786,6 +787,39 @@ async function updateContextsTimestamp (
   await control.apply(res)
 }
 
+async function removeContexts (
+  contexts: DocNotifyContext[],
+  unsubscribe: Ref<PersonAccount>[],
+  control: TriggerControl
+): Promise<void> {
+  if (contexts.length === 0) return
+  if (unsubscribe.length === 0) return
+
+  const unsubscribeAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
+    _id: { $in: unsubscribe }
+  })
+  const res: Tx[] = []
+
+  for (const context of contexts) {
+    const account = unsubscribeAccounts.find(({ _id }) => _id === context.user)
+    if (account === undefined) continue
+
+    const removeTx = control.txFactory.createTxRemoveDoc(context._class, context.space, context._id)
+
+    res.push(removeTx)
+
+    if (account.email !== undefined) {
+      control.operationContext.derived.targets['docNotifyContext' + removeTx._id] = (it) => {
+        if (it._id === removeTx._id) {
+          return [account.email]
+        }
+      }
+    }
+  }
+
+  await control.apply(res)
+}
+
 export async function createCollabDocInfo (
   ctx: MeasureContext,
   collaborators: Ref<PersonAccount>[],
@@ -795,7 +829,7 @@ export async function createCollabDocInfo (
   object: Doc,
   activityMessages: ActivityMessage[],
   params: NotifyParams,
-  cache: Map<Ref<Doc>, Doc>
+  unsubscribe: Ref<PersonAccount>[] = []
 ): Promise<Tx[]> {
   let res: Tx[] = []
 
@@ -803,9 +837,10 @@ export async function createCollabDocInfo (
     return res
   }
 
-  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { attachedTo: object._id })
+  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { objectId: object._id })
 
   await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control, originTx.modifiedBy)
+  await removeContexts(notifyContexts, unsubscribe, control)
 
   const docMessages = activityMessages.filter((message) => message.attachedTo === object._id)
   if (docMessages.length === 0) {
@@ -831,12 +866,15 @@ export async function createCollabDocInfo (
     {},
     async (ctx) => await getUsersInfo(ctx, [...Array.from(targets), originTx.modifiedBy as Ref<PersonAccount>], control)
   )
-  const sender = usersInfo.find(({ _id }) => _id === originTx.modifiedBy) ?? {
+  const sender: SenderInfo = usersInfo.find(({ _id }) => _id === originTx.modifiedBy) ?? {
     _id: originTx.modifiedBy
   }
 
   for (const target of targets) {
-    const info = usersInfo.find(({ _id }) => _id === target)
+    const info: ReceiverInfo | undefined = toReceiverInfo(
+      control.hierarchy,
+      usersInfo.find(({ _id }) => _id === target)
+    )
 
     if (info === undefined) continue
 
@@ -856,7 +894,7 @@ export async function createCollabDocInfo (
       const id = generateId() as string
       control.operationContext.derived.targets[id] = (it) => {
         if (ids.has(it._id)) {
-          return [info.account?.email as string]
+          return [info.account?.email]
         }
       }
     }
@@ -882,6 +920,50 @@ export function getMixinTx (
       collaborators
     }
   )
+}
+
+async function getTxCollabs (
+  ctx: MeasureContext,
+  tx: TxCUD<Doc>,
+  control: TriggerControl,
+  doc: Doc
+): Promise<{
+    added: Ref<Account>[]
+    removed: Ref<Account>[]
+    result: Ref<Account>[]
+  }> {
+  const { hierarchy } = control
+  const mixin = hierarchy.classHierarchyMixin<Doc, ClassCollaborators>(
+    doc._class,
+    notification.mixin.ClassCollaborators
+  )
+  if (mixin === undefined) return { added: [], removed: [], result: [] }
+
+  if (tx._class === core.class.TxCreateDoc) {
+    const collabs = await getDocCollaborators(ctx, doc, mixin, control)
+    return { added: collabs, removed: [], result: collabs }
+  }
+
+  if (tx._class === core.class.TxRemoveDoc) {
+    if (hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+      return { added: [], removed: [], result: hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? [] }
+    }
+
+    return { added: [], removed: [], result: [] }
+  }
+
+  if ([core.class.TxUpdateDoc, core.class.TxMixin].includes(tx._class)) {
+    const collabs = new Set(hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? [])
+    const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
+    const newCollaborators = (await getNewCollaborators(ops, mixin, doc._class, control)).filter((p) => !collabs.has(p))
+    const isSpace = control.hierarchy.isDerived(doc._class, core.class.Space)
+    const removedCollabs = isSpace ? await getRemovedMembers(ops, mixin, (doc as Space)._class, control) : []
+    const result = [...collabs, ...newCollaborators].filter((p) => !removedCollabs.includes(p))
+
+    return { added: newCollaborators, removed: removedCollabs, result }
+  }
+
+  return { added: [], removed: [], result: [] }
 }
 
 async function getSpaceCollabTxes (
@@ -916,8 +998,7 @@ async function getSpaceCollabTxes (
         originTx,
         doc,
         activityMessages,
-        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true },
-        cache
+        { isSpace: true, isOwn: false, shouldUpdateTimestamp: true }
       )
     }
   }
@@ -960,8 +1041,7 @@ async function createCollaboratorDoc (
         originTx,
         doc,
         activityMessage,
-        { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
-        cache
+        { isOwn: true, isSpace: false, shouldUpdateTimestamp: true }
       )
   )
   res.push(mixinTx)
@@ -1046,7 +1126,7 @@ async function updateCollaboratorsMixin (
     if (newCollabs.length > 0) {
       const docNotifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, {
         user: { $in: newCollabs },
-        attachedTo: tx.objectId
+        objectId: tx.objectId
       })
 
       const infos = await ctx.with(
@@ -1054,11 +1134,13 @@ async function updateCollaboratorsMixin (
         {},
         async (ctx) => await getUsersInfo(ctx, [...newCollabs, originTx.modifiedBy] as Ref<PersonAccount>[], control)
       )
-      const sender = infos.find(({ _id }) => _id === originTx.modifiedBy) ?? { _id: originTx.modifiedBy }
+      const sender: SenderInfo = infos.find(({ _id }) => _id === originTx.modifiedBy) ?? { _id: originTx.modifiedBy }
 
       for (const collab of newCollabs) {
-        const target = infos.find(({ _id }) => _id === collab)
-
+        const target = toReceiverInfo(
+          hierarchy,
+          infos.find(({ _id }) => _id === collab)
+        )
         if (target === undefined) continue
 
         for (const message of activityMessages) {
@@ -1132,8 +1214,7 @@ async function collectionCollabDoc (
           tx,
           doc,
           activityMessages,
-          { isOwn: false, isSpace: false, shouldUpdateTimestamp: true },
-          cache
+          { isOwn: false, isSpace: false, shouldUpdateTimestamp: true }
         )
     )
   )
@@ -1152,7 +1233,7 @@ async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerCont
   const res: Tx[] = []
   const notifyContexts = await control.findAll(
     notification.class.DocNotifyContext,
-    { attachedTo: tx.objectId },
+    { objectId: tx.objectId },
     {
       projection: {
         _id: 1,
@@ -1195,7 +1276,7 @@ async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerCont
 async function getNewCollaborators (
   ops: DocumentUpdate<Doc> | MixinUpdate<Doc, Doc>,
   mixin: ClassCollaborators,
-  doc: Doc,
+  docClass: Ref<Class<Doc>>,
   control: TriggerControl
 ): Promise<Ref<Account>[]> {
   const newCollaborators = new Set<Ref<Account>>()
@@ -1206,7 +1287,7 @@ async function getNewCollaborators (
         if (typeof value !== 'string') {
           value = value.$each
         }
-        const newCollabs = await getKeyCollaborators(doc, value, key, control)
+        const newCollabs = await getKeyCollaborators(docClass, value, key, control)
         if (newCollabs !== undefined) {
           for (const newCollab of newCollabs) {
             newCollaborators.add(newCollab)
@@ -1219,7 +1300,7 @@ async function getNewCollaborators (
     if (key.startsWith('$')) continue
     if (mixin.fields.includes(key)) {
       const value = (ops as any)[key]
-      const newCollabs = await getKeyCollaborators(doc, value, key, control)
+      const newCollabs = await getKeyCollaborators(docClass, value, key, control)
       if (newCollabs !== undefined) {
         for (const newCollab of newCollabs) {
           newCollaborators.add(newCollab)
@@ -1228,6 +1309,30 @@ async function getNewCollaborators (
     }
   }
   return Array.from(newCollaborators.values())
+}
+
+async function getRemovedMembers (
+  ops: DocumentUpdate<Space> | MixinUpdate<Space, Space>,
+  mixin: ClassCollaborators,
+  docClass: Ref<Class<Space>>,
+  control: TriggerControl
+): Promise<Ref<Account>[]> {
+  const removedCollaborators: Ref<Account>[] = []
+  if (ops.$pull !== undefined && 'members' in ops.$pull) {
+    const key = 'members'
+    if (mixin.fields.includes(key)) {
+      let value = (ops.$pull as any)[key]
+      if (typeof value !== 'string') {
+        value = value.$in
+      }
+      const collabs = await getKeyCollaborators(docClass, value, key, control)
+      if (collabs !== undefined) {
+        removedCollaborators.push(...collabs)
+      }
+    }
+  }
+
+  return Array.from(new Set(removedCollaborators).values())
 }
 
 async function updateCollaboratorDoc (
@@ -1245,31 +1350,28 @@ async function updateCollaboratorDoc (
   const doc = await ctx.with(
     'find-doc',
     { _class: tx.objectClass },
-    async () => (await control.findAllCtx(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+    async () =>
+      cache.get(tx.objectId) ?? (await control.findAllCtx(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
   )
   if (doc === undefined) return []
+  cache.set(doc._id, doc)
   const params: NotifyParams = { isOwn: true, isSpace: false, shouldUpdateTimestamp: true }
   if (hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
     // we should handle change field and subscribe new collaborators
-    const collabMixin = hierarchy.as(doc, notification.mixin.Collaborators)
-    const collabs = new Set(collabMixin.collaborators)
-    const ops = isMixinTx(tx) ? tx.attributes : tx.operations
-    const newCollaborators = await ctx.with('get-new-collaborators', {}, async () =>
-      (await getNewCollaborators(ops, mixin, doc, control)).filter((p) => !collabs.has(p))
+    const collabsInfo = await ctx.with(
+      'get-tx-collaborators',
+      {},
+      async () => await getTxCollabs(ctx, tx, control, doc)
     )
 
-    if (newCollaborators.length > 0) {
-      res.push(
-        control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-          $push: {
-            collaborators: {
-              $each: newCollaborators,
-              $position: 0
-            }
-          }
-        })
-      )
+    if (collabsInfo.added.length > 0) {
+      res.push(createPushCollaboratorsTx(control, tx.objectId, tx.objectClass, tx.objectSpace, collabsInfo.added))
     }
+
+    if (collabsInfo.removed.length > 0) {
+      res.push(createPullCollaboratorsTx(control, tx.objectId, tx.objectClass, tx.objectSpace, collabsInfo.removed))
+    }
+
     res = res.concat(
       await ctx.with(
         'create-collab-docinfo',
@@ -1277,14 +1379,14 @@ async function updateCollaboratorDoc (
         async () =>
           await createCollabDocInfo(
             ctx,
-            [...collabMixin.collaborators, ...newCollaborators] as Ref<PersonAccount>[],
+            collabsInfo.result as Ref<PersonAccount>[],
             control,
             tx,
             originTx,
             doc,
             activityMessages,
             params,
-            cache
+            collabsInfo.removed as Ref<PersonAccount>[]
           )
       )
     )
@@ -1304,8 +1406,7 @@ async function updateCollaboratorDoc (
         originTx,
         doc,
         activityMessages,
-        params,
-        cache
+        params
       )
     )
   }
@@ -1436,6 +1537,59 @@ async function applyUserTxes (
   return res
 }
 
+async function updateCollaborators (ctx: MeasureContext, control: TriggerControl, tx: TxCUD<Doc>): Promise<Tx[]> {
+  if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxMixin) return []
+
+  const hierarchy = control.hierarchy
+
+  const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
+  if (mixin === undefined) return []
+
+  const { objectClass, objectId, objectSpace } = tx
+  const ops = isMixinTx(tx) ? tx.attributes : (tx as TxUpdateDoc<Doc>).operations
+  const addedCollaborators = await getNewCollaborators(ops, mixin, objectClass, control)
+  const isSpace = control.hierarchy.isDerived(objectClass, core.class.Space)
+  const removedCollaborators = isSpace
+    ? await getRemovedMembers(ops, mixin, objectClass as Ref<Class<Space>>, control)
+    : []
+
+  if (removedCollaborators.length === 0 && addedCollaborators.length === 0) return []
+
+  const doc = (await control.findAll(objectClass, { _id: objectId }, { limit: 1 }))[0]
+  if (doc === undefined) return []
+
+  const res: Tx[] = []
+  const currentCollaborators = new Set(hierarchy.as(doc, notification.mixin.Collaborators).collaborators ?? [])
+  const toAdd = addedCollaborators.filter((p) => !currentCollaborators.has(p))
+
+  if (toAdd.length === 0 && removedCollaborators.length === 0) return []
+
+  if (toAdd.length > 0) {
+    res.push(createPushCollaboratorsTx(control, objectId, objectClass, objectSpace, toAdd))
+  }
+
+  if (removedCollaborators.length > 0) {
+    res.push(createPullCollaboratorsTx(control, objectId, objectClass, objectSpace, removedCollaborators))
+  }
+
+  if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return res
+
+  const contexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: objectId })
+  const addedInfo = await getUsersInfo(ctx, toAdd as Ref<PersonAccount>[], control)
+
+  for (const addedUser of addedInfo) {
+    const info = toReceiverInfo(hierarchy, addedUser)
+    if (info === undefined) continue
+    const context = contexts.find(({ user }) => user === info._id)
+    if (context !== undefined) continue
+    await createNotifyContext(control, objectId, objectClass, objectSpace, info)
+  }
+
+  await removeContexts(contexts, removedCollaborators as Ref<PersonAccount>[], control)
+
+  return res
+}
+
 export async function createCollaboratorNotifications (
   ctx: MeasureContext,
   tx: TxCUD<Doc>,
@@ -1445,7 +1599,12 @@ export async function createCollaboratorNotifications (
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx[]> {
   if (tx.space === core.space.DerivedTx) {
-    return []
+    // do not forgot update collaborators for derived  tx
+    return await ctx.with(
+      'updateDerivedCollaborators',
+      {},
+      async () => await updateCollaborators(ctx, control, TxProcessor.extractTx(tx) as TxCUD<Doc>)
+    )
   }
 
   if (activityMessages.length === 0) {
@@ -1543,7 +1702,7 @@ async function OnActivityMessageRemove (message: ActivityMessage, control: Trigg
     return []
   }
 
-  const contexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: message.attachedTo })
+  const contexts = await control.findAll(notification.class.DocNotifyContext, { objectId: message.attachedTo })
   if (contexts.length === 0) return []
 
   const isLastUpdate = contexts.some((context) => {

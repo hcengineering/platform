@@ -20,6 +20,9 @@ export class DocumentsPage extends CommonPage {
   readonly buttonCreateDocument = (): Locator =>
     this.page.locator('div[data-float="navigator"] button[id="new-document"]')
 
+  readonly buttonDocument = (name: string): Locator =>
+    this.page.locator('button.hulyNavItem-container > span[class*="label"]', { hasText: name })
+
   readonly divTeamspacesParent = (): Locator =>
     this.page.locator('div#navGroup-tree-teamspaces').locator('xpath=../button[1]')
 
@@ -97,7 +100,13 @@ export class DocumentsPage extends CommonPage {
   }
 
   async openDocument (name: string): Promise<void> {
-    await this.page.locator('button.hulyNavItem-container > span[class*="label"]', { hasText: name }).click()
+    await this.buttonDocument(name).click()
+  }
+
+  async selectMoreActionOfDocument (name: string, popupItem: string): Promise<void> {
+    await this.buttonDocument(name).hover()
+    await this.page.getByRole('button', { name }).getByRole('button').nth(2).click()
+    await this.selectFromDropdown(this.page, popupItem)
   }
 
   async openDocumentForTeamspace (spaceName: string, documentName: string): Promise<void> {

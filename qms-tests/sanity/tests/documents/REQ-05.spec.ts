@@ -16,6 +16,13 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
 
+  test.afterEach(async ({ browser }) => {
+    const contexts = browser.contexts()
+    for (const context of contexts) {
+      await context.close()
+    }
+  })
+
   test('TESTS-298. Create a new Category from top right corner', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create a new category')
     await allure.tms('TESTS-298', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-298')

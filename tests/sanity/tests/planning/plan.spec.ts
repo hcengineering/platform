@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI, generateTestData } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, generateTestData, getTimeForPlanner } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
@@ -11,6 +11,7 @@ import { ApiEndpoint } from '../API/Api'
 import { LoginPage } from '../model/login-page'
 import { SignInJoinPage } from '../model/signin-page'
 import { TeamPage } from '../model/team-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 
 test.use({
   storageState: PlatformSetting
@@ -178,12 +179,7 @@ test.describe('Planning ToDo tests', () => {
     }
     const titleV = `Visible ToDo ${generateId()}`
     const titleI = `Inisible ToDo ${generateId()}`
-
-    let hour = new Date().getHours()
-    const ampm = hour < 13 ? 'am' : 'pm'
-    hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
-    const timeV = `${hour}${ampm}`
-    const timeI = `${hour + 1}${ampm}`
+    const time = getTimeForPlanner()
 
     const leftSideMenuPage: LeftSideMenuPage = new LeftSideMenuPage(page)
     const loginPage: LoginPage = new LoginPage(page)
@@ -192,7 +188,9 @@ test.describe('Planning ToDo tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
     await leftSideMenuPage.clickPlanner()
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
@@ -201,7 +199,7 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.selectInputToDo().fill(titleV)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(titleV, timeV)
+    await planningPage.dragdropTomorrow(titleV, time)
     await planningPage.eventInSchedule(titleV).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupVisibleToEveryone().click()
@@ -209,7 +207,7 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.selectInputToDo().fill(titleI)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(titleI, timeI)
+    await planningPage.dragdropTomorrow(titleI, time, true)
     await planningPage.eventInSchedule(titleI).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupOnlyVisibleToYou().click()

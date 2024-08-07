@@ -412,7 +412,7 @@ export class IssuesPage extends CommonTrackerPage {
     await this.fillNewIssueForm(data)
     await this.clickButtonCreateIssue()
     if (closeNotification) {
-      await this.closeNotification(this.page)
+      await this.closeNotification()
     }
     await attachScreenshot(`createdNewIssue-${data.title}.png`, this.page)
   }

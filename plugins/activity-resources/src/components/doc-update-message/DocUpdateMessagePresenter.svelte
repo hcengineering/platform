@@ -26,7 +26,7 @@
   import { Account, AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, ShowMore, Action } from '@hcengineering/ui'
+  import { Action, Component, ShowMore } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
@@ -144,17 +144,17 @@
   }
 
   async function loadParentObject (
-    message: DocUpdateMessage,
-    parentMessage?: ActivityMessage,
+    message: Pick<DocUpdateMessage, 'attachedTo' | 'attachedToClass' | 'objectId' | 'space'>,
+    parentMessage?: Pick<ActivityMessage, 'attachedTo' | 'space' | 'attachedToClass'>,
     doc?: Doc
   ): Promise<void> {
-    if (!parentMessage && message.objectId === message.attachedTo) {
+    if (parentMessage === undefined && message.objectId === message.attachedTo) {
       return
     }
 
-    const _id = parentMessage ? parentMessage.attachedTo : message.attachedTo
-    const _class = parentMessage ? parentMessage.attachedToClass : message.attachedToClass
-    const space = parentMessage ? parentMessage.space : message.space
+    const _id = parentMessage !== undefined ? parentMessage.attachedTo : message.attachedTo
+    const _class = parentMessage !== undefined ? parentMessage.attachedToClass : message.attachedToClass
+    const space = parentMessage !== undefined ? parentMessage.space : message.space
 
     if (doc !== undefined && doc._id === _id) {
       parentObject = doc
@@ -229,7 +229,14 @@
         />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
-      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} {space} />
+      <DocUpdateMessageAttributes
+        attributeUpdates={value.attributeUpdates}
+        {attributeModel}
+        {viewlet}
+        {space}
+        {object}
+        message={value}
+      />
     {/if}
   </svelte:fragment>
 </ActivityMessageTemplate>

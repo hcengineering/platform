@@ -82,11 +82,7 @@ test.describe('Workspace tests', () => {
     await issuesPage.openIssueByName(newIssue.title)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
   })
 
   test('Check validation steps description for the create flow', async ({ page }) => {

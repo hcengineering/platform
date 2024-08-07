@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonAccount, PersonSpace } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
 import {
   BaseNotificationType,
@@ -135,7 +135,14 @@ export interface NotificationPresenter extends Class<Doc> {
   presenter: Resource<NotificationContentProvider>
 }
 
-export interface UserInfo {
+export interface ReceiverInfo {
+  _id: Ref<Account>
+  account: PersonAccount
+  person: Employee
+  space: Ref<PersonSpace>
+}
+
+export interface SenderInfo {
   _id: Ref<Account>
   account?: PersonAccount
   person?: Person
@@ -146,8 +153,8 @@ export type NotificationProviderFunc = (
   types: BaseNotificationType[],
   object: Doc,
   data: InboxNotification,
-  receiver: UserInfo,
-  sender: UserInfo
+  receiver: ReceiverInfo,
+  sender: SenderInfo
 ) => Promise<Tx[]>
 
 export interface NotificationProviderResources extends Doc {
@@ -156,7 +163,7 @@ export interface NotificationProviderResources extends Doc {
 }
 
 export const NOTIFICATION_BODY_SIZE = 50
-export const NOTIFICATION_TITLE_SIZE = 30
+export const NOTIFICATION_TITLE_SIZE = 50
 
 /**
  * @public

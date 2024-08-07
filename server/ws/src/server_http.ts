@@ -431,17 +431,12 @@ function createWebsocketClientSocket (
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
-      const sst = Date.now()
       const smsg = rpcHandler.serialize(msg, binary)
-      ctx.measure('serialize', Date.now() - sst)
 
       ctx.measure('send-data', smsg.length)
       const st = Date.now()
       if (ws.readyState !== ws.OPEN || cs.isClosed) {
         return
-      }
-      if (ws.bufferedAmount > 16 * 1024) {
-        ctx.measure('send-bufferAmmount', 1)
       }
       ws.send(smsg, { binary: true, compress: compression }, (err) => {
         if (err != null) {

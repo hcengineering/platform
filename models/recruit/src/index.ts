@@ -54,26 +54,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Review, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(recruit.mixin.Candidate, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: recruit.class.Vacancy,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: recruit.class.Applicant,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: recruit.class.Vacancy,
     components: { input: chunter.component.ChatMessageInput }

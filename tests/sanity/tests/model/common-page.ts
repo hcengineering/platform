@@ -31,7 +31,7 @@ export class CommonPage {
   tagsStringAddTagButtonSubmit = (): Locator =>
     this.page.locator('div.popup form[id="tags:string:AddTag"] button[type="submit"]')
 
-  notifyContainerButton = (): Locator => this.page.locator('div.notify-container button[type="button"].small').nth(0)
+  notifyContainerButton = (): Locator => this.page.locator('div.notifyPopup button[data-id="btnNotifyClose"]').first()
   errorSpan = (): Locator => this.page.locator('div.ERROR span')
   infoSpan = (): Locator => this.page.locator('div.INFO span')
   popupSubmitButton = (): Locator => this.page.locator('div.popup button[type="submit"]')
@@ -165,8 +165,10 @@ export class CommonPage {
     await this.selectPopupSpanLines(point).click()
   }
 
-  async closeNotification (page: Page): Promise<void> {
-    await this.notifyContainerButton().click()
+  async closeNotification (): Promise<void> {
+    while (await this.notifyContainerButton().isVisible()) {
+      await this.notifyContainerButton().click()
+    }
   }
 
   async checkError (page: Page, errorMessage: string): Promise<void> {

@@ -75,12 +75,20 @@
           icon={action.icon}
           kind={'tertiary'}
           size={'extra-small'}
+          dataId={action.label}
           tooltip={{ label: action.label, direction: 'top' }}
           on:click={(evt) => action.action({}, evt)}
         />
       {/if}
     {/each}
-    <ButtonIcon icon={IconMoreH} kind={'tertiary'} size={'extra-small'} pressed={hovered} on:click={onMenuClick} />
+    <ButtonIcon
+      icon={IconMoreH}
+      kind={'tertiary'}
+      size={'extra-small'}
+      pressed={hovered}
+      dataId={'btnDocMore'}
+      on:click={onMenuClick}
+    />
   </svelte:fragment>
   <svelte:fragment slot="dropbox">
     <slot />

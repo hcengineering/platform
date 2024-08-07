@@ -731,7 +731,7 @@ abstract class MongoAdapterBase implements DbAdapter {
           const coll = this.collection(domain)
           const mongoQuery = this.translateQuery(_class, query, options)
 
-          if (options?.limit === 1) {
+          if (options?.limit === 1 || typeof query._id === 'string') {
             // Skip sort/projection/etc.
             return await ctx.with(
               'find-one',
@@ -748,11 +748,11 @@ abstract class MongoAdapterBase implements DbAdapter {
 
                 const doc = await coll.findOne(mongoQuery, findOptions)
                 let total = -1
-                if (options.total === true) {
+                if (options?.total === true) {
                   total = await coll.countDocuments(mongoQuery)
                 }
                 if (doc != null) {
-                  return toFindResult([doc as unknown as T], total)
+                  return toFindResult([this.stripHash<T>(doc as unknown as T) as T], total)
                 }
                 return toFindResult([], total)
               },
@@ -783,7 +783,6 @@ abstract class MongoAdapterBase implements DbAdapter {
               cursor = cursor.limit(options.limit ?? 1)
             }
           }
-
           // Error in case of timeout
           try {
             let res: T[] = []
@@ -1520,8 +1519,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
         (tx._class === core.class.TxCreateDoc ||
           tx._class === core.class.TxUpdateDoc ||
           tx._class === core.class.TxRemoveDoc) &&
-        ((tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount' ||
-          (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
+        (tx as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
       )
     }
     model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))

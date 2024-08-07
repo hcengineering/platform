@@ -168,6 +168,9 @@ export async function connect (title: string): Promise<Client | undefined> {
             return
           }
           try {
+            if (event === ClientConnectEvent.Connected) {
+              setMetadata(presentation.metadata.SessionId, data)
+            }
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
               void ctx.with('refresh client', {}, async () => {
                 await refreshClient(tokenChanged)

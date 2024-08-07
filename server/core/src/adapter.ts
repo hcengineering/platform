@@ -112,6 +112,7 @@ export interface DbAdapter {
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
+
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
   find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator

@@ -34,6 +34,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -89,6 +90,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
+    void this.init()
+  }
+
+  private async init (): Promise<void> {
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
@@ -96,15 +101,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
-        this._contextByDoc = new Map(result.map((updates) => [updates.attachedTo, updates]))
+        this._contextByDoc = new Map(result.map((updates) => [updates.objectId, updates]))
         this.contextByDoc.set(this._contextByDoc)
       }
     )
     this.otherInboxNotificationsQuery.query(
-      notification.class.InboxNotification,
+      notification.class.CommonInboxNotification,
       {
-        _class: { $ne: notification.class.ActivityInboxNotification },
-        archived: { $ne: true },
+        archived: false,
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
@@ -120,7 +124,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.activityInboxNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
       {
-        archived: { $ne: true },
+        archived: false,
         user: getCurrentAccount()._id
       },
       (result: ActivityInboxNotification[]) => {
@@ -242,7 +246,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          archived: { $ne: true }
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -267,8 +271,8 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          isViewed: { $ne: true },
-          archived: { $ne: true }
+          isViewed: false,
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -293,7 +297,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         {
           user: getCurrentAccount()._id,
           isViewed: true,
-          archived: { $ne: true }
+          archived: false
         },
         {
           projection: { _id: 1, _class: 1, space: 1, docNotifyContext: 1 },

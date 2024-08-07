@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage, ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import { getClient, isSpace } from '@hcengineering/presentation'
@@ -60,16 +60,11 @@
   let refsLoaded = false
 
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: void updateDataProvider(object._id, _class, selectedMessageId)
+  $: void updateDataProvider(object._id, selectedMessageId)
 
-  async function updateDataProvider (
-    attachedTo: Ref<Doc>,
-    _class: Ref<Class<ActivityMessage>>,
-    selectedMessageId?: Ref<ActivityMessage>
-  ): Promise<void> {
+  async function updateDataProvider (attachedTo: Ref<Doc>, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
@@ -77,13 +72,21 @@
       const ctx =
         context ??
         (await client.findOne(notification.class.DocNotifyContext, {
-          attachedTo: object._id,
+          objectId: object._id,
           user: getCurrentAccount()._id
         }))
       const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0
       refsLoaded = hasRefs
       const space = isSpace(object) ? object._id : object.space
-      dataProvider = new ChannelDataProvider(ctx, space, attachedTo, _class, selectedMessageId, loadAll, hasRefs)
+      dataProvider = new ChannelDataProvider(
+        ctx,
+        space,
+        attachedTo,
+        activity.class.ActivityMessage,
+        selectedMessageId,
+        loadAll,
+        hasRefs
+      )
     }
   }
 

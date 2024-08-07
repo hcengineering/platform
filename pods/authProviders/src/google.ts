@@ -1,8 +1,9 @@
-import { joinWithProvider, loginWithProvider } from '@hcengineering/account'
+import { joinWithProvider, LoginInfo, loginWithProvider } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Db } from 'mongodb'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
+import qs from 'querystringify'
 import { Passport } from '.'
 import { getBranding, getHost, safeParseAuthState } from './utils'
 
@@ -71,10 +72,11 @@ export function registerGoogle (
       measureCtx.info('Provider auth handler', { email, type: 'google' })
       if (email !== undefined) {
         try {
+          let loginInfo: LoginInfo
           const state = safeParseAuthState(ctx.query?.state)
           const branding = getBranding(brandings, state?.branding)
           if (state.inviteId != null && state.inviteId !== '') {
-            const loginInfo = await joinWithProvider(
+            loginInfo = await joinWithProvider(
               measureCtx,
               db,
               productId,
@@ -84,19 +86,16 @@ export function registerGoogle (
               last,
               state.inviteId as any
             )
-            if (ctx.session != null) {
-              ctx.session.loginInfo = loginInfo
-            }
           } else {
-            const loginInfo = await loginWithProvider(measureCtx, db, productId, null, email, first, last)
-            if (ctx.session != null) {
-              ctx.session.loginInfo = loginInfo
-            }
+            loginInfo = await loginWithProvider(measureCtx, db, productId, null, email, first, last)
           }
 
+          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
+
           // Successful authentication, redirect to your application
-          measureCtx.info('Success auth, redirect', { email, type: 'google' })
-          ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login/auth'))
+          measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
+          ctx.redirect(`${origin}?${query}`)
         } catch (err: any) {
           measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
         }

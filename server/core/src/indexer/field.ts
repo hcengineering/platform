@@ -22,7 +22,6 @@ import core, {
   type DocIndexState,
   type DocumentQuery,
   type DocumentUpdate,
-  type IndexStageState,
   type MeasureContext,
   type Ref
 } from '@hcengineering/core'
@@ -36,15 +35,7 @@ import {
   type FullTextPipeline,
   type FullTextPipelineStage
 } from './types'
-import {
-  collectPropagate,
-  docKey,
-  docUpdKey,
-  getContent,
-  getCustomAttrKeys,
-  isFullTextAttribute,
-  loadIndexStageStage
-} from './utils'
+import { collectPropagate, docKey, docUpdKey, getContent, getCustomAttrKeys, isFullTextAttribute } from './utils'
 import { Analytics } from '@hcengineering/analytics'
 
 /**
@@ -61,46 +52,9 @@ export class IndexedFieldStage implements FullTextPipelineStage {
   updateFields: DocUpdateHandler[] = []
 
   enabled = true
-
-  stageValue: boolean | string = true
-
-  indexState?: IndexStageState
-
   constructor (private readonly dbStorage: ServerStorage) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
-    const indexablePropogate = (
-      await pipeline.model.findAll(core.class.Class, {
-        [core.mixin.FullTextSearchContext]: { $exists: true }
-      })
-    )
-      .map((it) => pipeline.hierarchy.as(it, core.mixin.FullTextSearchContext))
-      .filter((it) => it.propagate != null || it.parentPropagate)
-      .map((it) =>
-        JSON.stringify({
-          id: it._id,
-          propogate: it.propagate,
-          parentPropgate: it.parentPropagate
-        })
-      )
-
-    const forceIndexing = (
-      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext + '.forceIndex']: true })
-    ).map((it) => it._id)
-
-    indexablePropogate.sort()
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
-      ctx,
-      storage,
-      this.indexState,
-      this.stageId,
-      'config',
-      {
-        classes: indexablePropogate,
-        forceIndex: forceIndexing
-      }
-    )
-  }
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
 
   async search (
     _classes: Ref<Class<Doc>>[],
@@ -234,7 +188,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
             }
           }
 
-          await pipeline.update(docState._id, this.stageValue, docUpdate)
+          await pipeline.update(docState._id, true, docUpdate)
         } catch (err: any) {
           Analytics.handleError(err)
           continue
@@ -272,7 +226,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           await pipeline.update(attachedTo, false, parentDocUpdate)
         }
       }
-      await pipeline.update(doc._id, this.stageValue, {})
+      await pipeline.update(doc._id, true, {})
     }
   }
 }

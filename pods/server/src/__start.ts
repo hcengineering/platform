@@ -15,6 +15,7 @@ import serverNotification from '@hcengineering/server-notification'
 import serverToken from '@hcengineering/server-token'
 import { serverFactories } from '@hcengineering/server-ws/src/factories'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import serverAiBot from '@hcengineering/server-ai-bot'
 import { join } from 'path'
 import { start } from '.'
 const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
@@ -50,6 +51,7 @@ setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
 setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
 setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
 setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
+setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 
 const shutdown = start(config.url, {
   fullTextUrl: config.elasticUrl,

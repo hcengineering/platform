@@ -150,4 +150,23 @@ test.describe('Documents tests', () => {
     await documentContentPage.addLinkToText(contentLink, 'test/link/123456')
     await documentContentPage.checkLinkInTheText(contentLink, 'test/link/123456')
   })
+
+  test('Locked document and checking URL', async ({ page, context }) => {
+    const newDocument: NewDocument = {
+      title: `New Document-${generateId()}`,
+      space: 'Default'
+    }
+
+    await leftSideMenuPage.clickDocuments()
+    await documentsPage.clickOnButtonCreateDocument()
+    await documentsPage.createDocument(newDocument)
+    await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Lock')
+    await documentsPage.selectMoreActionOfDocument(newDocument.title, 'Copy document URL to clipboard')
+    await context.grantPermissions(['clipboard-read'])
+    const handle = await page.evaluateHandle(() => navigator.clipboard.readText())
+    const clipboardContent = await handle.jsonValue()
+    await page.goto(`${clipboardContent}`)
+    await documentContentPage.checkDocumentTitle(newDocument.title)
+    await documentContentPage.checkDocumentLocked()
+  })
 })

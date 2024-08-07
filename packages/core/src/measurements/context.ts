@@ -116,6 +116,20 @@ export class MeasureMetricsContext implements MeasureContext {
     }
   }
 
+  withSync<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T,
+    fullParams?: ParamsType | (() => FullParamsType)
+  ): T {
+    const c = this.newChild(name, params, fullParams, this.logger)
+    try {
+      return op(c)
+    } finally {
+      c.end()
+    }
+  }
+
   async withLog<T>(
     name: string,
     params: ParamsType,

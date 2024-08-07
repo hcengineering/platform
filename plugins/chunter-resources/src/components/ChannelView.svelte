@@ -123,7 +123,7 @@
                 <Label label={chunter.string.JoinChannelText} />
               </span>
               <span class="mt-4"> </span>
-              <ModernButton label={view.string.Join} kind="primary" on:click={join} />
+              <ModernButton label={view.string.Join} kind={'primary'} dataId={'btnJoin'} on:click={join} />
             </div>
           </div>
         {:else}

@@ -57,7 +57,6 @@
     rooms
   } from '../stores'
   import {
-    connectRoom,
     disconnect,
     getRoomName,
     isCameraEnabled,

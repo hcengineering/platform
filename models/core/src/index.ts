@@ -49,7 +49,6 @@ import {
   TEnumOf,
   TFullTextSearchContext,
   TIndexConfiguration,
-  TIndexStageState,
   TInterface,
   TMigrationState,
   TMixin,
@@ -94,9 +93,9 @@ import { TUserStatus } from './transient'
 import {
   TTx,
   TTxApplyIf,
-  TTxCUD,
   TTxCollectionCUD,
   TTxCreateDoc,
+  TTxCUD,
   TTxMixin,
   TTxRemoveDoc,
   TTxUpdateDoc,
@@ -164,7 +163,6 @@ export function createModel (builder: Builder): void {
     TTypeAny,
     TTypeRelatedDocument,
     TDocIndexState,
-    TIndexStageState,
     TFullTextSearchContext,
     TConfiguration,
     TConfigurationElement,
@@ -284,8 +282,9 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_DOC_INDEX_STATE,
     indexes: [
-      { keys: { removed: 1 }, filter: { removed: true } },
-      { keys: { _class: 1 }, filter: { _class: core.class.DocIndexState } }
+      {
+        keys: { needIndex: 1 }
+      }
     ],
     disabled: [
       { attachedToClass: 1 },
@@ -297,8 +296,7 @@ export function createModel (builder: Builder): void {
       { createdBy: 1 },
       { createdBy: -1 },
       { createdOn: -1 }
-    ],
-    skip: ['stages.']
+    ]
   })
 
   builder.mixin(core.class.Space, core.class.Class, core.mixin.FullTextSearchContext, {

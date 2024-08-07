@@ -63,6 +63,13 @@ export interface MeasureContext {
     fullParams?: FullParamsType | (() => FullParamsType)
   ) => Promise<T>
 
+  withSync: <T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T,
+    fullParams?: FullParamsType | (() => FullParamsType)
+  ) => T
+
   withLog: <T>(
     name: string,
     params: ParamsType,

@@ -30,6 +30,14 @@ export function generateTestData (): TestData {
   }
 }
 
+export function getTimeForPlanner (): string {
+  let hour = new Date().getHours()
+  const ampm = hour < 13 ? 'am' : 'pm'
+  hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
+
+  return `${hour}${ampm}`
+}
+
 // Consistent data
 export const workspaceName = faker.lorem.word()
 export const userName = faker.internet.userName()

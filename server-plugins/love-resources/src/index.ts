@@ -84,7 +84,8 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
     name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
     room: room?._id ?? love.ids.Reception,
     x: 0,
-    y: 0
+    y: 0,
+    sessionId: null
   })
   const ptx = control.txFactory.createTxApplyIf(
     core.space.Workspace,
@@ -93,7 +94,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
     [
       {
         _class: love.class.ParticipantInfo,
-        query: { person }
+        query: { person: personId }
       }
     ],
     [tx],

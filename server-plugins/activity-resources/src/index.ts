@@ -13,23 +13,30 @@
 // limitations under the License.
 //
 
-import activity, { ActivityMessage, ActivityMessageControl, DocUpdateMessage, Reaction } from '@hcengineering/activity'
+import activity, {
+  ActivityMessage,
+  ActivityMessageControl,
+  DocAttributeUpdates,
+  DocUpdateMessage,
+  Reaction
+} from '@hcengineering/activity'
 import core, {
   Account,
   AttachedDoc,
   Class,
+  Collection,
   Data,
   Doc,
+  Hierarchy,
+  matchQuery,
   MeasureContext,
   Ref,
+  Space,
   Tx,
-  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxProcessor,
-  matchQuery,
-  Hierarchy,
-  Space
+  TxCUD,
+  TxProcessor
 } from '@hcengineering/core'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -43,7 +50,7 @@ import { PersonAccount } from '@hcengineering/contact'
 import { NotificationContent } from '@hcengineering/notification'
 import { getResource, translate } from '@hcengineering/platform'
 
-import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
+import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
 import { ReferenceTrigger } from './references'
 
 export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -143,8 +150,7 @@ export async function createReactionNotifications (
       tx,
       parentMessage,
       [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false },
-      new Map()
+      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
     )
   )
 
@@ -257,12 +263,11 @@ export async function generateDocUpdateMessages (
   originTx?: TxCUD<Doc>,
   objectCache?: DocObjectCache
 ): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
-  const { hierarchy } = control
-
   if (tx.space === core.space.DerivedTx) {
     return res
   }
 
+  const { hierarchy } = control
   const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
 
   if (
@@ -314,6 +319,7 @@ export async function generateDocUpdateMessages (
       let doc = objectCache?.docs?.get(tx.objectId)
       if (doc === undefined) {
         doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+        objectCache?.docs?.set(tx.objectId, doc)
       }
       return await ctx.with(
         'pushDocUpdateMessages',
@@ -342,6 +348,7 @@ export async function generateDocUpdateMessages (
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+          objectCache?.docs?.set(tx.objectId, doc)
         }
         if (doc !== undefined) {
           return await ctx.with(
@@ -369,33 +376,35 @@ export async function generateDocUpdateMessages (
 }
 
 async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  if (tx.space === core.space.DerivedTx) {
-    return []
-  }
-
   if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return []
   }
 
+  const cache: DocObjectCache = {
+    docs: new Map(),
+    transactions: new Map()
+  }
   const txes = await control.ctx.with(
     'generateDocUpdateMessages',
     {},
-    async (ctx) => await generateDocUpdateMessages(ctx, tx, control)
+    async (ctx) => await generateDocUpdateMessages(ctx, tx, control, [], undefined, cache)
   )
-
-  if (txes.length === 0) {
-    return []
-  }
 
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
   const notificationTxes = await control.ctx.with(
     'createCollaboratorNotifications',
     {},
-    async (ctx) => await createCollaboratorNotifications(ctx, tx, control, messages)
+    async (ctx) =>
+      await createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
   )
 
-  return [...txes, ...notificationTxes]
+  const result = [...txes, ...notificationTxes]
+
+  if (result.length > 0) {
+    await control.apply(result)
+  }
+  return []
 }
 
 async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
@@ -443,11 +452,76 @@ async function ReactionNotificationContentProvider (
   return {
     title: activity.string.ReactionNotificationTitle,
     body: activity.string.ReactionNotificationBody,
+    data: reaction.emoji,
     intlParams: {
       title: text,
       reaction: reaction.emoji
     }
   }
+}
+
+async function getAttributesUpdatesText (
+  attributeUpdates: DocAttributeUpdates,
+  objectClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy
+): Promise<string | undefined> {
+  const attrName = await getAttrName(attributeUpdates, objectClass, hierarchy)
+
+  if (attrName === undefined) {
+    return undefined
+  }
+
+  if (attributeUpdates.added.length > 0) {
+    return await translate(activity.string.NewObject, { object: attrName })
+  }
+  if (attributeUpdates.removed.length > 0) {
+    return await translate(activity.string.RemovedObject, { object: attrName })
+  }
+
+  if (attributeUpdates.set.length > 0) {
+    const values = attributeUpdates.set
+    const isUnset = values.length > 0 && !values.some((value) => value !== null && value !== '')
+
+    if (isUnset) {
+      return await translate(activity.string.UnsetObject, { object: attrName })
+    } else {
+      return await translate(activity.string.ChangedObject, { object: attrName })
+    }
+  }
+
+  return undefined
+}
+
+export async function DocUpdateMessageTextPresenter (doc: DocUpdateMessage, control: TriggerControl): Promise<string> {
+  const { hierarchy } = control
+  const { attachedTo, attachedToClass, objectClass, objectId, action, updateCollection, attributeUpdates } = doc
+  const isOwn = attachedTo === objectId
+
+  const collectionAttribute = getCollectionAttribute(hierarchy, attachedToClass, updateCollection)
+  const clazz = hierarchy.getClass(objectClass)
+  const objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
+  const collectionName = collectionAttribute?.label
+
+  const name =
+    isOwn || collectionName === undefined ? await translate(objectName, {}) : await translate(collectionName, {})
+
+  if (action === 'create') {
+    return await translate(activity.string.NewObject, { object: name })
+  }
+
+  if (action === 'remove') {
+    return await translate(activity.string.RemovedObject, { object: name })
+  }
+
+  if (action === 'update' && attributeUpdates !== undefined) {
+    const text = await getAttributesUpdatesText(attributeUpdates, objectClass, hierarchy)
+
+    if (text !== undefined) {
+      return text
+    }
+  }
+
+  return await translate(activity.string.UpdatedObject, { object: name })
 }
 
 export * from './references'
@@ -461,6 +535,7 @@ export default async () => ({
     OnReactionChanged
   },
   function: {
-    ReactionNotificationContentProvider
+    ReactionNotificationContentProvider,
+    DocUpdateMessageTextPresenter
   }
 })

@@ -25,6 +25,13 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
 
+  test.afterEach(async ({ browser }) => {
+    const contexts = browser.contexts()
+    for (const context of contexts) {
+      await context.close()
+    }
+  })
+
   test('TESTS-325. Create a Several documents with Minor & Major versions', async ({ page, browser }) => {
     await allure.description(
       'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'

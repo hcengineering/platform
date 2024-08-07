@@ -268,7 +268,7 @@ export function createModel (builder: Builder): void {
       defaultEnabled: true,
       canDisable: true,
       depends: notification.providers.InboxNotificationProvider,
-      order: 30
+      order: 300
     },
     gmail.providers.EmailNotificationProvider
   )

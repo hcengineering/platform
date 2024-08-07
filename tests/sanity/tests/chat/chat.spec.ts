@@ -1,13 +1,14 @@
-import { test, expect } from '@playwright/test'
-import { PlatformURI, generateTestData } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { ChunterPage } from '../model/chunter-page'
-import { ChannelPage } from '../model/channel-page'
-import { ApiEndpoint } from '../API/Api'
-import { LoginPage } from '../model/login-page'
-import { SignUpData } from '../model/common-types'
 import { faker } from '@faker-js/faker'
+import { expect, test } from '@playwright/test'
+import { ApiEndpoint } from '../API/Api'
+import { ChannelPage } from '../model/channel-page'
+import { ChunterPage } from '../model/chunter-page'
+import { SignUpData } from '../model/common-types'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { LoginPage } from '../model/login-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
+import { PlatformURI, generateTestData } from '../utils'
 
 test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -36,7 +37,9 @@ test.describe('channel tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
   })
 
   test('create new private channel and check if the messages stays on it', async ({ browser, page }) => {
@@ -155,10 +158,11 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
     await channelPageSecond.clickJoinChannelButton()
     await channelPageSecond.clickChooseChannel(data.channelName)
+    const checkJoinButton = await page2.locator('button[data-id="btnJoin"]').isVisible({ timeout: 1500 })
+    if (checkJoinButton) await page2.locator('button[data-id="btnJoin"]').click()
     await channelPageSecond.checkMessageExist('Test message', true, 'Test message')
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
-    await channelPage.clickOnClosePopupButton()
     await channelPage.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
     await page2.close()
   })
@@ -412,6 +416,7 @@ test.describe('channel tests', () => {
   })
 
   test('Checking backlinks in the Chat', async ({ browser, page }) => {
+    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
@@ -420,10 +425,10 @@ test.describe('channel tests', () => {
     const page2 = await browser.newPage()
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
-    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     await page2.goto(linkText ?? '')
     const joinPage = new SignInJoinPage(page2)
     await joinPage.join(newUser2)
+    await leftSideMenuPageSecond.clickChunter()
 
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('general')
@@ -431,7 +436,6 @@ test.describe('channel tests', () => {
     await channelPage.sendMention(mentionName)
     await channelPage.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
 
-    await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
     await page2.close()
