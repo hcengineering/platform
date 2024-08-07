@@ -130,8 +130,8 @@ const metadataTableCell = z.object({
     col: z.number().min(0),
     slice: z
       .object({
-        start: z.number().min(0).optional(),
-        end: z.number().min(0).optional()
+        start: z.number().optional(),
+        end: z.number().optional()
       })
       .optional()
   })
