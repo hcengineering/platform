@@ -41,7 +41,8 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  type MeasureContext
+  type MeasureContext,
+  Markup
 } from '@hcengineering/core'
 import { getResource, IntlString, translate } from '@hcengineering/platform'
 import serverNotification, {
@@ -52,7 +53,7 @@ import serverNotification, {
   SenderInfo,
   TextPresenter
 } from '@hcengineering/server-notification'
-import { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import { DocUpdateMessage } from '@hcengineering/activity'
 
 import { NotifyResult } from './types'
 
@@ -347,12 +348,10 @@ async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
   control: TriggerControl,
-  sender: SenderInfo,
-  message?: ActivityMessage
+  sender: SenderInfo
 ): Promise<NotificationContent> {
   const title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = notification.string.CommonNotificationBody
-  let data: string | undefined
 
   const intlParams: Record<string, string | number> = {}
   const intlParamsNotLocalized: Record<string, IntlString> = {}
@@ -361,15 +360,6 @@ async function getFallbackNotificationFullfillment (
   if (textPresenter !== undefined) {
     const textPresenterFunc = await getResource(textPresenter.presenter)
     intlParams.title = await textPresenterFunc(object, control)
-  }
-
-  if (message !== undefined) {
-    const dataPresenter = getTextPresenter(message._class, control.hierarchy)
-
-    if (dataPresenter !== undefined) {
-      const textPresenterFunc = await getResource(dataPresenter.presenter)
-      data = await textPresenterFunc(message, control)
-    }
   }
 
   const tx = TxProcessor.extractTx(originTx)
@@ -416,7 +406,7 @@ async function getFallbackNotificationFullfillment (
     }
   }
 
-  return { title, body, data, intlParams, intlParamsNotLocalized }
+  return { title, body, intlParams, intlParamsNotLocalized }
 }
 
 function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): NotificationPresenter | undefined {
@@ -428,16 +418,16 @@ export async function getNotificationContent (
   targetUser: PersonAccount,
   sender: SenderInfo,
   object: Doc,
-  control: TriggerControl,
-  message?: ActivityMessage
+  control: TriggerControl
 ): Promise<NotificationContent> {
-  let { title, body, data, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
+  let { title, body, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
     object,
     originTx,
     control,
-    sender,
-    message
+    sender
   )
+
+  let data: Markup | undefined
 
   const actualTx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
   const notificationPresenter = getNotificationPresenter(actualTx.objectClass, control.hierarchy)
@@ -447,7 +437,7 @@ export async function getNotificationContent (
     const updateParams = await getFuillfillmentParams(object, originTx, targetUser._id, control)
     title = updateParams.title
     body = updateParams.body
-    data = updateParams?.data ?? data
+    data = updateParams.data
     intlParams = {
       ...intlParams,
       ...updateParams.intlParams

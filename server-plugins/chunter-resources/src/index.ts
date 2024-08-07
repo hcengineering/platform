@@ -343,7 +343,6 @@ export async function getChunterNotificationContent (
   return {
     title,
     body,
-    data: message,
     intlParams,
     intlParamsNotLocalized
   }

@@ -16,7 +16,6 @@
 export interface Config {
   Port: number
   BotToken: string
-  FrontUrl: string
   MongoURL: string
   MongoDB: string
   ServiceId: string
@@ -35,7 +34,6 @@ const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4020,
     BotToken: process.env.BOT_TOKEN,
-    FrontUrl: process.env.FRONT_URL,
     MongoURL: process.env.MONGO_URL,
     MongoDB: process.env.MONGO_DB,
     AccountsUrl: process.env.ACCOUNTS_URL,

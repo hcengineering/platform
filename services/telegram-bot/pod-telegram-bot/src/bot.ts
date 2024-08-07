@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { Context, Telegraf, NarrowedContext } from 'telegraf'
-import { Update, Message } from 'telegraf/typings/core/types/typegram'
+import { Context, Telegraf } from 'telegraf'
 import { translate } from '@hcengineering/platform'
 import telegram from '@hcengineering/telegram'
 import { htmlToMarkup } from '@hcengineering/text'
 import { message } from 'telegraf/filters'
 import { toHTML } from '@telegraf/entity'
+import { TextMessage } from '@telegraf/entity/types/types'
 
 import config from './config'
 import { PlatformWorker } from './worker'
@@ -91,36 +91,20 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
   await ctx.reply(`*${code}*`, { parse_mode: 'MarkdownV2' })
 }
 
-type TextMessage = Record<'text', any> & Message.TextMessage
-
-async function onReply (
-  ctx: NarrowedContext<Context<Update>, Update.MessageUpdate<TextMessage>>,
-  worker: PlatformWorker
-): Promise<void> {
-  const id = ctx.chat?.id
-  const message = ctx.message
-
-  if (id === undefined || message.reply_to_message === undefined) {
-    return
-  }
-
-  const replyTo = message.reply_to_message
+async function onReply (id: number, message: TextMessage, replyTo: number, worker: PlatformWorker): Promise<boolean> {
   const userRecord = await worker.getUserRecord(id)
 
   if (userRecord === undefined) {
-    return
+    return false
   }
 
-  const notification = await worker.getNotificationRecord(replyTo.message_id, userRecord.email)
+  const notification = await worker.getNotificationRecord(replyTo, userRecord.email)
 
   if (notification === undefined) {
-    return
+    return false
   }
 
-  const isReplied = await worker.reply(notification, htmlToMarkup(toHTML(message)))
-  if (isReplied) {
-    await ctx.react('👍')
-  }
+  return await worker.reply(notification, htmlToMarkup(toHTML(message)))
 }
 
 export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
@@ -134,8 +118,20 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
   bot.command('stop', (ctx) => onStop(ctx, worker))
   bot.command('connect', (ctx) => onConnect(ctx, worker))
 
-  bot.on(message('text'), async (ctx) => {
-    await onReply(ctx, worker)
+  bot.on(message('reply_to_message'), async (ctx) => {
+    const id = ctx.chat?.id
+    const message = ctx.message
+
+    if (id === undefined || message.reply_to_message === undefined) {
+      return
+    }
+
+    const replyTo = message.reply_to_message
+    const isReplied = await onReply(id, message as TextMessage, replyTo.message_id, worker)
+
+    if (isReplied) {
+      await ctx.react('👍')
+    }
   })
 
   const description = await translate(telegram.string.BotDescription, { app: config.App })

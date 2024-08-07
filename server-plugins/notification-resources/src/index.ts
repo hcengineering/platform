@@ -75,7 +75,7 @@ import serverNotification, {
   getPersonAccount,
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE,
-  NOTIFICATION_TITLE_SIZE,
+  PUSH_NOTIFICATION_TITLE_SIZE,
   ReceiverInfo,
   SenderInfo
 } from '@hcengineering/server-notification'
@@ -373,7 +373,7 @@ async function activityInboxNotificationToText (
     body = await translate(doc.body, params)
   }
 
-  return { ...params, title: title.substring(0, NOTIFICATION_TITLE_SIZE), body }
+  return { ...params, title, body }
 }
 
 async function commonInboxNotificationToText (
@@ -461,11 +461,13 @@ export async function createPushFromInbox (
   _id: Ref<Doc>,
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx | undefined> {
-  const { title, body } = await getTranslatedNotificationContent(data, _class, control)
+  let { title, body } = await getTranslatedNotificationContent(data, _class, control)
 
   if (title === '' || body === '') {
     return
   }
+
+  title = title.slice(0, PUSH_NOTIFICATION_TITLE_SIZE)
 
   const senderPerson = sender.person
   const linkProviders = control.modelDb.findAllSync(serverView.mixin.ServerLinkIdProvider, {})
@@ -575,7 +577,7 @@ export async function pushActivityInboxNotifications (
   activityMessage: ActivityMessage,
   shouldUpdateTimestamp: boolean
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
-  const content = await getNotificationContent(originTx, receiver.account, sender, object, control, activityMessage)
+  const content = await getNotificationContent(originTx, receiver.account, sender, object, control)
   const data: Partial<Data<ActivityInboxNotification>> = {
     ...content,
     attachedTo: activityMessage._id,
@@ -606,7 +608,8 @@ export async function applyNotificationProviders (
   res: Tx[],
   object: Doc,
   receiver: ReceiverInfo,
-  sender: SenderInfo
+  sender: SenderInfo,
+  message?: ActivityMessage
 ): Promise<void> {
   const resources = await control.modelDb.findAll(serverNotification.class.NotificationProviderResources, {})
   for (const [provider, types] of notifyResult.entries()) {
@@ -635,7 +638,7 @@ export async function applyNotificationProviders (
 
     const fn = await getResource(resource.fn)
 
-    const txes = await fn(control, types, object, data, receiver, sender)
+    const txes = await fn(control, types, object, data, receiver, sender, message)
     if (txes.length > 0) {
       res.push(...txes)
     }
@@ -724,7 +727,8 @@ export async function getNotificationTxes (
           res,
           object,
           receiver,
-          sender
+          sender,
+          message
         )
       }
     } else {
