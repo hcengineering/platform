@@ -39,7 +39,7 @@
   export let shouldUpdateUndefined: boolean = true
   export let minW0 = true
 
-  let container: HTMLElement
+  let container: HTMLButtonElement
   let opened: boolean = false
 
   $: selectedItem = items.find((x) => x.id === selected)
@@ -75,28 +75,27 @@
   }
 </script>
 
-<div bind:this={container} class:min-w-0={minW0}>
-  <Button
-    {icon}
-    width={width ?? 'min-content'}
-    {size}
-    {kind}
-    {disabled}
-    {justify}
-    showTooltip={{ label, direction: labelDirection }}
-    on:click={openPopup}
-  >
-    <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
-      <Label
-        label={selectedItem ? selectedItem.label : label}
-        params={selectedItem ? selectedItem.params ?? params : params}
-      />
-    </span>
-    <svelte:fragment slot="iconRight">
-      <DropdownIcon
-        size={'small'}
-        fill={kind === 'primary' && !disabled ? 'var(--primary-button-content-color)' : 'var(--theme-dark-color)'}
-      />
-    </svelte:fragment>
-  </Button>
-</div>
+<Button
+  {icon}
+  width={width ?? 'min-content'}
+  {size}
+  {kind}
+  {disabled}
+  {justify}
+  showTooltip={{ label, direction: labelDirection }}
+  bind:input={container}
+  on:click={openPopup}
+>
+  <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
+    <Label
+      label={selectedItem ? selectedItem.label : label}
+      params={selectedItem ? selectedItem.params ?? params : params}
+    />
+  </span>
+  <svelte:fragment slot="iconRight">
+    <DropdownIcon
+      size={'small'}
+      fill={kind === 'primary' && !disabled ? 'var(--primary-button-content-color)' : 'var(--theme-dark-color)'}
+    />
+  </svelte:fragment>
+</Button>
