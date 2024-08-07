@@ -53,15 +53,6 @@ export const FileExtension = FileNode.extend<FileOptions>({
     return [
       {
         tag: `div[data-type="${this.name}"]`
-      },
-      {
-        tag: 'div[data-file-name]'
-      },
-      {
-        tag: 'div[data-file-size]'
-      },
-      {
-        tag: 'div[data-file-type]'
       }
     ]
   },

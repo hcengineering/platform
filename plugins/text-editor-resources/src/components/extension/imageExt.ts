@@ -151,7 +151,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
 
             const fileId = node.attrs['file-id'] ?? node.attrs.src
             const fileName = node.attrs.alt ?? ''
-            const fileType = node.attrs['data-file-type'] ?? ''
+            const fileType = node.attrs['data-file-type'] ?? 'image/*'
 
             showPopup(
               FilePreviewPopup,
@@ -211,7 +211,7 @@ export async function openImage (editor: Editor): Promise<void> {
   const attributes = editor.getAttributes('image')
   const fileId = attributes['file-id'] ?? attributes.src
   const fileName = attributes.alt ?? ''
-  const fileType = attributes['data-file-type'] ?? ''
+  const fileType = attributes['data-file-type'] ?? 'image/*'
   await new Promise<void>((resolve) => {
     showPopup(
       FilePreviewPopup,

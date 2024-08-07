@@ -28,9 +28,8 @@ export function getDataAttribute (
     default: null,
     parseHTML: (element) => element.getAttribute(dataName),
     renderHTML: (attributes) => {
-      // eslint-disable-next-line
-      if (!attributes[name]) {
-        return {}
+      if (attributes[name] == null) {
+        return null
       }
 
       return {
