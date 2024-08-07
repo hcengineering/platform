@@ -40,7 +40,7 @@ import { getTranslatedNotificationContent, getTextPresenter } from '@hcengineeri
 import { generateToken } from '@hcengineering/server-token'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import { markupToHTML } from '@hcengineering/text'
-import activity from '@hcengineering/activity'
+import activity, { ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -142,10 +142,31 @@ async function getContactChannel (
   return res?.value ?? ''
 }
 
+async function activityMessageToHtml (control: TriggerControl, message: ActivityMessage): Promise<string | undefined> {
+  const { hierarchy } = control
+  if (hierarchy.isDerived(message._class, chunter.class.ChatMessage)) {
+    const chatMessage = message as ChatMessage
+    return markupToHTML(chatMessage.message)
+  } else {
+    const resource = getTextPresenter(message._class, control.hierarchy)
+
+    if (resource !== undefined) {
+      const fn = await getResource(resource.presenter)
+      const textData = await fn(message, control)
+      if (textData !== undefined && textData !== '') {
+        return markupToHTML(textData)
+      }
+    }
+  }
+
+  return undefined
+}
+
 async function getTranslatedData (
   data: InboxNotification,
   doc: Doc,
-  control: TriggerControl
+  control: TriggerControl,
+  message?: ActivityMessage
 ): Promise<{
     title: string
     quote: string | undefined
@@ -156,23 +177,22 @@ async function getTranslatedData (
   let { title, body } = await getTranslatedNotificationContent(data, data._class, control)
   let quote: string | undefined
 
-  if (hierarchy.isDerived(doc._class, chunter.class.ChatMessage)) {
-    const chatMessage = doc as ChatMessage
-    title = ''
-    quote = markupToHTML(chatMessage.message)
-  } else if (hierarchy.isDerived(doc._class, activity.class.ActivityMessage)) {
-    const resource = getTextPresenter(doc._class, control.hierarchy)
-
-    if (resource !== undefined) {
-      const fn = await getResource(resource.presenter)
-      const textData = await fn(doc, control)
-      if (textData !== undefined && textData !== '') {
-        title = ''
-        quote = markupToHTML(textData)
-      }
+  if (data.data !== undefined) {
+    body = markupToHTML(data.data)
+  } else if (message !== undefined) {
+    const html = await activityMessageToHtml(control, message)
+    if (html !== undefined) {
+      body = html
     }
   }
-  body = data.data !== undefined ? `${markupToHTML(data.data)}` : body
+
+  if (hierarchy.isDerived(doc._class, activity.class.ActivityMessage)) {
+    const html = await activityMessageToHtml(control, doc as ActivityMessage)
+    if (html !== undefined) {
+      title = ''
+      quote = html
+    }
+  }
 
   return {
     title,
@@ -187,7 +207,8 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   doc: Doc,
   data: InboxNotification,
   receiver: ReceiverInfo,
-  sender: SenderInfo
+  sender: SenderInfo,
+  message?: ActivityMessage
 ): Promise<Tx[]> => {
   if (types.length === 0) {
     return []
@@ -205,7 +226,7 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   }
 
   try {
-    const { title, body, quote } = await getTranslatedData(data, doc, control)
+    const { title, body, quote } = await getTranslatedData(data, doc, control, message)
     const record: TelegramNotificationRecord = {
       notificationId: data._id,
       account: receiver._id,

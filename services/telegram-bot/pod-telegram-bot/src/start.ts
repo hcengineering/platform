@@ -36,11 +36,16 @@ export const start = async (): Promise<void> => {
   const bot = await setUpBot(worker)
   const app = createServer(bot, worker)
 
-  void bot.launch({ webhook: { domain: config.Domain, port: config.BotPort } }).then(() => {
-    void bot.telegram.getWebhookInfo().then((info) => {
-      ctx.info('Webhook info', info)
+  if (config.Domain === '') {
+    void bot.launch({ dropPendingUpdates: true })
+  } else {
+    void bot.launch({ webhook: { domain: config.Domain, port: config.BotPort }, dropPendingUpdates: true }).then(() => {
+      void bot.telegram.getWebhookInfo().then((info) => {
+        ctx.info('Webhook info', info)
+      })
     })
-  })
+  }
+
   app.get(`/telegraf/${bot.secretPathComponent()}`, (req, res) => {
     res.status(200).send()
   })
