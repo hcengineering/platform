@@ -153,7 +153,10 @@ async function handleImageUpload (
     const size = await getImageSize(file)
     const node = view.state.schema.nodes.image.create({
       'file-id': attached.file,
+      'data-file-type': file.type,
       src: url,
+      alt: file.name,
+      title: file.name,
       width: Math.round(size.width / size.pixelRatio)
     })
 
