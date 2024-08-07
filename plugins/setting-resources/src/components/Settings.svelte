@@ -40,6 +40,8 @@
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { ComponentType, onDestroy } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
+  import { Analytics } from '@hcengineering/analytics'
+  import { SettingsEvents } from '../analytics'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
@@ -99,12 +101,15 @@
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     void closeClient()
+    Analytics.handleEvent(SettingsEvents.SignOut)
     navigate({ path: [loginId] })
   }
   function selectWorkspace (): void {
+    Analytics.handleEvent(SettingsEvents.SelectWorkspace)
     navigate({ path: [loginId, 'selectWorkspace'] })
   }
   function inviteWorkspace (): void {
+    Analytics.handleEvent(SettingsEvents.InviteToWorkspace)
     showPopup(login.component.InviteLink, {})
   }
 
