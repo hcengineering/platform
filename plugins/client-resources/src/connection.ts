@@ -261,7 +261,7 @@ class Connection implements ClientConnection {
 
         void this.opt?.onConnect?.(
           (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
-          null
+          this.sessionId
         )
         this.schedulePing(socketId)
         return
