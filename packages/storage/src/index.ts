@@ -19,6 +19,7 @@ import { type Readable } from 'stream'
 export type ListBlobResult = Omit<Blob, 'contentType' | 'version'>
 
 export interface UploadedObjectInfo {
+  objectName: string
   etag: string
   versionId: string | null
 }
@@ -64,6 +65,8 @@ export interface StorageAdapter {
     offset: number,
     length?: number
   ) => Promise<Readable>
+
+  getUrl: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<string>
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
@@ -159,6 +162,10 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     contentType: string,
     size?: number | undefined
   ): Promise<UploadedObjectInfo> {
+    throw new Error('not implemented')
+  }
+
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
     throw new Error('not implemented')
   }
 }

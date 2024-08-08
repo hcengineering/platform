@@ -201,6 +201,7 @@ export async function configurePlatform (): Promise<void> {
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
+  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
   setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))

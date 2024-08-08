@@ -55,7 +55,7 @@
 
   async function doSync (): Promise<void> {
     loading = true
-    const uploadUrl = window.location.origin + getMetadata(presentation.metadata.UploadURL)
+    const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
     const token = (getMetadata(presentation.metadata.Token) as string) ?? ''
 
     const mappedFilter: Record<string, any> = {}
@@ -75,7 +75,7 @@
           email: '',
           endpoint: ''
         },
-        frontUrl: uploadUrl,
+        frontUrl,
         monitor: (total: number) => {
           docsProcessed++
           state = `processed: ${docsProcessed}/${total ?? 1}`

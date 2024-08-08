@@ -44,18 +44,16 @@ async function storageUpload (
   workspace: WorkspaceId,
   file: UploadedFile
 ): Promise<string> {
-  const id = uuid()
-
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
     { workspace: workspace.name },
-    async (ctx) => await storageAdapter.put(ctx, workspace, id, data, file.mimetype, file.size),
+    async (ctx) => await storageAdapter.put(ctx, workspace, file.name, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
   ctx.info('minio upload', resp)
-  return id
+  return resp.objectName
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -240,6 +238,7 @@ export function start (
     storageAdapter: StorageAdapter
     accountsUrl: string
     uploadUrl: string
+    filesUrl: string
     modelVersion: string
     version: string
     rekoniUrl: string
@@ -290,6 +289,7 @@ export function start (
     const data = {
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
+      FILES_URL: config.filesUrl,
       MODEL_VERSION: config.modelVersion,
       VERSION: config.version,
       REKONI_URL: config.rekoniUrl,
@@ -511,7 +511,12 @@ export function start (
           const payload = decodeToken(token)
           const uuid = await storageUpload(ctx, config.storageAdapter, payload.workspace, file)
 
-          res.status(200).send(uuid)
+          res.status(200).send([
+            {
+              key: 'file',
+              id: uuid
+            }
+          ])
         } catch (error: any) {
           ctx.error('error-post-files', error)
           res.status(500).send()
@@ -595,7 +600,7 @@ export function start (
             res.status(500).send(`server returned ${response.statusCode}`)
             return
           }
-          const id = uuid()
+          // const id = uuid()
           const contentType = response.headers['content-type'] ?? 'application/octet-stream'
           const data: Buffer[] = []
           response
@@ -605,10 +610,10 @@ export function start (
             .on('end', function () {
               const buffer = Buffer.concat(data)
               config.storageAdapter
-                .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
+                .put(ctx, payload.workspace, uuid(), buffer, contentType, buffer.length)
                 .then(async (objInfo) => {
                   res.status(200).send({
-                    id,
+                    id: objInfo.objectName,
                     contentType,
                     size: buffer.length
                   })

@@ -4,7 +4,7 @@ export interface ServerEnv {
   serverSecret: string
   rekoniUrl: string
   frontUrl: string
-  uploadUrl: string
+  filesUrl: string
   sesUrl: string | undefined
   accountsUrl: string
   serverPort: number
@@ -55,9 +55,9 @@ export function serverConfigFromEnv (): ServerEnv {
     process.exit(1)
   }
 
-  const uploadUrl = process.env.UPLOAD_URL
-  if (uploadUrl === undefined) {
-    console.log('Please provide UPLOAD_URL url')
+  const filesUrl = process.env.FILES_URL
+  if (filesUrl === undefined) {
+    console.log('Please provide FILES_URL url')
     process.exit(1)
   }
 
@@ -81,7 +81,7 @@ export function serverConfigFromEnv (): ServerEnv {
     serverSecret,
     rekoniUrl,
     frontUrl,
-    uploadUrl,
+    filesUrl,
     sesUrl,
     accountsUrl,
     serverPort,

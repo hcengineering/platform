@@ -17,6 +17,7 @@ import { CopyObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 
 import core, {
+  concatLink,
   toWorkspaceString,
   withContext,
   type Blob,
@@ -24,8 +25,8 @@ import core, {
   type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
-
-import {
+import { getMetadata } from '@hcengineering/platform'
+import serverCore, {
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -434,6 +435,14 @@ export class S3Service implements StorageAdapter {
   ): Promise<Readable> {
     const range = length !== undefined ? `bytes=${offset}-${offset + length}` : `bytes=${offset}-`
     return await this.doGet(ctx, workspaceId, objectName, range)
+  }
+
+  @withContext('getUrl')
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
+    return filesUrl
+      .replaceAll(':workspace', workspaceId.name)
+      .replaceAll(':blobId', objectName)
   }
 }
 

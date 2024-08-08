@@ -8,6 +8,7 @@ export interface Config {
   COLLABORATOR_URL: string
   COLLABORATOR_API_URL: string
   FRONT_URL: string
+  FILES_URL: string
   UPLOAD_URL: string
   MODEL_VERSION?: string
   VERSION?: string

@@ -35,10 +35,10 @@ import core, {
 } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { areEqualMarkups } from '@hcengineering/text'
-import { Transformer } from '@hocuspocus/transformer'
 import { MongoClient } from 'mongodb'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
+import { TransformerFactory } from '../types'
 
 import { CollabStorageAdapter } from './adapter'
 
@@ -46,7 +46,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (
     private readonly storage: StorageAdapter,
     private readonly mongodb: MongoClient,
-    private readonly transformer: Transformer
+    private readonly transformerFactory: TransformerFactory
   ) {}
 
   async loadDocument (ctx: MeasureContext, documentId: DocumentId, context: Context): Promise<YDoc | undefined> {
@@ -208,18 +208,18 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     platformDocumentId: PlatformDocumentId,
     context: Context
   ): Promise<YDoc | undefined> {
-    const { mongodb, transformer } = this
     const { workspaceId } = context
     const { objectDomain, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
 
     const doc = await ctx.with('query', {}, async () => {
-      const db = mongodb.db(toWorkspaceString(workspaceId))
+      const db = this.mongodb.db(toWorkspaceString(workspaceId))
       return await db.collection<Doc>(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
     })
 
     const content = doc !== null && objectAttr in doc ? ((doc as any)[objectAttr] as string) : ''
     if (content.startsWith('{') && content.endsWith('}')) {
       return await ctx.with('transform', {}, () => {
+        const transformer = this.transformerFactory(workspaceId)
         return transformer.toYdoc(content, objectAttr)
       })
     }
@@ -237,6 +237,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     snapshot: YDocVersion | undefined,
     context: Context
   ): Promise<void> {
+    const { workspaceId } = context
     const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
@@ -267,7 +268,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     } else if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)) {
       // TODO a temporary solution while we are keeping Markup in Mongo
       const content = await ctx.with('transform', {}, () => {
-        return this.transformer.fromYdoc(document, objectAttr)
+        const transformer = this.transformerFactory(workspaceId)
+        return transformer.fromYdoc(document, objectAttr)
       })
       if (!areEqualMarkups(content, (current as any)[objectAttr])) {
         await ctx.with('update', {}, async () => {
