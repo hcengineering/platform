@@ -20,7 +20,6 @@ interface Config {
   MongoURI: string
   MongoDB: string
   AccountsURL: string
-  UploadUrl: string
   ServiceID: string
   Secret: string
   Credentials: string
@@ -36,7 +35,6 @@ const envMap: { [key in keyof Config]: string } = {
   MongoDB: 'MONGO_DB',
 
   AccountsURL: 'ACCOUNTS_URL',
-  UploadUrl: 'UPLOAD_URL',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
   Credentials: 'Credentials',
@@ -53,7 +51,6 @@ const config: Config = (() => {
     MongoDB: process.env[envMap.MongoDB] ?? 'gmail-service',
     MongoURI: process.env[envMap.MongoURI],
     AccountsURL: process.env[envMap.AccountsURL],
-    UploadUrl: process.env[envMap.UploadUrl],
     ServiceID: process.env[envMap.ServiceID] ?? 'gmail-service',
     Secret: process.env[envMap.Secret],
     SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',

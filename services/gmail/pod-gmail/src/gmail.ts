@@ -16,11 +16,11 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
 import core, {
   AttachedData,
+  Blob,
   Client,
   Data,
-  Doc,
+  MeasureContext,
   Ref,
-  Space,
   Timestamp,
   TxCollectionCUD,
   TxCreateDoc,
@@ -28,16 +28,16 @@ import core, {
   TxOperations,
   TxProcessor,
   TxUpdateDoc,
-  Blob
+  WorkspaceId
 } from '@hcengineering/core'
 import gmail, { type Message, type NewMessage } from '@hcengineering/gmail'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
-import FormData from 'form-data'
 import type { GaxiosResponse } from 'gaxios'
 import type { Credentials, OAuth2Client } from 'google-auth-library'
 import { gmail_v1, google } from 'googleapis'
 import type { Collection, Db } from 'mongodb'
-import fetch from 'node-fetch'
+import { v4 as uuid } from 'uuid'
 import { arrayBufferToBase64, decode64, encode64 } from './base64'
 import config from './config'
 import { GmailController } from './gmailController'
@@ -50,55 +50,6 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
-
-async function uploadFile (
-  file: AttachedFile,
-  token: string,
-  opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }
-): Promise<string> {
-  const uploadUrl = config.UploadUrl
-  if (uploadUrl === undefined) {
-    throw Error('UploadURL is not defined')
-  }
-
-  const data = new FormData()
-  const buffer = Buffer.from(file.file, 'base64')
-  data.append(
-    'file',
-    Object.assign(buffer, {
-      lastModified: file.lastModified,
-      name: file.name,
-      type: file.type
-    })
-  )
-
-  const params =
-    opts !== undefined
-      ? [
-          ['space', opts.space],
-          ['attachedTo', opts.attachedTo]
-        ]
-          .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
-          .map(([name, value]) => `${name}=${value}`)
-          .join('&')
-      : ''
-  const suffix = params === '' ? params : `?${params}`
-
-  const url = `${uploadUrl}${suffix}`
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + token
-    },
-    body: data
-  })
-
-  if (resp.status !== 200) {
-    throw Error(`Failed to upload file: ${resp.statusText}`)
-  }
-
-  return (await resp.text()) as Ref<Blob>
-}
 
 function makeHTMLBody (message: NewMessage, from: string): string {
   const str = [
@@ -207,10 +158,13 @@ export class GmailClient {
   private readonly rateLimiter = new RateLimiter(1000, 200) // in fact 250, but let's make reserve
 
   private constructor (
+    private readonly ctx: MeasureContext,
     credentials: ProjectCredentials,
     private readonly user: User,
     mongo: Db,
     client: Client,
+    private readonly workspaceId: WorkspaceId,
+    private readonly storageAdapter: StorageAdapter,
     private readonly workspace: WorkspaceClient
   ) {
     const { client_secret, client_id, redirect_uris } = credentials.web // eslint-disable-line
@@ -222,13 +176,16 @@ export class GmailClient {
   }
 
   static async create (
+    ctx: MeasureContext,
     credentials: ProjectCredentials,
     user: User | Token,
     mongo: Db,
     client: Client,
-    workspace: WorkspaceClient
+    workspace: WorkspaceClient,
+    workspaceId: WorkspaceId,
+    storageAdapter: StorageAdapter
   ): Promise<GmailClient> {
-    const gmailClient = new GmailClient(credentials, user, mongo, client, workspace)
+    const gmailClient = new GmailClient(ctx, credentials, user, mongo, client, workspaceId, storageAdapter, workspace)
     if (isToken(user)) {
       console.log('Setting token while creating', user.workspace, user.userId, user)
       await gmailClient.setToken(user)
@@ -665,14 +622,15 @@ export class GmailClient {
       if (currentAttachemtns.findIndex((p) => p.name === file.name && p.lastModified === file.lastModified) !== -1) {
         return
       }
-      const uuid = await uploadFile(file, this.user.token, { space: message.space, attachedTo: message._id })
+      const id = uuid()
       const data: AttachedData<Attachment> = {
         name: file.name,
-        file: uuid as any,
+        file: id as Ref<Blob>,
         type: file.type ?? 'undefined',
         size: file.size ?? Buffer.from(file.file, 'base64').length,
         lastModified: file.lastModified
       }
+      await this.storageAdapter.put(this.ctx, this.workspaceId, id, file.file, data.type, data.size)
       await this.client.addCollection(
         attachment.class.Attachment,
         message.space,
@@ -858,7 +816,8 @@ export class GmailClient {
   }
 
   private async makeAttachmentPart (attachment: Attachment): Promise<string[]> {
-    const data = await this.getAttachmentData(attachment.file)
+    const buffer = await this.storageAdapter.read(this.ctx, this.workspaceId, attachment.file)
+    const data = arrayBufferToBase64(Buffer.concat(buffer))
     const res: string[] = []
     res.push('--mail\n')
     res.push(`Content-Type: ${attachment.type}\n`)
@@ -868,16 +827,6 @@ export class GmailClient {
     res.push(data)
     res.push('\n\n')
     return res
-  }
-
-  private async getAttachmentData (fileId: string): Promise<string> {
-    const uploadUrl = config.UploadUrl
-    if (uploadUrl === undefined) {
-      throw Error('UploadURL is not defined')
-    }
-    const url = `${uploadUrl}?file=${fileId}&token=${this.user.token}`
-    const res = await fetch(url)
-    return arrayBufferToBase64(await res.arrayBuffer())
   }
 
   async close (): Promise<void> {

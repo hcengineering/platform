@@ -2,9 +2,13 @@ import type { Collection } from 'mongodb'
 import { getDB } from './storage'
 import { LastMsgRecord, TgUser, User, UserRecord, WorkspaceChannel } from './types'
 import { WorkspaceWorker } from './workspace'
+import { StorageAdapter } from '@hcengineering/server-core'
+import { MeasureContext } from '@hcengineering/core'
 
 export class PlatformWorker {
   private constructor (
+    private readonly ctx: MeasureContext,
+    private readonly storageAdapter: StorageAdapter,
     private readonly clientMap: Map<string, WorkspaceWorker>,
     private readonly storage: Collection<UserRecord>
   ) {}
@@ -29,7 +33,14 @@ export class PlatformWorker {
 
     if (wsWorker === undefined) {
       const [userStorage, lastMsgStorage, channelStorage] = await PlatformWorker.createStorages()
-      wsWorker = await WorkspaceWorker.create(workspace, userStorage, lastMsgStorage, channelStorage)
+      wsWorker = await WorkspaceWorker.create(
+        this.ctx,
+        this.storageAdapter,
+        workspace,
+        userStorage,
+        lastMsgStorage,
+        channelStorage
+      )
       this.clientMap.set(workspace, wsWorker)
     }
 
@@ -80,13 +91,20 @@ export class PlatformWorker {
     return [userStorage, lastMsgStorage, channelStorage]
   }
 
-  static async create (): Promise<PlatformWorker> {
+  static async create (ctx: MeasureContext, storageAdapter: StorageAdapter): Promise<PlatformWorker> {
     const [userStorage, lastMsgStorage, channelStorage] = await PlatformWorker.createStorages()
     const workspaces = new Set((await userStorage.find().toArray()).map((p) => p.workspace))
     const clients: Array<[string, WorkspaceWorker]> = []
     for (const workspace of workspaces) {
       try {
-        const worker = await WorkspaceWorker.create(workspace, userStorage, lastMsgStorage, channelStorage)
+        const worker = await WorkspaceWorker.create(
+          ctx,
+          storageAdapter,
+          workspace,
+          userStorage,
+          lastMsgStorage,
+          channelStorage
+        )
         clients.push([workspace, worker])
         void worker.checkUsers()
       } catch (e) {
@@ -97,7 +115,7 @@ export class PlatformWorker {
 
     const res = clients.filter((client): client is [string, WorkspaceWorker] => client !== undefined)
 
-    const worker = new PlatformWorker(new Map(res), userStorage)
+    const worker = new PlatformWorker(ctx, storageAdapter, new Map(res), userStorage)
 
     return worker
   }

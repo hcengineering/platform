@@ -280,7 +280,8 @@
         "SERVER_SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
         "COLLABORATOR_API_URL": "http://localhost:3078",
-        "FRONT_URL": "http://localhost:8080"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "MONGO_URL": "mongodb://localhost:27017"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
