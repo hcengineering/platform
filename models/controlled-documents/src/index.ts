@@ -164,8 +164,8 @@ export function createModel (builder: Builder): void {
                 [documents.mixin.DocumentTemplate]: { $exists: false }
               },
               config: [
-                ['effective', documents.string.Effective, {}],
                 ['inProgress', documents.string.InProgress, {}],
+                ['effective', documents.string.Effective, {}],
                 ['archived', documents.string.Archived, {}],
                 ['all', documents.string.All, {}]
               ]
