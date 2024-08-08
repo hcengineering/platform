@@ -26,6 +26,7 @@ export interface Config {
   OtpTimeToLiveSec: number
   OtpRetryDelaySec: number
   AccountsUrl: string
+  SentryDSN: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -44,7 +45,8 @@ const config: Config = (() => {
     // TODO: later we should get this title from branding map
     App: process.env.APP ?? 'Huly',
     OtpTimeToLiveSec: parseNumber(process.env.OTP_TIME_TO_LIVE_SEC) ?? 60,
-    OtpRetryDelaySec: parseNumber(process.env.OTP_RETRY_DELAY_SEC) ?? 60
+    OtpRetryDelaySec: parseNumber(process.env.OTP_RETRY_DELAY_SEC) ?? 60,
+    SentryDSN: process.env.SENTRY_DSN ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

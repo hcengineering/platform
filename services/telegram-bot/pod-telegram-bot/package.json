@@ -55,6 +55,8 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/analytics-service": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/client-resources": "^0.6.27",
