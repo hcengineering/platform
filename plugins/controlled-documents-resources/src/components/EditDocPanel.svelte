@@ -278,8 +278,9 @@
     allowClose={withClose && !embedded}
     {embedded}
     printHeader={false}
-    adaptive={'doubleRow'}
+    adaptive={'autoExtra'}
     overflowExtra
+    hideSearch
     on:close
     on:select={(ev) => rightPanelTabChanged(ev.detail)}
   >
@@ -413,7 +414,7 @@
       {#if $editorMode === 'comparing'}
         <DocumentDiffViewer />
       {:else}
-        <Tabs model={tabs} bind:selected={selectedTab} size="small" padding="0 1.5rem" noMargin />
+        <Tabs model={tabs} bind:selected={selectedTab} size={'large'} padding="0 1.5rem" noMargin />
       {/if}
     </Collaboration>
     <svelte:fragment slot="custom-attributes">

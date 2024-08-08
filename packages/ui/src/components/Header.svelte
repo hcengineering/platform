@@ -20,14 +20,15 @@
     IconClose,
     ButtonIcon,
     deviceOptionsStore as deviceInfo,
-    resizeObserver
+    resizeObserver,
+    HeaderAdaptive
   } from '..'
 
   export let type: 'type-aside' | 'type-popup' | 'type-component' | 'type-panel' = 'type-component'
   export let allowFullsize: boolean = false
   export let hideSeparator: boolean = false
   export let topIndent: boolean = false
-  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'default'
+  export let adaptive: HeaderAdaptive = 'default'
   export let hideBefore: boolean = false
   export let hideDescription: boolean = false
   export let hideSearch: boolean = false
@@ -40,7 +41,12 @@
   const dispatch = createEventDispatcher()
 
   const closeButton: boolean = ['type-popup', 'type-aside'].some((v) => v === type)
+  let spaceFiller: HTMLElement
   let doubleRow: boolean = false
+  let doubleExtra: boolean = false
+  let extraWidth: number = 0
+  let spaceWidth: number = 0
+  $: _doubleRow = adaptive === 'doubleRow' || (adaptive !== 'disabled' && doubleRow) || (adaptive === 'autoExtra' && (doubleRow || doubleExtra))
 
   onMount(() => {
     if (closeButton) window.addEventListener('keydown', _close)
@@ -65,13 +71,14 @@
     else if (doubleRow && element.clientWidth > 768) doubleRow = false
   }}
   class="hulyHeader-container"
-  class:doubleRow={adaptive === 'doubleRow' || (adaptive !== 'disabled' && doubleRow)}
+  class:doubleRow={_doubleRow}
   class:topIndent
   class:clearPadding={$$slots.description}
   class:hideSeparator
   class:no-print={noPrint}
 >
-  {#if adaptive === 'doubleRow' || (adaptive !== 'disabled' && doubleRow)}
+  {#if _doubleRow}
+
     <div class="hulyHeader-row">
       {#if allowFullsize}
         <ButtonIcon
@@ -90,7 +97,7 @@
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="hulyHeader-titleGroup" class:withDescription={$$slots.description && !hideDescription} on:click>
+      <div class="hulyHeader-titleGroup" class:withDescription={$$slots.description && !hideDescription} class:notGrow={adaptive === 'autoExtra'} on:click>
         {#if $$slots.description && !hideDescription}
           <div class="hulyHeader-titleGroup"><slot /></div>
           <div class="hulyHeader-titleGroup"><slot name="description" /></div>
@@ -98,7 +105,19 @@
           <slot />
         {/if}
       </div>
-      {#if $$slots.actions && !hideActions && (adaptive === 'freezeActions' || adaptive === 'doubleRow')}
+
+      {#if adaptive === 'autoExtra'}
+        <div
+          class="hulyHeader-spaceFiller"
+          bind:this={spaceFiller}
+          use:resizeObserver={(element) => {
+            if (spaceWidth !== element.clientWidth) spaceWidth = element.clientWidth
+            if (doubleExtra && element.clientWidth > extraWidth + 42) doubleExtra = false
+          }}
+        />
+      {/if}
+
+      {#if $$slots.actions && !hideActions && (adaptive === 'freezeActions' || adaptive === 'doubleRow' || adaptive === 'autoExtra')}
         <div class="hulyHeader-buttonsGroup actions no-print">
           <slot name="actions" {doubleRow} />
         </div>
@@ -116,18 +135,26 @@
           <slot name="search" {doubleRow} />
         </div>
       {/if}
-      {#if $$slots.actions && !hideActions && adaptive !== 'freezeActions' && adaptive !== 'doubleRow'}
+      {#if $$slots.extra && !hideExtra && (adaptive === 'doubleRow' || adaptive === 'autoExtra')}
+        <div
+          class="hulyHeader-buttonsGroup extra"
+          class:overflow={overflowExtra}
+          use:resizeObserver={(element) => {
+            if (extraWidth !== element.clientWidth) extraWidth = element.clientWidth
+          }}
+        >
+          <slot name="extra" {doubleRow} />
+        </div>
+      {/if}
+      {#if $$slots.actions && !hideActions && !(adaptive === 'freezeActions' || adaptive === 'doubleRow' || adaptive === 'autoExtra')}
         <div class="hulyHeader-buttonsGroup actions">
           <slot name="actions" {doubleRow} />
         </div>
       {/if}
-      {#if $$slots.extra && !hideExtra && adaptive === 'doubleRow'}
-        <div class="hulyHeader-buttonsGroup extra" class:overflow={overflowExtra}>
-          <slot name="extra" {doubleRow} />
-        </div>
-      {/if}
     </div>
+
   {:else}
+
     {#if allowFullsize}
       <ButtonIcon
         icon={$deviceInfo.navigator.visible ? IconMaximize : IconMinimize}
@@ -145,7 +172,7 @@
     {/if}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="hulyHeader-titleGroup" class:withDescription={$$slots.description && !hideDescription} on:click>
+    <div class="hulyHeader-titleGroup" class:withDescription={$$slots.description && !hideDescription} class:notGrow={adaptive === 'autoExtra'} on:click>
       {#if $$slots.description && !hideDescription}
         <slot />
         <slot name="description" />
@@ -153,11 +180,34 @@
         <slot />
       {/if}
     </div>
+
+    {#if adaptive === 'autoExtra'}
+      <div
+        class="hulyHeader-spaceFiller"
+        bind:this={spaceFiller}
+        use:resizeObserver={(element) => {
+          if (spaceWidth !== element.clientWidth) spaceWidth = element.clientWidth
+          if (!doubleExtra && element.clientWidth <= 16) doubleExtra = true
+        }}
+      />
+    {/if}
+
     {#if $$slots.search && !hideSearch}
       <div class="hulyHeader-buttonsGroup search no-print">
         <slot name="search" {doubleRow} />
       </div>
       {#if $$slots.actions && !hideActions}<div class="hulyHeader-divider no-print" />{/if}
+    {/if}
+    {#if $$slots.extra && !hideExtra}
+      <div
+        class="hulyHeader-buttonsGroup extra"
+        class:overflow={overflowExtra}
+        use:resizeObserver={(element) => {
+          if (extraWidth !== element.clientWidth) extraWidth = element.clientWidth
+        }}
+      >
+        <slot name="extra" {doubleRow} />
+      </div>
     {/if}
     {#if $$slots.actions && !hideActions}
       <div class="hulyHeader-buttonsGroup actions no-print">
@@ -169,5 +219,6 @@
       <div class="hulyHotKey-item no-print">Esc</div>
       <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} noPrint on:click={() => dispatch('close')} />
     {/if}
+
   {/if}
 </div>

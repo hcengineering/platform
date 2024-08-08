@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IModeSelector, ModeSelector, SearchInput, Header, Breadcrumb } from '@hcengineering/ui'
+  import { IModeSelector, ModeSelector, SearchInput, Header, Breadcrumb, HeaderAdaptive } from '@hcengineering/ui'
   import type { Asset } from '@hcengineering/platform'
   import { Viewlet } from '@hcengineering/view'
   import ViewletSelector from './ViewletSelector.svelte'
@@ -16,11 +16,12 @@
   export let search: string
   export let showLabelSelector = false
   export let modeSelectorProps: IModeSelector | undefined = undefined
+  export let adaptive: HeaderAdaptive = 'doubleRow'
 
   let scroller: HTMLElement
 </script>
 
-<Header adaptive={'doubleRow'} overflowExtra>
+<Header {adaptive} overflowExtra hideActions={!$$slots.actions} hideExtra={!$$slots.extra && modeSelectorProps === undefined}>
   <svelte:fragment slot="beforeTitle">
     <ViewletSelector bind:viewlet bind:viewlets viewletQuery={viewletQuery ?? { attachTo: _class }} />
     <slot name="header-tools" />

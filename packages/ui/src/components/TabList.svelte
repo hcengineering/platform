@@ -104,7 +104,7 @@
               <div class="color" style:background-color={item.color} />
             {/if}
             {#if item.label || item.labelIntl}
-              <span class="flex-center overflow-label" class:ml-1-5={item.icon || item.color}>
+              <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
                 {#if item.label}
                   {item.label}
                 {:else if item.labelIntl}
