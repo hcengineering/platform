@@ -898,6 +898,7 @@ export async function createAcc (
   first: string,
   last: string,
   confirmed: boolean = false,
+  shouldConfirm: boolean = true,
   extra?: Record<string, string>
 ): Promise<Account> {
   const email = cleanEmail(_email)
@@ -933,7 +934,7 @@ export async function createAcc (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (!confirmed) {
+  if (!confirmed && shouldConfirm) {
     if (sesURL !== undefined && sesURL !== '') {
       await sendConfirmation(productId, branding, newAccount)
     } else {
@@ -994,7 +995,7 @@ export async function signUpOtp (
   const first = email.split('@', 1)[0] ?? ''
   const last = ''
 
-  await createAcc(ctx, db, productId, branding, email, null, first, last, false)
+  await createAcc(ctx, db, productId, branding, email, null, first, last, false, false)
 
   return await sendOtp(ctx, db, productId, branding, _email)
 }
@@ -2525,7 +2526,7 @@ export async function joinWithProvider (
       await useInvite(db, inviteId)
       return result
     }
-    const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
+    const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, true, extra)
     const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
     const ws = await assignWorkspace(
       ctx,
@@ -2589,7 +2590,7 @@ export async function loginWithProvider (
       }
       return result
     }
-    const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
+    const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, true, extra)
 
     const result = {
       endpoint: '',
