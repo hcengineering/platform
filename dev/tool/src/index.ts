@@ -77,7 +77,7 @@ import { openAIConfigDefaults } from '@hcengineering/openai'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
-import { benchmark, benchmarkWorker } from './benchmark'
+import { benchmark, benchmarkWorker, stressBenchmark, type StressBenchmarkMode } from './benchmark'
 import {
   cleanArchivedSpaces,
   cleanRemovedTransactions,
@@ -1253,6 +1253,14 @@ export function devTool (
     .action(async (cmd: any) => {
       console.log(JSON.stringify(cmd))
       benchmarkWorker()
+    })
+
+  program
+    .command('stress <transactor>')
+    .description('stress benchmark')
+    .option('--mode <mode>', 'A benchmark mode. Supported values: `wrong`, `connect-disconnect` ', 'wrong')
+    .action(async (transactor: string, cmd: { mode: StressBenchmarkMode }) => {
+      await stressBenchmark(transactor, cmd.mode)
     })
 
   program

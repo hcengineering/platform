@@ -605,7 +605,8 @@ export async function canCreateChildTemplate (
 }
 
 export async function canCreateChildDocument (
-  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[]
+  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[],
+  includeProjects = false
 ): Promise<boolean> {
   if (doc === null || doc === undefined) {
     return false
@@ -625,7 +626,7 @@ export async function canCreateChildDocument (
 
   if (isSpace(hierarchy, doc)) {
     const spaceType = await client.findOne(documents.class.DocumentSpaceType, { _id: doc.type })
-    return spaceType?.projects !== true
+    return includeProjects || spaceType?.projects !== true
   }
 
   if (isProjectDocument(hierarchy, doc)) {

@@ -262,8 +262,7 @@ export function startHttpServer (
       language: request.headers['accept-language'] ?? '',
       email: token.email,
       mode: token.extra?.mode,
-      model: token.extra?.model,
-      rpcHandler
+      model: token.extra?.model
     }
     const cs: ConnectionSocket = createWebsocketClientSocket(ws, data)
 
@@ -278,7 +277,7 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+          cs.close()
         }
         if ('upgrade' in s) {
           void cs
@@ -287,6 +286,9 @@ export function startHttpServer (
               cs.close()
             })
         }
+      })
+      void webSocketData.session.catch((err) => {
+        ctx.error('unexpected error in websocket', { err })
       })
     }
 

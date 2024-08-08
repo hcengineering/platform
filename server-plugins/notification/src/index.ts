@@ -25,6 +25,7 @@ import {
 } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
+import { ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -154,7 +155,8 @@ export type NotificationProviderFunc = (
   object: Doc,
   data: InboxNotification,
   receiver: ReceiverInfo,
-  sender: SenderInfo
+  sender: SenderInfo,
+  message?: ActivityMessage
 ) => Promise<Tx[]>
 
 export interface NotificationProviderResources extends Doc {
@@ -163,7 +165,7 @@ export interface NotificationProviderResources extends Doc {
 }
 
 export const NOTIFICATION_BODY_SIZE = 50
-export const NOTIFICATION_TITLE_SIZE = 50
+export const PUSH_NOTIFICATION_TITLE_SIZE = 80
 
 /**
  * @public

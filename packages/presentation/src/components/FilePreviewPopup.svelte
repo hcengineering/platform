@@ -21,7 +21,7 @@
   import presentation from '../plugin'
 
   import { BlobMetadata } from '../types'
-  import { getClient, getFileUrl } from '../utils'
+  import { getFileUrl } from '../utils'
 
   import ActionContext from './ActionContext.svelte'
   import FilePreview from './FilePreview.svelte'
@@ -36,7 +36,6 @@
   export let fullSize = false
   export let showIcon = true
 
-  const client = getClient()
   const dispatch = createEventDispatcher()
 
   let download: HTMLAnchorElement

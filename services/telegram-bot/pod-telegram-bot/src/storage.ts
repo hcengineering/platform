@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,29 +13,19 @@
 // limitations under the License.
 //
 
-import { Attribute } from '@tiptap/core'
+import { MongoClient } from 'mongodb'
 
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
+import config from './config'
 
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      if (attributes[name] == null) {
-        return null
-      }
+export const getDB = (() => {
+  let client: MongoClient | undefined
 
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options ?? {})
+  return async () => {
+    if (client === undefined) {
+      client = new MongoClient(config.MongoURL)
+      await client.connect()
+    }
+
+    return client.db(config.MongoDB)
   }
-}
+})()

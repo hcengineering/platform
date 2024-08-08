@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,29 +13,27 @@
 // limitations under the License.
 //
 
-import { Attribute } from '@tiptap/core'
+const generateMessage = (code: number): string => {
+  if (code === 401) {
+    return 'Unauthorized'
+  }
 
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
+  if (code === 404) {
+    return 'Not Found'
+  }
 
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      if (attributes[name] == null) {
-        return null
-      }
+  if (code === 400) {
+    return 'Bad Request'
+  }
 
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options ?? {})
+  return 'Error'
+}
+
+export class ApiError extends Error {
+  readonly code: number
+
+  constructor (code: number, message?: string) {
+    super(message ?? generateMessage(code))
+    this.code = code
   }
 }

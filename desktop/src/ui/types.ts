@@ -30,6 +30,7 @@ export interface Config {
   PREVIEW_CONFIG: string
   DESKTOP_UPDATES_URL?: string
   DESKTOP_UPDATES_CHANNEL?: string
+  TELEGRAM_BOT_URL?: string
 }
 
 export interface Branding {

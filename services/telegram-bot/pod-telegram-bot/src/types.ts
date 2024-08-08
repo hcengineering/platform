@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,29 +13,24 @@
 // limitations under the License.
 //
 
-import { Attribute } from '@tiptap/core'
+import { Ref, Timestamp } from '@hcengineering/core'
+import { InboxNotification } from '@hcengineering/notification'
 
-/**
- * @public
- */
-export function getDataAttribute (
-  name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
-): Partial<Attribute> {
-  const dataName = `data-${name}`
+export interface UserRecord {
+  telegramId: number
+  email: string
+}
 
-  return {
-    default: null,
-    parseHTML: (element) => element.getAttribute(dataName),
-    renderHTML: (attributes) => {
-      if (attributes[name] == null) {
-        return null
-      }
+export interface NotificationRecord {
+  notificationId: Ref<InboxNotification>
+  workspace: string
+  email: string
+  telegramId: number
+}
 
-      return {
-        [dataName]: attributes[name]
-      }
-    },
-    ...(options ?? {})
-  }
+export interface OtpRecord {
+  telegramId: number
+  code: string
+  expires: Timestamp
+  createdOn: Timestamp
 }

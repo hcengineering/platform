@@ -137,8 +137,7 @@ export class TServerStorage implements ServerStorage {
         if (h !== undefined) {
           const dbDomains = adapterDomains.get(adapter) ?? (await h.listDomains())
           adapterDomains.set(adapter, dbDomains)
-          const dbIdIndex = dbDomains.has(d)
-          info.exists = dbIdIndex !== undefined
+          info.exists = dbDomains.has(d)
           if (info.exists) {
             info.documents = await h.estimatedCount(d)
           }
