@@ -34,7 +34,7 @@ export const start = async (): Promise<void> => {
 
   const worker = await PlatformWorker.create()
   const bot = await setUpBot(worker)
-  const app = createServer(bot, worker)
+  const app = createServer(bot, worker, ctx)
 
   if (config.Domain === '') {
     void bot.launch({ dropPendingUpdates: true })
