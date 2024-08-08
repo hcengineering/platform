@@ -30,6 +30,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
 import contact, { type PersonSpace } from '@hcengineering/contact'
+import chunter from '@hcengineering/chunter'
 
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
@@ -320,6 +321,26 @@ export const notificationOperation: MigrateOperation = {
             DOMAIN_DOC_NOTIFY,
             { _class: notification.class.DocNotifyContext, objectSpace: 'contact:space:Employee' as Ref<Space> },
             { objectSpace: contact.space.Contacts }
+          )
+        }
+      },
+      {
+        state: 'migrate-wrong-spaces-v1',
+        func: async () => {
+          await client.update<DocNotifyContext>(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, objectClass: chunter.class.DirectMessage },
+            { objectSpace: core.space.Space }
+          )
+          await client.update<DocNotifyContext>(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, objectClass: chunter.class.Channel },
+            { objectSpace: core.space.Space }
+          )
+          await client.update<DocNotifyContext>(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, objectClass: 'recruit:class:Vacancy' as any },
+            { objectSpace: core.space.Space }
           )
         }
       }
