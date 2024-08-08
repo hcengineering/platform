@@ -355,6 +355,7 @@ export interface Component extends Doc {
  * @public
  */
 export const trackerId = 'tracker' as Plugin
+export * from './analytics'
 
 const pluginState = plugin(trackerId, {
   class: {

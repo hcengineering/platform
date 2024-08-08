@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-export let OnboardEvents = {
-  StartHuly: 'onboard.startHuly',
+export const OnboardEvents = {
+  StartHuly: 'onboard.startHuly'
 }

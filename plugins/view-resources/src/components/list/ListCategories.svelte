@@ -64,6 +64,7 @@
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
+  export let createItemEvent: string | undefined
   export let viewOptions: ViewOptions
   export let flatHeaders = false
   export let disableHeader = false
@@ -399,6 +400,7 @@
     {createItemDialog}
     {createItemDialogProps}
     {createItemLabel}
+    {createItemEvent}
     {viewOptionsConfig}
     {compactMode}
     {resultQuery}

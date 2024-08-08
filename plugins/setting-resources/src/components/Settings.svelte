@@ -18,7 +18,7 @@
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory } from '@hcengineering/setting'
+  import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
     Component,
     Label,
@@ -41,7 +41,6 @@
   import { ComponentType, onDestroy } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
   import { Analytics } from '@hcengineering/analytics'
-  import { SettingsEvents } from '../analytics'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''

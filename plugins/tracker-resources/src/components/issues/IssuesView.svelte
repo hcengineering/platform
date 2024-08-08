@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString, Asset, translate } from '@hcengineering/platform'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, TrackerEvents } from '@hcengineering/tracker'
   import { IModeSelector, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
@@ -83,6 +83,7 @@
     {viewOptions}
     createItemDialog={CreateIssue}
     createItemLabel={tracker.string.AddIssueTooltip}
+    createItemEvent={TrackerEvents.ClickAddIssuePlusButton}
     createItemDialogProps={{ shouldSaveDraft: true }}
   />
 {/if}

@@ -111,16 +111,16 @@ export async function signUp (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent(LoginEvents.SignUpEmail, { email: email, ok: true })
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: true })
       Analytics.setUser(email)
     } else {
-      Analytics.handleEvent(LoginEvents.SignUpEmail, { email: email, ok: false })
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
       await handleStatusError('Sign up error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     Analytics.handleError(err)
-    Analytics.handleEvent(LoginEvents.SignUpEmail, { email: email, ok: false })
+    Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
     return [unknownError(err), undefined]
   }
 }
@@ -193,15 +193,15 @@ export async function createWorkspace (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent(LoginEvents.CreateWorkspace, {name: workspaceName, ok: true})
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
       Analytics.setWorkspace(workspaceName)
     } else {
-      Analytics.handleEvent(LoginEvents.CreateWorkspace, {name: workspaceName, ok: false})
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
       await handleStatusError('Create workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
-    Analytics.handleEvent(LoginEvents.CreateWorkspace, {name: workspaceName, ok: false})
+    Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }

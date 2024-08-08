@@ -52,6 +52,7 @@
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
+  export let createItemEvent: string | undefined
   export let selectedObjectIds: Doc[]
   export let itemModels: Map<Ref<Class<Doc>>, AttributeModel[]>
   export let extraHeaders: AnyComponent[] | undefined
@@ -432,6 +433,7 @@
       {createItemDialog}
       {createItemDialogProps}
       {createItemLabel}
+      {createItemEvent}
       {extraHeaders}
       newObjectProps={_newObjectProps}
       flat={flatHeaders}

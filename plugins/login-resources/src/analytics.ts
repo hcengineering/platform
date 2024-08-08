@@ -24,5 +24,5 @@ export const LoginEvents = {
   LoginGithub: 'login.viaGitHub',
 
   CreateWorkspace: 'onboard.createWorkspace',
-  SelectWorkspace: 'onboard.selectWorkspace',
+  SelectWorkspace: 'onboard.selectWorkspace'
 }
