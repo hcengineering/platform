@@ -90,6 +90,10 @@ class TSessionManager implements SessionManager {
 
   modelVersion = process.env.MODEL_VERSION ?? ''
 
+  oldClientErrors: number = 0
+  clientErrors: number = 0
+  lastClients: string[] = []
+
   constructor (
     readonly ctx: MeasureContext,
     readonly sessionFactory: (token: Token, pipeline: Pipeline) => Session,
@@ -211,6 +215,15 @@ class TSessionManager implements SessionManager {
       } else {
         workspace.softShutdown = 3
       }
+
+      if (this.clientErrors !== this.oldClientErrors) {
+        this.ctx.warn('connection errors during interval', {
+          diff: this.clientErrors - this.oldClientErrors,
+          errors: this.clientErrors,
+          lastClients: this.lastClients
+        })
+        this.oldClientErrors = this.clientErrors
+      }
     }
     this.ticks++
   }
@@ -219,7 +232,6 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline)
   }
 
-  @withContext('get-workspace-info')
   async getWorkspaceInfo (
     ctx: MeasureContext,
     accounts: string,
@@ -241,7 +253,6 @@ class TSessionManager implements SessionManager {
       ).json()
 
       if (userInfo.error !== undefined) {
-        ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
         throw new Error(JSON.stringify(userInfo.error))
       }
       return { ...userInfo.result, upgrade: userInfo.upgrade }
@@ -271,19 +282,39 @@ class TSessionManager implements SessionManager {
     const wsString = toWorkspaceString(token.workspace, '@')
 
     let workspaceInfo: WorkspaceLoginInfo | undefined
-    workspaceInfo =
-      accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+    try {
+      workspaceInfo =
+        accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+    } catch (err: any) {
+      this.updateConnectErrorInfo(token)
+      // No connection to account service, retry from client.
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000)
+      })
+      return { error: err }
+    }
 
     if (workspaceInfo === undefined) {
+      this.updateConnectErrorInfo(token)
       // No connection to account service, retry from client.
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000)
+      })
       return { upgrade: true }
     }
 
     if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1000)
+      })
       // No access to workspace for token.
       return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
     }
     if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 5000)
+      })
+      this.updateConnectErrorInfo(token)
       // No access to workspace for token.
       return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
     } else if (workspaceInfo === undefined) {
@@ -395,6 +426,11 @@ class TSessionManager implements SessionManager {
       void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
     }
     return { session, context: workspace.context, workspaceId: wsString }
+  }
+
+  private updateConnectErrorInfo (token: Token): void {
+    this.clientErrors++
+    this.lastClients = [token.email, ...this.lastClients.slice(0, 9)]
   }
 
   private wsFromToken (token: Token): WorkspaceLoginInfo {

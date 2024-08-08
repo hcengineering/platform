@@ -104,7 +104,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
-  allAttrs = new WeakMap<Ref<Class<Doc>>, Map<string, AnyAttribute>>()
+  allAttrs = new WeakMap<Class<Doc>, Map<string, AnyAttribute>>()
 
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, ctx: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
@@ -321,7 +321,7 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   return doc
 }
 function updateDoc2Elastic (
-  allAttrs: WeakMap<Ref<Class<Doc>>, Map<string, AnyAttribute>>,
+  allAttrs: WeakMap<Class<Doc>, Map<string, AnyAttribute>>,
   ctx: MeasureContext,
   attributes: Record<string, any>,
   doc: IndexedDoc,
@@ -346,42 +346,47 @@ function updateDoc2Elastic (
       })
     }
     try {
-      let attrs = allAttrs.get(_class ?? doc._class[0])
+      if (vv != null) {
+        const cachedClass = _class ?? doc._class[0]
+        if (hierarchy?.hasClass(cachedClass) ?? false) {
+          const cl = hierarchy?.getClass(cachedClass) as Class<Doc>
+          let attrs = cl !== undefined ? allAttrs.get(cl) : undefined
 
-      if (attrs === undefined) {
-        attrs = new Map()
-        if (attrs !== undefined) {
-          allAttrs.set(_class ?? doc._class[0], attrs)
-        }
-      }
-
-      const attribute = attrs?.get(attr) ?? hierarchy?.findAttribute(_class ?? doc._class[0], attr)
-      if (attribute !== undefined) {
-        attrs.set(attr, attribute)
-        allAttrs.set(_class ?? doc._class[0], attrs)
-      }
-      if (attribute !== undefined && vv != null) {
-        if (
-          isFullTextAttribute(attribute) ||
-          (isChildOrParentDoc === true &&
-            !(
-              attribute.type._class === core.class.RefTo ||
-              (attribute.type._class === core.class.ArrOf &&
-                (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
-            ))
-        ) {
-          let vvv = vv
-          if (
-            attribute.type._class === core.class.TypeMarkup ||
-            attribute.type._class === core.class.TypeCollaborativeMarkup
-          ) {
-            ctx.withSync('markup-to-json-text', {}, () => {
-              vvv = jsonToText(markupToJSON(vv))
-            })
+          if (attrs === undefined && cachedClass != null) {
+            attrs = new Map()
+            if (attrs !== undefined) {
+              allAttrs.set(cl, attrs)
+            }
           }
-          if (!(doc.fulltextSummary ?? '').includes(vvv)) {
-            doc.fulltextSummary = (doc.fulltextSummary ?? '') + vvv + '\n'
-            continue
+          const attribute = attrs?.get(attr) ?? hierarchy?.findAttribute(cachedClass, attr)
+          if (attribute !== undefined && attrs !== undefined) {
+            attrs.set(attr, attribute)
+            allAttrs.set(cl, attrs)
+          }
+          if (attribute !== undefined) {
+            if (
+              isFullTextAttribute(attribute) ||
+              (isChildOrParentDoc === true &&
+                !(
+                  attribute.type._class === core.class.RefTo ||
+                  (attribute.type._class === core.class.ArrOf &&
+                    (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
+                ))
+            ) {
+              let vvv = vv
+              if (
+                attribute.type._class === core.class.TypeMarkup ||
+                attribute.type._class === core.class.TypeCollaborativeMarkup
+              ) {
+                ctx.withSync('markup-to-json-text', {}, () => {
+                  vvv = jsonToText(markupToJSON(vv))
+                })
+              }
+              if (!(doc.fulltextSummary ?? '').includes(vvv)) {
+                doc.fulltextSummary = (doc.fulltextSummary ?? '') + vvv + '\n'
+                continue
+              }
+            }
           }
         }
       }
