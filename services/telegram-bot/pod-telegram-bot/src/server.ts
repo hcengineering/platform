@@ -86,6 +86,7 @@ const handleRequest = async (
     const token = extractToken(req.headers)
     await fn(req, res, token, next)
   } catch (err: unknown) {
+    console.error('Error during extract token', err)
     next(err)
   }
 }
@@ -94,7 +95,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-export function createServer (bot: Telegraf, worker: PlatformWorker): Express {
+export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: MeasureContext): Express {
   const limiter = new Limiter()
   const app = express()
 
@@ -174,28 +175,32 @@ export function createServer (bot: Telegraf, worker: PlatformWorker): Express {
   app.post(
     '/notify',
     wrapRequest(async (req, res, token) => {
+      ctx.info('Received notification', { email: token.email })
       if (req.body == null || !Array.isArray(req.body)) {
+        ctx.error('Invalid request body', { body: req.body, email: token.email })
         throw new ApiError(400)
       }
       const notificationRecords = req.body as TelegramNotificationRecord[]
-      const usersRecords = await worker.getUsersRecords()
+      const userRecord = await worker.getUserRecordByEmail(token.email)
+
+      if (userRecord === undefined) {
+        ctx.error('User not found', { email: token.email })
+        throw new ApiError(404)
+      }
 
       for (const notificationRecord of notificationRecords) {
-        const userRecord = usersRecords.find((record) => record.email === token.email)
-        if (userRecord !== undefined) {
-          void limiter.add(userRecord.telegramId, async () => {
-            const formattedMessage = toTelegramHtml(notificationRecord)
-            const message = await bot.telegram.sendMessage(userRecord.telegramId, formattedMessage, {
-              parse_mode: 'HTML'
-            })
-            await worker.addNotificationRecord({
-              notificationId: notificationRecord.notificationId,
-              email: userRecord.email,
-              workspace: notificationRecord.workspace,
-              telegramId: message.message_id
-            })
+        void limiter.add(userRecord.telegramId, async () => {
+          const formattedMessage = toTelegramHtml(notificationRecord)
+          const message = await bot.telegram.sendMessage(userRecord.telegramId, formattedMessage, {
+            parse_mode: 'HTML'
           })
-        }
+          await worker.addNotificationRecord({
+            notificationId: notificationRecord.notificationId,
+            email: userRecord.email,
+            workspace: notificationRecord.workspace,
+            telegramId: message.message_id
+          })
+        })
       }
 
       res.status(200)
