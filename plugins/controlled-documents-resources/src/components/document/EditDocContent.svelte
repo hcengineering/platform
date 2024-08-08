@@ -222,6 +222,8 @@
 
 <style lang="scss">
   .root {
+    overflow: hidden;
+
     @media print {
       margin-left: -1rem;
     }
