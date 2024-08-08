@@ -1,8 +1,10 @@
 import type { Blob, Ref } from '@hcengineering/core'
 import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import { getCurrentWorkspaceUrl, getFileUrl } from '.'
+
+import { getFileUrl } from './file'
 import presentation from './plugin'
+import { getCurrentWorkspaceUrl } from './utils'
 
 export interface PreviewConfig {
   previewUrl: string
@@ -74,7 +76,7 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
       fu.replaceAll(':size', `${width * 3}`) +
       ' 3x'
   } else {
-    result += fu.replaceAll(':size', `${-1}`)
+    result += downloadUrl
   }
 
   return result

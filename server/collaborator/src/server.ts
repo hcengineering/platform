@@ -34,6 +34,7 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
+import { TransformerFactory } from './types'
 
 /**
  * @public
@@ -57,23 +58,22 @@ export async function start (
   const app = express()
   app.use(cors())
   app.use(bp.json())
-  const extensions = [
-    ServerKit.configure({
-      image: {
-        getBlobRef: async (fileId, name, size) => {
-          const sz = size !== undefined ? `&size=${size}` : ''
-          return {
-            src: `${config.UploadUrl}?file=${fileId}`,
-            srcset: `${config.UploadUrl}?file=${fileId}${sz}`
-          }
-        }
-      }
-    })
-  ]
 
   const extensionsCtx = ctx.newChild('extensions', {})
 
-  const transformer = new MarkupTransformer(extensions)
+  const transformerFactory: TransformerFactory = (workspaceId) => {
+    const extensions = [
+      ServerKit.configure({
+        image: {
+          getBlobRef: async (fileId, name, size) => {
+            const src = await storageAdapter.getUrl(ctx, workspaceId, fileId)
+            return { src, srcset: '' }
+          }
+        }
+      })
+    ]
+    return new MarkupTransformer(extensions)
+  }
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -116,7 +116,7 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter(storageAdapter, mongo, transformer)
+        adapter: new PlatformStorageAdapter(storageAdapter, mongo, transformerFactory)
       })
     ]
   })
@@ -178,6 +178,7 @@ export async function start (
       rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
       await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
+          const transformer = transformerFactory(token.workspace)
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
             return await method(ctx, context, request.payload, { hocuspocus, storageAdapter, transformer })
           })

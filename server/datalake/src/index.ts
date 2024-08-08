@@ -147,6 +147,10 @@ export class DatalakeService implements StorageAdapter {
   ): Promise<Readable> {
     throw new Error('not implemented')
   }
+
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    return this.client.getObjectUrl(ctx, objectName)
+  }
 }
 
 export function processConfigFromEnv (storageConfig: StorageConfiguration): string | undefined {

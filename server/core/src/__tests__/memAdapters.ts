@@ -124,6 +124,7 @@ export class MemStorageAdapter implements StorageAdapter {
     }
     this.files.set(workspaceId.name + '/' + objectName, dta)
     return {
+      objectName,
       etag: objectName,
       versionId: null
     }
@@ -146,6 +147,10 @@ export class MemStorageAdapter implements StorageAdapter {
   ): Promise<Readable> {
     // Partial are not supported by
     throw new Error('NoSuchKey')
+  }
+
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    return '/files/' + objectName
   }
 }
 

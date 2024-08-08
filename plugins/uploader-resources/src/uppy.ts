@@ -78,8 +78,9 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
       Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
     },
     getResponseData: (body: string): UppyBody => {
+      const data = JSON.parse(body)
       return {
-        uuid: body
+        uuid: data[0].id
       }
     }
   })
