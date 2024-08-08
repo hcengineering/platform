@@ -21,7 +21,12 @@
   let scroller: HTMLElement
 </script>
 
-<Header {adaptive} overflowExtra hideActions={!$$slots.actions} hideExtra={!$$slots.extra && modeSelectorProps === undefined}>
+<Header
+  {adaptive}
+  overflowExtra
+  hideActions={!$$slots.actions}
+  hideExtra={!$$slots.extra && modeSelectorProps === undefined}
+>
   <svelte:fragment slot="beforeTitle">
     <ViewletSelector bind:viewlet bind:viewlets viewletQuery={viewletQuery ?? { attachTo: _class }} />
     <slot name="header-tools" />

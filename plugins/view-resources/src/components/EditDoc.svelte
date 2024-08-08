@@ -253,6 +253,7 @@
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}
           kind={'icon'}
+          dataId={'btnMoreActions'}
           on:click={(e) => {
             showMenu(e, { object, excludedActions: [view.action.Open] })
           }}
@@ -263,6 +264,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         selected={showAllMixins}
+        dataId={'btnMixin'}
         on:click={() => {
           showAllMixins = !showAllMixins
         }}

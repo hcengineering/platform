@@ -26,7 +26,7 @@ export class CommonTrackerPage extends CalendarPage {
     this.page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
 
   buttonMoreActions = (): Locator =>
-    this.page.locator('.popupPanel > .hulyHeader-container > div:nth-child(3) > button').first()
+    this.page.locator('.popupPanel > .hulyHeader-container button[data-id="btnMoreActions"]')
 
   textActivityContent = (): Locator => this.page.locator('div.activityMessage div.content')
   linkInActivity = (): Locator => this.page.locator('div[id="activity:string:Activity"] a')

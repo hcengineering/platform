@@ -46,7 +46,10 @@
   let doubleExtra: boolean = false
   let extraWidth: number = 0
   let spaceWidth: number = 0
-  $: _doubleRow = adaptive === 'doubleRow' || (adaptive !== 'disabled' && doubleRow) || (adaptive === 'autoExtra' && (doubleRow || doubleExtra))
+  $: _doubleRow =
+    adaptive === 'doubleRow' ||
+    (adaptive !== 'disabled' && doubleRow) ||
+    (adaptive === 'autoExtra' && (doubleRow || doubleExtra))
 
   onMount(() => {
     if (closeButton) window.addEventListener('keydown', _close)
@@ -78,7 +81,6 @@
   class:no-print={noPrint}
 >
   {#if _doubleRow}
-
     <div class="hulyHeader-row">
       {#if allowFullsize}
         <ButtonIcon
@@ -97,7 +99,12 @@
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="hulyHeader-titleGroup" class:withDescription={$$slots.description && !hideDescription} class:notGrow={adaptive === 'autoExtra'} on:click>
+      <div
+        class="hulyHeader-titleGroup"
+        class:withDescription={$$slots.description && !hideDescription}
+        class:notGrow={adaptive === 'autoExtra'}
+        on:click
+      >
         {#if $$slots.description && !hideDescription}
           <div class="hulyHeader-titleGroup"><slot /></div>
           <div class="hulyHeader-titleGroup"><slot name="description" /></div>
@@ -152,9 +159,7 @@
         </div>
       {/if}
     </div>
-
   {:else}
-
     {#if allowFullsize}
       <ButtonIcon
         icon={$deviceInfo.navigator.visible ? IconMaximize : IconMinimize}
@@ -172,7 +177,12 @@
     {/if}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="hulyHeader-titleGroup" class:withDescription={$$slots.description && !hideDescription} class:notGrow={adaptive === 'autoExtra'} on:click>
+    <div
+      class="hulyHeader-titleGroup"
+      class:withDescription={$$slots.description && !hideDescription}
+      class:notGrow={adaptive === 'autoExtra'}
+      on:click
+    >
       {#if $$slots.description && !hideDescription}
         <slot />
         <slot name="description" />
@@ -219,6 +229,5 @@
       <div class="hulyHotKey-item no-print">Esc</div>
       <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} noPrint on:click={() => dispatch('close')} />
     {/if}
-
   {/if}
 </div>
