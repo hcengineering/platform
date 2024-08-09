@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineering/core'
-import { UNAUTHORIZED } from '@hcengineering/platform'
+import { UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import cors from 'cors'
@@ -277,13 +277,22 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          cs.close()
+          void cs
+            .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
+            .then(() => {
+              // No connection to account service, retry from client.
+              setTimeout(() => {
+                cs.close()
+              }, 1000)
+            })
         }
         if ('upgrade' in s) {
           void cs
             .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
             .then(() => {
-              cs.close()
+              setTimeout(() => {
+                cs.close()
+              }, 5000)
             })
         }
       })

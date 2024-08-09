@@ -739,6 +739,9 @@ export class PlatformWorker {
         }
       }
     }
+    this.ctx.info('************************* Check workspaces done ************************* ', {
+      workspaces: this.clients.size
+    })
     return errors > 0
   }
 
