@@ -52,10 +52,8 @@
       "entitlementsInherit": "./entitlements.mac.plist",
       "notarize": false,
       "publish": {
-        "provider": "s3",
-        "bucket": "desktop-distro",
-        "acl": null,
-        "endpoint": "https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com",
+        "provider": "generic",
+        "url": "https://dist.huly.io",
         "channel": "latest"
       }
     },
@@ -68,10 +66,8 @@
       "verifyUpdateCodeSignature": false,
       "icon": "./src/AppIcon.png",
       "publish": {
-        "provider": "s3",
-        "bucket": "desktop-distro",
-        "acl": null,
-        "endpoint": "https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com",
+        "provider": "generic",
+        "url": "https://dist.huly.io",
         "channel": "latest"
       }
     },
@@ -84,10 +80,8 @@
       ],
       "category": "Utility",
       "publish": {
-        "provider": "s3",
-        "bucket": "desktop-distro",
-        "acl": null,
-        "endpoint": "https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com",
+        "provider": "generic",
+        "url": "https://dist.huly.io",
         "channel": "latest"
       }
     }
