@@ -35,13 +35,6 @@ import core, {
   type Blob,
   type MigrationState
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
-import { StorageAdapter } from '@hcengineering/server-core'
-import { getPublicLinkUrl } from '@hcengineering/server-guest-resources'
-import task, { ProjectType, TaskType } from '@hcengineering/task'
-import { MarkupNode, jsonToMarkup, isMarkdownsEquals } from '@hcengineering/text'
-import tracker from '@hcengineering/tracker'
-import { User } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubAuthentication,
@@ -53,6 +46,13 @@ import github, {
   GithubUserInfo,
   githubId
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
+import { StorageAdapter } from '@hcengineering/server-core'
+import { getPublicLinkUrl } from '@hcengineering/server-guest-resources'
+import task, { ProjectType, TaskType } from '@hcengineering/task'
+import { MarkupNode, isMarkdownsEquals, jsonToMarkup } from '@hcengineering/text'
+import tracker from '@hcengineering/tracker'
+import { User } from '@octokit/webhooks-types'
 import { App, Octokit } from 'octokit'
 import { createPlatformClient } from './client'
 import { createCollaboratorClient } from './collaborator'
@@ -1487,7 +1487,7 @@ export class GithubWorker implements IntegrationManager {
     ctx.info('Connecting to', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
     let client: Client | undefined
     try {
-      client = await createPlatformClient(workspace.name, workspace.productId, 10000, (event: ClientConnectEvent) => {
+      client = await createPlatformClient(workspace.name, workspace.productId, 30000, (event: ClientConnectEvent) => {
         reconnect(workspace.name, event)
       })
 
@@ -1506,6 +1506,7 @@ export class GithubWorker implements IntegrationManager {
         return worker
       }
     } catch (err: any) {
+      ctx.error('timeout during to connect', { workspace, error: err })
       await client?.close()
     }
   }
