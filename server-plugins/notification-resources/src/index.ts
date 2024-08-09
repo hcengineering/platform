@@ -323,8 +323,7 @@ export async function pushInboxNotifications (
   modifiedOn: Timestamp,
   shouldUpdateTimestamp = true
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
-  const context = contexts.find((context) => context.user === receiver._id && context.objectId === objectId)
-
+  const context = getDocNotifyContext(control, contexts, objectId, receiver._id)
   let docNotifyContextId: Ref<DocNotifyContext>
 
   if (context === undefined) {
@@ -732,9 +731,7 @@ export async function getNotificationTxes (
         )
       }
     } else {
-      const context = docNotifyContexts.find(
-        (context) => context.objectId === message.attachedTo && context.user === receiver.account._id
-      )
+      const context = getDocNotifyContext(control, docNotifyContexts, message.attachedTo, receiver.account._id)
 
       if (context === undefined) {
         await createNotifyContext(
@@ -1584,7 +1581,7 @@ async function updateCollaborators (ctx: MeasureContext, control: TriggerControl
   for (const addedUser of addedInfo) {
     const info = toReceiverInfo(hierarchy, addedUser)
     if (info === undefined) continue
-    const context = contexts.find(({ user }) => user === info._id)
+    const context = getDocNotifyContext(control, contexts, objectId, info._id)
     if (context !== undefined) continue
     await createNotifyContext(control, objectId, objectClass, objectSpace, info)
   }
@@ -1699,6 +1696,31 @@ export async function getCollaborators (
     res.push(getMixinTx(tx, control, collaborators))
     return collaborators
   }
+}
+
+function getDocNotifyContext (
+  control: TriggerControl,
+  contexts: DocNotifyContext[],
+  objectId: Ref<Doc>,
+  user: Ref<Account>
+): DocNotifyContext | undefined {
+  const context = contexts.find((it) => it.objectId === objectId && it.user === user)
+
+  if (context !== undefined) {
+    return context
+  }
+
+  const txes = [...control.txes.apply, ...control.txes.result, ...control.operationContext.derived.txes] as TxCUD<Doc>[]
+
+  for (const tx of txes) {
+    if (tx._class === core.class.TxCreateDoc && tx.objectClass === notification.class.DocNotifyContext) {
+      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<DocNotifyContext>)
+      if (doc.objectId === objectId && doc.user === user) {
+        return doc
+      }
+    }
+  }
+  return undefined
 }
 
 async function OnActivityMessageRemove (message: ActivityMessage, control: TriggerControl): Promise<Tx[]> {
