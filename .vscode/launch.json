@@ -96,7 +96,7 @@
         "ELASTIC_URL": "http://localhost:9200",
         "MONGO_URL": "mongodb://localhost:27017",
         "METRICS_CONSOLE": "false",
-        "STORAGE_CONFIG": "datalake|https://huly.net",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "SERVER_SECRET": "secret",
         "REKONI_URL": "http://localhost:4004",
         "FRONT_URL": "http://localhost:8080",
@@ -109,9 +109,7 @@
         "GMAIL_URL": "http://localhost:8088",
         "TELEGRAM_URL": "http://localhost:8086",
         "MODEL_VERSION": "",
-        "VERSION": "",
-        "PREVIEW_CONFIG": "https://huly.net/image/fit=scale-down,width=:size/:workspace/:blobId",
-        "FILES_URL": "https://huly.net/blob/:workspace/:blobId"
+        "VERSION": ""
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

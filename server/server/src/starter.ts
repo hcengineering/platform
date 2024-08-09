@@ -4,7 +4,7 @@ export interface ServerEnv {
   serverSecret: string
   rekoniUrl: string
   frontUrl: string
-  filesUrl: string
+  filesUrl: string | undefined
   sesUrl: string | undefined
   accountsUrl: string
   serverPort: number
@@ -56,11 +56,6 @@ export function serverConfigFromEnv (): ServerEnv {
   }
 
   const filesUrl = process.env.FILES_URL
-  if (filesUrl === undefined) {
-    console.log('Please provide FILES_URL url')
-    process.exit(1)
-  }
-
   const sesUrl = process.env.SES_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
