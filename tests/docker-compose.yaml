@@ -101,7 +101,6 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:7
       - FRONT_URL=http://localhost:8083
-      - UPLOAD_URL=http://localhost:8083/files
       - ACCOUNTS_URL=http://account:3003
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
@@ -118,7 +117,6 @@ services:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3003
-      - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
