@@ -14,6 +14,8 @@ export SERVER_SECRET=secret
 # Re-assign user to workspace.
 ./tool-local.sh assign-workspace user1 sanity-ws-qms
 ./tool-local.sh assign-workspace user2 sanity-ws-qms
+./tool-local.sh assign-workspace user3 sanity-ws-qms
+
 ./tool-local.sh assign-workspace user_qara sanity-ws-qms
 ./tool-local.sh set-user-role user1 sanity-ws-qms OWNER
 ./tool-local.sh set-user-role user2 sanity-ws-qms OWNER

@@ -1,0 +1,34 @@
+{
+    "cookies": [],
+    "origins": [
+      {
+        "origin": "http://localhost:8083",
+        "localStorage": [
+          {
+            "name": "login:metadata:LoginEmail",
+            "value": "user3"
+          },
+          {
+            "name": "login:metadata:LoginTokens",
+            "value": "{\"sanity-ws-qms\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjb25maXJtZWQiOnRydWUsImVtYWlsIjoidXNlcjMiLCJ3b3Jrc3BhY2UiOiJzYW5pdHktd3MtcW1zIiwicHJvZHVjdElkIjoiIn0.ylvF9znBgI9iQpHSR6GKvhI5yHDE9m8jB4eUPWuwuKk\"}"
+          },
+          {
+            "name": "login:metadata:LoginEndpoint",
+            "value": "ws://localhost:3334"
+          },
+          {
+            "name": "#platform.notification.logging",
+            "value": "false"
+          },
+          {
+            "name": "#platform.lazy.loading",
+            "value": "false"
+          },
+          {
+            "name": "flagOpenInDesktopApp",
+            "value": "true"
+          }
+        ]
+      }
+    ]
+  }

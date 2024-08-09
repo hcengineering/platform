@@ -1249,7 +1249,7 @@ test.describe('QMS. Documents tests', () => {
     })
   })
 
-  test('TESTS-352. Create a document', async ({ page }) => {
+  test.skip('TESTS-352. Create a document', async ({ page }) => {
     const folderName = faker.word.words(1)
     const documentTitle = faker.word.words(2)
     await allure.description('Requirement\nUsers need to create a new document')

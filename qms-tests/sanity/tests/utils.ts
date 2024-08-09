@@ -7,6 +7,7 @@ export const PlatformUser = process.env.PLATFORM_USER as string
 export const PlatformToken = process.env.PLATFORM_TOKEN as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
+export const PlatformSettingThird = process.env.SETTING_THIRD as string
 export const PlatformSettingQaraManager = process.env.SETTING_QARA_MANAGER as string
 export const PlatformPassword = process.env.PLATFORM_PASSWORD as string
 export const DefaultWorkspace = 'sanity-ws-qms'
