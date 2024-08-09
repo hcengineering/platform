@@ -3,8 +3,12 @@
     "RequiredField": "Required field {field}",
     "FieldsDoNotMatch": "{field} don't match {field2}",
     "ConnectingToServer": "Connecting to server....",
-    "IncorrectValue": "Incorrect value {field}"
-  },
+    "IncorrectValue": "Incorrect value {field}",
+    "PasswordLength": "Password must be at least 8 characters long",
+    "PasswordNumber": "Password must contain at least one number",
+    "PasswordLowercase": "Password must contain at least one lowercase letter",
+    "PasswordUppercase": "Password must contain at least one uppercase letter"
+  },  
   "string": {
     "LogIn": "Log In",
     "SignUp": "Sign Up",
