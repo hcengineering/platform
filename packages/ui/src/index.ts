@@ -34,6 +34,7 @@ export type {
   ButtonKind,
   ButtonSize,
   ButtonItem,
+  HeaderAdaptive,
   IconSize,
   TabItem,
   BreadcrumbItem,

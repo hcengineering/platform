@@ -20,10 +20,10 @@
   export let selected = 0
   export let padding: string | undefined = undefined
   export let noMargin: boolean = false
-  export let size: 'small' | 'medium' = 'medium'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 </script>
 
-<div class="flex-stretch tabs-container no-print" class:small={size === 'small'} style:padding class:noMargin>
+<div class="flex-stretch tabs-container no-print {size}" style:padding class:noMargin>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -67,6 +67,13 @@
 
       .tab {
         height: 3.25rem;
+      }
+    }
+    &.large {
+      height: 3.5rem;
+
+      .tab {
+        height: 3.5rem;
       }
     }
 

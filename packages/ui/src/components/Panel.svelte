@@ -24,7 +24,8 @@
     Scroller,
     panelSeparators,
     ButtonItem,
-    Header
+    Header,
+    HeaderAdaptive
   } from '../../'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
@@ -47,7 +48,7 @@
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
   export let printHeader = true
   export let printAside = false
-  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'default'
+  export let adaptive: HeaderAdaptive = 'default'
   export let hideBefore: boolean = false
   export let hideSearch: boolean = true
   export let hideActions: boolean = false

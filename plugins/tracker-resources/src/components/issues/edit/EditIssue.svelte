@@ -233,13 +233,20 @@
 
     <svelte:fragment slot="utils">
       {#if !readonly}
-        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          dataId={'btnMoreActions'}
+          on:click={showContextMenu}
+        />
         <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
         <Button
           icon={setting.icon.Setting}
           kind={'icon'}
           iconProps={{ size: 'medium' }}
           showTooltip={{ label: setting.string.ClassSetting }}
+          dataId={'btnClassSetting'}
           on:click={(ev) => {
             ev.stopPropagation()
             const loc = getCurrentResolvedLocation()
@@ -258,6 +265,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         selected={showAllMixins}
+        dataId={'btnMixin'}
         on:click={() => {
           showAllMixins = !showAllMixins
         }}

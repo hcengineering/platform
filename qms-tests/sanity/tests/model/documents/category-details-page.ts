@@ -19,7 +19,7 @@ export class CategoryDetailsPage extends CalendarPage {
     this.inputCategoryCode = page.locator('input[placeholder="Category"]')
     this.textDescription = page.locator('div.grid div.tiptap')
     this.inputAttachFile = page.locator('div.grid input#file')
-    this.buttonMoreActions = page.locator('.popupPanel > .hulyHeader-container > div:nth-child(3) > button').first()
+    this.buttonMoreActions = page.locator('.popupPanel > .hulyHeader-container button[data-id="btnMoreActions"]')
     this.textAttachFile = page.locator('div.attachment-grid-container div[class*="attachment"] div.name')
   }
 

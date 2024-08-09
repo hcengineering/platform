@@ -7,7 +7,15 @@
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import type { IntlString, Asset } from '@hcengineering/platform'
-  import { IModeSelector, SearchInput, ModeSelector, themeStore, Header, Breadcrumb } from '@hcengineering/ui'
+  import {
+    IModeSelector,
+    SearchInput,
+    ModeSelector,
+    themeStore,
+    Header,
+    Breadcrumb,
+    HeaderAdaptive
+  } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
 
   import FilterBar from './filter/FilterBar.svelte'
@@ -28,7 +36,7 @@
   export let modeSelectorProps: IModeSelector | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
   export let resultQuery: DocumentQuery<Doc>
-  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'default'
+  export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
 
   let label = ''
