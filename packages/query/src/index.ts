@@ -1111,15 +1111,21 @@ export class LiveQuery implements WithTx, Client {
       for (const resDoc of docs) {
         const obj = getObjectValue(objWay, resDoc)
         if (obj === undefined) continue
-        const value = getObjectValue('$lookup.' + key, obj)
+        let value = getObjectValue('$lookup.' + key, obj)
+        const reverseCheck = reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id
+        if (value == null && reverseCheck) {
+          value = []
+          obj.$lookup[key] = value
+        }
         if (Array.isArray(value)) {
-          if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
-            if (reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id) {
-              if ((value as Doc[]).find((p) => p._id === doc._id) === undefined) {
-                value.push(doc)
-                needCallback = true
-              }
+          if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc) && reverseCheck) {
+            const idx = (value as Doc[]).findIndex((p) => p._id === doc._id)
+            if (idx === -1) {
+              value.push(doc)
+            } else {
+              value[idx] = doc
             }
+            needCallback = true
           }
         } else {
           if (obj[key] === doc._id) {
