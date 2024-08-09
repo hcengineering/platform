@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext } from '@hcengineering/core'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import serverClient from '@hcengineering/server-client'
+import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import { Analytics } from '@hcengineering/analytics'
+import { join } from 'path'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -24,17 +27,29 @@ import { setUpBot } from './bot'
 import { PlatformWorker } from './worker'
 import { registerLoaders } from './loaders'
 
+const ctx = new MeasureMetricsContext(
+  'telegram-bot-service',
+  {},
+  {},
+  newMetrics(),
+  new SplitLogger('telegram-bot-service', {
+    root: join(process.cwd(), 'logs'),
+    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+  })
+)
+
+configureAnalytics(config.SentryDSN, config)
+Analytics.setTag('application', 'telegram-bot-service')
+
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
-  const ctx = new MeasureMetricsContext('telegram-bot', {})
-
   const worker = await PlatformWorker.create()
   const bot = await setUpBot(worker)
-  const app = createServer(bot, worker)
+  const app = createServer(bot, worker, ctx)
 
   if (config.Domain === '') {
     void bot.launch({ dropPendingUpdates: true })
