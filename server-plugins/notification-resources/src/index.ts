@@ -548,7 +548,8 @@ export async function createPushNotification (
     const provider = getAvatarProviderId(senderAvatar.avatarType)
     if (provider === contact.avatarProvider.Image) {
       if (senderAvatar.avatar != null) {
-        data.icon = await control.storageAdapter.getUrl(control.ctx, control.workspace, senderAvatar.avatar)
+        const url = await control.storageAdapter.getUrl(control.ctx, control.workspace, senderAvatar.avatar)
+        data.icon = url.includes('://') ? url : concatLink(front, url)
       }
     } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {
       data.icon = getGravatarUrl(senderAvatar.avatarProps?.url, 512)

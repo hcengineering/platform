@@ -361,7 +361,6 @@ export class S3Service implements StorageAdapter {
           })
           const response = await this.client.send(cmd)
           return {
-            objectName,
             etag: response.ETag ?? '',
             versionId: response.VersionId ?? null
           }
@@ -393,7 +392,6 @@ export class S3Service implements StorageAdapter {
 
           const output = await uploadTask.done()
           return {
-            objectName,
             etag: output.ETag ?? '',
             versionId: output.VersionId ?? null
           }

@@ -90,7 +90,7 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('get')
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
-    return await this.client.getObject(ctx, objectName)
+    return await this.client.getObject(ctx, workspaceId, objectName)
   }
 
   @withContext('put')
@@ -102,11 +102,6 @@ export class DatalakeService implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
-    if (objectName != null) {
-      ctx.error('unexpected non empty object name', { objectName })
-      throw new Error('unexpected non empty object name')
-    }
-
     const metadata: ObjectMetadata = {
       lastModified: Date.now(),
       name: objectName,
@@ -114,12 +109,11 @@ export class DatalakeService implements StorageAdapter {
       size
     }
 
-    const response = await ctx.with('put', {}, async () => {
-      return await this.client.putObject(ctx, objectName, stream, metadata)
+    await ctx.with('put', {}, async () => {
+      return await this.client.putObject(ctx, workspaceId, objectName, stream, metadata)
     })
 
     return {
-      objectName: response.id,
       etag: '',
       versionId: ''
     }
@@ -127,7 +121,7 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('read')
   async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(ctx, objectName)
+    const data = await this.client.getObject(ctx, workspaceId, objectName)
     const chunks: Buffer[] = []
 
     for await (const chunk of data) {

@@ -124,7 +124,6 @@ export class MemStorageAdapter implements StorageAdapter {
     }
     this.files.set(workspaceId.name + '/' + objectName, dta)
     return {
-      objectName,
       etag: objectName,
       versionId: null
     }

@@ -19,7 +19,6 @@ import { type Readable } from 'stream'
 export type ListBlobResult = Omit<Blob, 'contentType' | 'version'>
 
 export interface UploadedObjectInfo {
-  objectName: string
   etag: string
   versionId: string | null
 }
