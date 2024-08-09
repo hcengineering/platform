@@ -110,8 +110,8 @@
         "TELEGRAM_URL": "http://localhost:8086",
         "MODEL_VERSION": "",
         "VERSION": "",
-        "PREVIEW_CONFIG": "https://huly.net/image/fit=scale-down,width=:size/:blobId",
-        "FILES_URL": "https://huly.net/blob/:blobId"
+        "PREVIEW_CONFIG": "https://huly.net/image/fit=scale-down,width=:size/:workspace/:blobId",
+        "FILES_URL": "https://huly.net/blob/:workspace/:blobId"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -130,7 +130,6 @@
         "SECRET": "secret",
         "METRICS_CONSOLE": "true",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "UPLOAD_URL": "/files",
         "MONGO_URL": "mongodb://localhost:27017",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",

@@ -44,16 +44,17 @@ async function storageUpload (
   workspace: WorkspaceId,
   file: UploadedFile
 ): Promise<string> {
+  const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
     { workspace: workspace.name },
-    async (ctx) => await storageAdapter.put(ctx, workspace, file.name, data, file.mimetype, file.size),
+    async (ctx) => await storageAdapter.put(ctx, workspace, uuid, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
-  ctx.info('minio upload', resp)
-  return resp.objectName
+  ctx.info('storage upload', resp)
+  return uuid
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -82,6 +83,7 @@ async function getFileRange (
   workspace: WorkspaceId,
   res: Response
 ): Promise<void> {
+  const uuid = stat._id
   const size: number = stat.size
 
   const [start, end] = getRange(range, size)
@@ -600,7 +602,7 @@ export function start (
             res.status(500).send(`server returned ${response.statusCode}`)
             return
           }
-          // const id = uuid()
+          const id = uuid()
           const contentType = response.headers['content-type'] ?? 'application/octet-stream'
           const data: Buffer[] = []
           response
@@ -610,10 +612,10 @@ export function start (
             .on('end', function () {
               const buffer = Buffer.concat(data)
               config.storageAdapter
-                .put(ctx, payload.workspace, uuid(), buffer, contentType, buffer.length)
-                .then(async (objInfo) => {
+                .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
+                .then(async () => {
                   res.status(200).send({
-                    id: objInfo.objectName,
+                    id,
                     contentType,
                     size: buffer.length
                   })

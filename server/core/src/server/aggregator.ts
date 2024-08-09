@@ -357,8 +357,9 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
     // If the file is already stored in different provider, we need to remove it.
     if (stat !== undefined && stat.provider !== provider) {
-      const adapter = this.adapters.get(stat.provider)
-      await adapter?.remove(ctx, workspaceId, [stat._id])
+      // TODO temporary not needed
+      // const adapter = this.adapters.get(stat.provider)
+      // await adapter?.remove(ctx, workspaceId, [stat._id])
     }
 
     return result

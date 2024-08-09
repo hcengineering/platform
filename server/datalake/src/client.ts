@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, concatLink } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceId, concatLink } from '@hcengineering/core'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
 import { Readable } from 'stream'
@@ -54,8 +54,8 @@ export class Client {
     return `${this.endpoint}/blob/${objectName}`
   }
 
-  async getObject (ctx: MeasureContext, objectName: string): Promise<Readable> {
-    const path = `/blob/${objectName}`
+  async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
+    const path = `/blob/${workspace.name}/${objectName}`
     const url = concatLink(this.endpoint, path)
     const response = await fetch(url)
 
@@ -73,15 +73,17 @@ export class Client {
 
   async putObject (
     ctx: MeasureContext,
+    workspace: WorkspaceId,
     objectName: string,
     stream: Readable | Buffer | string,
     metadata: ObjectMetadata
   ): Promise<PutObjectOutput> {
-    const url = concatLink(this.endpoint, '/upload/form-data')
+    const path = `/upload/form-data/${workspace.name}`
+    const url = concatLink(this.endpoint, path)
 
     const form = new FormData()
     const options: FormData.AppendOptions = {
-      filename: metadata.name,
+      filename: objectName,
       contentType: metadata.type,
       knownLength: metadata.size,
       header: {

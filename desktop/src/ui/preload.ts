@@ -70,7 +70,9 @@ const expose: IPCMainExposed = {
               ...serverConfig,
               ...mainConfig,
               INITIAL_URL: openArg ?? '',
-              UPLOAD_URL: concatLink(mainConfig.FRONT_URL, serverConfig.UPLOAD_URL),
+              UPLOAD_URL: (serverConfig.UPLOAD_URL as string).includes('://')
+                ? serverConfig.UPLOAD_URL
+                : concatLink(mainConfig.FRONT_URL, serverConfig.UPLOAD_URL),
               MODEL_VERSION: mainConfig.MODEL_VERSION,
               VERSION: mainConfig.VERSION
             }

@@ -15,9 +15,10 @@
 
 import { concatLink, type Blob, type Ref } from '@hcengineering/core'
 import { PlatformError, Severity, Status, getMetadata } from '@hcengineering/platform'
+import { v4 as uuid } from 'uuid'
 
 import plugin from './plugin'
-import { getCurrentWorkspaceUrl } from './utils'
+import { decodeTokenPayload } from './utils'
 
 interface FileUploadError {
   key: string
@@ -38,9 +39,27 @@ function getFilesUrl (): string {
   const filesUrl = getMetadata(plugin.metadata.FilesURL) ?? defaultFilesUrl
   const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
 
-  return filesUrl.includes('://')
-    ? filesUrl
-    : concatLink(frontUrl, filesUrl)
+  return filesUrl.includes('://') ? filesUrl : concatLink(frontUrl, filesUrl)
+}
+
+export function getCurrentWorkspace (): string {
+  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').workspace
+}
+
+/**
+ * @public
+ */
+export function generateFileId (): string {
+  return uuid()
+}
+
+/**
+ * @public
+ */
+export function getUploadUrl (): string {
+  const template = getMetadata(plugin.metadata.UploadURL) ?? defaultUploadUrl
+
+  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
 }
 
 /**
@@ -53,8 +72,8 @@ export function getFileUrl (file: string, filename?: string): string {
 
   const template = getFilesUrl()
   return template
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceUrl()))
     .replaceAll(':filename', encodeURIComponent(filename ?? ''))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
     .replaceAll(':blobId', encodeURIComponent(file))
 }
 
@@ -62,14 +81,11 @@ export function getFileUrl (file: string, filename?: string): string {
  * @public
  */
 export async function uploadFile (file: File): Promise<Ref<Blob>> {
-  const uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? defaultUploadUrl
+  const uploadUrl = getUploadUrl()
 
-  if (uploadUrl === undefined) {
-    throw Error('UploadURL is not defined')
-  }
-
+  const id = generateFileId()
   const data = new FormData()
-  data.append('file', file)
+  data.append('file', file, id)
 
   const resp = await fetch(uploadUrl, {
     method: 'POST',
@@ -96,7 +112,7 @@ export async function uploadFile (file: File): Promise<Ref<Blob>> {
     throw Error(`Failed to upload file: ${result[0].error}`)
   }
 
-  return result[0].id as Ref<Blob>
+  return id as Ref<Blob>
 }
 
 /**
