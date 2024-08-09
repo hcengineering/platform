@@ -592,7 +592,7 @@ jobs:
           r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
           r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           r2-bucket: desktop-distro
-          source-dir: ${{ env.PublishTempFolder}}
+          source-dir: desktop-package/${{ env.PublishTempFolder}}
       - name: Publish distribution version
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
