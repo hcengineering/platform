@@ -15,7 +15,7 @@ import core, {
   Ref,
   TxOperations
 } from '@hcengineering/core'
-import github, { GithubAuthentication, GithubIntegration, makeQuery } from '@hcengineering/github'
+import github, { GithubAuthentication, makeQuery } from '@hcengineering/github'
 import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
 import { setMetadata } from '@hcengineering/platform'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -104,11 +104,6 @@ export class PlatformWorker {
     this.integrations = await this.integrationCollection.find({}).toArray()
     await this.queryInstallations(ctx)
 
-    const workspacesToCheck = new Set<string>()
-    // We need to delete local integrations not retrieved by queryInstallations()
-    for (const intValue of this.integrations) {
-      workspacesToCheck.add(intValue.workspace)
-    }
     for (const integr of [...this.integrations]) {
       // We need to check and remove integrations without a real integration's
       if (!this.installations.has(integr.installationId)) {
@@ -116,30 +111,10 @@ export class PlatformWorker {
           installationId: integr.installationId,
           workspace: integr.workspace
         })
+        await this.integrationCollection.deleteOne({ installationId: integr.installationId })
         this.integrations = this.integrations.filter((it) => it.installationId !== integr.installationId)
       }
     }
-
-    const checkClean = async (): Promise<void> => {
-      const rateLimit = new RateLimiter(10)
-      for (const workspace of workspacesToCheck) {
-        // We need to connect to workspace and verify all installations and clean if required
-        try {
-          await rateLimit.add(async () => {
-            ctx.info('check clean', { workspace })
-            try {
-              await this.cleanWorkspaceInstallations(ctx, workspace)
-            } catch (err: any) {
-              ctx.error('failed to check clean', { workspace })
-            }
-          })
-        } catch (err: any) {
-          ctx.error('failed to clean workspace', { err, workspace })
-        }
-      }
-      await rateLimit.waitProcessing()
-    }
-    void checkClean()
 
     void this.doSyncWorkspaces().catch((err) => {
       ctx.error('error during sync workspaces', { err })
@@ -181,6 +156,7 @@ export class PlatformWorker {
       }
       await new Promise<void>((resolve) => {
         this.triggerCheckWorkspaces = resolve
+        this.ctx.info('Workspaces check triggered')
         if (errors) {
           setTimeout(resolve, 5000)
         }
@@ -215,44 +191,6 @@ export class PlatformWorker {
 
   public async getUser (login: string): Promise<GithubUserRecord | undefined> {
     return (await this.usersCollection.find<GithubUserRecord>({ _id: login }).toArray()).shift()
-  }
-
-  async cleanWorkspaceInstallations (ctx: MeasureContext, workspace: string, installId?: number): Promise<void> {
-    // TODO: Do not remove record from $github if we failed to clean github installations inside workspace.
-    const token = generateToken(
-      config.SystemEmail,
-      {
-        name: workspace,
-        productId: config.ProductID
-      },
-      { mode: 'github' }
-    )
-    let workspaceInfo: ClientWorkspaceInfo
-    try {
-      workspaceInfo = await getWorkspaceInfo(token)
-    } catch (err: any) {
-      ctx.error('Workspace not found:', { workspace })
-      return
-    }
-    if (workspaceInfo === undefined) {
-      ctx.error('No workspace found', { workspace })
-      return
-    }
-    let client: Client | undefined
-    try {
-      client = await createPlatformClient(workspace, config.ProductID, 10000)
-      const ops = new TxOperations(client, core.account.System)
-
-      const wsIntegerations = await client.findAll(github.class.GithubIntegration, {})
-
-      for (const intValue of wsIntegerations) {
-        if (!this.installations.has(intValue.installationId) || intValue.installationId === installId) {
-          await ops.remove<GithubIntegration>(intValue)
-        }
-      }
-    } finally {
-      await client?.close()
-    }
   }
 
   async mapInstallation (
@@ -297,8 +235,6 @@ export class PlatformWorker {
         installation_id: installationId
       })
     }
-    // Clean workspace
-    await this.cleanWorkspaceInstallations(ctx, workspace, installationId)
     this.triggerCheckWorkspaces()
   }
 
@@ -679,6 +615,7 @@ export class PlatformWorker {
             index: widx,
             total: workspaces.length
           })
+
           const worker = await GithubWorker.create(
             this,
             workerCtx,
@@ -708,6 +645,12 @@ export class PlatformWorker {
             // No if no integration, we will try connect one more time in a time period
             this.clients.set(workspace, worker)
           } else {
+            workerCtx.info('Failed Register worker, timeout or integrations removed', {
+              workspaceId: workspaceInfo.workspaceId,
+              workspace: workspaceInfo.workspace,
+              index: widx,
+              total: workspaces.length
+            })
             errors++
           }
         } catch (e: any) {
@@ -729,7 +672,6 @@ export class PlatformWorker {
       const ws = this.clients.get(deleted)
       if (ws !== undefined) {
         try {
-          await ws.ctx.logger.close()
           this.ctx.info('workspace removed from tracking list', { workspace: deleted })
           this.clients.delete(deleted)
           await ws.close()

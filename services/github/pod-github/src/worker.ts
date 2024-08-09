@@ -1491,6 +1491,8 @@ export class GithubWorker implements IntegrationManager {
         reconnect(workspace.name, event)
       })
 
+      await GithubWorker.checkIntegrations(client, installations)
+
       const worker = new GithubWorker(
         ctx,
         platformWorker,
@@ -1508,6 +1510,17 @@ export class GithubWorker implements IntegrationManager {
     } catch (err: any) {
       ctx.error('timeout during to connect', { workspace, error: err })
       await client?.close()
+    }
+  }
+
+  static async checkIntegrations (client: Client, installations: Map<number, InstallationRecord>): Promise<void> {
+    const wsIntegerations = await client.findAll(github.class.GithubIntegration, {})
+
+    for (const intValue of wsIntegerations) {
+      if (!installations.has(intValue.installationId)) {
+        const ops = new TxOperations(client, core.account.System)
+        await ops.remove<GithubIntegration>(intValue)
+      }
     }
   }
 }
