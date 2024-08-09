@@ -287,33 +287,19 @@ class TSessionManager implements SessionManager {
         accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
     } catch (err: any) {
       this.updateConnectErrorInfo(token)
-      // No connection to account service, retry from client.
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 1000)
-      })
       return { error: err }
     }
 
     if (workspaceInfo === undefined) {
       this.updateConnectErrorInfo(token)
-      // No connection to account service, retry from client.
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 1000)
-      })
       return { upgrade: true }
     }
 
     if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 1000)
-      })
       // No access to workspace for token.
       return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
     }
     if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 5000)
-      })
       this.updateConnectErrorInfo(token)
       // No access to workspace for token.
       return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }

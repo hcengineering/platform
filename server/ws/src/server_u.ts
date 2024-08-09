@@ -29,6 +29,7 @@ import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSo
 import { Readable } from 'stream'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+import { unknownStatus } from '@hcengineering/platform'
 
 const rpcHandler = new RPCHandler()
 
@@ -139,13 +140,22 @@ export function startUWebsocketServer (
       if (data.session instanceof Promise) {
         void data.session.then((s) => {
           if ('error' in s) {
-            ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+            void cs
+              .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
+              .then(() => {
+                // No connection to account service, retry from client.
+                setTimeout(() => {
+                  cs.close()
+                }, 1000)
+              })
           }
           if ('upgrade' in s) {
             void cs
               .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
               .then(() => {
-                cs.close()
+                setTimeout(() => {
+                  cs.close()
+                }, 5000)
               })
           }
         })
