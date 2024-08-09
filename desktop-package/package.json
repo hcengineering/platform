@@ -54,6 +54,7 @@
       "publish": {
         "provider": "s3",
         "bucket": "desktop-distro",
+        "acl": null,
         "endpoint": "https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com",
         "channel": "latest"
       }
@@ -69,6 +70,7 @@
       "publish": {
         "provider": "s3",
         "bucket": "desktop-distro",
+        "acl": null,
         "endpoint": "https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com",
         "channel": "latest"
       }
@@ -84,6 +86,7 @@
       "publish": {
         "provider": "s3",
         "bucket": "desktop-distro",
+        "acl": null,
         "endpoint": "https://47fadbaa4ecbea9f3e8b7043a4584e27.r2.cloudflarestorage.com",
         "channel": "latest"
       }
