@@ -61,7 +61,7 @@ export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
       for (const uri of uris) {
         if (uri !== '') {
           const url = new URL(uri)
-
+          // TODO datalake support
           const _file = (url.searchParams.get('file') ?? '').split('/').join('')
 
           if (_file.trim().length === 0) {

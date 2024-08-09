@@ -42,6 +42,7 @@ export interface Workspace {
  */
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
+  workspaceId: string
   creating?: boolean
   createProgress?: number
 }

@@ -253,8 +253,12 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
   @withContext('aggregator-get', {})
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Readable> {
-    const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
-    return await provider.get(ctx, workspaceId, stat.storageId)
+    // const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
+    const provider = this.adapters.get(this.defaultAdapter)
+    if (provider === undefined) {
+      throw new NoSuchKeyError('No such provider found')
+    }
+    return await provider.get(ctx, workspaceId, name)
   }
 
   @withContext('find-provider', {})
@@ -353,11 +357,18 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
     // If the file is already stored in different provider, we need to remove it.
     if (stat !== undefined && stat.provider !== provider) {
-      const adapter = this.adapters.get(stat.provider)
-      await adapter?.remove(ctx, workspaceId, [stat._id])
+      // TODO temporary not needed
+      // const adapter = this.adapters.get(stat.provider)
+      // await adapter?.remove(ctx, workspaceId, [stat._id])
     }
 
     return result
+  }
+
+  @withContext('aggregator-getUrl', {})
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<string> {
+    const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
+    return await provider.getUrl(ctx, workspaceId, stat.storageId)
   }
 }
 

@@ -15,7 +15,7 @@
 
 import { type Blob, type Ref, generateId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import presentation, { getFileMetadata } from '@hcengineering/presentation'
+import presentation, { generateFileId, getFileMetadata, getUploadUrl } from '@hcengineering/presentation'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import type { FileUploadCallback, FileUploadOptions } from '@hcengineering/uploader'
 
@@ -72,14 +72,26 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
   }
 
   const uppy = new Uppy<UppyMeta, UppyBody>(uppyOptions).use(XHR, {
-    endpoint: getMetadata(presentation.metadata.UploadURL) ?? '',
+    endpoint: getUploadUrl(),
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
-    },
-    getResponseData: (body: string): UppyBody => {
-      return {
-        uuid: body
+    }
+    // getResponseData: (body: string): UppyBody => {
+    //   const data = JSON.parse(body)
+    //   return {
+    //     uuid: data[0].id
+    //   }
+    // }
+  })
+
+  uppy.addPreProcessor(async (fileIds: string[]) => {
+    for (const fileId of fileIds) {
+      const file = uppy.getFile(fileId)
+      if (file != null) {
+        const uuid = generateFileId()
+        file.meta.uuid = uuid
+        file.meta.name = uuid
       }
     }
   })
@@ -88,7 +100,7 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
     uppy.addPostProcessor(async (fileIds: string[]) => {
       for (const fileId of fileIds) {
         const file = uppy.getFile(fileId)
-        const uuid = file?.response?.body?.uuid as Ref<Blob>
+        const uuid = file.meta.uuid as Ref<Blob>
         if (uuid !== undefined) {
           const metadata = await getFileMetadata(file.data, uuid)
           await onFileUploaded(uuid, file.name, file.data, file.meta.relativePath, metadata)

@@ -18,9 +18,9 @@
 
   import presentation from '../plugin'
 
-  import { getPreviewType, previewTypes } from '../file'
+  import { getFileUrl } from '../file'
+  import { getPreviewType, previewTypes } from '../filetypes'
   import { BlobMetadata, FilePreviewExtension } from '../types'
-  import { getFileUrl } from '../utils'
 
   export let file: Ref<Blob>
   export let name: string

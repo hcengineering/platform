@@ -120,6 +120,7 @@ import { Analytics } from '@hcengineering/analytics'
 export interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
+  FILES_URL: string
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
@@ -284,6 +285,7 @@ export async function configurePlatform() {
   // tryOpenInDesktopApp(config.APP_PROTOCOL ?? 'huly://')
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
+  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
   setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)

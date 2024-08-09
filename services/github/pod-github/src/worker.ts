@@ -163,6 +163,7 @@ export class GithubWorker implements IntegrationManager {
     }
     const frontUrl = this.getBranding()?.front ?? config.FrontURL
     const refUrl = concatLink(frontUrl, `/browse/?workspace=${this.workspace.name}`)
+    // TODO storage URL
     const imageUrl = concatLink(frontUrl ?? config.FrontURL, `/files?workspace=${this.workspace.name}&file=`)
     const guestUrl = getPublicLinkUrl(this.workspace, frontUrl)
     const json = parseMessageMarkdown(text ?? '', refUrl, imageUrl, guestUrl)
@@ -177,6 +178,7 @@ export class GithubWorker implements IntegrationManager {
     return await markupToMarkdown(
       text ?? '',
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/browse/?workspace=${this.workspace.name}`),
+      // TODO storage URL
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/files?workspace=${this.workspace.name}&file=`),
       preprocessor
     )

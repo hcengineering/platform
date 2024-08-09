@@ -147,6 +147,10 @@ export class MemStorageAdapter implements StorageAdapter {
     // Partial are not supported by
     throw new Error('NoSuchKey')
   }
+
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    return '/files/' + objectName
+  }
 }
 
 export class MemRawDBAdapter implements RawDBAdapter {

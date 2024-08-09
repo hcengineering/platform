@@ -44,18 +44,17 @@ async function storageUpload (
   workspace: WorkspaceId,
   file: UploadedFile
 ): Promise<string> {
-  const id = uuid()
-
+  const uuid = file.name
   const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
     { workspace: workspace.name },
-    async (ctx) => await storageAdapter.put(ctx, workspace, id, data, file.mimetype, file.size),
+    async (ctx) => await storageAdapter.put(ctx, workspace, uuid, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
-  ctx.info('minio upload', resp)
-  return id
+  ctx.info('storage upload', resp)
+  return uuid
 }
 
 function getRange (range: string, size: number): [number, number] {
@@ -84,6 +83,7 @@ async function getFileRange (
   workspace: WorkspaceId,
   res: Response
 ): Promise<void> {
+  const uuid = stat._id
   const size: number = stat.size
 
   const [start, end] = getRange(range, size)
@@ -240,6 +240,7 @@ export function start (
     storageAdapter: StorageAdapter
     accountsUrl: string
     uploadUrl: string
+    filesUrl: string
     modelVersion: string
     version: string
     rekoniUrl: string
@@ -290,6 +291,7 @@ export function start (
     const data = {
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
+      FILES_URL: config.filesUrl,
       MODEL_VERSION: config.modelVersion,
       VERSION: config.version,
       REKONI_URL: config.rekoniUrl,
@@ -511,7 +513,12 @@ export function start (
           const payload = decodeToken(token)
           const uuid = await storageUpload(ctx, config.storageAdapter, payload.workspace, file)
 
-          res.status(200).send(uuid)
+          res.status(200).send([
+            {
+              key: 'file',
+              id: uuid
+            }
+          ])
         } catch (error: any) {
           ctx.error('error-post-files', error)
           res.status(500).send()
@@ -606,7 +613,7 @@ export function start (
               const buffer = Buffer.concat(data)
               config.storageAdapter
                 .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
-                .then(async (objInfo) => {
+                .then(async () => {
                   res.status(200).send({
                     id,
                     contentType,

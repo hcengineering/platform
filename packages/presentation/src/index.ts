@@ -51,6 +51,7 @@ export { default } from './plugin'
 export * from './types'
 export * from './utils'
 export * from './file'
+export * from './filetypes'
 export * from './drafts'
 export { presentationId }
 export * from './collaborator'

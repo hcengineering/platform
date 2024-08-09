@@ -232,6 +232,8 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
   productId: string
 
+  workspaceId: string
+
   creating?: boolean
   createProgress?: number
 }
@@ -610,6 +612,7 @@ export async function selectWorkspace (
       email,
       token,
       workspace: workspaceUrl,
+      workspaceId: workspaceInfo.workspace,
       productId,
       creating: workspaceInfo.creating,
       createProgress: workspaceInfo.createProgress
@@ -642,6 +645,7 @@ export async function selectWorkspace (
       email,
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
       workspace: workspaceUrl,
+      workspaceId: workspaceInfo.workspace,
       productId,
       creating: workspaceInfo.creating,
       createProgress: workspaceInfo.createProgress
@@ -664,6 +668,7 @@ export async function selectWorkspace (
           email,
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
           workspace: workspaceUrl,
+          workspaceId: workspaceInfo.workspace,
           productId,
           creating: workspaceInfo.creating,
           createProgress: workspaceInfo.createProgress
