@@ -15,8 +15,8 @@ import core, {
   Ref,
   TxOperations
 } from '@hcengineering/core'
-import github, { GithubAuthentication, makeQuery } from '@hcengineering/github'
-import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
+import github, { GithubAuthentication, makeQuery, type GithubIntegration } from '@hcengineering/github'
+import { getMongoClient, MongoClientReference } from '@hcengineering/mongo'
 import { setMetadata } from '@hcengineering/platform'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
@@ -199,9 +199,39 @@ export class PlatformWorker {
     installationId: number,
     accountId: Ref<Account>
   ): Promise<void> {
-    if (this.integrations.find((it) => it.installationId === installationId) != null) {
+    const oldInstallation = this.integrations.find((it) => it.installationId === installationId)
+    if (oldInstallation != null) {
+      ctx.info('update integration', { workspace, installationId, accountId })
       // What to do with installation in different workspace?
       // Let's remove it and sync to new one.
+      if (oldInstallation.workspace !== workspace) {
+        //
+        const oldWorkspace = oldInstallation.workspace
+
+        await this.integrationCollection.updateOne(
+          { installationId: oldInstallation.installationId },
+          { $set: { workspace } }
+        )
+        oldInstallation.workspace = workspace
+
+        const oldWorker = this.clients.get(oldWorkspace) as GithubWorker
+        if (oldWorker !== undefined) {
+          await this.removeInstallationFromWorkspace(oldWorker.client, installationId)
+          await oldWorker.reloadRepositories(installationId)
+        } else {
+          let client: Client | undefined
+          try {
+            client = await createPlatformClient(oldWorkspace, config.ProductID, 30000)
+            await this.removeInstallationFromWorkspace(oldWorker, installationId)
+            await client.close()
+          } catch (err: any) {
+            ctx.error('failed to remove old installation from workspace', { workspace: oldWorkspace, installationId })
+          }
+        }
+      }
+
+      await this.updateInstallation(installationId)
+
       const worker = this.clients.get(workspace) as GithubWorker
       await worker?.reloadRepositories(installationId)
       worker?.triggerUpdate()
@@ -214,7 +244,9 @@ export class PlatformWorker {
       installationId,
       accountId
     }
-    await ctx.withLog('add integration', { workspace, installationId, accountId }, async (ctx) => {
+    ctx.info('add integration', { workspace, installationId, accountId })
+
+    await ctx.with('add integration', { workspace, installationId, accountId }, async (ctx) => {
       await this.integrationCollection.insertOne(record)
       this.integrations.push(record)
     })
@@ -228,12 +260,43 @@ export class PlatformWorker {
     this.triggerCheckWorkspaces()
   }
 
+  private async removeInstallationFromWorkspace (client: Client, installationId: number): Promise<void> {
+    const wsIntegerations = await client.findAll(github.class.GithubIntegration, { installationId })
+
+    for (const intValue of wsIntegerations) {
+      const ops = new TxOperations(client, core.account.System)
+      await ops.remove<GithubIntegration>(intValue)
+    }
+  }
+
   async removeInstallation (ctx: MeasureContext, workspace: string, installationId: number): Promise<void> {
     const installation = this.installations.get(installationId)
     if (installation !== undefined) {
-      await installation.octokit.rest.apps.deleteInstallation({
-        installation_id: installationId
-      })
+      try {
+        await installation.octokit.rest.apps.deleteInstallation({
+          installation_id: installationId
+        })
+      } catch (err: any) {
+        if (err.status !== 404) {
+          // Already deleted.
+          ctx.error('error from github api', { error: err })
+        }
+        await this.handleInstallationEventDelete(installationId)
+      }
+      // Let's check if workspace somehow still have installation and remove it
+      const worker = this.clients.get(workspace) as GithubWorker
+      if (worker !== undefined) {
+        await GithubWorker.checkIntegrations(worker.client, this.installations)
+      } else {
+        let client: Client | undefined
+        try {
+          client = await createPlatformClient(workspace, config.ProductID, 30000)
+          await GithubWorker.checkIntegrations(client, this.installations)
+          await client.close()
+        } catch (err: any) {
+          ctx.error('failed to clean installation from workspace', { workspace, installationId })
+        }
+      }
     }
     this.triggerCheckWorkspaces()
   }
@@ -578,6 +641,12 @@ export class PlatformWorker {
     const rateLimiter = new RateLimiter(5)
     let errors = 0
     let idx = 0
+    const connecting = new Map<string, number>()
+    const connectingInfo = setInterval(() => {
+      for (const [c, d] of connecting.entries()) {
+        this.ctx.info('connecting to workspace', { workspace: c, time: Date.now() - d })
+      }
+    }, 5000)
     for (const workspace of workspaces) {
       const widx = ++idx
       if (this.clients.has(workspace)) {
@@ -607,8 +676,14 @@ export class PlatformWorker {
             errors++
             return
           }
+          if (workspaceInfo?.disabled === true) {
+            this.ctx.error('Workspace is disabled workspaceId', { workspace })
+            return
+          }
           const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
           const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.workspace }, {})
+
+          connecting.set(workspaceInfo.workspace, Date.now())
           workerCtx.info('************************* Register worker ************************* ', {
             workspaceId: workspaceInfo.workspaceId,
             workspace: workspaceInfo.workspace,
@@ -658,6 +733,8 @@ export class PlatformWorker {
           this.ctx.info("Couldn't create WS worker", { workspace, error: e })
           console.error(e)
           errors++
+        } finally {
+          connecting.delete(workspaceInfo.workspace)
         }
       })
     }
@@ -667,6 +744,7 @@ export class PlatformWorker {
       Analytics.handleError(e)
       errors++
     }
+    clearInterval(connectingInfo)
     // Close deleted workspaces
     for (const deleted of Array.from(toDelete.keys())) {
       const ws = this.clients.get(deleted)
