@@ -579,14 +579,24 @@ function getExtra (info: Account | AccountInfo | null, rec?: Record<string, any>
 
 export const guestAccountEmail = '#guest@hc.engineering'
 
+const failedEmails = new Set()
+
 function decodeToken (ctx: MeasureContext, token: string): Token {
   // eslint-disable-next-line no-useless-catch
   try {
     return decodeTokenRaw(token)
   } catch (err: any) {
     try {
-      // Ok we have error, but we need to log a proper message
-      ctx.warn('failed to verify token', { ...decodeTokenRaw(token, false) })
+      const decode = decodeTokenRaw(token, false)
+      const has = failedEmails.has(decode.email)
+      if (!has) {
+        failedEmails.add(decode.email)
+        // Ok we have error, but we need to log a proper message
+        ctx.warn('failed to verify token', { ...decode })
+      }
+      if (failedEmails.size > 1000) {
+        failedEmails.clear()
+      }
     } catch (err2: any) {
       // Ignore
     }
