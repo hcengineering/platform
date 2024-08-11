@@ -230,7 +230,10 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 
   async estimatedCount (domain: Domain): Promise<number> {
-    const c = this.collection(domain)
-    return await c.estimatedDocumentCount()
+    if (this.exists(domain)) {
+      const c = this.collection(domain)
+      return await c.estimatedDocumentCount()
+    }
+    return 0
   }
 }
