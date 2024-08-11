@@ -174,6 +174,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
         }
       }
     } catch (err: any) {
+      ctx.error('error during domain collections/indexes check', { domain, error: err })
       Analytics.handleError(err)
     }
 

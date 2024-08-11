@@ -16,7 +16,7 @@ const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.tr
 const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as Tx[]
 
 configureAnalytics(process.env.SENTRY_DSN, {})
-Analytics.setTag('application', 'transactor')
+Analytics.setTag('application', 'account')
 
 const metricsContext = new MeasureMetricsContext(
   'account',
