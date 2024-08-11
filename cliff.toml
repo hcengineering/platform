@@ -9,22 +9,21 @@
 # template for the changelog footer
 header = """
 # Changelog\n
-All notable changes to this project will be documented in this file.\n
+Changelog.\n
 """
 # template for the changelog body
 # https://keats.github.io/tera/docs/#introduction
 body = """
 {% if version %}\
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}\n
 {% else %}\
-    ## [unreleased]
+    ## [unreleased]\n
 {% endif %}\
-{% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group | striptags | trim | upper_first }}
-    {% for commit in commits %}
-        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}\
+    {% for commit in commits %}\
+        * {{ group | striptags | trim | upper }}: {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
             {% if commit.breaking %}[**breaking**] {% endif %}\
-            {{ commit.message | upper_first }}\
+            {{ commit.message | trim | upper_first }}\
     {% endfor %}
 {% endfor %}\n
 """
