@@ -65,7 +65,7 @@ import {
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { decodeToken, generateToken } from '@hcengineering/server-token'
+import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hcengineering/server-token'
 import toolPlugin, {
   connect,
   initializeWorkspace,
@@ -398,7 +398,7 @@ export async function getAccountInfoByToken (
   let email: string = ''
   let workspace: WorkspaceId
   try {
-    ;({ email, workspace } = decodeToken(token))
+    ;({ email, workspace } = decodeToken(ctx, token))
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('Invalid token', { token })
@@ -579,6 +579,21 @@ function getExtra (info: Account | AccountInfo | null, rec?: Record<string, any>
 
 export const guestAccountEmail = '#guest@hc.engineering'
 
+function decodeToken (ctx: MeasureContext, token: string): Token {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    return decodeTokenRaw(token)
+  } catch (err: any) {
+    try {
+      // Ok we have error, but we need to log a proper message
+      ctx.warn('failed to verify token', { ...decodeTokenRaw(token, false) })
+    } catch (err2: any) {
+      // Ignore
+    }
+    throw err
+  }
+}
+
 /**
  * @public
  */
@@ -592,7 +607,7 @@ export async function selectWorkspace (
   kind: 'external' | 'internal',
   allowAdmin: boolean = true
 ): Promise<WorkspaceLoginInfo> {
-  const decodedToken = decodeToken(token)
+  const decodedToken = decodeToken(ctx, token)
   const email = cleanEmail(decodedToken.email)
 
   const endpointKind = kind === 'external' ? EndpointKind.External : EndpointKind.Internal
@@ -776,7 +791,7 @@ export async function confirm (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
-  const decode = decodeToken(token)
+  const decode = decodeToken(ctx, token)
   const _email = decode.extra?.confirm
   if (_email === undefined) {
     ctx.error('confirm email invalid', { token: decode })
@@ -1010,7 +1025,7 @@ export async function listWorkspaces (
   branding: Branding | null,
   token: string
 ): Promise<WorkspaceInfo[]> {
-  decodeToken(token) // Just verify token is valid
+  decodeToken(ctx, token) // Just verify token is valid
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)
@@ -1447,7 +1462,7 @@ export const createUserWorkspace =
       token: string,
       workspaceName: string
     ): Promise<LoginInfo> => {
-      const { email } = decodeToken(token)
+      const { email } = decodeToken(ctx, token)
 
       ctx.info('Creating workspace', { workspaceName, email })
 
@@ -1567,7 +1582,7 @@ export async function getInviteLink (
   role?: AccountRole,
   personId?: Ref<Person>
 ): Promise<ObjectId> {
-  const { workspace, email } = decodeToken(token)
+  const { workspace, email } = decodeToken(ctx, token)
   const wsPromise = await getWorkspaceById(db, productId, workspace.name)
   if (wsPromise === null) {
     ctx.error('workspace not found', { workspace, email })
@@ -1620,7 +1635,7 @@ export async function getUserWorkspaces (
   branding: Branding | null,
   token: string
 ): Promise<ClientWorkspaceInfo[]> {
-  const { email } = decodeToken(token)
+  const { email } = decodeToken(ctx, token)
   const account = await getAccount(db, email)
   if (account === null) {
     ctx.error('account not found', { email })
@@ -1648,7 +1663,7 @@ export async function getWorkspaceInfo (
   token: string,
   _updateLastVisit: boolean = false
 ): Promise<ClientWorkspaceInfo> {
-  const { email, workspace, extra } = decodeToken(token)
+  const { email, workspace, extra } = decodeToken(ctx, token)
   const guest = extra?.guest === 'true'
   let account: Pick<Account, 'admin' | 'workspaces'> | Account | null = null
   const query: Filter<Workspace> = {
@@ -1772,7 +1787,7 @@ export async function createMissingEmployee (
   branding: Branding | null,
   token: string
 ): Promise<void> {
-  const { email } = decodeToken(token)
+  const { email } = decodeToken(ctx, token)
   const wsInfo = await getWorkspaceInfo(ctx, db, productId, branding, token)
   const account = await getAccount(db, email)
 
@@ -2020,7 +2035,7 @@ export async function changePassword (
   oldPassword: string,
   password: string
 ): Promise<void> {
-  const { email } = decodeToken(token)
+  const { email } = decodeToken(ctx, token)
   const account = await getAccountInfo(ctx, db, productId, branding, email, oldPassword)
 
   const salt = randomBytes(32)
@@ -2121,7 +2136,7 @@ export async function restorePassword (
   token: string,
   password: string
 ): Promise<LoginInfo> {
-  const decode = decodeToken(token)
+  const decode = decodeToken(ctx, token)
   const email = decode.extra?.restore
   if (email === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -2180,7 +2195,7 @@ export async function checkJoin (
   token: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
-  const { email } = decodeToken(token)
+  const { email } = decodeToken(ctx, token)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(ctx, invite, email)
   const ws = await getWorkspaceById(db, productId, workspace.name)
@@ -2283,7 +2298,7 @@ export async function leaveWorkspace (
   token: string,
   email: string
 ): Promise<void> {
-  const tokenData = decodeToken(token)
+  const tokenData = decodeToken(ctx, token)
 
   const currentAccount = await getAccount(db, tokenData.email)
   if (currentAccount === null) {
@@ -2324,7 +2339,7 @@ export async function sendInvite (
   personId?: Ref<Person>,
   role?: AccountRole
 ): Promise<void> {
-  const tokenData = decodeToken(token)
+  const tokenData = decodeToken(ctx, token)
   const currentAccount = await getAccount(db, tokenData.email)
   if (currentAccount === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: tokenData.email }))
@@ -2449,6 +2464,13 @@ function wrap (
           err instanceof PlatformError
             ? err.status
             : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+
+        if (((err.message as string) ?? '') === 'Signature verification failed') {
+          // Let's send un authorized
+          return {
+            error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+          }
+        }
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
           ctx.error('error', { status, err })
@@ -2617,7 +2639,7 @@ export async function changeUsername (
   first: string,
   last: string
 ): Promise<void> {
-  const { email } = decodeToken(token)
+  const { email } = decodeToken(ctx, token)
   const account = await getAccount(db, email)
 
   if (account == null) {

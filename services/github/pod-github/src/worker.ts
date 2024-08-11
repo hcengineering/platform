@@ -624,7 +624,7 @@ export class GithubWorker implements IntegrationManager {
     return statuses.filter((it) => allowedTypes.has(it._id))
   }
 
-  async init (): Promise<boolean> {
+  async init (): Promise<void> {
     this.registerNotifyHandler()
 
     await this.queryAccounts()
@@ -692,7 +692,6 @@ export class GithubWorker implements IntegrationManager {
     this.triggerRequests = 1
     this.updateRequests = 1
     this.syncPromise = this.syncAndWait()
-    return true
   }
 
   projects: GithubProject[] = []
@@ -1504,9 +1503,8 @@ export class GithubWorker implements IntegrationManager {
         branding
       )
       ctx.info('Init worker', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
-      if (await worker.init()) {
-        return worker
-      }
+      void worker.init()
+      return worker
     } catch (err: any) {
       ctx.error('timeout during to connect', { workspace, error: err })
       await client?.close()

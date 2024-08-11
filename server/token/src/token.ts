@@ -26,8 +26,8 @@ export function generateToken (email: string, workspace: WorkspaceId, extra?: Re
 /**
  * @public
  */
-export function decodeToken (token: string): Token {
-  const value = decode(token, getSecret(), false)
+export function decodeToken (token: string, verify: boolean = true): Token {
+  const value = decode(token, getSecret(), !verify)
   const { email, workspace, productId, ...extra } = value
   return { email, workspace: getWorkspaceId(workspace, productId), extra }
 }

@@ -73,13 +73,12 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/api/v1/installation', async (req, res) => {
+    const payloadData: {
+      installationId: number
+      accountId: Ref<Account>
+      token: string
+    } = req.body
     try {
-      const payloadData: {
-        installationId: number
-        accountId: Ref<Account>
-        token: string
-      } = req.body
-
       const decodedToken = decodeToken(payloadData.token)
       ctx.info('/api/v1/installation', {
         email: decodedToken.email,
@@ -87,6 +86,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
         body: req.body
       })
 
+      ctx.info('map-installation', {
+        workspace: decodedToken.workspace.name,
+        installationid: payloadData.installationId
+      })
       await ctx.withLog('map-installation', {}, async (ctx) => {
         await worker.mapInstallation(
           ctx,
@@ -99,6 +102,12 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       res.json({})
     } catch (err: any) {
       Analytics.handleError(err)
+      const tok = decodeToken(payloadData.token, false)
+      ctx.error('failed to map-installation', {
+        workspace: tok.workspace?.name,
+        installationid: payloadData.installationId,
+        email: tok?.email
+      })
       res.status(401)
       res.json({ error: err.message })
     }
@@ -121,7 +130,12 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       } = JSON.parse(atob(payloadData.state))
 
       const decodedToken = decodeToken(decodedData.token)
-
+      ctx.info('request github access-token', {
+        workspace: decodedToken.workspace.name,
+        accountId: payloadData.accountId,
+        code: payloadData.code,
+        state: payloadData.state
+      })
       await ctx.withLog('request-github-access-token', {}, async (ctx) => {
         await worker.requestGithubAccessToken({
           workspace: decodedToken.workspace.name,
@@ -154,7 +168,11 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
         body: req.body
       })
 
-      await ctx.withLog('map-installation', {}, async (ctx) => {
+      ctx.info('remove-installation', {
+        workspace: decodedToken.workspace.name,
+        installationId: payloadData.installationId
+      })
+      await ctx.withLog('remove-installation', {}, async (ctx) => {
         await worker.removeInstallation(ctx, decodedToken.workspace.name, payloadData.installationId)
       })
       res.status(200)

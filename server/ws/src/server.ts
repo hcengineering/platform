@@ -316,7 +316,9 @@ class TSessionManager implements SessionManager {
     ) {
       ctx.warn('model version mismatch', {
         version: this.modelVersion,
-        workspaceVersion: versionToString(workspaceInfo.version)
+        workspaceVersion: versionToString(workspaceInfo.version),
+        workspace: workspaceInfo.workspaceId,
+        workspaceUrl: workspaceInfo.workspaceUrl
       })
       // Version mismatch, return upgrading.
       return { upgrade: true, upgradeInfo: workspaceInfo.upgrade }
