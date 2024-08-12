@@ -18,14 +18,16 @@
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
   import { Account, Doc, DocumentQuery, Ref, Space, generateId } from '@hcengineering/core'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
-  import { Component, Issue } from '@hcengineering/tracker'
+  import { Component, Issue, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
+  import { Analytics } from '@hcengineering/analytics'
   import { createEventDispatcher } from 'svelte'
   import { get } from 'svelte/store'
+
   import tracker from '../../plugin'
   import { getPreviousAssignees } from '../../utils'
 
-  type AssigneeObject = (Doc | any) & Pick<Issue, 'space' | 'component' | 'assignee'>
+  type AssigneeObject = (Doc | any) & Pick<Issue, 'space' | 'component' | 'assignee' | 'identifier'>
 
   export let object: AssigneeObject | AssigneeObject[] | undefined = undefined
   export let value: AssigneeObject | AssigneeObject[] | undefined = undefined
@@ -61,11 +63,13 @@
     if (Array.isArray(_object)) {
       for (const p of _object) {
         if ('_class' in p) {
+          Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: p.identifier ?? p._id })
           await ops.update(p, { assignee: newAssignee })
         }
       }
     } else {
       if ('_class' in _object) {
+        Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: _object.identifier ?? _object._id })
         await ops.update(_object, { assignee: newAssignee })
       }
     }

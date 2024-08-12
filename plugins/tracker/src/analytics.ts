@@ -1,13 +1,26 @@
 export enum TrackerEvents {
-  ClickAddIssuePlusButton = 'tracker.ClickAddIssuePlusButton',
-  ClickNewIssueButton = 'tracker.ClickNewIssueButton',
-  ClickCreateIssueGlobal = 'tracker.ClickCreateIssueGlobal',
-  CallNewIssueBinding = 'tracker.CallNewIssueBinding',
+  IssuePlusButtonClicked = 'tracker.issue.PlusButtonClicked',
+  NewIssueButtonClicked = 'tracker.issue.NewIssueButtonClicked',
+  IssueCreateFromGlobalActionCalled = 'tracker.issue.CreateFromGlobalActionCalled',
+  NewIssueBindingCalled = 'tracker.issue.NewIssueBindingCalled',
 
-  CreateIssue = 'tracker.CreateIssue',
-  DeleteIssue = 'tracker.DeleteIssue',
+  IssueCreated = 'tracker.issue.Created',
+  IssueDeleted = 'tracker.issue.Deleted',
 
-  CreateProject = 'tracker.CreateProject',
-  DeleteProject = 'tracker.DeleteProject',
-  ArchiveProject = 'tracker.ArchiveProject'
+  IssueSetStatus = 'tracker.issue.SetStatus',
+  IssueSetPriority = 'tracker.issue.SetPriority',
+  IssueSetAssignee = 'tracker.issue.SetAssignee',
+  IssueSetDueDate = 'tracker.issue.SetDueDate',
+  IssueSetEstimate = 'tracker.issue.SetEstimate',
+  IssueTimeSpentAdded = 'tracker.issue.TimeSpentAdded',
+  IssueTimeSpentUpdated = 'tracker.issue.TimeSpentUpdated',
+  IssueTitleUpdated = 'tracker.issue.TitleUpdated',
+  IssueDescriptionUpdated = 'tracker.issue.DescriptionUpdated',
+
+  IssueComponentAdded = 'tracker.issue.ComponentAdded',
+  IssueMilestoneAdded = 'tracker.issue.MilestoneAdded',
+
+  ProjectCreated = 'tracker.project.Created',
+  ProjectDeleted = 'tracker.project.Deleted',
+  ProjectArchived = 'tracker.project.Archived'
 }

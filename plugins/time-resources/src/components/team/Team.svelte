@@ -37,8 +37,9 @@
   import Calendar from './calendar/Calendar.svelte'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
-  import calendar from '@hcengineering/calendar'
+  import { Analytics } from '@hcengineering/analytics'
   import tracker, { Project as Proj } from '@hcengineering/tracker'
+  import { TimeEvents } from '@hcengineering/time'
 
   const client = getClient()
 
@@ -74,6 +75,8 @@
 
   function changeMode (_mode: string): void {
     mode = _mode
+
+    Analytics.handleEvent(TimeEvents.TeamOpenTab, { tab: _mode })
   }
 
   const config: Array<[string, IntlString, object]> = [

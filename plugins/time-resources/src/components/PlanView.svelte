@@ -28,6 +28,8 @@
   import { timeSeparators } from '../utils'
   import { dragging } from '../dragging'
   import time from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
+  import { TimeEvents } from '@hcengineering/time'
 
   const dispatch = createEventDispatcher()
 
@@ -67,6 +69,7 @@
       visibility: doc.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: []
     })
+    Analytics.handleEvent(TimeEvents.ToDoScheduled, { id: doc._id })
   }
 
   defineSeparators('time', timeSeparators)

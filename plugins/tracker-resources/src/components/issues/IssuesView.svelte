@@ -83,7 +83,7 @@
     {viewOptions}
     createItemDialog={CreateIssue}
     createItemLabel={tracker.string.AddIssueTooltip}
-    createItemEvent={TrackerEvents.ClickAddIssuePlusButton}
+    createItemEvent={TrackerEvents.IssuePlusButtonClicked}
     createItemDialogProps={{ shouldSaveDraft: true }}
   />
 {/if}

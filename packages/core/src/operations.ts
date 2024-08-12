@@ -26,6 +26,7 @@ import type {
   WithLookup
 } from './storage'
 import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } from './tx'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -541,7 +542,8 @@ export async function updateAttribute (
   _class: Ref<Class<Doc>>,
   attribute: { key: string, attr: AnyAttribute },
   value: any,
-  saveModified: boolean = false
+  saveModified: boolean = false,
+  analyticsProps: Record<string, any> = {}
 ): Promise<void> {
   const doc = object
   const attributeKey = attribute.key
@@ -549,6 +551,13 @@ export async function updateAttribute (
   const modifiedOn = saveModified ? doc.modifiedOn : Date.now()
   const modifiedBy = attribute.key === 'modifiedBy' ? value : saveModified ? doc.modifiedBy : undefined
   const attr = attribute.attr
+
+  const baseAnalyticsProps = {
+    objectClass: _class,
+    objectId: object._id,
+    attribute: attributeKey,
+    ...analyticsProps
+  }
   if (client.getHierarchy().isMixin(attr.attributeOf)) {
     await client.updateMixin(
       doc._id,
@@ -559,6 +568,7 @@ export async function updateAttribute (
       modifiedOn,
       modifiedBy
     )
+    Analytics.handleEvent('ChangeAttribute', { ...baseAnalyticsProps, value })
   } else {
     if (client.getHierarchy().isDerived(attribute.attr.type._class, core.class.ArrOf)) {
       const oldValue: any[] = (object as any)[attributeKey] ?? []
@@ -568,6 +578,10 @@ export async function updateAttribute (
       const toPush = val.filter((it) => !oldValue.includes(it))
       if (toPull.length > 0) {
         await client.update(object, { $pull: { [attributeKey]: { $in: toPull } } }, false, modifiedOn, modifiedBy)
+        Analytics.handleEvent('RemoveCollectionItems', {
+          ...baseAnalyticsProps,
+          removed: toPull
+        })
       }
       if (toPush.length > 0) {
         await client.update(
@@ -577,9 +591,17 @@ export async function updateAttribute (
           modifiedOn,
           modifiedBy
         )
+        Analytics.handleEvent('AddCollectionItems', {
+          ...baseAnalyticsProps,
+          added: toPush
+        })
       }
     } else {
       await client.update(object, { [attributeKey]: value }, false, modifiedOn, modifiedBy)
+      Analytics.handleEvent('SetCollectionItems', {
+        ...baseAnalyticsProps,
+        value
+      })
     }
   }
 }

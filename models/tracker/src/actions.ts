@@ -124,7 +124,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'edit'
       },
-      analyticsEvent: TrackerEvents.ArchiveProject,
+      analyticsEvent: TrackerEvents.ProjectArchived,
       override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProject
@@ -146,7 +146,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'edit'
       },
-      analyticsEvent: TrackerEvents.DeleteProject,
+      analyticsEvent: TrackerEvents.ProjectDeleted,
       override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProjectClean
@@ -190,7 +190,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       },
       visibilityTester: view.function.CanDeleteObject,
       override: [view.action.Delete],
-      analyticsEvent: TrackerEvents.DeleteIssue
+      analyticsEvent: TrackerEvents.IssueDeleted
     },
     tracker.action.DeleteIssue
   )
@@ -222,7 +222,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         group: 'create'
       },
       override: [tracker.action.NewIssueGlobal],
-      analyticsEvent: TrackerEvents.CallNewIssueBinding
+      analyticsEvent: TrackerEvents.NewIssueBindingCalled
     },
     tracker.action.NewIssue
   )
@@ -244,7 +244,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: [],
         group: 'create'
       },
-      analyticsEvent: TrackerEvents.ClickCreateIssueGlobal
+      analyticsEvent: TrackerEvents.IssueCreateFromGlobalActionCalled
     },
     tracker.action.NewIssueGlobal
   )

@@ -28,6 +28,7 @@
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
+  import { GmailEvents } from '@hcengineering/gmail'
   import plugin from '../plugin'
 
   export let object: Contact
@@ -81,6 +82,7 @@
       },
       objectId
     )
+    Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
     await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
     objectId = generateId()
     dispatch('close')

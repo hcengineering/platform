@@ -39,7 +39,7 @@
   )
   async function newIssue (): Promise<void> {
     closed = false
-    Analytics.handleEvent(TrackerEvents.ClickNewIssueButton)
+    Analytics.handleEvent(TrackerEvents.NewIssueButtonClicked)
     showPopup(CreateIssue, { space: currentSpace, shouldSaveDraft: true }, 'top', () => {
       closed = true
     })

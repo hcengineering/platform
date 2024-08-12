@@ -10,12 +10,19 @@ import core, {
 } from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { type InitialKnowledge, type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
+import {
+  type InitialKnowledge,
+  type TagCategory,
+  type TagElement,
+  type TagReference,
+  TagsEvents
+} from '@hcengineering/tags'
 import { type ColorDefinition, getColorNumberByText } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { writable } from 'svelte/store'
 import tags from './plugin'
+import { Analytics } from '@hcengineering/analytics'
 
 export function getTagStyle (color: ColorDefinition, selected = false): string {
   return `
@@ -77,7 +84,8 @@ export async function createTagElement (
   targetClass: Ref<Class<Doc>>,
   category?: Ref<TagCategory> | null,
   description?: string | null,
-  color?: number | null
+  color?: number | null,
+  keyTitle?: string
 ): Promise<Ref<TagElement>> {
   const tagElement: Data<TagElement> = {
     title,
@@ -88,5 +96,7 @@ export async function createTagElement (
   }
 
   const client = getClient()
-  return await client.createDoc<TagElement>(tags.class.TagElement, core.space.Workspace, tagElement)
+  const ref = await client.createDoc<TagElement>(tags.class.TagElement, core.space.Workspace, tagElement)
+  Analytics.handleEvent(TagsEvents.TagCreated, { key: keyTitle, id: ref })
+  return ref
 }

@@ -21,6 +21,7 @@ import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 import type { Applicant, ApplicantMatch, Candidate, Opinion, Review, Vacancy, VacancyList } from './types'
 
 export * from './types'
+export * from './analytics'
 
 /**
  * @public

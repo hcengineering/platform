@@ -236,7 +236,7 @@
       isSaving = true
       await ops.createDoc(tracker.class.Project, core.space.Space, { ...projectData, type: typeId }, projectId)
       const succeeded = await ops.commit()
-      Analytics.handleEvent(TrackerEvents.CreateProject, {
+      Analytics.handleEvent(TrackerEvents.ProjectCreated, {
         ok: succeeded.result,
         id: projectData.identifier
       })

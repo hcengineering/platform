@@ -16,7 +16,8 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, IssueTemplate, Milestone, Project } from '@hcengineering/tracker'
+  import { Issue, IssueTemplate, Milestone, Project, TrackerEvents } from '@hcengineering/tracker'
+  import { Analytics } from '@hcengineering/analytics'
   import {
     ButtonKind,
     ButtonShape,
@@ -58,10 +59,18 @@
       await Promise.all(
         value.map(async (p) => {
           await client.update(p, { milestone: newMilestoneId })
+          Analytics.handleEvent(TrackerEvents.IssueMilestoneAdded, {
+            issue: p.identifier ?? p._id,
+            component: newMilestoneId
+          })
         })
       )
     } else {
       await client.update(value, { milestone: newMilestoneId })
+      Analytics.handleEvent(TrackerEvents.IssueMilestoneAdded, {
+        issue: (value as Issue).identifier ?? value._id,
+        component: newMilestoneId
+      })
     }
     if (isAction) dispatch('close')
   }

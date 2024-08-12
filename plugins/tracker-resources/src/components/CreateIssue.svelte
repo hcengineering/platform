@@ -564,7 +564,7 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
-      Analytics.handleEvent(TrackerEvents.CreateIssue, {
+      Analytics.handleEvent(TrackerEvents.IssueCreated, {
         ok: true,
         id: value.identifier,
         project: currentProject.identifier
@@ -575,7 +575,7 @@
       draftController.remove()
       descriptionBox?.removeDraft(false)
       console.error(err)
-      Analytics.handleEvent(TrackerEvents.CreateIssue, { ok: false, project: currentProject.identifier })
+      Analytics.handleEvent(TrackerEvents.IssueCreated, { ok: false, project: currentProject.identifier })
       Analytics.handleError(err)
     }
   }

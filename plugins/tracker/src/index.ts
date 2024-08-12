@@ -45,6 +45,8 @@ import {
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
+export * from './analytics'
+
 /**
  * @public
  */

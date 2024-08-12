@@ -43,8 +43,6 @@ export const Analytics = {
   },
 
   handleEvent (event: string, params: Record<string, any> = {}): void {
-    //TODO: remove me
-    console.log(event, params)
     providers.forEach((provider) => {
       provider.handleEvent(event, params)
     })

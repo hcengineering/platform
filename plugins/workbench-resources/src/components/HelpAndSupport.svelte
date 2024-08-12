@@ -37,6 +37,8 @@
   import RightArrowIcon from './icons/Collapsed.svelte'
   import DocumentationIcon from './icons/Documentation.svelte'
   import KeyboardIcon from './icons/Keyboard.svelte'
+  import { WorkbenchEvents } from '@hcengineering/workbench'
+  import { Analytics } from '@hcengineering/analytics'
 
   let shortcuts = false
   let actions: Action[] = []
@@ -94,6 +96,7 @@
       description: workbench.string.OpenPlatformGuide,
       onClick: () => {
         window.open(docsLink, '_blank')
+        Analytics.handleEvent(WorkbenchEvents.DocumentationOpened)
       }
     },
     {
@@ -108,6 +111,7 @@
       description: workbench.string.HowToWorkFaster,
       onClick: () => {
         shortcuts = true
+        Analytics.handleEvent(WorkbenchEvents.KeyboardShortcutsOpened)
       }
     }
   ]
