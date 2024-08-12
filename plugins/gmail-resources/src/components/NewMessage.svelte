@@ -18,7 +18,7 @@
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import core, { Data, Markup, generateId } from '@hcengineering/core'
-  import { NewMessage, SharedMessage } from '@hcengineering/gmail'
+  import { NewMessage, SharedMessage, GmailEvents } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -28,8 +28,7 @@
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { GmailEvents } from '@hcengineering/gmail'
-  import plugin from '../plugin'
+    import plugin from '../plugin'
 
   export let object: Contact
   export let channel: Channel
