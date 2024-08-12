@@ -741,6 +741,7 @@
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
   hideSubheader={parentIssue == null}
+  headerNoPadding
   noFade={true}
   on:changeContent
 >
@@ -778,11 +779,16 @@
     <DocCreateExtComponent manager={docCreateManager} kind={'header'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <div class="flex-row-center gap-2">
-      <div>
+    <div class="flex-row-center gap-2 pt-1 pb-1 pr-1">
+      <span class="overflow-label">
         <Label {label} />
-      </div>
-      <TaskKindSelector projectType={currentProject?.type} bind:value={kind} baseClass={tracker.class.Issue} />
+      </span>
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        bind:value={kind}
+        baseClass={tracker.class.Issue}
+        size={'small'}
+      />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />

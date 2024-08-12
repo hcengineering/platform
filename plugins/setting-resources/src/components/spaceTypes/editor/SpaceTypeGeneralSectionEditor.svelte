@@ -85,7 +85,7 @@
   <div class="hulyComponent-content__column-group">
     <div class="hulyComponent-content__header">
       <div class="flex gap-1">
-        <ButtonIcon icon={descriptor.icon} size={'large'} kind={'secondary'} />
+        <ButtonIcon icon={descriptor.icon} size={'large'} kind={'secondary'} dataId={'btnSelectIcon'} />
         <ModernEditbox
           kind="ghost"
           size="large"

@@ -147,6 +147,7 @@
                     iconProps={{ value: taskType }}
                     size={'large'}
                     kind={'secondary'}
+                    dataId={'btnSelectIcon'}
                     disabled={readonly}
                     on:click={selectIcon}
                   />
