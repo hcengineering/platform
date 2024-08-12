@@ -513,7 +513,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
-    presenter: view.component.CollaborativeDocActivityPresenter
+    presenter: view.component.MarkupDiffPresenter
   })
 
   builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {
