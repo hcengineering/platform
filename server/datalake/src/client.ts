@@ -46,9 +46,7 @@ type BlobUploadResult = BlobUploadSuccess | BlobUploadError
 
 /** @public */
 export class Client {
-  constructor (
-    private readonly endpoint: string
-  ) {}
+  constructor (private readonly endpoint: string) {}
 
   getObjectUrl (ctx: MeasureContext, objectName: string): string {
     return `${this.endpoint}/blob/${objectName}`
@@ -101,7 +99,7 @@ export class Client {
       throw new Error('HTTP error ' + response.status)
     }
 
-    const result = await response.json() as BlobUploadResult[]
+    const result = (await response.json()) as BlobUploadResult[]
     if (result.length !== 1) {
       ctx.error('bad datalake response', { objectName, result })
       throw new Error('Bad datalake response')

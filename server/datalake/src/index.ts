@@ -13,12 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  withContext,
-  type Blob,
-  type MeasureContext,
-  type WorkspaceId
-} from '@hcengineering/core'
+import { withContext, type Blob, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
 
 import {
   type BlobStorageIterator,

@@ -16,7 +16,6 @@
 import { Client, type BucketItem, type BucketStream } from 'minio'
 
 import core, {
-  concatLink,
   toWorkspaceString,
   withContext,
   type Blob,
@@ -368,9 +367,7 @@ export class MinioService implements StorageAdapter {
   @withContext('getUrl')
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
     const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
-    return filesUrl
-      .replaceAll(':workspace', workspaceId.name)
-      .replaceAll(':blobId', objectName)
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
   }
 }
 

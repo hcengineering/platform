@@ -17,7 +17,6 @@ import { CopyObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 
 import core, {
-  concatLink,
   toWorkspaceString,
   withContext,
   type Blob,
@@ -438,9 +437,7 @@ export class S3Service implements StorageAdapter {
   @withContext('getUrl')
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
     const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
-    return filesUrl
-      .replaceAll(':workspace', workspaceId.name)
-      .replaceAll(':blobId', objectName)
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
   }
 }
 
