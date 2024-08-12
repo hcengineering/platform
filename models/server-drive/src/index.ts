@@ -39,4 +39,18 @@ export function createModel (builder: Builder): void {
       collectDocs: serverDrive.function.FindFolderResources
     }
   )
+
+  builder.mixin(drive.class.File, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      icon: drive.icon.File,
+      title: 'name'
+    }
+  })
+
+  builder.mixin(drive.class.Folder, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      icon: drive.icon.Folder,
+      title: 'name'
+    }
+  })
 }
