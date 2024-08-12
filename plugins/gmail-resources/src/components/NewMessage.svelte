@@ -28,7 +28,7 @@
   import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
-    import plugin from '../plugin'
+  import plugin from '../plugin'
 
   export let object: Contact
   export let channel: Channel
