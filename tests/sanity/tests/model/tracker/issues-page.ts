@@ -170,10 +170,10 @@ export class IssuesPage extends CommonTrackerPage {
     await this.page.keyboard.press('Escape')
   }
 
-  async createAndOpenIssue (name: string, assignee: string, status: string): Promise<void> {
+  async createAndOpenIssue (name: string, assignee: string, status: string, taskType?: string): Promise<void> {
     try {
       await this.notificationTimeoutSetting('5000')
-      await createIssue(this.page, { name, assignee, status })
+      await createIssue(this.page, { name, assignee, status, taskType })
       await this.page.waitForSelector(`text="${name}"`)
       await this.viewIssueButton().click()
     } finally {

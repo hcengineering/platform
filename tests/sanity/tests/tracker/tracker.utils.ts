@@ -13,6 +13,7 @@ export interface IssueProps {
   milestone?: string
   estimation?: string
   dueDate?: string
+  taskType?: string
 }
 
 export enum ViewletSelectors {
@@ -56,8 +57,14 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
 }
 
 export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
-  const { name, description, status, assignee, labels, priority, component, milestone } = props
+  const { name, description, status, assignee, labels, priority, component, milestone, taskType } = props
   const af = 'form '
+
+  if (taskType !== undefined) {
+    await page.click(af + 'button[data-id="btnSelectTaskType"]')
+    await page.click(`.menu-item:has-text("${taskType}")`)
+  }
+
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
   await issueTitle.fill(name)
   await issueTitle.evaluate((e) => {

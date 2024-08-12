@@ -26,6 +26,6 @@
   <div class="hulyTableAttr-header font-medium-12">
     <IconFolder size="small" />
     <span><Label label={task.string.Collections} /></span>
-    <ButtonIcon kind="primary" icon={IconAdd} size="small" {disabled} on:click={() => {}} />
+    <ButtonIcon kind="primary" icon={IconAdd} size="small" dataId={'btnAdd'} {disabled} on:click={() => {}} />
   </div>
 {/if}

@@ -44,6 +44,10 @@
     &.withSub.thinHeader { padding: 1rem 1.5rem 0; }
     &.thinHeader:not(.withSub) { padding: 1rem 1.5rem; }
     &:not(.withSub, .thinHeader) { padding: 1.5rem; }
+    &.noPadding {
+      padding: 0 1.5rem;
+      min-height: 4.75rem;
+    }
 
     &__title-wrap {
       display: flex;

@@ -109,6 +109,7 @@
       searchField="name"
       showNavigate={false}
       focusIndex={20000}
+      id={'selectSpaceType'}
     />
   </svelte:fragment>
   <div class="flex-col flex-gap-2">

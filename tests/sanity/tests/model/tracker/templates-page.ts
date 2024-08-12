@@ -40,7 +40,14 @@ export class TemplatePage extends CommonTrackerPage {
   proseMirrorEditor = (): Locator => this.page.locator('.ProseMirror')
   saveTemplateButton = (): Locator => this.page.locator('text=Save template')
   editTemplateButton = (): Locator => this.page.locator('text=Edit template')
-  vacanciesLink = (): Locator => this.page.locator('#new-space-type')
+  newSpaceTypeButton = (): Locator => this.page.locator('#new-space-type')
+  spaceTypeButton = (name: string, category?: string): Locator =>
+    this.page.locator('div#navGroup-spaceTypes button.hulyTaskNavLink-container', {
+      hasText: category !== undefined ? `${name} ${category}` : name
+    })
+
+  addTaskTypeButton = (): Locator =>
+    this.page.locator('div.hulyTableAttr-header', { hasText: 'Task types' }).locator('button[data-id="btnAdd"]')
 
   async createNewTemplate (data: NewIssue): Promise<void> {
     await this.buttonNewTemplate().click()
@@ -114,7 +121,16 @@ export class TemplatePage extends CommonTrackerPage {
   }
 
   async selectVacancies (): Promise<void> {
-    await this.vacanciesLink().click()
+    await this.newSpaceTypeButton().click()
+  }
+
+  async selectSpaceType (name: string, category?: string): Promise<void> {
+    await this.spaceTypeButton(name, category).click()
+  }
+
+  async addTaskType (): Promise<void> {
+    console.log('[!!!] ', await this.page.locator('div.hulyTableAttr-header', { hasText: 'Task types' }).isVisible())
+    await this.addTaskTypeButton().click()
   }
 
   async createTemplate (templateName: string, templateContent: string): Promise<void> {
