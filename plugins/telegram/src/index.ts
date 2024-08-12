@@ -66,6 +66,7 @@ export interface TelegramNotificationRecord {
   quote?: string
   body: string
   sender: string
+  link: string
 }
 
 /**

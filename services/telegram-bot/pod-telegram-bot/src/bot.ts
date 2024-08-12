@@ -42,7 +42,7 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectedMessage
 
     await ctx.replyWithHTML(message)
-    if(record.telegramUsername !== ctx.from?.username) {
+    if (record.telegramUsername !== ctx.from?.username) {
       await worker.updateTelegramUsername(record, ctx.from?.username)
     }
   } else {
@@ -94,14 +94,20 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
   await ctx.reply(`*${code}*`, { parse_mode: 'MarkdownV2' })
 }
 
-async function onReply (id: number, message: TextMessage, replyTo: number, worker: PlatformWorker, username?:string): Promise<boolean> {
+async function onReply (
+  id: number,
+  message: TextMessage,
+  replyTo: number,
+  worker: PlatformWorker,
+  username?: string
+): Promise<boolean> {
   const userRecord = await worker.getUserRecord(id)
 
   if (userRecord === undefined) {
     return false
   }
 
-  if(userRecord.telegramUsername !== username) {
+  if (userRecord.telegramUsername !== username) {
     await worker.updateTelegramUsername(userRecord, username)
   }
 

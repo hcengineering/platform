@@ -34,6 +34,7 @@
   export let allowFullsize: boolean = false
   export let hideFooter: boolean = false
   export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'disabled'
+  export let showCancelButton: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -97,13 +98,15 @@
         on:click={okAction}
         disabled={!canSave}
       />
-      <ButtonBase
-        type={'type-button'}
-        kind={'secondary'}
-        size={type === 'type-aside' ? 'large' : 'medium'}
-        label={ui.string.Cancel}
-        on:click={onCancel}
-      />
+      {#if showCancelButton}
+        <ButtonBase
+          type={'type-button'}
+          kind={'secondary'}
+          size={type === 'type-aside' ? 'large' : 'medium'}
+          label={ui.string.Cancel}
+          on:click={onCancel}
+        />
+      {/if}
     </div>
   {/if}
 </div>

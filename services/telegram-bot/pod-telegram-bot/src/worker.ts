@@ -64,7 +64,7 @@ export class PlatformWorker {
     }
   }
 
-  async addUser (id: number, email: string, telegramUsername?:string): Promise<UserRecord | undefined> {
+  async addUser (id: number, email: string, telegramUsername?: string): Promise<UserRecord | undefined> {
     const emailRes = await this.usersStorage.findOne({ email })
 
     if (emailRes !== null) {
@@ -84,8 +84,11 @@ export class PlatformWorker {
     return (await this.usersStorage.findOne({ _id: insertResult.insertedId })) ?? undefined
   }
 
-  async updateTelegramUsername (userRecord: UserRecord, telegramUsername?:string): Promise<void> {
-    await this.usersStorage.updateOne({ telegramId: userRecord.telegramId, email: userRecord.email }, { $set: { telegramUsername } })
+  async updateTelegramUsername (userRecord: UserRecord, telegramUsername?: string): Promise<void> {
+    await this.usersStorage.updateOne(
+      { telegramId: userRecord.telegramId, email: userRecord.email },
+      { $set: { telegramUsername } }
+    )
   }
 
   async addNotificationRecord (record: NotificationRecord): Promise<void> {
@@ -151,7 +154,7 @@ export class PlatformWorker {
     return await this.addUser(otpData.telegramId, email, otpData.telegramUsername)
   }
 
-  async generateCode (telegramId: number, telegramUsername?:string): Promise<string> {
+  async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {
     const now = Date.now()
     const otpData = (
       await this.otpStorage.find({ telegramId }).sort({ createdOn: SortingOrder.Descending }).limit(1).toArray()

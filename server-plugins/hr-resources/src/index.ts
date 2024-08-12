@@ -296,7 +296,7 @@ async function sendEmailNotifications (
   if (content === undefined) return
 
   for (const channel of channels) {
-    await sendEmailNotification(content.text, content.html, content.subject, channel.value)
+    await sendEmailNotification(control.ctx, content.text, content.html, content.subject, channel.value)
   }
 }
 

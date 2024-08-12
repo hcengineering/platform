@@ -190,7 +190,11 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
         throw new ApiError(404)
       }
 
-      ctx.info('Received notification', { email: token.email, username: userRecord.telegramUsername, ids: notificationRecords.map(it => it.notificationId) })
+      ctx.info('Received notification', {
+        email: token.email,
+        username: userRecord.telegramUsername,
+        ids: notificationRecords.map((it) => it.notificationId)
+      })
 
       for (const notificationRecord of notificationRecords) {
         void limiter.add(userRecord.telegramId, async () => {
