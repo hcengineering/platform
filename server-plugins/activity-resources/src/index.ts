@@ -197,7 +197,7 @@ function getDocUpdateMessageTx (
 }
 
 export async function pushDocUpdateMessages (
-  ctx: MeasureContext | undefined,
+  ctx: MeasureContext,
   control: ActivityControl,
   res: TxCollectionCUD<Doc, DocUpdateMessage>[],
   object: Doc | undefined,
@@ -231,7 +231,7 @@ export async function pushDocUpdateMessages (
         : undefined
   }
 
-  const attributesUpdates = await getTxAttributesUpdates(control, originTx, tx, object, objectCache, controlRules)
+  const attributesUpdates = await getTxAttributesUpdates(ctx, control, originTx, tx, object, objectCache, controlRules)
 
   for (const attributeUpdates of attributesUpdates) {
     res.push(
