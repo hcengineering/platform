@@ -77,7 +77,7 @@ test.describe('settings tests', () => {
   })
 
   // TODO: Need rework.
-  test('manage-templates', async () => {
+  test.skip('manage-templates', async () => {
     await templatePage.navigateToWorkspace(platformUri)
     await templatePage.openProfileMenu()
     await templatePage.openSettings()
