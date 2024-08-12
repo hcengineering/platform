@@ -52,8 +52,10 @@ export const start = async (): Promise<void> => {
   const app = createServer(bot, worker, ctx)
 
   if (config.Domain === '') {
+    ctx.info('Starting bot with polling')
     void bot.launch({ dropPendingUpdates: true })
   } else {
+    ctx.info('Starting bot with webhook', { domain: config.Domain, port: config.BotPort })
     void bot.launch({ webhook: { domain: config.Domain, port: config.BotPort }, dropPendingUpdates: true }).then(() => {
       void bot.telegram.getWebhookInfo().then((info) => {
         ctx.info('Webhook info', info)

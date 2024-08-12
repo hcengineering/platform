@@ -42,6 +42,9 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectedMessage
 
     await ctx.replyWithHTML(message)
+    if(record.telegramUsername !== ctx.from?.username) {
+      await worker.updateTelegramUsername(record, ctx.from?.username)
+    }
   } else {
     const connectMessage = await translate(telegram.string.ConnectMessage, { app: config.App }, lang)
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectMessage
@@ -87,15 +90,19 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const code = await worker.generateCode(id)
+  const code = await worker.generateCode(id, ctx.from?.username)
   await ctx.reply(`*${code}*`, { parse_mode: 'MarkdownV2' })
 }
 
-async function onReply (id: number, message: TextMessage, replyTo: number, worker: PlatformWorker): Promise<boolean> {
+async function onReply (id: number, message: TextMessage, replyTo: number, worker: PlatformWorker, username?:string): Promise<boolean> {
   const userRecord = await worker.getUserRecord(id)
 
   if (userRecord === undefined) {
     return false
+  }
+
+  if(userRecord.telegramUsername !== username) {
+    await worker.updateTelegramUsername(userRecord, username)
   }
 
   const notification = await worker.getNotificationRecord(replyTo, userRecord.email)
@@ -127,7 +134,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
     }
 
     const replyTo = message.reply_to_message
-    const isReplied = await onReply(id, message as TextMessage, replyTo.message_id, worker)
+    const isReplied = await onReply(id, message as TextMessage, replyTo.message_id, worker, ctx.from.username)
 
     if (isReplied) {
       await ctx.react('👍')

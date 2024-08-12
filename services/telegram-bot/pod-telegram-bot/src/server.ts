@@ -111,6 +111,7 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
       }
 
       await limiter.add(record.telegramId, async () => {
+        ctx.info('Sending test message', { email: token.email, username: record.telegramUsername })
         const testMessage = await translate(telegram.string.TestMessage, { app: config.App })
         await bot.telegram.sendMessage(record.telegramId, testMessage)
       })
@@ -146,6 +147,7 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
       }
 
       void limiter.add(newRecord.telegramId, async () => {
+        ctx.info('Connected account', { email: token.email, username: newRecord.telegramUsername })
         const message = await translate(telegram.string.AccountConnectedHtml, { app: config.App, email: token.email })
         await bot.telegram.sendMessage(newRecord.telegramId, message, { parse_mode: 'HTML' })
       })
@@ -175,11 +177,11 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
   app.post(
     '/notify',
     wrapRequest(async (req, res, token) => {
-      ctx.info('Received notification', { email: token.email })
       if (req.body == null || !Array.isArray(req.body)) {
         ctx.error('Invalid request body', { body: req.body, email: token.email })
         throw new ApiError(400)
       }
+
       const notificationRecords = req.body as TelegramNotificationRecord[]
       const userRecord = await worker.getUserRecordByEmail(token.email)
 
@@ -187,6 +189,8 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
         ctx.error('User not found', { email: token.email })
         throw new ApiError(404)
       }
+
+      ctx.info('Received notification', { email: token.email, username: userRecord.telegramUsername, ids: notificationRecords.map(it => it.notificationId) })
 
       for (const notificationRecord of notificationRecords) {
         void limiter.add(userRecord.telegramId, async () => {
