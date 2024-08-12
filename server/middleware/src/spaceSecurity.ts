@@ -497,7 +497,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           const res = await this.mergeQuery(account, query[field], domain, isSpace)
           if (res === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete (query as any)[field]
+            delete (newQuery as any)[field]
           } else {
             ;(newQuery as any)[field] = res
             if (typeof res === 'object') {
