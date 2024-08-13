@@ -60,7 +60,11 @@ export class DatalakeService implements StorageAdapter {
 
   @withContext('remove')
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
-    // not supported, just do nothing and pretend we removed the object
+    await Promise.all(
+      objectNames.map(async (objectName) => {
+        await this.client.deleteObject(ctx, workspaceId, objectName)
+      })
+    )
   }
 
   @withContext('delete')
@@ -138,7 +142,7 @@ export class DatalakeService implements StorageAdapter {
   }
 
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
-    return this.client.getObjectUrl(ctx, objectName)
+    return this.client.getObjectUrl(ctx, workspaceId, objectName)
   }
 }
 

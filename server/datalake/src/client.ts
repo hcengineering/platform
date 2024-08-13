@@ -48,13 +48,13 @@ type BlobUploadResult = BlobUploadSuccess | BlobUploadError
 export class Client {
   constructor (private readonly endpoint: string) {}
 
-  getObjectUrl (ctx: MeasureContext, objectName: string): string {
-    return `${this.endpoint}/blob/${objectName}`
+  getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
+    const path = `/blob/${workspace.name}/${objectName}`
+    return concatLink(this.endpoint, path)
   }
 
   async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
-    const path = `/blob/${workspace.name}/${objectName}`
-    const url = concatLink(this.endpoint, path)
+    const url = this.getObjectUrl(ctx, workspace, objectName)
     const response = await fetch(url)
 
     if (!response.ok) {
@@ -67,6 +67,16 @@ export class Client {
     }
 
     return Readable.from(response.body)
+  }
+
+  async deleteObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
+    const url = this.getObjectUrl(ctx, workspace, objectName)
+
+    const response = await fetch(url, { method: 'DELETE' })
+
+    if (!response.ok) {
+      throw new Error('HTTP error ' + response.status)
+    }
   }
 
   async putObject (
