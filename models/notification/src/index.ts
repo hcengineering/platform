@@ -556,8 +556,8 @@ export function createModel (builder: Builder): void {
       group: notification.ids.NotificationGroup,
       defaultEnabled: true,
       templates: {
-        textTemplate: '{sender} mentioned you in {doc} {message}',
-        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {message}',
+        textTemplate: '{sender} mentioned you in {doc}: {message}',
+        htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}:</p> <p>{message}</p> <p>{link}</p>',
         subjectTemplate: 'You were mentioned in {doc}'
       }
     },

@@ -80,7 +80,7 @@ import serverNotification, {
   SenderInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
-import { stripTags } from '@hcengineering/text'
+import { markupToText, stripTags } from '@hcengineering/text'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
@@ -91,6 +91,7 @@ import {
   createPushCollaboratorsTx,
   getHTMLPresenter,
   getNotificationContent,
+  getNotificationLink,
   getTextPresenter,
   getUsersInfo,
   isAllowed,
@@ -98,6 +99,7 @@ import {
   isShouldNotifyTx,
   isUserEmployeeInFieldValue,
   isUserInFieldValue,
+  messageToMarkup,
   replaceAll,
   toReceiverInfo,
   updateNotifyContextsSpace
@@ -212,7 +214,8 @@ export async function getContentByTemplate (
   type: Ref<BaseNotificationType>,
   control: TriggerControl,
   data: string,
-  notificationData?: InboxNotification
+  notificationData?: InboxNotification,
+  message?: ActivityMessage
 ): Promise<Content | undefined> {
   if (doc === undefined) return
   const notificationType = control.modelDb.getObject(type)
@@ -220,10 +223,23 @@ export async function getContentByTemplate (
 
   const textPart = await getTextPart(doc, control)
   if (textPart === undefined) return
-  const params =
+  const params: Record<string, string> =
     notificationData !== undefined
       ? await getTranslatedNotificationContent(notificationData, notificationData._class, control)
       : {}
+
+  if (message !== undefined) {
+    const markup = await messageToMarkup(control, message)
+    params.message = markup !== undefined ? markupToText(markup) : params.message ?? ''
+  } else if (params.message === undefined) {
+    params.message = params.body ?? ''
+  }
+
+  const link = await getNotificationLink(control, doc, message?._id)
+  const app = control.branding?.title ?? 'Huly'
+  const linkText = await translate(notification.string.ViewIn, { app })
+
+  params.link = `<a href='${link}'>${linkText}</a>`
 
   const text = fillTemplate(notificationType.templates.textTemplate, sender, textPart, data, params)
   const htmlPart = await getHtmlPart(doc, control)
@@ -838,15 +854,23 @@ export async function createCollabDocInfo (
     return res
   }
 
-  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { objectId: object._id })
-
-  await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control, originTx.modifiedBy)
-  await removeContexts(notifyContexts, unsubscribe, control)
-
   const docMessages = activityMessages.filter((message) => message.attachedTo === object._id)
+
   if (docMessages.length === 0) {
+    if (unsubscribe.length > 0) {
+      const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, {
+        objectId: object._id,
+        user: { $in: unsubscribe }
+      })
+      await removeContexts(notifyContexts, unsubscribe, control)
+    }
+
     return res
   }
+
+  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { objectId: object._id })
+  await removeContexts(notifyContexts, unsubscribe, control)
+  await updateContextsTimestamp(notifyContexts, originTx.modifiedOn, control, originTx.modifiedBy)
 
   const targets = new Set(collaborators)
 

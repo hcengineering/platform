@@ -53,7 +53,7 @@ import {
   getDocCollaborators,
   getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { markupToText, stripTags } from '@hcengineering/text'
+import { markupToHTML, markupToText, stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
@@ -89,6 +89,10 @@ export async function channelTextPresenter (doc: Doc): Promise<string> {
 
 export async function ChatMessageTextPresenter (doc: ChatMessage): Promise<string> {
   return markupToText(doc.message)
+}
+
+export async function ChatMessageHtmlPresenter (doc: ChatMessage): Promise<string> {
+  return markupToHTML(doc.message)
 }
 
 /**
@@ -580,6 +584,7 @@ export default async () => ({
     ChannelTextPresenter: channelTextPresenter,
     ChunterNotificationContentProvider: getChunterNotificationContent,
     ChatMessageTextPresenter,
+    ChatMessageHtmlPresenter,
     JoinChannelTypeMatch
   }
 })

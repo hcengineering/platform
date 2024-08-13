@@ -55,10 +55,11 @@ import serverNotification, {
   SenderInfo,
   TextPresenter
 } from '@hcengineering/server-notification'
-import { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import serverView from '@hcengineering/server-view'
 import { workbenchId } from '@hcengineering/workbench'
 import { encodeObjectURI } from '@hcengineering/view'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 
 import { NotifyResult } from './types'
 
@@ -568,11 +569,45 @@ export async function getNotificationLink (
     id = await encodeFn(doc, control)
   }
 
+  let thread: string | undefined
+
+  if (control.hierarchy.isDerived(doc._class, activity.class.ActivityMessage)) {
+    const id = (doc as ActivityMessage)._id
+
+    if (message === undefined) {
+      message = id
+    } else {
+      thread = id
+    }
+  }
+
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = [workbenchId, 'platform', notificationId, encodeObjectURI(id, doc._class)]
+  const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, doc._class), thread]
+    .filter((x): x is string => x !== undefined)
     .map((p) => encodeURIComponent(p))
     .join('/')
+
   const link = concatLink(front, path)
 
   return message !== undefined ? `${link}?message=${message}` : link
+}
+
+export async function messageToMarkup (control: TriggerControl, message: ActivityMessage): Promise<string | undefined> {
+  const { hierarchy } = control
+  if (hierarchy.isDerived(message._class, chunter.class.ChatMessage)) {
+    const chatMessage = message as ChatMessage
+    return chatMessage.message
+  } else {
+    const resource = getTextPresenter(message._class, control.hierarchy)
+
+    if (resource !== undefined) {
+      const fn = await getResource(resource.presenter)
+      const textData = await fn(message, control)
+      if (textData !== undefined && textData !== '') {
+        return textData
+      }
+    }
+  }
+
+  return undefined
 }
