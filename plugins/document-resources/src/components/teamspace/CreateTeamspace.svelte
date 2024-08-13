@@ -408,7 +408,7 @@
         <Label label={core.string.AutoJoin} />
         <span><Label label={core.string.AutoJoinDescr} /></span>
       </div>
-      <Toggle bind:on={autoJoin} />
+      <Toggle id={'teamspace-autoJoin'} bind:on={autoJoin} />
     </div>
 
     {#each roles as role}
