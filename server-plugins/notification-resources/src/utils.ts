@@ -55,13 +55,13 @@ import serverNotification, {
   SenderInfo,
   TextPresenter
 } from '@hcengineering/server-notification'
-import { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import serverView from '@hcengineering/server-view'
 import { workbenchId } from '@hcengineering/workbench'
 import { encodeObjectURI } from '@hcengineering/view'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 
 import { NotifyResult } from './types'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
 
 /**
  * @public
@@ -569,10 +569,24 @@ export async function getNotificationLink (
     id = await encodeFn(doc, control)
   }
 
+  let thread: string | undefined
+
+  if (control.hierarchy.isDerived(doc._class, activity.class.ActivityMessage)) {
+    const id = (doc as ActivityMessage)._id
+
+    if (message === undefined) {
+      message = id
+    } else {
+      thread = id
+    }
+  }
+
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = [workbenchId, 'platform', notificationId, encodeObjectURI(id, doc._class)]
+  const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, doc._class), thread]
+    .filter((x): x is string => x !== undefined)
     .map((p) => encodeURIComponent(p))
     .join('/')
+
   const link = concatLink(front, path)
 
   return message !== undefined ? `${link}?message=${message}` : link

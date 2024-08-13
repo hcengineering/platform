@@ -230,12 +230,16 @@ export async function getContentByTemplate (
 
   if (message !== undefined) {
     const markup = await messageToMarkup(control, message)
-    const link = await getNotificationLink(control, doc, message._id)
-    const app = control.branding?.title ?? 'Huly'
-    const linkText = await translate(notification.string.ViewIn, { app })
     params.message = markup !== undefined ? markupToText(markup) : params.message ?? ''
-    params.link = `<a href='${link}'>${linkText}</a>`
+  } else if (params.message === undefined) {
+    params.message = params.body ?? ''
   }
+
+  const link = await getNotificationLink(control, doc, message?._id)
+  const app = control.branding?.title ?? 'Huly'
+  const linkText = await translate(notification.string.ViewIn, { app })
+
+  params.link = `<a href='${link}'>${linkText}</a>`
 
   const text = fillTemplate(notificationType.templates.textTemplate, sender, textPart, data, params)
   const htmlPart = await getHtmlPart(doc, control)
@@ -855,7 +859,8 @@ export async function createCollabDocInfo (
   if (docMessages.length === 0) {
     if (unsubscribe.length > 0) {
       const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, {
-        objectId: object._id
+        objectId: object._id,
+        user: { $in: unsubscribe }
       })
       await removeContexts(notifyContexts, unsubscribe, control)
     }
