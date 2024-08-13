@@ -29,6 +29,12 @@ export interface NotificationRecord {
   telegramId: number
 }
 
+export interface ReplyRecord {
+  notificationId: Ref<InboxNotification>
+  telegramId: number
+  replyId: number
+}
+
 export interface OtpRecord {
   telegramId: number
   telegramUsername?: string

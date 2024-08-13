@@ -15,8 +15,9 @@
 
 import type { Collection } from 'mongodb'
 import { Account, Ref, SortingOrder } from '@hcengineering/core'
+import { InboxNotification } from '@hcengineering/notification'
 
-import { UserRecord, NotificationRecord, OtpRecord } from './types'
+import { UserRecord, NotificationRecord, OtpRecord, ReplyRecord } from './types'
 import { getDB } from './storage'
 import { WorkspaceClient } from './workspace'
 import { getNewOtp } from './utils'
@@ -32,7 +33,8 @@ export class PlatformWorker {
   private constructor (
     private readonly usersStorage: Collection<UserRecord>,
     private readonly notificationsStorage: Collection<NotificationRecord>,
-    private readonly otpStorage: Collection<OtpRecord>
+    private readonly otpStorage: Collection<OtpRecord>,
+    private readonly repliesStorage: Collection<ReplyRecord>
   ) {
     this.intervalId = setInterval(
       () => {
@@ -103,8 +105,23 @@ export class PlatformWorker {
     await this.usersStorage.deleteOne({ account: _id })
   }
 
+  async saveReply (record: ReplyRecord): Promise<void> {
+    await this.repliesStorage.insertOne(record)
+  }
+
+  async getReply (id: number, replyTo: number): Promise<ReplyRecord | undefined> {
+    return (await this.repliesStorage.findOne({ telegramId: id, replyId: replyTo })) ?? undefined
+  }
+
   async getNotificationRecord (id: number, email: string): Promise<NotificationRecord | undefined> {
     return (await this.notificationsStorage.findOne({ telegramId: id, email })) ?? undefined
+  }
+
+  async getNotificationRecordById (
+    notificationId: Ref<InboxNotification>,
+    email: string
+  ): Promise<NotificationRecord | undefined> {
+    return (await this.notificationsStorage.findOne({ notificationId, email })) ?? undefined
   }
 
   async getUserRecord (id: number): Promise<UserRecord | undefined> {
@@ -177,19 +194,20 @@ export class PlatformWorker {
   }
 
   static async createStorages (): Promise<
-  [Collection<UserRecord>, Collection<NotificationRecord>, Collection<OtpRecord>]
+  [Collection<UserRecord>, Collection<NotificationRecord>, Collection<OtpRecord>, Collection<ReplyRecord>]
   > {
     const db = await getDB()
     const userStorage = db.collection<UserRecord>('users')
     const notificationsStorage = db.collection<NotificationRecord>('notifications')
     const otpStorage = db.collection<OtpRecord>('otp')
+    const repliesStorage = db.collection<ReplyRecord>('replies')
 
-    return [userStorage, notificationsStorage, otpStorage]
+    return [userStorage, notificationsStorage, otpStorage, repliesStorage]
   }
 
   static async create (): Promise<PlatformWorker> {
-    const [userStorage, notificationsStorage, otpStorage] = await PlatformWorker.createStorages()
+    const [userStorage, notificationsStorage, otpStorage, repliesStorage] = await PlatformWorker.createStorages()
 
-    return new PlatformWorker(userStorage, notificationsStorage, otpStorage)
+    return new PlatformWorker(userStorage, notificationsStorage, otpStorage, repliesStorage)
   }
 }
