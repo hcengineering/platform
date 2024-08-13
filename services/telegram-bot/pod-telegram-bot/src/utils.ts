@@ -74,7 +74,8 @@ const maxBodyLength = 2000
 const maxSenderLength = 100
 
 export function toTelegramHtml (record: TelegramNotificationRecord): string {
-  const title = record.title !== '' ? `<b>${platformToTelegram(record.title, maxTitleLength)}</b>` + '\n' : ''
+  const title =
+    record.title !== '' ? `<a href='${record.link}'>${platformToTelegram(record.title, maxTitleLength)}</a>` + '\n' : ''
   const quote =
     record.quote !== undefined && record.quote !== ''
       ? `<blockquote>${platformToTelegram(record.quote, maxQuoteLength)}</blockquote>` + '\n'
@@ -132,8 +133,8 @@ export function platformToTelegram (message: string, limit: number): string {
       newMessage += unescape(text)
 
       if (textLength > limit) {
-        const extra = textLength - limit
-        newMessage = newMessage.slice(0, -extra)
+        const extra = textLength - limit + 1
+        newMessage = newMessage.slice(0, -extra) + '…'
       }
     },
     onclosetag: (tag) => {

@@ -17,10 +17,11 @@ import notification, {
   Collaborators,
   CommonNotificationType,
   NotificationContent,
+  notificationId,
   NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
-import type { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { Analytics } from '@hcengineering/analytics'
 import contact, { formatName, PersonAccount } from '@hcengineering/contact'
 import core, {
@@ -42,9 +43,10 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc,
   type MeasureContext,
-  Markup
+  Markup,
+  concatLink
 } from '@hcengineering/core'
-import { getResource, IntlString, translate } from '@hcengineering/platform'
+import { getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
 import serverNotification, {
   getPersonAccountById,
   HTMLPresenter,
@@ -53,7 +55,10 @@ import serverNotification, {
   SenderInfo,
   TextPresenter
 } from '@hcengineering/server-notification'
-import { DocUpdateMessage } from '@hcengineering/activity'
+import { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
+import serverView from '@hcengineering/server-view'
+import { workbenchId } from '@hcengineering/workbench'
+import { encodeObjectURI } from '@hcengineering/view'
 
 import { NotifyResult } from './types'
 
@@ -545,4 +550,29 @@ export function createPullCollaboratorsTx (
   return control.txFactory.createTxMixin(objectId, objectClass, space, notification.mixin.Collaborators, {
     $pull: { collaborators: { $in: collaborators } }
   })
+}
+
+export async function getNotificationLink (
+  control: TriggerControl,
+  doc: Doc,
+  message?: Ref<ActivityMessage>
+): Promise<string> {
+  const linkProviders = control.modelDb.findAllSync(serverView.mixin.ServerLinkIdProvider, {})
+  const provider = linkProviders.find(({ _id }) => _id === doc._class)
+
+  let id: string = doc._id
+
+  if (provider !== undefined) {
+    const encodeFn = await getResource(provider.encode)
+
+    id = await encodeFn(doc, control)
+  }
+
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const path = [workbenchId, 'platform', notificationId, encodeObjectURI(id, doc._class)]
+    .map((p) => encodeURIComponent(p))
+    .join('/')
+  const link = concatLink(front, path)
+
+  return message !== undefined ? `${link}?message=${message}` : link
 }

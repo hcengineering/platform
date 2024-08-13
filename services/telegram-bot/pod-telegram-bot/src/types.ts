@@ -18,6 +18,7 @@ import { InboxNotification } from '@hcengineering/notification'
 
 export interface UserRecord {
   telegramId: number
+  telegramUsername?: string
   email: string
 }
 
@@ -30,6 +31,7 @@ export interface NotificationRecord {
 
 export interface OtpRecord {
   telegramId: number
+  telegramUsername?: string
   code: string
   expires: Timestamp
   createdOn: Timestamp

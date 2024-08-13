@@ -64,11 +64,7 @@ export class PlatformWorker {
     }
   }
 
-  async getUsersRecords (): Promise<UserRecord[]> {
-    return await this.usersStorage.find().toArray()
-  }
-
-  async addUser (id: number, email: string): Promise<UserRecord | undefined> {
+  async addUser (id: number, email: string, telegramUsername?: string): Promise<UserRecord | undefined> {
     const emailRes = await this.usersStorage.findOne({ email })
 
     if (emailRes !== null) {
@@ -83,9 +79,16 @@ export class PlatformWorker {
       return
     }
 
-    const insertResult = await this.usersStorage.insertOne({ telegramId: id, email })
+    const insertResult = await this.usersStorage.insertOne({ telegramId: id, email, telegramUsername })
 
     return (await this.usersStorage.findOne({ _id: insertResult.insertedId })) ?? undefined
+  }
+
+  async updateTelegramUsername (userRecord: UserRecord, telegramUsername?: string): Promise<void> {
+    await this.usersStorage.updateOne(
+      { telegramId: userRecord.telegramId, email: userRecord.email },
+      { $set: { telegramUsername } }
+    )
   }
 
   async addNotificationRecord (record: NotificationRecord): Promise<void> {
@@ -148,10 +151,10 @@ export class PlatformWorker {
       throw new Error('Invalid OTP')
     }
 
-    return await this.addUser(otpData.telegramId, email)
+    return await this.addUser(otpData.telegramId, email, otpData.telegramUsername)
   }
 
-  async generateCode (telegramId: number): Promise<string> {
+  async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {
     const now = Date.now()
     const otpData = (
       await this.otpStorage.find({ telegramId }).sort({ createdOn: SortingOrder.Descending }).limit(1).toArray()
@@ -168,7 +171,7 @@ export class PlatformWorker {
     const timeToLive = config.OtpTimeToLiveSec * 1000
     const expires = now + timeToLive
 
-    await this.otpStorage.insertOne({ telegramId, code: newCode, expires, createdOn: now })
+    await this.otpStorage.insertOne({ telegramId, code: newCode, expires, createdOn: now, telegramUsername })
 
     return newCode
   }

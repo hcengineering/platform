@@ -23,6 +23,7 @@ import {
   FindOptions,
   FindResult,
   Hierarchy,
+  MeasureContext,
   Ref,
   Tx,
   TxCreateDoc,
@@ -98,6 +99,7 @@ export async function IsIncomingMessage (
 }
 
 export async function sendEmailNotification (
+  ctx: MeasureContext,
   text: string,
   html: string,
   subject: string,
@@ -106,7 +108,7 @@ export async function sendEmailNotification (
   try {
     const sesURL = getMetadata(serverNotification.metadata.SesUrl)
     if (sesURL === undefined || sesURL === '') {
-      console.log('Please provide email service url to enable email confirmations.')
+      ctx.error('Please provide email service url to enable email confirmations.')
       return
     }
     await fetch(concatLink(sesURL, '/send'), {
@@ -122,7 +124,7 @@ export async function sendEmailNotification (
       })
     })
   } catch (err) {
-    console.log('Could not send email notification', err)
+    ctx.error('Could not send email notification', { err, receiver })
   }
 }
 
@@ -146,7 +148,7 @@ async function notifyByEmail (
   const content = await getContentByTemplate(doc, senderName, type, control, '', data)
 
   if (content !== undefined) {
-    await sendEmailNotification(content.text, content.html, content.subject, account.email)
+    await sendEmailNotification(control.ctx, content.text, content.html, content.subject, account.email)
   }
 }
 
