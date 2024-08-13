@@ -55,6 +55,7 @@
     "SoundNotificationsDescription": "Receba notificações sonoras para eventos.",
     "CommonNotificationCollectionAdded":  "{senderName} adicionou {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} removeu {collection}",
-    "NoAccessToObject": "Você não tem mais acesso a este objeto"
+    "NoAccessToObject": "Você não tem mais acesso a este objeto",
+    "ViewIn": "Ver em {app}"
   }
 }

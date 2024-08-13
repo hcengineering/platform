@@ -39,6 +39,7 @@ import serverNotification, {
 } from '@hcengineering/server-notification'
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
+import { ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -134,7 +135,8 @@ async function notifyByEmail (
   doc: Doc | undefined,
   sender: SenderInfo,
   receiver: ReceiverInfo,
-  data: InboxNotification
+  data: InboxNotification,
+  message?: ActivityMessage
 ): Promise<void> {
   const account = receiver.account
 
@@ -145,8 +147,7 @@ async function notifyByEmail (
   const senderPerson = sender.person
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
 
-  const content = await getContentByTemplate(doc, senderName, type, control, '', data)
-
+  const content = await getContentByTemplate(doc, senderName, type, control, '', data, message)
   if (content !== undefined) {
     await sendEmailNotification(control.ctx, content.text, content.html, content.subject, account.email)
   }
@@ -158,7 +159,8 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   object: Doc,
   data: InboxNotification,
   receiver: ReceiverInfo,
-  sender: SenderInfo
+  sender: SenderInfo,
+  message?: ActivityMessage
 ): Promise<Tx[]> => {
   if (types.length === 0) {
     return []
@@ -169,7 +171,7 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   }
 
   for (const type of types) {
-    await notifyByEmail(control, type._id, object, sender, receiver, data)
+    await notifyByEmail(control, type._id, object, sender, receiver, data, message)
   }
 
   return []

@@ -61,6 +61,7 @@ import { workbenchId } from '@hcengineering/workbench'
 import { encodeObjectURI } from '@hcengineering/view'
 
 import { NotifyResult } from './types'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 
 /**
  * @public
@@ -575,4 +576,24 @@ export async function getNotificationLink (
   const link = concatLink(front, path)
 
   return message !== undefined ? `${link}?message=${message}` : link
+}
+
+export async function messageToMarkup (control: TriggerControl, message: ActivityMessage): Promise<string | undefined> {
+  const { hierarchy } = control
+  if (hierarchy.isDerived(message._class, chunter.class.ChatMessage)) {
+    const chatMessage = message as ChatMessage
+    return chatMessage.message
+  } else {
+    const resource = getTextPresenter(message._class, control.hierarchy)
+
+    if (resource !== undefined) {
+      const fn = await getResource(resource.presenter)
+      const textData = await fn(message, control)
+      if (textData !== undefined && textData !== '') {
+        return textData
+      }
+    }
+  }
+
+  return undefined
 }

@@ -129,8 +129,8 @@ export function defineNotifications (builder: Builder): void {
       defaultEnabled: false,
       group: chunter.ids.ChunterNotificationGroup,
       templates: {
-        textTemplate: '{body}',
-        htmlTemplate: '<p>{body}</p>',
+        textTemplate: '{sender} replied to {doc}:\n\n{message}',
+        htmlTemplate: '<p><b>{sender}</b> replied to {doc}:</p><p>{message}</p><p>{link}</p>',
         subjectTemplate: '{title}'
       }
     },
