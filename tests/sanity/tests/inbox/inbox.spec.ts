@@ -290,7 +290,7 @@ test.describe('Inbox tests', () => {
     await issuesDetailsPageSecond.checkIssue(newIssue)
     await leftSideMenuPageSecond.clickPlanner()
     await planningPageSecond.closeNotification()
-    await planningPageSecond.dragdropTomorrow(newIssue.title, getTimeForPlanner())
+    await planningPageSecond.dragToCalendar(newIssue.title, 2, getTimeForPlanner())
     await planningPageSecond.eventInSchedule(newIssue.title).isVisible()
     await attachScreenshot('Recive_task_and_scheduled.png', page2)
 

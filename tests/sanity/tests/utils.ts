@@ -198,14 +198,18 @@ export async function createAccount (request: APIRequestContext, data: SignUpDat
   await api.createAccount(data.email, data.password, data.firstName, data.lastName)
 }
 
-export async function createAccountAndWorkspace (page: Page, request: APIRequestContext, data: TestData): Promise<void> {
-  const api: ApiEndpoint = new ApiEndpoint(request)
-  await api.createAccount(data.userName, '1234', data.firstName, data.lastName)
-  await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
+export async function reLogin (page: Page, data: TestData): Promise<void> {
   const loginPage: LoginPage = new LoginPage(page)
   await loginPage.checkingNeedReLogin()
   await (await page.goto(`${PlatformURI}`))?.finished()
   await loginPage.login(data.userName, '1234')
   const swp = new SelectWorkspacePage(page)
   await swp.selectWorkspace(data.workspaceName)
+}
+
+export async function createAccountAndWorkspace (page: Page, request: APIRequestContext, data: TestData): Promise<void> {
+  const api: ApiEndpoint = new ApiEndpoint(request)
+  await api.createAccount(data.userName, '1234', data.firstName, data.lastName)
+  await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
+  await reLogin(page, data)
 }

@@ -1,9 +1,26 @@
 import { test } from '@playwright/test'
-import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
+import {
+  generateId,
+  getSecondPage,
+  PlatformSetting,
+  PlatformURI,
+  getTimeForPlanner,
+  generateUser,
+  createAccountAndWorkspace,
+  createAccount,
+  getInviteLink,
+  generateTestData,
+  reLogin
+} from '../utils'
 import { NewDocument, NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentContentPage } from '../model/documents/document-content-page'
+import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
+import { PlanningPage } from '../model/planning/planning-page'
+import { SignUpData } from '../model/common-types'
+import { SignInJoinPage } from '../model/signin-page'
+import { TestData } from '../chat/types'
 
 test.use({
   storageState: PlatformSetting
@@ -168,5 +185,70 @@ test.describe('Documents tests', () => {
     await page.goto(`${clipboardContent}`)
     await documentContentPage.checkDocumentTitle(newDocument.title)
     await documentContentPage.checkDocumentLocked()
+  })
+
+  test('ToDos in the Document', async ({ page, browser, request }) => {
+    const testData: TestData = generateTestData()
+    await createAccountAndWorkspace(page, request, testData)
+    const newUser2: SignUpData = generateUser()
+    await createAccount(request, newUser2)
+
+    const todosTeamspace: NewTeamspace = {
+      title: `ToDos Teamspace-${generateId()}`,
+      description: 'ToDos Teamspace description',
+      autoJoin: true
+    }
+    const todosDocument: NewDocument = {
+      title: `ToDos in the Document-${generateId()}`,
+      space: todosTeamspace.title
+    }
+    const contents: string[] = ['work', 'meet up']
+    let content: string = ''
+
+    const linkText = await getInviteLink(page)
+    await leftSideMenuPage.clickDocuments()
+    await documentsPage.checkTeamspaceNotExist(todosTeamspace.title)
+    await documentsPage.createNewTeamspace(todosTeamspace)
+    const page2 = await browser.newPage()
+    await page2.goto(linkText ?? '')
+    const joinPage: SignInJoinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+    await page2.goto(`${PlatformURI}/workbench/sanity-ws`)
+
+    await documentsPage.clickOnButtonCreateDocument()
+    await documentsPage.createDocument(todosDocument)
+    await documentsPage.openDocument(todosDocument.title)
+    await documentContentPage.checkDocumentTitle(todosDocument.title)
+    for (let i = 0; i < contents.length; i++) {
+      content = await documentContentPage.addContentToTheNewLine(`${i === 0 ? '[] ' : ''}${contents[i]}`)
+      await documentContentPage.checkContent(content)
+    }
+    for (const line of contents) {
+      await documentContentPage.assignToDo(`${newUser2.lastName} ${newUser2.firstName}`, line)
+    }
+
+    await reLogin(page2, { ...testData, userName: newUser2.email })
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    await leftSideMenuPageSecond.clickDocuments()
+    const documentsPageSecond = new DocumentsPage(page2)
+    await documentsPageSecond.openTeamspace(todosDocument.space)
+    await documentsPageSecond.openDocument(todosDocument.title)
+    const documentContentPageSecond = new DocumentContentPage(page2)
+    await documentContentPageSecond.checkDocumentTitle(todosDocument.title)
+    await documentContentPageSecond.checkContent(content)
+    await leftSideMenuPageSecond.clickPlanner()
+
+    const planningNavigationMenuPage = new PlanningNavigationMenuPage(page2)
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
+    const planningPage = new PlanningPage(page2)
+    const time: string = getTimeForPlanner()
+    await planningPage.dragToCalendar(contents[0], 1, time)
+    await planningPage.dragToCalendar(contents[1], 1, time, true)
+    await planningPage.checkInSchedule(contents[0])
+    await planningPage.checkInSchedule(contents[1])
+    await planningPage.markDoneInToDos(contents[0])
+    await planningPage.markDoneInToDos(contents[1])
+    for (const line of contents) await documentContentPage.checkToDo(line, true)
+    await page2.close()
   })
 })
