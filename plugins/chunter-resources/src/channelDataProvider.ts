@@ -320,12 +320,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
         space: this.space,
         _id: { $nin: skipIds },
         createdOn: equal
-          ? isBackward
-            ? { $lte: loadAfter }
-            : { $gte: loadAfter }
-          : isBackward
-            ? { $lt: loadAfter }
-            : { $gt: loadAfter }
+          ? isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
+          : isBackward ? { $lt: loadAfter } : { $gt: loadAfter }
       },
       {
         limit: limit ?? this.limit,
