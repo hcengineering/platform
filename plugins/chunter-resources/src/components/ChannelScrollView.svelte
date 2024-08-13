@@ -25,7 +25,7 @@
     canGroupMessages,
     messageInFocus
   } from '@hcengineering/activity-resources'
-  import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Class, Doc, generateId, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -657,15 +657,13 @@
     }
   }
 
-  function handleScrollDown (): void {
+  async function handleScrollDown (): Promise<void> {
     selectedMessageId = undefined
     messageInFocus.set(undefined)
 
     const metadata = $metadataStore
     const lastMetadata = metadata[metadata.length - 1]
     const lastMessage = displayMessages[displayMessages.length - 1]
-
-    void inboxClient.readDoc(client, objectId)
 
     if (lastMetadata._id !== lastMessage._id) {
       separatorIndex = -1
@@ -674,12 +672,17 @@
     } else {
       scrollToBottom()
     }
+
+    const op = client.apply(generateId(), 'chunter.scrollDown')
+    await inboxClient.readDoc(op, objectId)
+    await op.commit()
   }
 
-  $: forceReadContext(isScrollAtBottom, notifyContext)
+  let forceRead = false
+  $: void forceReadContext(isScrollAtBottom, notifyContext)
 
-  function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): void {
-    if (context === undefined || !isScrollAtBottom) return
+  async function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): Promise<void> {
+    if (context === undefined || !isScrollAtBottom || forceRead || !separatorElement) return
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastViewedTimestamp >= lastUpdateTimestamp) return
@@ -688,7 +691,10 @@
     const unViewed = notifications.filter(({ isViewed }) => !isViewed)
 
     if (unViewed.length === 0) {
-      void inboxClient.readDoc(client, objectId)
+      forceRead = true
+      const op = client.apply(generateId(), 'chunter.forceReadContext')
+      await inboxClient.readDoc(op, objectId)
+      await op.commit()
     }
   }
 
