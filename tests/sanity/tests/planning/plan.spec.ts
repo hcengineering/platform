@@ -199,7 +199,7 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.selectInputToDo().fill(titleV)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(titleV, time)
+    await planningPage.dragToCalendar(titleV, 2, time)
     await planningPage.eventInSchedule(titleV).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupVisibleToEveryone().click()
@@ -207,7 +207,7 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.selectInputToDo().fill(titleI)
     await planningPage.selectInputToDo().press('Enter')
-    await planningPage.dragdropTomorrow(titleI, time, true)
+    await planningPage.dragToCalendar(titleI, 2, time, true)
     await planningPage.eventInSchedule(titleI).click()
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupOnlyVisibleToYou().click()

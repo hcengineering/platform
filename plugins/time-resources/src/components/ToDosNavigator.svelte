@@ -137,6 +137,8 @@
               tag = undefined
               currentDate = event.detail
               mode = 'date'
+              localStorage.setItem('todos_last_mode', mode)
+              localStorage.removeItem('todos_last_tag')
             }
           }}
         >

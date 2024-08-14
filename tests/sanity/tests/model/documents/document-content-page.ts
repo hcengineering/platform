@@ -24,6 +24,10 @@ export class DocumentContentPage extends CommonPage {
   readonly popupPanel = (): Locator => this.page.locator('div.popupPanel-title')
   readonly popupPanelH1 = (): Locator => this.page.locator('div.antiPopup > h1')
 
+  readonly rowToDo = (hasText: string): Locator => this.page.locator('div.tiptap div.todo-item', { hasText })
+  readonly assigneeToDo = (hasText: string): Locator => this.rowToDo(hasText).locator('div.assignee')
+  readonly checkboxToDo = (hasText: string): Locator => this.rowToDo(hasText).locator('input.chBox')
+
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle()).toHaveValue(title)
   }
@@ -77,5 +81,16 @@ export class DocumentContentPage extends CommonPage {
 
   async checkIfPopupHasText (text: string): Promise<void> {
     await expect(this.popupPanelH1()).toHaveText(text)
+  }
+
+  async assignToDo (user: string, text: string): Promise<void> {
+    await this.rowToDo(text).hover()
+    await this.assigneeToDo(text).click()
+    await this.selectListItem(user)
+  }
+
+  async checkToDo (text: string, checked: boolean): Promise<void> {
+    await this.rowToDo(text).hover()
+    await expect(this.checkboxToDo(text)).toBeChecked({ checked, timeout: 5000 })
   }
 }
