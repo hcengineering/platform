@@ -62,6 +62,8 @@ export class WorkspaceClient {
   aiAccount: PersonAccount | undefined
   rate = new RateLimiter(1)
 
+  directByEmail = new Map<string, Ref<DirectMessage>>()
+
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
@@ -303,7 +305,7 @@ export class WorkspaceClient {
     await this.opClient.remove(event)
   }
 
-  async getAccount (email: string): Promise<Account | undefined> {
+  async getAccount (email: string): Promise<PersonAccount | undefined> {
     if (this.opClient === undefined) {
       return
     }
@@ -311,12 +313,12 @@ export class WorkspaceClient {
     return await this.opClient.findOne(contact.class.PersonAccount, { email })
   }
 
-  async getDirect (_id: Ref<Account>): Promise<Ref<DirectMessage> | undefined> {
+  async getDirect (email: string): Promise<Ref<DirectMessage> | undefined> {
     if (this.opClient === undefined) {
       return
     }
 
-    const personAccount = await this.opClient.findOne(contact.class.PersonAccount, { _id: _id as Ref<PersonAccount> })
+    const personAccount = await this.getAccount(email)
 
     if (personAccount === undefined) {
       return
@@ -332,7 +334,7 @@ export class WorkspaceClient {
       }
     }
 
-    const id = await this.opClient.createDoc<DirectMessage>(chunter.class.DirectMessage, core.space.Space, {
+    const dmId = await this.opClient.createDoc<DirectMessage>(chunter.class.DirectMessage, core.space.Space, {
       name: '',
       description: '',
       private: true,
@@ -340,42 +342,41 @@ export class WorkspaceClient {
       members: accIds
     })
 
-    if (this.aiAccount === undefined) return id
+    if (this.aiAccount === undefined) return dmId
     const space = await this.opClient.findOne(contact.class.PersonSpace, { person: this.aiAccount.person })
-    if (space === undefined) return id
+    if (space === undefined) return dmId
     await this.opClient.createDoc(notification.class.DocNotifyContext, space._id, {
       user: aiBot.account.AIBot,
-      objectId: id,
+      objectId: dmId,
       objectClass: chunter.class.DirectMessage,
       objectSpace: core.space.Space,
       isPinned: false
     })
 
-    return id
+    return dmId
   }
 
-  async transferToSupport (event: AIBotTransferEvent): Promise<void> {
-    await this.rate.add(async () => {
-      if (this.opClient === undefined) return
-      const key = `${event.toEmail}-${event.fromWorkspace}`
-      const channel =
-        this.channelByKey.get(key) ??
-        (await getOrCreateAnalyticsChannel(
-          this.ctx,
-          this.opClient,
-          event.toEmail,
-          event.fromWorkspace,
-          event.fromWorkspaceUrl
-        ))
+  async transferToSupport (event: AIBotTransferEvent, channelRef?: Ref<Channel>): Promise<void> {
+    if (this.opClient === undefined) return
+    const key = `${event.toEmail}-${event.fromWorkspace}`
+    const channel =
+      channelRef ??
+      this.channelByKey.get(key) ??
+      (await getOrCreateAnalyticsChannel(
+        this.ctx,
+        this.opClient,
+        event.toEmail,
+        event.fromWorkspace,
+        event.fromWorkspaceUrl
+      ))
 
-      if (channel === undefined) {
-        return
-      }
+    if (channel === undefined) {
+      return
+    }
 
-      this.channelByKey.set(key, channel)
+    this.channelByKey.set(key, channel)
 
-      await this.createTransferMessage(this.opClient, event, channel, chunter.class.Channel, channel, event.message)
-    })
+    await this.createTransferMessage(this.opClient, event, channel, chunter.class.Channel, channel, event.message)
   }
 
   async transferToUserDirect (event: AIBotTransferEvent): Promise<void> {
@@ -383,19 +384,21 @@ export class WorkspaceClient {
       return
     }
 
-    const account = await this.getAccount(event.toEmail)
-
-    if (account === undefined) {
-      return
-    }
-
-    const direct = await this.getDirect(account._id)
+    const direct = this.directByEmail.get(event.toEmail) ?? (await this.getDirect(event.toEmail))
 
     if (direct === undefined) {
       return
     }
 
+    this.directByEmail.set(event.toEmail, direct)
+
     await this.createTransferMessage(this.opClient, event, direct, chunter.class.DirectMessage, direct, event.message)
+  }
+
+  getChannelRef (email: string, workspace: string): Ref<Channel> | undefined {
+    const key = `${email}-${workspace}`
+
+    return this.channelByKey.get(key)
   }
 
   async transfer (event: AIBotTransferEvent): Promise<void> {
@@ -404,9 +407,25 @@ export class WorkspaceClient {
     }
 
     if (event.toWorkspace === config.SupportWorkspace) {
-      await this.transferToSupport(event)
+      const channel = this.getChannelRef(event.toEmail, event.fromWorkspace)
+
+      if (channel !== undefined) {
+        await this.transferToSupport(event, channel)
+      } else {
+        // If we dont have AnalyticsChannel we should call it sync to prevent multiple channel for the same user and workspace
+        await this.rate.add(async () => {
+          await this.transferToSupport(event)
+        })
+      }
     } else {
-      await this.transferToUserDirect(event)
+      if (this.directByEmail.has(event.toEmail)) {
+        await this.transferToUserDirect(event)
+      } else {
+        // If we dont have Direct with user we should call it sync to prevent multiple directs for the same user
+        await this.rate.add(async () => {
+          await this.transferToUserDirect(event)
+        })
+      }
     }
   }
 

@@ -88,17 +88,23 @@ export class WorkspaceClient {
 
   async getChannel (
     client: TxOperations,
-    key: string,
     workspace: string,
     workspaceName: string,
     email: string,
     person?: Person
   ): Promise<Ref<Channel> | undefined> {
+    const key = `${email}-${workspace}`
     if (this.channelIdByKey.has(key)) {
       return this.channelIdByKey.get(key)
     }
 
-    return await getOrCreateAnalyticsChannel(this.ctx, client, email, workspace, workspaceName, person)
+    const channel = await getOrCreateAnalyticsChannel(this.ctx, client, email, workspace, workspaceName, person)
+
+    if (channel !== undefined) {
+      this.channelIdByKey.set(key, channel)
+    }
+
+    return channel
   }
 
   async processEvents (
@@ -107,18 +113,15 @@ export class WorkspaceClient {
     email: string,
     workspace: WorkspaceId,
     person?: Person,
-    wsUrl?: string
+    wsUrl?: string,
+    channelRef?: Ref<Channel>
   ): Promise<void> {
     const wsString = toWorkspaceString(workspace)
-    const channelKey = `${email}-${wsString}`
-
-    const channel = await this.getChannel(client, channelKey, wsString, wsUrl ?? wsString, email, person)
+    const channel = channelRef ?? (await this.getChannel(client, wsString, wsUrl ?? wsString, email, person))
 
     if (channel === undefined) {
       return
     }
-
-    this.channelIdByKey.set(channelKey, channel)
 
     for (const event of events) {
       const markup = await eventToMarkup(event, client.getHierarchy())
@@ -155,10 +158,19 @@ export class WorkspaceClient {
       return
     }
 
-    await this.rate.add(async () => {
-      if (this.opClient === undefined) return
-      await this.processEvents(this.opClient, events, email, workspace, person, wsUrl)
-    })
+    const wsString = toWorkspaceString(workspace)
+    const channelKey = `${email}-${wsString}`
+
+    if (this.channelIdByKey.has(channelKey)) {
+      const channel = this.channelIdByKey.get(channelKey)
+      await this.processEvents(this.opClient, events, email, workspace, person, wsUrl, channel)
+    } else {
+      // If we dont have AnalyticsChannel we should call it sync to prevent multiple channels for the same user and workspace
+      await this.rate.add(async () => {
+        if (this.opClient === undefined) return
+        await this.processEvents(this.opClient, events, email, workspace, person, wsUrl)
+      })
+    }
   }
 
   async close (): Promise<void> {
