@@ -21,6 +21,7 @@ import { TChannel } from '@hcengineering/model-chunter'
 import analyticsCollector from './plugin'
 
 export { analyticsCollectorId } from '@hcengineering/analytics-collector'
+export { analyticsCollectorOperation } from './migration'
 export default analyticsCollector
 
 @Mixin(analyticsCollector.mixin.AnalyticsChannel, chunter.class.Channel)

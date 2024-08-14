@@ -26,10 +26,11 @@ import core, {
   TxOperations,
   TxProcessor,
   WorkspaceId,
-  Blob
+  Blob,
+  RateLimiter
 } from '@hcengineering/core'
 import aiBot, { AIBotEvent, aiBotAccountEmail, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
-import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
+import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import contact, { AvatarType, combineName, getFirstName, getLastName, PersonAccount } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
 import notification from '@hcengineering/notification'
@@ -57,7 +58,9 @@ export class WorkspaceClient {
 
   initializePromise: Promise<void> | undefined = undefined
 
+  channelByKey = new Map<string, Ref<Channel>>()
   aiAccount: PersonAccount | undefined
+  rate = new RateLimiter(1)
 
   constructor (
     readonly transactorUrl: string,
@@ -176,15 +179,13 @@ export class WorkspaceClient {
       return
     }
     this.opClient = new TxOperations(this.client, aiBot.account.AIBot)
-    void this.opClient.findAll(aiBot.class.AIBotEvent, {}).then((res) => {
-      void this.processEvents(res)
-    })
+    await this.uploadAvatarFile(this.opClient)
+    const events = await this.opClient.findAll(aiBot.class.AIBotTransferEvent, {})
+    void this.processEvents(events)
 
     this.client.notify = (...txes: Tx[]) => {
       void this.txHandler(txes)
     }
-
-    await this.uploadAvatarFile(this.opClient)
     this.ctx.info('Initialized workspace', this.workspace)
   }
 
@@ -354,17 +355,27 @@ export class WorkspaceClient {
   }
 
   async transferToSupport (event: AIBotTransferEvent): Promise<void> {
-    if (this.opClient === undefined) {
-      return
-    }
+    await this.rate.add(async () => {
+      if (this.opClient === undefined) return
+      const key = `${event.toEmail}-${event.fromWorkspace}`
+      const channel =
+        this.channelByKey.get(key) ??
+        (await getOrCreateAnalyticsChannel(
+          this.ctx,
+          this.opClient,
+          event.toEmail,
+          event.fromWorkspace,
+          event.fromWorkspaceUrl
+        ))
 
-    const channel = await getOrCreateAnalyticsChannel(this.opClient, event.toEmail, event.fromWorkspace)
+      if (channel === undefined) {
+        return
+      }
 
-    if (channel === undefined) {
-      return
-    }
+      this.channelByKey.set(key, channel)
 
-    await this.createTransferMessage(this.opClient, event, channel, chunter.class.Channel, channel, event.message)
+      await this.createTransferMessage(this.opClient, event, channel, chunter.class.Channel, channel, event.message)
+    })
   }
 
   async transferToUserDirect (event: AIBotTransferEvent): Promise<void> {

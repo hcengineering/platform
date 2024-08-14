@@ -32,6 +32,7 @@ const MAX_ASSIGN_ATTEMPTS = 5
 export class AIBotController {
   private readonly workspaces: Map<string, WorkspaceClient> = new Map<string, WorkspaceClient>()
   private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
+  private readonly connectingWorkspaces: Set<string> = new Set<string>()
 
   private readonly db: Db
   private readonly ctx: MeasureContext
@@ -58,7 +59,13 @@ export class AIBotController {
     for (const record of activeRecords) {
       const id: WorkspaceId = { name: record.workspace, productId: record.productId }
 
-      if (this.workspaces.has(toWorkspaceString(id))) {
+      const ws = toWorkspaceString(id)
+
+      if (this.workspaces.has(ws)) {
+        continue
+      }
+
+      if (this.connectingWorkspaces.has(ws)) {
         continue
       }
 
@@ -89,6 +96,7 @@ export class AIBotController {
       await client.close()
       this.workspaces.delete(workspace)
     }
+    this.connectingWorkspaces.delete(workspace)
   }
 
   private async getWorkspaceInfo (ws: WorkspaceId): Promise<WorkspaceLoginInfo | undefined> {
@@ -146,6 +154,7 @@ export class AIBotController {
 
   async initWorkspaceClient (workspaceId: WorkspaceId, info: WorkspaceInfoRecord): Promise<void> {
     const workspace = toWorkspaceString(workspaceId)
+    this.connectingWorkspaces.add(workspace)
 
     if (!this.workspaces.has(workspace)) {
       this.ctx.info('Listen workspace: ', { workspace })
@@ -169,6 +178,7 @@ export class AIBotController {
     }, CLOSE_INTERVAL_MS)
 
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
+    this.connectingWorkspaces.delete(workspace)
   }
 
   async transfer (event: AIBotTransferEvent): Promise<void> {

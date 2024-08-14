@@ -13,25 +13,13 @@
 // limitations under the License.
 //
 
-import { WorkspaceInfo } from '@hcengineering/account'
+import { coreId } from '@hcengineering/core'
+import coreEng from '@hcengineering/core/lang/en.json'
+import platformEng from '@hcengineering/platform/lang/en.json'
 
-import config from './config'
+import { addStringsLoader, platformId } from '@hcengineering/platform'
 
-export async function getWorkspaceInfo (token: string): Promise<WorkspaceInfo | undefined> {
-  const accountsUrl = config.AccountsUrl
-  const workspaceInfo = await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'getWorkspaceInfo',
-        params: []
-      })
-    })
-  ).json()
-
-  return workspaceInfo.result as WorkspaceInfo
+export function registerLoaders (): void {
+  addStringsLoader(coreId, async (lang: string) => coreEng)
+  addStringsLoader(platformId, async (lang: string) => platformEng)
 }

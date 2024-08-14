@@ -182,23 +182,11 @@ function getSupportWorkspaceId (): string | undefined {
   return supportWorkspaceId
 }
 
-async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<Tx[]> {
+async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
   const supportWorkspaceId = getSupportWorkspaceId()
 
   if (supportWorkspaceId === undefined) {
-    return []
-  }
-
-  const direct = (await getMessageDoc(message, control)) as DirectMessage
-
-  if (direct === undefined) {
-    return []
-  }
-
-  const isAvailable = await isDirectAvailable(direct, control)
-
-  if (!isAvailable) {
-    return []
+    return
   }
 
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
@@ -206,7 +194,19 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
   })[0]
 
   if (account === undefined || account.role !== AccountRole.Owner) {
-    return []
+    return
+  }
+
+  const direct = (await getMessageDoc(message, control)) as DirectMessage
+
+  if (direct === undefined) {
+    return
+  }
+
+  const isAvailable = await isDirectAvailable(direct, control)
+
+  if (!isAvailable) {
+    return
   }
 
   let data: Data<AIBotResponseEvent> | undefined
@@ -218,7 +218,7 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
   }
 
   if (data === undefined) {
-    return []
+    return
   }
 
   const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
@@ -228,34 +228,34 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
     toWorkspace: supportWorkspaceId,
     toEmail: account.email,
     fromWorkspace: toWorkspaceString(control.workspace),
+    fromWorkspaceUrl: control.workspace.workspaceUrl,
     messageId: message._id,
     parentMessageId: await getThreadParent(control, message)
   })
 
+  await control.apply([eventTx])
   await processWorkspace(control)
-
-  return [eventTx]
 }
 
-async function onSupportWorkspaceMessage (control: TriggerControl, message: ChatMessage): Promise<Tx[]> {
+async function onSupportWorkspaceMessage (control: TriggerControl, message: ChatMessage): Promise<void> {
   const supportWorkspaceId = getSupportWorkspaceId()
 
   if (supportWorkspaceId === undefined) {
-    return []
+    return
   }
 
   if (toWorkspaceString(control.workspace) !== supportWorkspaceId) {
-    return []
+    return
   }
 
   const channel = await getMessageDoc(message, control)
 
   if (channel === undefined) {
-    return []
+    return
   }
 
   if (!control.hierarchy.hasMixin(channel, analytics.mixin.AnalyticsChannel)) {
-    return []
+    return
   }
 
   const mixin = control.hierarchy.as(channel, analytics.mixin.AnalyticsChannel)
@@ -270,23 +270,24 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
   }
 
   if (data === undefined) {
-    return []
+    return
   }
 
-  await processWorkspace(control)
+  const tx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
+    messageClass: data.messageClass,
+    message: message.message,
+    collection: data.collection,
+    toEmail: email,
+    toWorkspace: workspace,
+    fromWorkspace: toWorkspaceString(control.workspace),
+    fromWorkspaceUrl: control.workspace.workspaceUrl,
+    messageId: message._id,
+    parentMessageId: await getThreadParent(control, message)
+  })
 
-  return [
-    control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
-      messageClass: data.messageClass,
-      message: message.message,
-      collection: data.collection,
-      toEmail: email,
-      toWorkspace: workspace,
-      fromWorkspace: toWorkspaceString(control.workspace),
-      messageId: message._id,
-      parentMessageId: await getThreadParent(control, message)
-    })
-  ]
+  await control.apply([tx])
+
+  await processWorkspace(control)
 }
 
 export async function OnMessageSend (
@@ -312,19 +313,15 @@ export async function OnMessageSend (
     return []
   }
 
-  const res: Tx[] = []
-
   if (docClass === chunter.class.DirectMessage) {
-    const txes = await onBotDirectMessageSend(control, message)
-    res.push(...txes)
+    await onBotDirectMessageSend(control, message)
   }
 
   if (docClass === chunter.class.Channel) {
-    const txes = await onSupportWorkspaceMessage(control, message)
-    res.push(...txes)
+    await onSupportWorkspaceMessage(control, message)
   }
 
-  return res
+  return []
 }
 
 export async function OnMention (tx: TxCreateDoc<MentionInboxNotification>, control: TriggerControl): Promise<Tx[]> {

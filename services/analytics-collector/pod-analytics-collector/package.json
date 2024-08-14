@@ -53,6 +53,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/analytics-service": "^0.6.0",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/chunter-assets": "^0.6.18",

@@ -20,6 +20,7 @@ export interface Config {
   ServiceID: string
   SupportWorkspace: string
   AccountsUrl: string
+  SentryDSN?: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -31,7 +32,8 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'analytics-collector-service',
     SupportWorkspace: process.env.SUPPORT_WORKSPACE,
-    AccountsUrl: process.env.ACCOUNTS_URL
+    AccountsUrl: process.env.ACCOUNTS_URL,
+    SentryDSN: process.env.SENTRY_DSN ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
