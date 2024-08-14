@@ -16,11 +16,12 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
+  import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
   import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
+  import { getObjectId } from '@hcengineering/view-resources'
 
   import { getChannelSpace } from '../../utils'
 
@@ -108,7 +109,11 @@
       const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
       console.log(`create.${_class} measure`, res.serverTime, res.time)
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: res.result, objectId, objectClass: object._class })
     } catch (err: any) {
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
       console.error(err)
     }
@@ -117,7 +122,11 @@
   async function handleEdit (event: CustomEvent): Promise<void> {
     try {
       await editMessage(event)
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: true, objectId, objectClass: object._class })
     } catch (err: any) {
+      const objectId = await getObjectId(object, client.getHierarchy())
+      Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
       console.error(err)
     }

@@ -1624,3 +1624,14 @@ export async function parseLinkId<T extends Doc> (
 
   return (_id ?? id) as Ref<T>
 }
+
+export async function getObjectId (object: Doc, hierarchy: Hierarchy): Promise<string> {
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    return await encodeFn(object)
+  }
+
+  return object._id
+}

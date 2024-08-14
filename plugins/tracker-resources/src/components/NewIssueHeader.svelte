@@ -17,11 +17,13 @@
   import { MultipleDraftController, getClient } from '@hcengineering/presentation'
   import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { Project, TrackerEvents } from '@hcengineering/tracker'
+  import { Analytics } from '@hcengineering/analytics'
+
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
   import { importTasks } from '..'
-  import { Project } from '@hcengineering/tracker'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -37,6 +39,7 @@
   )
   async function newIssue (): Promise<void> {
     closed = false
+    Analytics.handleEvent(TrackerEvents.NewIssueButtonClicked)
     showPopup(CreateIssue, { space: currentSpace, shouldSaveDraft: true }, 'top', () => {
       closed = true
     })

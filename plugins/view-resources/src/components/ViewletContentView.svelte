@@ -14,6 +14,7 @@
 
   export let createItemDialog: AnySvelteComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
+  export let createItemEvent: string | undefined = undefined
   export let createItemDialogProps = { shouldSaveDraft: true }
 
   const hierarchy = getClient().getHierarchy()
@@ -92,6 +93,7 @@
         createItemDialog,
         createItemDialogProps,
         createItemLabel,
+        createItemEvent,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,

@@ -17,6 +17,7 @@
   import { getAccount, getWorkspaces, navigateToWorkspace } from '@hcengineering/login-resources'
   import { OK } from '@hcengineering/platform'
   import { onMount } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   import { OnboardSteps } from '../index'
   import onboard from '../plugin'
@@ -25,6 +26,7 @@
   import Form from './Form.svelte'
   import OnboardUserForm from './OnboardUserForm.svelte'
   import OnboardWorkspaceForm from './OnboardWorkspaceForm.svelte'
+  import { OnboardEvents } from '../analytics'
 
   const steps = Object.values(OnboardSteps)
 
@@ -68,6 +70,7 @@
     i18n: onboard.string.StartUsingHuly,
     func: async () => {
       if (account !== undefined && isWorkspaceLoginInfo(account)) {
+        Analytics.handleEvent(OnboardEvents.StartHuly)
         navigateToWorkspace(account.workspace, account)
       }
     }

@@ -89,6 +89,7 @@ export interface ChannelInfo extends DocNotifyContext {
 export const chunterId = 'chunter' as Plugin
 
 export * from './utils'
+export * from './analytics'
 
 export default plugin(chunterId, {
   icon: {

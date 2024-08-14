@@ -23,7 +23,8 @@ import {
   type Meeting,
   type Office,
   type ParticipantInfo,
-  type Room
+  type Room,
+  LoveEvents
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, { createQuery, getClient, type DocCreatePhase } from '@hcengineering/presentation'
@@ -348,11 +349,13 @@ lk.on(RoomEvent.Connected, () => {
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
+  Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
   isConnected.set(false)
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(false)
+  Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 
 export async function connect (name: string, room: Room, _id: string): Promise<void> {

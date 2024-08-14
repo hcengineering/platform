@@ -41,6 +41,7 @@ import { workbenchId } from '@hcengineering/workbench'
 
 import login from './plugin'
 import { type Pages } from './index'
+import { LoginEvents } from './analytics'
 
 /**
  * Perform a login operation to required workspace with user credentials.
@@ -68,14 +69,16 @@ export async function doLogin (email: string, password: string): Promise<[Status
     const result = await response.json()
     console.log('login result', result)
     if (result.error == null) {
-      Analytics.handleEvent('login')
+      Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
       await handleStatusError('Login error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     console.error('login error', err)
+    Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -108,14 +111,16 @@ export async function signUp (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('signup')
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
       await handleStatusError('Sign up error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     Analytics.handleError(err)
+    Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
     return [unknownError(err), undefined]
   }
 }
@@ -188,13 +193,15 @@ export async function createWorkspace (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('create workspace')
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
       Analytics.setWorkspace(workspaceName)
     } else {
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
       await handleStatusError('Create workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
+    Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -318,13 +325,15 @@ export async function selectWorkspace (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('Select workspace')
+      Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: true })
       Analytics.setWorkspace(workspace)
     } else {
+      Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: false })
       await handleStatusError('Select workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
+    Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -1014,14 +1023,16 @@ export async function loginWithOtp (email: string, otp: string): Promise<[Status
     const result = await response.json()
 
     if (result.error == null) {
-      Analytics.handleEvent('loginWithOtp')
+      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
       await handleStatusError('Login with otp error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     console.error('Login with otp error', err)
+    Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }

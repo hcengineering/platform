@@ -16,7 +16,7 @@
   import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { TimeEvents, ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
   import { Calendar, generateEventId } from '@hcengineering/calendar'
   import tagsPlugin, { TagReference } from '@hcengineering/tags'
   import { createEventDispatcher } from 'svelte'
@@ -29,6 +29,7 @@
   import DueDateEditor from './DueDateEditor.svelte'
   import Workslots from './Workslots.svelte'
   import time from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let object: Doc | undefined
 
@@ -84,6 +85,7 @@
         rank: makeRank(undefined, latestTodo?.rank)
       }
     )
+    Analytics.handleEvent(TimeEvents.ToDoCreated, { id })
     for (const slot of slots) {
       await ops.addCollection(time.class.WorkSlot, calendar.space.Calendar, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
@@ -98,6 +100,7 @@
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
         reminders: []
       })
+      Analytics.handleEvent(TimeEvents.ToDoScheduled, { id })
     }
     for (const tag of tags) {
       await ops.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)

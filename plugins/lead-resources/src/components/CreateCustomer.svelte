@@ -17,7 +17,7 @@
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
-  import type { Customer } from '@hcengineering/lead'
+  import { Customer, LeadEvents } from '@hcengineering/lead'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import {
     Button,
@@ -31,6 +31,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
   import lead from '../plugin'
 
   let firstName = ''
@@ -95,6 +96,7 @@
         }
       )
     }
+    Analytics.handleEvent(LeadEvents.CustomerCreated, { id })
   }
 
   const targets = [

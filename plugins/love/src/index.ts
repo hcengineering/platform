@@ -12,6 +12,8 @@ export const loveId = 'love' as Plugin
 export type { ScreenSource } from './utils'
 export const GRID_WIDTH = 15
 
+export * from './analytics'
+
 export enum RoomAccess {
   Open,
   Knock,

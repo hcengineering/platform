@@ -25,7 +25,7 @@
   } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, TrackerEvents } from '@hcengineering/tracker'
   import {
     AnyComponent,
     Button,
@@ -41,6 +41,9 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { Analytics } from '@hcengineering/analytics'
+
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueIdByIdentifier } from '../../../issues'
   import tracker from '../../../plugin'
@@ -49,7 +52,6 @@
   import CopyToClipboard from './CopyToClipboard.svelte'
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   export let _id: Ref<Issue> | string
   export let _class: Ref<Class<Issue>>
@@ -128,6 +130,7 @@
 
     if (trimmedTitle.length > 0 && trimmedTitle !== issue.title?.trim()) {
       await client.update(issue, { title: trimmedTitle })
+      Analytics.handleEvent(TrackerEvents.IssueTitleUpdated, { issue: issue.identifier ?? issue._id })
     }
   }
 
@@ -292,6 +295,7 @@
         {readonly}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
+        identifier={issue?.identifier}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         boundary={content}
         on:saved={(evt) => {

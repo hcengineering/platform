@@ -82,7 +82,14 @@
   }
 
   async function createTagElementQuick (): Promise<void> {
-    const res = await createTagElement(search, targetClass, findTagCategory(search, categories))
+    const res = await createTagElement(
+      search,
+      targetClass,
+      findTagCategory(search, categories),
+      undefined,
+      undefined,
+      keyLabel
+    )
     await onCreateTagElement(res)
   }
 

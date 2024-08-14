@@ -23,6 +23,7 @@ import { SpaceTypeCreator, SpaceTypeEditor } from './spaceTypeEditor'
 
 export * from './spaceTypeEditor'
 export * from './utils'
+export * from './analytics'
 
 /**
  * @public

@@ -14,7 +14,14 @@
 //
 
 import { type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
-import { type Drive, type FileVersion, type Folder, type Resource, createFolder } from '@hcengineering/drive'
+import {
+  type Drive,
+  type FileVersion,
+  type Folder,
+  type Resource,
+  createFolder,
+  DriveEvents
+} from '@hcengineering/drive'
 import drive, { createFile } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -36,6 +43,7 @@ import FileTypeImage from './components/icons/FileTypeImage.svelte'
 import FileTypeVideo from './components/icons/FileTypeVideo.svelte'
 import FileTypePdf from './components/icons/FileTypePdf.svelte'
 import FileTypeText from './components/icons/FileTypeText.svelte'
+import { Analytics } from '@hcengineering/analytics'
 
 async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
   const client = getClient()
@@ -239,8 +247,10 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
       }
 
       await createFile(client, space, folder, data)
+      Analytics.handleEvent(DriveEvents.FileUploaded, { ok: true, type: file.type, size: file.size, name })
     } catch (err) {
       void setPlatformStatus(unknownError(err))
+      Analytics.handleEvent(DriveEvents.FileUploaded, { ok: false, name })
     }
   }
 

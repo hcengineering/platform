@@ -57,7 +57,8 @@
     IssueTemplate,
     Milestone,
     Project,
-    ProjectTargetPreference
+    ProjectTargetPreference,
+    TrackerEvents
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -563,12 +564,18 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
+      Analytics.handleEvent(TrackerEvents.IssueCreated, {
+        ok: true,
+        id: value.identifier,
+        project: currentProject.identifier
+      })
       console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {
       resetObject()
       draftController.remove()
       descriptionBox?.removeDraft(false)
       console.error(err)
+      Analytics.handleEvent(TrackerEvents.IssueCreated, { ok: false, project: currentProject.identifier })
       Analytics.handleError(err)
     }
   }

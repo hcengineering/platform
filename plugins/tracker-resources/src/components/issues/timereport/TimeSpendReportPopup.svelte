@@ -18,12 +18,13 @@
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { UserBox } from '@hcengineering/contact-resources'
-  import { Issue, TimeReportDayType, TimeSpendReport } from '@hcengineering/tracker'
+  import { Issue, TimeReportDayType, TimeSpendReport, TrackerEvents } from '@hcengineering/tracker'
   import { Button, DatePresenter, EditBox, Label } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import { getTimeReportDate, getTimeReportDayType } from '../../../utils'
   import TitlePresenter from '../TitlePresenter.svelte'
   import TimeReportDayDropdown from './TimeReportDayDropdown.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let issue: Issue | undefined = undefined
   export let issueId: Ref<Issue> | undefined = issue?._id
@@ -61,6 +62,7 @@
           'reports',
           data as AttachedData<TimeSpendReport>
         )
+        Analytics.handleEvent(TrackerEvents.IssueTimeSpentAdded, { issue: issue?.identifier ?? issueId })
       }
     } else {
       const ops: DocumentUpdate<TimeSpendReport> = {}
@@ -78,6 +80,7 @@
       }
       if (Object.keys(ops).length > 0) {
         await client.update(value, ops)
+        Analytics.handleEvent(TrackerEvents.IssueTimeSpentUpdated, { issue: issue?.identifier ?? issueId })
       }
     }
   }

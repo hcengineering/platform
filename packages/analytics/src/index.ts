@@ -10,9 +10,10 @@ export interface AnalyticProvider {
   setUser: (email: string) => void
   setTag: (key: string, value: string) => void
   setWorkspace: (ws: string) => void
-  handleEvent: (event: string) => void
+  handleEvent: (event: string, params: Record<string, string>) => void
   handleError: (error: Error) => void
   navigate: (path: string) => void
+  logout: () => void
 }
 
 export const Analytics = {
@@ -41,9 +42,9 @@ export const Analytics = {
     })
   },
 
-  handleEvent (event: string): void {
+  handleEvent (event: string, params: Record<string, any> = {}): void {
     providers.forEach((provider) => {
-      provider.handleEvent(event)
+      provider.handleEvent(event, params)
     })
   },
 
@@ -56,6 +57,12 @@ export const Analytics = {
   navigate (path: string): void {
     providers.forEach((provider) => {
       provider.navigate(path)
+    })
+  },
+
+  logout (): void {
+    providers.forEach((provider) => {
+      provider.logout()
     })
   }
 }
