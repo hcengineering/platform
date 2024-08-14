@@ -61,7 +61,6 @@ export class WorkspaceClient {
   channelByKey = new Map<string, Ref<Channel>>()
   aiAccount: PersonAccount | undefined
   rate = new RateLimiter(1)
-
   directByEmail = new Map<string, Ref<DirectMessage>>()
 
   constructor (
