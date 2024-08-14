@@ -109,7 +109,7 @@ export async function sendEmailNotification (
   try {
     const sesURL = getMetadata(serverNotification.metadata.SesUrl)
     if (sesURL === undefined || sesURL === '') {
-      ctx.error('Please provide email service url to enable email confirmations.')
+      ctx.error('Please provide email service url to enable email notifications.')
       return
     }
     await fetch(concatLink(sesURL, '/send'), {
