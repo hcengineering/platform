@@ -13,13 +13,25 @@
 // limitations under the License.
 //
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
-import analyticsCollector from '@hcengineering/analytics-collector'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  tryMigrate
+} from '@hcengineering/model'
+import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 export const analyticsCollectorOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await client.deleteMany(DOMAIN_SPACE, { [`${analyticsCollector.mixin.AnalyticsChannel}`]: { $exists: true } })
+    await tryMigrate(client, analyticsCollectorId, [
+      {
+        state: 'remove-analytics-channels',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_SPACE, { [`${analyticsCollector.mixin.AnalyticsChannel}`]: { $exists: true } })
+        }
+      }
+    ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }
