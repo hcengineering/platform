@@ -228,7 +228,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title))))
   }
 
-  return await getCommonNotificationTxes(
+  const txes = await getCommonNotificationTxes(
     control,
     object,
     data,
@@ -240,6 +240,16 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     createTx.modifiedOn,
     notifyResult
   )
+
+  await control.apply(txes)
+
+  const ids = txes.map((it) => it._id)
+  control.operationContext.derived.targets.notifications = (it) => {
+    if (ids.includes(it._id)) {
+      return [receiverInfo.account.email]
+    }
+  }
+  return []
 }
 
 /**
