@@ -63,6 +63,8 @@ export class WorkspaceClient {
   rate = new RateLimiter(1)
   directByEmail = new Map<string, Ref<DirectMessage>>()
 
+  directByEmail = new Map<string, Ref<DirectMessage>>()
+
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
