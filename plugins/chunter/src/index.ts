@@ -20,7 +20,7 @@ import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
-import { Person } from '@hcengineering/contact'
+import { Person, ChannelProvider as SocialChannelProvider } from '@hcengineering/contact'
 
 /**
  * @public
@@ -53,6 +53,7 @@ export interface ChatMessage extends ActivityMessage {
   message: Markup
   attachments?: number
   editedOn?: Timestamp
+  provider?: Ref<SocialChannelProvider>
 }
 
 /**

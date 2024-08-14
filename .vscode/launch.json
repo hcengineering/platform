@@ -415,6 +415,25 @@
       "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
       "protocol": "inspector",
       "outputCapture": "std"
+    },
+    {
+      "name": "Debug telegram bot",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4020",
+        "BOT_TOKEN": "token",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "MONGO_DB": "telegram-bot",
+        "SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "SERVICE_ID": "telegram-bot-service"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
     }
   ]
 }

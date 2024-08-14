@@ -55,7 +55,8 @@ export class WorkspaceClient {
           objectClass: thread.objectClass,
           message: text,
           attachments: 0,
-          collection: 'replies'
+          collection: 'replies',
+          provider: contact.channelProvider.Telegram
         })
       )
       await this.client.tx(collectionTx)
@@ -72,7 +73,8 @@ export class WorkspaceClient {
           objectClass: message.attachedToClass,
           message: text,
           attachments: 0,
-          collection: 'replies'
+          collection: 'replies',
+          provider: contact.channelProvider.Telegram
         })
       )
       await this.client.tx(collectionTx)
