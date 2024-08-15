@@ -21,10 +21,10 @@ import core, {
   type Class,
   type TxMixin
 } from '@hcengineering/core'
+import github, { DocSyncInfo, GithubProject } from '@hcengineering/github'
 import { TriggerControl } from '@hcengineering/server-core'
 import time, { ToDo } from '@hcengineering/time'
 import tracker from '@hcengineering/tracker'
-import github, { DocSyncInfo, GithubProject } from '@hcengineering/github'
 
 /**
  * @public
@@ -124,7 +124,7 @@ async function updateDocSyncInfo (
     }
   }
 
-  const [account] = await control.modelDb.findAll(contact.class.PersonAccount, {
+  const [account] = control.modelDb.findAllSync(contact.class.PersonAccount, {
     _id: tx.modifiedBy as Ref<PersonAccount>
   })
   // Do not modify state if is modified by github service.

@@ -67,7 +67,7 @@ async function hydrateNotificationAsYouCan (lastNotification: InboxNotification)
     body: ''
   }
 
-  const account = await client.findOne(contact.class.PersonAccount, { _id: lastNotification.modifiedBy as Ref<PersonAccount> })
+  const account = await client.getModel().findOne(contact.class.PersonAccount, { _id: lastNotification.modifiedBy as Ref<PersonAccount> })
 
   if (account == null) {
     return noPersonData

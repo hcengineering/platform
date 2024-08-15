@@ -75,16 +75,16 @@
     { sort: { _id: 1 }, projection: { _id: 1 } }
   )
 
-  const archivedProjectQuery = createQuery()
-  let archived: Ref<Project>[] = []
+  const allProjectQuery = createQuery()
+  let allProjects: Pick<Project, '_class' | '_id' | 'archived'>[] = []
 
-  archivedProjectQuery.query(
+  allProjectQuery.query(
     tracker.class.Project,
-    { archived: true },
+    {},
     (res) => {
-      archived = res.map((it) => it._id)
+      allProjects = res
     },
-    { projection: { _id: 1 } }
+    { projection: { _id: 1, archived: 1 } }
   )
 
   $: queries = { assigned, active, backlog, created, subscribed }
@@ -95,7 +95,7 @@
   $: if (mode !== undefined) {
     query = { ...(queries as any)[mode] }
     if (query?.space === undefined) {
-      query = { ...query, space: { $nin: archived } }
+      query = { ...query, space: { $in: allProjects.filter((it) => !it.archived).map((it) => it._id) } }
     }
     modeSelectorProps = {
       config,

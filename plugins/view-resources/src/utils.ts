@@ -1496,6 +1496,14 @@ export const permissionsStore = writable<PermissionsStore>({
   whitelist: new Set()
 })
 
+const spaceSpaceQuery = createQuery(true)
+
+export const spaceSpace = writable<TypedSpace | undefined>(undefined)
+
+spaceSpaceQuery.query(core.class.TypedSpace, { _id: core.space.Space }, (res) => {
+  spaceSpace.set(res[0])
+})
+
 const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
 type TargetClassesProjection = Record<Ref<Class<Space>>, number>

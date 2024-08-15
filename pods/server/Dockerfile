@@ -2,7 +2,7 @@ FROM node:20
 
 WORKDIR /usr/src/app
 RUN npm install --ignore-scripts=false --verbose bufferutil utf-8-validate @mongodb-js/zstd snappy --unsafe-perm
-RUN npm install --ignore-scripts=false --verbose uNetworking/uWebSockets.js#v20.43.0
+RUN npm install --ignore-scripts=false --verbose uNetworking/uWebSockets.js#v20.47.0
 
 RUN apt-get update
 RUN apt-get install libjemalloc2

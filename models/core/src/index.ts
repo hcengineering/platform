@@ -197,6 +197,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_TX,
     disabled: [
+      { _class: 1 },
       { space: 1 },
       { objectClass: 1 },
       { createdBy: 1 },
@@ -267,7 +268,14 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_STATUS,
-    disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+    disabled: [
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 },
+      { space: 1 }
+    ]
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_SPACE,
@@ -276,7 +284,15 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_BLOB,
-    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 },
+      { modifiedOn: 1 }
+    ]
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
