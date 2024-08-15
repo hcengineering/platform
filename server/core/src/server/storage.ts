@@ -78,6 +78,7 @@ import type {
   TriggerControl
 } from '../types'
 import { SessionContextImpl, createBroadcastEvent } from '../utils'
+import { QueryJoiner } from './utils'
 
 interface DomainInfo {
   exists: boolean
@@ -101,6 +102,8 @@ export class TServerStorage implements ServerStorage {
 
   emptyAdapter = new DummyDbAdapter()
 
+  joiner: QueryJoiner
+
   constructor (
     private readonly _domains: Record<string, string>,
     private readonly defaultAdapter: string,
@@ -122,6 +125,9 @@ export class TServerStorage implements ServerStorage {
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
     this.branding = options.branding
+    this.joiner = new QueryJoiner((ctx, _class, query, options) => {
+      return this.liveQuery.findAll(_class, query, { ...options, ctx } as any)
+    })
 
     this.setModel(model)
   }
@@ -949,12 +955,20 @@ export class TServerStorage implements ServerStorage {
   async processTxes (ctx: SessionOperationContext, txes: Tx[]): Promise<TxResult> {
     // store tx
     const _findAll: ServerStorage['findAll'] = async <T extends Doc>(
-      ctx: MeasureContext,
+      _ctx: MeasureContext,
       clazz: Ref<Class<T>>,
       query: DocumentQuery<T>,
       options?: FindOptions<T>
     ): Promise<FindResult<T>> => {
-      return await this.findAll(ctx, clazz, query, { ...options, prefix: 'server' })
+      return await _ctx.with(
+        'findAll',
+        { _class: clazz },
+        async (ctx) => await this.joiner.findAll(ctx, clazz, query, { ...options, prefix: 'server' } as any),
+        {
+          query,
+          options
+        }
+      )
     }
     const txToStore: Tx[] = []
     const modelTx: Tx[] = []
