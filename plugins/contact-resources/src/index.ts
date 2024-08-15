@@ -268,8 +268,8 @@ async function kickEmployee (doc: Person): Promise<void> {
   const client = getClient()
 
   const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
-  const email = await client.findOne(contact.class.PersonAccount, { person: doc._id })
-  if (email === undefined) {
+  const accounts = client.getModel().getAccountByPersonId(doc._id)
+  if (accounts.length === 0) {
     await client.update(employee, { active: false })
   } else {
     showPopup(
@@ -282,9 +282,11 @@ async function kickEmployee (doc: Person): Promise<void> {
       (res?: boolean) => {
         if (res === true) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          getResource(login.function.LeaveWorkspace).then(async (f) => {
-            await f(email.email)
-          })
+          for (const i of accounts) {
+            void getResource(login.function.LeaveWorkspace).then(async (f) => {
+              await f(i.email)
+            })
+          }
         }
       }
     )

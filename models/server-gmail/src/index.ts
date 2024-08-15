@@ -49,6 +49,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(gmail.ids.EmailNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
-    func: serverGmail.function.IsIncomingMessage
+    func: serverGmail.function.IsIncomingMessageTypeMatch
   })
 }

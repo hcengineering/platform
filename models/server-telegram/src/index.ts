@@ -56,7 +56,7 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverTelegram.function.IsIncomingMessage
+      func: serverTelegram.function.IsIncomingMessageTypeMatch
     }
   )
 

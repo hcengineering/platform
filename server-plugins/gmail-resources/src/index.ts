@@ -88,13 +88,13 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
 /**
  * @public
  */
-export async function IsIncomingMessage (
+export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
   user: Ref<Account>,
   type: NotificationType,
   control: TriggerControl
-): Promise<boolean> {
+): boolean {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<Message>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
@@ -183,7 +183,7 @@ export default async () => ({
     OnMessageCreate
   },
   function: {
-    IsIncomingMessage,
+    IsIncomingMessageTypeMatch,
     FindMessages,
     SendEmailNotifications
   }
