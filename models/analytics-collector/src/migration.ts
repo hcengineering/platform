@@ -21,15 +21,34 @@ import {
 } from '@hcengineering/model'
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+
+async function removeAnalyticsChannels (client: MigrationClient): Promise<void> {
+  const channels = await client.find(DOMAIN_SPACE, {
+    [`${analyticsCollector.mixin.AnalyticsChannel}`]: { $exists: true }
+  })
+
+  if (channels.length === 0) {
+    return
+  }
+
+  const channelsIds = channels.map((it) => it._id)
+  const contexts = await client.find(DOMAIN_DOC_NOTIFY, { objectId: { $in: channelsIds } })
+  const contextsIds = contexts.map((it) => it._id)
+
+  await client.deleteMany(DOMAIN_ACTIVITY, { attachedTo: { $in: channelsIds } })
+  await client.deleteMany(DOMAIN_NOTIFICATION, { docNotifyContext: { $in: contextsIds } })
+  await client.deleteMany(DOMAIN_DOC_NOTIFY, { _id: { $in: contextsIds } })
+  await client.deleteMany(DOMAIN_SPACE, { [`${analyticsCollector.mixin.AnalyticsChannel}`]: { $exists: true } })
+}
 
 export const analyticsCollectorOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, analyticsCollectorId, [
       {
-        state: 'remove-analytics-channels',
-        func: async (client) => {
-          await client.deleteMany(DOMAIN_SPACE, { [`${analyticsCollector.mixin.AnalyticsChannel}`]: { $exists: true } })
-        }
+        state: 'remove-analytics-channels-v1',
+        func: removeAnalyticsChannels
       }
     ])
   },
