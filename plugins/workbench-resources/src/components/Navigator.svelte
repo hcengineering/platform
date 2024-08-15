@@ -41,12 +41,14 @@
   let shownSpaces: Space[] = []
 
   $: if (model) {
-    const classes = getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c))
+    const classes = Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
+      (it) => !hierarchy.isMixin(it)
+    )
     if (classes.length > 0) {
       query.query(
-        core.class.Space,
+        classes.length === 1 ? classes[0] : core.class.Space,
         {
-          _class: classes.length === 1 ? classes[0] : { $in: classes },
+          ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
           members: getCurrentAccount()._id
         },
         (result) => {

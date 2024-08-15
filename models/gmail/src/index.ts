@@ -254,7 +254,8 @@ export function createModel (builder: Builder): void {
       { modifiedBy: 1 },
       { createdBy: 1 },
       { attachedToClass: 1 },
-      { createdOn: -1 }
+      { createdOn: -1 },
+      { modifiedOn: 1 }
     ]
   })
 

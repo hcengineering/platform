@@ -321,11 +321,12 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       if (upd.operations.value !== undefined) {
         const logTxes = Array.from(
           await control.findAll(core.class.TxCollectionCUD, {
-            'tx.objectId': cud.objectId,
-            _id: { $nin: [parentTx._id] }
+            'tx.objectId': cud.objectId
           })
+        )
+          .filter((it) => it._id !== parentTx._id)
           // eslint-disable-next-line @typescript-eslint/unbound-method
-        ).map(TxProcessor.extractTx)
+          .map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
 
         const res: Tx[] = []
@@ -357,11 +358,12 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       if (!control.removedMap.has(parentTx.objectId)) {
         const logTxes = Array.from(
           await control.findAll(core.class.TxCollectionCUD, {
-            'tx.objectId': cud.objectId,
-            _id: { $nin: [parentTx._id] }
+            'tx.objectId': cud.objectId
           })
+        )
+          .filter((it) => it._id !== parentTx._id)
           // eslint-disable-next-line @typescript-eslint/unbound-method
-        ).map(TxProcessor.extractTx)
+          .map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
         if (doc !== undefined) {
           const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })

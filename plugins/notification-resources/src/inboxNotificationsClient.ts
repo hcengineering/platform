@@ -112,12 +112,8 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
+        result.sort((a, b) => (b.createdOn ?? b.modifiedOn) - (a.createdOn ?? a.modifiedOn))
         this.otherInboxNotifications.set(result)
-      },
-      {
-        sort: {
-          createdOn: SortingOrder.Descending
-        }
       }
     )
 

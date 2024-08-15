@@ -115,7 +115,19 @@ interface LookupStep {
 }
 
 export async function toArray<T> (cursor: AbstractCursor<T>): Promise<T[]> {
-  const data = await cursor.toArray()
+  const data: T[] = []
+
+  while (true) {
+    const d = await cursor.next()
+    if (d === null) {
+      break
+    }
+    data.push(d)
+    const batch = cursor.readBufferedDocuments()
+    if (batch.length > 0) {
+      data.push(...batch)
+    }
+  }
   await cursor.close()
   return data
 }

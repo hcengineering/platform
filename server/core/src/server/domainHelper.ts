@@ -44,6 +44,10 @@ export class DomainIndexHelperImpl implements DomainHelper {
         const attrs = hierarchy.getAllAttributes(c._id)
         const domainAttrs = this.domains.get(domain) ?? new Set<FieldIndexConfig<Doc>>()
         for (const a of attrs.values()) {
+          if (a.isCustom === true) {
+            // Skip custom attribute indexes
+            continue
+          }
           if (a.index !== undefined && a.index !== IndexKind.FullText) {
             domainAttrs.add({
               keys: {
