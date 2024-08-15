@@ -1,15 +1,4 @@
 services:
-  mongodb:
-    image: 'mongo:7-jammy'
-    container_name: mongodb
-    environment:
-      - PUID=1000
-      - PGID=1000
-    volumes:
-      - db:/data/db
-    ports:
-      - 27017:27017
-    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
@@ -43,16 +32,15 @@ services:
   account:
     image: hardcoreeng/account
     links:
-      - mongodb
       - minio
     ports:
       - 3000:3000
     volumes:
-      - ./branding.json:/var/cfg/branding.json
+      - ../branding.json:/var/cfg/branding.json
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -68,7 +56,6 @@ services:
   collaborator:
     image: hardcoreeng/collaborator
     links:
-      - mongodb
       - minio
       - transactor
     ports:
@@ -78,14 +65,13 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3000
       - UPLOAD_URL=/files
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"collaborator","maxPoolSize":2}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   front:
     image: hardcoreeng/front
     links:
-      - mongodb
       - minio
       - elastic
       - transactor
@@ -97,7 +83,7 @@ services:
       - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files      
@@ -120,7 +106,6 @@ services:
   transactor:
     image: hardcoreeng/transactor
     links:
-      - mongodb
       - elastic
       - minio
       - rekoni
@@ -129,7 +114,7 @@ services:
     ports:
       - 3333:3333
     volumes:
-      - ./branding.json:/var/cfg/branding.json      
+      - ../branding.json:/var/cfg/branding.json      
     environment:
       # - SERVER_PROVIDER=uweb
       # - UWS_HTTP_MAX_HEADERS_SIZE="32768"
@@ -138,7 +123,7 @@ services:
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
       - ELASTIC_URL=http://elastic:9200
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
@@ -169,7 +154,7 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=mongodb://host.docker.internal:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     deploy:
@@ -182,11 +167,11 @@ services:
     ports:
       - 4006:4006
     volumes:
-      - ../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
-      - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
+      - ../../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
+      - ../../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
     environment:
       - SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://host.docker.internal:27017
       - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
@@ -207,7 +192,7 @@ services:
     environment:
       - SECRET=secret
       - PORT=4007
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://host.docker.internal:27017
       - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
       - SERVICE_ID=analytics-collector-service
       - ACCOUNTS_URL=http://account:3000
@@ -221,7 +206,7 @@ services:
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://host.docker.internal:27017
       - ACCOUNTS_URL=http://account:3000
       - SUPPORT_WORKSPACE=support
       - FIRST_NAME=Jolie
@@ -239,7 +224,7 @@ services:
 #    environment:
 #      - PORT=4020
 #      - BOT_TOKEN=token
-#      - MONGO_URL=mongodb://mongodb:27017
+#      - MONGO_URL=mongodb://host.docker.internal:27017
 #      - MONGO_DB=telegram-bot
 #      - SECRET=secret
 #      - DOMAIN=domain
