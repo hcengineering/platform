@@ -5,7 +5,7 @@
 // Add this to the VERY top of the first file loaded in your app
 import { Analytics } from '@hcengineering/analytics'
 import contactPlugin from '@hcengineering/contact'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { getMetricsContext, serverConfigFromEnv } from '@hcengineering/server'
@@ -38,6 +38,8 @@ getMetricsContext(
       })
     )
 )
+
+setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()

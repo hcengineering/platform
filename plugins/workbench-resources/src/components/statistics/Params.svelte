@@ -13,25 +13,63 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { OperationLog, OperationLogEntry } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
   import { Button, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let params: Record<string, any>
+  export let opLog: Record<string, OperationLog> | undefined
 
   const dispatch = createEventDispatcher()
 
   const manager = createFocusManager()
+
+  function toEntries (entries: OperationLogEntry[]): OperationLogEntry[] {
+    entries.sort((a, b) => a.start - b.start)
+    // make relative times
+
+    if (entries.length > 0) {
+      const min = entries[0].start
+      entries.forEach((it) => {
+        it.start -= min
+        it.end -= min
+      })
+    }
+
+    return entries
+  }
+
+  $: entries = toEntries(
+    Object.values(opLog ?? {})
+      .map((it, i) => it.ops.map((q) => ({ ...q, op: `#${i} ${q.op}` })))
+      .flat()
+  )
 </script>
 
 <FocusHandler {manager} />
 
-<div class="msgbox-container">
+<div class="msgbox-container w-full select-text">
   <div class="overflow-label fs-title mb-4"></div>
   <div class="message no-word-wrap" style:overflow={'auto'}>
     {#each Object.entries(params) as kv}
       <div class="flex-row-center">
         {kv[0]}: {typeof kv[1] === 'object' ? JSON.stringify(kv[1]) : kv[1]}
+      </div>
+    {/each}
+    {#each entries as op, i}
+      {@const hasOverlap = i > 1 && entries.slice(0, i).some((it) => it.end > op.start)}
+      {@const hasOverlapDown = i > 0 && entries.slice(i + 1).some((it) => it.start < op.end)}
+      <div class="flex-row-center select-text" style:background-color={hasOverlap || hasOverlapDown ? 'yellow' : ''}>
+        {op.op}
+        {#if hasOverlap}
+          ⬆️
+        {/if}
+
+        {#if hasOverlapDown}
+          ⬇️
+        {/if}
+        {JSON.stringify(op.params)} - {op.start} - {op.end} - ({op.end - op.start})
       </div>
     {/each}
   </div>
@@ -54,8 +92,9 @@
     display: flex;
     flex-direction: column;
     padding: 2rem 1.75rem 1.75rem;
-    width: 30rem;
-    max-width: 40rem;
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
     background: var(--theme-popup-color);
     border-radius: 0.5rem;
     user-select: none;

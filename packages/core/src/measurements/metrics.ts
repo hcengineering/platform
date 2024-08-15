@@ -161,7 +161,8 @@ export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
     params: m.params,
     value: sumVal,
     topResult: m.topResult,
-    namedParams: m.namedParams
+    namedParams: m.namedParams,
+    opLog: m.opLog
   }
 }
 

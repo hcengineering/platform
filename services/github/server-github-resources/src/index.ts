@@ -132,7 +132,7 @@ async function updateDocSyncInfo (
     return
   }
 
-  const projects = await control.queryFind(github.mixin.GithubProject, {}, { projection: { _id: 1 } })
+  const projects = await control.queryFind(control.ctx, github.mixin.GithubProject, {}, { projection: { _id: 1 } })
   if (projects.some((it) => it._id === (space as Ref<GithubProject>))) {
     const [sdoc] = await control.findAll(github.class.DocSyncInfo, { _id: cud.objectId as Ref<DocSyncInfo> })
     // We need to check if sync doc is already exists.

@@ -146,7 +146,7 @@ export async function isAllowed (
   type: BaseNotificationType,
   provider: NotificationProvider
 ): Promise<boolean> {
-  const providersSettings = await control.queryFind(notification.class.NotificationProviderSetting, {
+  const providersSettings = await control.queryFind(control.ctx, notification.class.NotificationProviderSetting, {
     space: core.space.Workspace
   })
   const providerSetting = providersSettings.find(
@@ -167,7 +167,7 @@ export async function isAllowed (
     return false
   }
 
-  const typesSettings = await control.queryFind(notification.class.NotificationTypeSetting, {
+  const typesSettings = await control.queryFind(control.ctx, notification.class.NotificationTypeSetting, {
     space: core.space.Workspace
   })
   const setting = typesSettings.find(
