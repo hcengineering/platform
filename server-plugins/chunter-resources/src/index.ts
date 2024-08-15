@@ -283,7 +283,10 @@ export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): 
       ))
     )
   }
-  if (control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)) {
+  if (
+    actualTx._class === core.class.TxRemoveDoc &&
+    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
+  ) {
     res.push(
       ...(await control.ctx.with(
         'OnThreadMessageDeleted',

@@ -829,6 +829,9 @@ async function removeContexts (
   const res: Tx[] = []
 
   for (const context of contexts) {
+    if (!unsubscribe.includes(context.user as Ref<PersonAccount>)) {
+      continue
+    }
     const account = control.modelDb.getObject(context.user)
     if (account === undefined) continue
 

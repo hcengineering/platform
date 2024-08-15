@@ -1146,8 +1146,7 @@ class MongoAdapter extends MongoAdapterBase {
               { domain },
               () =>
                 coll.bulkWrite(ops, {
-                  ordered: false,
-                  writeConcern: { w: 0 }
+                  ordered: false
                 }),
               {
                 domain,
@@ -1541,8 +1540,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
             this.txCollection().insertMany(
               txes.map((it) => translateDoc(it)),
               {
-                ordered: false,
-                writeConcern: { w: 0 }
+                ordered: false
               }
             ),
           {

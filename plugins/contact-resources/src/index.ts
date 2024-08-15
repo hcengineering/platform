@@ -282,8 +282,9 @@ async function kickEmployee (doc: Person): Promise<void> {
       (res?: boolean) => {
         if (res === true) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          const p = getResource(login.function.LeaveWorkspace)
           for (const i of accounts) {
-            void getResource(login.function.LeaveWorkspace).then(async (f) => {
+            void p.then(async (f) => {
               await f(i.email)
             })
           }
