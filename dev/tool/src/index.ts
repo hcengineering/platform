@@ -91,6 +91,7 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
+import { moveFromMongoToPG } from './db'
 import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
@@ -115,6 +116,7 @@ const colorConstants = {
 export function devTool (
   prepareTools: () => {
     mongodbUri: string
+    dbUrl: string | undefined
     txes: Tx[]
     version: Data<Version>
     migrateOperations: [string, MigrateOperation][]
@@ -1346,6 +1348,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         await removeDuplicateIds(toolCtx, mongodbUri, adapter, productId, accountsUrl, workspaces)
+      })
+    })
+
+  program
+    .command('move-to-pg')
+    .action(async () => {
+      const { mongodbUri, dbUrl } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const workspaces = await listWorkspacesRaw(db, productId)
+        await moveFromMongoToPG(mongodbUri, dbUrl, workspaces.map((it) => getWorkspaceId(it.workspace, productId)))
       })
     })
 

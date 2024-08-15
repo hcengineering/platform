@@ -65,27 +65,53 @@ export async function createServerStorage (
     }
   })
 
-  await ctx.with('init-adapters', {}, async (ctx) => {
-    for (const adapter of adapters.values()) {
-      await adapter.init?.()
+  const txAdapterName = conf.domains[DOMAIN_TX]
+  const txAdapter = adapters.get(txAdapterName) as TxAdapter
+  const txAdapterDomains: string[] = []
+  for (const key in conf.domains) {
+    if (conf.domains[key] === txAdapterName) {
+      txAdapterDomains.push(key)
     }
-  })
-  const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
+  }
+  await txAdapter.init?.(txAdapterDomains)
 
   const model = await ctx.with('get model', {}, async (ctx) => {
     const model = await ctx.with('fetch-model', {}, async (ctx) => await txAdapter.getModel(ctx))
     for (const tx of model) {
       try {
         hierarchy.tx(tx)
-        if (options.disableTriggers !== true) {
-          await triggers.tx(tx)
-        }
       } catch (err: any) {
         ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
       }
     }
     modelDb.addTxes(ctx, model, false)
     return model
+  })
+
+  await ctx.with('init-adapters', {}, async (ctx) => {
+    for (const [key, adapter] of adapters) {
+      // already initialized
+      if (key !== conf.domains[DOMAIN_TX]) {
+        let excludeDomains: string[] | undefined
+        let domains: string[] | undefined
+        if (conf.defaultAdapter === key) {
+          excludeDomains = []
+          for (const domain in conf.domains) {
+            if (conf.domains[domain] !== key) {
+              excludeDomains.push(domain)
+            }
+          }
+        } else {
+          domains = []
+          for (const domain in conf.domains) {
+            if (conf.domains[domain] === key) {
+              domains.push(domain)
+            }
+          }
+        }
+        await adapter.init?.(domains, excludeDomains)
+      }
+    }
   })
 
   const fulltextAdapter = await ctx.with(
@@ -112,6 +138,16 @@ export async function createServerStorage (
         metrics.newChild('content', {})
       )
   )
+
+  if (options.disableTriggers !== true) {
+    for (const tx of model) {
+      try {
+        await triggers.tx(tx)
+      } catch (err: any) {
+        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
+      }
+    }
+  }
 
   const defaultAdapter = adapters.get(conf.defaultAdapter)
   if (defaultAdapter === undefined) {

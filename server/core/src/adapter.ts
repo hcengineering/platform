@@ -101,7 +101,7 @@ export type DbAdapterHandler = (
  * @public
  */
 export interface DbAdapter {
-  init?: () => Promise<void>
+  init?: (domains?: string[], excludeDomains?: string[]) => Promise<void>
 
   helper: () => DomainHelperOperations
 

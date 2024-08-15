@@ -18,6 +18,7 @@ import {
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware
 } from '@hcengineering/middleware'
+import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import {
   createNullAdapter,
@@ -42,7 +43,7 @@ import { createIndexStages } from './indexing'
 
 export function createServerPipeline (
   metrics: MeasureContext,
-  dbUrl: string,
+  dbUrls: string,
   opt: {
     fullTextUrl: string
     rekoniUrl: string
@@ -67,9 +68,10 @@ export function createServerPipeline (
   return (ctx, workspace, upgrade, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
+    const [dbUrl, mongoUrl] = dbUrls.split(';')
     const conf: DbConfiguration = {
       domains: {
-        [DOMAIN_TX]: 'MongoTx',
+        [DOMAIN_TX]: 'Tx',
         [DOMAIN_TRANSIENT]: 'InMemory',
         [DOMAIN_BLOB]: 'StorageData',
         [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
@@ -78,14 +80,14 @@ export function createServerPipeline (
         ...extensions?.domains
       },
       metrics: wsMetrics,
-      defaultAdapter: extensions?.defaultAdapter ?? 'Mongo',
+      defaultAdapter: extensions?.defaultAdapter ?? 'Main',
       adapters: {
-        MongoTx: {
-          factory: createMongoTxAdapter,
+        Tx: {
+          factory: mongoUrl !== undefined ? createPostgresTxAdapter : createMongoTxAdapter,
           url: dbUrl
         },
-        Mongo: {
-          factory: createMongoAdapter,
+        Main: {
+          factory: mongoUrl !== undefined ? createPostgresAdapter : createMongoAdapter,
           url: dbUrl
         },
         Null: {
@@ -98,7 +100,7 @@ export function createServerPipeline (
         },
         StorageData: {
           factory: createStorageDataAdapter,
-          url: dbUrl
+          url: mongoUrl ?? dbUrl
         },
         FullTextBlob: {
           factory: createElasticBackupDataAdapter,

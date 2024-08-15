@@ -623,6 +623,9 @@ dependencies:
   '@rush-temp/pod-telegram-bot':
     specifier: file:./projects/pod-telegram-bot.tgz
     version: file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+  '@rush-temp/postgres':
+    specifier: file:./projects/postgres.tgz
+    version: file:projects/postgres.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/preference':
     specifier: file:./projects/preference.tgz
     version: file:projects/preference.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1286,6 +1289,9 @@ dependencies:
   '@types/pdfjs-dist':
     specifier: 2.10.378
     version: 2.10.378
+  '@types/pg':
+    specifier: ^8.11.6
+    version: 8.11.6
   '@types/png-chunks-extract':
     specifier: ^1.0.2
     version: 1.0.2
@@ -1313,6 +1319,9 @@ dependencies:
   '@types/web-push':
     specifier: ~3.6.3
     version: 3.6.3
+  '@types/ws':
+    specifier: ^8.5.11
+    version: 8.5.11
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.11.0
     version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
@@ -1511,6 +1520,9 @@ dependencies:
   eslint-plugin-svelte:
     specifier: ^2.35.1
     version: 2.35.1(eslint@8.56.0)(svelte@4.2.12)(ts-node@10.9.2)
+  express:
+    specifier: ^4.19.2
+    version: 4.19.2
   express-fileupload:
     specifier: ^1.5.1
     version: 1.5.1
@@ -1538,6 +1550,9 @@ dependencies:
   fork-ts-checker-webpack-plugin:
     specifier: ~7.3.0
     version: 7.3.0(typescript@5.3.3)(webpack@5.90.3)
+  form-data:
+    specifier: ^4.0.0
+    version: 4.0.0
   gaxios:
     specifier: ^5.0.1
     version: 5.1.3
@@ -1676,6 +1691,9 @@ dependencies:
   pdfjs-dist:
     specifier: 2.12.313
     version: 2.12.313
+  pg:
+    specifier: 8.12.0
+    version: 8.12.0
   png-chunks-extract:
     specifier: ^1.0.0
     version: 1.0.0
@@ -1835,6 +1853,9 @@ dependencies:
   winston-daily-rotate-file:
     specifier: ^5.0.0
     version: 5.0.0(winston@3.13.1)
+  ws:
+    specifier: ^8.18.0
+    version: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
   y-prosemirror:
     specifier: ^1.2.1
     version: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
@@ -2604,7 +2625,7 @@ packages:
       '@babel/traverse': 7.23.9
       '@babel/types': 7.23.9
       convert-source-map: 2.0.0
-      debug: 4.3.4
+      debug: 4.3.5
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -3827,7 +3848,7 @@ packages:
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/parser': 7.23.9
       '@babel/types': 7.23.9
-      debug: 4.3.4
+      debug: 4.3.5
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -3949,7 +3970,7 @@ packages:
     resolution: {integrity: sha512-aL+bFMIkpR0cmmj5Zgy0LMKEpgy43/hw5zadEArgmAMWWlKc5buwFvFT9G/o/YJkvXAJm5q3iuTuLaiaXW39sg==}
     engines: {node: '>= 10.0.0'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       fs-extra: 9.1.0
       promise-retry: 2.0.1
     transitivePeerDependencies:
@@ -3973,7 +3994,7 @@ packages:
     hasBin: true
     dependencies:
       compare-version: 0.1.2
-      debug: 4.3.4
+      debug: 4.3.5
       fs-extra: 10.1.0
       isbinaryfile: 4.0.10
       minimist: 1.2.8
@@ -3988,7 +4009,7 @@ packages:
     dependencies:
       '@electron/asar': 3.2.10
       '@malept/cross-spawn-promise': 1.1.1
-      debug: 4.3.4
+      debug: 4.3.5
       dir-compare: 3.3.0
       fs-extra: 9.1.0
       minimatch: 3.1.2
@@ -4637,7 +4658,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4
+      debug: 4.3.5
       espree: 9.6.1
       globals: 13.24.0
       ignore: 5.3.1
@@ -4820,7 +4841,7 @@ packages:
     engines: {node: '>=10.10.0'}
     dependencies:
       '@humanwhocodes/object-schema': 1.2.1
-      debug: 4.3.4
+      debug: 4.3.5
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -5579,7 +5600,7 @@ packages:
     resolution: {integrity: sha512-9QOtNffcOF/c1seMCDnjckb3R9WHcG34tky+FHpNKKCW0wc/scYLwMtO+ptyGUfMW0/b/n4qRiALlaFHc9Oj7Q==}
     engines: {node: '>= 10.0.0'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       fs-extra: 9.1.0
       lodash: 4.17.21
       tmp-promise: 3.0.3
@@ -9306,6 +9327,14 @@ packages:
       - worker-loader
     dev: false
 
+  /@types/pg@8.11.6:
+    resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
+    dependencies:
+      '@types/node': 20.11.19
+      pg-protocol: 1.6.1
+      pg-types: 4.0.2
+    dev: false
+
   /@types/plist@3.0.5:
     resolution: {integrity: sha512-E6OCaRmAe4WDmWNsL/9RMqdkkzDCY1etutkflWk4c+AcjDU07Pcz1fQwTX0TQz+Pxqn9i4L1TU3UFpjnrcDgxA==}
     requiresBuild: true
@@ -9540,7 +9569,7 @@ packages:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/type-utils': 5.62.0(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/utils': 5.62.0(eslint@8.56.0)(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.5
       eslint: 8.56.0
       graphemer: 1.4.0
       ignore: 5.3.1
@@ -9594,7 +9623,7 @@ packages:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.5
       eslint: 8.56.0
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -9650,7 +9679,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.3.3)
       '@typescript-eslint/utils': 5.62.0(eslint@8.56.0)(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.5
       eslint: 8.56.0
       tsutils: 3.21.0(typescript@5.3.3)
       typescript: 5.3.3
@@ -9699,7 +9728,7 @@ packages:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
-      debug: 4.3.4
+      debug: 4.3.5
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.6.3
@@ -10257,7 +10286,7 @@ packages:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -10266,7 +10295,7 @@ packages:
     resolution: {integrity: sha512-H0TSyFNDMomMNJQBn8wFV5YC/2eJ+VXECwOadZJT554xP6cODZHPX3H9QMQECxvrgiSOP1pHjy1sMWQVYJOUOA==}
     engines: {node: '>= 14'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -12449,7 +12478,7 @@ packages:
       object-keys: 1.1.1
       object.assign: 4.1.5
       regexp.prototype.flags: 1.5.2
-      side-channel: 1.0.5
+      side-channel: 1.0.6
       which-boxed-primitive: 1.0.2
       which-collection: 1.0.1
       which-typed-array: 1.1.14
@@ -12617,7 +12646,7 @@ packages:
     hasBin: true
     dependencies:
       address: 1.2.2
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -13498,7 +13527,7 @@ packages:
     peerDependencies:
       esbuild: '>=0.12 <1'
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       esbuild: 0.18.20
     transitivePeerDependencies:
       - supports-color
@@ -13990,7 +14019,7 @@ packages:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.4
+      debug: 4.3.5
       doctrine: 3.0.0
       enquirer: 2.4.1
       escape-string-regexp: 4.0.0
@@ -15667,7 +15696,7 @@ packages:
     dependencies:
       '@tootallnate/once': 2.0.0
       agent-base: 6.0.2
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -15730,7 +15759,7 @@ packages:
     engines: {node: '>= 6.0.0'}
     dependencies:
       agent-base: 5.1.1
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -15750,7 +15779,7 @@ packages:
     engines: {node: '>= 14'}
     dependencies:
       agent-base: 7.1.1
-      debug: 4.3.4
+      debug: 4.3.5
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -15898,7 +15927,7 @@ packages:
     dependencies:
       es-errors: 1.3.0
       hasown: 2.0.1
-      side-channel: 1.0.5
+      side-channel: 1.0.6
     dev: false
 
   /interpret@3.1.1:
@@ -16422,7 +16451,7 @@ packages:
     resolution: {integrity: sha512-n3s8EwkdFIJCG3BPKBYvskgXGoy88ARzvegkitk60NxRdwltLOTaH7CUiMRXvwYorl0Q712iEjcWB+fK/MrWVw==}
     engines: {node: '>=10'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -19196,6 +19225,86 @@ packages:
       is-reference: 3.0.2
     dev: false
 
+  /pg-cloudflare@1.1.1:
+    resolution: {integrity: sha512-xWPagP/4B6BgFO+EKz3JONXv3YDgvkbVrGw2mTo3D6tVDQRh1e7cqVGvyR3BE+eQgAvx1XhW/iEASj4/jCWl3Q==}
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /pg-connection-string@2.6.4:
+    resolution: {integrity: sha512-v+Z7W/0EO707aNMaAEfiGnGL9sxxumwLl2fJvCQtMn9Fxsg+lPpPkdcyBSv/KFgpGdYkMfn+EI1Or2EHjpgLCA==}
+    dev: false
+
+  /pg-int8@1.0.1:
+    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
+    engines: {node: '>=4.0.0'}
+    dev: false
+
+  /pg-numeric@1.0.2:
+    resolution: {integrity: sha512-BM/Thnrw5jm2kKLE5uJkXqqExRUY/toLHda65XgFTBTFYZyopbKjBe29Ii3RbkvlsMoFwD+tHeGaCjjv0gHlyw==}
+    engines: {node: '>=4'}
+    dev: false
+
+  /pg-pool@3.6.2(pg@8.12.0):
+    resolution: {integrity: sha512-Htjbg8BlwXqSBQ9V8Vjtc+vzf/6fVUuak/3/XXKA9oxZprwW3IMDQTGHP+KDmVL7rtd+R1QjbnCFPuTHm3G4hg==}
+    peerDependencies:
+      pg: '>=8.0'
+    dependencies:
+      pg: 8.12.0
+    dev: false
+
+  /pg-protocol@1.6.1:
+    resolution: {integrity: sha512-jPIlvgoD63hrEuihvIg+tJhoGjUsLPn6poJY9N5CnlPd91c2T18T/9zBtLxZSb1EhYxBRoZJtzScCaWlYLtktg==}
+    dev: false
+
+  /pg-types@2.2.0:
+    resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
+    engines: {node: '>=4'}
+    dependencies:
+      pg-int8: 1.0.1
+      postgres-array: 2.0.0
+      postgres-bytea: 1.0.0
+      postgres-date: 1.0.7
+      postgres-interval: 1.2.0
+    dev: false
+
+  /pg-types@4.0.2:
+    resolution: {integrity: sha512-cRL3JpS3lKMGsKaWndugWQoLOCoP+Cic8oseVcbr0qhPzYD5DWXK+RZ9LY9wxRf7RQia4SCwQlXk0q6FCPrVng==}
+    engines: {node: '>=10'}
+    dependencies:
+      pg-int8: 1.0.1
+      pg-numeric: 1.0.2
+      postgres-array: 3.0.2
+      postgres-bytea: 3.0.0
+      postgres-date: 2.1.0
+      postgres-interval: 3.0.0
+      postgres-range: 1.1.4
+    dev: false
+
+  /pg@8.12.0:
+    resolution: {integrity: sha512-A+LHUSnwnxrnL/tZ+OLfqR1SxLN3c/pgDztZ47Rpbsd4jUytsTtwQo/TLPRzPJMp/1pbhYVhH9cuSZLAajNfjQ==}
+    engines: {node: '>= 8.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+    dependencies:
+      pg-connection-string: 2.6.4
+      pg-pool: 3.6.2(pg@8.12.0)
+      pg-protocol: 1.6.1
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.1.1
+    dev: false
+
+  /pgpass@1.0.5:
+    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
+    dependencies:
+      split2: 4.2.0
+    dev: false
+
   /phin@2.9.3:
     resolution: {integrity: sha512-CzFr90qM24ju5f88quFC/6qohjC144rehe5n6DH900lgXmUe86+xCKc10ev56gRKC4/BkHUoG4uSiQgBiIXwDA==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
@@ -19482,6 +19591,54 @@ packages:
       nanoid: 3.3.7
       picocolors: 1.0.0
       source-map-js: 1.0.2
+    dev: false
+
+  /postgres-array@2.0.0:
+    resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
+    engines: {node: '>=4'}
+    dev: false
+
+  /postgres-array@3.0.2:
+    resolution: {integrity: sha512-6faShkdFugNQCLwucjPcY5ARoW1SlbnrZjmGl0IrrqewpvxvhSLHimCVzqeuULCbG0fQv7Dtk1yDbG3xv7Veog==}
+    engines: {node: '>=12'}
+    dev: false
+
+  /postgres-bytea@1.0.0:
+    resolution: {integrity: sha512-xy3pmLuQqRBZBXDULy7KbaitYqLcmxigw14Q5sj8QBVLqEwXfeybIKVWiqAXTlcvdvb0+xkOtDbfQMOf4lST1w==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
+  /postgres-bytea@3.0.0:
+    resolution: {integrity: sha512-CNd4jim9RFPkObHSjVHlVrxoVQXz7quwNFpz7RY1okNNme49+sVyiTvTRobiLV548Hx/hb1BG+iE7h9493WzFw==}
+    engines: {node: '>= 6'}
+    dependencies:
+      obuf: 1.1.2
+    dev: false
+
+  /postgres-date@1.0.7:
+    resolution: {integrity: sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
+  /postgres-date@2.1.0:
+    resolution: {integrity: sha512-K7Juri8gtgXVcDfZttFKVmhglp7epKb1K4pgrkLxehjqkrgPhfG6OO8LHLkfaqkbpjNRnra018XwAr1yQFWGcA==}
+    engines: {node: '>=12'}
+    dev: false
+
+  /postgres-interval@1.2.0:
+    resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      xtend: 4.0.2
+    dev: false
+
+  /postgres-interval@3.0.0:
+    resolution: {integrity: sha512-BSNDnbyZCXSxgA+1f5UU2GmwhoI0aU5yMxRGO8CdFEcY2BQF9xm/7MqKnYoM1nJDk8nONNWDk9WeSmePFhQdlw==}
+    engines: {node: '>=12'}
+    dev: false
+
+  /postgres-range@1.1.4:
+    resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
     dev: false
 
   /posthog-js@1.122.0:
@@ -19877,7 +20034,7 @@ packages:
     engines: {node: '>=8.16.0'}
     dependencies:
       '@types/mime-types': 2.1.4
-      debug: 4.3.4
+      debug: 4.3.5
       extract-zip: 1.7.0
       https-proxy-agent: 4.0.0
       mime: 2.6.0
@@ -19930,7 +20087,7 @@ packages:
     resolution: {integrity: sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==}
     engines: {node: '>=0.6'}
     dependencies:
-      side-channel: 1.0.5
+      side-channel: 1.0.6
     dev: false
 
   /qs@6.11.2:
@@ -21149,7 +21306,7 @@ packages:
   /spdy-transport@3.0.0:
     resolution: {integrity: sha512-hsLVFE5SjA6TCisWeJXFKniGGOpBgMLmerfO2aCyCU5s7nJ/rpAepqmFifv/GCbSbueEeAJJnmSQ2rKC/g8Fcw==}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       detect-node: 2.1.0
       hpack.js: 2.1.6
       obuf: 1.1.2
@@ -21163,7 +21320,7 @@ packages:
     resolution: {integrity: sha512-r46gZQZQV+Kl9oItvl1JZZqJKGr+oEkB08A6BzkiR7593/7IbtuncXHd2YoYeTsG4157ZssMu9KYvUHLcjcDoA==}
     engines: {node: '>=6.0.0'}
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       handle-thing: 2.0.1
       http-deceiver: 1.2.7
       select-hose: 2.0.0
@@ -21175,6 +21332,11 @@ packages:
   /split-on-first@1.1.0:
     resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
     engines: {node: '>=6'}
+    dev: false
+
+  /split2@4.2.0:
+    resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
+    engines: {node: '>= 10.x'}
     dev: false
 
   /sprintf-js@1.0.3:
@@ -21586,7 +21748,7 @@ packages:
     dependencies:
       component-emitter: 1.3.1
       cookiejar: 2.1.4
-      debug: 4.3.4
+      debug: 4.3.5
       fast-safe-stringify: 2.1.1
       form-data: 4.0.0
       formidable: 2.1.2
@@ -27110,7 +27272,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz:
-    resolution: {integrity: sha512-iZAri5sHzRIutIt2bdrG1zI/QAu/lt1KC14lDRvHKLCaEtThF4RLlBqYHQ/rZM8aZyHIiGLwVztxvzR8D5EnZA==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-GYOekXK7++TNstTuTVtmUp1crs2chkWBmgdMBGzWaKVnuYbvHCKSfaNhaZfnAKV3ZnXc4nrbFbq6MUZgu97hnQ==, tarball: file:projects/model-all.tgz}
     name: '@rush-temp/model-all'
     version: 0.0.0
     dependencies:
@@ -27342,7 +27504,7 @@ packages:
     dev: false
 
   file:projects/model-drive.tgz:
-    resolution: {integrity: sha512-V1Zaxs9HItgN9Zp8M2rdPjTUS1ZSkNaDUCeRcW5xuOdD0YY8xijRwZ+d2HF5G6xYgRwTpfqIw0O1cUBmqJAY8A==, tarball: file:projects/model-drive.tgz}
+    resolution: {integrity: sha512-JG62skvnh8n7bBwsriHH6TE71W/gVm287OVnmy4VRJVf/tDC0/sCKlg+75qvcSu3CmAjaYqnnJz5q1Lz9EH3xw==, tarball: file:projects/model-drive.tgz}
     name: '@rush-temp/model-drive'
     version: 0.0.0
     dependencies:
@@ -28340,7 +28502,7 @@ packages:
     dev: false
 
   file:projects/model-telegram.tgz:
-    resolution: {integrity: sha512-WjCLxLQvcXBwLNQQnCbClBIum033r+fwS3nwB7RmCTgERzxT7lqedPlCwsd1TUs7PF6C0Y6cp5O/Lrnn+7Z46g==, tarball: file:projects/model-telegram.tgz}
+    resolution: {integrity: sha512-uXXH0LQVtX+rJ0+XLPft4NLphBmtXs9ZY+g16hC9x7j5JToKwsYsBHR/rktANxYU3CyAHeoqA7S7CiYbGLrDVw==, tarball: file:projects/model-telegram.tgz}
     name: '@rush-temp/model-telegram'
     version: 0.0.0
     dependencies:
@@ -29515,7 +29677,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-91Ac7EN5mpCKBG8sIWUljU+qSb6mtEJNVt9TynP8U0++Bhlmyvcryd4k2rMC5S+M/GvmlikUpAZ+MdIBsqUM+g==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-cbeFqSKcEIP6H/55Ux47qcZ1os7nwgBryGQGIF3DILmB/1J7wc6dlbJizE6S7/f3PON5c3H5s7VY2NmpVzhD5g==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -29650,7 +29812,7 @@ packages:
     dev: false
 
   file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-T7EdAT4nMEnEDROxVBBAwOD7ssjiSl6eOr96YFwfZvHlbaR6wJm/XYNzwOM61oc0+rjfnmkmM+FzOwTSifePEA==, tarball: file:projects/pod-telegram-bot.tgz}
+    resolution: {integrity: sha512-nHK8VvEEKMela0QxFYFIFHgIjnQj8A01bct7tu+T54i9PP0bgk1zuS+6neAPX45/su+hRG+oiXjdXnuAPMYv3w==, tarball: file:projects/pod-telegram-bot.tgz}
     id: file:projects/pod-telegram-bot.tgz
     name: '@rush-temp/pod-telegram-bot'
     version: 0.0.0
@@ -29770,6 +29932,39 @@ packages:
       - supports-color
       - ts-node
       - utf-8-validate
+    dev: false
+
+  file:projects/postgres.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-qZVG4Pk9RAvQfkKRB1iQPPOWsKFvFuFyNBtD/ksT/eW0/ByyGABvYMeQPNenrh3ZH2n/hZ5lH5DON042MXebPg==, tarball: file:projects/postgres.tgz}
+    id: file:projects/postgres.tgz
+    name: '@rush-temp/postgres'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@types/pg': 8.11.6
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      pg: 8.12.0
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - pg-native
+      - supports-color
+      - ts-node
     dev: false
 
   file:projects/preference-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
@@ -30161,7 +30356,7 @@ packages:
     dev: false
 
   file:projects/qms-doc-import-tool.tgz:
-    resolution: {integrity: sha512-mzTjks1peZbU8165Sd1xaoYs9H9f37XszY2zoxtggnaJrP1GeEktuX0TtNTz1XJRsMOg0+0K3s3CRYUEM9+cYw==, tarball: file:projects/qms-doc-import-tool.tgz}
+    resolution: {integrity: sha512-5CfQNuO9R7VNOvU84mR2y/EPQW9tQFUOJ1hX+BWtAGu0TIyO7fHfj57SqGMV8yFqGxjDfBpDpPigZnCM6OUN8A==, tarball: file:projects/qms-doc-import-tool.tgz}
     name: '@rush-temp/qms-doc-import-tool'
     version: 0.0.0
     dependencies:
@@ -31649,7 +31844,7 @@ packages:
     dev: false
 
   file:projects/server-gmail-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-jc5tLhz7YJs4Nw0dwPgOpZnZA+wMstl6Vt3BuL5BOE8iMTeUTZP1fKJXf6pGVeZAGEaYzayHM9Jmw+S45/l9MQ==, tarball: file:projects/server-gmail-resources.tgz}
+    resolution: {integrity: sha512-V9M3+rquV4MPbPtmwWPdekguzA5WKJRDvU7xtpYKQSJ7J7hkLPKNah4GtSjin0opg6lTgtoAJUQaYLKheeCCbA==, tarball: file:projects/server-gmail-resources.tgz}
     id: file:projects/server-gmail-resources.tgz
     name: '@rush-temp/server-gmail-resources'
     version: 0.0.0
@@ -32056,7 +32251,7 @@ packages:
     dev: false
 
   file:projects/server-notification.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-jGABHblqLJRd4EjN6dDbXqUJQxr88DjqFkyTva4La4HBrK1ge4g0v6xF450nn7BSOPxLtTZs+60UzaY9lLi0qg==, tarball: file:projects/server-notification.tgz}
+    resolution: {integrity: sha512-aTPQrWC0ymA+iBGLDS9+d8HJvvXCXRdj+XdAe6irRywRPzKjc+niHzm+wVMLRTELYR3RWt/HTGZBVeRSMRgS4g==, tarball: file:projects/server-notification.tgz}
     id: file:projects/server-notification.tgz
     name: '@rush-temp/server-notification'
     version: 0.0.0
@@ -32087,7 +32282,7 @@ packages:
     dev: false
 
   file:projects/server-pipeline.tgz:
-    resolution: {integrity: sha512-VMd/X1M3HotOPN51cVDAHjKrHhNm8/5GMMiZ4WklnQVtDfmDHocXKsC+FgOLXpb9RHYhtsz0Arwi7pW7xIar5A==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-qGocP2RKEaAspOP4lJZzIYkjIk/hbsYMGGyC4oO62GgWyfBw3O6o2u2R9sU/Jtkkeu2/GBIxkkAc9XEzQ4LbDQ==, tarball: file:projects/server-pipeline.tgz}
     name: '@rush-temp/server-pipeline'
     version: 0.0.0
     dependencies:
@@ -34157,7 +34352,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-lU7I2J+om0YHTY8FtcR2DtsEo4wSjZFP7FxAmpPgzFRSz7SwPtvdNDiXlM5zdMLiDszCXxUE/fNluCcxOeO8rg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-eZQ8XE+deR+AVtEVrG2p1xfsPLpLfDF4HkcWFNK9SXarUz05pP5xp2KPLXLiVYBbG81Qx56t5jjWi6bMaboTwQ==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0

@@ -837,6 +837,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/postgres",
+      "projectFolder": "server/postgres",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/elastic",
       "projectFolder": "server/elastic",
       "shouldPublish": false

@@ -240,15 +240,15 @@ abstract class MongoAdapterBase implements DbAdapter {
     return translated
   }
 
-  private async getLookupValue<T extends Doc>(
+  private getLookupValue<T extends Doc>(
     clazz: Ref<Class<T>>,
     lookup: Lookup<T>,
     result: LookupStep[],
     parent?: string
-  ): Promise<void> {
+  ): void {
     for (const key in lookup) {
       if (key === '_id') {
-        await this.getReverseLookupValue(lookup, result, parent)
+        this.getReverseLookupValue(lookup, result, parent)
         continue
       }
       const value = (lookup as any)[key]
@@ -265,7 +265,7 @@ abstract class MongoAdapterBase implements DbAdapter {
             as: fullKey.split('.').join('') + '_lookup'
           })
         }
-        await this.getLookupValue(_class, nested, result, fullKey + '_lookup')
+        this.getLookupValue(_class, nested, result, fullKey + '_lookup')
       } else {
         const _class = value as Ref<Class<Doc>>
         const tkey = this.checkMixinKey(key, clazz)
@@ -283,11 +283,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  private async getReverseLookupValue (
-    lookup: ReverseLookups,
-    result: LookupStep[],
-    parent?: string
-  ): Promise<any | undefined> {
+  private getReverseLookupValue (lookup: ReverseLookups, result: LookupStep[], parent?: string): void {
     const fullKey = parent !== undefined ? parent + '.' + '_id' : '_id'
     const lid = lookup?._id ?? {}
     for (const key in lid) {
@@ -304,7 +300,9 @@ abstract class MongoAdapterBase implements DbAdapter {
         _class = value
       }
       const domain = this.hierarchy.getDomain(_class)
-      const desc = this.hierarchy.getDescendants(_class)
+      const desc = this.hierarchy
+        .getDescendants(this.hierarchy.getBaseClass(_class))
+        .filter((it) => !this.hierarchy.isMixin(it))
       if (domain !== DOMAIN_MODEL) {
         const asVal = as.split('.').join('') + '_lookup'
         const step: LookupStep = {
@@ -325,14 +323,14 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  private async getLookups<T extends Doc>(
+  private getLookups<T extends Doc>(
     _class: Ref<Class<T>>,
     lookup: Lookup<T> | undefined,
     parent?: string
-  ): Promise<LookupStep[]> {
+  ): LookupStep[] {
     if (lookup === undefined) return []
     const result: [] = []
-    await this.getLookupValue(_class, lookup, result, parent)
+    this.getLookupValue(_class, lookup, result, parent)
     return result
   }
 
@@ -466,7 +464,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     const pipeline: any[] = []
     const match = { $match: this.translateQuery(clazz, query, options) }
     const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
-    const steps = await ctx.with('get-lookups', {}, async () => await this.getLookups(clazz, options?.lookup))
+    const steps = this.getLookups(clazz, options?.lookup)
     if (slowPipeline) {
       for (const step of steps) {
         pipeline.push({ $lookup: step })

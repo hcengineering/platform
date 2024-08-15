@@ -89,6 +89,7 @@ export class FileModelLogger implements ModelLogger {
  */
 export function prepareTools (rawTxes: Tx[]): {
   mongodbUri: string
+  dbUrl: string | undefined
   txes: Tx[]
 } {
   const mongodbUri = process.env.MONGO_URL
@@ -97,8 +98,11 @@ export function prepareTools (rawTxes: Tx[]): {
     process.exit(1)
   }
 
+  const dbUrl = process.env.DB_URL
+
   return {
     mongodbUri,
+    dbUrl,
     txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[]
   }
 }

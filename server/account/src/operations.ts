@@ -1291,7 +1291,8 @@ export async function createWorkspace (
         })
       })
 
-      const { mongodbUri } = prepareTools([])
+      const { mongodbUri, dbUrl } = prepareTools([])
+      const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
 
       const storageConfig: StorageConfiguration = storageConfigFromEnv()
       const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
@@ -1301,7 +1302,7 @@ export async function createWorkspace (
         registerStringLoaders()
         const factory: PipelineFactory = createServerPipeline(
           ctx,
-          mongodbUri,
+          dbUrls,
           {
             externalStorage: storageAdapter,
             fullTextUrl: 'http://localost:9200',
