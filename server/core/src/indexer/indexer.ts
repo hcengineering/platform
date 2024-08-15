@@ -268,6 +268,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       if (!stg.includes(false) && stg.length === this.stages.length) {
         // Check if all marks are true, we need to clear needIndex.
         udoc.needIndex = false
+        update.needIndex
       }
 
       if (Object.keys(update).length > 0) {

@@ -239,7 +239,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
               }
               doc = { ...doc, ...data }
             } else {
-              ;(doc as any)[column] = row[column] === 'NULL' ? null : row[column]
+              if (column === 'createdOn' || column === 'modifiedOn') {
+                const val = Number.parseInt(row[column])
+                ;(doc as any)[column] = Number.isNaN(val) ? null : val
+              } else {
+                ;(doc as any)[column] = row[column] === 'NULL' ? null : row[column]
+              }
             }
           }
         }
@@ -383,7 +388,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const value = query[key]
       const tkey = this.getKey(_class, baseDomain, key)
-      res.push(this.translateQueryValue(tkey, value))
+      const translated = this.translateQueryValue(tkey, value)
+      if (translated !== undefined) {
+        res.push(translated)
+      }
     }
     return res.join(' AND ')
   }
@@ -483,7 +491,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return key
   }
 
-  private translateQueryValue (tkey: string, value: any): string {
+  private translateQueryValue (tkey: string, value: any): string | undefined {
     if (value === null) {
       return `${tkey} IS NULL`
     } else if (typeof value === 'object' && !Array.isArray(value)) {
@@ -511,7 +519,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
             break
           case '$nin':
-            res.push(`${tkey} NOT IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+            if (val.length > 0) {
+              res.push(`${tkey} NOT IN (${val.map((v: any) => `'${v}'`).join(', ')})`)
+            }
             break
           case '$like':
             res.push(`${tkey} ILIKE '${val}'`)
@@ -521,7 +531,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             break
         }
       }
-      return res.join(' AND ')
+      return res.length === 0 ? undefined : res.join(' AND ')
     }
     return `${tkey} = '${value}'`
   }
@@ -601,11 +611,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    throw new Error('Method not implemented.')
+    try {
+      await this.insert(domain, docs)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.client.query(`DELETE FROM ${translateDomain(domain)} WHERE _id IN $1 AND "workspaceId" = $2`, [
+    await this.client.query(`DELETE FROM ${translateDomain(domain)} WHERE _id = ANY($1) AND "workspaceId" = $2`, [
       docs,
       this.workspaceId.name
     ])
@@ -623,7 +637,27 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
-    throw new Error('Method not implemented.')
+    const ids = Array.from(operations.keys())
+    const res = await this.client.query(
+      `SELECT * FROM ${translateDomain(domain)} WHERE _id = ANY($1) AND "workspaceId" = $2`,
+      [ids, this.workspaceId.name]
+    )
+    const docs = res.rows.map(parseDoc)
+    const map = new Map(docs.map((d) => [d._id, d]))
+    for (const [_id, ops] of operations) {
+      const doc = map.get(_id)
+      if (doc === undefined) continue
+      ;(ops as any)['%hash%'] = null
+      TxProcessor.applyUpdate(doc, ops)
+      const converted = convertDoc(doc, this.workspaceId.name)
+      await this.retryTxn(async (client) => {
+        await client.query(`UPDATE ${translateDomain(domain)} SET data = $3 WHERE _id = $1 AND "workspaceId" = $2`, [
+          _id,
+          this.workspaceId.name,
+          converted.data
+        ])
+      })
+    }
   }
 
   async insert (domain: string, docs: Doc[]): Promise<TxResult> {
@@ -781,6 +815,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     if (isOperator(tx.operations)) {
       const doc = await this.findDoc(tx.objectClass, tx.objectId)
       if (doc === undefined) return {}
+      ;(tx.operations as any)['%hash%'] = null
       TxProcessor.applyUpdate(doc, tx.operations)
       const converted = convertDoc(doc, this.workspaceId.name)
       await this.retryTxn(async (client) => {

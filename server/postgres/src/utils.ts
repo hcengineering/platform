@@ -274,6 +274,9 @@ export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection: P
     if ((rest as any)[key] === 'NULL') {
       ;(rest as any)[key] = null
     }
+    if (key === 'modifiedOn' || key === 'createdOn') {
+      ;(rest as any)[key] = Number.parseInt((rest as any)[key])
+    }
   }
   if (projection !== undefined) {
     for (const key in data) {

@@ -11,7 +11,8 @@ export async function moveFromMongoToPG (mongoUrl: string, dbUrl: string | undef
   const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
-  for (const ws of workspaces) {
+  for (let index = 0; index < workspaces.length; index++) {
+    const ws = workspaces[index]
     try {
       const mongoDB = getWorkspaceDB(mongo, ws)
       const collections = await mongoDB.collections()
@@ -33,13 +34,14 @@ export async function moveFromMongoToPG (mongoUrl: string, dbUrl: string | undef
           }
         }
       }
+      if (index % 100 === 0) {
+        console.log('Move workspace', index, workspaces.length)
+      }
     } catch (err) {
       console.log('Error when move workspace', ws.name, err)
       throw err
     }
   }
-
-  pgClient.release()
   pg.close()
   client.close()
 }
