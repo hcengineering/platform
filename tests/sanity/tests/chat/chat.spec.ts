@@ -296,9 +296,11 @@ test.describe('channel tests', () => {
     await channelPage.clickChannel('random')
     await channelPage.sendMessage('Test message')
     await channelPage.pinMessage('Test message')
-    await channelPage.clickPinMessageTub()
+    await channelPage.clickPinMessageButton()
     await channelPage.checkIfMessageExist(true, 'Test message')
-    await channelPage.closeAndOpenPinMessage()
+    await channelPage.clickPinMessageButton()
+    await channelPage.checkIfMessageExist(true, 'Test message')
+    await channelPage.clickPinMessageButton()
     await channelPage.checkIfMessageExist(true, 'Test message')
   })
 
