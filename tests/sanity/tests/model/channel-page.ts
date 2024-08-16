@@ -115,6 +115,10 @@ export class ChannelPage extends CommonPage {
     await this.saveMessageTab().click()
   }
 
+  async clickPinMessageButton(): Promise<void> {
+    await this.pinnedMessageButton().click()
+  }
+
   async addMemberToChannelPreview (user: string): Promise<void> {
     await this.addMemberPreview().click()
     await this.addMemberToChannelButton(user).click()
