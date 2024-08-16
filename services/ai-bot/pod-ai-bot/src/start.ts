@@ -23,6 +23,7 @@ import config from './config'
 import { closeDB, getDB } from './storage'
 import { AIBotController } from './controller'
 import { createBotAccount } from './account'
+import { registerLoaders } from './loaders'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -30,6 +31,7 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
 
+  registerLoaders()
   const ctx = new MeasureMetricsContext('ai-bot-service', {})
 
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })

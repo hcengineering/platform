@@ -157,12 +157,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       return
     }
 
-    const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(
-      (notification) => notification.docNotifyContext === docNotifyContext._id && !notification.isViewed
+    const inboxNotifications = await client.findAll(
+      notification.class.InboxNotification,
+      { docNotifyContext: docNotifyContext._id, isViewed: false },
+      { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
     for (const notification of inboxNotifications) {
-      await client.update(notification, { isViewed: true })
+      await client.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
     }
     await client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
   }

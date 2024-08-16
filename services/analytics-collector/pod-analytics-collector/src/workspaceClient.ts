@@ -15,6 +15,8 @@
 
 import core, {
   Client,
+  MeasureContext,
+  RateLimiter,
   Ref,
   systemAccountEmail,
   toWorkspaceString,
@@ -38,7 +40,12 @@ export class WorkspaceClient {
 
   channelIdByKey = new Map<string, Ref<Channel>>()
 
-  constructor (readonly workspace: WorkspaceId) {
+  rate = new RateLimiter(1)
+
+  constructor (
+    readonly ctx: MeasureContext,
+    readonly workspace: WorkspaceId
+  ) {
     this.initializePromise = this.initClient().then(() => {
       this.initializePromise = undefined
     })
@@ -79,7 +86,70 @@ export class WorkspaceClient {
     return await this.opClient.findOne(contact.class.Person, { _id: account.person })
   }
 
-  async pushEvents (events: AnalyticEvent[], email: string, workspace: WorkspaceId, person?: Person): Promise<void> {
+  async getChannel (
+    client: TxOperations,
+    workspace: string,
+    workspaceName: string,
+    email: string,
+    person?: Person
+  ): Promise<Ref<Channel> | undefined> {
+    const key = `${email}-${workspace}`
+    if (this.channelIdByKey.has(key)) {
+      return this.channelIdByKey.get(key)
+    }
+
+    const channel = await getOrCreateAnalyticsChannel(this.ctx, client, email, workspace, workspaceName, person)
+
+    if (channel !== undefined) {
+      this.channelIdByKey.set(key, channel)
+    }
+
+    return channel
+  }
+
+  async processEvents (
+    client: TxOperations,
+    events: AnalyticEvent[],
+    email: string,
+    workspace: WorkspaceId,
+    person?: Person,
+    wsUrl?: string,
+    channelRef?: Ref<Channel>
+  ): Promise<void> {
+    const wsString = toWorkspaceString(workspace)
+    const channel = channelRef ?? (await this.getChannel(client, wsString, wsUrl ?? wsString, email, person))
+
+    if (channel === undefined) {
+      return
+    }
+
+    for (const event of events) {
+      const markup = await eventToMarkup(event, client.getHierarchy())
+
+      if (markup === undefined) {
+        continue
+      }
+
+      await client.addCollection(
+        chunter.class.ChatMessage,
+        channel,
+        channel,
+        chunter.class.Channel,
+        'messages',
+        { message: markup },
+        undefined,
+        event.timestamp
+      )
+    }
+  }
+
+  async pushEvents (
+    events: AnalyticEvent[],
+    email: string,
+    workspace: WorkspaceId,
+    person?: Person,
+    wsUrl?: string
+  ): Promise<void> {
     if (this.initializePromise instanceof Promise) {
       await this.initializePromise
     }
@@ -91,32 +161,15 @@ export class WorkspaceClient {
     const wsString = toWorkspaceString(workspace)
     const channelKey = `${email}-${wsString}`
 
-    const channel =
-      this.channelIdByKey.get(channelKey) ?? (await getOrCreateAnalyticsChannel(this.opClient, email, wsString, person))
-
-    if (channel === undefined) {
-      return
-    }
-
-    this.channelIdByKey.set(channelKey, channel)
-
-    for (const event of events) {
-      const markup = await eventToMarkup(event, this.opClient.getHierarchy())
-
-      if (markup === undefined) {
-        continue
-      }
-
-      await this.opClient.addCollection(
-        chunter.class.ChatMessage,
-        channel,
-        channel,
-        chunter.class.Channel,
-        'messages',
-        { message: markup },
-        undefined,
-        event.timestamp
-      )
+    if (this.channelIdByKey.has(channelKey)) {
+      const channel = this.channelIdByKey.get(channelKey)
+      await this.processEvents(this.opClient, events, email, workspace, person, wsUrl, channel)
+    } else {
+      // If we dont have AnalyticsChannel we should call it sync to prevent multiple channels for the same user and workspace
+      await this.rate.add(async () => {
+        if (this.opClient === undefined) return
+        await this.processEvents(this.opClient, events, email, workspace, person, wsUrl)
+      })
     }
   }
 
