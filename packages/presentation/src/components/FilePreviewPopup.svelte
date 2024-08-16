@@ -20,8 +20,8 @@
 
   import presentation from '../plugin'
 
+  import { getFileUrl } from '../file'
   import { BlobMetadata } from '../types'
-  import { getFileUrl } from '../utils'
 
   import ActionContext from './ActionContext.svelte'
   import FilePreview from './FilePreview.svelte'

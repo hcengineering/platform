@@ -36,7 +36,8 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "svelte-eslint-parser": "^0.33.1",
-    "@types/png-chunks-extract": "^1.0.2"
+    "@types/png-chunks-extract": "^1.0.2",
+    "@types/uuid": "^8.3.1"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
@@ -52,7 +53,8 @@
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/collaborator-client": "^0.6.4",
     "fast-equals": "^5.0.1",
-    "png-chunks-extract": "^1.0.0"
+    "png-chunks-extract": "^1.0.0",
+    "uuid": "^8.3.2"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

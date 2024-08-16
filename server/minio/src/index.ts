@@ -23,8 +23,8 @@ import core, {
   type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
-
-import {
+import { getMetadata } from '@hcengineering/platform'
+import serverCore, {
   removeAllObjects,
   type BlobStorageIterator,
   type BucketInfo,
@@ -362,6 +362,12 @@ export class MinioService implements StorageAdapter {
       offset,
       length
     )
+  }
+
+  @withContext('getUrl')
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
   }
 }
 

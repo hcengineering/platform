@@ -69,7 +69,7 @@ import notification, {
   PushSubscription
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
-import type { TriggerControl } from '@hcengineering/server-core'
+import { type TriggerControl } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   getPersonAccount,
@@ -539,7 +539,6 @@ export async function createPushNotification (
     data.tag = _id
   }
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const uploadUrl = getMetadata(serverCore.metadata.UploadURL) ?? ''
   const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
   data.domain = concatLink(front, domainPath)
   if (path !== undefined) {
@@ -548,7 +547,10 @@ export async function createPushNotification (
   if (senderAvatar != null) {
     const provider = getAvatarProviderId(senderAvatar.avatarType)
     if (provider === contact.avatarProvider.Image) {
-      data.icon = concatLink(uploadUrl, `?file=${senderAvatar.avatar}`)
+      if (senderAvatar.avatar != null) {
+        const url = await control.storageAdapter.getUrl(control.ctx, control.workspace, senderAvatar.avatar)
+        data.icon = url.includes('://') ? url : concatLink(front, url)
+      }
     } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {
       data.icon = getGravatarUrl(senderAvatar.avatarProps?.url, 512)
     }

@@ -59,7 +59,6 @@ export async function configurePlatform() {
   const config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
-  setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
