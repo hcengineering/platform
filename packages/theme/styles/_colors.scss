@@ -238,6 +238,16 @@
   --theme-won-color: #34DB80;
   --theme-caret-color: #fff;
 
+  --theme-text-editor-note-anchor-bg-neutral: #2C2C2C; /* Gray, no saturation change needed */
+  --theme-text-editor-note-anchor-bg-dangerous: #8F4040;
+  --theme-text-editor-note-anchor-bg-dangerous-light: #8E6464;
+  --theme-text-editor-note-anchor-bg-warning: #A88D4E;
+  --theme-text-editor-note-anchor-bg-warning-light: #8A8666;
+  --theme-text-editor-note-anchor-bg-positive: #596941;
+  --theme-text-editor-note-anchor-bg-positive-light: #7B9589;
+  --theme-text-editor-note-anchor-bg-primary: #688797;
+  --theme-text-editor-note-anchor-bg-primary-light: #747C81;
+
   --accent-bg-color: #27282b;
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
 
@@ -486,6 +496,16 @@
   --theme-lost-color: #eb5757;  // Dark
   --theme-won-color: #34DB80;  // Dark
   --theme-caret-color: #669AFF;
+
+  --theme-text-editor-note-anchor-bg-neutral: #F3F3F3;
+  --theme-text-editor-note-anchor-bg-dangerous: #DF8D8B;
+  --theme-text-editor-note-anchor-bg-dangerous-light: #EECECE;
+  --theme-text-editor-note-anchor-bg-warning: #FDE5A4;
+  --theme-text-editor-note-anchor-bg-warning-light: #FEF4D1;
+  --theme-text-editor-note-anchor-bg-positive: #BED6AF;
+  --theme-text-editor-note-anchor-bg-positive-light: #DEE9D9;
+  --theme-text-editor-note-anchor-bg-primary: #AAC5E9;
+  --theme-text-editor-note-anchor-bg-primary-light: #D5E5F5;
 
   --accent-bg-color: #eff0f2;  // HZ
   --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;  // Dark

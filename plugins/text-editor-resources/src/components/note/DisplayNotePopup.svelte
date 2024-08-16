@@ -1,5 +1,5 @@
-//
-// Copyright © 2023 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,22 +11,20 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import textEditor from '@hcengineering/text-editor'
+  import { Card } from '@hcengineering/presentation'
 
-export * from './extensions'
-export * from './markup/dsl'
-export * from './markup/model'
-export * from './markup/traverse'
-export * from './markup/utils'
-export * from './nodes'
-export * from './ydoc'
-export * from './marks/code'
-export * from './marks/noteBase'
-export * from './markdown'
-export * from './markdown/serializer'
-export * from './markdown/parser'
-export * from './markdown/compare'
-export * from './markdown/node'
+  export let text: string
+</script>
 
-export * from './kits/default-kit'
-export * from './kits/server-kit'
+<Card label={textEditor.string.Note} width="medium" thinHeader={true} hideFooter={true} okAction={() => {}} on:close>
+  <div class="note">{text}</div>
+</Card>
+
+<style lang="scss">
+  .note {
+    white-space: pre-wrap;
+  }
+</style>

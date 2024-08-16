@@ -340,4 +340,16 @@ export function createModel (builder: Builder): void {
     category: 100,
     index: 5
   })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.ConfigureNote,
+    icon: textEditor.icon.Note,
+    visibilityTester: textEditor.function.IsEditableNote,
+    isActive: {
+      name: 'note'
+    },
+    label: textEditor.string.Note,
+    category: 110,
+    index: 5
+  })
 }

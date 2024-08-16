@@ -37,5 +37,6 @@ loadMetadata(textEditor.icon, {
   AlignRight: `${icons}#alignRight`,
   MoreH: `${icons}#moreH`,
   Expand: `${icons}#expand`,
-  ScaleOut: `${icons}#scaleOut`
+  ScaleOut: `${icons}#scaleOut`,
+  Note: `${icons}#note`
 })
