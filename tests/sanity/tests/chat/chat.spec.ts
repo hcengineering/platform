@@ -304,6 +304,27 @@ test.describe('channel tests', () => {
     await channelPage.checkIfMessageExist(true, 'Test message')
   })
 
+  test('check if user can unpin message on pinned messages page', async () => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.pinMessage('Test message')
+    await channelPage.clickPinMessageButton()
+    await channelPage.checkIfMessageExist(true, 'Test message')
+    await channelPage.unpinMessage('Test message')
+    await channelPage.checkIfMessageExist(false, 'Test message')
+  })
+
+  test('check if user can unpin message messages page', async () => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.pinMessage('Test message')
+    await channelPage.checkIfMessageExist(true, 'Test message')
+    await channelPage.unpinMessage('Test message')
+    await channelPage.checkIfMessageExist(false, 'Test message')
+  })
+
   test('check if user can edit message', async ({ page }) => {
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('random')
