@@ -1371,7 +1371,9 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
     { targets: {}, txes: [] },
     wsUrl,
     null,
-    false
+    false,
+    new Map(),
+    new Map()
   )
 
   return {

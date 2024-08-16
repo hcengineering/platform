@@ -129,7 +129,9 @@ export class ClientSession implements Session {
           },
           this._pipeline.storage.workspaceId,
           this._pipeline.storage.branding,
-          false
+          false,
+          new Map(),
+          new Map()
         )
         await this._pipeline.tx(context, createTx)
         const acc = TxProcessor.createDoc2Doc(createTx)
@@ -163,7 +165,9 @@ export class ClientSession implements Session {
       },
       this._pipeline.storage.workspaceId,
       this._pipeline.storage.branding,
-      false
+      false,
+      new Map(),
+      new Map()
     )
     return await this._pipeline.findAll(context, _class, query, options)
   }
@@ -190,7 +194,9 @@ export class ClientSession implements Session {
       },
       this._pipeline.storage.workspaceId,
       this._pipeline.storage.branding,
-      false
+      false,
+      new Map(),
+      new Map()
     )
     await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
   }
@@ -210,13 +216,18 @@ export class ClientSession implements Session {
       },
       this._pipeline.storage.workspaceId,
       this._pipeline.storage.branding,
-      false
+      false,
+      new Map(),
+      new Map()
     )
 
     const result = await this._pipeline.tx(context, tx)
 
     // Send result immideately
     await ctx.sendResponse(result)
+    if (tx == null) {
+      return
+    }
 
     // We need to combine all derived data and check if we need to send it
 

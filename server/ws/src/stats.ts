@@ -59,6 +59,7 @@ export function wipeStatistics (ctx: MeasureContext): void {
     m.operations = 0
     m.value = 0
     m.topResult = undefined
+    delete (m as Metrics).opLog
     if ('measurements' in m) {
       for (const v of Object.values(m.measurements)) {
         toClean.push(v)
@@ -72,6 +73,7 @@ export function wipeStatistics (ctx: MeasureContext): void {
   }
 
   if (ctx instanceof MeasureMetricsContext) {
+    ctx.metrics.opLog = undefined
     toClean.push(ctx.metrics)
     while (toClean.length > 0) {
       const v = toClean.shift()

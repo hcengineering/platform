@@ -154,7 +154,9 @@ class BackupWorker {
       { targets: {}, txes: [] },
       wsUrl,
       null,
-      false
+      false,
+      new Map(),
+      new Map()
     )
     const backupOps = new BackupClientOps(pipeline)
 
