@@ -769,8 +769,8 @@ export class TServerStorage implements ServerStorage {
           findAll(mctx, clazz, query, options)
 
     const removed = await ctx.with('process-remove', {}, (ctx) => this.processRemove(ctx, txes, findAll))
-    const collections = ctx.with('process-collection', {}, (ctx) => this.processCollection(ctx, txes, findAll))
-    const moves = ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
+    const collections = await ctx.with('process-collection', {}, (ctx) => this.processCollection(ctx, txes, findAll))
+    const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
 
     const applyTxes: Tx[] = []
 
@@ -869,7 +869,7 @@ export class TServerStorage implements ServerStorage {
       { count: txes.length }
     )
 
-    const derived = [...removed, ...(await collections), ...(await moves), ...triggers]
+    const derived = [...removed, ...collections, ...moves, ...triggers]
 
     return await this.processDerivedTxes(derived, ctx, findAll)
   }
@@ -879,15 +879,12 @@ export class TServerStorage implements ServerStorage {
     ctx: SessionOperationContext,
     findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
-    derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
-
-    const routePromise = ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
-
     const nestedTxes: Tx[] = []
     if (derived.length > 0) {
+      derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
+      await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
       nestedTxes.push(...(await this.processDerived(ctx, derived, findAll)))
     }
-    await routePromise
 
     const res = [...derived, ...nestedTxes]
 
