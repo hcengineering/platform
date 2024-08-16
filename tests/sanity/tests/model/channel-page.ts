@@ -186,6 +186,13 @@ export class ChannelPage extends CommonPage {
     await expect(this.pinnedMessage(message)).toBeVisible()
   }
 
+  async unpinMessage (message: string): Promise<void> {
+    await this.textMessage(message).hover()
+    await this.pinMessageButton().click()
+    await this.pinnedMessageButton().click()
+    await expect(this.pinnedMessage(message)).not.toBeVisible()
+  }
+
   async replyToMessage (message: string, messageReply: string): Promise<void> {
     await this.textMessage(message).hover()
     await this.replyButton().click()
