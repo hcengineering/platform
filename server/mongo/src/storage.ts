@@ -16,7 +16,6 @@
 import core, {
   DOMAIN_MODEL,
   DOMAIN_TX,
-  RateLimiter,
   SortingOrder,
   TxProcessor,
   addOperation,
@@ -76,6 +75,7 @@ import { createHash } from 'crypto'
 import {
   type AbstractCursor,
   type AnyBulkWriteOperation,
+  type BulkWriteResult,
   type Collection,
   type Db,
   type Document,
@@ -140,9 +140,6 @@ export interface DbAdapterOptions {
 
 abstract class MongoAdapterBase implements DbAdapter {
   _db: DBCollectionHelper
-
-  findRateLimit = new RateLimiter(parseInt(process.env.FIND_RLIMIT ?? '1000'))
-  rateLimit = new RateLimiter(parseInt(process.env.TX_RLIMIT ?? '5'))
 
   handlers: DbAdapterHandler[] = []
 
@@ -706,130 +703,119 @@ abstract class MongoAdapterBase implements DbAdapter {
     const stTime = Date.now()
     const mongoQuery = this.translateQuery(_class, query, options)
     const fQuery = { ...mongoQuery.base, ...mongoQuery.lookup }
-    return await addOperation(
-      ctx,
-      'find-all',
-      {},
-      async () =>
-        await this.findRateLimit.exec(async () => {
-          const st = Date.now()
-          let result: FindResult<T>
-          const domain = options?.domain ?? this.hierarchy.getDomain(_class)
-          if (
-            options != null &&
-            (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))
-          ) {
-            return await this.findWithPipeline(ctx, domain, _class, query, options, stTime)
-          }
-          const coll = this.collection(domain)
-
-          if (options?.limit === 1 || typeof query._id === 'string') {
-            // Skip sort/projection/etc.
-            return await ctx.with(
-              'find-one',
-              { domain },
-              async (ctx) => {
-                const findOptions: MongoFindOptions = {}
-
-                if (options?.sort !== undefined) {
-                  findOptions.sort = this.collectSort<T>(options, _class)
-                }
-                if (options?.projection !== undefined) {
-                  findOptions.projection = this.calcProjection<T>(options, _class)
-                }
-
-                let doc: WithId<Document> | null
-
-                if (typeof fQuery._id === 'string') {
-                  doc = await coll.findOne({ _id: fQuery._id }, findOptions)
-                  if (doc != null && matchQuery([doc as unknown as Doc], query, _class, this.hierarchy).length === 0) {
-                    doc = null
-                  }
-                } else {
-                  doc = await coll.findOne(fQuery, findOptions)
-                }
-
-                let total = -1
-                if (options?.total === true) {
-                  total = await coll.countDocuments({ ...mongoQuery.base, ...mongoQuery.lookup })
-                }
-                if (doc != null) {
-                  return toFindResult([this.stripHash<T>(doc as unknown as T) as T], total)
-                }
-                return toFindResult([], total)
-              },
-              { domain, mongoQuery, _idOnly: typeof fQuery._id === 'string' }
-            )
-          }
-
-          let cursor = coll.find<T>(fQuery)
-
-          if (options?.projection !== undefined) {
-            const projection = this.calcProjection<T>(options, _class)
-            if (projection != null) {
-              cursor = cursor.project(projection)
-            }
-          }
-          let total: number = -1
-          if (options != null) {
-            if (options.sort !== undefined) {
-              const sort = this.collectSort<T>(options, _class)
-              if (sort !== undefined) {
-                cursor = cursor.sort(sort)
-              }
-            }
-            if (options.limit !== undefined || typeof query._id === 'string') {
-              if (options.total === true) {
-                total = await coll.countDocuments(fQuery)
-              }
-              cursor = cursor.limit(options.limit ?? 1)
-            }
-          }
-          // Error in case of timeout
-          try {
-            let res: T[] = []
-            await ctx.with(
-              'find-all',
-              {},
-              async (ctx) => {
-                res = await toArray(cursor)
-              },
-              () => ({
-                size: res.length,
-                queueTime: stTime - st,
-                mongoQuery,
-                options,
-                domain
-              })
-            )
-            if (options?.total === true && options?.limit === undefined) {
-              total = res.length
-            }
-            result = toFindResult(this.stripHash(res) as T[], total)
-          } catch (e) {
-            console.error('error during executing cursor in findAll', _class, cutObjectArray(query), options, e)
-            throw e
-          }
-
-          const edTime = Date.now()
-          if (edTime - st > 1000 || st - stTime > 1000) {
-            ctx.error('FindAll', {
-              time: edTime - st,
-              _class,
-              query: fQuery,
-              options,
-              queueTime: st - stTime
-            })
-          }
-          this.handleEvent(domain, 'read', result.length)
-          return result
-        }),
-      {
-        _class,
-        query: fQuery,
-        options
+    return await addOperation(ctx, 'find-all', {}, async () => {
+      const st = Date.now()
+      let result: FindResult<T>
+      const domain = options?.domain ?? this.hierarchy.getDomain(_class)
+      if (
+        options != null &&
+        (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))
+      ) {
+        return await this.findWithPipeline(ctx, domain, _class, query, options, stTime)
       }
-    )
+      const coll = this.collection(domain)
+
+      if (options?.limit === 1 || typeof query._id === 'string') {
+        // Skip sort/projection/etc.
+        return await ctx.with(
+          'find-one',
+          { domain },
+          async (ctx) => {
+            const findOptions: MongoFindOptions = {}
+
+            if (options?.sort !== undefined) {
+              findOptions.sort = this.collectSort<T>(options, _class)
+            }
+            if (options?.projection !== undefined) {
+              findOptions.projection = this.calcProjection<T>(options, _class)
+            }
+
+            let doc: WithId<Document> | null
+
+            if (typeof fQuery._id === 'string') {
+              doc = await coll.findOne({ _id: fQuery._id }, findOptions)
+              if (doc != null && matchQuery([doc as unknown as Doc], query, _class, this.hierarchy).length === 0) {
+                doc = null
+              }
+            } else {
+              doc = await coll.findOne(fQuery, findOptions)
+            }
+
+            let total = -1
+            if (options?.total === true) {
+              total = await coll.countDocuments({ ...mongoQuery.base, ...mongoQuery.lookup })
+            }
+            if (doc != null) {
+              return toFindResult([this.stripHash<T>(doc as unknown as T) as T], total)
+            }
+            return toFindResult([], total)
+          },
+          { domain, mongoQuery, _idOnly: typeof fQuery._id === 'string' }
+        )
+      }
+
+      let cursor = coll.find<T>(fQuery)
+
+      if (options?.projection !== undefined) {
+        const projection = this.calcProjection<T>(options, _class)
+        if (projection != null) {
+          cursor = cursor.project(projection)
+        }
+      }
+      let total: number = -1
+      if (options != null) {
+        if (options.sort !== undefined) {
+          const sort = this.collectSort<T>(options, _class)
+          if (sort !== undefined) {
+            cursor = cursor.sort(sort)
+          }
+        }
+        if (options.limit !== undefined || typeof query._id === 'string') {
+          if (options.total === true) {
+            total = await coll.countDocuments(fQuery)
+          }
+          cursor = cursor.limit(options.limit ?? 1)
+        }
+      }
+      // Error in case of timeout
+      try {
+        let res: T[] = []
+        await ctx.with(
+          'find-all',
+          {},
+          async (ctx) => {
+            res = await toArray(cursor)
+          },
+          () => ({
+            size: res.length,
+            queueTime: stTime - st,
+            mongoQuery,
+            options,
+            domain
+          })
+        )
+        if (options?.total === true && options?.limit === undefined) {
+          total = res.length
+        }
+        result = toFindResult(this.stripHash(res) as T[], total)
+      } catch (e) {
+        console.error('error during executing cursor in findAll', _class, cutObjectArray(query), options, e)
+        throw e
+      }
+
+      const edTime = Date.now()
+      if (edTime - st > 1000 || st - stTime > 1000) {
+        ctx.error('FindAll', {
+          time: edTime - st,
+          _class,
+          query: fQuery,
+          options,
+          queueTime: st - stTime
+        })
+      }
+      this.handleEvent(domain, 'read', result.length)
+      return result
+    })
   }
 
   private collectSort<T extends Doc>(
@@ -1129,13 +1115,14 @@ class MongoAdapter extends MongoAdapterBase {
     if (bulk.length === 0) {
       return
     }
+    const promises: Promise<BulkWriteResult>[] = []
     for (const [domain, ops] of bulk) {
       if (ops === undefined || ops.length === 0) {
         continue
       }
       const coll = this.db.collection<Doc>(domain)
 
-      await this.rateLimit.exec(() =>
+      promises.push(
         addOperation(
           ctx,
           'bulk-write',
@@ -1156,6 +1143,7 @@ class MongoAdapter extends MongoAdapterBase {
         )
       )
     }
+    await Promise.all(promises)
   }
 
   async pushBulk (ctx: MeasureContext, domain: Domain, ops: AnyBulkWriteOperation<Doc>[]): Promise<void> {
@@ -1165,6 +1153,8 @@ class MongoAdapter extends MongoAdapterBase {
     } else {
       this.bulkOps.set(domain, ops)
     }
+    // We need to wait next cycle to send request
+    await new Promise<void>((resolve) => setImmediate(resolve))
     await this._pushBulk(ctx)
   }
 
@@ -1527,6 +1517,10 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     const txes = this.txBulk
     this.txBulk = []
 
+    if (txes.length === 0) {
+      return
+    }
+
     const opName = txes.length === 1 ? 'tx-one' : 'tx'
     await addOperation(
       ctx,
@@ -1559,6 +1553,9 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       return []
     }
     this.txBulk.push(...tx)
+
+    // We need to wait next cycle to send request
+    await new Promise<void>((resolve) => setImmediate(resolve))
     await this._bulkTx(ctx)
     return []
   }

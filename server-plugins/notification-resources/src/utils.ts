@@ -483,37 +483,27 @@ export async function getUsersInfo (
   const spaces = new Map<Ref<Person>, PersonSpace>()
 
   const p = await ctx.with('find-persons', {}, async (ctx) =>
-    (
-      await control.queryFind(
-        ctx,
-        contact.mixin.Employee,
-        { active: { $in: [true, false] } },
-        {}
-      )
-    ).filter((it) => personIdsMap.has(it._id))
+    (await control.queryFind(ctx, contact.mixin.Employee, { active: { $in: [true, false] } }, {})).filter((it) =>
+      personIdsMap.has(it._id)
+    )
   )
   for (const pp of p) {
     persons.set(pp._id, pp)
   }
 
-  const nonEmployee = personIds.filter(it => !persons.has(it))
+  const nonEmployee = personIds.filter((it) => !persons.has(it))
 
   const p2 = await ctx.with('find-persons', {}, async (ctx) =>
-    (
-      await control.queryFind(
-        ctx,
-        contact.class.Person,
-        { _id: { $in: Array.from(nonEmployee) } },
-        { }
-      )
-    ).filter((it) => personIdsMap.has(it._id))
+    (await control.queryFind(ctx, contact.class.Person, { _id: { $in: Array.from(nonEmployee) } }, {})).filter((it) =>
+      personIdsMap.has(it._id)
+    )
   )
   for (const pp of p2) {
     persons.set(pp._id, pp)
   }
 
   const res = await ctx.with('find-person-spaces', {}, async (ctx) =>
-    (await control.queryFind(ctx, contact.class.PersonSpace, {}, { })).filter((it) => personIdsMap.has(it.person))
+    (await control.queryFind(ctx, contact.class.PersonSpace, {}, {})).filter((it) => personIdsMap.has(it.person))
   )
   for (const r of res) {
     spaces.set(r.person, r)
