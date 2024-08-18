@@ -645,7 +645,7 @@ export class NotificationProviderControl {
   }
 }
 const notificationProvidersKey = 'notification_provider_settings'
-const typesSettingsKey = 'notification_provider_settings'
+const typesSettingsKey = 'notification_type_settings'
 export async function getNotificationProviderControl (
   ctx: MeasureContext,
   control: TriggerControl
