@@ -189,14 +189,17 @@ describe('postgres operations', () => {
         txes: [],
         targets: {}
       },
-      with: async <T>(
+      with: <T>(
         name: string,
         params: ParamsType,
         op: (ctx: SessionOperationContext) => T | Promise<T>,
         fullParams?: FullParamsType
       ): Promise<T> => {
-        return await op(soCtx)
-      }
+        const result = op(soCtx)
+        return result instanceof Promise ? result : Promise.resolve(result)
+      },
+      contextCache: new Map(),
+      removedMap: new Map()
     }
     client = await createClient(async (handler) => {
       const st: ClientConnection = {

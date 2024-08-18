@@ -1,0 +1,7 @@
+services:
+  account:
+    environment:
+      - MONGO_URL=postgresql://postgres:example@localhost:5433;mongodb://mongodb:27018
+  transactor:
+    environment:
+      - MONGO_URL=postgresql://postgres:example@localhost:5433;mongodb://mongodb:27018
