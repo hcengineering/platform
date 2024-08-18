@@ -28,7 +28,6 @@ import core, {
   isOperator,
   type Lookup,
   type MeasureContext,
-  type Mixin,
   type ModelDb,
   type ObjQueryType,
   type Projection,
@@ -117,7 +116,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (joins.length > 0) {
         sqlChunks.push(this.buildJoinString(joins))
       }
-      sqlChunks.push(`WHERE ${this.buildQuery(_class, domain, query, options)}`)
+      sqlChunks.push(`WHERE ${this.buildQuery(_class, domain, query, joins, options)}`)
 
       let total = options?.total === true ? 0 : -1
       if (options?.total === true) {
@@ -128,7 +127,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         total = Number.isNaN(parsed) ? 0 : parsed
       }
       if (options?.sort !== undefined) {
-        sqlChunks.push(this.buildOrder(_class, domain, options.sort))
+        sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
       }
       if (options?.limit !== undefined) {
         sqlChunks.push(`LIMIT ${options.limit}`)
@@ -157,106 +156,182 @@ abstract class PostgresAdapterBase implements DbAdapter {
     projection: Projection<T> | undefined
   ): WithLookup<T>[] {
     const map = new Map<Ref<T>, WithLookup<T>>()
+    const modelJoins: JoinProps[] = []
+    const reverseJoins: JoinProps[] = []
+    const simpleJoins: JoinProps[] = []
+    for (const join of joins) {
+      if (join.table === DOMAIN_MODEL) {
+        modelJoins.push(join)
+      } else if (join.isReverse) {
+        reverseJoins.push(join)
+      } else {
+        simpleJoins.push(join)
+      }
+    }
     for (const row of rows) {
-      let doc = map.get(row._id) ?? { _id: row._id, $lookup: {} as any }
-      const lookup: Record<string, any> = doc.$lookup
+      /* eslint-disable @typescript-eslint/consistent-type-assertions */
+      let doc: WithLookup<T> = map.get(row._id) ?? ({ _id: row._id, $lookup: {} } as WithLookup<T>)
+      const lookup: Record<string, any> = doc.$lookup as Record<string, any>
       let joinIndex: number | undefined
       let skip = false
-      for (const column in row) {
-        if (column.startsWith('lookup_')) {
-          const keys = column.split('_')
-          let key = keys[keys.length - 1]
-          if (keys[keys.length - 2] === '') {
-            key = '_' + key
-          }
-
-          if (key === 'workspaceId') {
-            continue
-          }
-
-          if (key === '_id') {
-            if (row[column] === null) {
-              skip = true
+      try {
+        for (const column in row) {
+          if (column.startsWith('reverse_lookup_')) {
+            const join = reverseJoins.find((j) => j.toAlias === column)
+            if (join === undefined) {
               continue
             }
-            joinIndex = joinIndex === undefined ? 0 : ++joinIndex
-            skip = false
-          }
+            const res = this.getLookupValue(join.path, lookup, false)
+            if (res === undefined) continue
+            const { obj, key } = res
 
-          if (skip) {
-            continue
-          }
-
-          const join = joins[joinIndex ?? 0]
-
-          let obj = lookup
-          const path = join.path.split('.')
-
-          for (let i = 0; i < path.length; i++) {
-            const p = path[i]
-            if (i > 0) {
-              if (obj.$lookup === undefined) {
-                obj.$lookup = {}
-              }
-              obj = obj.$lookup
+            if (row[column] != null) {
+              const parsed = row[column].map(parseDoc)
+              obj[key] = parsed
+            }
+          } else if (column.startsWith('lookup_')) {
+            const keys = column.split('_')
+            let key = keys[keys.length - 1]
+            if (keys[keys.length - 2] === '') {
+              key = '_' + key
             }
 
-            if (join.isReverse) {
-              if (obj[p] === undefined) {
-                obj[p] = []
-              }
-              if (key === '_id') {
-                obj[p].push({})
-              }
-            } else if (obj[p] === undefined) {
-              obj[p] = {}
+            if (key === 'workspaceId') {
+              continue
             }
-            obj = Array.isArray(obj[p]) ? obj[p][obj[p].length - 1] : obj[p]
-          }
 
-          if (key === 'data') {
-            obj = { ...obj, ...row[column] }
+            if (key === '_id') {
+              if (row[column] === null) {
+                skip = true
+                continue
+              }
+              joinIndex = joinIndex === undefined ? 0 : ++joinIndex
+              skip = false
+            }
+
+            if (skip) {
+              continue
+            }
+
+            const join = simpleJoins[joinIndex ?? 0]
+
+            const res = this.getLookupValue(join.path, lookup)
+            if (res === undefined) continue
+            const { obj, key: p } = res
+
+            if (key === 'data') {
+              obj[p] = { ...obj[p], ...row[column] }
+            } else {
+              if (key === 'attachedTo' && row[column] === 'NULL') {
+                continue
+              } else {
+                obj[p][key] = row[column] === 'NULL' ? null : row[column]
+              }
+            }
           } else {
-            obj[key] = row[column] === 'NULL' ? null : row[column]
-          }
-        } else {
-          joinIndex = undefined
-          if (!map.has(row._id)) {
-            if (column === 'workspaceId') {
-              continue
-            }
-            if (column === 'data') {
-              const data = row[column]
-              if (projection !== undefined) {
+            joinIndex = undefined
+            if (!map.has(row._id)) {
+              if (column === 'workspaceId') {
+                continue
+              }
+              if (column === 'data') {
+                const data = row[column]
                 if (projection !== undefined) {
-                  for (const key in data) {
-                    if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
-                      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                      delete data[key]
+                  if (projection !== undefined) {
+                    for (const key in data) {
+                      if (!Object.prototype.hasOwnProperty.call(projection, key) || (projection as any)[key] === 0) {
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        delete data[key]
+                      }
                     }
                   }
                 }
-              }
-              doc = { ...doc, ...data }
-            } else {
-              if (column === 'createdOn' || column === 'modifiedOn') {
-                const val = Number.parseInt(row[column])
-                ;(doc as any)[column] = Number.isNaN(val) ? null : val
+                doc = { ...doc, ...data }
               } else {
-                ;(doc as any)[column] = row[column] === 'NULL' ? null : row[column]
+                if (column === 'createdOn' || column === 'modifiedOn') {
+                  const val = Number.parseInt(row[column])
+                  ;(doc as any)[column] = Number.isNaN(val) ? null : val
+                } else {
+                  ;(doc as any)[column] = row[column] === 'NULL' ? null : row[column]
+                }
               }
             }
           }
         }
+      } catch (err) {
+        console.log(err)
+        throw err
       }
-      map.set(row._id, doc as WithLookup<T>)
+      for (const modelJoin of modelJoins) {
+        const res = this.getLookupValue(modelJoin.path, lookup)
+        if (res === undefined) continue
+        const { obj, key } = res
+        const val = this.getModelLookupValue<T>(doc, modelJoin, simpleJoins)
+        if (val !== undefined) {
+          const res = this.modelDb.findAllSync(modelJoin.toClass, {
+            [modelJoin.toField]: (doc as any)[modelJoin.fromField]
+          })
+          obj[key] = modelJoin.isReverse ? res : res[0]
+        }
+      }
+      map.set(row._id, doc)
     }
     return Array.from(map.values())
+  }
+
+  private getLookupValue (
+    fullPath: string,
+    obj: Record<string, any>,
+    shouldCreate: boolean = true
+  ):
+    | {
+      obj: any
+      key: string
+    }
+    | undefined {
+    const path = fullPath.split('.')
+    for (let i = 0; i < path.length; i++) {
+      const p = path[i]
+      if (i > 0) {
+        if (obj.$lookup === undefined) {
+          obj.$lookup = {}
+        }
+        obj = obj.$lookup
+      }
+
+      if (obj[p] === undefined) {
+        if (!shouldCreate && i < path.length - 1) {
+          return
+        } else {
+          obj[p] = {}
+        }
+      }
+      if (i === path.length - 1) {
+        return { obj, key: p }
+      }
+      obj = obj[p]
+    }
+  }
+
+  private getModelLookupValue<T extends Doc>(doc: WithLookup<T>, join: JoinProps, simpleJoins: JoinProps[]): any {
+    if (join.fromAlias.startsWith('lookup_')) {
+      const simple = simpleJoins.find((j) => j.toAlias === join.fromAlias)
+      if (simple !== undefined) {
+        const val = this.getLookupValue(simple.path, doc.$lookup ?? {})
+        if (val !== undefined) {
+          const data = val.obj[val.key]
+          return data[join.fromField]
+        }
+      }
+    } else {
+      return (doc as any)[join.fromField]
+    }
   }
 
   private buildJoinString (value: JoinProps[]): string {
     const res: string[] = []
     for (const val of value) {
+      if (val.isReverse) continue
       if (val.table === DOMAIN_MODEL) continue
       res.push(
         `LEFT JOIN ${val.table} AS ${val.toAlias} ON ${val.fromAlias}.${val.fromField} = ${val.toAlias}."${val.toField}" AND ${val.toAlias}."workspaceId" = '${this.workspaceId.name}'`
@@ -296,7 +371,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const _class = Array.isArray(value) ? value[0] : value
       const nested = Array.isArray(value) ? value[1] : undefined
       const domain = translateDomain(this.hierarchy.getDomain(_class))
-      const tkey = this.transformKey(clazz, key)
+      const tkey = domain === DOMAIN_MODEL ? key : this.transformKey(clazz, key)
       const as = `lookup_${domain}_${parentKey !== undefined ? parentKey + '_lookup_' + key : key}`
       res.push({
         isReverse: false,
@@ -337,7 +412,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const desc = this.hierarchy
         .getDescendants(this.hierarchy.getBaseClass(_class))
         .filter((it) => !this.hierarchy.isMixin(it))
-      const as = `lookup_${domain}_${parent !== undefined ? parent + '_lookup_' + key : key}`
+      const as = `reverse_lookup_${domain}_${parent !== undefined ? parent + '_lookup_' + key : key}`
       result.push({
         isReverse: true,
         table: domain,
@@ -352,7 +427,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private buildOrder<T extends Doc>(_class: Ref<Class<T>>, baseDomain: string, sort: SortingQuery<T>): string {
+  private buildOrder<T extends Doc>(
+    _class: Ref<Class<T>>,
+    baseDomain: string,
+    sort: SortingQuery<T>,
+    joins: JoinProps[]
+  ): string {
     const res: string[] = []
     for (const key in sort) {
       const val = sort[key]
@@ -360,7 +440,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         continue
       }
       if (typeof val === 'number') {
-        res.push(`${this.getKey(_class, baseDomain, key)} ${val === 1 ? 'ASC' : 'DESC'}`)
+        res.push(`${this.getKey(_class, baseDomain, key, joins)} ${val === 1 ? 'ASC' : 'DESC'}`)
       } else {
         // todo handle custom sorting
       }
@@ -372,6 +452,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     _class: Ref<Class<T>>,
     baseDomain: string,
     query: DocumentQuery<T>,
+    joins: JoinProps[],
     options?: ServerFindOptions<T>
   ): string {
     const res: string[] = []
@@ -387,13 +468,22 @@ abstract class PostgresAdapterBase implements DbAdapter {
         continue
       }
       const value = query[key]
-      const tkey = this.getKey(_class, baseDomain, key)
-      const translated = this.translateQueryValue(tkey, value)
+      const isDataArray = this.checkDataArray(_class, key)
+      const tkey = this.getKey(_class, baseDomain, key, joins, isDataArray)
+      const translated = this.translateQueryValue(tkey, value, isDataArray)
       if (translated !== undefined) {
         res.push(translated)
       }
     }
     return res.join(' AND ')
+  }
+
+  private checkDataArray<T extends Doc>(_class: Ref<Class<T>>, key: string): boolean {
+    const attr = this.hierarchy.findAttribute(_class, key)
+    if (attr !== undefined) {
+      return attr.type._class === core.class.ArrOf
+    }
+    return false
   }
 
   private fillClass<T extends Doc>(
@@ -447,11 +537,35 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return value
   }
 
-  private getKey<T extends Doc>(_class: Ref<Class<T>>, baseDomain: string, key: string): string {
-    return `${baseDomain}.${this.transformKey(_class, key)}`
+  private getKey<T extends Doc>(
+    _class: Ref<Class<T>>,
+    baseDomain: string,
+    key: string,
+    joins: JoinProps[],
+    isDataArray: boolean = false
+  ): string {
+    if (key.startsWith('$lookup')) {
+      return this.transformLookupKey(key, joins, isDataArray)
+    }
+    return `${baseDomain}.${this.transformKey(_class, key, isDataArray)}`
   }
 
-  private transformKey<T extends Doc>(_class: Ref<Class<T>>, key: string): string {
+  private transformLookupKey (key: string, joins: JoinProps[], isDataArray: boolean = false): string {
+    const arr = key.split('.').filter((p) => p !== '$lookup')
+    const tKey = arr.pop() ?? ''
+    const path = arr.join('.')
+    const join = joins.find((p) => p.path === path)
+    if (join === undefined) {
+      throw new Error(`Can't fined join for path: ${path}`)
+    }
+    if (join.isReverse) {
+      return `${join.toAlias}->'${tKey}'`
+    }
+    const res = isDataField(tKey) ? (isDataArray ? `data->'${tKey}'` : `data#>>'{${tKey}}'`) : key
+    return `${join.toAlias}.${res}`
+  }
+
+  private transformKey<T extends Doc>(_class: Ref<Class<T>>, key: string, isDataArray: boolean = false): string {
     if (!isDataField(key)) return `"${key}"`
     const arr = key.split('.').filter((p) => p)
     let tKey = ''
@@ -470,19 +584,23 @@ abstract class PostgresAdapterBase implements DbAdapter {
         }
       }
       // Check if key is belong to mixin class, we need to add prefix.
-      tKey = this.checkMixinKey<T>(tKey, _class)
+      tKey = this.checkMixinKey<T>(tKey, _class, isDataArray)
     }
 
-    return `data->>'${tKey}'`
+    return isDataArray ? `data->'${tKey}'` : `data#>>'{${tKey}}'`
   }
 
-  private checkMixinKey<T extends Doc>(key: string, _class: Ref<Class<T>>): string {
+  private checkMixinKey<T extends Doc>(key: string, _class: Ref<Class<T>>, isDataArray: boolean): string {
     if (!key.includes('.')) {
       try {
         const attr = this.hierarchy.findAttribute(_class, key)
         if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
           // It is mixin
-          key = attr.attributeOf + '.' + key
+          if (isDataArray) {
+            key = `${attr.attributeOf}->${key}`
+          } else {
+            key = `${attr.attributeOf},${key}`
+          }
         }
       } catch (err: any) {
         // ignore, if
@@ -491,7 +609,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return key
   }
 
-  private translateQueryValue (tkey: string, value: any): string | undefined {
+  private translateQueryValue (tkey: string, value: any, isDataArray: boolean): string | undefined {
     if (value === null) {
       return `${tkey} IS NULL`
     } else if (typeof value === 'object' && !Array.isArray(value)) {
@@ -516,7 +634,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
             res.push(`${tkey} <= '${val}'`)
             break
           case '$in':
-            res.push(`${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`)
+            res.push(
+              isDataArray
+                ? `${tkey} ?| array[${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'}]`
+                : `${tkey} IN (${val.length > 0 ? val.map((v: any) => `'${v}'`).join(', ') : 'NULL'})`
+            )
             break
           case '$nin':
             if (val.length > 0) {
@@ -533,10 +655,18 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       return res.length === 0 ? undefined : res.join(' AND ')
     }
-    return `${tkey} = '${value}'`
+    return isDataArray
+      ? `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
+      : `${tkey} = '${value}'`
   }
 
   private getProjectionsAliases (join: JoinProps): string[] {
+    if (join.table === DOMAIN_MODEL) return []
+    if (join.isReverse) {
+      return [
+        `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}") AS ${join.toAlias}`
+      ]
+    }
     const res: string[] = []
     for (const key of [...docFields, 'data']) {
       res.push(`${join.toAlias}."${key}" as "lookup_${join.path.replaceAll('.', '_')}_${key}"`)
@@ -556,35 +686,20 @@ abstract class PostgresAdapterBase implements DbAdapter {
     let dataAdded = false
     if (projection === undefined) {
       res.push(`${baseDomain}.*`)
-      for (const join of joins) {
-        res.push(...this.getProjectionsAliases(join))
-      }
     } else {
       for (const key in projection) {
-        if (key.startsWith('$lookup.')) {
-          const keys = key.split('.')
-          const path = keys.filter((p) => p !== '$lookup').join('.')
-          const join = joins.find((p) => p.path === path)
-          if (join === undefined) {
-            ctx.error('Build lookup key error', {
-              key,
-              joins
-            })
-            continue
+        if (isDataField(key)) {
+          if (!dataAdded) {
+            res.push('data as data')
+            dataAdded = true
           }
-          const finalKey = keys[keys.length - 1]
-          res.push(`${join.toAlias}.${this.transformKey(join.toClass, finalKey)}" AS "${join.toAlias}.${finalKey}"`)
         } else {
-          if (isDataField(key)) {
-            if (!dataAdded) {
-              res.push('data as data')
-              dataAdded = true
-            }
-          } else {
-            res.push(`${baseDomain}."${key}" AS "${key}"`)
-          }
+          res.push(`${baseDomain}."${key}" AS "${key}"`)
         }
       }
+    }
+    for (const join of joins) {
+      res.push(...this.getProjectionsAliases(join))
     }
     return res.join(', ')
   }
@@ -626,51 +741,60 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    const result = await ctx.with('groupBy', { domain }, async (ctx) => {
-      const result = await this.client.query(
-        `SELECT DISTINCT ${field} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`,
-        [this.workspaceId.name]
-      )
-      return new Set(result.rows.map((r) => r[field]))
-    })
-    return result
+    try {
+      const result = await ctx.with('groupBy', { domain }, async (ctx) => {
+        const result = await this.client.query(
+          `SELECT DISTINCT ${field} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`,
+          [this.workspaceId.name]
+        )
+        return new Set(result.rows.map((r) => r[field]))
+      })
+      return result
+    } catch (err) {
+      ctx.error('Error while grouping by', { domain, field })
+      throw err
+    }
   }
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     const ids = Array.from(operations.keys())
-    const res = await this.client.query(
-      `SELECT * FROM ${translateDomain(domain)} WHERE _id = ANY($1) AND "workspaceId" = $2`,
-      [ids, this.workspaceId.name]
-    )
-    const docs = res.rows.map(parseDoc)
-    const map = new Map(docs.map((d) => [d._id, d]))
-    for (const [_id, ops] of operations) {
-      const doc = map.get(_id)
-      if (doc === undefined) continue
-      ;(ops as any)['%hash%'] = null
-      TxProcessor.applyUpdate(doc, ops)
-      const converted = convertDoc(doc, this.workspaceId.name)
-      await this.retryTxn(async (client) => {
-        await client.query(`UPDATE ${translateDomain(domain)} SET data = $3 WHERE _id = $1 AND "workspaceId" = $2`, [
-          _id,
-          this.workspaceId.name,
-          converted.data
-        ])
-      })
-    }
+    await this.retryTxn(async (client) => {
+      try {
+        const res = await client.query(
+          `SELECT * FROM ${translateDomain(domain)} WHERE _id = ANY($1) AND "workspaceId" = $2 FOR UPDATE`,
+          [ids, this.workspaceId.name]
+        )
+        const docs = res.rows.map(parseDoc)
+        const map = new Map(docs.map((d) => [d._id, d]))
+        for (const [_id, ops] of operations) {
+          const doc = map.get(_id)
+          if (doc === undefined) continue
+          ;(ops as any)['%hash%'] = null
+          TxProcessor.applyUpdate(doc, ops)
+          const converted = convertDoc(doc, this.workspaceId.name)
+          await client.query(`UPDATE ${translateDomain(domain)} SET data = $3 WHERE _id = $1 AND "workspaceId" = $2`, [
+            _id,
+            this.workspaceId.name,
+            converted.data
+          ])
+        }
+      } catch (err) {
+        ctx.error('Error while updating', { domain, operations, err })
+        throw err
+      }
+    })
   }
 
   async insert (domain: string, docs: Doc[]): Promise<TxResult> {
     return await this.retryTxn(async (client) => {
-      const res = await client.query(
+      await client.query(
         `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${docs
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${JSON.stringify(d.data)}')`
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${JSON.stringify(d.data)}')`
           })
           .join(', ')}`
       )
-      return res.oid
     })
   }
 }
@@ -726,59 +850,17 @@ class PostgresAdapter extends PostgresAdapterBase {
   }
 
   private async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    if (isOperator(tx.attributes)) {
-      const doc = await this.findDoc(tx.objectClass, tx.objectId)
+    await this.retryTxn(async (client) => {
+      const doc = await this.findDoc(tx.objectClass, tx.objectId, true)
       if (doc === undefined) return {}
       TxProcessor.updateMixin4Doc(doc, tx)
       const converted = convertDoc(doc, this.workspaceId.name)
-      await this.retryTxn(async (client) => {
-        await client.query(
-          `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET "modifiedBy" = $1, "modifiedOn" = $2, data = $5 WHERE _id = $3 AND "workspaceId" = $4`,
-          [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name, converted.data]
-        )
-      })
-    } else {
-      const ops = this.translateMixinAttrs(tx.mixin, tx.attributes)
-      let from = 'data'
-      if (Object.keys(ops).length > 0) {
-        for (const key in ops) {
-          from = `jsonb_set(
-            ${from},
-            '{${key}}',
-            '${getUpdateValue((ops as any)[key])}',
-            true
-          )`
-        }
-      }
-
-      await this.retryTxn(async (client) => {
-        await client.query(
-          `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET "modifiedBy" = $1, "modifiedOn" = $2, data = ${from} WHERE _id = $3 AND "workspaceId" = $4`,
-          [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-        )
-      })
-    }
+      await client.query(
+        `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET "modifiedBy" = $1, "modifiedOn" = $2, data = $5 WHERE _id = $3 AND "workspaceId" = $4`,
+        [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name, converted.data]
+      )
+    })
     return {}
-  }
-
-  private translateMixinAttrs (mixin: Ref<Mixin<Doc>>, attributes: Record<string, any>): Record<string, any> {
-    const attrs: Record<string, any> = {}
-    let count = 0
-    for (const [k, v] of Object.entries(attributes)) {
-      if (k.startsWith('$')) {
-        attrs[k] = this.translateMixinAttrs(mixin, v)
-      } else {
-        attrs[mixin + '.' + k] = v
-      }
-      count++
-    }
-
-    if (count === 0) {
-      // We need at least one attribute, to be inside for first time,
-      // for mongo to create embedded object, if we don't want to get object first.
-      attrs[mixin + '.' + '__mixin'] = 'true'
-    }
-    return attrs
   }
 
   async tx (ctx: MeasureContext, ...txes: Tx[]): Promise<TxResult[]> {
@@ -813,18 +895,19 @@ class PostgresAdapter extends PostgresAdapterBase {
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
     if (isOperator(tx.operations)) {
-      const doc = await this.findDoc(tx.objectClass, tx.objectId)
-      if (doc === undefined) return {}
-      ;(tx.operations as any)['%hash%'] = null
-      TxProcessor.applyUpdate(doc, tx.operations)
-      const converted = convertDoc(doc, this.workspaceId.name)
+      let doc: Doc | undefined
       await this.retryTxn(async (client) => {
+        doc = await this.findDoc(tx.objectClass, tx.objectId, true)
+        if (doc === undefined) return {}
+        ;(tx.operations as any)['%hash%'] = null
+        TxProcessor.applyUpdate(doc, tx.operations)
+        const converted = convertDoc(doc, this.workspaceId.name)
         await client.query(
           `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET "modifiedBy" = $1, "modifiedOn" = $2, data = $5 WHERE _id = $3 AND "workspaceId" = $4`,
           [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name, converted.data]
         )
       })
-      if (tx.retrieve === true) {
+      if (tx.retrieve === true && doc !== undefined) {
         return { object: doc }
       }
     } else {
@@ -843,34 +926,34 @@ class PostgresAdapter extends PostgresAdapterBase {
       updates.push(`space = ${space}`)
     }
     if (attachedTo !== undefined) {
-      updates.push(`"attachedTo" = ${attachedTo ?? 'NULL'}`)
+      updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
     }
     if (Object.keys(ops).length > 0) {
       let from = 'data'
       for (const key in ops) {
-        from = `jsonb_set(
-                ${from},
-                '{${key}}',
-                '${getUpdateValue(ops[key])}',
-                true
-              )`
+        from = `jsonb_set(${from}, '{${key}}', '${getUpdateValue(ops[key])}', true)`
       }
       updates.push(`data = ${from}`)
     }
 
-    await this.retryTxn(async (client) => {
-      await client.query(
-        `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET ${updates.join(', ')} WHERE _id = $3 AND "workspaceId" = $4`,
-        [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-      )
-    })
+    try {
+      await this.retryTxn(async (client) => {
+        await client.query(
+          `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET ${updates.join(', ')} WHERE _id = $3 AND "workspaceId" = $4`,
+          [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
+        )
+      })
+    } catch (err) {
+      console.error(err)
+    }
   }
 
-  private async findDoc (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<Doc | undefined> {
-    const res = await this.client.query(
-      `SELECT * FROM ${translateDomain(this.hierarchy.getDomain(_class))} WHERE _id = $1 AND "workspaceId" = $2`,
-      [_id, this.workspaceId.name]
-    )
+  private async findDoc (_class: Ref<Class<Doc>>, _id: Ref<Doc>, forUpdate: boolean = false): Promise<Doc | undefined> {
+    let query = `SELECT * FROM ${translateDomain(this.hierarchy.getDomain(_class))} WHERE _id = $1 AND "workspaceId" = $2`
+    if (forUpdate) {
+      query += ' FOR UPDATE'
+    }
+    const res = await this.client.query(query, [_id, this.workspaceId.name])
     const dbDoc = res.rows[0]
     return dbDoc !== undefined ? parseDoc(dbDoc) : undefined
   }
@@ -878,11 +961,10 @@ class PostgresAdapter extends PostgresAdapterBase {
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
     const domain = translateDomain(this.hierarchy.getDomain(tx.objectClass))
     const res = await this.retryTxn(async (client) => {
-      const res = await client.query(`DELETE FROM ${domain} WHERE _id = $1 AND "workspaceId" = $2`, [
+      await client.query(`DELETE FROM ${domain} WHERE _id = $1 AND "workspaceId" = $2`, [
         tx.objectId,
         this.workspaceId.name
       ])
-      return res.oid
     })
     return res
   }

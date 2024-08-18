@@ -272,7 +272,12 @@ export function parseDocWithProjection<T extends Doc> (doc: DBDoc, projection: P
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL') {
-      ;(rest as any)[key] = null
+      if (key === 'attachedTo') {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete rest[key]
+      } else {
+        ;(rest as any)[key] = null
+      }
     }
     if (key === 'modifiedOn' || key === 'createdOn') {
       ;(rest as any)[key] = Number.parseInt((rest as any)[key])
@@ -298,7 +303,15 @@ export function parseDoc<T extends Doc> (doc: DBDoc): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL') {
-      ;(rest as any)[key] = null
+      if (key === 'attachedTo') {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete rest[key]
+      } else {
+        ;(rest as any)[key] = null
+      }
+    }
+    if (key === 'modifiedOn' || key === 'createdOn') {
+      ;(rest as any)[key] = Number.parseInt((rest as any)[key])
     }
   }
   const res = {

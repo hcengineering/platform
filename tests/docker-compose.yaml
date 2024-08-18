@@ -10,11 +10,10 @@ services:
     restart: unless-stopped
   postgres:
     image: postgres
-    container_name: postgres
     environment:
       - POSTGRES_PASSWORD=example
     ports:
-      - 5433:5433
+      - 5433:5432
     restart: unless-stopped
   minio:
     image: 'minio/minio'

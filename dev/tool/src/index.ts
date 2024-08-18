@@ -1351,15 +1351,17 @@ export function devTool (
       })
     })
 
-  program
-    .command('move-to-pg')
-    .action(async () => {
-      const { mongodbUri, dbUrl } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
-        const workspaces = await listWorkspacesRaw(db, productId)
-        await moveFromMongoToPG(mongodbUri, dbUrl, workspaces.map((it) => getWorkspaceId(it.workspace, productId)))
-      })
+  program.command('move-to-pg').action(async () => {
+    const { mongodbUri, dbUrl } = prepareTools()
+    await withDatabase(mongodbUri, async (db) => {
+      const workspaces = await listWorkspacesRaw(db, productId)
+      await moveFromMongoToPG(
+        mongodbUri,
+        dbUrl,
+        workspaces.map((it) => getWorkspaceId(it.workspace, productId))
+      )
     })
+  })
 
   extendProgram?.(program)
 

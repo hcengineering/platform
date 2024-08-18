@@ -13,7 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, ContactEvents, Employee, PersonAccount } from '@hcengineering/contact'
+  import {
+    AvatarType,
+    Channel,
+    combineName,
+    ContactEvents,
+    Employee,
+    Person,
+    PersonAccount
+  } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -42,10 +50,9 @@
 
   let saving: boolean = false
 
-  const person: Data<Employee> = {
+  const person: Data<Person> = {
     name: '',
     city: '',
-    active: true,
     avatarType: AvatarType.COLOR
   }
 
