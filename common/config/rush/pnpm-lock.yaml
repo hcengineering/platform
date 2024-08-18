@@ -1824,8 +1824,8 @@ dependencies:
     specifier: ^5.3.3
     version: 5.3.3
   update-browserslist-db:
-    specifier: ~1.0.11
-    version: 1.0.13(browserslist@4.21.5)
+    specifier: ~1.1.0
+    version: 1.1.0(browserslist@4.21.5)
   url-loader:
     specifier: ~4.1.1
     version: 4.1.1(file-loader@6.2.0)(webpack@5.90.3)
@@ -11221,7 +11221,7 @@ packages:
       caniuse-lite: 1.0.30001589
       electron-to-chromium: 1.4.679
       node-releases: 2.0.14
-      update-browserslist-db: 1.0.13(browserslist@4.21.5)
+      update-browserslist-db: 1.1.0(browserslist@4.21.5)
     dev: false
 
   /browserslist@4.23.0:
@@ -11232,7 +11232,7 @@ packages:
       caniuse-lite: 1.0.30001589
       electron-to-chromium: 1.4.679
       node-releases: 2.0.14
-      update-browserslist-db: 1.0.13(browserslist@4.23.0)
+      update-browserslist-db: 1.1.0(browserslist@4.23.0)
     dev: false
 
   /bs-logger@0.2.6:
@@ -19326,6 +19326,10 @@ packages:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
     dev: false
 
+  /picocolors@1.0.1:
+    resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
+    dev: false
+
   /picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
@@ -22935,26 +22939,26 @@ packages:
       path-exists: 5.0.0
     dev: false
 
-  /update-browserslist-db@1.0.13(browserslist@4.21.5):
-    resolution: {integrity: sha512-xebP81SNcPuNpPP3uzeW1NYXxI3rxyJzF3pD6sH4jE7o/IX+WtSpwnVU+qIsDPyk0d3hmFQ7mjqc6AtV604hbg==}
+  /update-browserslist-db@1.1.0(browserslist@4.21.5):
+    resolution: {integrity: sha512-EdRAaAyk2cUE1wOf2DkEhzxqOQvFOoRJFNS6NeyJ01Gp2beMRpBAINjM2iDXE3KCuKhwnvHIQCJm6ThL2Z+HzQ==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
       browserslist: 4.21.5
       escalade: 3.1.2
-      picocolors: 1.0.0
+      picocolors: 1.0.1
     dev: false
 
-  /update-browserslist-db@1.0.13(browserslist@4.23.0):
-    resolution: {integrity: sha512-xebP81SNcPuNpPP3uzeW1NYXxI3rxyJzF3pD6sH4jE7o/IX+WtSpwnVU+qIsDPyk0d3hmFQ7mjqc6AtV604hbg==}
+  /update-browserslist-db@1.1.0(browserslist@4.23.0):
+    resolution: {integrity: sha512-EdRAaAyk2cUE1wOf2DkEhzxqOQvFOoRJFNS6NeyJ01Gp2beMRpBAINjM2iDXE3KCuKhwnvHIQCJm6ThL2Z+HzQ==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:
       browserslist: 4.23.0
       escalade: 3.1.2
-      picocolors: 1.0.0
+      picocolors: 1.0.1
     dev: false
 
   /uri-js@4.4.1:
@@ -25665,7 +25669,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-j8onQxy51K29b/9q8g+lOG8e8dOFO2WpQQTdtnhP2vy2EcvIuSgckenQpg++0r1AtJ1G7FC7hr5QYNsrTPWkBA==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-vNzAySZmoh0oiqWk3QAy5CmT1ai/wSMRcJ/NwHGzsHz9tns0chnRMUwHwSiU86OSYmsxXpDHlfqyFYBpc62DUg==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -25717,7 +25721,7 @@ packages:
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
-      update-browserslist-db: 1.0.13(browserslist@4.21.5)
+      update-browserslist-db: 1.1.0(browserslist@4.21.5)
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
       webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       webpack-cli: 5.1.4(webpack-bundle-analyzer@4.10.1)(webpack-dev-server@4.15.1)(webpack@5.90.3)
@@ -30226,7 +30230,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-U0i5q0YgmqM+29OoNKE5F7SYHLenVyjGDEus4MgN7CqMIC1n6n2gtztzRm2O6/j8hba5E6asgHgGF+ljESlbGw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-ZBYZMpLRndTP0qXJ4+kgvt4xmYZbF/f3Nj7TD1sDi8eL9foH1Md4RA/P+eEXWOjQzhSxBZ2yE/onCjzrK2BaSw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -30257,7 +30261,7 @@ packages:
       svgo-loader: 3.0.3
       ts-loader: 9.5.1(typescript@5.3.3)(webpack@5.90.3)
       typescript: 5.3.3
-      update-browserslist-db: 1.0.13(browserslist@4.21.5)
+      update-browserslist-db: 1.1.0(browserslist@4.21.5)
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
       webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       webpack-cli: 5.1.4(webpack-bundle-analyzer@4.10.1)(webpack-dev-server@4.15.1)(webpack@5.90.3)

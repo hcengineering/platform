@@ -10,7 +10,7 @@
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
-    "test": "jest",
+    "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
     "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
