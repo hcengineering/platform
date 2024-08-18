@@ -244,7 +244,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.isTailLoading.set(true)
       const tailStart = metadata[startIndex]?.createdOn
       this.loadTail(tailStart)
-      this.backwardNextPromise = this.loadNext('backward', metadata[startIndex]?.createdOn, this.limit)
+      this.backwardNextPromise = this.loadNext('backward', metadata[startIndex]?.createdOn, this.limit, false)
     } else {
       const newStart = Math.max(startPosition - this.limit / 2, 0)
       await this.loadMore('forward', metadata[newStart]?.createdOn, this.limit)
@@ -309,7 +309,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return index !== -1 ? metadata.length - index : -1
   }
 
-  async loadChunk (isBackward: boolean, loadAfter: Timestamp, limit?: number): Promise<Chunk | undefined> {
+  async loadChunk (isBackward: boolean, loadAfter: Timestamp, limit?: number, equal = true): Promise<Chunk | undefined> {
     const client = getClient()
     const skipIds = this.getChunkSkipIds(loadAfter)
 
@@ -319,7 +319,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
         attachedTo: this.chatId,
         space: this.space,
         _id: { $nin: skipIds },
-        createdOn: isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
+        createdOn: equal
+          ? isBackward
+            ? { $lte: loadAfter }
+            : { $gte: loadAfter }
+          : isBackward
+            ? { $lt: loadAfter }
+            : { $gt: loadAfter }
       },
       {
         limit: limit ?? this.limit,
@@ -359,7 +365,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       .map(({ _id }) => _id)
   }
 
-  async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
+  async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number, equal = true): Promise<void> {
     if (this.chatId === undefined || loadAfter === undefined) {
       return
     }
@@ -384,7 +390,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return
     }
 
-    const chunk = await this.loadChunk(isBackward, loadAfter, limit)
+    const chunk = await this.loadChunk(isBackward, loadAfter, limit, equal)
 
     if (chunk !== undefined && isBackward) {
       this.backwardNextStore.set(chunk)

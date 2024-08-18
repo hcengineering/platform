@@ -223,6 +223,7 @@ export class TContactsTab extends TDoc implements ContactsTab {
 @Model(contact.class.PersonSpace, core.class.Space)
 export class TPersonSpace extends TSpace implements PersonSpace {
   @Prop(TypeRef(contact.class.Person), contact.string.Person)
+  @Index(IndexKind.Indexed)
     person!: Ref<Person>
 }
 
@@ -1170,6 +1171,14 @@ export function createModel (builder: Builder): void {
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_CONTACT,
+    indexes: [
+      {
+        keys: {
+          _class: 1,
+          [contact.mixin.Employee + '.active']: 1
+        }
+      }
+    ],
     disabled: [{ attachedToClass: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }, { attachedTo: 1 }]
   })
 

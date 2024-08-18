@@ -150,7 +150,7 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
 }
 
 async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const roomInfo = roomInfos.find((ri) => ri.room === info.room)
   if (roomInfo !== undefined) {
     roomInfo.persons.push(info.person)
@@ -174,7 +174,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
 
 async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
@@ -197,7 +197,7 @@ async function rejectJoinRequests (info: ParticipantInfo, control: TriggerContro
 
 async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     oldRoomInfo.persons = oldRoomInfo.persons.filter((p) => p !== info.person)

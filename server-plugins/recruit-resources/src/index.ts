@@ -122,10 +122,11 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
     const updateTx = cud as TxUpdateDoc<Vacancy>
     if (updateTx.operations.company !== undefined) {
       // It could be null or new value
-      const txes = await control.findAll(core.class.TxCUD, {
-        objectId: updateTx.objectId,
-        _id: { $nin: [updateTx._id] }
-      })
+      const txes = (
+        await control.findAll(core.class.TxCUD, {
+          objectId: updateTx.objectId
+        })
+      ).filter((it) => it._id !== updateTx._id)
       const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
       if (vacancy.company != null) {
         // We have old value
@@ -162,10 +163,11 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
   if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Vacancy)) {
     const removeTx = actualTx as TxRemoveDoc<Vacancy>
     // It could be null or new value
-    const txes = await control.findAll(core.class.TxCUD, {
-      objectId: removeTx.objectId,
-      _id: { $nin: [removeTx._id] }
-    })
+    const txes = (
+      await control.findAll(core.class.TxCUD, {
+        objectId: removeTx.objectId
+      })
+    ).filter((it) => it._id !== removeTx._id)
     const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
     const res: Tx[] = []
     if (vacancy.company != null) {

@@ -143,7 +143,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
         while (ops.length > 0) {
           const part = ops.splice(0, skip)
           try {
-            await ctx.with('bulk-write', {}, async () => {
+            await ctx.with('raw-bulk-write', {}, async () => {
               await coll.bulkWrite(
                 part.map((it) => {
                   const { $unset, ...set } = it[1] as any

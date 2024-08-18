@@ -40,7 +40,7 @@
         <Button
           label={getEmbeddedLabel('*')}
           on:click={() => {
-            showPopup(Params, { params: metrics.namedParams ?? {} })
+            showPopup(Params, { params: metrics.namedParams ?? {}, opLog: metrics.opLog }, 'full')
           }}
           kind={'ghost'}
         />

@@ -389,7 +389,7 @@ export async function upgradeModel (
 
       await tryMigrate(migrateClient, coreId, [
         {
-          state: 'indexes-v3',
+          state: 'indexes-v4',
           func: upgradeIndexes
         }
       ])

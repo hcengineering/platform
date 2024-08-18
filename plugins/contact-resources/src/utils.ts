@@ -320,7 +320,7 @@ function fillStores (): void {
     const accountPersonQuery = createQuery(true)
 
     const query = createQuery(true)
-    query.query(contact.mixin.Employee, {}, (res) => {
+    query.query(contact.mixin.Employee, { [contact.mixin.Employee + '.active']: { $in: [true, false] } }, (res) => {
       employeesStore.set(res)
       employeeByIdStore.set(toIdMap(res))
     })
@@ -331,13 +331,10 @@ function fillStores (): void {
 
       const persons = res.map((it) => it.person)
 
-      accountPersonQuery.query<Person>(
-        contact.class.Person,
-        { _id: { $in: persons }, [contact.mixin.Employee]: { $exists: false } },
-        (res) => {
-          personAccountPersonByIdStore.set(toIdMap(res))
-        }
-      )
+      accountPersonQuery.query<Person>(contact.class.Person, { _id: { $in: persons } }, (res) => {
+        const personIn = toIdMap(res)
+        personAccountPersonByIdStore.set(personIn)
+      })
     })
 
     const providerQuery = createQuery(true)

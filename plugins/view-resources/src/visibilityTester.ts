@@ -13,8 +13,17 @@
 // limitations under the License.
 //
 
-import core, { checkPermission, type Space, type Doc, type TypedSpace, getCurrentAccount } from '@hcengineering/core'
+import core, {
+  checkPermission,
+  getCurrentAccount,
+  toIdMap,
+  type Doc,
+  type Space,
+  type TypedSpace
+} from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
+import { get } from 'svelte/store'
+import { spaceSpace } from './utils'
 
 function isTypedSpace (space: Space): space is TypedSpace {
   return getClient().getHierarchy().isDerived(space._class, core.class.TypedSpace)
@@ -28,14 +37,14 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
   const client = getClient()
   const targets = Array.isArray(doc) ? doc : [doc]
   // Note: allow deleting objects in NOT typed spaces for now
-  const targetSpaces = (await client.findAll(core.class.Space, { _id: { $in: targets.map((t) => t.space) } })).filter(
-    isTypedSpace
+  const targetSpaces = toIdMap(
+    (await client.findAll(core.class.Space, { _id: { $in: targets.map((t) => t.space) } })).filter(isTypedSpace)
   )
 
   return !(
     await Promise.all(
-      Array.from(new Set(targetSpaces.map((t) => t._id))).map(
-        async (s) => await checkPermission(client, core.permission.ForbidDeleteObject, s)
+      Array.from(targetSpaces.entries()).map(
+        async (s) => await checkPermission(client, core.permission.ForbidDeleteObject, s[0], s[1])
       )
     )
   ).some((r) => r)
@@ -54,11 +63,13 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const client = getClient()
 
-  if (await checkPermission(client, core.permission.UpdateObject, core.space.Space)) {
+  const _spaceSpace = get(spaceSpace) ?? (await client.findOne(core.class.TypedSpace, { _id: core.space.Space }))
+
+  if (await checkPermission(client, core.permission.UpdateObject, core.space.Space, _spaceSpace)) {
     return true
   }
 
-  if (isTypedSpace(space) && (await checkPermission(client, core.permission.UpdateSpace, space._id))) {
+  if (isTypedSpace(space) && (await checkPermission(client, core.permission.UpdateSpace, space._id, space))) {
     return true
   }
 
@@ -78,11 +89,13 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const client = getClient()
 
-  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space)) {
+  const _spaceSpace = get(spaceSpace) ?? (await client.findOne(core.class.TypedSpace, { _id: core.space.Space }))
+
+  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space, _spaceSpace)) {
     return true
   }
 
-  if (isTypedSpace(space) && (await checkPermission(client, core.permission.ArchiveSpace, space._id))) {
+  if (isTypedSpace(space) && (await checkPermission(client, core.permission.ArchiveSpace, space._id, space))) {
     return true
   }
 
@@ -102,7 +115,9 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   const client = getClient()
 
-  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space)) {
+  const _spaceSpace = get(spaceSpace) ?? (await client.findOne(core.class.TypedSpace, { _id: core.space.Space }))
+
+  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space, _spaceSpace)) {
     return true
   }
 

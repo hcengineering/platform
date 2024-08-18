@@ -1493,6 +1493,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/datalake",
+      "projectFolder": "server/datalake",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/bitrix",
       "projectFolder": "plugins/bitrix",
       "shouldPublish": true

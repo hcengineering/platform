@@ -13,15 +13,17 @@
 // limitations under the License.
 //
 import chunter, { Channel } from '@hcengineering/chunter'
-import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
+import core, { AccountRole, MeasureContext, Ref, TxOperations } from '@hcengineering/core'
 import analyticsCollector, { getAnalyticsChannelName } from '@hcengineering/analytics-collector'
 import contact, { Person } from '@hcengineering/contact'
 import { translate } from '@hcengineering/platform'
 
 export async function getOrCreateAnalyticsChannel (
+  ctx: MeasureContext,
   client: TxOperations,
   email: string,
   workspace: string,
+  workspaceUrl: string,
   person?: Person
 ): Promise<Ref<Channel> | undefined> {
   const channel = await client.findOne(chunter.class.Channel, {
@@ -33,13 +35,14 @@ export async function getOrCreateAnalyticsChannel (
     return channel._id
   }
 
-  const accounts = await client.findAll(contact.class.PersonAccount, { role: { $ne: AccountRole.Guest } })
+  ctx.info('Creating analytics channel', { email, workspace })
 
+  const accounts = await client.findAll(contact.class.PersonAccount, { role: { $ne: AccountRole.Guest } })
   const _id = await client.createDoc(chunter.class.Channel, core.space.Space, {
-    name: getAnalyticsChannelName(workspace, email),
+    name: getAnalyticsChannelName(workspaceUrl, email),
     topic: await translate(analyticsCollector.string.AnalyticsChannelDescription, {
       user: person?.name ?? email,
-      workspace
+      workspace: workspaceUrl
     }),
     description: '',
     private: false,

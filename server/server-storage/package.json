@@ -48,6 +48,7 @@
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/s3": "^0.6.0",
+    "@hcengineering/datalake": "^0.6.0",
     "elastic-apm-node": "~3.26.0",
     "@hcengineering/server-token": "^0.6.11"
   }

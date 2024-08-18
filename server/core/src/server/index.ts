@@ -235,3 +235,4 @@ export function createNullStorageFactory (): StorageAdapter {
 
 export { AggregatorStorageAdapter, buildStorage } from './aggregator'
 export { DomainIndexHelperImpl } from './domainHelper'
+export { QueryJoiner } from './utils'

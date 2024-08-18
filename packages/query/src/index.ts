@@ -312,6 +312,12 @@ export class LiveQuery implements WithTx, Client {
     return this.clone(q.result)[0] as WithLookup<T>
   }
 
+  private optionsCompare (opt1?: FindOptions<Doc>, opt2?: FindOptions<Doc>): boolean {
+    const { ctx: _1, ..._opt1 } = (opt1 ?? {}) as any
+    const { ctx: _2, ..._opt2 } = (opt2 ?? {}) as any
+    return deepEqual(_opt1, _opt2)
+  }
+
   private findQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -319,8 +325,9 @@ export class LiveQuery implements WithTx, Client {
   ): Query | undefined {
     const queries = this.queries.get(_class)
     if (queries === undefined) return
+
     for (const q of queries) {
-      if (!deepEqual(query, q.query) || !deepEqual(options, q.options)) continue
+      if (!deepEqual(query, q.query) || !this.optionsCompare(options, q.options)) continue
       return q
     }
   }

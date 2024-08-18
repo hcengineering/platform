@@ -54,6 +54,9 @@ export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
 
   skipClass?: boolean
   skipSpace?: boolean
+
+  // Optional measure context, for server side operations
+  ctx?: MeasureContext
 }
 /**
  * @public
@@ -174,6 +177,8 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
+  contextCache: Map<string, any>
+
   // Since we don't have other storages let's consider adapter is MinioClient
   // Later can be replaced with generic one with bucket encapsulated inside.
   storageAdapter: StorageAdapter
@@ -184,6 +189,7 @@ export interface TriggerControl {
 
   // Will create a live query if missing and return values immediately if already asked.
   queryFind: <T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>

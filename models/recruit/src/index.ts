@@ -480,7 +480,7 @@ export function createModel (builder: Builder): void {
         sortable: true
       },
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       }
     },
@@ -500,7 +500,7 @@ export function createModel (builder: Builder): void {
         }
       },
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       }
     },
@@ -796,7 +796,7 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       },
       viewOptions: {
