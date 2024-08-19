@@ -35,7 +35,7 @@ export default plugin(serverTelegramId, {
     OnMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
-    IsIncomingMessage: '' as TypeMatchFunc,
+    IsIncomingMessageTypeMatch: '' as TypeMatchFunc,
     FindMessages: '' as Resource<ObjectDDParticipantFunc>,
     GetCurrentEmployeeTG: '' as Resource<TemplateFieldServerFunc>,
     GetIntegrationOwnerTG: '' as Resource<TemplateFieldServerFunc>,

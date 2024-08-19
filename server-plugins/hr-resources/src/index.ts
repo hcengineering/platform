@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import contact, { Contact, Employee, Person, PersonAccount, formatName, getName } from '@hcengineering/contact'
+import contact, { Contact, Employee, formatName, getName, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Doc,
   Ref,
@@ -27,6 +27,7 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
+import gmail from '@hcengineering/gmail'
 import hr, {
   Department,
   DepartmentMember,
@@ -39,10 +40,13 @@ import hr, {
 import notification, { NotificationType } from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { getEmployee, getPersonAccountById } from '@hcengineering/server-notification'
-import { getContentByTemplate, isAllowed } from '@hcengineering/server-notification-resources'
-import gmail from '@hcengineering/gmail'
 import { sendEmailNotification } from '@hcengineering/server-gmail-resources'
+import { getEmployee, getPersonAccountById } from '@hcengineering/server-notification'
+import {
+  getContentByTemplate,
+  getNotificationProviderControl,
+  isAllowed
+} from '@hcengineering/server-notification-resources'
 
 async function getOldDepartment (
   currentTx: TxMixin<Employee, Staff> | TxUpdateDoc<Employee>,
@@ -97,21 +101,29 @@ function exlude (first: Ref<Department>[], second: Ref<Department>[]): Ref<Depar
 
 function getTxes (
   factory: TxFactory,
-  account: Ref<DepartmentMember>,
+  account: Ref<DepartmentMember>[],
   added: Ref<Department>[],
   removed?: Ref<Department>[]
 ): Tx[] {
-  const pushTxes = added.map((dep) =>
-    factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
-      $push: { members: account }
-    })
-  )
+  const pushTxes = added
+    .map((dep) =>
+      account.map((it) =>
+        factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
+          $push: { members: it }
+        })
+      )
+    )
+    .flat()
   if (removed === undefined) return pushTxes
-  const pullTxes = removed.map((dep) =>
-    factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
-      $pull: { members: account }
-    })
-  )
+  const pullTxes = removed
+    .map((dep) =>
+      account.map((it) =>
+        factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
+          $pull: { members: it }
+        })
+      )
+    )
+    .flat()
   return [...pullTxes, ...pushTxes]
 }
 
@@ -121,12 +133,8 @@ function getTxes (
 export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxMixin<Employee, Staff>
 
-  const targetAccount = (
-    await control.modelDb.findAll(contact.class.PersonAccount, {
-      person: ctx.objectId
-    })
-  )[0]
-  if (targetAccount === undefined) return []
+  const targetAccount = control.modelDb.getAccountByPersonId(ctx.objectId) as PersonAccount[]
+  if (targetAccount.length === 0) return []
 
   if (ctx.attributes.department !== undefined) {
     const lastDepartment = await getOldDepartment(ctx, control)
@@ -137,7 +145,7 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
         const removed = await buildHierarchy(lastDepartment, control)
         return getTxes(
           control.txFactory,
-          targetAccount._id,
+          targetAccount.map((it) => it._id),
           [],
           removed.map((p) => p._id)
         )
@@ -146,13 +154,22 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
     const push = (await buildHierarchy(departmentId, control)).map((p) => p._id)
 
     if (lastDepartment === undefined) {
-      return getTxes(control.txFactory, targetAccount._id, push)
+      return getTxes(
+        control.txFactory,
+        targetAccount.map((it) => it._id),
+        push
+      )
     }
 
     let removed = (await buildHierarchy(lastDepartment, control)).map((p) => p._id)
     const added = exlude(removed, push)
     removed = exlude(push, removed)
-    return getTxes(control.txFactory, targetAccount._id, added, removed)
+    return getTxes(
+      control.txFactory,
+      targetAccount.map((it) => it._id),
+      added,
+      removed
+    )
   }
 
   return []
@@ -183,16 +200,14 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
   employee.forEach((em) => {
     res.push(control.txFactory.createTxMixin(em._id, em._class, em.space, hr.mixin.Staff, { department: undefined }))
   })
-  targetAccounts.forEach((acc) => {
-    res.push(
-      ...getTxes(
-        control.txFactory,
-        acc._id,
-        [],
-        removed.map((p) => p._id)
-      )
+  res.push(
+    ...getTxes(
+      control.txFactory,
+      targetAccounts.map((it) => it._id),
+      [],
+      removed.map((p) => p._id)
     )
-  })
+  )
   return res
 }
 
@@ -232,19 +247,15 @@ export async function OnEmployeeDeactivate (tx: Tx, control: TriggerControl): Pr
     return []
   }
 
-  const targetAccount = (
-    await control.modelDb.findAll(contact.class.PersonAccount, {
-      person: ctx.objectId
-    })
-  )[0]
-  if (targetAccount === undefined) return []
+  const targetAccount = control.modelDb.getAccountByPersonId(ctx.objectId) as PersonAccount[]
+  if (targetAccount.length === 0) return []
   const lastDepartment = await getOldDepartment(ctx, control)
   if (lastDepartment === undefined) return []
 
   const removed = await buildHierarchy(lastDepartment, control)
   return getTxes(
     control.txFactory,
-    targetAccount._id,
+    targetAccount.map((it) => it._id),
     [],
     removed.map((p) => p._id)
   )
@@ -268,19 +279,21 @@ async function sendEmailNotifications (
   }
 
   // should respect employee settings
-  const accounts = await control.modelDb.findAll(contact.class.PersonAccount, {
-    person: { $in: Array.from(contacts.values()) as Ref<Employee>[] }
-  })
   const type = await control.modelDb.findOne(notification.class.NotificationType, { _id: typeId })
   if (type === undefined) return
   const provider = await control.modelDb.findOne(notification.class.NotificationProvider, {
     _id: gmail.providers.EmailNotificationProvider
   })
   if (provider === undefined) return
-  for (const account of accounts) {
-    const allowed = await isAllowed(control, account._id, type, provider)
-    if (!allowed) {
-      contacts.delete(account.person)
+
+  const notificationControl = await getNotificationProviderControl(control.ctx, control)
+  for (const accountId of contacts.values()) {
+    const accounts = control.modelDb.getAccountByPersonId(accountId) as PersonAccount[]
+    for (const account of accounts) {
+      const allowed = isAllowed(control, account._id, type, provider, notificationControl)
+      if (!allowed) {
+        contacts.delete(account.person)
+      }
     }
   }
 
@@ -306,7 +319,7 @@ async function sendEmailNotifications (
 export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
 
-  const sender = await getPersonAccountById(ctx.modifiedBy, control)
+  const sender = getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
   const request = TxProcessor.createDoc2Doc(ctx)
@@ -321,7 +334,7 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
 export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Request>
 
-  const sender = await getPersonAccountById(ctx.modifiedBy, control)
+  const sender = getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
   const request = (await control.findAll(hr.class.Request, { _id: ctx.objectId }))[0] as Request
@@ -337,7 +350,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
 export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Request>
 
-  const sender = await getPersonAccountById(ctx.modifiedBy, control)
+  const sender = getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
   const request = control.removedMap.get(ctx.objectId) as Request
@@ -389,7 +402,7 @@ export async function RequestTextPresenter (doc: Doc, control: TriggerControl): 
 export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<PublicHoliday>
 
-  const sender = await getPersonAccountById(ctx.modifiedBy, control)
+  const sender = getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
   const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return []
@@ -410,7 +423,7 @@ export async function OnPublicHolidayCreate (tx: Tx, control: TriggerControl): P
  */
 export async function PublicHolidayHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const holiday = doc as PublicHoliday
-  const sender = await getPersonAccountById(holiday.modifiedBy, control)
+  const sender = getPersonAccountById(holiday.modifiedBy, control)
   if (sender === undefined) return ''
   const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return ''
@@ -426,7 +439,7 @@ export async function PublicHolidayHTMLPresenter (doc: Doc, control: TriggerCont
  */
 export async function PublicHolidayTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const holiday = doc as PublicHoliday
-  const sender = await getPersonAccountById(holiday.modifiedBy, control)
+  const sender = getPersonAccountById(holiday.modifiedBy, control)
   if (sender === undefined) return ''
   const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return ''
