@@ -220,7 +220,7 @@
         }}
       />
     {/if}
-    {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isConnected}
       <ModernButton
         icon={view.icon.Copy}
         tooltip={{ label: !linkCopied ? plugin.string.CopyGuestLink : view.string.Copied, direction: 'top' }}
