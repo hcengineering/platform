@@ -229,6 +229,10 @@ export function convertDoc<T extends Doc> (doc: T, workspaceId: string): DBDoc {
   }
 }
 
+export function escapeBackticks (str: string): string {
+  return str.replaceAll("'", "''")
+}
+
 export class DBCollectionHelper implements DomainHelperOperations {
   constructor (
     protected readonly client: PoolClient,

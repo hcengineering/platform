@@ -33,8 +33,10 @@ import core, {
   generateId,
   getWorkspaceId,
   groupByArray,
+  Hierarchy,
   MeasureContext,
   MeasureMetricsContext,
+  ModelDb,
   RateLimiter,
   Ref,
   roleOrder,
@@ -61,6 +63,7 @@ import {
 import {
   createIndexStages,
   createServerPipeline,
+  getTxAdapterFactory,
   registerServerPlugins,
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
@@ -1290,18 +1293,30 @@ export async function createWorkspace (
 
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
 
-      await childLogger.withLog('init-workspace', {}, async (ctx) => {
-        await initModel(ctx, wsId, txes, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 10) })
-        })
-      })
-
       const { mongodbUri, dbUrl } = prepareTools([])
       const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
+
+      const hierarchy = new Hierarchy()
+      const modelDb = new ModelDb(hierarchy)
 
       const storageConfig: StorageConfiguration = storageConfigFromEnv()
       const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
+      const factory = getTxAdapterFactory(ctx, dbUrls, wsUrl, null, {
+        externalStorage: storageAdapter,
+        fullTextUrl: 'http://localhost:9200',
+        indexParallel: 0,
+        indexProcessing: 0,
+        rekoniUrl: '',
+        usePassedCtx: true
+      })
+      const txAdapter = await factory(ctx, hierarchy, dbUrl ?? mongodbUri, wsId, modelDb, storageAdapter)
+
+      await childLogger.withLog('init-workspace', {}, async (ctx) => {
+        await initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 10) })
+        })
+      })
       try {
         registerServerPlugins()
         registerStringLoaders()
@@ -1310,7 +1325,7 @@ export async function createWorkspace (
           dbUrls,
           {
             externalStorage: storageAdapter,
-            fullTextUrl: 'http://localost:9200',
+            fullTextUrl: 'http://localhost:9200',
             indexParallel: 0,
             indexProcessing: 0,
             rekoniUrl: '',
@@ -1337,6 +1352,7 @@ export async function createWorkspace (
         )
 
         const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
+
         const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
 
         await updateModel(ctx, wsId, migrationOperation, client, ctxModellogger, async (value) => {

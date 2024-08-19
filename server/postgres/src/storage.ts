@@ -62,6 +62,7 @@ import {
   createTable,
   DBCollectionHelper,
   docFields,
+  escapeBackticks,
   getDBClient,
   getUpdateValue,
   isDataField,
@@ -726,11 +727,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    try {
-      await this.insert(domain, docs)
-    } catch (err) {
-      console.log(err)
-    }
+    await this.insert(domain, docs)
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
@@ -787,14 +784,18 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async insert (domain: string, docs: Doc[]): Promise<TxResult> {
     return await this.retryTxn(async (client) => {
-      await client.query(
-        `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${docs
+      while (docs.length > 0) {
+        const part = docs.splice(0, 1)
+        const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${JSON.stringify(d.data)}')`
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${escapeBackticks(JSON.stringify(d.data))}')`
           })
-          .join(', ')}`
-      )
+          .join(', ')
+        await client.query(
+          `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
+        )
+      }
     })
   }
 }
@@ -982,16 +983,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
       return []
     }
     try {
-      await this.retryTxn(async (client) => {
-        await client.query(
-          `INSERT INTO ${translateDomain(DOMAIN_TX)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, data) VALUES ${tx
-            .map((it) => {
-              const doc = convertDoc(it, this.workspaceId.name)
-              return `('${doc._id}', '${doc.workspaceId}', '${doc._class}', '${doc.createdBy ?? doc.modifiedBy}', '${doc.modifiedBy}', ${doc.modifiedOn}, ${doc.createdOn ?? doc.modifiedOn}, '${doc.space}', '${JSON.stringify(doc.data)}')`
-            })
-            .join(', ')}`
-        )
-      })
+      await this.upload(ctx, DOMAIN_TX, tx)
     } catch (err) {
       console.error(err)
     }

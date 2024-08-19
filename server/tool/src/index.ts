@@ -42,6 +42,7 @@ import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@
 import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import {
   AggregatorStorageAdapter,
+  DbAdapter,
   DomainIndexHelperImpl,
   StorageAdapter,
   StorageConfiguration
@@ -114,24 +115,20 @@ export async function initModel (
   ctx: MeasureContext,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
+  adapter: DbAdapter,
+  storageAdapter: AggregatorStorageAdapter,
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
-  const { mongodbUri, txes } = prepareTools(rawTxes)
+  const { txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
 
-  const _client = getMongoClient(mongodbUri)
-  const client = await _client.getClient()
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
   try {
-    const db = getWorkspaceDB(client, workspaceId)
-
     logger.log('creating model...', workspaceId)
-    const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
-    logger.log('model transactions inserted.', { count: result.insertedCount })
+    await adapter.upload(ctx, DOMAIN_TX, txes)
+    logger.log('model transactions inserted.', { count: txes.length })
 
     await progress(30)
 
@@ -148,7 +145,6 @@ export async function initModel (
     throw err
   } finally {
     await storageAdapter.close()
-    _client.close()
   }
 }
 
