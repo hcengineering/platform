@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" packages="logger_and_report.withlog4j2">
+
+    <CustomLevels>
+        <CustomLevel name="SYSTEM" />
+        <CustomLevel name="SUCCESS" />
+        <CustomLevel name="ACTION" />
+        <CustomLevel name="UNDEFINED" />
+        <CustomLevel name="STEP" />
+        <CustomLevel name="API" />
+        <CustomLevel name="FAIL" />
+
+    </CustomLevels>
+
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss} %highlight{%-10level}{FATAL=bg_red black, FAIL=bg_yellow black, INFO=blue, SUCCESS=bg_green black, STEP=magenta, green, SYSTEM=cyan, UNDEFINED=bg_black white, API=gray, ACTION=gray} - %msg%n" disableAnsi="false"/>
+        </Console>
+        <CustomUIAppender name="CustomAppender">
+            <PatternLayout pattern="%d{HH:mm:ss} [%t] %-10level - %msg%n"/>
+        </CustomUIAppender>
+    </Appenders>
+    <Loggers>
+        <Root level="trace">
+            <AppenderRef ref="CustomAppender"/>
+            <AppenderRef ref="Console" />
+
+        </Root>
+    </Loggers>
+</Configuration>

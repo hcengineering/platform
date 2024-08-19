@@ -4,6 +4,8 @@ _api-extractor-temp/
 temp/
 .idea
 
+/report/*
+/target/*
 # Logs
 *.log
 npm-debug.log*
