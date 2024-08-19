@@ -1983,7 +1983,7 @@ async function createPersonAccount (
     client ??
     (await connect(getEndpoint(ctx, workspaceInfo, EndpointKind.Internal), getWorkspaceId(workspace, productId)))
   try {
-    const ops = new TxOperations(connection, core.account.System)
+    const ops = new TxOperations(connection, core.account.System).apply('create-person' + generateId())
 
     const name = combineName(account.first, account.last)
     // Check if PersonAccount is not exists
@@ -2033,6 +2033,7 @@ async function createPersonAccount (
         }
       }
     }
+    await ops.commit()
   } finally {
     if (client === undefined) {
       await connection.close()

@@ -19,6 +19,7 @@ import core from '@hcengineering/core/src/component'
 import serverActivity from '@hcengineering/server-activity'
 import serverNotification from '@hcengineering/server-notification'
 import activity from '@hcengineering/activity'
+import notification from '@hcengineering/notification'
 
 export { activityServerOperation } from './migration'
 export { serverActivityId } from '@hcengineering/server-activity'
@@ -43,6 +44,9 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ActivityMessagesHandler,
+    txMatch: {
+      'tx.objectClass': { $nin: [activity.class.ActivityMessage, notification.class.DocNotifyContext] }
+    },
     isAsync: true
   })
 
@@ -52,6 +56,10 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ReferenceTrigger,
+    txMatch: {
+      'tx.objectClass': { $ne: activity.class.ActivityMessage },
+      objectClass: { $nin: [notification.class.InboxNotification, notification.class.DocNotifyContext] }
+    },
     isAsync: true
   })
 }

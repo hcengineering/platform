@@ -879,12 +879,10 @@ export class TServerStorage implements ServerStorage {
     ctx: SessionOperationContext,
     findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
-    derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
-
-    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
-
     const nestedTxes: Tx[] = []
     if (derived.length > 0) {
+      derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
+      await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
       nestedTxes.push(...(await this.processDerived(ctx, derived, findAll)))
     }
 
@@ -992,6 +990,7 @@ export class TServerStorage implements ServerStorage {
     const onEnds: (() => void)[] = []
     const result: TxResult[] = []
     const derived: Tx[] = [...txes].filter((it) => it._class !== core.class.TxApplyIf)
+    let txPromise: Promise<TxResult[]> | undefined
 
     try {
       this.fillTxes(txes, txToStore, modelTx, txToProcess, applyTxes)
@@ -1023,7 +1022,7 @@ export class TServerStorage implements ServerStorage {
         await this.modelDb.tx(tx)
       }
       if (txToStore.length > 0) {
-        await ctx.with(
+        txPromise = ctx.with(
           'domain-tx',
           {},
           async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore),
@@ -1034,9 +1033,8 @@ export class TServerStorage implements ServerStorage {
         )
       }
       if (txToProcess.length > 0) {
-        result.push(...(await ctx.with('routeTx', {}, (ctx) => this.routeTx(ctx, ...txToProcess))), {
-          count: txToProcess.length
-        })
+        const routerResult = await ctx.with('routeTx', {}, (ctx) => this.routeTx(ctx, ...txToProcess))
+        result.push(...routerResult, { count: txToProcess.length })
         // invoke triggers and store derived objects
         derived.push(...(await this.processDerived(ctx, txToProcess, _findAll)))
       }
@@ -1052,6 +1050,10 @@ export class TServerStorage implements ServerStorage {
           },
           { count: txToProcess.length + derived.length }
         )
+      }
+      if (txPromise !== undefined) {
+        // Wait for main Tx to be stored
+        await txPromise
       }
     } catch (err: any) {
       ctx.ctx.error('error process tx', { error: err })
