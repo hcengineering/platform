@@ -277,6 +277,9 @@ export class TDocument extends TDoc implements Document {
 
   @Prop(Collection(documents.class.DocumentSnapshot), documents.string.Snapshots)
     snapshots?: CollectionSize<DocumentSnapshot>
+
+  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
+    attachments?: CollectionSize<Attachment>
 }
 
 @Model(documents.class.HierarchyDocument, documents.class.Document)
