@@ -111,6 +111,9 @@ export function escapeLikeForRegexp (value: string): string {
  */
 export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMap?: Record<string, Doc>): FindResult<T> {
   const length = total ?? docs.length
+  if (Object.keys(lookupMap ?? {}).length === 0) {
+    lookupMap = undefined
+  }
   return Object.assign(docs, { total: length, lookupMap })
 }
 

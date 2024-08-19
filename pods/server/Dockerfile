@@ -1,7 +1,7 @@
 FROM node:20
 
 WORKDIR /usr/src/app
-RUN npm install --ignore-scripts=false --verbose bufferutil utf-8-validate @mongodb-js/zstd snappy --unsafe-perm
+RUN npm install --ignore-scripts=false --verbose bufferutil utf-8-validate @mongodb-js/zstd snappy msgpackr msgpackr-extract --unsafe-perm
 RUN npm install --ignore-scripts=false --verbose uNetworking/uWebSockets.js#v20.47.0
 
 RUN apt-get update
@@ -16,4 +16,4 @@ COPY bundle/bundle.js.map ./
 
 EXPOSE 8080
 ENV UWS_HTTP_MAX_HEADERS_SIZE 32768
-CMD node --enable-source-maps --inspect bundle.js
+CMD node --enable-source-maps --inspect=0.0.0.0:9229 bundle.js
