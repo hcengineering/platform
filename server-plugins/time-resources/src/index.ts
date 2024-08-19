@@ -34,17 +34,18 @@ import core, {
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
+import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
   getCommonNotificationTxes,
   getNotificationContent,
+  getNotificationProviderControl,
   isShouldNotifyTx
 } from '@hcengineering/server-notification-resources'
+import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import task, { makeRank } from '@hcengineering/task'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text'
-import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
-import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
-import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
+import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
 
 /**
  * @public
@@ -179,9 +180,9 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   }
 
   const todo = TxProcessor.createDoc2Doc(createTx)
-  const account = await getPersonAccount(todo.user, control)
+  const account = control.modelDb.getAccountByPersonId(todo.user) as PersonAccount[]
 
-  if (account === undefined) {
+  if (account.length === 0) {
     return []
   }
 
@@ -189,23 +190,24 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   if (object === undefined) return []
 
   const person = (
-    await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee>, active: true }, { limit: 1 })
+    await control.findAll(contact.mixin.Employee, { _id: todo.user as Ref<Employee>, active: true }, { limit: 1 })
   )[0]
   if (person === undefined) return []
 
-  const personSpace = (await control.findAll(contact.class.PersonSpace, { person: account.person }, { limit: 1 }))[0]
+  const personSpace = (await control.findAll(contact.class.PersonSpace, { person: todo.user }, { limit: 1 }))[0]
   if (personSpace === undefined) return []
 
+  // TODO: Select a proper account
   const receiverInfo: ReceiverInfo = {
-    _id: account._id,
-    account,
+    _id: account[0]._id,
+    account: account[0],
     person,
     space: personSpace._id
   }
 
-  const senderAccount = await control.modelDb.findOne(contact.class.PersonAccount, {
+  const senderAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
     _id: tx.modifiedBy as Ref<PersonAccount>
-  })
+  })[0]
   const senderPerson =
     senderAccount !== undefined
       ? (await control.findAll(contact.class.Person, { _id: senderAccount.person }))[0]
@@ -216,8 +218,8 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     account: senderAccount,
     person: senderPerson
   }
-
-  const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false)
+  const notificationControl = await getNotificationProviderControl(control.ctx, control)
+  const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account, true, false, notificationControl)
   const content = await getNotificationContent(tx, account, senderInfo, todo, control)
   const data: Partial<Data<CommonInboxNotification>> = {
     ...content,
@@ -229,6 +231,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   }
 
   const txes = await getCommonNotificationTxes(
+    control.ctx,
     control,
     object,
     data,
@@ -465,31 +468,18 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
   return []
 }
 
-async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
-  const account = (
-    await control.modelDb.findAll(
-      contact.class.PersonAccount,
-      {
-        person
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account
-}
-
 async function getIssueToDoData (
   issue: Issue,
   user: Ref<Person>,
   control: TriggerControl
 ): Promise<AttachedData<ProjectToDo> | undefined> {
-  const acc = await getPersonAccount(user, control)
-  if (acc === undefined) return
+  const acc = control.modelDb.getAccountByPersonId(user) as PersonAccount[]
+  if (acc.length === 0) return
   const firstTodoItem = (
     await control.findAll(
       time.class.ToDo,
       {
-        user: acc.person,
+        user: { $in: acc.map((it) => it.person) },
         doneOn: null
       },
       {
@@ -506,7 +496,7 @@ async function getIssueToDoData (
     priority: ToDoPriority.NoPriority,
     visibility: 'public',
     title: issue.title,
-    user: acc.person,
+    user,
     rank
   }
   return data

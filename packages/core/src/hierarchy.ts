@@ -30,7 +30,7 @@ export class Hierarchy {
   private readonly attributes = new Map<Ref<Classifier>, Map<string, AnyAttribute>>()
   private readonly attributesById = new Map<Ref<AnyAttribute>, AnyAttribute>()
   private readonly descendants = new Map<Ref<Classifier>, Ref<Classifier>[]>()
-  private readonly ancestors = new Map<Ref<Classifier>, Ref<Classifier>[]>()
+  private readonly ancestors = new Map<Ref<Classifier>, { ordered: Ref<Classifier>[], set: Set<Ref<Classifier>> }>()
   private readonly proxies = new Map<Ref<Mixin<Doc>>, ProxyHandler<Doc>>()
 
   private readonly classifierProperties = new Map<Ref<Classifier>, Record<string, any>>()
@@ -166,7 +166,7 @@ export class Hierarchy {
     if (result === undefined) {
       throw new Error('ancestors not found: ' + _class)
     }
-    return result
+    return result.ordered
   }
 
   getClass<T extends Obj = Obj>(_class: Ref<Class<T>>): Class<T> {
@@ -301,17 +301,7 @@ export class Hierarchy {
    * It will iterate over parents.
    */
   isDerived<T extends Obj>(_class: Ref<Class<T>>, from: Ref<Class<T>>): boolean {
-    let cl: Ref<Class<T>> | undefined = _class
-    while (cl !== undefined) {
-      if (cl === from) return true
-
-      const cll = this.classifiers.get(cl)
-      if (cll === undefined || this.isInterface(cll)) {
-        return false
-      }
-      cl = (cll as Class<T>).extends
-    }
-    return false
+    return this.ancestors.get(_class)?.set?.has(from) ?? false
   }
 
   /**
@@ -398,15 +388,19 @@ export class Hierarchy {
         const list = this.ancestors.get(_class)
         if (list === undefined) {
           if (add) {
-            this.ancestors.set(_class, [classifier])
+            this.ancestors.set(_class, { ordered: [classifier], set: new Set([classifier]) })
           }
         } else {
           if (add) {
-            addIf(list, classifier)
+            if (!list.set.has(classifier)) {
+              list.ordered.push(classifier)
+              list.set.add(classifier)
+            }
           } else {
-            const pos = list.indexOf(classifier)
+            const pos = list.ordered.indexOf(classifier)
             if (pos !== -1) {
-              list.splice(pos, 1)
+              list.ordered.splice(pos, 1)
+              list.set.delete(classifier)
             }
           }
         }

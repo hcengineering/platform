@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { ActivityMessage } from '@hcengineering/activity'
 import contact, { Employee, Person, PersonAccount, PersonSpace } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
 import {
@@ -25,7 +26,6 @@ import {
 } from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
-import { ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -35,37 +35,13 @@ export const serverNotificationId = 'server-notification' as Plugin
 /**
  * @public
  */
-export async function getPersonAccount (
-  person: Ref<Person>,
-  control: TriggerControl
-): Promise<PersonAccount | undefined> {
-  const account = (
-    await control.modelDb.findAll(
-      contact.class.PersonAccount,
-      {
-        person
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account
-}
-
-/**
- * @public
- */
-export async function getPersonAccountById (
-  _id: Ref<Account>,
-  control: TriggerControl
-): Promise<PersonAccount | undefined> {
-  const account = (
-    await control.modelDb.findAll(
-      contact.class.PersonAccount,
-      {
-        _id: _id as Ref<PersonAccount>
-      },
-      { limit: 1 }
-    )
+export function getPersonAccountById (_id: Ref<Account>, control: TriggerControl): PersonAccount | undefined {
+  const account = control.modelDb.findAllSync(
+    contact.class.PersonAccount,
+    {
+      _id: _id as Ref<PersonAccount>
+    },
+    { limit: 1 }
   )[0]
   return account
 }
@@ -109,7 +85,7 @@ export interface TextPresenter<T extends Doc = any> extends Class<T> {
  * @public
  */
 export type TypeMatchFunc = Resource<
-(tx: Tx, doc: Doc, user: Ref<Account>, type: NotificationType, control: TriggerControl) => Promise<boolean>
+(tx: Tx, doc: Doc, user: Ref<Account>[], type: NotificationType, control: TriggerControl) => boolean
 >
 
 /**
@@ -192,7 +168,7 @@ export default plugin(serverNotificationId, {
     OnDocRemove: '' as Resource<TriggerFunc>
   },
   function: {
-    IsUserInFieldValue: '' as TypeMatchFunc,
-    IsUserEmployeeInFieldValue: '' as TypeMatchFunc
+    IsUserInFieldValueTypeMatch: '' as TypeMatchFunc,
+    IsUserEmployeeInFieldValueTypeMatch: '' as TypeMatchFunc
   }
 })

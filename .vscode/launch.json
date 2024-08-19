@@ -77,7 +77,7 @@
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
         "outputCapture": "std",
-        "SES_URL": "http://localhost:8091",
+        "SES_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"

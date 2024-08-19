@@ -56,13 +56,15 @@ export function yDocContentToNode (
   return yDocToNode(ydoc, field, schema, extensions)
 }
 
+const defaultSchema = getSchema(defaultExtensions)
+
 /**
  * Get ProseMirror node from Y.Doc
  *
  * @public
  */
 export function yDocToNode (ydoc: YDoc, field?: string, schema?: Schema, extensions?: Extensions): Node {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   try {
     const body = yDocToProsemirrorJSON(ydoc, field)
@@ -79,7 +81,7 @@ export function yDocToNode (ydoc: YDoc, field?: string, schema?: Schema, extensi
  * @public
  */
 export function yDocContentToNodes (content: ArrayBuffer, schema?: Schema, extensions?: Extensions): Node[] {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   const nodes: Node[] = []
 
@@ -112,7 +114,7 @@ export function updateYDocContent (
   schema?: Schema,
   extensions?: Extensions
 ): YDoc | undefined {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   try {
     const ydoc = new YDoc()
@@ -140,7 +142,7 @@ export function updateYDocContent (
  * @public
  */
 export function YDocFromContent (content: MarkupNode, field: string, schema?: Schema, extensions?: Extensions): YDoc {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   const res = new YDoc({ gc: false })
 

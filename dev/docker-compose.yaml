@@ -70,8 +70,8 @@ services:
       - LAST_NAME_FIRST=true
       - ACCOUNTS_URL=http://localhost:3000
       - BRANDING_PATH=/var/cfg/branding.json
-      - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
-      - INIT_WORKSPACE=onboarding      
+      # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
+      # - INIT_WORKSPACE=onboarding      
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator

@@ -320,7 +320,7 @@ function fillStores (): void {
     const accountPersonQuery = createQuery(true)
 
     const query = createQuery(true)
-    query.query(contact.mixin.Employee, { [contact.mixin.Employee + '.active']: { $in: [true, false] } }, (res) => {
+    query.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
       employeesStore.set(res)
       employeeByIdStore.set(toIdMap(res))
     })

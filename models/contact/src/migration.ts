@@ -37,8 +37,8 @@ async function createEmployeeEmail (client: TxOperations): Promise<void> {
   ).filter((it) => it.provider === contact.channelProvider.Email)
   const channelsMap = new Map(channels.map((p) => [p.attachedTo, p]))
   for (const employee of employees) {
-    const acc = await client.findOne(contact.class.PersonAccount, { person: employee._id })
-    if (acc === undefined) continue
+    const acc = client.getModel().getAccountByPersonId(employee._id)
+    if (acc.length === 0) continue
     const current = channelsMap.get(employee._id)
     if (current === undefined) {
       await client.addCollection(
@@ -49,13 +49,13 @@ async function createEmployeeEmail (client: TxOperations): Promise<void> {
         'channels',
         {
           provider: contact.channelProvider.Email,
-          value: acc.email.trim()
+          value: acc[0].email.trim()
         },
         undefined,
         employee.modifiedOn
       )
-    } else if (current.value !== acc.email.trim()) {
-      await client.update(current, { value: acc.email.trim() }, false, current.modifiedOn)
+    } else if (current.value !== acc[0].email.trim()) {
+      await client.update(current, { value: acc[0].email.trim() }, false, current.modifiedOn)
     }
   }
 }
