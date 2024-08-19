@@ -1309,7 +1309,7 @@ export async function createWorkspace (
           mongodbUri,
           {
             externalStorage: storageAdapter,
-            fullTextUrl: 'http://localost:9200',
+            fullTextUrl: '',
             indexParallel: 0,
             indexProcessing: 0,
             rekoniUrl: '',
