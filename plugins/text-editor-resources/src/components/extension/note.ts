@@ -8,7 +8,17 @@ import { NoteBaseExtension, type NoteKind, name as noteName } from '@hcengineeri
 import ConfigureNotePopup from '../note/ConfigureNotePopup.svelte'
 import DisplayNotePopup from '../note/DisplayNotePopup.svelte'
 
+export interface NoteOptions {
+  readonly: boolean
+}
+
 export const NoteExtension = NoteBaseExtension.extend({
+  addOptions () {
+    return {
+      readonly: false
+    }
+  },
+
   addCommands () {
     return {
       setNote:
@@ -168,5 +178,15 @@ export async function configureNote (editor: Editor, event: MouseEvent): Promise
 }
 
 export async function isEditableNote (editor: Editor): Promise<boolean> {
-  return editor.isEditable && editor.isActive('table')
+  if (!editor.isEditable) {
+    return false
+  }
+
+  const noteExt = editor.extensionManager.extensions.find((ext) => ext.name === noteName)
+
+  if (noteExt == null) {
+    return false
+  }
+
+  return noteExt.options?.readonly !== true
 }

@@ -73,39 +73,6 @@ async function createQualityDocumentsSpace (tx: TxOperations): Promise<void> {
   }
 }
 
-async function fixChangeControlsForDocs (tx: TxOperations): Promise<void> {
-  const defaultCCSpec: Data<ChangeControl> = {
-    description: '',
-    reason: '',
-    impact: '',
-    impactedDocuments: []
-  }
-  const controlledDocuments = await tx.findAll(
-    documents.class.ControlledDocument,
-    {},
-    { lookup: { changeControl: documents.class.ChangeControl } }
-  )
-
-  for (const cdoc of controlledDocuments) {
-    const existingCC = await tx.findOne(documents.class.ChangeControl, { _id: cdoc.changeControl })
-
-    if (existingCC !== undefined) {
-      continue
-    }
-
-    const newCc = await tx.createDoc(
-      documents.class.ChangeControl,
-      cdoc.space,
-      defaultCCSpec,
-      cdoc.changeControl?.length > 0 ? cdoc.changeControl : undefined
-    )
-
-    if (cdoc.changeControl === undefined) {
-      await tx.update(cdoc, { changeControl: newCc })
-    }
-  }
-}
-
 async function createProductChangeControlTemplate (tx: TxOperations): Promise<void> {
   const ccCategory = 'documents:category:DOC - CC' as Ref<DocumentCategory>
   const productChangeControlTemplate = await tx.findOne(documents.mixin.DocumentTemplate, {
@@ -152,15 +119,10 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         major: 0,
         minor: 1,
         state: DocumentState.Effective,
-        sections: 0,
         commentSequence: 0,
         content: getCollaborativeDoc(generateId())
       },
-      ccCategory,
-      undefined,
-      {
-        title: 'Section 1'
-      }
+      ccCategory
     )
 
     if (!success) {
@@ -305,7 +267,6 @@ export const documentsOperation: MigrateOperation = {
           await createTemplateSequence(tx)
           await createTagCategories(tx)
           await createDocumentCategories(tx)
-          await fixChangeControlsForDocs(tx)
           await createProductChangeControlTemplate(tx)
         }
       }

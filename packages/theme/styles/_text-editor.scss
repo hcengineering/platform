@@ -317,6 +317,11 @@
   &.text-editor-highlighted-node-selected, &:hover {
     background-color: var(--text-editor-highlighted-node-warning-active-background-color);
   }
+
+  @media print {
+    background-color: inherit !important;
+    border-bottom: none;
+  }
 }
 
 .text-editor-highlighted-node-delete {
@@ -337,6 +342,10 @@
   background-repeat: no-repeat;
   user-select: none;
   cursor: pointer;
+
+  @media print {
+    display: none;
+  }
 }
 
 .theme-dark .text-editor-note-marker {
@@ -378,6 +387,10 @@
   
   &.primary-light {
     background-color: var(--theme-text-editor-note-anchor-bg-primary-light);
+  }
+
+  @media print {
+    background-color: inherit !important;
   }
 }
 

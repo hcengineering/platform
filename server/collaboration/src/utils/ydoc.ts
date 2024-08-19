@@ -43,3 +43,6 @@ export function yDocCopyXmlField (ydoc: YDoc, source: string, target: string): v
     dstField.insert(0, srcField.toArray().map((item) => (item instanceof YAbstractType ? item.clone() : item)) as any)
   })
 }
+
+// TODO: add method to combine multiple XmlFragments into a single one
+// We'll also need to append custom headers with a note attached.

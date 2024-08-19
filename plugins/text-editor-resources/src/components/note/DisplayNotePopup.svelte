@@ -19,7 +19,7 @@
   export let text: string
 </script>
 
-<Card label={textEditor.string.Note} width="medium" thinHeader={true} hideFooter={true} okAction={() => {}} on:close>
+<Card label={textEditor.string.Note} width="small" thinHeader={true} hideFooter={true} okAction={() => {}} on:close>
   <div class="note">{text}</div>
 </Card>
 

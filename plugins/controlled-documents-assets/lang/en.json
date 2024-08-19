@@ -9,11 +9,7 @@
     "Requests": "Requests",
     "EffectiveDate": "Effective date",
     "PlannedEffectiveDate": "Planned effective date",
-    "Section": "Section",
     "Rank": "Rang",
-    "CollaborativeSection": "Collaborative section",
-    "CollaboratorSectionId": "Collaborator section ID",
-    "AttachmentsSection": "Attachments section",
     "DocumentRequest": "Request",
     "DocumentReviewRequest": "Document review request",
     "DocumentApprovalRequest": "Document approval request",
@@ -22,7 +18,6 @@
     "Guidance": "Guidance",
     "Required": "Required",
     "Description": "Description",
-    "SectionTemplate": "Section template",
     "Major": "Major",
     "Minor": "Minor",
     "Patch": "Patch",
@@ -104,8 +99,6 @@
     "DocumentCodePlaceholder": "DOC-1",
     "DocumentPrefixPlaceholder": "DOC",
     "DocumentPrefix": "Documents prefix",
-    "Sections": "Sections",
-    "TemplateSectionTitle": "Title",
     "DocumentTemplateCreateLabel": "Template",
     "DocumentCategoryCreateLabel": "Category",
     "CreateDocumentCategory": "Create a category",
@@ -114,6 +107,7 @@
     "AttachmentsMax": "Maximum allowed attachments",
     "Resolve": "Resolve",
     "Unresolve": "Unresolve",
+    "Pending": "Pending",
     "Resolved": "Resolved",
     "ShowResolved": "Show resolved comments",
     "Ordering": "Ordering",
@@ -152,12 +146,6 @@
     "ChangeControl": "Change Control",
     "ReviewInterval": "Review interval",
 
-    "DocTemplateDeleteSectionTitle": "Confirm deletion of section",
-    "DocTemplateDeleteSectionConfirm": "Are you sure that you want to permanently remove section \"{section}\" from the template?",
-
-    "AddSectionAbove": "Add new section above",
-    "AddSectionBelow": "Add new section below",
-
     "SelectReviewers": "Select reviewers",
     "SelectApprovers": "Select approvers",
     "RequestsToReviewTheDoc": "requests you to review the document",
@@ -179,8 +167,6 @@
     "InfoStepTitle": "Info",
     "TeamStepTitle": "Team",
 
-    "Duplicate": "Duplicate",
-
     "TitleAndDescr": "Title and description",
     "Reason": "Reason",
     "AbstractPlaceholder": "What is this document about? Who will need it and when? ...",
@@ -193,7 +179,6 @@
     "EditDocument": "Edit document",
 
     "Key": "Key",
-    "SectionKey": "Section key",
     "CommentsSequence": "Comments sequence",
 
     "Email": "Email",

@@ -364,7 +364,7 @@
       justify-content: center;
     }
     &__main, &__mobile, &__aside {
-      overflow: hidden;
+      // overflow: hidden;
       display: flex;
       flex-direction: column;
       min-width: 0;
@@ -538,6 +538,7 @@
 
     @media print {
       border: none;
+      overflow: visible;
     }
 
     // &.asideShown .popupPanel-body__main {

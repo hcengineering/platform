@@ -1,7 +1,7 @@
 import { attach, sample } from 'effector'
 import { type Ref } from '@hcengineering/core'
 import { type ChatMessage } from '@hcengineering/chunter'
-import { type EditorMode, type DocumentSection, DocumentState } from '@hcengineering/controlled-documents'
+import { type EditorMode, DocumentState } from '@hcengineering/controlled-documents'
 import { isDocumentCommentAttachedTo } from '../../utils'
 import {
   RightPanelTab,
@@ -41,15 +41,12 @@ export * from './document/documentComments'
 export * from './document/comparison'
 export * from './document/editor'
 export * from './document/query'
-export * from './document/section'
-export * from './document/types'
 
 export const addDocumentCommentFx = attach({
   source: { document: $controlledDocument },
   effect: addCommentFx,
   mapParams: (
     payload: {
-      section?: DocumentSection
       nodeId?: string
       content: string
       messageId?: Ref<ChatMessage>

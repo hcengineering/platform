@@ -72,7 +72,6 @@
     category: '' as Ref<DocumentCategory>,
     abstract: '',
     state: DocumentState.Draft,
-    sections: 0,
     requests: 0,
     snapshots: 0,
     reviewers: [],
@@ -131,9 +130,6 @@
       limit: 1
     }
   )
-
-  // Note: previously there was inline document section editing. Restore later if will be needed as per UX.
-  // See QE CreateReport component for reference. May unify general approach on creating docs with content right away.
 </script>
 
 <FocusHandler {manager} />

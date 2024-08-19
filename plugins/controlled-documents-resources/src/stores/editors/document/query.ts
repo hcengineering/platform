@@ -32,7 +32,6 @@ import {
   approvalRequestUpdated,
   controlledDocumentClosed,
   controlledDocumentOpened,
-  controlledDocumentSectionsUpdated,
   controlledDocumentUpdated,
   documentAllVersionsUpdated,
   reviewRequestUpdated,
@@ -51,7 +50,6 @@ const documentSnapshotsQuery = createQuery(true)
 const reviewRequestQuery = createQuery(true)
 const approvalRequestQuery = createQuery(true)
 const documentCommentsQuery = createQuery(true)
-const sectionsQuery = createQuery(true)
 const workingCopyMetadataQuery = createQuery(true)
 const savedAttachmentsQuery = createQuery(true)
 const trainingQuery = createQuery(true)
@@ -83,27 +81,6 @@ const queryControlledDocumentFx = createEffect(
     )
   }
 )
-
-const querySectionsFx = createEffect((payload: { _id: Ref<ControlledDocument> }) => {
-  const { _id } = payload
-  if (_id == null) {
-    sectionsQuery.unsubscribe()
-    return
-  }
-
-  sectionsQuery.query(
-    documents.class.DocumentSection,
-    { attachedTo: _id },
-    (result) => {
-      controlledDocumentSectionsUpdated(result ?? [])
-    },
-    {
-      sort: {
-        rank: SortingOrder.Ascending
-      }
-    }
-  )
-})
 
 const queryDocumentVersionsFx = createEffect((payload: ControlledDocument) => {
   if (payload == null) {
@@ -269,7 +246,6 @@ const unsubscribeFx = createEffect(() => {
   reviewRequestQuery.unsubscribe()
   approvalRequestQuery.unsubscribe()
   documentCommentsQuery.unsubscribe()
-  sectionsQuery.unsubscribe()
   workingCopyMetadataQuery.unsubscribe()
   documentVersionsQuery.unsubscribe()
   savedAttachmentsQuery.unsubscribe()
@@ -282,7 +258,6 @@ forward({
   from: controlledDocumentOpened,
   to: [
     queryControlledDocumentFx,
-    querySectionsFx,
     queryReviewRequestFx,
     queryApprovalRequestFx,
     querySavedAttachmentsFx,

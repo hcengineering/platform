@@ -20,7 +20,7 @@
   import { Button, Label, PlainTextEditor } from '@hcengineering/ui'
 
   export let text: string
-  export let kind: NoteKind
+  export let kind: NoteKind = NoteKind.Neutral
   export let isNew: boolean
   export let handleUpdate: (text: string, kind: NoteKind) => void
   export let handleRemove: () => void
