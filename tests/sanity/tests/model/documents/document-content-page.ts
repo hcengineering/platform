@@ -11,6 +11,23 @@ export class DocumentContentPage extends CommonPage {
 
   readonly buttonDocumentTitle = (): Locator => this.page.locator('div[class*="main-content"] div.title input')
   readonly inputContent = (): Locator => this.page.locator('div.textInput div.tiptap')
+  readonly inputContentParapraph = (): Locator => this.page.locator('div.textInput div.tiptap > p')
+  readonly leftMenu = (): Locator => this.page.locator('div.tiptap-left-menu')
+  readonly proseTableCell = (row: number, col: number): Locator =>
+    this.page.locator('table.proseTable').locator('tr').nth(row).locator('td').nth(col).locator('p')
+
+  readonly proseTableColumnHandle = (col: number): Locator =>
+    this.page.locator('table.proseTable').locator('tr').first().locator('td').nth(col).locator('div.table-col-handle')
+
+  readonly buttonInsertColumn = (col: number = 0): Locator =>
+    this.page.locator('div.table-col-insert').nth(col).locator('button')
+
+  readonly buttonInsertLastRow = (): Locator =>
+    this.page.locator('table.proseTable + div.table-button-container__col + div.table-button-container__row')
+
+  readonly buttonInsertInnerRow = (row: number = 0): Locator =>
+    this.page.locator('table.proseTable').locator('tr').nth(row).locator('div.table-row-insert button')
+
   readonly buttonToolbarLink = (): Locator => this.page.locator('div.text-editor-toolbar button[data-id="btnLink"]')
   readonly inputFormLink = (): Locator => this.page.locator('form[id="text-editor:string:Link"] input')
   readonly buttonFormLinkSave = (): Locator =>

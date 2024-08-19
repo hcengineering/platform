@@ -8,6 +8,7 @@ import { SignUpData } from './model/common-types'
 import { ApiEndpoint } from './API/Api'
 import { SelectWorkspacePage } from './model/select-workspace-page'
 import { LoginPage } from './model/login-page'
+import { SignInJoinPage } from './model/signin-page'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -109,6 +110,19 @@ export async function getSecondPage (browser: Browser): Promise<{ page: Page, co
   const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
   return { page: await userSecondContext.newPage(), context: userSecondContext }
 }
+
+export async function getSecondPageByInvite (
+  browser: Browser,
+  linkText: string | null,
+  newUser: SignUpData
+): Promise<Page> {
+  const page = await browser.newPage()
+  await page.goto(linkText ?? '')
+  const joinPage: SignInJoinPage = new SignInJoinPage(page)
+  await joinPage.join(newUser)
+  return page
+}
+
 export function expectToContainsOrdered (val: Locator, text: string[], timeout?: number): Promise<void> {
   const origIssuesExp = new RegExp('.*' + text.join('.*') + '.*')
   return expect(val).toHaveText(origIssuesExp, { timeout })
