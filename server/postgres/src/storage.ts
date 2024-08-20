@@ -181,15 +181,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
       try {
         for (const column in row) {
           if (column.startsWith('reverse_lookup_')) {
-            const join = reverseJoins.find((j) => j.toAlias === column)
-            if (join === undefined) {
-              continue
-            }
-            const res = this.getLookupValue(join.path, lookup, false)
-            if (res === undefined) continue
-            const { obj, key } = res
-
             if (row[column] != null) {
+              const join = reverseJoins.find((j) => j.toAlias === column)
+              if (join === undefined) {
+                continue
+              }
+              const res = this.getLookupValue(join.path, lookup, false)
+              if (res === undefined) continue
+              const { obj, key } = res
+
               const parsed = row[column].map(parseDoc)
               obj[key] = parsed
             }
