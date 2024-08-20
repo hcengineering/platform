@@ -7,7 +7,7 @@
   export let manager: DocCreateExtensionManager
   export let kind: CreateExtensionKind
   export let props: Record<string, any> = {}
-  export let space: Space | undefined
+  export let space: Space | undefined = undefined
 
   $: extensions = manager.extensions
 

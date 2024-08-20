@@ -43,6 +43,13 @@
     "Thread": "Обсуждение",
     "AddReaction": "Добавить реакцию",
     "SaveForLater": "Cохранить",
-    "RemoveFromLater": "Удалить из сохраненных"
+    "RemoveFromLater": "Удалить из сохраненных",
+    "ReactionNotificationTitle": "Реакция на {title}",
+    "ReactionNotificationBody": "{senderName}: {reaction}",
+    "NewObject": "Новый(ые) {object}",
+    "RemovedObject": "Удален(ы) {object}",
+    "ChangedObject": "Изменил(а) {object}",
+    "UnsetObject": "Сбросил(а) {object}",
+    "UpdatedObject": "Обновил(а) {object}"
   }
 }

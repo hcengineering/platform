@@ -28,6 +28,7 @@ import core, {
   type DocumentUpdate,
   type Ref,
   type Space,
+  type Status,
   type StatusCategory,
   type TxCollectionCUD,
   type TxCreateDoc,
@@ -35,15 +36,12 @@ import core, {
   type TxResult,
   type TxUpdateDoc
 } from '@hcengineering/core'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import task, { getStatusIndex, makeRank, type ProjectType } from '@hcengineering/task'
 import { activeProjects as taskActiveProjects, taskTypeStore } from '@hcengineering/task-resources'
 import {
   IssuePriority,
-  IssuesDateModificationPeriod,
-  IssuesGrouping,
-  IssuesOrdering,
   MilestoneStatus,
   TimeReportDayType,
   type Component,
@@ -52,24 +50,10 @@ import {
   type Milestone,
   type Project
 } from '@hcengineering/tracker'
-import {
-  MILLISECONDS_IN_WEEK,
-  PaletteColorIndexes,
-  areDatesEqual,
-  getMillisecondsInMonth,
-  isWeekend,
-  type AnyComponent,
-  type AnySvelteComponent
-} from '@hcengineering/ui'
+import { PaletteColorIndexes, areDatesEqual, isWeekend } from '@hcengineering/ui'
 import { type KeyFilter, type ViewletDescriptor } from '@hcengineering/view'
-import {
-  CategoryQuery,
-  ListSelectionProvider,
-  groupBy,
-  statusStore,
-  type SelectDirection
-} from '@hcengineering/view-resources'
-import { derived, get } from 'svelte/store'
+import { CategoryQuery, ListSelectionProvider, statusStore, type SelectDirection } from '@hcengineering/view-resources'
+import { derived, get, writable } from 'svelte/store'
 import tracker from './plugin'
 import { defaultMilestoneStatuses, defaultPriorities } from './types'
 
@@ -80,164 +64,6 @@ export const activeProjects = derived(taskActiveProjects, (projects) => {
   ) as Map<Ref<Project>, Project>
 })
 export * from './types'
-
-export const UNSET_COLOR = -1
-
-export interface NavigationItem {
-  id: string
-  label: IntlString
-  icon: Asset
-  component: AnyComponent
-  componentProps?: Record<string, string>
-  top: boolean
-}
-
-export interface Selection {
-  currentProject?: Ref<Project>
-  currentSpecial?: string
-}
-
-export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'component' | 'milestone'>
-export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate' | 'rank'>
-
-export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
-  [IssuesGrouping.Status]: 'status',
-  [IssuesGrouping.Priority]: 'priority',
-  [IssuesGrouping.Assignee]: 'assignee',
-  [IssuesGrouping.Component]: 'component',
-  [IssuesGrouping.Milestone]: 'milestone',
-  [IssuesGrouping.NoGrouping]: undefined
-}
-
-export const issuesOrderKeyMap: Record<IssuesOrdering, IssuesOrderByKeys> = {
-  [IssuesOrdering.Status]: 'status',
-  [IssuesOrdering.Priority]: 'priority',
-  [IssuesOrdering.LastUpdated]: 'modifiedOn',
-  [IssuesOrdering.DueDate]: 'dueDate',
-  [IssuesOrdering.Manual]: 'rank'
-}
-
-export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'milestone', AnyComponent | undefined> =
-  {
-    status: tracker.component.StatusEditor,
-    priority: tracker.component.PriorityEditor,
-    component: tracker.component.ComponentEditor,
-    milestone: tracker.component.MilestoneEditor
-  }
-
-export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
-  const today = new Date(Date.now())
-
-  switch (period) {
-    case IssuesDateModificationPeriod.PastWeek: {
-      return today.getTime() - MILLISECONDS_IN_WEEK
-    }
-    case IssuesDateModificationPeriod.PastMonth: {
-      return today.getTime() - getMillisecondsInMonth(today)
-    }
-    default: {
-      return 0
-    }
-  }
-}
-
-export interface FilterAction {
-  icon?: Asset | AnySvelteComponent
-  label?: IntlString
-  onSelect: (event: MouseEvent | KeyboardEvent) => void
-}
-
-export interface FilterSectionElement extends Omit<FilterAction, 'label'> {
-  title?: string
-  count?: number
-  isSelected?: boolean
-}
-
-export interface IssueFilter {
-  mode: '$in' | '$nin'
-  query: DocumentQuery<Issue>
-}
-
-export const getGroupedIssues = (
-  key: IssuesGroupByKeys | undefined,
-  elements: Issue[],
-  orderedCategories?: any[]
-): Record<string, Issue[]> => {
-  if (key === undefined) {
-    return { [undefined as any]: elements }
-  }
-
-  const unorderedIssues = groupBy(elements, key)
-
-  if (orderedCategories === undefined || orderedCategories.length === 0) {
-    return unorderedIssues
-  }
-
-  return Object.keys(unorderedIssues)
-    .sort((o1, o2) => {
-      const key1 = o1 === 'null' ? null : o1
-      const key2 = o2 === 'null' ? null : o2
-
-      const i1 = orderedCategories.findIndex((x) => x === key1)
-      const i2 = orderedCategories.findIndex((x) => x === key2)
-
-      return i1 - i2
-    })
-    .reduce((obj: Record<string, any[]>, objKey) => {
-      obj[objKey] = unorderedIssues[objKey]
-      return obj
-    }, {})
-}
-
-export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: IntlString } | undefined => {
-  switch (type) {
-    case 'status': {
-      return {
-        icon: tracker.icon.CategoryBacklog,
-        label: tracker.string.Status
-      }
-    }
-    case 'priority': {
-      return {
-        icon: tracker.icon.PriorityHigh,
-        label: tracker.string.Priority
-      }
-    }
-    case 'component': {
-      return {
-        icon: tracker.icon.Component,
-        label: tracker.string.Component
-      }
-    }
-    case 'milestone': {
-      return {
-        icon: tracker.icon.Milestone,
-        label: tracker.string.Milestone
-      }
-    }
-    default: {
-      return undefined
-    }
-  }
-}
-
-export const getArraysIntersection = (a: any[], b: any[]): any[] => {
-  const setB = new Set(b)
-  const intersection = new Set(a.filter((x) => setB.has(x)))
-
-  return Array.from(intersection)
-}
-
-export const getArraysUnion = (a: any[], b: any[]): any[] => {
-  const setB = new Set(b)
-  const union = new Set(a)
-
-  for (const element of setB) {
-    union.add(element)
-  }
-
-  return Array.from(union)
-}
 
 export type ComponentsFilterMode = 'all' | 'backlog' | 'active' | 'closed'
 
@@ -569,6 +395,7 @@ async function updateIssuesOnMove (
             },
             true
           )
+          const number = (incResult as any).object.sequence
           await updateIssuesOnMove(
             client,
             applyOps,
@@ -577,7 +404,8 @@ async function updateIssuesOnMove (
             {
               ...updates.get(attached._id as Ref<Issue>),
               rank: makeRank(lastOne?.rank, undefined),
-              number: (incResult as any).object.sequence
+              number,
+              identifier: `${space.identifier}-${number}`
             },
             updates
           )
@@ -743,3 +571,44 @@ export async function getMilestoneTitle (client: TxOperations, ref: Ref<Mileston
 
   return object?.label ?? ''
 }
+
+export interface IssueRef {
+  status: Ref<Status>
+  _id: Ref<Issue>
+}
+export type IssueReverseRevMap = Map<Ref<Doc>, IssueRef[]>
+export const relatedIssues = writable<IssueReverseRevMap>(new Map())
+
+function fillStores (): void {
+  const client = getClient()
+
+  if (client !== undefined) {
+    const relatedIssuesQuery = createQuery(true)
+
+    relatedIssuesQuery.query(
+      tracker.class.Issue,
+      { 'relations._id': { $exists: true } },
+      (res) => {
+        const nMap: IssueReverseRevMap = new Map()
+        for (const r of res) {
+          for (const rr of r.relations ?? []) {
+            nMap.set(rr._id, [...(nMap.get(rr._id) ?? []), { _id: r._id, status: r.status }])
+          }
+        }
+        relatedIssues.set(nMap)
+      },
+      {
+        projection: {
+          relations: 1,
+          status: 1
+        }
+      }
+    )
+  } else {
+    setTimeout(() => {
+      fillStores()
+    }, 50)
+  }
+}
+
+fillStores()

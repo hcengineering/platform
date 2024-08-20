@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { type Drive } from '@hcengineering/drive'
+  import { type Drive, DriveEvents } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
-  import { createDrive, createFolder, createFiles } from '../utils'
+  import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
@@ -54,16 +55,16 @@
   }
 
   async function handleCreateDrive (): Promise<void> {
-    await createDrive()
+    await showCreateDrivePopup()
   }
 
   async function handleCreateFolder (): Promise<void> {
-    await createFolder(currentSpace, parent, true)
+    await showCreateFolderPopup(currentSpace, parent, true)
   }
 
   async function handleUploadFile (): Promise<void> {
     if (currentSpace !== undefined) {
-      inputFile.click()
+      await uploadFilesToDrivePopup(currentSpace, parent)
     }
   }
 
@@ -72,49 +73,16 @@
         { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
         { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
         { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-        // { id: drive.string.UploadFolder, label: drive.string.UploadFolder }
       ]
     : [
         { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },
         { id: drive.string.UploadFile, label: drive.string.UploadFile, icon: drive.icon.File }
-        // { id: drive.string.UploadFolder, label: drive.string.UploadFolder }
       ]
-
-  let progress = false
-  let inputFile: HTMLInputElement
-
-  async function fileSelected (): Promise<void> {
-    if (currentSpace === undefined) {
-      return
-    }
-
-    const list = inputFile.files
-    if (list === null || list.length === 0) {
-      return
-    }
-
-    progress = true
-
-    await createFiles(list, currentSpace, parent)
-
-    inputFile.value = ''
-    progress = false
-  }
 </script>
 
 {#if loading}
   <Loading shrink />
 {:else}
-  <input
-    bind:this={inputFile}
-    multiple
-    type="file"
-    name="file"
-    id="file"
-    style="display: none"
-    on:change={fileSelected}
-  />
-
   <div class="antiNav-subheader">
     {#if hasDrive}
       <ButtonWithDropdown
@@ -125,7 +93,7 @@
         mainButtonId={'new-document'}
         dropdownIcon={IconDropdown}
         {dropdownItems}
-        disabled={currentSpace === undefined || progress}
+        disabled={currentSpace === undefined}
         on:click={handleUploadFile}
         on:dropdown-selected={(ev) => {
           void handleDropdownItemSelected(ev.detail)
@@ -139,7 +107,6 @@
         width={'100%'}
         kind={'primary'}
         gap={'large'}
-        disabled={progress}
         on:click={handleCreateDrive}
       />
     {/if}

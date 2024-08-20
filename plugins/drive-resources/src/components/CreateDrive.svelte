@@ -28,12 +28,13 @@
     getCurrentAccount,
     WithLookup
   } from '@hcengineering/core'
-  import { Drive } from '@hcengineering/drive'
+  import { Drive, DriveEvents } from '@hcengineering/drive'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { SpaceTypeSelector } from '@hcengineering/view-resources'
 
   import driveRes from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let drive: Drive | undefined = undefined
 
@@ -168,7 +169,7 @@
 
     // Create space type's mixin with roles assignments
     await client.createMixin(driveId, driveRes.class.Drive, core.space.Space, spaceType.targetClass, rolesAssignment)
-
+    Analytics.handleEvent(DriveEvents.DriveCreated, { id: driveId })
     close(driveId)
   }
 
@@ -299,6 +300,7 @@
         onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
+        allowGuests
       />
     </div>
 

@@ -17,6 +17,8 @@ import core, {
   MeasureMetricsContext,
   RateLimiter,
   TxOperations,
+  concatLink,
+  generateId,
   metricsToString,
   newMetrics,
   systemAccountEmail,
@@ -33,11 +35,15 @@ import { connect } from '@hcengineering/server-tool'
 
 import client from '@hcengineering/client'
 import { setMetadata } from '@hcengineering/platform'
+import serverClientPlugin, { getTransactorEndpoint } from '@hcengineering/server-client'
 import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
 
+import { WebSocket } from 'ws'
+
 interface StartMessage {
+  email: string
   workspaceId: WorkspaceId
   transactorUrl: string
   id: number
@@ -54,6 +60,7 @@ interface StartMessage {
     // If enabled, will perform write tx for same values and Derived format.
     write: boolean
     sleep: number
+    mode: 'find-all' | 'connect-only'
   }
   binary: boolean
   compression: boolean
@@ -75,8 +82,17 @@ interface PendingMsg extends Msg {
 
 export async function benchmark (
   workspaceId: WorkspaceId[],
-  transactorUrl: string,
-  cmd: { from: number, steps: number, sleep: number, binary: boolean, write: boolean, compression: boolean }
+  users: Map<string, string[]>,
+  accountsUrl: string,
+  cmd: {
+    from: number
+    steps: number
+    sleep: number
+    binary: boolean
+    write: boolean
+    compression: boolean
+    mode: 'find-all' | 'connect-only'
+  }
 ): Promise<void> {
   const operating = new Set<string>()
   const workers: Worker[] = []
@@ -157,11 +173,14 @@ export async function benchmark (
 
   const token = generateToken(systemAccountEmail, workspaceId[0])
 
+  setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
+  const endpoint = await getTransactorEndpoint(token, 'external')
+  console.log('monitor endpoint', endpoint, 'workspace', workspaceId[0].name)
   const monitorConnection = isMainThread
     ? ((await ctx.with(
         'connect',
         {},
-        async () => await connect(transactorUrl, workspaceId[0], undefined, { mode: 'backup' })
+        async () => await connect(endpoint, workspaceId[0], undefined, { mode: 'backup' })
       )) as BackupClient & Client)
     : undefined
 
@@ -191,7 +210,7 @@ export async function benchmark (
       const st = Date.now()
 
       try {
-        const fetchUrl = transactorUrl.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
+        const fetchUrl = endpoint.replace('ws:/', 'http:/') + '/api/v1/statistics?token=' + token
         void fetch(fetchUrl)
           .then((res) => {
             void res
@@ -216,7 +235,7 @@ export async function benchmark (
 
                 requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
 
-                const tr = extract(json.metrics as Metrics, '🧲 session', 'client', 'handleRequest', '#send-data')
+                const tr = extract(json.metrics as Metrics, '🧲 session', '#send-data')
                 transfer = (tr?.value ?? 0) - oldTransfer
                 oldTransfer = tr?.value ?? 0
               })
@@ -275,12 +294,18 @@ export async function benchmark (
         await Promise.all(
           Array.from(Array(i))
             .map((it, idx) => idx)
-            .map((it) => {
+            .map(async (it) => {
               const wsid = workspaceId[randNum(workspaceId.length)]
               const workId = 'w-' + i + '-' + it
+              const wsUsers = users.get(wsid.name) ?? []
+
+              const token = generateToken(systemAccountEmail, wsid)
+              const endpoint = await getTransactorEndpoint(token, 'external')
+              console.log('endpoint', endpoint, 'workspace', wsid.name)
               const msg: StartMessage = {
+                email: wsUsers[randNum(wsUsers.length)],
                 workspaceId: wsid,
-                transactorUrl,
+                transactorUrl: endpoint,
                 id: i,
                 idd: it,
                 workId,
@@ -293,14 +318,15 @@ export async function benchmark (
                     rand: 512
                   },
                   sleep: cmd.sleep,
-                  write: cmd.write
+                  write: cmd.write,
+                  mode: cmd.mode
                 },
                 binary: cmd.binary,
                 compression: cmd.compression
               }
               workers[i % workers.length].postMessage(msg)
 
-              return new Promise((resolve) => {
+              return await new Promise((resolve) => {
                 works.set(workId, () => {
                   resolve(null)
                 })
@@ -339,81 +365,91 @@ export function benchmarkWorker (): void {
       setMetadata(client.metadata.UseProtocolCompression, msg.compression)
       console.log('connecting to', msg.workspaceId)
 
-      connection = await connect(msg.transactorUrl, msg.workspaceId, undefined)
-      const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
-      parentPort?.postMessage({
-        type: 'operate',
-        workId: msg.workId
-      })
+      connection = await connect(msg.transactorUrl, msg.workspaceId, msg.email)
 
-      const rateLimiter = new RateLimiter(msg.options.rate)
-
-      let bigRunning = 0
-
-      while (msg.options.smallRequests + msg.options.bigRequests > 0) {
-        const variant = Math.random()
-        // console.log(`Thread ${msg.workId} ${msg.options.smallRequests} ${msg.options.bigRequests}`)
-        if (msg.options.bigRequests > 0 && variant < 0.5 && bigRunning === 0) {
-          await rateLimiter.add(async () => {
-            bigRunning = 1
-            await connection?.findAll(core.class.BenchmarkDoc, {
-              source: msg.workId,
-              request: {
-                documents: {
-                  from: 1024,
-                  to: 1000
-                },
-                size: {
-                  // 1kb to 5kb
-                  from: 1 * 1024,
-                  to: 4 * 1024
-                }
-              }
-            })
-          })
-          bigRunning = 0
-          msg.options.bigRequests--
-        }
-        if (msg.options.smallRequests > 0 && variant > 0.5) {
-          await rateLimiter.add(async () => {
-            await connection?.findAll(core.class.BenchmarkDoc, {
-              source: msg.workId,
-              request: {
-                documents: {
-                  from: msg.options.limit.min,
-                  to: msg.options.limit.min + msg.options.limit.rand
-                },
-                size: {
-                  from: 4,
-                  to: 16
-                }
-              }
-            })
-          })
-          msg.options.smallRequests--
-        }
-        if (msg.options.write) {
-          await opt.updateDoc(core.class.BenchmarkDoc, core.space.DerivedTx, '' as Ref<BenchmarkDoc>, {
-            response: 'qwe'
-          })
-        }
-        if (msg.options.sleep > 0) {
-          await new Promise((resolve) => setTimeout(resolve, randNum(msg.options.sleep)))
-        }
-      }
-
-      // clearInterval(infoInterval)
-      await rateLimiter.waitProcessing()
-      const to1 = setTimeout(() => {
+      if (msg.options.mode === 'find-all') {
+        const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
         parentPort?.postMessage({
-          type: 'log',
-          workId: msg.workId,
-          msg: `timeout waiting processing${msg.workId}`
+          type: 'operate',
+          workId: msg.workId
         })
-      }, 5000)
-      clearTimeout(to1)
-      //
-      // console.log(`${msg.idd} perform complete`)
+
+        const rateLimiter = new RateLimiter(msg.options.rate)
+
+        let bigRunning = 0
+
+        while (msg.options.smallRequests + msg.options.bigRequests > 0) {
+          const variant = Math.random()
+          // console.log(`Thread ${msg.workId} ${msg.options.smallRequests} ${msg.options.bigRequests}`)
+          if (msg.options.bigRequests > 0 && variant < 0.5 && bigRunning === 0) {
+            await rateLimiter.add(async () => {
+              bigRunning = 1
+              await connection?.findAll(core.class.BenchmarkDoc, {
+                source: msg.workId,
+                request: {
+                  documents: {
+                    from: 1024,
+                    to: 1000
+                  },
+                  size: {
+                    // 1kb to 5kb
+                    from: 1 * 1024,
+                    to: 4 * 1024
+                  }
+                }
+              })
+            })
+            bigRunning = 0
+            msg.options.bigRequests--
+          }
+          if (msg.options.smallRequests > 0 && variant > 0.5) {
+            await rateLimiter.add(async () => {
+              await connection?.findAll(core.class.BenchmarkDoc, {
+                source: msg.workId,
+                request: {
+                  documents: {
+                    from: msg.options.limit.min,
+                    to: msg.options.limit.min + msg.options.limit.rand
+                  },
+                  size: {
+                    from: 4,
+                    to: 16
+                  }
+                }
+              })
+            })
+            msg.options.smallRequests--
+          }
+          if (msg.options.write) {
+            await opt.updateDoc(core.class.BenchmarkDoc, core.space.DerivedTx, '' as Ref<BenchmarkDoc>, {
+              response: 'qwe'
+            })
+          }
+          if (msg.options.sleep > 0) {
+            await new Promise((resolve) => setTimeout(resolve, randNum(msg.options.sleep)))
+          }
+        }
+
+        // clearInterval(infoInterval)
+        await rateLimiter.waitProcessing()
+        const to1 = setTimeout(() => {
+          parentPort?.postMessage({
+            type: 'log',
+            workId: msg.workId,
+            msg: `timeout waiting processing${msg.workId}`
+          })
+        }, 5000)
+        clearTimeout(to1)
+        //
+        // console.log(`${msg.idd} perform complete`)
+      } else if (msg.options.mode === 'connect-only') {
+        parentPort?.postMessage({
+          type: 'operate',
+          workId: msg.workId
+        })
+        // Just a huge timeout
+        await new Promise<void>((resolve) => setTimeout(resolve, 50000000))
+      }
     } catch (err: any) {
       console.error(msg.workspaceId, err)
     } finally {
@@ -427,9 +463,43 @@ export function benchmarkWorker (): void {
       await connection?.close()
       clearTimeout(to)
     }
+
     parentPort?.postMessage({
       type: 'complete',
       workId: msg.workId
     })
+  }
+}
+
+export type StressBenchmarkMode = 'wrong' | 'connect-disconnect'
+export async function stressBenchmark (transactor: string, mode: StressBenchmarkMode): Promise<void> {
+  if (mode === 'wrong') {
+    console.log('Stress with wrong workspace/email')
+    let counter = 0
+    const rate = new RateLimiter(1)
+    while (true) {
+      try {
+        counter++
+        console.log('Attempt', counter)
+        const token = generateToken(generateId(), { name: generateId(), productId: '' })
+        await rate.add(async () => {
+          try {
+            const ws = new WebSocket(concatLink(transactor, token))
+            await new Promise<void>((resolve) => {
+              ws.onopen = () => {
+                resolve()
+              }
+            })
+            // ws.close()
+            // await createClient(transactor, token, undefined, 50)
+            console.log('out')
+          } catch (err: any) {
+            console.error(err)
+          }
+        })
+      } catch (err: any) {
+        // Ignore
+      }
+    }
   }
 }

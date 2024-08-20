@@ -1,4 +1,4 @@
-import { MeasureContext, MeasureLogger, ParamType, ParamsType } from '@hcengineering/core'
+import { MeasureContext, MeasureLogger, ParamType, ParamsType, type FullParamsType } from '@hcengineering/core'
 import apm, { Agent, Span, Transaction } from 'elastic-apm-node'
 
 /**
@@ -71,7 +71,7 @@ export class APMMeasureContext implements MeasureContext {
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType
+    fullParams?: FullParamsType | (() => FullParamsType)
   ): Promise<T> {
     const c = this.newChild(name, params)
     try {
@@ -79,11 +79,29 @@ export class APMMeasureContext implements MeasureContext {
       if (value instanceof Promise) {
         value = await value
       }
-      c.end()
       return value
     } catch (err: any) {
       c.error(err)
       throw err
+    } finally {
+      c.end()
+    }
+  }
+
+  withSync<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T,
+    fullParams?: FullParamsType | (() => FullParamsType)
+  ): T {
+    const c = this.newChild(name, params)
+    try {
+      return op(c)
+    } catch (err: any) {
+      c.error(err)
+      throw err
+    } finally {
+      c.end()
     }
   }
 

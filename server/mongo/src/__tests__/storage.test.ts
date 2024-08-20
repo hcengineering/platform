@@ -22,20 +22,20 @@ import core, {
   type Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
+  type FullParamsType,
   generateId,
   getWorkspaceId,
   Hierarchy,
   type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
+  type ParamsType,
   type Ref,
+  type SessionOperationContext,
   SortingOrder,
   type Space,
   TxOperations,
-  type WorkspaceId,
-  type SessionOperationContext,
-  type ParamsType,
-  type FullParamsType
+  type WorkspaceId
 } from '@hcengineering/core'
 import {
   type ContentTextAdapter,
@@ -97,6 +97,7 @@ describe('mongo operations', () => {
   })
 
   afterAll(async () => {
+    mongoClient.close()
     await shutdown()
   })
 
@@ -135,6 +136,8 @@ describe('mongo operations', () => {
     for (const t of txes) {
       await txStorage.tx(mctx, t)
     }
+
+    await txStorage.close()
 
     const conf: DbConfiguration = {
       domains: {
@@ -177,19 +180,26 @@ describe('mongo operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     serverStorage = await createServerStorage(ctx, conf, {
       upgrade: false,
-      broadcast: () => {}
+      broadcast: () => {},
+      branding: null
     })
     const soCtx: SessionOperationContext = {
       ctx,
-      derived: [],
-      with: async <T>(
+      derived: {
+        txes: [],
+        targets: {}
+      },
+      with: <T>(
         name: string,
         params: ParamsType,
         op: (ctx: SessionOperationContext) => T | Promise<T>,
         fullParams?: FullParamsType
       ): Promise<T> => {
-        return await op(soCtx)
-      }
+        const result = op(soCtx)
+        return result instanceof Promise ? result : Promise.resolve(result)
+      },
+      contextCache: new Map(),
+      removedMap: new Map()
     }
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
@@ -205,7 +215,6 @@ describe('mongo operations', () => {
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async () => txes,
         getAccount: async () => ({}) as any,
-        measure: async () => async () => ({ time: 0, serverTime: 0 }),
         sendForceClose: async () => {}
       }
       return st
@@ -220,13 +229,18 @@ describe('mongo operations', () => {
 
   it('check add', async () => {
     jest.setTimeout(500000)
+    const times: number[] = []
     for (let i = 0; i < 50; i++) {
+      const t = Date.now()
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
         description: `${i * i}`,
         rate: 20 + i
       })
+      times.push(Date.now() - t)
     }
+
+    console.log('createDoc times', times)
 
     const r = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(r.length).toEqual(50)

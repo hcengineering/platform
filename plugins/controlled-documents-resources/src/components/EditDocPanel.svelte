@@ -18,7 +18,7 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { Collaboration } from '@hcengineering/text-editor'
+  import { Collaboration } from '@hcengineering/text-editor-resources'
   import {
     Button,
     Chevron,
@@ -273,11 +273,14 @@
     isSub={false}
     selectedAside={$activeRightPanelTab ?? false}
     withoutActivity
-    contentClasses="m0 h-full flex-col"
+    contentClasses="h-full flex-col"
     withoutContentScroll
     allowClose={withClose && !embedded}
     {embedded}
     printHeader={false}
+    adaptive={'autoExtra'}
+    overflowExtra
+    hideSearch
     on:close
     on:select={(ev) => rightPanelTabChanged(ev.detail)}
   >
@@ -312,8 +315,8 @@
         </button>
       </div>
     </svelte:fragment>
-    <svelte:fragment slot="pre-utils">
-      <div class="flex flex-gap-2 no-print">
+    <svelte:fragment slot="extra">
+      <div class="flex flex-gap-1 no-print">
         {#if $isProjectEditable}
           {#if $isDocumentOwner && !$documentReviewIsActive && !$documentApprovalIsActive}
             {#if $canSendForReview}
@@ -377,7 +380,7 @@
       </div>
     </svelte:fragment>
     <svelte:fragment slot="post-utils">
-      <div class="no-print">
+      <div class="no-print ml-1">
         <Button
           icon={IconMoreV}
           iconProps={{ size: 'medium' }}
@@ -411,7 +414,7 @@
       {#if $editorMode === 'comparing'}
         <DocumentDiffViewer />
       {:else}
-        <Tabs model={tabs} bind:selected={selectedTab} size="small" padding="0 1.5rem" noMargin />
+        <Tabs model={tabs} bind:selected={selectedTab} size={'large'} padding="0 1.5rem" noMargin />
       {/if}
     </Collaboration>
     <svelte:fragment slot="custom-attributes">

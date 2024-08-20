@@ -11,6 +11,7 @@ export class LoginPage {
   inputEmail = (): Locator => this.page.locator('input[name=email]')
   inputPassword = (): Locator => this.page.locator('input[name=current-password]')
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
+  loginWithPassword = (): Locator => this.page.locator('a', { hasText: 'Login with password' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
   invalidPasswordMessage = (): Locator => this.page.getByText('Invalid password')
   recoverLink = (): Locator => this.page.getByRole('link', { name: 'Recover' })
@@ -19,6 +20,9 @@ export class LoginPage {
   recoverySignUpText = (): Locator => this.page.getByText('Do not have an account? Sign Up')
   recoveryLogin = (): Locator => this.page.getByRole('link', { name: 'Log In' })
   recoverySignUp = (): Locator => this.page.getByRole('link', { name: 'Sign Up' })
+
+  profileButton = (): Locator => this.page.locator('#profile-button')
+  popupItemButton = (hasText: string): Locator => this.page.locator('div.popup button[class*="menu"]', { hasText })
 
   // ACTIONS
   async goto (): Promise<void> {
@@ -42,13 +46,26 @@ export class LoginPage {
   }
 
   async login (email: string, password: string): Promise<void> {
+    await this.loginWithPassword().click()
     await this.inputEmail().fill(email)
     await this.inputPassword().fill(password)
     expect(await this.buttonLogin().isEnabled()).toBe(true)
     await this.buttonLogin().click()
   }
 
+  async openProfileMenu (): Promise<void> {
+    await this.profileButton().click()
+  }
+
   // ASSERTS
+
+  async checkingNeedReLogin (): Promise<void> {
+    if (await this.profileButton().isVisible()) {
+      await this.openProfileMenu()
+      await this.popupItemButton('Sign out').click()
+      await this.loginWithPassword().waitFor({ state: 'visible', timeout: 15000 })
+    }
+  }
 
   async checkIfErrorMessageIsShown (): Promise<void> {
     await expect(this.invalidPasswordMessage()).toContainText('Invalid password')

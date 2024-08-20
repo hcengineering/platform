@@ -14,26 +14,28 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
+  import { IntlString, Asset } from '@hcengineering/platform'
   import {
     AnyComponent,
     Button,
     Component,
     IconAdd,
     IModeSelector,
-    Label,
     Loading,
     ModeSelector,
-    SearchEdit,
-    showPopup
+    SearchInput,
+    showPopup,
+    Header,
+    Breadcrumb
   } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletDescriptor, ViewletPreference } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
-  // export let icon: Asset
+  export let icon: Asset
   export let label: IntlString
+  export let createEvent: string | undefined
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
@@ -44,6 +46,7 @@
 
   let search = ''
   let viewlet: WithLookup<Viewlet> | undefined
+  let filterVisible: boolean = false
 
   let preference: ViewletPreference | undefined
   let viewlets: Array<WithLookup<Viewlet>> = []
@@ -59,15 +62,13 @@
   }
 </script>
 
-<div class="ac-header full divide caption-height" class:header-with-mode-selector={modes !== undefined}>
-  <div class="ac-header__wrap-title mr-3">
-    <span class="ac-header__title"><Label {label} /></span>
-    {#if modes !== undefined}
-      <ModeSelector props={modes} />
-    {/if}
-  </div>
-
-  <div class="ac-header-full medium-gap mb-1">
+<Header
+  adaptive={modes !== undefined ? 'doubleRow' : filterVisible ? 'freezeActions' : 'disabled'}
+  hideActions={!(createLabel && createComponent)}
+  hideExtra={modes === undefined}
+  freezeBefore
+>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector
       bind:viewlet
       bind:preference
@@ -78,31 +79,35 @@
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <Breadcrumb {icon} {label} size={'large'} isCurrent />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed />
+    <FilterButton {_class} bind:visible={filterVisible} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}
         label={createLabel}
         kind={'primary'}
         disabled={isCreationDisabled}
+        event={createEvent}
         on:click={() => {
           showCreateDialog()
         }}
       />
     {/if}
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-    <FilterButton {_class} />
-  </div>
-  <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
+  </svelte:fragment>
+  <svelte:fragment slot="extra">
+    {#if modes !== undefined}
+      <ModeSelector kind={'subtle'} props={modes} />
+    {/if}
+  </svelte:fragment>
+</Header>
 
 {#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}
   <Loading />

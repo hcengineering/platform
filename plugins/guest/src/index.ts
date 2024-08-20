@@ -1,4 +1,4 @@
-import { Class, Doc, Ref, Space } from '@hcengineering/core'
+import { Class, Doc, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent, Location } from '@hcengineering/ui'
@@ -29,9 +29,6 @@ export default plugin(guestId, {
   },
   icon: {
     Link: '' as Asset
-  },
-  space: {
-    Links: '' as Ref<Space>
   },
   component: {
     GuestApp: '' as AnyComponent

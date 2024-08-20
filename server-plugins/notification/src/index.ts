@@ -14,9 +14,16 @@
 // limitations under the License.
 //
 
-import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+import { ActivityMessage } from '@hcengineering/activity'
+import contact, { Employee, Person, PersonAccount, PersonSpace } from '@hcengineering/contact'
 import { Account, Class, Doc, Mixin, Ref, Tx, TxCUD } from '@hcengineering/core'
-import { NotificationContent, NotificationType } from '@hcengineering/notification'
+import {
+  BaseNotificationType,
+  InboxNotification,
+  NotificationContent,
+  NotificationProvider,
+  NotificationType
+} from '@hcengineering/notification'
 import { Metadata, Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 
@@ -28,37 +35,13 @@ export const serverNotificationId = 'server-notification' as Plugin
 /**
  * @public
  */
-export async function getPersonAccount (
-  person: Ref<Person>,
-  control: TriggerControl
-): Promise<PersonAccount | undefined> {
-  const account = (
-    await control.modelDb.findAll(
-      contact.class.PersonAccount,
-      {
-        person
-      },
-      { limit: 1 }
-    )
-  )[0]
-  return account
-}
-
-/**
- * @public
- */
-export async function getPersonAccountById (
-  _id: Ref<Account>,
-  control: TriggerControl
-): Promise<PersonAccount | undefined> {
-  const account = (
-    await control.modelDb.findAll(
-      contact.class.PersonAccount,
-      {
-        _id: _id as Ref<PersonAccount>
-      },
-      { limit: 1 }
-    )
+export function getPersonAccountById (_id: Ref<Account>, control: TriggerControl): PersonAccount | undefined {
+  const account = control.modelDb.findAllSync(
+    contact.class.PersonAccount,
+    {
+      _id: _id as Ref<PersonAccount>
+    },
+    { limit: 1 }
   )[0]
   return account
 }
@@ -102,7 +85,7 @@ export interface TextPresenter<T extends Doc = any> extends Class<T> {
  * @public
  */
 export type TypeMatchFunc = Resource<
-(tx: Tx, doc: Doc, user: Ref<Account>, type: NotificationType, control: TriggerControl) => Promise<boolean>
+(tx: Tx, doc: Doc, user: Ref<Account>[], type: NotificationType, control: TriggerControl) => boolean
 >
 
 /**
@@ -129,7 +112,36 @@ export interface NotificationPresenter extends Class<Doc> {
   presenter: Resource<NotificationContentProvider>
 }
 
+export interface ReceiverInfo {
+  _id: Ref<Account>
+  account: PersonAccount
+  person: Employee
+  space: Ref<PersonSpace>
+}
+
+export interface SenderInfo {
+  _id: Ref<Account>
+  account?: PersonAccount
+  person?: Person
+}
+
+export type NotificationProviderFunc = (
+  control: TriggerControl,
+  types: BaseNotificationType[],
+  object: Doc,
+  data: InboxNotification,
+  receiver: ReceiverInfo,
+  sender: SenderInfo,
+  message?: ActivityMessage
+) => Promise<Tx[]>
+
+export interface NotificationProviderResources extends Doc {
+  provider: Ref<NotificationProvider>
+  fn: Resource<NotificationProviderFunc>
+}
+
 export const NOTIFICATION_BODY_SIZE = 50
+export const PUSH_NOTIFICATION_TITLE_SIZE = 80
 
 /**
  * @public
@@ -139,6 +151,9 @@ export default plugin(serverNotificationId, {
     SesUrl: '' as Metadata<string>,
     PushPrivateKey: '' as Metadata<string>,
     PushSubject: '' as Metadata<string>
+  },
+  class: {
+    NotificationProviderResources: '' as Ref<Class<NotificationProviderResources>>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
@@ -150,11 +165,10 @@ export default plugin(serverNotificationId, {
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
-    OnActivityNotificationViewed: '' as Resource<TriggerFunc>,
     OnDocRemove: '' as Resource<TriggerFunc>
   },
   function: {
-    IsUserInFieldValue: '' as TypeMatchFunc,
-    IsUserEmployeeInFieldValue: '' as TypeMatchFunc
+    IsUserInFieldValueTypeMatch: '' as TypeMatchFunc,
+    IsUserEmployeeInFieldValueTypeMatch: '' as TypeMatchFunc
   }
 })

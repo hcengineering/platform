@@ -77,9 +77,11 @@ export async function createServerStorage (
     for (const tx of model) {
       try {
         hierarchy.tx(tx)
-        await triggers.tx(tx)
+        if (options.disableTriggers !== true) {
+          await triggers.tx(tx)
+        }
       } catch (err: any) {
-        console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
+        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
       }
     }
     modelDb.addTxes(ctx, model, false)
@@ -135,6 +137,7 @@ export async function createServerStorage (
       metrics.newChild('fulltext', {}),
       modelDb,
       (classes: Ref<Class<Doc>>[]) => {
+        ctx.info('broadcast indexing update', { classes, workspace: conf.workspace })
         const evt: IndexingUpdateEvent = {
           _class: classes
         }
@@ -162,9 +165,9 @@ export async function createServerStorage (
     )
   }
 
-  const domainHelper = new DomainIndexHelperImpl(hierarchy, modelDb)
+  const domainHelper = new DomainIndexHelperImpl(metrics, hierarchy, modelDb, conf.workspace)
 
-  return new TServerStorage(
+  const serverStorage = new TServerStorage(
     conf.domains,
     conf.defaultAdapter,
     adapters,
@@ -181,6 +184,10 @@ export async function createServerStorage (
     model,
     domainHelper
   )
+  await ctx.with('init-domain-info', {}, async () => {
+    await serverStorage.initDomainInfo()
+  })
+  return serverStorage
 }
 
 /**
@@ -192,3 +199,4 @@ export function createNullStorageFactory (): StorageAdapter {
 
 export { AggregatorStorageAdapter, buildStorage } from './aggregator'
 export { DomainIndexHelperImpl } from './domainHelper'
+export { QueryJoiner } from './utils'

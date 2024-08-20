@@ -15,7 +15,8 @@
 <script lang="ts">
   import chunter from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Heading, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { isEmptyMarkup } from '@hcengineering/text'
+  import { Heading } from '@hcengineering/text-editor'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import documents, { Document, DocumentSection, DocumentTemplateSection } from '@hcengineering/controlled-documents'
 
@@ -153,7 +154,9 @@
     <slot name="before-header" />
   </svelte:fragment>
   <svelte:fragment slot="index">
-    {index + 1}
+    <span class="sectionTitle">
+      {index + 1}
+    </span>
   </svelte:fragment>
   <svelte:fragment slot="header">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -163,6 +166,7 @@
       class:text-editor-highlighted-node-warning={isActiveSectionNode ||
         $groupedDocumentComments.hasDocumentComments(value.key)}
       class:text-editor-highlighted-node-selected={isActiveSectionNode}
+      class="sectionTitle"
       bind:this={sectionElement}
       on:click={handleDisplayDocumentComments}
     >
@@ -202,3 +206,10 @@
     />
   </svelte:fragment>
 </FieldSectionEditor>
+
+<style lang="scss">
+  .sectionTitle {
+    font-size: 1.75rem;
+    line-height: 150%;
+  }
+</style>

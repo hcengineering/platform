@@ -4,27 +4,39 @@
 
 import account, {
   ACCOUNT_DB,
+  EndpointKind,
   UpgradeWorker,
   accountId,
+  cleanExpiredOtp,
   cleanInProgressWorkspaces,
-  getMethods,
-  type BrandingMap
+  getAllTransactors,
+  getMethods
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { type Data, type MeasureContext, type Tx, type Version } from '@hcengineering/core'
+import {
+  metricsAggregate,
+  type BrandingMap,
+  type Data,
+  type MeasureContext,
+  type Tx,
+  type Version
+} from '@hcengineering/core'
 import { type MigrateOperation } from '@hcengineering/model'
+import { getMongoClient, type MongoClientReference } from '@hcengineering/mongo'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
+import serverClientPlugin from '@hcengineering/server-client'
+import serverToken, { decodeToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
-import { MongoClient } from 'mongodb'
+import type { MongoClient } from 'mongodb'
+import os from 'os'
 
 /**
  * @public
@@ -53,8 +65,6 @@ export function serveAccount (
     process.exit(1)
   }
 
-  const endpointUri = process.env.ENDPOINT_URL ?? transactorUri
-
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
@@ -77,8 +87,11 @@ export function serveAccount (
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
 
+  setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
+  setMetadata(account.metadata.OtpTimeToLiveSec, parseInt(process.env.OTP_TIME_TO_LIVE ?? '60'))
+  setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
 
@@ -88,34 +101,56 @@ export function serveAccount (
   if (initWS !== undefined) {
     setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
   }
-  setMetadata(toolPlugin.metadata.Endpoint, endpointUri)
-  setMetadata(toolPlugin.metadata.Transactor, transactorUri)
-  setMetadata(toolPlugin.metadata.UserAgent, 'AccountService')
+  const initScriptUrl = process.env.INIT_SCRIPT_URL
+  if (initScriptUrl !== undefined) {
+    setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
+  }
+  setMetadata(serverClientPlugin.metadata.UserAgent, 'AccountService')
 
-  let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
+  const client: MongoClientReference = getMongoClient(dbUri)
+  let _client: MongoClient | Promise<MongoClient> = client.getClient()
+
+  let worker: UpgradeWorker | undefined
 
   const app = new Koa()
   const router = new Router()
 
-  let worker: UpgradeWorker | undefined
+  app.use(
+    cors({
+      credentials: true
+    })
+  )
+  app.use(bodyParser())
 
-  void client.then(async (p: MongoClient) => {
+  void client.getClient().then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
-    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL)
+    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL, brandings)
 
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)
 
-    worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
-    await worker.upgradeAll(measureCtx, {
-      errorHandler: async (ws, err) => {
-        Analytics.handleError(err)
+    setInterval(
+      () => {
+        void cleanExpiredOtp(db)
       },
-      force: false,
-      console: false,
-      logs: 'upgrade-logs',
-      parallel: parseInt(process.env.PARALLEL ?? '1')
-    })
+      3 * 60 * 1000
+    )
+
+    const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
+    if (performUpgrade) {
+      await measureCtx.with('upgrade-all-models', {}, async (ctx) => {
+        worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
+        await worker.upgradeAll(ctx, {
+          errorHandler: async (ws, err) => {
+            Analytics.handleError(err)
+          },
+          force: false,
+          console: false,
+          logs: 'upgrade-logs',
+          parallel: parseInt(process.env.PARALLEL ?? '1')
+        })
+      })
+    }
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
@@ -125,6 +160,70 @@ export function serveAccount (
       return undefined
     }
   }
+
+  router.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      const data: Record<string, any> = {
+        metrics: admin ? metricsAggregate((measureCtx as any).metrics) : {},
+        statistics: {}
+      }
+      data.statistics.totalClients = 0
+      data.statistics.memoryUsed = Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100
+      data.statistics.memoryTotal = Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100
+      data.statistics.cpuUsage = Math.round(os.loadavg()[0] * 100) / 100
+      data.statistics.freeMem = Math.round((os.freemem() / 1024 / 1024) * 100) / 100
+      data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100
+      const json = JSON.stringify(data)
+      req.res.writeHead(200, { 'Content-Type': 'application/json' })
+      req.res.end(json)
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.error(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
+
+  router.put('/api/v1/manage', async (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      if (payload.extra?.admin !== 'true') {
+        req.res.writeHead(404, {})
+        req.res.end()
+        return
+      }
+
+      const operation = req.query.operation
+
+      switch (operation) {
+        case 'maintenance': {
+          const timeMinutes = parseInt((req.query.timeout as string) ?? '5')
+          const transactors = getAllTransactors(EndpointKind.Internal)
+          for (const tr of transactors) {
+            const serverEndpoint = tr.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+            await fetch(serverEndpoint + `/api/v1/manage?token=${token}&operation=maintenance&timeout=${timeMinutes}`, {
+              method: 'PUT'
+            })
+          }
+
+          req.res.writeHead(200)
+          req.res.end()
+          return
+        }
+      }
+
+      req.res.writeHead(404, {})
+      req.res.end()
+    } catch (err: any) {
+      Analytics.handleError(err)
+      req.res.writeHead(404, {})
+      req.res.end()
+    }
+  })
 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
@@ -140,10 +239,10 @@ export function serveAccount (
       ctx.body = JSON.stringify(response)
     }
 
-    if (client instanceof Promise) {
-      client = await client
+    if (_client instanceof Promise) {
+      _client = await _client
     }
-    const db = client.db(ACCOUNT_DB)
+    const db = _client.db(ACCOUNT_DB)
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
@@ -151,18 +250,16 @@ export function serveAccount (
       host = new URL(origin).host
     }
     const branding = host !== undefined ? brandings[host] : null
-    const result = await method(measureCtx, db, productId, branding, request, token)
+    const result = await measureCtx.with(
+      request.method,
+      {},
+      async (ctx) => await method(ctx, db, productId, branding, request, token)
+    )
 
     worker?.updateResponseStatistics(result)
     ctx.body = result
   })
 
-  app.use(
-    cors({
-      credentials: true
-    })
-  )
-  app.use(bodyParser())
   app.use(router.routes()).use(router.allowedMethods())
 
   const server = app.listen(ACCOUNT_PORT, () => {
@@ -174,7 +271,7 @@ export function serveAccount (
     if (client instanceof Promise) {
       void client.then((c) => c.close())
     } else {
-      void client.close()
+      client.close()
     }
     server.close()
   }

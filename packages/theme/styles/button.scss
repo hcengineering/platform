@@ -84,7 +84,7 @@
 
   &:hover .btn-icon { color: var(--theme-caption-color); }
   &:not(.no-focus):focus {
-    &:not(.sh-filter) { box-shadow: 0 0 0 2px var(--primary-button-outline); }
+    &:not(.sh-filter, .regular) { box-shadow: 0 0 0 2px var(--primary-button-outline); }
     &.sh-filter { border-color: var(--primary-button-outline); }
   }
 
@@ -109,7 +109,8 @@
     &.pressed:hover { background-color: var(--theme-button-pressed); }
     &:focus {
       background-color: var(--theme-button-focused);
-      border-color: var(--theme-button-focused-border);
+      outline: 2px solid var(--global-focus-BorderColor);
+      outline-offset: 2px;
     }
     &:disabled { background-color: var(--theme-button-disabled); }
     &.selected {
@@ -240,6 +241,7 @@
     }
   }
   &.secondary {
+    color: var(--secondary-button-color);
     background-color: var(--secondary-button-default);
     &:hover { background-color: var(--secondary-button-hovered); }
     &:active,

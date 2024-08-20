@@ -14,24 +14,11 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { type BlobMetadata } from '@hcengineering/presentation'
   import AudioPlayer from './AudioPlayer.svelte'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
   export let contentType: string
-  export let metadata: BlobMetadata | undefined
 </script>
 
 <AudioPlayer {value} {name} {contentType} fullSize={true} />
-
-<style lang="scss">
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-</style>

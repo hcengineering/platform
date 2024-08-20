@@ -14,22 +14,22 @@
 //
 
 import {
+  DOMAIN_MODEL,
+  IndexKind,
   type Account,
   type AccountRole,
   type Arr,
+  type Class,
+  type CollectionSize,
   type Domain,
-  DOMAIN_MODEL,
-  IndexKind,
+  type Permission,
   type Ref,
+  type Role,
+  type RolesAssignment,
   type Space,
-  type TypedSpace,
   type SpaceType,
   type SpaceTypeDescriptor,
-  type Role,
-  type Class,
-  type Permission,
-  type CollectionSize,
-  type RolesAssignment
+  type TypedSpace
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -46,7 +46,7 @@ import {
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
-import { TDoc, TAttachedDoc } from './core'
+import { TAttachedDoc, TDoc } from './core'
 
 export const DOMAIN_SPACE = 'space' as Domain
 
@@ -67,9 +67,11 @@ export class TSpace extends TDoc implements Space {
     private!: boolean
 
   @Prop(TypeBoolean(), core.string.Archived)
+  @Index(IndexKind.Indexed)
     archived!: boolean
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
+  @Index(IndexKind.Indexed)
     members!: Arr<Ref<Account>>
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
@@ -166,7 +168,7 @@ export class TSpacesTypeData extends TSpace implements RolesAssignment {
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
-@UX(core.string.Account)
+@UX(core.string.Account, undefined, undefined, 'name')
 export class TAccount extends TDoc implements Account {
   email!: string
   role!: AccountRole

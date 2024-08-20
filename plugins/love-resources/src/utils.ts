@@ -1,11 +1,17 @@
 import { Analytics } from '@hcengineering/analytics'
+import calendar, { getAllEvents, type Event } from '@hcengineering/calendar'
 import contact, { getName, type Person, type PersonAccount } from '@hcengineering/contact'
-import { concatLink, getCurrentAccount, type IdMap, type Ref, type Space } from '@hcengineering/core'
-import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
-import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
-import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
-import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
+import core, {
+  AccountRole,
+  concatLink,
+  getCurrentAccount,
+  type Data,
+  type IdMap,
+  type Ref,
+  type Space,
+  type TxOperations
+} from '@hcengineering/core'
+import login from '@hcengineering/login'
 import {
   RequestStatus,
   RoomAccess,
@@ -14,19 +20,26 @@ import {
   loveId,
   type Invite,
   type JoinRequest,
+  type Meeting,
   type Office,
   type ParticipantInfo,
-  type Room
+  type Room,
+  LoveEvents
 } from '@hcengineering/love'
+import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
+import presentation, { createQuery, getClient, type DocCreatePhase } from '@hcengineering/presentation'
+import { getCurrentLocation, navigate, type DropdownTextItem } from '@hcengineering/ui'
+import { KrispNoiseFilter, isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
+import { BackgroundBlur, type BackgroundOptions, type ProcessorWrapper } from '@livekit/track-processors'
 import {
   ConnectionState,
   Room as LKRoom,
   LocalAudioTrack,
-  type LocalTrack,
   LocalVideoTrack,
   RoomEvent,
   Track,
   type AudioCaptureOptions,
+  type LocalTrack,
   type LocalTrackPublication,
   type RemoteParticipant,
   type RemoteTrack,
@@ -117,7 +130,7 @@ isCurrentInstanceConnected.subscribe((value) => {
 })
 export const screenSharing = writable<boolean>(false)
 export const isRecording = writable<boolean>(false)
-export const isRecordingAvailable = writable<boolean | undefined>(undefined)
+export const isRecordingAvailable = writable<boolean>(false)
 export const isMicEnabled = writable<boolean>(false)
 export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
@@ -336,11 +349,13 @@ lk.on(RoomEvent.Connected, () => {
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
+  Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
   isConnected.set(false)
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(false)
+  Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 
 export async function connect (name: string, room: Room, _id: string): Promise<void> {
@@ -473,22 +488,25 @@ async function moveToRoom (
   y: number,
   currentInfo: ParticipantInfo | undefined,
   currentPerson: Person,
-  room: Room
+  room: Room,
+  sessionId: string | null
 ): Promise<void> {
   const client = getClient()
   if (currentInfo !== undefined) {
     await client.diffUpdate(currentInfo, {
       x,
       y,
-      room: room._id
+      room: room._id,
+      sessionId
     })
   } else {
-    await client.createDoc(love.class.ParticipantInfo, love.space.Rooms, {
+    await client.createDoc(love.class.ParticipantInfo, core.space.Workspace, {
       x,
       y,
       room: room._id,
       person: currentPerson._id,
-      name: currentPerson.name
+      name: currentPerson.name,
+      sessionId
     })
   }
   const loc = getCurrentLocation()
@@ -517,7 +535,7 @@ export async function connectRoom (
   room: Room
 ): Promise<void> {
   await disconnect()
-  await moveToRoom(x, y, currentInfo, currentPerson, room)
+  await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
   await connectLK(currentPerson, room)
 }
 
@@ -555,6 +573,38 @@ function checkPlace (room: Room, info: ParticipantInfo[], x: number, y: number):
   return !isOffice(room) && info.find((p) => p.x === x && p.y === y) === undefined
 }
 
+export async function connectToMeeting (
+  personByIdStore: IdMap<Person>,
+  currentInfo: ParticipantInfo | undefined,
+  info: ParticipantInfo[],
+  currentRequests: JoinRequest[],
+  currentInvites: Invite[],
+  meetId: string
+): Promise<void> {
+  const client = getClient()
+  const meeting = await client.findOne(love.mixin.Meeting, { _id: meetId as Ref<Meeting> })
+  if (meeting === undefined) return
+  const room = await client.findOne(love.class.Room, { _id: meeting.room })
+  if (room === undefined) return
+
+  // check time (it should be 10 minutes before the meeting or active in roomInfo)
+  const now = new Date()
+  const res = getAllEvents([meeting], now.setMinutes(now.getMinutes() - 10), new Date().getTime())
+  if (res.length === 0) {
+    console.log('Meeting is not active')
+    return
+  }
+
+  await tryConnect(
+    personByIdStore,
+    currentInfo,
+    room,
+    info.filter((p) => p.room === room._id),
+    currentRequests,
+    currentInvites
+  )
+}
+
 export async function tryConnect (
   personByIdStore: IdMap<Person>,
   currentInfo: ParticipantInfo | undefined,
@@ -568,7 +618,10 @@ export async function tryConnect (
   const currentPerson = personByIdStore.get((me as PersonAccount).person)
   if (currentPerson === undefined) return
   const client = getClient()
+
+  // guests can't join without invite
   if (!client.getHierarchy().hasMixin(currentPerson, contact.mixin.Employee)) return
+
   if (room._id === currentInfo?.room) return
   if (room.access === RoomAccess.DND) return
   const thisRoomRequest = currentRequests.find((p) => p.room === room._id)
@@ -606,13 +659,14 @@ export async function tryConnect (
     await client.update(invite, { status: invite.room === room._id ? RequestStatus.Approved : RequestStatus.Rejected })
   }
   if (room.access === RoomAccess.Knock && (!isOffice(room) || room.person !== currentPerson._id)) {
-    const _id = await client.createDoc(love.class.JoinRequest, love.space.Rooms, {
+    const _id = await client.createDoc(love.class.JoinRequest, core.space.Workspace, {
       person: currentPerson._id,
       room: room._id,
       status: RequestStatus.Pending
     })
     requestsQuery.query(love.class.JoinRequest, { person: (me as PersonAccount).person, _id }, (res) => {
       const req = res[0]
+      if (req === undefined) return
       if (req.status === RequestStatus.Pending) return
       requestsQuery.unsubscribe()
       if (req.status === RequestStatus.Approved) {
@@ -629,7 +683,7 @@ export async function invite (person: Ref<Person>, room: Ref<Room> | undefined):
   if (room === undefined || room === love.ids.Reception) return
   const client = getClient()
   const me = getCurrentAccount()
-  await client.createDoc(love.class.Invite, love.space.Rooms, {
+  await client.createDoc(love.class.Invite, core.space.Workspace, {
     target: person,
     room,
     status: RequestStatus.Pending,
@@ -697,16 +751,18 @@ export async function record (room: Room): Promise<void> {
   }
 }
 
-export async function checkRecordAvailable (): Promise<void> {
+async function checkRecordAvailable (): Promise<void> {
   try {
     const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
     if (endpoint === undefined) {
-      throw new Error('Love service endpoint not found')
+      setTimeout(() => {
+        void checkRecordAvailable()
+      }, 500)
+    } else {
+      const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
+      const result = await res.json()
+      isRecordingAvailable.set(result)
     }
-
-    const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
-    const result = await res.json()
-    isRecordingAvailable.set(result)
   } catch (err: any) {
     Analytics.handleError(err)
     console.error(err)
@@ -714,3 +770,28 @@ export async function checkRecordAvailable (): Promise<void> {
 }
 
 void checkRecordAvailable()
+
+export async function createMeeting (
+  client: TxOperations,
+  _id: Ref<Event>,
+  space: Space,
+  data: Data<Event>,
+  store: Record<string, any>,
+  phase: DocCreatePhase
+): Promise<void> {
+  if (phase === 'post' && store.room != null && store.isMeeting === true) {
+    await client.createMixin<Event, Meeting>(_id, calendar.class.Event, space._id, love.mixin.Meeting, {
+      room: store.room as Ref<Room>
+    })
+    const event = await client.findOne(calendar.class.Event, { _id })
+    if (event === undefined) return
+    const navigateUrl = getCurrentLocation()
+    navigateUrl.path[2] = loveId
+    navigateUrl.query = {
+      meetId: _id
+    }
+    const func = await getResource(login.function.GetInviteLink)
+    const link = await func(-1, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
+    await client.update(event, { location: link })
+  }
+}

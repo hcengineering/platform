@@ -13,18 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import core, { AnyAttribute, ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
-  import preferencePlugin from '@hcengineering/preference'
   import { createQuery, getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { Loading, resizeObserver } from '@hcengineering/ui'
+  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
+  import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { buildConfigLookup, getKeyLabel } from '../utils'
   import ViewletClassSettings from './ViewletClassSettings.svelte'
-  import DropdownLabelsIntl from '@hcengineering/ui/src/components/DropdownLabelsIntl.svelte'
 
   export let viewlet: Viewlet
 
@@ -56,6 +55,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: { $in: Array.from(viewlets.map((it) => it._id)) }
       },
       (res) => {
@@ -148,13 +148,14 @@
     return result
   }
 
-  function getValue (name: string, type: Type<any>): string {
+  function getValue (name: string, type: Type<any>, attrClass: Ref<Class<Doc>>): string {
+    const presenter = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)?.presenter
+    if (presenter !== undefined) {
+      return name
+    }
     if (hierarchy.isDerived(type._class, core.class.RefTo)) {
       return '$lookup.' + name
     }
-    // if (hierarchy.isDerived(type._class, core.class.ArrOf)) {
-    //   return getValue(name, (type as ArrOf<any>).of)
-    // }
     return name
   }
 
@@ -162,14 +163,14 @@
     if (attribute.hidden === true || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
-    const value = getValue(attribute.name, attribute.type)
+    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+    const value = getValue(attribute.name, attribute.type, attrClass)
     for (const res of result) {
       const key = typeof res.value === 'string' ? res.value : res.value?.key
       if (key === undefined) return
       if (key === attribute.name) return
       if (key === value) return
     }
-    const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
     const mixin =
       category === 'object'
         ? view.mixin.ObjectPresenter
@@ -273,7 +274,7 @@
         config
       })
     } else {
-      await client.createDoc(view.class.ViewletPreference, preferencePlugin.space.Preference, {
+      await client.createDoc(view.class.ViewletPreference, core.space.Workspace, {
         attachedTo: viewletId,
         config
       })

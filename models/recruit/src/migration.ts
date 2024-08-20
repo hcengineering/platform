@@ -14,10 +14,10 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { DOMAIN_TX, TxOperations, type Ref, type Status } from '@hcengineering/core'
+import core, { DOMAIN_TX, TxOperations, type Ref, type Space, type Status } from '@hcengineering/core'
 import {
-  createDefaultSpace,
   createOrUpdate,
+  migrateSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -29,6 +29,7 @@ import tags, { type TagCategory } from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import { recruitId, type Applicant } from '@hcengineering/recruit'
 
+import { DOMAIN_CALENDAR } from '@hcengineering/model-calendar'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import recruit from './plugin'
 import { defaultApplicantStatuses } from './spaceType'
@@ -53,11 +54,27 @@ export const recruitOperation: MigrateOperation = {
         func: async (client) => {
           await migrateDefaultTypeMixins(client)
         }
+      },
+      {
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'recruit:space:Reviews' as Ref<Space>, core.space.Workspace, [DOMAIN_CALENDAR])
+        }
+      },
+      {
+        state: 'migrate-applicants',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_TASK,
+            { _class: recruit.class.Applicant, isDone: { $nin: [false, true] } },
+            { isDone: false }
+          )
+        }
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, recruitId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, recruitId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {
@@ -164,12 +181,10 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
-  await createDefaultSpace(client, recruit.space.Reviews, { name: 'Reviews' })
-
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
-    tags.space.Tags,
+    core.space.Workspace,
     {
       icon: recruit.icon.Skills,
       label: 'Other',
@@ -184,7 +199,7 @@ async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations)
     await createOrUpdate(
       tx,
       tags.class.TagCategory,
-      tags.space.Tags,
+      core.space.Workspace,
       {
         icon: recruit.icon.Skills,
         label: c.label,

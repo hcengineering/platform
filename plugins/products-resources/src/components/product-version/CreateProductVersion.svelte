@@ -28,7 +28,7 @@
   import { Product, ProductVersion, ProductVersionState } from '@hcengineering/products'
   import { Data, Ref, SortingOrder, generateId } from '@hcengineering/core'
   import { Card, MessageBox, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { DropdownLabelsIntl, EditBox, FocusHandler, createFocusManager, showPopup } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
 

@@ -1,6 +1,5 @@
 import board, { type Board, type CommonBoardPreference } from '@hcengineering/board'
 import core, { getCurrentAccount, type Ref, type TxOperations } from '@hcengineering/core'
-import preference from '@hcengineering/preference'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import type { ProjectType } from '@hcengineering/task'
 import {
@@ -55,7 +54,7 @@ export const commonBoardPreference = readable<CommonBoardPreference>(undefined, 
       set(result[0])
       return
     }
-    void getClient().createDoc(board.class.CommonBoardPreference, preference.space.Preference, {
+    void getClient().createDoc(board.class.CommonBoardPreference, core.space.Workspace, {
       attachedTo: board.app.Board
     })
   })

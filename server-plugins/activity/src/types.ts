@@ -11,7 +11,6 @@ export interface ActivityControl {
   hierarchy: Hierarchy
   txFactory: TxFactory
   modelDb: ModelDb
-
   storageAdapter: StorageAdapter
   workspace: WorkspaceId
 }

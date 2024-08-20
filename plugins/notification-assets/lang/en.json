@@ -48,6 +48,15 @@
     "Push": "Push",
     "Unreads": "Unreads",
     "EnablePush": "Enable push notifications",
-    "NotificationBlockedInBrowser": "Notifications are blocked in your browser. Please enable notifications in your browser settings"
+    "NotificationBlockedInBrowser": "Notifications are blocked in your browser. Please enable notifications in your browser settings",
+    "General": "General",
+    "InboxNotificationsDescription": "Receive personal notifications in your Huly inbox.",
+    "PushNotificationsDescription": "Receive personal notifications on desktop.",
+    "CommonNotificationCollectionAdded":  "{senderName} added {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} removed {collection}",
+    "Sound": "Sound",
+    "SoundNotificationsDescription": "Receive sound notifications for events.",
+    "NoAccessToObject": "You no longer have access to this object",
+    "ViewIn": "View in {app}"
   }
 }

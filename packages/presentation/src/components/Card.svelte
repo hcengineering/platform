@@ -41,6 +41,7 @@
   export let numberOfBlocks: number = 0
   export let thinHeader: boolean = false
   export let accentHeader: boolean = false
+  export let headerNoPadding: boolean = false
   export let hideSubheader: boolean = false
   export let hideContent: boolean = false
   export let hideAttachments: boolean = false
@@ -108,6 +109,7 @@
     class="antiCard-header"
     class:withSub={$$slots.subheader && !hideSubheader}
     class:thinHeader
+    class:noPadding={headerNoPadding}
     class:border-bottom-popup-divider={headerDivide}
   >
     <div class="antiCard-header__title-wrap">

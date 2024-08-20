@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   generateId,
+  getCurrentAccount,
   type Class,
   type Client,
   type DocumentQuery,
@@ -24,7 +25,6 @@ import {
 } from '@hcengineering/core'
 import { type Document, type Teamspace } from '@hcengineering/document'
 import { type Resources } from '@hcengineering/platform'
-import preference from '@hcengineering/preference'
 import { getClient, type ObjectSearchResult } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
@@ -45,7 +45,15 @@ import TeamspaceSpacePresenter from './components/navigator/TeamspaceSpacePresen
 import CreateTeamspace from './components/teamspace/CreateTeamspace.svelte'
 
 import document from './plugin'
-import { createEmptyDocument, documentTitleProvider, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
+import {
+  createEmptyDocument,
+  documentTitleProvider,
+  getDocumentLink,
+  getDocumentLinkId,
+  getDocumentUrl,
+  parseDocumentId,
+  resolveLocation
+} from './utils'
 
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
@@ -108,7 +116,7 @@ async function editTeamspace (teamspace: Teamspace | undefined): Promise<void> {
 export async function starDocument (doc: Document): Promise<void> {
   const client = getClient()
 
-  await client.createDoc(document.class.SavedDocument, preference.space.Preference, {
+  await client.createDoc(document.class.SavedDocument, core.space.Workspace, {
     attachedTo: doc._id
   })
 }
@@ -120,6 +128,35 @@ export async function unstarDocument (doc: Document): Promise<void> {
   if (current !== undefined) {
     await client.remove(current)
   }
+}
+
+export async function lockContent (doc: Document | Document[]): Promise<void> {
+  const client = getClient()
+  const me = getCurrentAccount()
+
+  const arr = Array.isArray(doc) ? doc : [doc]
+  for (const doc of arr) {
+    await client.diffUpdate(doc, { lockedBy: me._id })
+  }
+}
+
+export async function unlockContent (doc: Document | Document[]): Promise<void> {
+  const client = getClient()
+
+  const arr = Array.isArray(doc) ? doc : [doc]
+  for (const doc of arr) {
+    await client.diffUpdate(doc, { lockedBy: null })
+  }
+}
+
+export async function canLockDocument (doc: Document | Document[]): Promise<boolean> {
+  const arr = Array.isArray(doc) ? doc : [doc]
+  return arr.some((p) => p.lockedBy == null)
+}
+
+export async function canUnlockDocument (doc: Document | Document[]): Promise<boolean> {
+  const arr = Array.isArray(doc) ? doc : [doc]
+  return arr.some((p) => p.lockedBy != null)
 }
 
 export default async (): Promise<Resources> => ({
@@ -148,12 +185,18 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateChildDocument: createChildDocument,
     CreateDocument: createDocument,
-    EditTeamspace: editTeamspace
+    EditTeamspace: editTeamspace,
+    LockContent: lockContent,
+    UnlockContent: unlockContent
   },
   function: {
     GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
-    DocumentTitleProvider: documentTitleProvider
+    DocumentTitleProvider: documentTitleProvider,
+    CanLockDocument: canLockDocument,
+    CanUnlockDocument: canUnlockDocument,
+    GetDocumentLinkId: getDocumentLinkId,
+    ParseDocumentId: parseDocumentId
   },
   resolver: {
     Location: resolveLocation

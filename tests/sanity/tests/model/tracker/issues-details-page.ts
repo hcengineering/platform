@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 import { Issue, NewIssue } from './types'
+import { convertEstimation } from '../../tracker/tracker.utils'
 
 export class IssuesDetailsPage extends CommonTrackerPage {
   readonly page: Page
@@ -10,8 +11,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.page = page
   }
 
+  readonly issueTitle = (): Locator => this.page.locator('div.hulyHeader-container div.title')
   readonly inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
   readonly inputDescription = (): Locator => this.page.locator('div.popupPanel-body div.textInput div.tiptap')
+  readonly textIdentifier = (): Locator => this.page.locator('div.title.not-active')
   readonly buttonStatus = (): Locator => this.page.locator('//span[text()="Status"]/../button[1]//span')
   readonly buttonPriority = (): Locator => this.page.locator('//span[text()="Priority"]/../button[2]//span')
   readonly buttonAssignee = (): Locator => this.page.locator('(//span[text()="Assignee"]/../div/button)[2]')
@@ -137,10 +140,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
       await expect(this.buttonComponent()).toHaveText(data.component)
     }
     if (data.milestone != null) {
-      await expect(this.buttonMilestone()).toHaveText(data.milestone)
+      await expect(this.buttonMilestone()).toHaveText(data.milestone === 'No Milestone' ? 'Milestone' : data.milestone)
     }
     if (data.estimation != null) {
-      await expect(this.textEstimation()).toHaveText(data.estimation)
+      await expect(this.textEstimation()).toHaveText(convertEstimation(data.estimation))
     }
     if (data.parentIssue != null) {
       await expect(this.textParentTitle()).toHaveText(data.parentIssue)
@@ -166,7 +169,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async openSubIssueByName (issueName: string): Promise<void> {
-    await this.page.locator('div.main div.listGrid a', { hasText: issueName }).click()
+    await this.page.locator('div.listGrid a', { hasText: issueName }).click()
   }
 
   async checkIssueContainsAttachment (fileName: string): Promise<void> {

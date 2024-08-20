@@ -13,9 +13,39 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { MeasureMetricsContext, metricsToString, newMetrics } from '@hcengineering/core'
 import { startCollaborator } from '@hcengineering/collaborator'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
+import { writeFile } from 'fs/promises'
+import { join } from 'path'
 
-const ctx = new MeasureMetricsContext('collaborator', {}, {}, newMetrics())
+configureAnalytics(process.env.SENTRY_DSN, {})
+Analytics.setTag('application', 'collaborator')
 
-void startCollaborator(ctx)
+const ctx = new MeasureMetricsContext(
+  'collaborator',
+  {},
+  {},
+  newMetrics(),
+  new SplitLogger('collaborator', {
+    root: join(process.cwd(), 'logs'),
+    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+  })
+)
+
+let oldMetricsValue = ''
+
+const intTimer = setInterval(() => {
+  const val = metricsToString(ctx.metrics, 'Collaborator', 140)
+  if (val !== oldMetricsValue) {
+    oldMetricsValue = val
+    void writeFile('metrics.txt', val).catch((err) => {
+      console.error(err)
+    })
+  }
+}, 30000)
+
+void startCollaborator(ctx, () => {
+  clearInterval(intTimer)
+})

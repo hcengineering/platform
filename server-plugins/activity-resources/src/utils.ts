@@ -1,9 +1,11 @@
 import {
   Account,
   AttachedDoc,
+  type Attribute,
   Class,
   CollaborativeDoc,
   collaborativeDocFromLastVersion,
+  Collection,
   Doc,
   Hierarchy,
   Markup,
@@ -25,6 +27,7 @@ import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcen
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
+import { translate } from '@hcengineering/platform'
 import { loadCollaborativeDoc } from '@hcengineering/collaboration'
 import { EmptyMarkup, yDocToMarkup } from '@hcengineering/text'
 
@@ -173,7 +176,10 @@ async function getCollaboratorsDiff (
     prevValue = hierarchy.as(prevDoc, notification.mixin.Collaborators).collaborators ?? []
   } else if (prevDoc !== undefined) {
     const mixin = hierarchy.classHierarchyMixin(prevDoc._class, notification.mixin.ClassCollaborators)
-    prevValue = mixin !== undefined ? await getDocCollaborators(prevDoc, mixin, control as TriggerControl) : []
+    prevValue =
+      mixin !== undefined
+        ? await getDocCollaborators((control as TriggerControl).ctx, prevDoc, mixin, control as TriggerControl)
+        : []
   }
 
   const added = value.filter((item) => !prevValue.includes(item)) as DocAttributeUpdates['added']
@@ -252,14 +258,12 @@ export async function getTxAttributesUpdates (
 
   const hierarchy = control.hierarchy
 
-  const filterSet = new Set<string>()
-  for (const c of controlRules ?? []) {
-    for (const f of c.skipFields ?? []) {
-      filterSet.add(f)
-    }
-  }
+  const allowedFields = new Set<string>(controlRules?.flatMap((it) => it.allowedFields ?? []) ?? [])
+  const skipFields = new Set<string>(controlRules?.flatMap((it) => it.skipFields ?? []) ?? [])
 
-  const keys = getAvailableAttributesKeys(tx, hierarchy).filter((it) => !filterSet.has(it))
+  const keys = getAvailableAttributesKeys(tx, hierarchy).filter(
+    (it) => !skipFields.has(it) && (allowedFields.size === 0 || allowedFields.has(it))
+  )
 
   if (keys.length === 0) {
     return []
@@ -270,14 +274,7 @@ export async function getTxAttributesUpdates (
   const isMixin = hierarchy.isDerived(tx._class, core.class.TxMixin)
   const mixin = isMixin ? (tx as TxMixin<Doc, Doc>).mixin : undefined
 
-  const { doc, prevDoc } = await getDocDiff(
-    control,
-    updateObject._class,
-    updateObject._id,
-    originTx._id,
-    mixin,
-    objectCache
-  )
+  let docDiff: { doc?: Doc, prevDoc?: Doc } | undefined
 
   for (const key of keys) {
     let attrValue = modifiedAttributes[key]
@@ -304,14 +301,26 @@ export async function getTxAttributesUpdates (
       continue
     }
 
-    if (Array.isArray(attrValue) && doc != null) {
-      const diff = await getAttributeDiff(control, doc, prevDoc, key, attrClass, isMixin)
+    if (
+      hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
+      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeMarkup) ||
+      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc) ||
+      mixin === notification.mixin.Collaborators
+    ) {
+      if (docDiff === undefined) {
+        docDiff = await getDocDiff(control, updateObject._class, updateObject._id, originTx._id, mixin, objectCache)
+      }
+    }
+
+    if (Array.isArray(attrValue) && docDiff?.doc !== undefined) {
+      const diff = await getAttributeDiff(control, docDiff.doc, docDiff.prevDoc, key, attrClass, isMixin)
       added.push(...diff.added)
       removed.push(...diff.removed)
       attrValue = []
     }
 
-    if (prevDoc !== undefined) {
+    if (docDiff?.prevDoc !== undefined) {
+      const { prevDoc } = docDiff
       const rawPrevValue = isMixin ? (hierarchy.as(prevDoc, attrClass) as any)[key] : (prevDoc as any)[key]
 
       if (Array.isArray(rawPrevValue)) {
@@ -361,6 +370,62 @@ function getHiddenAttrs (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Set<str
   )
 }
 
+export async function getAttrName (
+  attributeUpdates: DocAttributeUpdates,
+  objectClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy
+): Promise<string | undefined> {
+  const { attrKey, attrClass, isMixin } = attributeUpdates
+  let attrObjectClass = objectClass
+
+  try {
+    if (isMixin) {
+      const keyedAttribute = [...hierarchy.getAllAttributes(attrClass).entries()]
+        .filter(([, value]) => value.hidden !== true)
+        .map(([key, attr]) => ({ key, attr }))
+        .find(({ key }) => key === attrKey)
+      if (keyedAttribute === undefined) {
+        return undefined
+      }
+      attrObjectClass = keyedAttribute.attr.attributeOf
+    }
+
+    const attribute = hierarchy.getAttribute(attrObjectClass, attrKey)
+
+    const label = attribute.shortLabel ?? attribute.label
+
+    if (label === undefined) {
+      return undefined
+    }
+
+    return await translate(label, {})
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
+}
+
+export function getCollectionAttribute (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>,
+  collection?: string
+): Attribute<Collection<AttachedDoc>> | undefined {
+  if (collection === undefined) {
+    return undefined
+  }
+
+  const descendants = hierarchy.getDescendants(objectClass)
+
+  for (const descendant of descendants) {
+    const collectionAttribute = hierarchy.findAttribute(descendant, collection)
+    if (collectionAttribute !== undefined) {
+      return collectionAttribute
+    }
+  }
+
+  return undefined
+}
+
 async function getMarkup (
   ctx: MeasureContext,
   storage: StorageAdapter,
@@ -368,6 +433,7 @@ async function getMarkup (
   value: CollaborativeDoc,
   field: string
 ): Promise<Markup> {
+  if (value === undefined) return EmptyMarkup
   value = collaborativeDocFromLastVersion(value)
   const ydoc = await loadCollaborativeDoc(storage, workspace, value, ctx)
   return ydoc !== undefined ? yDocToMarkup(ydoc, field) : EmptyMarkup

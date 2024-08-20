@@ -35,7 +35,7 @@ export interface FullTextPipeline {
   model: ModelDb
   update: (
     docId: Ref<DocIndexState>,
-    mark: boolean | string,
+    mark: boolean,
     update: DocumentUpdate<DocIndexState>,
     flush?: boolean
   ) => Promise<void>
@@ -75,9 +75,6 @@ export interface FullTextPipelineStage {
   updateFields: DocUpdateHandler[]
 
   enabled: boolean
-
-  stageValue: boolean | string
-
   initialize: (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline) => Promise<void>
 
   // Collect all changes related to bulk of document states
@@ -107,4 +104,19 @@ export const fieldStateId = 'fld-v15'
 /**
  * @public
  */
-export const fullTextPushStageId = 'fts-v16'
+export const fullTextPushStageId = 'fts-v17'
+
+/**
+ * @public
+ */
+export const summaryStageId = 'sum-v5'
+
+/**
+ * @public
+ */
+export const collabStageId = 'collab-v1'
+
+/**
+ * @public
+ */
+export const fullTextPushStagePrefix = 'fts-'

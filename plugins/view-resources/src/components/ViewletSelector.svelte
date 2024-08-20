@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { activeViewlet, makeViewletKey, setActiveViewletId } from '../utils'
-  import { TabList, resolvedLocationStore } from '@hcengineering/ui'
+  import { resolvedLocationStore, Switcher } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import core, { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   export let viewlet: WithLookup<Viewlet> | undefined
@@ -69,6 +69,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: viewlet._id
       },
       (res) => {
@@ -85,10 +86,11 @@
 </script>
 
 {#if viewlets?.length > 1 && !hidden}
-  <TabList
+  <Switcher
+    name={'viewletSelector'}
     items={viewslist}
-    multiselect={false}
     selected={viewlet?._id}
+    kind={'subtle'}
     on:select={(result) => {
       if (result.detail !== undefined) {
         if (viewlet?._id === result.detail.id) {

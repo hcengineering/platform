@@ -36,7 +36,7 @@
   $: threadId = context ? undefined : (_id as Ref<ActivityMessage>)
 
   $: context &&
-    objectQuery.query(context.attachedToClass, { _id: context.attachedTo }, (res) => {
+    objectQuery.query(context.objectClass, { _id: context.objectId }, (res) => {
       ;[object] = res
     })
 </script>
@@ -44,5 +44,5 @@
 {#if threadId}
   <ThreadView _id={threadId} on:close />
 {:else if object}
-  <ChannelView {object} {context} allowClose embedded on:close />
+  <ChannelView {object} {context} embedded on:close />
 {/if}

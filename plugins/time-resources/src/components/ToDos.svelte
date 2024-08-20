@@ -21,7 +21,16 @@
   import type { TagElement } from '@hcengineering/tags'
   import type { Project } from '@hcengineering/tracker'
   import type { ToDosMode } from '..'
-  import { Scroller, areDatesEqual, todosSP, defaultSP, Header, ButtonIcon, Label } from '@hcengineering/ui'
+  import {
+    Scroller,
+    areDatesEqual,
+    todosSP,
+    defaultSP,
+    Header,
+    ButtonIcon,
+    Label,
+    deviceOptionsStore as deviceInfo
+  } from '@hcengineering/ui'
   import { getCurrentAccount, toIdMap, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import tracker from '@hcengineering/tracker'
@@ -32,13 +41,11 @@
   import ToDoGroup from './ToDoGroup.svelte'
   import MenuClose from './icons/MenuClose.svelte'
   import MenuOpen from './icons/MenuOpen.svelte'
-  import IconDiff from './icons/Diff.svelte'
   import time from '../plugin'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElement> | undefined
   export let currentDate: Date
-  export let visibleNav: boolean = true
 
   const acc = getCurrentAccount() as PersonAccount
   const user = acc.person
@@ -59,7 +66,7 @@
   $: updateTags(mode, tag)
 
   function togglePlannerNav (): void {
-    visibleNav = !visibleNav
+    $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
   }
 
   function updateTags (mode: ToDosMode, tag: Ref<TagElement> | undefined): void {
@@ -102,7 +109,7 @@
         doneOn: null,
         workslots: { $gt: 0 }
       }
-    } else if (mode === 'all') {
+    } else if (mode === 'all' || mode === 'date') {
       inboxQ = {
         doneOn: null,
         workslots: 0,
@@ -274,19 +281,24 @@
   const getDateStr = (date: Date): string => {
     return date.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })
   }
+  $: filteredGroups = groups.filter(
+    (gr) =>
+      (mode === 'unplanned' && gr[0] === time.string.Unplanned) ||
+      (mode === 'planned' && (gr[0] === time.string.ToDos || gr[0] === time.string.Scheduled)) ||
+      (mode !== 'unplanned' && mode !== 'planned')
+  )
 </script>
 
 <div class="toDos-container">
-  <Header type={'type-panel'} hideSeparator>
+  <Header type={'type-panel'} hideSeparator adaptive={'disabled'}>
     <ButtonIcon
-      icon={visibleNav ? MenuClose : MenuOpen}
+      icon={$deviceInfo.navigator.visible ? MenuClose : MenuOpen}
       kind={'tertiary'}
       size={'small'}
-      pressed={!visibleNav}
+      pressed={!$deviceInfo.navigator.visible}
       on:click={togglePlannerNav}
     />
     <div class="heading-bold-20 ml-4">
-      <Label label={time.string.ToDoColon} />
       {#if mode === 'date'}
         {getDateStr(currentDate)}
       {:else}
@@ -304,12 +316,12 @@
   </Header>
   <CreateToDo fullSize />
 
-  <Scroller fade={groups.length > 1 ? todosSP : defaultSP} noStretch>
-    {#each groups as group}
+  <Scroller fade={filteredGroups.length > 1 ? todosSP : defaultSP} noStretch>
+    {#each filteredGroups as group}
       <ToDoGroup
         todos={group[1]}
         title={group[0]}
-        showTitle={groups.length > 1}
+        showTitle
         showDuration={group[0] !== time.string.Unplanned}
         {mode}
         {projects}

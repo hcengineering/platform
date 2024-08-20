@@ -16,7 +16,7 @@
   import calendar from '@hcengineering/calendar'
   import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import {
+  import core, {
     Account,
     Class,
     Client,
@@ -30,15 +30,18 @@
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
-  import type { Applicant, Candidate, Review } from '@hcengineering/recruit'
+  import { Applicant, Candidate, RecruitEvents, Review } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
-  import { EmptyMarkup, StyledTextArea } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectSearchBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../../plugin'
   import IconCompany from '../icons/Company.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getCandidateIdentifier } from '../../utils'
 
   // export let space: Ref<Project>
   export let candidate: Ref<Person>
@@ -68,7 +71,7 @@
     attachedTo: candidate,
     attachedToClass: recruit.mixin.Candidate,
     _class: recruit.class.Review,
-    space: recruit.space.Reviews,
+    space: core.space.Workspace,
     _id: generateId(),
     collection: 'reviews',
     modifiedOn: Date.now(),
@@ -116,21 +119,31 @@
       )
     }
 
-    await client.addCollection(recruit.class.Review, doc.space, doc.attachedTo, doc.attachedToClass, 'reviews', {
-      number: (incResult as any).object.sequence,
-      date: startDate ?? 0,
-      dueDate: dueDate ?? 0,
-      description,
-      verdict: '',
-      title,
-      participants: doc.participants,
-      company,
-      application,
-      location,
-      access: 'reader',
-      allDay: false,
-      eventId: ''
-    })
+    const ref = await client.addCollection(
+      recruit.class.Review,
+      doc.space,
+      doc.attachedTo,
+      doc.attachedToClass,
+      'reviews',
+      {
+        number: (incResult as any).object.sequence,
+        date: startDate ?? 0,
+        dueDate: dueDate ?? 0,
+        description,
+        verdict: '',
+        title,
+        participants: doc.participants,
+        company,
+        application,
+        location,
+        access: 'reader',
+        allDay: false,
+        eventId: '',
+        calendar: undefined
+      }
+    )
+
+    Analytics.handleEvent(RecruitEvents.ReviewCreated, { id: ref })
   }
 
   async function invokeValidate (

@@ -1,0 +1,41 @@
+{
+  "string": {
+    "Create": "创建",
+    "Cancel": "取消",
+    "Ok": "确定",
+    "Save": "保存",
+    "Saved": "已保存...",
+    "Download": "下载",
+    "Delete": "删除",
+    "Close": "关闭",
+    "NotSelected": "未选择",
+    "Deselect": "取消选择",
+    "Archived": "(已归档)",
+    "AddSocialLinks": "添加社交链接",
+    "EditSocialLinks": "编辑社交链接",
+    "Change": "更改",
+    "Remove": "移除",
+    "Search": "搜索...",
+    "Spaces": "空间",
+    "NumberSpaces": "{count, plural, =0 {在} =1 {在 1 个空间} other {在 # 个空间}}",
+    "InThis": "在这个 {space}",
+    "NoMatchesInThis": "在这个 {space} 中未找到匹配项",
+    "NoMatchesFound": "未找到匹配项",
+    "NotInThis": "不在这个 {space}",
+    "Match": "匹配",
+    "Add": "添加",
+    "Edit": "编辑",
+    "DocumentPreview": "预览",
+    "MakePrivate": "设为私有",
+    "MakePrivateDescription": "只有成员可以查看",
+    "Created": "已创建",
+    "NoResults": "没有可显示结果",
+    "Next": "下一步",
+    "FailedToPreview": "预览失败",
+    "ContentType": "内容类型",
+    "ContentTypeNotSupported": "此內容類型無法預覽"
+  },
+  "status": {
+    "FileTooLarge": "文件太大"
+  }
+}

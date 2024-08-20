@@ -569,7 +569,8 @@ export function createModel (builder: Builder): void {
       {
         id: 'properties',
         label: setting.string.Properties,
-        component: setting.component.SpaceTypePropertiesSectionEditor
+        component: setting.component.SpaceTypePropertiesSectionEditor,
+        withoutContainer: true
       },
       {
         id: 'roles',

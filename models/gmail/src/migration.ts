@@ -13,29 +13,49 @@
 // limitations under the License.
 //
 
+import core, { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { gmailId } from '@hcengineering/gmail'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
+import { DOMAIN_GMAIL } from '.'
+import notification from '@hcengineering/notification'
+import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
+
 import gmail from './plugin'
 
+async function migrateSettings (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_PREFERENCE,
+    {
+      _class: 'notification:class:NotificationSetting' as Ref<Class<Doc>>,
+      attachedTo: 'notification:providers:EmailNotification' as Ref<Doc>
+    },
+    {
+      _class: notification.class.NotificationTypeSetting,
+      attachedTo: gmail.providers.EmailNotificationProvider
+    }
+  )
+}
+
 export const gmailOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, gmailId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, gmailId, [
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, gmail.space.Gmail, {
-            name: 'Gmail',
-            description: 'Space for all gmail messages'
-          })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'gmail:space:Gmail' as Ref<Space>, core.space.Workspace, [DOMAIN_GMAIL])
         }
+      },
+      {
+        state: 'migrate-setting',
+        func: migrateSettings
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

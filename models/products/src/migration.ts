@@ -13,72 +13,9 @@
 // limitations under the License.
 //
 
-import { type Employee } from '@hcengineering/contact'
-import { type Ref, DOMAIN_TX } from '@hcengineering/core'
 import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { type Product } from '@hcengineering/products'
-
-import products from './plugin'
-
-async function migrateProductSpacesMixins (client: MigrationClient): Promise<void> {
-  const oldSpaceTypeMixin = `${products.spaceType.ProductType}:type:mixin`
-  const newSpaceTypeMixin = products.mixin.ProductTypeData
-
-  await client.update(
-    DOMAIN_TX,
-    {
-      objectClass: core.class.Attribute,
-      'attributes.attributeOf': oldSpaceTypeMixin
-    },
-    {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
-    }
-  )
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _class: products.class.Product,
-      [oldSpaceTypeMixin]: { $exists: true }
-    },
-    {
-      $rename: {
-        [oldSpaceTypeMixin]: newSpaceTypeMixin
-      }
-    }
-  )
-}
-
-async function migrateProductOwner (client: MigrationClient): Promise<void> {
-  type ExProduct = Product & { owner: Ref<Employee> }
-
-  const docs = await client.find<ExProduct>(DOMAIN_SPACE, { _class: products.class.Product, owner: { $exists: true } })
-  for (const doc of docs) {
-    if (doc.owner == null) continue
-    const currentOwners = doc.owners ?? []
-    const currenMembers = doc.members ?? []
-
-    const owners = Array.from(new Set(...currentOwners, doc.owner))
-    const members = Array.from(new Set(...currenMembers, ...owners))
-
-    await client.update(
-      DOMAIN_SPACE,
-      { _id: doc._id },
-      {
-        $set: { owners, members },
-        $unset: { owner: undefined }
-      }
-    )
-  }
-}
 
 export const productsOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await migrateProductSpacesMixins(client)
-    await migrateProductOwner(client)
-  },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async migrate (client: MigrationClient): Promise<void> {},
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

@@ -25,6 +25,7 @@
   --primary-button-hovered: #3575DE;
   --primary-button-pressed: #1C52AB;
   --primary-button-focused: #205DC2;
+  --secondary-button-color: rgba(0, 0, 0, .8);
   --secondary-button-default: #D3E1F8;
   --secondary-button-hovered: #BDD2F5;
   --secondary-button-pressed: #A7C3F1;
@@ -75,7 +76,8 @@
 
   --text-editor-highlighted-node-delete-background-color: #F6DCDA;
   --text-editor-highlighted-node-delete-font-color: #54201C;
-
+  
+  --text-editor-inline-code-color: #B02B46;
   --text-editor-table-marker-color: #bebebf;
 
   --theme-clockface-sec-arrow: conic-gradient(at 50% -10px, rgba(255, 0, 0, 0), rgba(255, 0, 0, 0) 49%, #F47758 50%, rgba(255, 0, 0, 0) 51%, rgba(255, 0, 0, 0) 100%);

@@ -25,11 +25,6 @@ export const clientId = 'client' as Plugin
 /**
  * @public
  */
-export type ClientHook = (client: AccountClient) => Promise<AccountClient>
-
-/**
- * @public
- */
 export type ClientSocketFactory = (url: string) => ClientSocket
 
 /**
@@ -60,21 +55,21 @@ export enum ClientSocketReadyState {
   CLOSED = 3
 }
 
+export interface ClientFactoryOptions {
+  onUpgrade?: () => void
+  onUnauthorized?: () => void
+  onConnect?: (event: ClientConnectEvent, data: any) => void
+  ctx?: MeasureContext
+  onDialTimeout?: () => void | Promise<void>
+}
+
 /**
  * @public
  */
-export type ClientFactory = (
-  token: string,
-  endpoint: string,
-  onUpgrade?: () => void,
-  onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent, data: any) => void,
-  ctx?: MeasureContext
-) => Promise<AccountClient>
+export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactoryOptions) => Promise<AccountClient>
 
 export default plugin(clientId, {
   metadata: {
-    ClientHook: '' as Metadata<Resource<ClientHook>>,
     ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
     FilterModel: '' as Metadata<boolean>,
     ExtraPlugins: '' as Metadata<Plugin[]>,

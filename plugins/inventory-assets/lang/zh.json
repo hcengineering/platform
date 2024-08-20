@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "要求类别",
+    "NameRequired": "要求名称"
+  },
+  "string": {
+    "Categories": "类别",
+    "Category": "类别",
+    "CategoryCreateLabel": "类别",
+    "CreateCategory": "创建类别",
+    "CreateSubcategory": "创建子类别",
+    "Inventory": "库存",
+    "ProductCreateLabel": "产品",
+    "CreateProduct": "创建产品",
+    "Products": "产品",
+    "Product": "产品",
+    "Variant": "变种",
+    "SKU": "SKU",
+    "Variants": "变种",
+    "NoVariantsForProduct": "此产品没有变种。",
+    "CreateVariant": "创建变种",
+    "ConfigLabel": "库存",
+    "ConfigDescription": "用于管理扩展的扩展"
+  }
+}

@@ -126,7 +126,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createOrUpdate(
     tx,
     tags.class.TagCategory,
-    tags.space.Tags,
+    core.space.Workspace,
     {
       icon: tags.icon.Tags,
       label: 'Other',
@@ -426,12 +426,12 @@ export const trackerOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await tryUpgrade(client, trackerId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, trackerId, [
       {
         state: 'create-defaults',
-        func: async () => {
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
       }

@@ -19,9 +19,10 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { closePopup, showPopup } from '@hcengineering/ui'
   import { deleteObjects } from '@hcengineering/view-resources'
-  import { ToDo, WorkSlot } from '@hcengineering/time'
+  import { TimeEvents, ToDo, WorkSlot } from '@hcengineering/time'
   import time from '../plugin'
   import Workslots from './Workslots.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let todo: ToDo
 
@@ -55,7 +56,12 @@
     const now = Date.now()
     const date = Math.ceil(now / (30 * 60 * 1000)) * (30 * 60 * 1000)
     const currentUser = getCurrentAccount() as PersonAccount
-    const _calendar = `${currentUser._id}_calendar` as Ref<Calendar>
+    const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
+      createdBy: currentUser._id,
+      hidden: false,
+      default: true
+    })
+    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, todo._id, todo._class, 'workslots', {
       eventId: generateEventId(),
@@ -70,6 +76,7 @@
       visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: []
     })
+    Analytics.handleEvent(TimeEvents.ToDoScheduled, { id: todo._id })
   }
 
   async function remove (e: CustomEvent<{ _id: Ref<WorkSlot> }>): Promise<void> {

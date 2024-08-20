@@ -52,7 +52,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
-import time from '@hcengineering/time'
+import time, { type ToDo, type Todoable } from '@hcengineering/time'
 import document from './plugin'
 
 export { documentId } from '@hcengineering/document'
@@ -71,7 +71,7 @@ export class TDocumentEmbedding extends TAttachment implements DocumentEmbedding
 
 @Model(document.class.Document, core.class.AttachedDoc, DOMAIN_DOCUMENT)
 @UX(document.string.Document, document.icon.Document, undefined, 'name', undefined, document.string.Documents)
-export class TDocument extends TAttachedDoc implements Document {
+export class TDocument extends TAttachedDoc implements Document, Todoable {
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
   declare attachedTo: Ref<Document>
 
@@ -93,8 +93,11 @@ export class TDocument extends TAttachedDoc implements Document {
     name!: string
 
   @Prop(TypeCollaborativeDoc(), document.string.Document)
-  @Hidden()
     content!: CollaborativeDoc
+
+  @Prop(TypeRef(core.class.Account), document.string.LockedBy)
+  @Hidden()
+    lockedBy?: Ref<Account>
 
   @Prop(Collection(document.class.Document), document.string.ChildDocument)
     children!: CollectionSize<Document>
@@ -124,6 +127,9 @@ export class TDocument extends TAttachedDoc implements Document {
   @Hidden()
   @Index(IndexKind.FullText)
     color?: number
+
+  @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
+    todos?: CollectionSize<ToDo>
 }
 
 @Model(document.class.DocumentSnapshot, core.class.AttachedDoc, DOMAIN_DOCUMENT)
@@ -298,6 +304,11 @@ function defineDocument (builder: Builder): void {
     encode: document.function.GetObjectLinkFragment
   })
 
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: document.function.GetDocumentLinkId,
+    decode: document.function.ParseDocumentId
+  })
+
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectIcon, {
     component: document.component.DocumentIcon
   })
@@ -373,6 +384,44 @@ function defineDocument (builder: Builder): void {
     document.action.CopyDocumentLink
   )
 
+  createAction(
+    builder,
+    {
+      action: document.actionImpl.LockContent,
+      label: document.string.Lock,
+      icon: document.icon.Lock,
+      input: 'focus',
+      category: document.category.Document,
+      target: document.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        application: document.app.Documents,
+        group: 'copy'
+      },
+      visibilityTester: document.function.CanLockDocument
+    },
+    document.action.LockContent
+  )
+
+  createAction(
+    builder,
+    {
+      action: document.actionImpl.UnlockContent,
+      label: document.string.Unlock,
+      icon: document.icon.Unlock,
+      input: 'focus',
+      category: document.category.Document,
+      target: document.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        application: document.app.Documents,
+        group: 'copy'
+      },
+      visibilityTester: document.function.CanUnlockDocument
+    },
+    document.action.UnlockContent
+  )
+
   // Notifications
 
   builder.mixin(document.class.Document, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -412,13 +461,21 @@ function defineDocument (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     document.ids.ContentNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [document.ids.ContentNotification]
+  })
 
   generateClassNotificationTypes(
     builder,
@@ -476,6 +533,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: document.class.Teamspace,
+              icon: view.icon.List,
               label: document.string.Teamspaces
             },
             position: 'top'

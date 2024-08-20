@@ -20,9 +20,11 @@ import {
   type AvatarInfo,
   type Channel,
   type Contact,
-  type Person
+  type Person,
+  type PersonAccount
 } from '@hcengineering/contact'
 import {
+  DocManager,
   type Class,
   type Client,
   type Data,
@@ -47,6 +49,7 @@ import {
   type ColorDefinition,
   type TooltipAlignment
 } from '@hcengineering/ui'
+import { AggregationManager } from '@hcengineering/view-resources'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
 import AssigneeBox from './components/AssigneeBox.svelte'
@@ -121,7 +124,7 @@ import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 
-import { get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -140,6 +143,7 @@ import {
   getCurrentEmployeeName,
   getCurrentEmployeePosition,
   getPersonTooltip,
+  grouppingPersonManager,
   resolveLocation
 } from './utils'
 
@@ -264,8 +268,8 @@ async function kickEmployee (doc: Person): Promise<void> {
   const client = getClient()
 
   const employee = client.getHierarchy().as(doc, contact.mixin.Employee)
-  const email = await client.findOne(contact.class.PersonAccount, { person: doc._id })
-  if (email === undefined) {
+  const accounts = client.getModel().getAccountByPersonId(doc._id)
+  if (accounts.length === 0) {
     await client.update(employee, { active: false })
   } else {
     showPopup(
@@ -278,9 +282,12 @@ async function kickEmployee (doc: Person): Promise<void> {
       (res?: boolean) => {
         if (res === true) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          getResource(login.function.LeaveWorkspace).then(async (f) => {
-            await f(email.email)
-          })
+          const p = getResource(login.function.LeaveWorkspace)
+          for (const i of accounts) {
+            void p.then(async (f) => {
+              await f(i.email)
+            })
+          }
         }
       }
     )
@@ -291,6 +298,16 @@ async function openChannelURL (doc: Channel): Promise<void> {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     window.open(url)
   }
+}
+
+function filterPerson (doc: PersonAccount, target: PersonAccount): boolean {
+  return doc.person === target.person && doc._id !== target._id
+}
+
+export const personStore = writable<DocManager<PersonAccount>>(new DocManager([]))
+
+function setStore (manager: DocManager<PersonAccount>): void {
+  personStore.set(manager)
 }
 
 export interface PersonLabelTooltip {
@@ -394,7 +411,7 @@ export default async (): Promise<Resources> => ({
           color: getPersonColor(person, name)
         }
       }
-      const blobRef = await getBlobRef(person.$lookup?.avatar, person.avatar, undefined, width)
+      const blobRef = await getBlobRef(person.avatar, undefined, width)
       return {
         url: blobRef.src,
         srcSet: blobRef.srcset,
@@ -431,9 +448,16 @@ export default async (): Promise<Resources> => ({
     ContactTitleProvider: contactTitleProvider,
     PersonTooltipProvider: getPersonTooltip,
     ChannelTitleProvider: channelTitleProvider,
-    ChannelIdentifierProvider: channelIdentifierProvider
+    ChannelIdentifierProvider: channelIdentifierProvider,
+    SetPersonStore: setStore,
+    PersonFilterFunction: filterPerson
   },
   resolver: {
     Location: resolveLocation
+  },
+  aggregation: {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    CreatePersonAggregationManager: AggregationManager.create,
+    GrouppingPersonManager: grouppingPersonManager
   }
 })

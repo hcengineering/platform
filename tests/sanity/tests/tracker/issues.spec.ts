@@ -46,11 +46,7 @@ test.describe('Tracker issue tests', () => {
     }
 
     await prepareNewIssueWithOpenStep(page, newIssue)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
   })
 
   test('Edit an issue', async ({ page }) => {
@@ -74,34 +70,19 @@ test.describe('Tracker issue tests', () => {
 
     await issuesDetailsPage.checkIssue({
       ...newIssue,
-      ...editIssue,
-      estimation: '1d'
+      ...editIssue
     })
 
-    const estimations = new Map([
-      ['0', '0h'],
-      ['1', '1h'],
-      ['1.25', '1h 15m'],
-      ['1.259', '1h 15m'],
-      ['1.26', '1h 15m'],
-      ['1.27', '1h 16m'],
-      ['1.5', '1h 30m'],
-      ['1.75', '1h 45m'],
-      ['2', '2h'],
-      ['7', '7h'],
-      ['8', '1d'],
-      ['9', '1d 1h'],
-      ['9.5', '1d 1h 30m']
-    ])
+    const estimations = ['0', '1', '1.25', '1.259', '1.26', '1.27', '1.5', '1.75', '2', '7', '8', '9', '9.5']
 
-    for (const [input, expected] of estimations.entries()) {
+    for (const input of estimations) {
       await issuesDetailsPage.editIssue({
         estimation: input
       })
       await issuesDetailsPage.checkIssue({
         ...newIssue,
         ...editIssue,
-        estimation: expected
+        estimation: input
       })
     }
   })
@@ -222,7 +203,7 @@ test.describe('Tracker issue tests', () => {
       title: `New Issue-${generateId(4)}`,
       description: 'New Issue',
       priority: 'Medium',
-      estimation: '1d',
+      estimation: '8',
       component: 'Default component',
       milestone: 'Edit Milestone'
     }
@@ -289,13 +270,16 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
     await issuesDetailsPage.addComment(commentInside)
     await issuesDetailsPage.checkCommentExist(commentInside)
-    await trackerNavigationMenuPage.openIssuesForProject('Default')
+    await issuesPage.linkSidebarAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '1')
     await issuesPage.openCommentPopupForIssueByName(commentIssue.title)
     await issueCommentPopup.addCommentInPopup(commentPopup, 'cat2.jpeg')
     await issueCommentPopup.checkCommentWithImageExist('left a comment', 'cat2.jpeg')
     await issueCommentPopup.checkCommentExist(commentPopup)
+    await page.locator('.modal-overlay').hover({ position: { x: 10, y: 10 } })
+    await page.locator('.modal-overlay').click({ position: { x: 10, y: 10 } })
     await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '2')

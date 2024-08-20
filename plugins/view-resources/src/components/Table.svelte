@@ -154,9 +154,30 @@
     query,
     (result) => {
       total = result.total
+      if (totalQuery === undefined) {
+        gtotal = total
+      }
     },
     { limit: 1, ...options, sort: getSort(_sortKey), lookup, total: true }
   )
+
+  const totalQueryQ = createQuery()
+  $: if (totalQuery !== undefined) {
+    totalQueryQ.query(
+      _class,
+      totalQuery,
+      (result) => {
+        gtotal = result.total === -1 ? 0 : result.total
+      },
+      {
+        lookup,
+        limit: 1,
+        total: true
+      }
+    )
+  } else {
+    gtotal = total
+  }
 
   const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
@@ -257,20 +278,6 @@
   }
 
   let width: number
-
-  const totalQueryQ = createQuery()
-  $: totalQueryQ.query(
-    _class,
-    totalQuery ?? query ?? {},
-    (result) => {
-      gtotal = result.total === -1 ? 0 : result.total
-    },
-    {
-      lookup,
-      limit: 1,
-      total: true
-    }
-  )
 
   let isBuildingModel = true
   let model: AttributeModel[] | undefined
@@ -430,7 +437,7 @@
                       this={attribute.presenter}
                       value={getValue(attribute, object)}
                       onChange={getOnChange(object, attribute)}
-                      {...joinProps(attribute, object, $restrictionStore.readonly)}
+                      {...joinProps(attribute, object, readonly || $restrictionStore.readonly)}
                     />
                   </div>
                 </td>

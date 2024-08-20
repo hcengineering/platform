@@ -1,7 +1,9 @@
 {
   "localhost:8083": {
+    "key": "huly",
     "title": "Platform",
-    "languages": "en,ru,pt,es",
+    "protocol": "http",
+    "languages": "en,ru,pt,es,zh,fr",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
     "defaultSpace": "tracker:project:DefaultProject",

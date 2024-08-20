@@ -98,7 +98,6 @@ FulltextStorage & {
     searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
       return { docs: [] }
     },
-    measure: async () => async () => ({ time: 0, serverTime: 0 }),
     sendForceClose: async () => {}
   }
 }

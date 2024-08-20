@@ -21,9 +21,6 @@
     "WorkItem": "Elemento de trabajo",
     "Inbox": "Bandeja de entrada",
     "All": "Todo",
-    "Days": "{days}d",
-    "Hours": "{hours}h",
-    "Minutes": "{minutes}m",
     "AddToDo": "Agregar tarea",
     "CreateToDo": "Agregar tarea, presiona Enter para guardar",
     "ToDos": "Tareas pendientes",
@@ -57,6 +54,11 @@
     "NewToDoDetails": "Nueva tarea pendiente: {details}",
     "MarkedAsDone": "Marcado como hecho",
     "WorkSchedule": "Horario de trabajo",
-    "SummaryDuration": "Sumerio"
+    "SummaryDuration": "Sumerio",
+
+    "UnassignToDo": "Eliminar tarea asignada",
+    "UnassignToDoConfirm": "¿Desea eliminar la tarea asignada? La tarea será removida del planificador del asignado.",
+    "ReassignToDo": "Cambiar asignado de la tarea",
+    "ReassignToDoConfirm": "¿Desea cambiar el asignado de la tarea? La tarea será removida del planificador actual del asignado."
   }
 }

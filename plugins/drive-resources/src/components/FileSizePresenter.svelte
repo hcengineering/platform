@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import filesize from 'filesize'
+  import { humanReadableFileSize } from '@hcengineering/ui'
 
   export let value: number | undefined
   export let accent: boolean = false
@@ -21,6 +21,6 @@
 
 {#if value}
   <span class="overflow-label select-text" class:fs-bold={accent}>
-    {value !== undefined ? filesize(value) : '-'}
+    {value !== undefined ? humanReadableFileSize(value) : '-'}
   </span>
 {/if}

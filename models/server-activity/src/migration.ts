@@ -30,7 +30,13 @@ import core, {
   type TxCollectionCUD,
   type TxCreateDoc
 } from '@hcengineering/core'
-import { tryMigrate, type MigrateOperation, type MigrationClient, type MigrationIterator } from '@hcengineering/model'
+import {
+  tryMigrate,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationIterator,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import {
   getAllObjectTransactions,
@@ -39,7 +45,6 @@ import {
   type DocObjectCache
 } from '@hcengineering/server-activity'
 import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
-import { type StorageAdapter } from '@hcengineering/server-core'
 
 function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
@@ -50,7 +55,7 @@ function getActivityControl (client: MigrationClient): ActivityControl {
     hierarchy: client.hierarchy,
     findAll: async (_class, query, options) =>
       toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options)),
-    storageAdapter: client.storageAdapter as StorageAdapter,
+    storageAdapter: client.storageAdapter,
     workspace: client.workspaceId
   }
 }
@@ -278,5 +283,5 @@ export const activityServerOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

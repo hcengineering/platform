@@ -15,21 +15,39 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import { IconSize } from '@hcengineering/ui'
+  import core, { AggregateValue, Ref } from '@hcengineering/core'
+  import { IconSize, Label } from '@hcengineering/ui'
   import { personAccountByIdStore } from '../utils'
   import PersonAccountPresenter from './PersonAccountPresenter.svelte'
+  import { personStore } from '..'
 
-  export let value: Ref<PersonAccount>
+  export let value: Ref<PersonAccount> | AggregateValue
   export let avatarSize: IconSize = 'x-small'
+  export let shouldShowAvatar: boolean = true
+  export let shouldShowName: boolean = true
   export let disabled: boolean = false
   export let inline: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
   export let compact = false
 
-  $: account = $personAccountByIdStore.get(value)
+  $: _value = $personStore.get(typeof value === 'string' ? value : (value?.values?.[0]?._id as Ref<PersonAccount>))
+  $: account = $personAccountByIdStore.get(_value?._id ?? (value as Ref<PersonAccount>))
 </script>
 
 {#if account}
-  <PersonAccountPresenter value={account} {disabled} {inline} {avatarSize} {accent} {compact} on:accent-color />
+  <PersonAccountPresenter
+    value={account}
+    {shouldShowAvatar}
+    {shouldShowName}
+    {disabled}
+    {inline}
+    {avatarSize}
+    {accent}
+    {noUnderline}
+    {compact}
+    on:accent-color
+  />
+{:else}
+  <Label label={core.string.System} />
 {/if}

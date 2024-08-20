@@ -35,10 +35,11 @@
     navigate,
     openPanel,
     defineSeparators,
-    setResolvedLocation
+    setResolvedLocation,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ListSelectionProvider, restrictionStore, updateFocus } from '@hcengineering/view-resources'
+  import { ListSelectionProvider, parseLinkId, restrictionStore, updateFocus } from '@hcengineering/view-resources'
   import workbench, { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { SpaceView, buildNavModel } from '@hcengineering/workbench-resources'
   import guest from '../plugin'
@@ -46,6 +47,7 @@
   import { workbenchGuestSeparators } from '..'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+  $deviceInfo.navigator.visible = false
 
   const client = getClient()
 
@@ -74,7 +76,7 @@
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
-    if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
+    if (loc.path[2] != null && loc.path[2].trim().length > 0) {
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         const resolver = await getResource(app.locationResolver)
@@ -179,7 +181,7 @@
 
     if (fragment !== currentFragment) {
       currentFragment = fragment
-      if (fragment !== undefined && fragment.trim().length > 0) {
+      if (fragment != null && fragment.trim().length > 0) {
         await setOpenPanelFocus(fragment)
       } else {
         closePanel()
@@ -187,11 +189,17 @@
     }
   }
 
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
   async function setOpenPanelFocus (fragment: string): Promise<void> {
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
-      const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      const id = props[1]
+      const _class = props[2] as Ref<Class<Doc>>
+      const _id = await parseLinkId(linkProviders, id, _class)
+
+      const doc = await client.findOne<Doc>(_class, { _id })
       if (doc !== undefined) {
         await checkAccess(doc)
         const provider = ListSelectionProvider.Find(doc._id)
@@ -201,8 +209,8 @@
         })
         openPanel(
           props[0] as AnyComponent,
-          props[1],
-          props[2],
+          _id,
+          _class,
           (props[3] ?? undefined) as PopupAlignment,
           (props[4] ?? undefined) as AnyComponent
         )
@@ -251,14 +259,15 @@
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
-    const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
+    const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return
 
     const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
     if (mixin === undefined) return
     const titleProvider = await getResource(mixin.titleProvider)
     try {
-      return await titleProvider(client, _id as Ref<Doc>)
+      const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
+      return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -277,22 +286,18 @@
       <div class="workbench-container inner">
         <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
           {#if currentApplication && currentApplication.component}
-            <Component is={currentApplication.component} props={{ currentSpace, visibleNav: false }} />
+            <Component is={currentApplication.component} props={{ currentSpace }} />
           {:else if specialComponent}
             <Component
               is={specialComponent.component}
               props={{
                 model: navigatorModel,
                 ...specialComponent.componentProps,
-                currentSpace,
-                visibleNav: false
+                currentSpace
               }}
             />
           {:else if currentView?.component !== undefined}
-            <Component
-              is={currentView.component}
-              props={{ ...currentView.componentProps, currentView, visibleNav: false }}
-            />
+            <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
           {:else}
             <SpaceView {currentSpace} {currentView} />
           {/if}

@@ -13,13 +13,10 @@
 // limitations under the License.
 //
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const Dotenv = require('dotenv-webpack')
-const DefinePlugin = require('webpack').DefinePlugin
 const path = require('path')
-const autoprefixer = require('autoprefixer')
 const CompressionPlugin = require('compression-webpack-plugin')
-const { resolve } = require('path')
+const DefinePlugin = require('webpack').DefinePlugin
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { Configuration } = require('webpack')
 
@@ -27,11 +24,16 @@ const mode = process.env.NODE_ENV || 'development'
 const prod = mode === 'production'
 const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
 const devProduction = (process.env.CLIENT_TYPE ?? '') === 'dev-production'
-const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const devProductionHuly = (process.env.CLIENT_TYPE ?? '') === 'dev-huly'
+const devProductionBold = (process.env.CLIENT_TYPE ?? '') === 'dev-bold'
+const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+
 const { EsbuildPlugin } = require('esbuild-loader')
 
 const doValidate = !prod || (process.env.DO_VALIDATE === 'true')
+
+const useCache = process.env.USE_CACHE === 'true'
 
 /**
  * @type {Configuration}
@@ -72,6 +74,11 @@ module.exports = [
     }
   },
   {
+  cache: useCache ? {
+    type: 'filesystem',
+    allowCollectingMemory: true,
+    cacheLocation: path.resolve(__dirname, '.build_dev'),
+  }: undefined,
   entry: {
     bundle: [
       '@hcengineering/theme/styles/global.scss',
@@ -105,13 +112,33 @@ module.exports = [
     publicPath: '/',
     pathinfo: false
   },
-  optimization: {
-    minimize: prod,
+  optimization: prod ? {
+    minimize: true,
     minimizer: [
-      new EsbuildPlugin({
-        target: 'es2021'  // Syntax to transpile to (see options below for possible values)
-      })
-    ]
+      new EsbuildPlugin({ target: 'es2021' })
+    ],
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
+  } : {
+    minimize: false,
+    mangleExports: false,
+    usedExports: false,
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
   },
   module: {
     rules: [
@@ -122,13 +149,14 @@ module.exports = [
           target: 'es2021',
           keepNames: true,
           minify: !prod,
-          sourcemap: !prod
+          sourcemap: true
         },
         exclude: /node_modules/,
       },
       {
         test: /\.svelte$/,
-        use: {
+        use: [        
+          {
           loader: 'svelte-loader',
           options: {
             compilerOptions: {
@@ -138,7 +166,7 @@ module.exports = [
             hotReload: !prod,
             preprocess: require('svelte-preprocess')({
               postcss: true,
-              sourceMap: !prod,
+              sourceMap: true,
             }),
             hotOptions: {
               // Prevent preserving local component state
@@ -167,9 +195,8 @@ module.exports = [
               acceptNamedExports: true,
             }
           }
-        }
+        }]
       },
-
       {
         test: /\.css$/,
         use: [
@@ -196,7 +223,7 @@ module.exports = [
         use: {
           loader: 'file-loader',
           options: {
-            name: 'fonts/[contenthash].[ext]',
+            name: 'fonts/[hash:base64:8].[ext]',
             esModule: false
           }
         }
@@ -207,6 +234,16 @@ module.exports = [
           loader: 'file-loader',
           options: {
             name: 'img/[contenthash].[ext]',
+            esModule: false
+          }
+        }
+      },
+      {
+        test: /\.(wav|ogg)$/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            'name': 'snd/[contenthash].[ext]',
             esModule: false
           }
         }
@@ -239,7 +276,6 @@ module.exports = [
   mode,
   plugins: [
     new HtmlWebpackPlugin({
-      // favicon: './public/favicon.ico',
       meta: {
         viewport: 'width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=1'
       }
@@ -261,10 +297,10 @@ module.exports = [
     // https://webpack.js.org/configuration/watch/#watchoptionsignored
     // don't use this pattern, if you have a monorepo with linked packages
     ignored: /node_modules/,
-    aggregateTimeout: 500,
-    poll: 1000
+    aggregateTimeout: 100,
+    poll: 250
   },
-  devtool: prod ? false : 'inline-source-map',
+  devtool: prod ? 'source-map' : 'eval-source-map', // 'inline-source-map',
   devServer: {
     static: {
       directory: path.resolve(__dirname, "public"),
@@ -275,13 +311,14 @@ module.exports = [
     historyApiFallback: {
       disableDotRule: true
     },
+    host: '0.0.0.0',
     hot: true,
     client: {
       logging: "info",
       overlay: true,
       progress: false,
     },
-    proxy: (devServer && !devProduction) ? {
+    proxy: (devServer && !devProduction && !devProductionHuly && !devProductionBold) ? {
       '/account': {
         target: 'http://localhost:3000',
         changeOrigin: true,
@@ -293,12 +330,23 @@ module.exports = [
         changeOrigin: true,
         logLevel: 'debug'
       },
+      '/api/v1': {
+        target: 'http://localhost:8087',
+        changeOrigin: true,
+        logLevel: 'debug'
+      },
       '/import': {
         target: 'http://localhost:8087',
         changeOrigin: true,
         logLevel: 'debug'
       },
-    } : {
+      '/rekoni/recognize': {
+        target: 'http://localhost:4004',
+        changeOrigin: true,
+        pathRewrite: { '^/rekoni/recognize': '/recognize' },
+        logLevel: 'debug'
+      }
+    } : !devProductionHuly && !devProductionBold ? {
       '/account': {
         target: 'https://account.hc.engineering/',
         changeOrigin: true,
@@ -309,6 +357,60 @@ module.exports = [
         target: 'https://front.hc.engineering/files',
         changeOrigin: true,
         pathRewrite: { '^/files': '' },
+        logLevel: 'debug'
+      },
+      '/rekoni/recognize': {
+        target: 'https://rekoni.hc.enigneering',
+        changeOrigin: true,
+        pathRewrite: { '^/rekoni/recognize': '/recognize' },
+        logLevel: 'debug'
+      }
+    }: !devProductionBold ? {
+      '/account': {
+        target: 'https://account.huly.app/',
+        changeOrigin: true,
+        pathRewrite: { '^/account': '' },
+        logLevel: 'debug'
+      },
+      '/api/v1': {
+        target: 'http://huly.app',
+        changeOrigin: true,
+        logLevel: 'debug'
+      },
+      '/files': {
+        target: 'https://huly.app/files',
+        changeOrigin: true,
+        pathRewrite: { '^/files': '' },
+        logLevel: 'debug'
+      },
+      '/rekoni/recognize': {
+        target: 'https://rekoni.huly.app',
+        changeOrigin: true,
+        pathRewrite: { '^/rekoni/recognize': '/recognize' },
+        logLevel: 'debug'
+      }
+    } : {
+      '/account': {
+        target: 'https://account.bold.ru/',
+        changeOrigin: true,
+        pathRewrite: { '^/account': '' },
+        logLevel: 'debug'
+      },
+      '/files': {
+        target: 'https://app.bold.ru/files',
+        changeOrigin: true,
+        pathRewrite: { '^/files': '' },
+        logLevel: 'debug'
+      },
+      '/api/v1': {
+        target: 'http://app.bold.ru',
+        changeOrigin: true,
+        logLevel: 'debug'
+      },
+      '/rekoni/recognize': {
+        target: 'https://rekoni.bold.ru',
+        changeOrigin: true,
+        pathRewrite: { '^/rekoni/recognize': '/recognize' },
         logLevel: 'debug'
       }
     }

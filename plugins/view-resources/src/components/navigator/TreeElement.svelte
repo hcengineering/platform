@@ -50,6 +50,7 @@
   export let bold: boolean = false
   export let shouldTooltip: boolean = false
   export let showMenu: boolean = false
+  export let noDivider: boolean = false
   export let showNotify: boolean = false
   export let forciblyСollapsed: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
@@ -58,10 +59,12 @@
   let inlineActions: Action[] = []
   let popupMenuActions: Action[] = []
 
-  $: actions().then((result) => {
-    inlineActions = result.filter((action) => action.inline === true)
-    popupMenuActions = result.filter((action) => action.inline !== true)
-  })
+  $: if (actions !== undefined) {
+    actions().then((result) => {
+      inlineActions = result.filter((action) => action.inline === true)
+      popupMenuActions = result.filter((action) => action.inline !== true)
+    })
+  }
 
   async function onMenuClick (ev: MouseEvent): Promise<void> {
     // Read actual popup actions on open as visibility might have been changed
@@ -98,6 +101,7 @@
     {forciblyСollapsed}
     {shouldTooltip}
     showMenu={showMenu || pressed}
+    {noDivider}
     on:click
     on:toggle={(ev) => {
       if (ev.detail !== undefined) collapsed = !ev.detail

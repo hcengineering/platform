@@ -41,6 +41,7 @@
   export let objectId: Ref<TaskType>
   export let name: string | undefined
   export let icon: Asset | undefined
+  export let color: number | undefined
   export let readonly: boolean = true
 
   const client = getClient()
@@ -59,6 +60,7 @@
   $: taskType = taskTypes.find((tt) => tt._id === objectId)
   $: name = taskType?.name
   $: icon = taskType?.icon
+  $: color = taskType?.color
   $: descriptor = client.getModel().findAllSync(task.class.TaskTypeDescriptor, { _id: taskType?.descriptor })
   $: states = (taskType?.statuses.map((p) => $statusStore.byId.get(p)).filter((p) => p !== undefined) as Status[]) ?? []
 
@@ -147,6 +149,7 @@
                     iconProps={{ value: taskType }}
                     size={'large'}
                     kind={'secondary'}
+                    dataId={'btnSelectIcon'}
                     disabled={readonly}
                     on:click={selectIcon}
                   />

@@ -1,13 +1,18 @@
 <script lang="ts">
   import { Metrics } from '@hcengineering/core'
-  import { Expandable } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Button, Expandable, showPopup } from '@hcengineering/ui'
   import { FixedColumn } from '@hcengineering/view-resources'
+  import Params from './Params.svelte'
 
   export let metrics: Metrics
   export let level = 0
   export let name: string = 'System'
 
-  $: haschilds = Object.keys(metrics.measurements).length > 0 || Object.keys(metrics.params).length > 0
+  $: haschilds =
+    Object.keys(metrics.measurements).length > 0 ||
+    Object.keys(metrics.params).length > 0 ||
+    (metrics.topResult?.length ?? 0) > 0
 
   function showAvg (name: string, time: number, ops: number): string {
     if (name.startsWith('#')) {
@@ -28,8 +33,18 @@
   contentColor
 >
   <svelte:fragment slot="title">
+    {@const params = JSON.stringify(metrics.namedParams ?? {})}
     <div class="flex-row-center flex-between flex-grow ml-2">
       {name}
+      {#if params !== '{}'}
+        <Button
+          label={getEmbeddedLabel('*')}
+          on:click={() => {
+            showPopup(Params, { params: metrics.namedParams ?? {}, opLog: metrics.opLog }, 'full')
+          }}
+          kind={'ghost'}
+        />
+      {/if}
     </div>
   </svelte:fragment>
   <svelte:fragment slot="tools">
@@ -64,13 +79,13 @@
         {#each metrics.topResult ?? [] as r}
           <Expandable>
             <svelte:fragment slot="title">
-              <div class="flex-row-center flex-between flex-grow">
+              <div class="flex-row-center flex-between flex-grow select-text">
                 Time:{r.value}
               </div>
             </svelte:fragment>
-            <pre>
-          {JSON.stringify(r, null, 2)}
-        </pre>
+            <pre class="select-text">
+              {JSON.stringify(r, null, 2)}
+            </pre>
           </Expandable>
         {/each}
       </Expandable>
@@ -115,9 +130,9 @@
                       Time:{r.value}
                     </div>
                   </svelte:fragment>
-                  <pre>
-                  {JSON.stringify(r, null, 2)}
-                </pre>
+                  <pre class="select-text">
+                    {JSON.stringify(r, null, 2)}
+                  </pre>
                 </Expandable>
               {/each}
             </div>

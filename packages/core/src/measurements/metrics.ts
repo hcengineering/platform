@@ -1,7 +1,6 @@
 // Basic performance metrics suite.
 
 import { MetricsData } from '.'
-import { cutObjectArray } from '../utils'
 import { FullParamsType, Metrics, ParamsType } from './types'
 
 /**
@@ -18,7 +17,8 @@ export function newMetrics (): Metrics {
     operations: 0,
     value: 0,
     measurements: {},
-    params: {}
+    params: {},
+    namedParams: {}
   }
 }
 
@@ -27,18 +27,32 @@ function getUpdatedTopResult (
   time: number,
   params: FullParamsType
 ): Metrics['topResult'] {
-  if (current === undefined || current.length < 3 || current.some((it) => it.value < time)) {
-    const result = [
-      ...(current ?? []),
-      {
-        value: time,
-        params: cutObjectArray(params)
-      }
-    ]
-    result.sort((a, b) => b.value - a.value)
-    return result.slice(0, 3)
+  if (time === 0) {
+    return current
   }
-  return current
+  const result: Metrics['topResult'] = current ?? []
+
+  const newValue = {
+    value: time,
+    params
+  }
+
+  if (result.length > 6) {
+    if (result[0].value < newValue.value) {
+      result[0] = newValue
+      return result
+    }
+    if (result[result.length - 1].value > newValue.value) {
+      result[result.length - 1] = newValue
+      return result
+    }
+
+    // Shift the middle
+    return [result[0], newValue, ...result.slice(1, 3), result[5]]
+  } else {
+    result.push(newValue)
+    return result
+  }
 }
 
 /**
@@ -48,12 +62,14 @@ function getUpdatedTopResult (
 export function measure (
   metrics: Metrics,
   params: ParamsType,
-  fullParams: FullParamsType = {},
+  fullParams: FullParamsType | (() => FullParamsType) = {},
   endOp?: (spend: number) => void
 ): () => void {
   const st = Date.now()
-  return (value?: number) => {
+  return (value?: number, override?: boolean) => {
     const ed = Date.now()
+
+    const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
     // Update params if required
     for (const [k, v] of Object.entries(params)) {
       let params = metrics.params[k]
@@ -70,16 +86,24 @@ export function measure (
         }
         params[vKey] = param
       }
-      param.value += value ?? ed - st
-      param.operations++
+      if (override === true) {
+        metrics.operations = value ?? ed - st
+      } else {
+        param.value += value ?? ed - st
+        param.operations++
+      }
 
-      param.topResult = getUpdatedTopResult(param.topResult, ed - st, fullParams)
+      param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
     }
     // Update leaf data
-    metrics.value += value ?? ed - st
-    metrics.operations++
+    if (override === true) {
+      metrics.operations = value ?? ed - st
+    } else {
+      metrics.value += value ?? ed - st
+      metrics.operations++
+    }
 
-    metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fullParams)
+    metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fParams)
     endOp?.(ed - st)
   }
 }
@@ -101,8 +125,8 @@ export function childMetrics (root: Metrics, path: string[]): Metrics {
 /**
  * @public
  */
-export function metricsAggregate (m: Metrics): Metrics {
-  const ms = aggregateMetrics(m.measurements)
+export function metricsAggregate (m: Metrics, limit: number = -1): Metrics {
+  let ms = aggregateMetrics(m.measurements, limit)
 
   // Use child overage, if there is no top level value specified.
   const me = Object.entries(ms)
@@ -115,19 +139,37 @@ export function metricsAggregate (m: Metrics): Metrics {
         return p + v.value
       }, 0)
 
+  if (limit !== -1) {
+    // We need to keep only top limit items in ms
+    if (Object.keys(ms).length > 0) {
+      const newMs: typeof ms = {}
+      let added = 0
+      for (const [k, v] of Object.entries(ms)) {
+        newMs[k] = v
+        added++
+        if (added >= limit) {
+          break
+        }
+      }
+      ms = newMs
+    }
+  }
+
   return {
     operations: m.operations,
     measurements: ms,
     params: m.params,
     value: sumVal,
-    topResult: m.topResult
+    topResult: m.topResult,
+    namedParams: m.namedParams,
+    opLog: m.opLog
   }
 }
 
-function aggregateMetrics (m: Record<string, Metrics>): Record<string, Metrics> {
+function aggregateMetrics (m: Record<string, Metrics>, limit: number = -1): Record<string, Metrics> {
   const result: Record<string, Metrics> = {}
   for (const [k, v] of Object.entries(m).sort((a, b) => b[1].value - a[1].value)) {
-    result[k] = metricsAggregate(v)
+    result[k] = metricsAggregate(v, limit)
   }
   return result
 }
@@ -184,7 +226,7 @@ function toString (name: string, m: Metrics, offset: number, length: number): st
  * @public
  */
 export function metricsToString (metrics: Metrics, name = 'System', length: number): string {
-  return toString(name, metricsAggregate(metrics), 0, length)
+  return toString(name, metricsAggregate(metrics, 50), 0, length)
 }
 
 function printMetricsParamsRows (
@@ -234,5 +276,5 @@ function toStringRows (name: string, m: Metrics, offset: number): (number | stri
  * @public
  */
 export function metricsToRows (metrics: Metrics, name = 'System'): (number | string)[][] {
-  return toStringRows(name, metricsAggregate(metrics), 0)
+  return toStringRows(name, metricsAggregate(metrics, 50), 0)
 }

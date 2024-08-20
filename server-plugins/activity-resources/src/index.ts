@@ -13,33 +13,44 @@
 // limitations under the License.
 //
 
-import activity, { ActivityMessage, ActivityMessageControl, DocUpdateMessage, Reaction } from '@hcengineering/activity'
+import activity, {
+  ActivityMessage,
+  ActivityMessageControl,
+  DocAttributeUpdates,
+  DocUpdateMessage,
+  Reaction
+} from '@hcengineering/activity'
 import core, {
   Account,
   AttachedDoc,
   Class,
+  Collection,
   Data,
   Doc,
+  Hierarchy,
+  matchQuery,
   MeasureContext,
   Ref,
+  Space,
   Tx,
-  TxCUD,
   TxCollectionCUD,
   TxCreateDoc,
-  TxProcessor,
-  matchQuery,
-  Hierarchy,
-  Space
+  TxCUD,
+  TxProcessor
 } from '@hcengineering/core'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
 import {
   createCollabDocInfo,
   createCollaboratorNotifications,
+  getTextPresenter,
   removeDocInboxNotifications
 } from '@hcengineering/server-notification-resources'
+import { PersonAccount } from '@hcengineering/contact'
+import { NotificationContent } from '@hcengineering/notification'
+import { getResource, translate } from '@hcengineering/platform'
 
-import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
+import { getAttrName, getCollectionAttribute, getDocUpdateAction, getTxAttributesUpdates } from './utils'
 import { ReferenceTrigger } from './references'
 
 export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -47,11 +58,16 @@ export async function OnReactionChanged (originTx: Tx, control: TriggerControl):
   const innerTx = TxProcessor.extractTx(tx) as TxCUD<Reaction>
 
   if (innerTx._class === core.class.TxCreateDoc) {
-    return await createReactionNotifications(tx, control)
+    const txes = await createReactionNotifications(tx, control)
+
+    await control.apply(txes, true)
+    return []
   }
 
   if (innerTx._class === core.class.TxRemoveDoc) {
-    return await removeReactionNotifications(tx, control)
+    const txes = await removeReactionNotifications(tx, control)
+    await control.apply(txes, true)
+    return []
   }
 
   return []
@@ -127,14 +143,14 @@ export async function createReactionNotifications (
 
   res = res.concat(
     await createCollabDocInfo(
-      [user],
+      control.ctx,
+      [user] as Ref<PersonAccount>[],
       control,
       tx.tx,
       tx,
       parentMessage,
       [docUpdateMessage],
-      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false },
-      new Map()
+      { isOwn: true, isSpace: false, shouldUpdateTimestamp: false }
     )
   )
 
@@ -247,12 +263,11 @@ export async function generateDocUpdateMessages (
   originTx?: TxCUD<Doc>,
   objectCache?: DocObjectCache
 ): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
-  const { hierarchy } = control
-
   if (tx.space === core.space.DerivedTx) {
     return res
   }
 
+  const { hierarchy } = control
   const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
 
   if (
@@ -304,6 +319,7 @@ export async function generateDocUpdateMessages (
       let doc = objectCache?.docs?.get(tx.objectId)
       if (doc === undefined) {
         doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+        objectCache?.docs?.set(tx.objectId, doc)
       }
       return await ctx.with(
         'pushDocUpdateMessages',
@@ -332,6 +348,7 @@ export async function generateDocUpdateMessages (
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+          objectCache?.docs?.set(tx.objectId, doc)
         }
         if (doc !== undefined) {
           return await ctx.with(
@@ -359,33 +376,35 @@ export async function generateDocUpdateMessages (
 }
 
 async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  if (tx.space === core.space.DerivedTx) {
-    return []
-  }
-
   if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return []
   }
 
+  const cache: DocObjectCache = {
+    docs: new Map(),
+    transactions: new Map()
+  }
   const txes = await control.ctx.with(
     'generateDocUpdateMessages',
     {},
-    async (ctx) => await generateDocUpdateMessages(ctx, tx, control)
+    async (ctx) => await generateDocUpdateMessages(ctx, tx, control, [], undefined, cache)
   )
-
-  if (txes.length === 0) {
-    return []
-  }
 
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
   const notificationTxes = await control.ctx.with(
-    'createNotificationTxes',
+    'createCollaboratorNotifications',
     {},
-    async (ctx) => await createCollaboratorNotifications(ctx, tx, control, messages)
+    async (ctx) =>
+      await createCollaboratorNotifications(ctx, tx, control, messages, undefined, cache.docs as Map<Ref<Doc>, Doc>)
   )
 
-  return [...txes, ...notificationTxes]
+  const result = [...txes, ...notificationTxes]
+
+  if (result.length > 0) {
+    await control.apply(result)
+  }
+  return []
 }
 
 async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
@@ -410,6 +429,101 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
   return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
 }
 
+async function ReactionNotificationContentProvider (
+  doc: ActivityMessage,
+  originTx: TxCUD<Doc>,
+  _: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<Reaction>
+  const presenter = getTextPresenter(doc._class, control.hierarchy)
+  const reaction = TxProcessor.createDoc2Doc(tx)
+
+  let text = ''
+
+  if (presenter !== undefined) {
+    const fn = await getResource(presenter.presenter)
+
+    text = await fn(doc, control)
+  } else {
+    text = await translate(activity.string.Message, {})
+  }
+
+  return {
+    title: activity.string.ReactionNotificationTitle,
+    body: activity.string.ReactionNotificationBody,
+    data: reaction.emoji,
+    intlParams: {
+      title: text,
+      reaction: reaction.emoji
+    }
+  }
+}
+
+async function getAttributesUpdatesText (
+  attributeUpdates: DocAttributeUpdates,
+  objectClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy
+): Promise<string | undefined> {
+  const attrName = await getAttrName(attributeUpdates, objectClass, hierarchy)
+
+  if (attrName === undefined) {
+    return undefined
+  }
+
+  if (attributeUpdates.added.length > 0) {
+    return await translate(activity.string.NewObject, { object: attrName })
+  }
+  if (attributeUpdates.removed.length > 0) {
+    return await translate(activity.string.RemovedObject, { object: attrName })
+  }
+
+  if (attributeUpdates.set.length > 0) {
+    const values = attributeUpdates.set
+    const isUnset = values.length > 0 && !values.some((value) => value !== null && value !== '')
+
+    if (isUnset) {
+      return await translate(activity.string.UnsetObject, { object: attrName })
+    } else {
+      return await translate(activity.string.ChangedObject, { object: attrName })
+    }
+  }
+
+  return undefined
+}
+
+export async function DocUpdateMessageTextPresenter (doc: DocUpdateMessage, control: TriggerControl): Promise<string> {
+  const { hierarchy } = control
+  const { attachedTo, attachedToClass, objectClass, objectId, action, updateCollection, attributeUpdates } = doc
+  const isOwn = attachedTo === objectId
+
+  const collectionAttribute = getCollectionAttribute(hierarchy, attachedToClass, updateCollection)
+  const clazz = hierarchy.getClass(objectClass)
+  const objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
+  const collectionName = collectionAttribute?.label
+
+  const name =
+    isOwn || collectionName === undefined ? await translate(objectName, {}) : await translate(collectionName, {})
+
+  if (action === 'create') {
+    return await translate(activity.string.NewObject, { object: name })
+  }
+
+  if (action === 'remove') {
+    return await translate(activity.string.RemovedObject, { object: name })
+  }
+
+  if (action === 'update' && attributeUpdates !== undefined) {
+    const text = await getAttributesUpdatesText(attributeUpdates, objectClass, hierarchy)
+
+    if (text !== undefined) {
+      return text
+    }
+  }
+
+  return await translate(activity.string.UpdatedObject, { object: name })
+}
+
 export * from './references'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -419,5 +533,9 @@ export default async () => ({
     ActivityMessagesHandler,
     OnDocRemoved,
     OnReactionChanged
+  },
+  function: {
+    ReactionNotificationContentProvider,
+    DocUpdateMessageTextPresenter
   }
 })

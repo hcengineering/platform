@@ -60,10 +60,12 @@ import {
   ViewAction,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  LinkIdProvider
 } from './types'
 
 export * from './types'
+export * from './utils'
 
 /**
  * @public
@@ -103,6 +105,7 @@ const view = plugin(viewId, {
     AllValuesFunc: '' as Ref<Mixin<AllValuesFunc>>,
     ObjectPanel: '' as Ref<Mixin<ObjectPanel>>,
     LinkProvider: '' as Ref<Mixin<LinkProvider>>,
+    LinkIdProvider: '' as Ref<Mixin<LinkIdProvider>>,
     SpacePresenter: '' as Ref<Mixin<SpacePresenter>>,
     AttributeFilterPresenter: '' as Ref<Mixin<AttributeFilterPresenter>>,
     Aggregation: '' as Ref<Mixin<Aggregation>>,
@@ -206,7 +209,8 @@ const view = plugin(viewId, {
     Unpin: '' as IntlString,
     Join: '' as IntlString,
     Leave: '' as IntlString,
-    Copied: '' as IntlString
+    Copied: '' as IntlString,
+    And: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -245,7 +249,8 @@ const view = plugin(viewId, {
     Circle: '' as Asset,
     Join: '' as Asset,
     Leave: '' as Asset,
-    Copy: '' as Asset
+    Copy: '' as Asset,
+    TodoList: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -348,7 +353,8 @@ const view = plugin(viewId, {
 
       // If defined, documents will be set into value
       valueKey?: string
-    }>
+    }>,
+    Delete: '' as ViewAction
   }
 })
 export default view

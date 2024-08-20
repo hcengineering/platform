@@ -5,7 +5,8 @@ import session from 'koa-session'
 import { Db } from 'mongodb'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
-import { MeasureContext } from '@hcengineering/core'
+import { registerToken } from './token'
+import { BrandingMap, MeasureContext } from '@hcengineering/core'
 
 export type Passport = typeof passport
 
@@ -16,7 +17,8 @@ export type AuthProvider = (
   accountsUrl: string,
   db: Db,
   productId: string,
-  frontUrl: string
+  frontUrl: string,
+  brandings: BrandingMap
 ) => string | undefined
 
 export function registerProviders (
@@ -26,7 +28,8 @@ export function registerProviders (
   db: Db,
   productId: string,
   serverSecret: string,
-  frontUrl: string | undefined
+  frontUrl: string | undefined,
+  brandings: BrandingMap
 ): void {
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -41,7 +44,6 @@ export function registerProviders (
 
   app.keys = [serverSecret]
   app.use(session({}, app))
-
   app.use(passport.initialize())
   app.use(passport.session())
 
@@ -57,18 +59,14 @@ export function registerProviders (
     })
   })
 
+  registerToken(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
+
   const res: string[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub]
   for (const provider of providers) {
-    const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl)
+    const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
     if (value !== undefined) res.push(value)
   }
-
-  router.get('auth', '/auth', (ctx) => {
-    if (ctx.session?.loginInfo != null) {
-      ctx.body = JSON.stringify(ctx.session.loginInfo)
-    }
-  })
 
   router.get('providers', '/providers', (ctx) => {
     ctx.body = JSON.stringify(res)

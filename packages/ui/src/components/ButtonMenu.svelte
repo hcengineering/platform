@@ -32,6 +32,7 @@
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let noSelection: boolean = false
+  export let noPrint: boolean = false
   export let autoSelectionIfOne: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
 
@@ -41,6 +42,7 @@
   export let element: HTMLButtonElement | undefined = undefined
   export let focusIndex = -1
   export let id: string | undefined = undefined
+  export let dataId: string | undefined = undefined
 
   let opened: boolean = false
 
@@ -89,11 +91,13 @@
   {icon}
   {iconProps}
   {disabled}
+  {noPrint}
   {loading}
   {inheritColor}
   pressed={opened}
   {focusIndex}
   {id}
+  {dataId}
   {tooltip}
   on:click={openPopup}
 />

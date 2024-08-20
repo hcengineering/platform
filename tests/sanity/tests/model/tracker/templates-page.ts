@@ -40,7 +40,7 @@ export class TemplatePage extends CommonTrackerPage {
   proseMirrorEditor = (): Locator => this.page.locator('.ProseMirror')
   saveTemplateButton = (): Locator => this.page.locator('text=Save template')
   editTemplateButton = (): Locator => this.page.locator('text=Edit template')
-  vacanciesLink = (): Locator => this.page.locator('#new-space-type')
+  newSpaceTypeButton = (): Locator => this.page.locator('#new-space-type')
 
   async createNewTemplate (data: NewIssue): Promise<void> {
     await this.buttonNewTemplate().click()
@@ -114,7 +114,7 @@ export class TemplatePage extends CommonTrackerPage {
   }
 
   async selectVacancies (): Promise<void> {
-    await this.vacanciesLink().click()
+    await this.newSpaceTypeButton().click()
   }
 
   async createTemplate (templateName: string, templateContent: string): Promise<void> {

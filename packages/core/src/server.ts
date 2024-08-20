@@ -33,20 +33,24 @@ export interface StorageIterator {
   close: (ctx: MeasureContext) => Promise<void>
 }
 
+export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
+
 export interface SessionOperationContext {
   ctx: MeasureContext
   // A parts of derived data to deal with after operation will be complete
   derived: {
-    derived: Tx[]
-    target?: string[]
-  }[]
-
+    txes: Tx[]
+    targets: BroadcastTargets // A set of broadcast filters if required
+  }
   with: <T>(
     name: string,
     params: ParamsType,
     op: (ctx: SessionOperationContext) => T | Promise<T>,
     fullParams?: FullParamsType
   ) => Promise<T>
+
+  contextCache: Map<string, any>
+  removedMap: Map<Ref<Doc>, Doc>
 }
 
 /**
@@ -66,4 +70,19 @@ export interface LowLevelStorage {
 
   // Remove a list of documents.
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+
+  // Low level direct group API
+  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
 }
+
+export interface Branding {
+  key?: string
+  front?: string
+  title?: string
+  language?: string
+  initWorkspace?: string
+  lastNameFirst?: string
+  protocol?: string
+}
+
+export type BrandingMap = Record<string, Branding>

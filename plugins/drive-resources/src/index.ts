@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
-import drive, { type Drive, type File, type Folder } from '@hcengineering/drive'
+import type { Class, Client, Doc, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
+import drive, { type Drive, type File, type FileVersion, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
-import { getBlobHref } from '@hcengineering/presentation'
+import { type ObjectSearchResult, getFileUrl } from '@hcengineering/presentation'
 import { showPopup, type Location } from '@hcengineering/ui'
 
 import CreateDrive from './components/CreateDrive.svelte'
@@ -24,23 +24,82 @@ import DrivePanel from './components/DrivePanel.svelte'
 import DrivePresenter from './components/DrivePresenter.svelte'
 import DriveSpaceHeader from './components/DriveSpaceHeader.svelte'
 import DriveSpacePresenter from './components/DriveSpacePresenter.svelte'
+import EditFile from './components/EditFile.svelte'
 import EditFolder from './components/EditFolder.svelte'
+import FilePanel from './components/FilePanel.svelte'
 import FilePresenter from './components/FilePresenter.svelte'
+import FileSearchItem from './components/FileSearchItem.svelte'
 import FileSizePresenter from './components/FileSizePresenter.svelte'
+import FileVersionPresenter from './components/FileVersionPresenter.svelte'
+import FileVersionVersionPresenter from './components/FileVersionVersionPresenter.svelte'
 import FolderPanel from './components/FolderPanel.svelte'
 import FolderPresenter from './components/FolderPresenter.svelte'
+import FolderSearchItem from './components/FolderSearchItem.svelte'
 import GridView from './components/GridView.svelte'
+import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
-import { getDriveLink, getFolderLink, resolveLocation } from './navigation'
-import { createFolder, renameResource } from './utils'
+import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
+import { restoreFileVersion, showCreateFolderPopup, showRenameResourcePopup } from './utils'
+
+const toFileObjectSearchResult = (e: WithLookup<File>): ObjectSearchResult => ({
+  doc: e,
+  title: e.name,
+  icon: drive.icon.File,
+  component: FileSearchItem
+})
+
+const toFolderObjectSearchResult = (e: WithLookup<Folder>): ObjectSearchResult => ({
+  doc: e,
+  title: e.name,
+  icon: drive.icon.Folder,
+  component: FolderSearchItem
+})
+
+async function queryFile (
+  _class: Ref<Class<File>>,
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
+  const q: DocumentQuery<File> = { name: { $like: `%${search}%` } }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<File>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<File>)
+    }
+  }
+  return (await client.findAll(_class, q, { limit: 200 })).map(toFileObjectSearchResult)
+}
+
+async function queryFolder (
+  _class: Ref<Class<Folder>>,
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
+  const q: DocumentQuery<Folder> = { name: { $like: `%${search}%` } }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Folder>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Folder>)
+    }
+  }
+  return (await client.findAll(_class, q, { limit: 200 })).map(toFolderObjectSearchResult)
+}
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
-  await createFolder(doc._id, drive.ids.Root)
+  await showCreateFolderPopup(doc._id, drive.ids.Root)
 }
 
 async function CreateChildFolder (doc: Folder): Promise<void> {
-  await createFolder(doc.space, doc._id)
+  await showCreateFolderPopup(doc.space, doc._id)
 }
 
 async function EditDrive (drive: Drive): Promise<void> {
@@ -50,13 +109,16 @@ async function EditDrive (drive: Drive): Promise<void> {
 async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const href = await getBlobHref(file.$lookup?.file, file.file, file.name)
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.target = '_blank'
-    link.href = href
-    link.download = file.name
-    link.click()
+    const version = file.$lookup?.file
+    if (version != null) {
+      const href = getFileUrl(version.file, version.name)
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.target = '_blank'
+      link.href = href
+      link.download = file.name
+      link.click()
+    }
   }
 }
 
@@ -68,15 +130,25 @@ async function FolderLinkProvider (doc: Doc): Promise<Location> {
   return getFolderLink(doc._id as Ref<Folder>)
 }
 
+async function FileLinkProvider (doc: Doc): Promise<Location> {
+  return getFileLink(doc._id as Ref<File>)
+}
+
 async function RenameFile (doc: File | File[]): Promise<void> {
   if (!Array.isArray(doc)) {
-    await renameResource(doc)
+    await showRenameResourcePopup(doc)
   }
 }
 
 async function RenameFolder (doc: Folder | Folder[]): Promise<void> {
   if (!Array.isArray(doc)) {
-    await renameResource(doc)
+    await showRenameResourcePopup(doc)
+  }
+}
+
+async function RestoreFileVersion (doc: FileVersion | FileVersion[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await restoreFileVersion(doc)
   }
 }
 
@@ -95,12 +167,17 @@ export default async (): Promise<Resources> => ({
     DriveSpaceHeader,
     DriveSpacePresenter,
     DrivePresenter,
+    EditFile,
     EditFolder,
+    FilePanel,
     FilePresenter,
     FileSizePresenter,
+    FileVersionPresenter,
+    FileVersionVersionPresenter,
     FolderPanel,
     FolderPresenter,
     GridView,
+    MoveResource,
     ResourcePresenter
   },
   actionImpl: {
@@ -109,10 +186,18 @@ export default async (): Promise<Resources> => ({
     EditDrive,
     DownloadFile,
     RenameFile,
-    RenameFolder
+    RenameFolder,
+    RestoreFileVersion
+  },
+  completion: {
+    FileQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryFile(drive.class.File, client, query, filter),
+    FolderQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
+      await queryFolder(drive.class.Folder, client, query, filter)
   },
   function: {
     DriveLinkProvider,
+    FileLinkProvider,
     FolderLinkProvider,
     CanRenameFile,
     CanRenameFolder

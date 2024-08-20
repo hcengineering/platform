@@ -16,11 +16,11 @@
   import { type Blob, type Ref } from '@hcengineering/core'
   import { CircleButton, Progress } from '@hcengineering/ui'
 
-  import { getBlobSrcFor } from '@hcengineering/presentation'
+  import { getFileUrl } from '@hcengineering/presentation'
   import Pause from '../icons/Pause.svelte'
   import Play from '../icons/Play.svelte'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
   export let contentType: string
   export let fullSize = false
@@ -38,7 +38,7 @@
 
 <div class="container flex-between" class:fullSize>
   <CircleButton size="x-large" on:click={handleClick} {icon} />
-  <div class="w-full ml-4">
+  <div class="w-full ml-3 mr-2">
     <Progress
       value={time}
       max={Number.isFinite(duration) ? duration : 100}
@@ -49,9 +49,7 @@
 </div>
 
 <audio bind:duration bind:currentTime={time} bind:paused>
-  {#await getBlobSrcFor(value, name) then src}
-    <source {src} type={contentType} />
-  {/await}
+  <source src={getFileUrl(value, name)} type={contentType} />
 </audio>
 
 <style lang="scss">

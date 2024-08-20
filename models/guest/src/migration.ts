@@ -1,16 +1,23 @@
-import { AccountRole, DOMAIN_TX, type Account, type TxCreateDoc, type TxUpdateDoc } from '@hcengineering/core'
+import {
+  AccountRole,
+  DOMAIN_TX,
+  type Ref,
+  type Space,
+  type Account,
+  type TxCreateDoc,
+  type TxUpdateDoc
+} from '@hcengineering/core'
 import { guestId } from '@hcengineering/guest'
 import {
-  createDefaultSpace,
+  migrateSpace,
   tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
   type ModelLogger
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import guest from './plugin'
+import { GUEST_DOMAIN } from '.'
 
 export const guestOperation: MigrateOperation = {
   async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
@@ -58,20 +65,14 @@ export const guestOperation: MigrateOperation = {
             )
           }
         }
-      }
-    ])
-  },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, guestId, [
+      },
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, guest.space.Links, {
-            name: 'Links',
-            description: 'Space for all guest links'
-          })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'guest:space:Links' as Ref<Space>, core.space.Workspace, [GUEST_DOMAIN])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

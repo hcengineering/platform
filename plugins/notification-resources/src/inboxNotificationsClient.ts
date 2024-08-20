@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import activity from '@hcengineering/activity'
 import {
   SortingOrder,
   generateId,
@@ -34,6 +34,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+
 import { isActivityNotification } from './utils'
 
 /**
@@ -73,7 +74,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       return inboxNotifications.reduce((result, notification) => {
         const notifyContext = notifyContexts.find(({ _id }) => _id === notification.docNotifyContext)
 
-        if (notifyContext === undefined || notifyContext.hidden) {
+        if (notifyContext === undefined) {
           return result
         }
 
@@ -89,6 +90,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
+    void this.init()
+  }
+
+  private async init (): Promise<void> {
     this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
@@ -96,31 +101,26 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       },
       (result: DocNotifyContext[]) => {
         this.contexts.set(result)
-        this._contextByDoc = new Map(result.map((updates) => [updates.attachedTo, updates]))
+        this._contextByDoc = new Map(result.map((updates) => [updates.objectId, updates]))
         this.contextByDoc.set(this._contextByDoc)
       }
     )
     this.otherInboxNotificationsQuery.query(
-      notification.class.InboxNotification,
+      notification.class.CommonInboxNotification,
       {
-        _class: { $nin: [notification.class.ActivityInboxNotification] },
-        archived: { $ne: true },
+        archived: false,
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
+        result.sort((a, b) => (b.createdOn ?? b.modifiedOn) - (a.createdOn ?? a.modifiedOn))
         this.otherInboxNotifications.set(result)
-      },
-      {
-        sort: {
-          createdOn: SortingOrder.Descending
-        }
       }
     )
 
     this.activityInboxNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
       {
-        archived: { $ne: true },
+        archived: false,
         user: getCurrentAccount()._id
       },
       (result: ActivityInboxNotification[]) => {
@@ -157,12 +157,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       return
     }
 
-    const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(
-      (notification) => notification.docNotifyContext === docNotifyContext._id && !notification.isViewed
+    const inboxNotifications = await client.findAll(
+      notification.class.InboxNotification,
+      { docNotifyContext: docNotifyContext._id, isViewed: false },
+      { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
     for (const notification of inboxNotifications) {
-      await client.update(notification, { isViewed: true })
+      await client.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
     }
     await client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
   }
@@ -207,37 +209,12 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         }
       )
     }
-
-    await client.createDoc(notification.class.DocNotifyContext, doc.space, {
-      attachedTo: _id,
-      attachedToClass: _class,
-      user: getCurrentAccount()._id,
-      hidden: true
-    })
-  }
-
-  async readMessages (client: TxOperations, ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    const alreadyReadIds = get(this.activityInboxNotifications)
-      .filter(({ attachedTo, isViewed }) => ids.includes(attachedTo) && isViewed)
-      .map(({ attachedTo }) => attachedTo)
-
-    const toReadIds = ids.filter((id) => !alreadyReadIds.includes(id))
-
-    if (toReadIds.length === 0) {
-      return
-    }
-
-    const notificationsToRead = get(this.activityInboxNotifications).filter(({ attachedTo }) =>
-      toReadIds.includes(attachedTo)
-    )
-
-    for (const notification of notificationsToRead) {
-      await client.update(notification, { isViewed: true })
-    }
   }
 
   async readNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
-    const notificationsToRead = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
+    const notificationsToRead = (get(this.inboxNotifications) ?? []).filter(
+      ({ _id, isViewed }) => ids.includes(_id) && !isViewed
+    )
 
     for (const notification of notificationsToRead) {
       await client.update(notification, { isViewed: true })
@@ -260,15 +237,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async archiveAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('archiveAllNotifications')
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply(generateId(), 'archiveAllNotifications')
 
     try {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          archived: { $ne: true }
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -282,21 +258,19 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 
   async readAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('readAllNotifications')
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply(generateId(), 'readAllNotifications')
 
     try {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          isViewed: { $ne: true },
-          archived: { $ne: true }
+          isViewed: false,
+          archived: false
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -309,13 +283,11 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 
   async unreadAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('unreadAllNotifications')
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply(generateId(), 'unreadAllNotifications')
 
     try {
       const inboxNotifications = await ops.findAll(
@@ -323,7 +295,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         {
           user: getCurrentAccount()._id,
           isViewed: true,
-          archived: { $ne: true }
+          archived: false
         },
         {
           projection: { _id: 1, _class: 1, space: 1, docNotifyContext: 1 },
@@ -350,7 +322,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       }
     } finally {
       await ops.commit()
-      await doneOp()
     }
   }
 }

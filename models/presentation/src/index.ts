@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { DOMAIN_MODEL, type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
-import { Model, Prop, TypeRef, TypeString, type Builder } from '@hcengineering/model'
-import core, { TDoc } from '@hcengineering/model-core'
+import { DOMAIN_MODEL, type Tx, type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { Mixin, Model, Prop, TypeRef, TypeString, type Builder } from '@hcengineering/model'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
 import {
@@ -30,10 +30,12 @@ import {
   type DocCreateExtension,
   type DocCreateFunction,
   type DocRules,
+  type FileOrBlob,
   type FilePreviewExtension,
   type ObjectSearchCategory,
   type ObjectSearchContext,
-  type ObjectSearchFactory
+  type ObjectSearchFactory,
+  type InstantTransactions
 } from '@hcengineering/presentation/src/types'
 import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import presentation from './plugin'
@@ -90,8 +92,13 @@ export class TFilePreviewExtension extends TComponentPointExtension implements F
     contentType!: string | string[]
 
   alignment?: string
-  metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+  metadataProvider?: Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   availabilityChecker?: Resource<() => Promise<boolean>>
+}
+
+@Mixin(presentation.mixin.InstantTransactions, core.class.Class)
+export class TInstantTransactions extends TClass implements InstantTransactions {
+  txClasses!: Array<Ref<Class<Tx>>>
 }
 
 export function createModel (builder: Builder): void {
@@ -101,6 +108,7 @@ export function createModel (builder: Builder): void {
     TComponentPointExtension,
     TDocCreateExtension,
     TDocRules,
-    TFilePreviewExtension
+    TFilePreviewExtension,
+    TInstantTransactions
   )
 }

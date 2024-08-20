@@ -179,12 +179,19 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        dataId={'btnMoreActions'}
+        on:click={showContextMenu}
+      />
       <Button
         icon={setting.icon.Setting}
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         showTooltip={{ label: setting.string.ClassSetting }}
+        dataId={'btnClassSetting'}
         on:click={(ev) => {
           ev.stopPropagation()
           const loc = getCurrentResolvedLocation()

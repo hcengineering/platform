@@ -12,31 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import {
-  type Channel,
-  type ChatMessage,
-  chunterId,
-  type DirectMessage,
-  type ThreadMessage
-} from '@hcengineering/chunter'
-import contact, { type Employee, getName, type Person, type PersonAccount } from '@hcengineering/contact'
-import { employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
-import {
-  type Account,
-  type Class,
-  type Client,
-  type Doc,
-  generateId,
-  getCurrentAccount,
-  type IdMap,
-  type Ref,
-  type Space,
-  type Timestamp
-} from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent, getCurrentLocation, navigate } from '@hcengineering/ui'
-import { type Asset, translate } from '@hcengineering/platform'
-import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import activity, {
   type ActivityMessage,
   type ActivityMessagesFilter,
@@ -44,18 +19,39 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
+import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
+import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
+import { PersonIcon, employeeByIdStore } from '@hcengineering/contact-resources'
+import core, {
+  generateId,
+  getCurrentAccount,
+  type Account,
+  type Class,
+  type Client,
+  type Doc,
+  type IdMap,
+  type Ref,
+  type Space,
+  type Timestamp,
+  type WithLookup
+} from '@hcengineering/core'
+import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
-  archiveContextNotifications,
   InboxNotificationsClientImpl,
+  isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import { get, type Unsubscriber } from 'svelte/store'
+import { translate, type Asset } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
+import { type AnySvelteComponent } from '@hcengineering/ui'
+import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
+import { get, writable, type Unsubscriber } from 'svelte/store'
+import { isReactionMessage } from '@hcengineering/activity-resources'
 
-import chunter from './plugin'
-import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
-import { decodeChannelURI } from './navigation'
+import DirectIcon from './components/DirectIcon.svelte'
+import { resetChunterLocIfEqual } from './navigation'
+import chunter from './plugin'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -168,7 +164,11 @@ async function getDmAccounts (client: Client, space?: Space): Promise<PersonAcco
   })
 }
 
-export async function getDmPersons (client: Client, space: Space): Promise<Person[]> {
+export async function getDmPersons (
+  client: Client,
+  space: Space,
+  personsMap: Map<Ref<WithLookup<Person>>, WithLookup<Person>>
+): Promise<Person[]> {
   const personAccounts: PersonAccount[] = await getDmAccounts(client, space)
   const me = getCurrentAccount() as PersonAccount
   const persons: Person[] = []
@@ -177,7 +177,7 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   let myPerson: Person | undefined
 
   for (const personRef of personRefs) {
-    const person = await client.findOne(contact.class.Person, { _id: personRef })
+    const person = personsMap.get(personRef) ?? (await client.findOne(contact.class.Person, { _id: personRef }))
     if (person === undefined) {
       continue
     }
@@ -197,8 +197,12 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   return myPerson !== undefined ? [myPerson] : []
 }
 
-export async function DirectTitleProvider (client: Client, id: Ref<DirectMessage>): Promise<string> {
-  const direct = await client.findOne(chunter.class.DirectMessage, { _id: id })
+export async function DirectTitleProvider (
+  client: Client,
+  id: Ref<DirectMessage>,
+  doc?: DirectMessage
+): Promise<string> {
+  const direct = doc ?? (await client.findOne(chunter.class.DirectMessage, { _id: id }))
 
   if (direct === undefined) {
     return ''
@@ -207,8 +211,8 @@ export async function DirectTitleProvider (client: Client, id: Ref<DirectMessage
   return await getDmName(client, direct)
 }
 
-export async function ChannelTitleProvider (client: Client, id: Ref<Channel>): Promise<string> {
-  const channel = await client.findOne(chunter.class.Channel, { _id: id })
+export async function ChannelTitleProvider (client: Client, id: Ref<Channel>, doc?: Channel): Promise<string> {
+  const channel = doc ?? (await client.findOne(chunter.class.Channel, { _id: id }))
 
   if (channel === undefined) {
     return ''
@@ -339,7 +343,12 @@ export async function joinChannel (channel: Channel, value: Ref<Account> | Array
   }
 }
 
-export async function leaveChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+export async function leaveChannel (
+  channel: Channel | undefined,
+  value: Ref<Account> | Array<Ref<Account>>
+): Promise<void> {
+  if (channel === undefined) return
+
   const client = getClient()
 
   if (Array.isArray(value)) {
@@ -347,11 +356,72 @@ export async function leaveChannel (channel: Channel, value: Ref<Account> | Arra
       await client.update(channel, { $pull: { members: { $in: value } } })
     }
   } else {
-    const context = await client.findOne(notification.class.DocNotifyContext, { attachedTo: channel._id })
-
     await client.update(channel, { $pull: { members: value } })
-    await removeChannelAction(context)
+    await resetChunterLocIfEqual(channel._id, channel._class, channel)
   }
+}
+
+// NOTE: Store timestamp updates to avoid unnecessary updates when if the server takes a long time to respond
+const contextsTimestampStore = writable<Map<Ref<DocNotifyContext>, number>>(new Map())
+// NOTE: Sometimes user can read message before notification is created and we should mark it as viewed when notification is received
+export const chatReadMessagesStore = writable<Set<Ref<ActivityMessage>>>(new Set())
+
+function getAllIds (messages: DisplayActivityMessage[]): Array<Ref<ActivityMessage>> {
+  return messages
+    .map((message) => {
+      const combined =
+        message._class === activity.class.DocUpdateMessage
+          ? (message as DisplayDocUpdateMessage)?.combinedMessagesIds
+          : undefined
+
+      return [message._id, ...(combined ?? [])]
+    })
+    .flat()
+}
+
+let toReadTimer: any
+const toRead = new Set<Ref<InboxNotification>>()
+
+export function recheckNotifications (context: DocNotifyContext): void {
+  const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
+  const messages = get(chatReadMessagesStore)
+
+  if (messages.size === 0) {
+    return
+  }
+
+  const notifications = get(inboxClient.inboxNotificationsByContext).get(context._id) ?? []
+
+  notifications
+    .filter((it) => {
+      if (it.isViewed) {
+        return false
+      }
+
+      if (isMentionNotification(it)) {
+        return messages.has(it.mentionedIn as Ref<ActivityMessage>)
+      }
+
+      if (isActivityNotification(it)) {
+        return messages.has(it.attachedTo)
+      }
+
+      return false
+    })
+    .forEach((n) => toRead.add(n._id))
+
+  clearTimeout(toReadTimer)
+  toReadTimer = setTimeout(() => {
+    const toReadData = Array.from(toRead)
+    toRead.clear()
+    void (async () => {
+      const _client = client.apply(generateId(), 'recheckNotifications')
+      await inboxClient.readNotifications(_client, toReadData)
+      await _client.commit()
+    })()
+  }, 500)
 }
 
 export async function readChannelMessages (
@@ -363,88 +433,108 @@ export async function readChannelMessages (
   }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const client = getClient()
 
-  const allIds = messages
-    .map((message) => {
-      const combined =
-        message._class === activity.class.DocUpdateMessage
-          ? (message as DisplayDocUpdateMessage)?.combinedMessagesIds
-          : undefined
+  const client = getClient().apply(generateId(), 'readViewportMessages')
+  try {
+    const readMessages = get(chatReadMessagesStore)
+    const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
 
-      return [message._id, ...(combined ?? [])]
-    })
-    .flat()
-  const relatedMentions = get(inboxClient.otherInboxNotifications).filter(
-    (n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>)
-  )
+    const notifications = get(inboxClient.activityInboxNotifications)
+      .filter(({ attachedTo, $lookup, isViewed }) => {
+        if (isViewed) return false
+        const includes = allIds.includes(attachedTo)
+        if (includes) return true
+        const msg = $lookup?.attachedTo
+        if (isReactionMessage(msg)) {
+          return allIds.includes(msg.attachedTo as Ref<ActivityMessage>)
+        }
+        return false
+      })
+      .map((n) => n._id)
 
-  const ops = getClient().apply(generateId())
+    const relatedMentions = get(inboxClient.otherInboxNotifications)
+      .filter((n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>))
+      .map((n) => n._id)
 
-  void inboxClient.readMessages(ops, allIds).then(() => {
-    void ops.commit()
-  })
+    chatReadMessagesStore.update((store) => new Set([...store, ...allIds]))
 
-  void inboxClient.readNotifications(
-    client,
-    relatedMentions.map((n) => n._id)
-  )
+    await inboxClient.readNotifications(client, [...notifications, ...relatedMentions])
 
-  if (context === undefined) {
-    return
-  }
+    if (context === undefined) {
+      return
+    }
 
-  const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
+    const storedTimestampUpdates = get(contextsTimestampStore).get(context._id)
+    const newTimestamp = messages[messages.length - 1].createdOn ?? 0
+    const prevTimestamp = Math.max(storedTimestampUpdates ?? 0, context.lastViewedTimestamp ?? 0)
 
-  if ((context.lastViewedTimestamp ?? 0) < lastTimestamp) {
-    context.lastViewedTimestamp = lastTimestamp
-    void client.update(context, { lastViewedTimestamp: lastTimestamp })
+    if (prevTimestamp < newTimestamp) {
+      context.lastViewedTimestamp = newTimestamp
+      contextsTimestampStore.update((store) => {
+        store.set(context._id, newTimestamp)
+        return store
+      })
+      await client.update(context, { lastViewedTimestamp: newTimestamp })
+    }
+  } finally {
+    await client.commit()
   }
 }
 
-function resetChunterLoc (objectId: Ref<Doc>): void {
-  const loc = getCurrentLocation()
-  const [_id] = decodeChannelURI(loc.path[3])
-
-  if (loc.path[2] !== chunterId || _id !== objectId) {
-    return
-  }
-
-  loc.path[3] = ''
-  loc.path[4] = ''
-  loc.query = {}
-  loc.path.length = 3
-  navigate(loc)
-}
-
-export async function leaveChannelAction (context?: DocNotifyContext): Promise<void> {
+export async function leaveChannelAction (
+  context?: DocNotifyContext,
+  _?: Event,
+  props?: { object?: Channel }
+): Promise<void> {
   if (context === undefined) {
     return
   }
   const client = getClient()
-  const channel = await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> })
+  const channel =
+    props?.object ?? (await client.findOne(chunter.class.Channel, { _id: context.objectId as Ref<Channel> }))
 
   if (channel === undefined) {
     return
   }
 
   await leaveChannel(channel, getCurrentAccount()._id)
-  resetChunterLoc(channel._id)
+  await client.remove(context)
+  await resetChunterLocIfEqual(channel._id, channel._class, channel)
 }
 
-export async function removeChannelAction (context?: DocNotifyContext): Promise<void> {
+export async function removeChannelAction (context?: DocNotifyContext, _?: Event): Promise<void> {
   if (context === undefined) {
     return
   }
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const { objectId, objectClass, objectSpace } = context
 
-  await archiveContextNotifications(context)
+  if (hierarchy.isDerived(objectClass, chunter.class.Channel)) {
+    const channel = await client.findOne(chunter.class.Channel, { _id: objectId as Ref<Channel>, space: objectSpace })
+    await leaveChannel(channel, getCurrentAccount()._id)
+  } else {
+    const object = await client.findOne(objectClass, { _id: objectId, space: objectSpace })
+    // const account = getCurrentAccount() as PersonAccount
+
+    // await client.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
+    //
+    // const chatInfo = await client.findOne(chunter.class.ChatInfo, { user: account.person })
+    //
+    // if (chatInfo !== undefined) {
+    //   await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
+    // }
+    await resetChunterLocIfEqual(objectId, objectClass, object)
+  }
+
   await client.remove(context)
-
-  resetChunterLoc(context.attachedTo)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {
   return message._class === chunter.class.ThreadMessage
+}
+
+export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: Ref<Space>): Ref<Space> {
+  return getClient().getHierarchy().isDerived(_class, core.class.Space) ? (_id as Ref<Space>) : space
 }

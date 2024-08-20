@@ -30,6 +30,7 @@
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-attachment": "^0.6.0",
@@ -39,6 +40,7 @@
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/notification": "^0.6.23",
     "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/preference": "^0.6.13",
     "@hcengineering/setting": "^0.6.17",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",

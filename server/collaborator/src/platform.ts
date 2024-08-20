@@ -13,26 +13,13 @@
 // limitations under the License.
 //
 
-import client from '@hcengineering/client'
-import clientResources from '@hcengineering/client-resources'
 import core, { Client, TxOperations, WorkspaceId, systemAccountEmail, toWorkspaceString } from '@hcengineering/core'
-import { setMetadata } from '@hcengineering/platform'
+import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { Token, generateToken } from '@hcengineering/server-token'
-import config from './config'
-
-// eslint-disable-next-line
-const WebSocket = require('ws')
 
 async function connect (token: string): Promise<Client> {
-  // We need to override default factory with 'ws' one.
-  setMetadata(client.metadata.ClientSocketFactory, (url) => {
-    return new WebSocket(url, {
-      headers: {
-        'User-Agent': config.ServiceID
-      }
-    })
-  })
-  return await (await clientResources()).function.GetClient(token, config.TransactorUrl)
+  const endpoint = await getTransactorEndpoint(token)
+  return await createClient(endpoint, token)
 }
 
 async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {

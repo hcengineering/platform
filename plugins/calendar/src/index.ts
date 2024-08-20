@@ -16,8 +16,8 @@ import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestam
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Handler, IntegrationType } from '@hcengineering/setting'
-import { AnyComponent } from '@hcengineering/ui'
+import { Handler, IntegrationType } from '@hcengineering/setting'
+import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 /**
  * @public
@@ -149,6 +149,7 @@ const calendarPlugin = plugin(calendarId, {
   },
   icon: {
     Calendar: '' as Asset,
+    CalendarView: '' as Asset,
     Location: '' as Asset,
     Reminder: '' as Asset,
     Notifications: '' as Asset,
@@ -210,6 +211,9 @@ const calendarPlugin = plugin(calendarId, {
   },
   metadata: {
     CalendarServiceURL: '' as Metadata<string>
+  },
+  extensions: {
+    EditEventExtensions: '' as ComponentExtensionId
   },
   ids: {
     ReminderNotification: '' as Ref<NotificationType>,

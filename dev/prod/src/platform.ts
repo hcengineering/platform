@@ -32,6 +32,7 @@ import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
 import notification, { notificationId } from '@hcengineering/notification'
+import onboard, { onboardId } from '@hcengineering/onboard'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
@@ -44,17 +45,22 @@ import { templatesId } from '@hcengineering/templates'
 import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin from '@hcengineering/ui'
-import view, { viewId } from '@hcengineering/view'
+import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
-
-import { bitrixId } from '@hcengineering/bitrix'
 import love, { loveId } from '@hcengineering/love'
 import print, { printId } from '@hcengineering/print'
 import sign from '@hcengineering/sign'
+import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
+import { diffviewId } from '@hcengineering/diffview'
 import { productsId } from '@hcengineering/products'
 import { questionsId } from '@hcengineering/questions'
 import { trainingId } from '@hcengineering/training'
 import { documentsId } from '@hcengineering/controlled-documents'
+import textEditor, { textEditorId } from '@hcengineering/text-editor'
+import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics-collector'
+import { uploaderId } from '@hcengineering/uploader'
+
+import { bitrixId } from '@hcengineering/bitrix'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -87,38 +93,60 @@ import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
 import '@hcengineering/love-assets'
 import '@hcengineering/print-assets'
+import '@hcengineering/desktop-preferences-assets'
+import '@hcengineering/diffview-assets'
 import '@hcengineering/questions-assets'
 import '@hcengineering/training-assets'
 import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
+import '@hcengineering/analytics-collector-assets'
+import '@hcengineering/text-editor-assets'
+import '@hcengineering/uploader-assets'
+
+import github, { githubId } from '@hcengineering/github'
+import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
-import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
-import { preferenceId } from '@hcengineering/preference'
 import { setDefaultLanguage } from '@hcengineering/theme'
-import { uiId } from '@hcengineering/ui/src/plugin'
 
+import { preferenceId } from '@hcengineering/preference'
+import { uiId } from '@hcengineering/ui/src/plugin'
+import { configureAnalytics } from './analytics'
 import { Analytics } from '@hcengineering/analytics'
 
-interface Config {
+export interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
+  FILES_URL: string
   MODEL_VERSION: string
+  VERSION: string
+  COLLABORATOR_URL: string
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
   CALENDAR_URL: string
-  COLLABORATOR_URL: string
   PUSH_PUBLIC_KEY: string
-  BRANDING_URL?: string
-  PREVIEW_CONFIG: string
+  APP_PROTOCOL?: string
+  GITHUB_APP?: string
+  GITHUB_CLIENTID?: string
+  GITHUB_URL: string
+  SENTRY_DSN?: string
   LOVE_ENDPOINT?: string
   LIVEKIT_WS?: string
   SIGN_URL?: string
   PRINT_URL?: string
+  POSTHOG_API_KEY?: string
+  POSTHOG_HOST?: string
+  ANALYTICS_COLLECTOR_URL?:string
+  BRANDING_URL?: string
+  TELEGRAM_BOT_URL?: string
+
+  // Could be defined for dev environment
+  FRONT_URL?: string
+  PREVIEW_CONFIG?: string
 }
 
 export interface Branding {
@@ -141,14 +169,17 @@ export interface Branding {
 export type BrandingMap = Record<string, Branding>
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
+const devConfigHuly = process.env.CLIENT_TYPE === 'dev-huly'
+const devConfigBold = process.env.CLIENT_TYPE === 'dev-bold'
 
 function configureI18n(): void {
    //Add localization
-   addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
    addStringsLoader(platformId, async (lang: string) => await import(`@hcengineering/platform/lang/${lang}.json`))
+   addStringsLoader(coreId, async (lang: string) => await import(`@hcengineering/core/lang/${lang}.json`))
    addStringsLoader(presentationId, async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`))
-   addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor/lang/${lang}.json`))
+   addStringsLoader(textEditorId, async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`))
    addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
+   addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
    addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
    addStringsLoader(attachmentId, async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`))
    addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
@@ -163,6 +194,7 @@ function configureI18n(): void {
    addStringsLoader(leadId, async (lang: string) => await import(`@hcengineering/lead-assets/lang/${lang}.json`))
    addStringsLoader(loginId, async (lang: string) => await import(`@hcengineering/login-assets/lang/${lang}.json`))
    addStringsLoader(notificationId, async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`))
+   addStringsLoader(onboardId, async (lang: string) => await import(`@hcengineering/onboard-assets/lang/${lang}.json`))
    addStringsLoader(preferenceId, async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`))
    addStringsLoader(recruitId, async (lang: string) => await import(`@hcengineering/recruit-assets/lang/${lang}.json`))
    addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
@@ -175,35 +207,46 @@ function configureI18n(): void {
    addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
    addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
    addStringsLoader(workbenchId, async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`))
-   addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
+
+   addStringsLoader(desktopPreferencesId, async (lang: string) => await import(`@hcengineering/desktop-preferences-assets/lang/${lang}.json`))
+   addStringsLoader(diffviewId, async (lang: string) => await import(`@hcengineering/diffview-assets/lang/${lang}.json`))
    addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
-   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
+   addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
+   addStringsLoader(githubId, async (lang: string) => await import(`@hcengineering/github-assets/lang/${lang}.json`))
    addStringsLoader(documentsId, async (lang: string) => await import(`@hcengineering/controlled-documents-assets/lang/${lang}.json`))
    addStringsLoader(productsId, async (lang: string) => await import(`@hcengineering/products-assets/lang/${lang}.json`))
    addStringsLoader(questionsId, async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`))
    addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
+   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
    addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
    addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
+   addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
   setMetadata(platform.metadata.LoadHelper, async (loader) => {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       try {
         return loader()
       } catch (err: any) {
-        if (err.message.includes('Loading chunk') && i != 2) {
+        if (err.message.includes('Loading chunk') && i != 4) {
           continue
         }
         Analytics.handleError(err)
+        location.reload()
       }
     }
   })
-
   configureI18n()
 
-  const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
-  const branding: BrandingMap = await (await fetch(config.BRANDING_URL ?? '/branding.json')).json()
+  const config: Config = await (await fetch(
+    devConfigHuly
+      ? '/config-huly.json' : (
+        devConfigBold ? '/config-bold.json' : ( 
+          devConfig ? '/config-dev.json' : '/config.json'))
+  )
+  ).json()
+  const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
   console.log('loading configuration', config)
@@ -237,40 +280,58 @@ export async function configurePlatform() {
     }
   }
 
+  configureAnalytics(config)
+  // tryOpenInDesktopApp(config.APP_PROTOCOL ?? 'huly://')
+
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
+  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
+
+  setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
+
+  setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://localhost:3078')
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
-    setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
+    setMetadata(presentation.metadata.ModelVersion, config.MODEL_VERSION)
+  }
+  if (config.VERSION != null) {
+    console.log('Minimal version requirement', config.VERSION)
+    setMetadata(presentation.metadata.FrontVersion, config.VERSION)
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL)
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
+  setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
 
-  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
+  setMetadata(github.metadata.GithubApplication, config.GITHUB_APP ?? '')
+  setMetadata(github.metadata.GithubClientID, config.GITHUB_CLIENTID ?? '')
+  setMetadata(github.metadata.GithubURL, config.GITHUB_URL)
 
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
+
+  setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
+  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
   setMetadata(love.metadata.ServiceEnpdoint, config.LOVE_ENDPOINT)
   setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
   setMetadata(print.metadata.PrintURL, config.PRINT_URL)
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
-  setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://locahost:3078')
 
-  setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
-
-  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
-  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
+  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
+
   setMetadata(
     uiPlugin.metadata.Routes,
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
       [loginId, login.component.LoginApp],
+      [onboardId, onboard.component.OnboardApp],
+      [githubId, github.component.ConnectApp],
       [calendarId, calendar.component.ConnectApp],
       [guestId, guest.component.GuestApp]
     ])
@@ -278,10 +339,10 @@ export async function configurePlatform() {
 
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
-  addLocation(textEditorId, async () => ({ default: async () => ({}) }))
 
   addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
   addLocation(loginId, () => import(/* webpackChunkName: "login" */ '@hcengineering/login-resources'))
+  addLocation(onboardId, () => import(/* webpackChunkName: "onboard" */ '@hcengineering/onboard-resources'))
   addLocation(workbenchId, () => import(/* webpackChunkName: "workbench" */ '@hcengineering/workbench-resources'))
   addLocation(viewId, () => import(/* webpackChunkName: "view" */ '@hcengineering/view-resources'))
   addLocation(taskId, () => import(/* webpackChunkName: "task" */ '@hcengineering/task-resources'))
@@ -300,23 +361,29 @@ export async function configurePlatform() {
   addLocation(notificationId, () => import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources'))
   addLocation(tagsId, () => import(/* webpackChunkName: "tags" */ '@hcengineering/tags-resources'))
   addLocation(calendarId, () => import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources'))
+  addLocation(diffviewId, () => import(/* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources'))
+  addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
+  addLocation(desktopPreferencesId, () => import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
-  addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
-  addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
-  addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
-  addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
   addLocation(driveId, () => import(/* webpackChunkName: "drive" */ '@hcengineering/drive-resources'))
+  addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
+
+  addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
+  addLocation(githubId, () => import(/* webpackChunkName: "github" */ '@hcengineering/github-resources'))
   addLocation(questionsId, () => import(/* webpackChunkName: "training" */ '@hcengineering/questions-resources'))
   addLocation(trainingId, () => import(/* webpackChunkName: "training" */ '@hcengineering/training-resources'))
   addLocation(productsId, () => import(/* webpackChunkName: "products" */ '@hcengineering/products-resources'))
   addLocation(documentsId, () => import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources'))
+  addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
+  addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
+  addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

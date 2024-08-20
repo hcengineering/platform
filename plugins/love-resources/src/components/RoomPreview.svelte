@@ -17,7 +17,7 @@
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
   import { ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
-  import { Icon, Label, eventToHTMLElement, showPopup, showTooltip } from '@hcengineering/ui'
+  import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { invites, myInfo, myRequests } from '../stores'

@@ -18,12 +18,15 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
   ClassifierKind,
+  DocManager,
   Hierarchy,
+  SortingOrder,
   TxProcessor,
   getCurrentAccount,
   getObjectValue,
   type Account,
   type AggregateValue,
+  type AnyAttribute,
   type AttachedDoc,
   type CategoryType,
   type Class,
@@ -42,6 +45,7 @@ import core, {
   type ReverseLookup,
   type ReverseLookups,
   type Space,
+  type Tx,
   type TxCUD,
   type TxCollectionCUD,
   type TxCreateDoc,
@@ -49,7 +53,8 @@ import core, {
   type TxOperations,
   type TxUpdateDoc,
   type TypeAny,
-  type TypedSpace
+  type TypedSpace,
+  type WithLookup
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
@@ -59,6 +64,7 @@ import {
   getAttributePresenterClass,
   getClient,
   getFiltredKeys,
+  getRawLiveQuery,
   hasResource,
   isAdminUser,
   type KeyedAttribute
@@ -86,6 +92,8 @@ import view, {
   type BuildModelKey,
   type BuildModelOptions,
   type CollectionPresenter,
+  type IAggregationManager,
+  type LinkIdProvider,
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
@@ -102,6 +110,100 @@ export { getFiltredKeys, isCollectionAttr } from '@hcengineering/presentation'
  */
 export interface LoadingProps {
   length: number
+}
+
+/**
+ * @public
+ */
+export class AggregationManager<T extends Doc> implements IAggregationManager<T> {
+  docs: T[] | undefined
+  mgr: DocManager<T> | Promise<DocManager<T>> | undefined
+  query: (() => void) | undefined
+  lqCallback: () => void
+  private readonly setStore: (manager: DocManager<T>) => void
+  private readonly filter: (doc: T, target: T) => boolean
+  private readonly _class: Ref<Class<T>>
+
+  private constructor (
+    client: Client,
+    lqCallback: () => void,
+    setStore: (manager: DocManager<T>) => void,
+    categorizingFunc: (doc: T, target: T) => boolean,
+    _class: Ref<Class<T>>
+  ) {
+    this.lqCallback = lqCallback ?? (() => {})
+    this.setStore = setStore
+    this.filter = categorizingFunc
+    this._class = _class
+    void this.getManager()
+  }
+
+  static create<T extends Doc>(
+    client: Client,
+    lqCallback: () => void,
+    setStore: (manager: DocManager<T>) => void,
+    categorizingFunc: (doc: T, target: T) => boolean,
+    _class: Ref<Class<T>>
+  ): AggregationManager<T> {
+    return new AggregationManager<T>(client, lqCallback, setStore, categorizingFunc, _class)
+  }
+
+  private async getManager (): Promise<DocManager<T>> {
+    if (this.mgr !== undefined) {
+      if (this.mgr instanceof Promise) {
+        this.mgr = await this.mgr
+      }
+      return this.mgr
+    }
+    this.mgr = new Promise<DocManager<T>>((resolve) => {
+      this.query = getRawLiveQuery().query(
+        this._class,
+        {},
+        (res) => {
+          const first = this.docs === undefined
+          this.docs = res
+          this.mgr = new DocManager<T>(res as T[])
+          this.setStore(this.mgr)
+          if (!first) {
+            this.lqCallback()
+          }
+          resolve(this.mgr)
+        },
+        {
+          sort: {
+            label: SortingOrder.Ascending
+          }
+        }
+      )
+    })
+
+    return await this.mgr
+  }
+
+  close (): void {
+    this.query?.()
+  }
+
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    // This is intentional
+  }
+
+  getAttrClass (): Ref<Class<T>> {
+    return this._class
+  }
+
+  async categorize (target: Array<Ref<T>>, attr: AnyAttribute): Promise<Array<Ref<T>>> {
+    const mgr = await this.getManager()
+    for (const sid of [...target]) {
+      const c = mgr.getIdMap().get(sid) as WithLookup<T>
+      if (c !== undefined) {
+        let docs = mgr.getDocs()
+        docs = docs.filter((it: T) => this.filter(it, c))
+        target.push(...docs.map((it) => it._id))
+      }
+    }
+    return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
+  }
 }
 
 /**
@@ -372,7 +474,10 @@ export function buildConfigLookup<T extends Doc> (
       ...((existingLookup as ReverseLookups)._id ?? {}),
       ...((res as ReverseLookups)._id ?? {})
     }
-    res = { ...existingLookup, ...res, _id }
+    res = { ...existingLookup, ...res }
+    if (Object.keys(_id).length > 0) {
+      ;(res as any)._id = _id
+    }
   }
   return res
 }
@@ -1023,8 +1128,16 @@ export async function getObjectLinkFragment (
     }
   }
   const loc = getCurrentResolvedLocation()
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  let id: string = object._id
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    id = await encodeFn(object)
+  }
+
   if (hasResource(component) === true) {
-    loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+    loc.fragment = getPanelURI(component, id, Hierarchy.mixinOrClass(object), 'content')
   }
   return loc
 }
@@ -1382,59 +1495,88 @@ export const permissionsStore = writable<PermissionsStore>({
   ap: {},
   whitelist: new Set()
 })
+
+const spaceSpaceQuery = createQuery(true)
+
+export const spaceSpace = writable<TypedSpace | undefined>(undefined)
+
+spaceSpaceQuery.query(core.class.TypedSpace, { _id: core.space.Space }, (res) => {
+  spaceSpace.set(res[0])
+})
+
+const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
+type TargetClassesProjection = Record<Ref<Class<Space>>, number>
 
-permissionsQuery.query(core.class.Space, {}, (res) => {
-  const whitelistedSpaces = new Set<Ref<Space>>()
-  const permissionsBySpace: PermissionsBySpace = {}
-  const accountsByPermission: AccountsByPermission = {}
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const me = getCurrentAccount()
+spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
+  const targetClasses = types.reduce<TargetClassesProjection>((acc, st) => {
+    acc[st.targetClass] = 1
+    return acc
+  }, {})
 
-  for (const s of res) {
-    if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
-      const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
-      const mixin = type?.targetClass
+  permissionsQuery.query(
+    core.class.Space,
+    {},
+    (res) => {
+      const whitelistedSpaces = new Set<Ref<Space>>()
+      const permissionsBySpace: PermissionsBySpace = {}
+      const accountsByPermission: AccountsByPermission = {}
+      const client = getClient()
+      const hierarchy = client.getHierarchy()
+      const me = getCurrentAccount()
 
-      if (mixin === undefined) {
-        permissionsBySpace[s._id] = new Set()
-        accountsByPermission[s._id] = {}
-        continue
-      }
+      for (const s of res) {
+        if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+          const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+          const mixin = type?.targetClass
 
-      const asMixin = hierarchy.as(s, mixin)
-      const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-      const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
-      permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
-
-      accountsByPermission[s._id] = {}
-
-      for (const role of roles) {
-        const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
-
-        if (assignment.length === 0) {
-          continue
-        }
-
-        for (const permissionId of role.permissions) {
-          if (accountsByPermission[s._id][permissionId] === undefined) {
-            accountsByPermission[s._id][permissionId] = new Set()
+          if (mixin === undefined) {
+            permissionsBySpace[s._id] = new Set()
+            accountsByPermission[s._id] = {}
+            continue
           }
 
-          assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
+          const asMixin = hierarchy.as(s, mixin)
+          const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+          const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
+          permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+          accountsByPermission[s._id] = {}
+
+          for (const role of roles) {
+            const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
+
+            if (assignment.length === 0) {
+              continue
+            }
+
+            for (const permissionId of role.permissions) {
+              if (accountsByPermission[s._id][permissionId] === undefined) {
+                accountsByPermission[s._id][permissionId] = new Set()
+              }
+
+              assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
+            }
+          }
+        } else {
+          whitelistedSpaces.add(s._id)
         }
       }
-    } else {
-      whitelistedSpaces.add(s._id)
-    }
-  }
 
-  permissionsStore.set({
-    ps: permissionsBySpace,
-    ap: accountsByPermission,
-    whitelist: whitelistedSpaces
-  })
+      permissionsStore.set({
+        ps: permissionsBySpace,
+        ap: accountsByPermission,
+        whitelist: whitelistedSpaces
+      })
+    },
+    {
+      projection: {
+        _id: 1,
+        type: 1,
+        ...targetClasses
+      } as any
+    }
+  )
 })
 
 export function getCollaborationUser (): CollaborationUser {
@@ -1447,4 +1589,57 @@ export function getCollaborationUser (): CollaborationUser {
     email: me.email,
     color
   }
+}
+
+export async function getObjectLinkId (
+  providers: LinkIdProvider[],
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  doc?: Doc
+): Promise<string> {
+  const provider = providers.find(({ _id }) => _id === _class)
+
+  if (provider === undefined) {
+    return _id
+  }
+
+  const client = getClient()
+  const object = doc ?? (await client.findOne(_class, { _id }))
+
+  if (object === undefined) {
+    return _id
+  }
+
+  const encodeFn = await getResource(provider.encode)
+  return await encodeFn(object)
+}
+
+export async function parseLinkId<T extends Doc> (
+  providers: LinkIdProvider[],
+  id: string,
+  _class: Ref<Class<T>>
+): Promise<Ref<T>> {
+  const hierarchy = getClient().getHierarchy()
+  const provider =
+    providers.find(({ _id }) => id === _class) ?? providers.find(({ _id }) => hierarchy.isDerived(_class, _id))
+
+  if (provider === undefined) {
+    return id as Ref<T>
+  }
+
+  const decodeFn = await getResource(provider.decode)
+  const _id = await decodeFn(id)
+
+  return (_id ?? id) as Ref<T>
+}
+
+export async function getObjectId (object: Doc, hierarchy: Hierarchy): Promise<string> {
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    return await encodeFn(object)
+  }
+
+  return object._id
 }

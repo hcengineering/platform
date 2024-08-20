@@ -109,7 +109,17 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       space,
       spaceType.targetClass
     ) as unknown as RolesAssignment
-    this.assignmentBySpace[space._id] = asMixin
+
+    const allPossibleRoles = this.storage.modelDb.findAllSync(core.class.Role, {})
+    const requiredValues: Record<string, any> = {}
+    for (const role of allPossibleRoles) {
+      const v = asMixin[role._id]
+      if (v !== undefined) {
+        requiredValues[role._id] = asMixin[role._id]
+      }
+    }
+
+    this.assignmentBySpace[space._id] = requiredValues
 
     await this.setPermissions(space._id, await this.getRoles(spaceType._id), asMixin)
   }
@@ -193,7 +203,17 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     // Note: currently the whole assignment is always included into the mixin update
     // so we can just rebuild the permissions
     const assignment: RolesAssignment = mixinDoc.attributes as RolesAssignment
-    this.assignmentBySpace[spaceId] = assignment
+
+    const allPossibleRoles = this.storage.modelDb.findAllSync(core.class.Role, {})
+    const requiredValues: Record<string, any> = {}
+    for (const role of allPossibleRoles) {
+      const v = assignment[role._id]
+      if (v !== undefined) {
+        requiredValues[role._id] = assignment[role._id]
+      }
+    }
+
+    this.assignmentBySpace[spaceId] = requiredValues
 
     this.permissionsBySpace[tx.objectId] = {}
     await this.setPermissions(spaceId, await this.getRoles(spaceType._id), assignment)
@@ -230,9 +250,8 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return
     }
 
-    const h = this.storage.hierarchy
     const actualTx = TxProcessor.extractTx(tx)
-    if (!h.isDerived(actualTx._class, core.class.TxCUD)) {
+    if (!TxProcessor.isExtendsCUD(actualTx._class)) {
       return
     }
 
@@ -302,8 +321,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   private async processPermissionsUpdatesFromTx (ctx: SessionContext, tx: Tx): Promise<void> {
-    const h = this.storage.hierarchy
-    if (!h.isDerived(tx._class, core.class.TxCUD)) {
+    if (!TxProcessor.isExtendsCUD(tx._class)) {
       return
     }
 
@@ -315,10 +333,8 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     await this.processPermissionsUpdatesFromTx(ctx, tx)
     await this.checkPermissions(ctx, tx)
     const res = await this.provideTx(ctx, tx)
-    for (const txd of ctx.derived) {
-      for (const tx of txd.derived) {
-        await this.processPermissionsUpdatesFromTx(ctx, tx)
-      }
+    for (const txd of ctx.derived.txes) {
+      await this.processPermissionsUpdatesFromTx(ctx, txd)
     }
     return res
   }
@@ -327,7 +343,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
-      await Promise.all(applyTx.txes.map((t) => this.checkPermissions(ctx, t)))
+      for (const t of applyTx.txes) {
+        await this.checkPermissions(ctx, t)
+      }
       return
     }
 

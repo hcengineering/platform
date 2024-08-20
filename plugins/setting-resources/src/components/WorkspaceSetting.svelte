@@ -15,13 +15,12 @@
 <script lang="ts">
   import { AvatarType } from '@hcengineering/contact'
   import { EditableAvatar } from '@hcengineering/contact-resources'
+  import core from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import { FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
   import setting from '../plugin'
-
-  export let visibleNav: boolean = true
 
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
@@ -37,7 +36,7 @@
       const avatar = await avatarEditor.createAvatar()
       await client.createDoc<WorkspaceSetting>(
         setting.class.WorkspaceSetting,
-        setting.space.Setting,
+        core.space.Workspace,
         { icon: avatar.avatar },
         setting.ids.WorkspaceSetting
       )

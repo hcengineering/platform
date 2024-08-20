@@ -30,7 +30,7 @@
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, InlineAttributeBar, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
-  import { Vacancy as VacancyClass } from '@hcengineering/recruit'
+  import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { ProjectType, makeRank } from '@hcengineering/task'
   import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
@@ -47,7 +47,9 @@
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'
-  import Vacancy from './icons/Vacancy.svelte'
+  import VacancyIcon from './icons/Vacancy.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getSequenceId } from '../utils'
 
   const dispatch = createEventDispatcher()
 
@@ -231,29 +233,36 @@
     }
 
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+    const data: Data<Vacancy> = {
+      ...vacancyData,
+      name,
+      description: template?.shortDescription ?? '',
+      fullDescription: makeCollaborativeDoc(objectId, 'fullDescription'),
+      private: false,
+      archived: false,
+      number: (incResult as any).object.sequence,
+      company,
+      members,
+      autoJoin: typeType.autoJoin ?? false,
+      owners: [getCurrentAccount()._id],
+      type: typeId,
+      $markup: {
+        fullDescription
+      }
+    }
 
-    const id = await client.createDoc(
-      recruit.class.Vacancy,
-      core.space.Space,
-      {
-        ...vacancyData,
-        name,
-        description: template?.shortDescription ?? '',
-        fullDescription: makeCollaborativeDoc(objectId, 'fullDescription'),
-        private: false,
-        archived: false,
-        number: (incResult as any).object.sequence,
-        company,
-        members,
-        autoJoin: typeType.autoJoin ?? false,
-        owners: [getCurrentAccount()._id],
-        type: typeId,
-        $markup: {
-          fullDescription
-        }
-      },
-      objectId
-    )
+    const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
+
+    Analytics.handleEvent(RecruitEvents.VacancyCreated, {
+      id: getSequenceId({
+        ...data,
+        _id: id,
+        _class: recruit.class.Vacancy,
+        space: core.space.Space,
+        modifiedOn: 0,
+        modifiedBy: getCurrentAccount()._id
+      })
+    })
 
     if (issueTemplates.length > 0) {
       for (const issueTemplate of issueTemplates) {
@@ -330,7 +339,7 @@
   <span>{typeType?.name}</span>
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
-      <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} noFocus />
+      <Button focusIndex={1} icon={VacancyIcon} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
     <EditBox
       focusIndex={2}

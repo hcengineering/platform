@@ -30,6 +30,7 @@ import type {
   Space,
   Timestamp
 } from './classes'
+import { clone } from './clone'
 import { CollaborativeDoc } from './collaboration'
 import core from './component'
 import { setObjectValue } from './objvalue'
@@ -37,7 +38,6 @@ import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
 import { generateId } from './utils'
-import { clone } from './clone'
 
 /**
  * @public
@@ -51,7 +51,6 @@ export interface Tx extends Doc {
  */
 export enum WorkspaceEvent {
   UpgradeScheduled,
-  Upgrade,
   IndexingUpdate,
   SecurityChange,
   MaintenanceNotification,
@@ -156,10 +155,14 @@ export interface TxApplyIf extends Tx {
 
   // If passed, will send WorkspaceEvent.BulkUpdate event with list of classes to update
   extraNotify?: Ref<Class<Doc>>[]
+
+  // If defined will go into a separate measure section
+  measureName?: string
 }
 
 export interface TxApplyResult {
   success: boolean
+  serverTime: number
 }
 
 /**
@@ -470,6 +473,16 @@ export abstract class TxProcessor implements WithTx {
     return doc as D
   }
 
+  static isExtendsCUD (_class: Ref<Class<Doc>>): boolean {
+    return (
+      _class === core.class.TxCreateDoc ||
+      _class === core.class.TxUpdateDoc ||
+      _class === core.class.TxRemoveDoc ||
+      _class === core.class.TxCollectionCUD ||
+      _class === core.class.TxMixin
+    )
+  }
+
   static extractTx (tx: Tx): Tx {
     if (tx._class === core.class.TxCollectionCUD) {
       const ctx = tx as TxCollectionCUD<Doc, AttachedDoc>
@@ -654,6 +667,7 @@ export class TxFactory {
     match: DocumentClassQuery<Doc>[],
     notMatch: DocumentClassQuery<Doc>[],
     txes: TxCUD<Doc>[],
+    measureName: string | undefined,
     notify: boolean = true,
     extraNotify: Ref<Class<Doc>>[] = [],
     modifiedOn?: Timestamp,
@@ -670,6 +684,7 @@ export class TxFactory {
       match,
       notMatch,
       txes,
+      measureName,
       notify,
       extraNotify
     }

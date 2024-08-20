@@ -65,7 +65,7 @@
       label={setting.string.DateMode}
       on:selected={(res) => {
         selected = res.detail
-        dispatch('change', { type: TypeDate(res.detail._id) })
+        dispatch('change', { type: TypeDate(res.detail) })
       }}
     />
   {:else}

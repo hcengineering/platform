@@ -29,7 +29,7 @@
     Class
   } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { SpaceTypeSelector } from '@hcengineering/view-resources'
   import documents, { DocumentSpace, DocumentSpaceType } from '@hcengineering/controlled-documents'
@@ -74,6 +74,8 @@
 
     rolesAssignment = getRolesAssignment()
   }
+  $: descriptors =
+    spaceType?.descriptor !== undefined ? [spaceType.descriptor] : [documents.descriptor.DocumentSpaceType]
 
   function getRolesAssignment (): RolesAssignment {
     if (docSpace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -239,7 +241,7 @@
 
       <SpaceTypeSelector
         disabled={!isNew}
-        descriptors={[documents.descriptor.DocumentSpaceType]}
+        {descriptors}
         type={typeId}
         focusIndex={4}
         kind="regular"
@@ -304,6 +306,7 @@
         onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
+        allowGuests
       />
     </div>
 

@@ -36,6 +36,7 @@
   export let highlighted: boolean = false
   export let selected: boolean = false
   export let showMenu: boolean = false
+  export let noDivider: boolean = false
   export let shouldTooltip: boolean = false
   export let forciblyСollapsed: boolean = false
 </script>
@@ -60,6 +61,7 @@
   {selected}
   {shouldTooltip}
   {showMenu}
+  {noDivider}
   {forciblyСollapsed}
   on:click
 >

@@ -65,7 +65,7 @@
   class:error
   class:disabled
   style:width
-  on:click={() => {
+  on:click|stopPropagation={() => {
     if (!autoAction) element?.focus()
   }}
 >
@@ -213,6 +213,7 @@
       margin: 0;
       padding: 0;
       width: 100%;
+      text-overflow: ellipsis;
       color: var(--input-TextColor);
       caret-color: var(--global-focus-BorderColor);
       background-color: transparent;

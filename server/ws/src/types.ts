@@ -1,4 +1,5 @@
 import {
+  type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -7,11 +8,10 @@ import {
   type MeasureContext,
   type Ref,
   type Tx,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceId
 } from '@hcengineering/core'
 import { type Request, type Response } from '@hcengineering/rpc'
-import { type BroadcastFunc, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import { type Pipeline, type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 /**
@@ -70,30 +70,22 @@ export interface Session {
 
   requests: Map<string, SessionRequest>
 
+  broadcastTx: Tx[]
+
   binaryMode: boolean
   useCompression: boolean
   total: StatisticsElement
   current: StatisticsElement
   mins5: StatisticsElement
 
-  measureCtx?: { ctx: MeasureContext, time: number }
-
   lastRequest: number
 
   isUpgradeClient: () => boolean
 
   getMode: () => string
-}
 
-/**
- * @public
- */
-export type PipelineFactory = (
-  ctx: MeasureContext,
-  ws: WorkspaceIdWithUrl,
-  upgrade: boolean,
-  broadcast: BroadcastFunc
-) => Promise<Pipeline>
+  broadcast: (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]) => void
+}
 
 /**
  * @public
@@ -104,6 +96,8 @@ export interface ConnectionSocket {
   close: () => void
   send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<number>
   data: () => Record<string, any>
+
+  readRequest: (buffer: Buffer, binary: boolean) => Request<any>
 }
 
 /**
@@ -134,6 +128,7 @@ export interface Workspace {
 
   workspaceId: WorkspaceId
   workspaceName: string
+  branding: Branding | null
 }
 
 export interface AddSessionActive {

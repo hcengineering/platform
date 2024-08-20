@@ -21,7 +21,14 @@
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, ComponentExtensions, getClient, isAdminUser, reduceCalls } from '@hcengineering/presentation'
+  import {
+    ActionContext,
+    ComponentExtensions,
+    createQuery,
+    getClient,
+    isAdminUser,
+    reduceCalls
+  } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -67,7 +74,8 @@
     NavLink,
     accessDeniedStore,
     migrateViewOpttions,
-    updateFocus
+    updateFocus,
+    parseLinkId
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
@@ -117,9 +125,12 @@
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
-  let visibleNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
+  $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+
   async function toggleNav (): Promise<void> {
-    visibleNav = !visibleNav
+    $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
     closeTooltip()
     if (currentApplication && navigatorModel && navigator) {
       await tick()
@@ -202,14 +213,15 @@
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
-    const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
+    const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return
 
     const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
     if (mixin === undefined) return
     const titleProvider = await getResource(mixin.titleProvider)
     try {
-      return await titleProvider(client, _id as Ref<Doc>)
+      const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
+      return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -218,7 +230,7 @@
 
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
     let locationResolver = currentApplication?.locationResolver
-    if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
+    if (loc.path[2] != null && loc.path[2].trim().length > 0) {
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         locationResolver = app?.locationResolver
@@ -386,7 +398,7 @@
     currentQuery = loc.query
     if (fragment !== currentFragment) {
       currentFragment = fragment
-      if (fragment !== undefined && fragment.trim().length > 0) {
+      if (fragment != null && fragment.trim().length > 0) {
         await setOpenPanelFocus(fragment)
       } else {
         closePanel()
@@ -398,7 +410,10 @@
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
-      const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      const _class = props[2] as Ref<Class<Doc>>
+      const _id = await parseLinkId(linkProviders, props[1], _class)
+      const doc = await client.findOne<Doc>(_class, { _id })
+      panelDoc = { _class, _id }
 
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
@@ -408,8 +423,8 @@
         })
         openPanel(
           props[0] as AnyComponent,
-          props[1],
-          props[2],
+          _id,
+          _class,
           (props[3] ?? undefined) as PopupAlignment,
           (props[4] ?? undefined) as AnyComponent
         )
@@ -420,6 +435,17 @@
     } else {
       closePanel(false)
     }
+  }
+  let panelDoc: undefined | { _id: Ref<Doc>, _class: Ref<Class<Doc>> } = undefined
+  const panelQuery = createQuery()
+
+  $: if (panelDoc !== undefined) {
+    panelQuery.query(panelDoc._class, { _id: panelDoc._id }, (r) => {
+      if (r.length === 0) {
+        closePanel(false)
+        panelDoc = undefined
+      }
+    })
   }
 
   function clear (level: number): void {
@@ -499,21 +525,20 @@
   let aside: HTMLElement
   let cover: HTMLElement
 
-  let navFloat: boolean = !($deviceInfo.docWidth < 1024)
-  $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
-    visibleNav = false
-    navFloat = true
-  } else if ($deviceInfo.docWidth > 1024 && navFloat) {
+  $deviceInfo.navigator.float = !($deviceInfo.docWidth < 1024)
+  $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.navigator.float) {
+    $deviceInfo.navigator.visible = false
+    $deviceInfo.navigator.float = true
+  } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.navigator.float) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-      navFloat = false
-      visibleNav = true
+      $deviceInfo.navigator.float = false
+      $deviceInfo.navigator.visible = true
     }
   }
   const checkOnHide = (): void => {
-    if (visibleNav && $deviceInfo.docWidth <= 1024) visibleNav = false
+    if ($deviceInfo.navigator.visible && $deviceInfo.docWidth <= 1024) $deviceInfo.navigator.visible = false
   }
-  let appsDirection: 'vertical' | 'horizontal'
-  $: appsDirection = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
+  $: $deviceInfo.navigator.direction = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
   let appsMini: boolean
   $: appsMini =
     $deviceInfo.isMobile &&
@@ -521,13 +546,17 @@
       (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
   let popupPosition: PopupPosAlignment
   $: popupPosition =
-    appsDirection === 'horizontal'
+    $deviceInfo.navigator.direction === 'horizontal'
       ? 'account-portrait'
-      : appsDirection === 'vertical' && $deviceInfo.isMobile
+      : $deviceInfo.navigator.direction === 'vertical' && $deviceInfo.isMobile
         ? 'account-mobile'
         : 'account'
   let popupSpacePosition: PopupPosAlignment
-  $: popupSpacePosition = appsMini ? 'logo-mini' : appsDirection === 'horizontal' ? 'logo-portrait' : 'logo'
+  $: popupSpacePosition = appsMini
+    ? 'logo-mini'
+    : $deviceInfo.navigator.direction === 'horizontal'
+      ? 'logo-portrait'
+      : 'logo'
 
   onMount(() => {
     subscribeMobile(setTheme)
@@ -579,9 +608,8 @@
 
   defineSeparators('workbench', workbenchSeparators)
 
-  let modern: boolean
-  $: modern = currentApplication?.modern ?? false
-  $: elementPanel = modern ? $deviceInfo.replacedPanel ?? contentPanel : contentPanel
+  $: mainNavigator = currentApplication && navigatorModel && navigator && $deviceInfo.navigator.visible
+  $: elementPanel = $deviceInfo.replacedPanel ?? contentPanel
 
   $: deactivated =
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
@@ -626,14 +654,16 @@
   </svg>
   <div
     class="workbench-container"
-    class:modern-app={modern}
-    style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
+    style:flex-direction={$deviceInfo.navigator.direction === 'horizontal' ? 'column-reverse' : 'row'}
   >
-    <div class="antiPanel-application {appsDirection} no-print" class:lastDivider={!visibleNav}>
+    <div
+      class="antiPanel-application {$deviceInfo.navigator.direction} no-print"
+      class:lastDivider={!$deviceInfo.navigator.visible}
+    >
       <div
         class="hamburger-container clear-mins"
-        class:portrait={appsDirection === 'horizontal'}
-        class:landscape={appsDirection === 'vertical'}
+        class:portrait={$deviceInfo.navigator.direction === 'horizontal'}
+        class:landscape={$deviceInfo.navigator.direction === 'vertical'}
       >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -649,8 +679,8 @@
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
             icon={TopMenu}
-            label={visibleNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-            selected={!visibleNav}
+            label={$deviceInfo.navigator.visible ? workbench.string.HideMenu : workbench.string.ShowMenu}
+            selected={!$deviceInfo.navigator.visible}
             size={appsMini ? 'small' : 'medium'}
             on:click={toggleNav}
           />
@@ -675,9 +705,13 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
-        <Applications {apps} active={currentApplication?._id} direction={appsDirection} />
+        <Applications {apps} active={currentApplication?._id} direction={$deviceInfo.navigator.direction} />
       </div>
-      <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
+      <div
+        class="info-box {$deviceInfo.navigator.direction}"
+        class:vertical-mobile={$deviceInfo.navigator.direction === 'vertical'}
+        class:mini={appsMini}
+      >
         <AppItem
           icon={IconSettings}
           label={setting.string.Settings}
@@ -709,7 +743,11 @@
             />
           {/if}
         {/await} -->
-        <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
+        <div
+          class="flex-center"
+          class:mt-3={$deviceInfo.navigator.direction === 'vertical'}
+          class:ml-2={$deviceInfo.navigator.direction === 'horizontal'}
+        >
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
@@ -732,11 +770,17 @@
       }}
     />
     <div class="workbench-container inner">
-      {#if currentApplication && navigatorModel && navigator && visibleNav}
+      {#if mainNavigator}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
-        <div class="antiPanel-navigator no-print {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+        {#if $deviceInfo.navigator.float}
+          <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
+        {/if}
+        <div
+          class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
+            ? 'portrait'
+            : 'landscape'} border-left"
+        >
           <div class="antiPanel-wrap__content hulyNavPanel-container">
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
@@ -761,34 +805,45 @@
               on:open={checkOnHide}
             />
             <NavFooter>
-              {#if currentApplication.navFooterComponent}
+              {#if currentApplication && currentApplication.navFooterComponent}
                 <Component is={currentApplication.navFooterComponent} props={{ currentSpace }} />
               {/if}
             </NavFooter>
           </div>
           <Separator
             name={'workbench'}
-            float={navFloat ? 'navigator' : true}
+            float={$deviceInfo.navigator.float ? 'navigator' : true}
             index={0}
             color={'var(--theme-navpanel-border)'}
           />
         </div>
-        <Separator name={'workbench'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
+        <Separator
+          name={'workbench'}
+          float={$deviceInfo.navigator.float}
+          index={0}
+          color={'transparent'}
+          separatorSize={0}
+          short
+        />
       {/if}
-      <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
+      <div
+        bind:this={contentPanel}
+        class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
+      >
         {#if currentApplication && currentApplication.component}
-          <Component is={currentApplication.component} props={{ currentSpace, visibleNav, navFloat, appsDirection }} />
+          <Component
+            is={currentApplication.component}
+            props={{
+              currentSpace,
+              asideId,
+              asideComponent: currentApplication?.aside
+            }}
+            on:close={closeAside}
+          />
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
-            props={{
-              model: navigatorModel,
-              ...specialComponent.componentProps,
-              currentSpace,
-              visibleNav,
-              navFloat,
-              appsDirection
-            }}
+            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
             on:action={(e) => {
               if (e?.detail) {
                 const loc = getCurrentLocation()
@@ -798,10 +853,7 @@
             }}
           />
         {:else if currentView?.component !== undefined}
-          <Component
-            is={currentView.component}
-            props={{ ...currentView.componentProps, currentView, visibleNav, navFloat, appsDirection }}
-          />
+          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
         {:else if $accessDeniedStore}
           <div class="flex-center h-full">
             <h2><Label label={workbench.string.AccessDenied} /></h2>
@@ -810,10 +862,10 @@
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-      {#if asideId}
+      {#if asideId && navigatorModel !== undefined}
         {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
         {#if asideComponent !== undefined}
-          <Separator name={'workbench'} index={1} />
+          <Separator name={'workbench'} index={1} color={'transparent'} separatorSize={0} short />
           <div class="antiPanel-component antiComponent aside" bind:this={aside}>
             <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
           </div>
@@ -824,7 +876,7 @@
   <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
-  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel} kind={modern ? 'modern' : 'default'}>
+  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
     <svelte:fragment slot="panel-header">
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>
@@ -840,38 +892,30 @@
 
 <style lang="scss">
   .workbench-container {
+    position: relative;
     display: flex;
     min-width: 0;
     min-height: 0;
     width: 100%;
     height: 100%;
+    background-color: var(--theme-statusbar-color);
     touch-action: none;
 
-    &:not(.modern-app, .inner) {
-      border-top: 1px solid var(--theme-navpanel-divider);
-      border-left: 1px solid var(--theme-navpanel-color);
-
-      & + :global(.dock) {
-        border-left: 1px solid var(--theme-navpanel-divider);
-      }
+    &.inner {
+      background-color: var(--theme-navpanel-color);
+      border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
     }
-    &.modern-app {
-      position: relative;
-      background-color: var(--theme-statusbar-color);
-      border-top: 1px solid transparent;
-
-      &::after {
-        position: absolute;
-        content: '';
-        inset: 0;
-        border: 1px solid var(--theme-divider-color);
-        border-radius: var(--medium-BorderRadius);
-        pointer-events: none;
-      }
-      .antiPanel-application {
-        border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
-        border-right: none;
-      }
+    &:not(.inner)::after {
+      position: absolute;
+      content: '';
+      inset: 0;
+      border: 1px solid var(--theme-divider-color);
+      border-radius: var(--medium-BorderRadius);
+      pointer-events: none;
+    }
+    .antiPanel-application {
+      border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
+      border-right: none;
     }
   }
 
@@ -967,37 +1011,6 @@
 
     &.shown {
       display: block;
-    }
-  }
-  .splitter {
-    position: relative;
-    width: 1px;
-    min-width: 1px;
-    max-width: 1px;
-    height: 100%;
-    background-color: var(--theme-divider-color);
-    transition: background-color 0.15s ease-in-out;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0.5rem;
-      height: 100%;
-      border-left: 2px solid transparent;
-      cursor: col-resize;
-      z-index: 1;
-      transition: border-color 0.15s ease-in-out;
-    }
-    &:hover,
-    &.hovered {
-      transition-duration: 0;
-      background-color: var(--primary-bg-color);
-      &::before {
-        transition-duration: 0;
-        border-left: 2px solid var(--primary-bg-color);
-      }
     }
   }
 

@@ -48,11 +48,6 @@
         },
         (res) => {
           resAttachments = res
-        },
-        {
-          lookup: {
-            file: core.class.Blob
-          }
         }
       )
     } else {

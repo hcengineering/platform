@@ -43,6 +43,7 @@
   export let checkForHeaders: boolean = false
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
+  export let disableOverscroll = false
   export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
   export let onResize: (() => void) | undefined = undefined
 
@@ -542,6 +543,7 @@
         onResize?.()
       }}
       class="scroll relative flex-shrink"
+      class:disableOverscroll
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={() => {
         if (onScroll) {
@@ -838,6 +840,9 @@
     height: 100%;
     overflow-y: auto;
 
+    &.disableOverscroll {
+      overscroll-behavior: none;
+    }
     &::-webkit-scrollbar:vertical {
       width: 0;
     }

@@ -13,11 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
+  import { Calendar, Event, ReccuringEvent, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
   import { Person, PersonAccount } from '@hcengineering/contact'
-  import { Class, Doc, Markup, Ref, getCurrentAccount } from '@hcengineering/core'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor'
+  import core, { Class, Doc, Markup, Ref, Space, generateId, getCurrentAccount } from '@hcengineering/core'
+  import presentation, {
+    createQuery,
+    DocCreateExtComponent,
+    DocCreateExtensionManager,
+    getClient
+  } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
     EditBox,
@@ -42,15 +48,20 @@
   import ReccurancePopup from './ReccurancePopup.svelte'
   import VisibilityEditor from './VisibilityEditor.svelte'
 
+  const currentUser = getCurrentAccount() as PersonAccount
+
   export let attachedTo: Ref<Doc> = calendar.ids.NoAttached
   export let attachedToClass: Ref<Class<Doc>> = calendar.class.Event
   export let title: string = ''
   export let date: Date | undefined = undefined
   export let withTime = false
+  export let participants: Ref<Person>[] = [currentUser.person]
 
   const now = new Date()
   const defaultDuration = 60 * 60 * 1000
   const allDayDuration = 24 * 60 * 60 * 1000 - 1
+
+  const docCreateManager = DocCreateExtensionManager.create(calendar.class.Event)
 
   let startDate =
     date === undefined ? now.getTime() : withTime ? date.getTime() : date.setHours(now.getHours(), now.getMinutes())
@@ -74,10 +85,14 @@
     }
   })
 
+  const spaceQ = createQuery()
+  let space: Space | undefined = undefined
+  spaceQ.query(core.class.Space, { _id: calendar.space.Calendar }, (res) => {
+    space = res[0]
+  })
+
   let rules: RecurringRule[] = []
 
-  const currentUser = getCurrentAccount() as PersonAccount
-  let participants: Ref<Person>[] = [currentUser.person]
   let externalParticipants: string[] = []
 
   const dispatch = createEventDispatcher()
@@ -92,6 +107,7 @@
     if (startDate != null) date = startDate
     if (date === undefined) return
     if (title === '') return
+    const _id = generateId<Event>()
     if (rules.length > 0) {
       await client.addCollection(
         calendar.class.ReccuringEvent,
@@ -118,25 +134,37 @@
           access: 'owner',
           originalStartTime: allDay ? saveUTC(date) : date,
           timeZone
-        }
+        },
+        _id as Ref<ReccuringEvent>
       )
     } else {
-      await client.addCollection(calendar.class.Event, calendar.space.Calendar, attachedTo, attachedToClass, 'events', {
-        calendar: _calendar,
-        eventId: generateEventId(),
-        date: allDay ? saveUTC(date) : date,
-        dueDate: allDay ? saveUTC(dueDate) : dueDate,
-        externalParticipants,
-        description,
-        visibility,
-        participants,
-        reminders,
-        title,
-        location,
-        allDay,
-        timeZone,
-        access: 'owner'
-      })
+      await client.addCollection(
+        calendar.class.Event,
+        calendar.space.Calendar,
+        attachedTo,
+        attachedToClass,
+        'events',
+        {
+          calendar: _calendar,
+          eventId: generateEventId(),
+          date: allDay ? saveUTC(date) : date,
+          dueDate: allDay ? saveUTC(dueDate) : dueDate,
+          externalParticipants,
+          description,
+          visibility,
+          participants,
+          reminders,
+          title,
+          location,
+          allDay,
+          timeZone,
+          access: 'owner'
+        },
+        _id
+      )
+    }
+    if (space !== undefined) {
+      await docCreateManager.commit(client, _id, space, {}, 'post')
     }
     dispatch('close')
   }
@@ -203,6 +231,9 @@
       <LocationEditor focusIndex={10010} bind:value={location} />
       <EventParticipants focusIndex={10011} bind:participants bind:externalParticipants />
     </div>
+    <div class="block">
+      <DocCreateExtComponent manager={docCreateManager} kind={'body'} />
+    </div>
     <div class="block row gap-1-5">
       <div class="top-icon">
         <Icon icon={calendar.icon.Description} size={'small'} />
@@ -221,7 +252,7 @@
       <CalendarSelector bind:value={_calendar} focusIndex={10101} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'tertiary'} focusIndex={10102} withoutIcon />
+        <VisibilityEditor bind:value={visibility} kind={'tertiary'} size={'small'} focusIndex={10102} withoutIcon />
       </div>
       <EventReminders bind:reminders focusIndex={10103} />
     </div>

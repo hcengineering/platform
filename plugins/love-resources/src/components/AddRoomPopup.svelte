@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Class, Data, Ref } from '@hcengineering/core'
+  import core, { Class, Data, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Button, DropdownIntlItem } from '@hcengineering/ui'
@@ -64,7 +64,7 @@
     if (val._class === love.class.Office) {
       ;(data as Data<Office>).person = null
     }
-    await client.createDoc(val._class, love.space.Rooms, data)
+    await client.createDoc(val._class, core.space.Workspace, data)
     dispatch('close')
   }
 </script>

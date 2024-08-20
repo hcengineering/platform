@@ -22,9 +22,12 @@ import type { StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import config from './config'
 import { start } from './server'
+import serverClient from '@hcengineering/server-client'
 
 export async function startCollaborator (ctx: MeasureContext, onClose?: () => void): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
+  setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
+  setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoUrl)

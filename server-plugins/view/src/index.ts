@@ -14,18 +14,26 @@
 //
 
 import type { Plugin, Resource } from '@hcengineering/platform'
-import { TriggerFunc } from '@hcengineering/server-core'
+import { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
 import { plugin } from '@hcengineering/platform'
+import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
 
 /**
  * @public
  */
 export const serverViewId = 'server-view' as Plugin
 
+export interface ServerLinkIdProvider extends Class<Doc> {
+  encode: Resource<(doc: Doc, control: TriggerControl) => Promise<string>>
+}
+
 /**
  * @public
  */
 export default plugin(serverViewId, {
+  mixin: {
+    ServerLinkIdProvider: '' as Ref<Mixin<ServerLinkIdProvider>>
+  },
   trigger: {
     OnCustomAttributeRemove: '' as Resource<TriggerFunc>
   }

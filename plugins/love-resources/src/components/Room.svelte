@@ -31,7 +31,7 @@
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos, invites, myInfo, myRequests } from '../stores'
+  import { storePromise, currentRoom, infos, invites, myInfo, myRequests } from '../stores'
   import {
     awaitConnect,
     isConnected,
@@ -43,6 +43,7 @@
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
+  import presentation from '@hcengineering/presentation'
 
   export let withVideo: boolean
   export let room: TypeRoom
@@ -135,7 +136,7 @@
       await tick()
       index = participants.findIndex((p) => p._id === participant.identity)
       const el = participantElements[index]
-      if (el !== undefined) {
+      if (el != null) {
         el.appendChild(element)
         return
       }
@@ -180,7 +181,7 @@
         return
       }
       const index = participants.findIndex((p) => p._id === participant.identity)
-      if (index !== -1) {
+      if (index !== -1 && participantElements[index] != null) {
         participantElements[index].setTrackMuted(publication.isMuted)
       }
     } else {
@@ -221,7 +222,13 @@
 
     configured = true
 
-    if (!$isConnected && !$isCurrentInstanceConnected) {
+    await $storePromise
+
+    if (
+      !$isConnected &&
+      !$isCurrentInstanceConnected &&
+      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
+    ) {
       const info = $infos.filter((p) => p.room === room._id)
       await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
     }

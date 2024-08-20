@@ -53,6 +53,8 @@
     "UpdateSpaceDescription": "Concede aos usuários a capacidade de atualizar o espaço",
     "ArchiveSpaceDescription": "Concede aos usuários a capacidade de arquivar o espaço",
     "AutoJoin": "Auto adesão",
-    "AutoJoinDescr": "Adesão automática de novos funcionários a este espaço"
+    "AutoJoinDescr": "Adesão automática de novos funcionários a este espaço",
+    "BlobSize": "Tamanho",
+    "BlobContentType": "Tipo de conteúdo"
   }
 }

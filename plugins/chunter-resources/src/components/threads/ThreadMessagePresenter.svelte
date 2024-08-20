@@ -73,7 +73,6 @@
     {withShowMore}
     {attachmentImageSize}
     {videoPreload}
-    showLinksPreview={false}
     {onClick}
   />
 {/if}

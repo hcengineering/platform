@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, Class } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { Doc, Ref, Class, Space } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Component,
     defineSeparators,
@@ -23,48 +23,62 @@
     navigate,
     Separator,
     Location,
-    restoreLocation
+    restoreLocation,
+    deviceOptionsStore as deviceInfo,
+    type AnyComponent
   } from '@hcengineering/ui'
-
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { chunterId } from '@hcengineering/chunter'
-  import { ActivityMessage } from '@hcengineering/activity'
+  import view, { decodeObjectURI } from '@hcengineering/view'
+  import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
   import { chatSpecials, loadSavedAttachments } from './utils'
   import { SelectChannelEvent } from './types'
-  import { decodeChannelURI, openChannel } from '../../navigation'
+  import { openChannel } from '../../navigation'
 
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
+  export let currentSpace: Ref<Space> | undefined = undefined
+  export let asideComponent: AnyComponent | undefined = undefined
+  export let asideId: string | undefined = undefined
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
   const objectQuery = createQuery()
+  const client = getClient()
 
   const navigatorModel: NavigatorModel = {
     spaces: [],
     specials: chatSpecials
   }
 
-  let selectedData: { _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined = undefined
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
+  let selectedData: { id: string, _class: Ref<Class<Doc>> } | undefined = undefined
 
   let currentSpecial: SpecialNavModel | undefined
 
   let object: Doc | undefined = undefined
+  let replacedPanel: HTMLElement
 
   location.subscribe((loc) => {
     syncLocation(loc)
   })
 
-  $: void loadObject(selectedData?._id, selectedData?._class)
+  $: void loadObject(selectedData?.id, selectedData?._class)
 
-  async function loadObject (_id?: Ref<Doc>, _class?: Ref<Class<Doc>>): Promise<void> {
-    if (_id == null || _class == null || _class === '') {
+  async function loadObject (id?: string, _class?: Ref<Class<Doc>>): Promise<void> {
+    if (id == null || _class == null || _class === '') {
+      object = undefined
+      objectQuery.unsubscribe()
+      return
+    }
+
+    const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
+
+    if (_id === undefined) {
       object = undefined
       objectQuery.unsubscribe()
       return
@@ -87,7 +101,7 @@
 
     const id = loc.path[3]
 
-    if (!id) {
+    if (id == null || id === '') {
       currentSpecial = undefined
       selectedData = undefined
       object = undefined
@@ -101,59 +115,74 @@
       selectedData = undefined
       object = undefined
     } else {
-      const [_id, _class] = decodeChannelURI(loc.path[3])
-      selectedData = { _id, _class }
+      const [id, _class] = decodeObjectURI(loc.path[3])
+      selectedData = { id, _class }
     }
   }
 
-  function handleChannelSelected (event: CustomEvent): void {
+  async function handleChannelSelected (event: CustomEvent): Promise<void> {
     if (event.detail === null) {
       selectedData = undefined
       return
     }
 
     const detail = (event.detail ?? {}) as SelectChannelEvent
+    const _class = detail.object._class
+    const _id = detail.object._id
 
-    selectedData = { _id: detail.object._id, _class: detail.object._class }
+    const id = await getObjectLinkId(linkProviders, _id, _class, detail.object)
 
-    if (selectedData._id !== object?._id) {
+    selectedData = { id, _class }
+
+    if (_id !== object?._id) {
       object = detail.object
     }
 
-    openChannel(selectedData._id, selectedData._class)
+    openChannel(selectedData.id, selectedData._class)
   }
 
   defineSeparators('chat', [
     { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
-    { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
+    { size: 'auto', minSize: 20, maxSize: 'auto' },
+    { size: 20, minSize: 20, maxSize: 50, float: 'aside' }
   ])
 
   onMount(() => {
     loadSavedAttachments()
   })
+  $: $deviceInfo.replacedPanel = replacedPanel
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
 </script>
 
-<div class="flex-row-top h-full">
-  {#if visibleNav}
-    <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+<div class="hulyPanels-container">
+  {#if $deviceInfo.navigator.visible}
+    <div
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} border-left"
+    >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
-        <ChatNavigator objectId={selectedData?._id} {object} {currentSpecial} on:select={handleChannelSelected} />
+        <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
-      <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />
+      <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
     </div>
-    <Separator name="chat" float={navFloat} index={0} />
+    <Separator
+      name="chat"
+      float={$deviceInfo.navigator.float}
+      index={0}
+      color={'transparent'}
+      separatorSize={0}
+      short
+    />
   {/if}
 
-  <div class="antiPanel-component filled w-full">
+  <div bind:this={replacedPanel} class="hulyComponent" class:beforeAside={asideComponent !== undefined && asideId}>
     {#if currentSpecial}
       <Component
         is={currentSpecial.component}
         props={{
           model: navigatorModel,
-          ...currentSpecial.componentProps,
-          visibleNav,
-          navFloat,
-          appsDirection
+          ...currentSpecial.componentProps
         }}
         on:action={(e) => {
           if (e?.detail) {
@@ -168,4 +197,10 @@
       <ChannelView {object} {context} />
     {/if}
   </div>
+  {#if asideComponent !== undefined && asideId}
+    <Separator name={'chat'} index={1} color={'var(--theme-divider-color)'} separatorSize={1} />
+    <div class="hulyComponent aside">
+      <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close />
+    </div>
+  {/if}
 </div>

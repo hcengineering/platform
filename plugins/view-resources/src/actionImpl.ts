@@ -32,7 +32,7 @@ import {
   selectionStore,
   selectionLimit
 } from './selection'
-import { deleteObjects, getObjectLinkFragment, restrictionStore } from './utils'
+import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
 import contact from '@hcengineering/contact'
 import { locationToUrl } from '@hcengineering/ui'
 import { get } from 'svelte/store'
@@ -80,8 +80,9 @@ async function CopyTextToClipboard (
 function Delete (
   object: Doc | Doc[],
   evt: Event,
-  props: {
-    skipCheck: boolean
+  props?: {
+    skipCheck?: boolean
+    afterDelete?: () => Promise<void>
   }
 ): void {
   const skipCheck = props?.skipCheck ?? false
@@ -91,10 +92,15 @@ function Delete (
       object,
       skipCheck,
       deleteAction: async () => {
-        const objs = Array.isArray(object) ? object : [object]
-        await deleteObjects(getClient(), objs, skipCheck).catch((err) => {
-          console.error(err)
-        })
+        try {
+          const objs = Array.isArray(object) ? object : [object]
+          await deleteObjects(getClient(), objs, skipCheck)
+          if (props?.afterDelete !== undefined) {
+            await props.afterDelete()
+          }
+        } catch (e) {
+          console.error(e)
+        }
       }
     },
     undefined
@@ -405,7 +411,9 @@ async function ShowEditor (
         value: (doc as any)[props.attribute]
       }
     }
+
     if (editor !== undefined) {
+      const identifier = await getObjectId(doc, hierarchy)
       showPopup(
         editor,
         cprops,
@@ -414,7 +422,18 @@ async function ShowEditor (
         },
         (result) => {
           if (result != null) {
-            void updateAttribute(client, doc, doc._class, { key: props.attribute, attr: attribute }, result)
+            const analyticsProps = {
+              objectId: identifier
+            }
+            void updateAttribute(
+              client,
+              doc,
+              doc._class,
+              { key: props.attribute, attr: attribute },
+              result,
+              false,
+              analyticsProps
+            )
           }
         }
       )
@@ -500,13 +519,30 @@ function AttributeSelector (
   const hierarchy = client.getHierarchy()
   const docArray = Array.isArray(doc) ? doc : [doc]
   const attribute = hierarchy.getAttribute(docArray[0]._class, props.attribute)
-  showPopup(props.actionPopup, { ...props, [props.valueKey ?? 'value']: docArray, width: 'large' }, 'top', (result) => {
-    if (result != null) {
-      for (const docEl of docArray) {
-        void updateAttribute(client, docEl, docEl._class, { key: props.attribute, attr: attribute }, result)
+  showPopup(
+    props.actionPopup,
+    { ...props, [props.valueKey ?? 'value']: docArray, width: 'large' },
+    'top',
+    async (result) => {
+      if (result != null) {
+        for (const docEl of docArray) {
+          const identifier = await getObjectId(docEl, hierarchy)
+          const analyticsProps = {
+            objectId: identifier
+          }
+          void updateAttribute(
+            client,
+            docEl,
+            docEl._class,
+            { key: props.attribute, attr: attribute },
+            result,
+            false,
+            analyticsProps
+          )
+        }
       }
     }
-  })
+  )
 }
 
 async function getPopupAlignment (

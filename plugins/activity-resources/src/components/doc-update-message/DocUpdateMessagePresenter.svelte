@@ -26,7 +26,7 @@
   import { Account, AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, ShowMore, Action } from '@hcengineering/ui'
+  import { Action, Component, ShowMore } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
   import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
@@ -88,13 +88,17 @@
     attributeModel = model
   })
 
-  async function getParentMessage (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<ActivityMessage | undefined> {
+  async function getParentMessage (
+    _class: Ref<Class<Doc>>,
+    _id: Ref<Doc>,
+    space: Ref<Space>
+  ): Promise<ActivityMessage | undefined> {
     if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
-      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage> })
+      return await client.findOne(activity.class.ActivityMessage, { _id: _id as Ref<ActivityMessage>, space })
     }
   }
 
-  $: void getParentMessage(value.attachedToClass, value.attachedTo).then((res) => {
+  $: void getParentMessage(value.attachedToClass, value.attachedTo, value.space).then((res) => {
     parentMessage = res as DisplayActivityMessage
   })
 
@@ -140,16 +144,17 @@
   }
 
   async function loadParentObject (
-    message: DocUpdateMessage,
-    parentMessage?: ActivityMessage,
+    message: Pick<DocUpdateMessage, 'attachedTo' | 'attachedToClass' | 'objectId' | 'space'>,
+    parentMessage?: Pick<ActivityMessage, 'attachedTo' | 'space' | 'attachedToClass'>,
     doc?: Doc
   ): Promise<void> {
-    if (!parentMessage && message.objectId === message.attachedTo) {
+    if (parentMessage === undefined && message.objectId === message.attachedTo) {
       return
     }
 
-    const _id = parentMessage ? parentMessage.attachedTo : message.attachedTo
-    const _class = parentMessage ? parentMessage.attachedToClass : message.attachedToClass
+    const _id = parentMessage !== undefined ? parentMessage.attachedTo : message.attachedTo
+    const _class = parentMessage !== undefined ? parentMessage.attachedToClass : message.attachedToClass
+    const space = parentMessage !== undefined ? parentMessage.space : message.space
 
     if (doc !== undefined && doc._id === _id) {
       parentObject = doc
@@ -163,7 +168,7 @@
       return
     }
 
-    parentObjectQuery.query(_class, { _id }, (res) => {
+    parentObjectQuery.query(_class, { _id, space }, (res) => {
       parentObject = res[0]
     })
   }
@@ -224,7 +229,14 @@
         />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
-      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} {space} />
+      <DocUpdateMessageAttributes
+        attributeUpdates={value.attributeUpdates}
+        {attributeModel}
+        {viewlet}
+        {space}
+        {object}
+        message={value}
+      />
     {/if}
   </svelte:fragment>
 </ActivityMessageTemplate>

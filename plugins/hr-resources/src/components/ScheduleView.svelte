@@ -21,6 +21,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tracker, { Issue } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { groupBy } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { EmployeeReports, getEndDate, getStartDate } from '../utils'
@@ -35,6 +36,9 @@
   export let mode: CalendarMode
   export let display: 'chart' | 'stats'
   export let staffQuery: DocumentQuery<Staff> = {}
+  export let preference: ViewletPreference | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
+  export let loading: boolean = false
 
   $: startDate =
     mode === CalendarMode.Year
@@ -46,7 +50,7 @@
       ? getEndDate(currentDate.getFullYear(), 11)
       : getEndDate(currentDate.getFullYear(), currentDate.getMonth())
 
-  $: departments = [department, ...getDescendants(department, descendants)]
+  $: departments = [department, ...getDescendants(department, descendants, new Set())]
   $: staffIdsForOpenedDepartments = staff.filter((p) => departments.includes(p.department)).map((p) => p._id)
 
   const lq = createQuery()
@@ -79,11 +83,16 @@
 
   function getDescendants (
     department: Ref<Department>,
-    descendants: Map<Ref<Department>, Department[]>
+    descendants: Map<Ref<Department>, Department[]>,
+    visited: Set<string>
   ): Ref<Department>[] {
     const res = (descendants.get(department) ?? []).map((p) => p._id)
     for (const department of res) {
-      res.push(...getDescendants(department, descendants))
+      const has = visited.has(department)
+      if (!has) {
+        visited.add(department)
+        res.push(...getDescendants(department, descendants, visited))
+      }
     }
     return res
   }
@@ -308,6 +317,9 @@
         {holidays}
         {staffDepartmentMap}
         {getHolidays}
+        {preference}
+        {viewlet}
+        {loading}
       />
     {/if}
   {/if}

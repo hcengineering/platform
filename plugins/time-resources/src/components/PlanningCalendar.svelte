@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import calendar, { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
   import { PersonAccount } from '@hcengineering/contact'
@@ -30,15 +29,14 @@
   export let displayedDaysCount = 1
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
 
-  const dispatch = createEventDispatcher()
   const q = createQuery()
 
   function getFrom (date: Date): Timestamp {
     return new Date(date).setHours(0, 0, 0, 0)
   }
 
-  function getTo (date: Date): Timestamp {
-    return new Date(date).setDate(date.getDate() + 3)
+  function getTo (date: Date, days: number = 3): Timestamp {
+    return new Date(date).setDate(date.getDate() + days)
   }
 
   let dayCalendar: DayCalendar
@@ -60,7 +58,7 @@
   })
 
   $: from = getFrom(currentDate)
-  $: to = getTo(currentDate)
+  $: to = getTo(currentDate, displayedDaysCount)
 
   function update (calendars: Calendar[]): void {
     q.query<Event>(
@@ -150,6 +148,11 @@
       raw = raw.filter((r) => r._id !== dragItemId)
     }
   }
+  function dragOut () {
+    if (dragItemId != null) {
+      raw = raw.filter((r) => r._id !== dragItemId)
+    }
+  }
 
   function clear (dragItem: ToDo | null) {
     if (dragItem === null) {
@@ -166,6 +169,8 @@
     }
     showPopup(createComponent, { date, withTime }, 'top')
   }
+
+  $: isToday = areDatesEqual(currentDate, new Date($ticker))
 </script>
 
 <div
@@ -174,7 +179,7 @@
     showLabel = showLabel ? element.clientWidth > rem(3.5) + 399 : element.clientWidth > rem(3.5) + 400
   }}
 >
-  <Header noResize>
+  <Header adaptive={'disabled'}>
     <div class="heading-medium-20 line-height-auto overflow-label">
       <Label label={time.string.Schedule} />: <Label label={getTitle(currentDate, $ticker)} />
     </div>
@@ -196,6 +201,7 @@
         size={'small'}
         inheritFont
         hasMenu
+        disabled={isToday}
         on:click={() => {
           inc(0)
         }}
@@ -214,11 +220,12 @@
     <DayCalendar
       bind:this={dayCalendar}
       events={objects}
-      {displayedDaysCount}
+      bind:displayedDaysCount
       startFromWeekStart={false}
       clearCells={dragItem !== null}
       {dragItemId}
       on:dragEnter={dragEnter}
+      on:dragOut={dragOut}
       on:dragleave={dragLeave}
       on:create={(e) => {
         showCreateDialog(e.detail.date, e.detail.withTime)

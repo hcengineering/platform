@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
-import login, { loginId, type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
+import { loginId, type LoginInfo, type OtpInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
   PlatformError,
@@ -24,7 +24,8 @@ import {
   translate,
   unknownError,
   unknownStatus,
-  type Status
+  Status,
+  Severity
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
@@ -37,9 +38,10 @@ import {
   type Location
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
-import { type Pages } from './index'
 
-const DEV_WORKSPACE = 'DEV WORKSPACE'
+import login from './plugin'
+import { type Pages } from './index'
+import { LoginEvents } from './analytics'
 
 /**
  * Perform a login operation to required workspace with user credentials.
@@ -49,14 +51,6 @@ export async function doLogin (email: string, password: string): Promise<[Status
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, confirmed: true }]
-    }
   }
 
   const request = {
@@ -75,14 +69,16 @@ export async function doLogin (email: string, password: string): Promise<[Status
     const result = await response.json()
     console.log('login result', result)
     if (result.error == null) {
-      Analytics.handleEvent('login')
+      Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
       await handleStatusError('Login error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     console.error('login error', err)
+    Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -100,14 +96,6 @@ export async function signUp (
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, confirmed: true }]
-    }
-  }
-
   const request = {
     method: 'createAccount',
     params: [email, password, first, last]
@@ -123,7 +111,43 @@ export async function signUp (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('signup')
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: true })
+      Analytics.setUser(email)
+    } else {
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
+      await handleStatusError('Sign up error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function signUpOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'signUpOtp',
+    params: [email]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('signUpOtp')
       Analytics.setUser(email)
     } else {
       await handleStatusError('Sign up error', result.error)
@@ -142,15 +166,6 @@ export async function createWorkspace (
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, confirmed: true, workspace: workspaceName }]
-    }
   }
 
   const token = getMetadata(presentation.metadata.Token)
@@ -178,13 +193,15 @@ export async function createWorkspace (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('create workspace')
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
       Analytics.setWorkspace(workspaceName)
     } else {
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
       await handleStatusError('Create workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
+    Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -195,20 +212,6 @@ export async function getWorkspaces (): Promise<Workspace[]> {
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [
-        {
-          workspace: DEV_WORKSPACE,
-          workspaceId: DEV_WORKSPACE,
-          lastVisit: 0
-        }
-      ]
-    }
   }
 
   const token = getMetadata(presentation.metadata.Token)
@@ -251,15 +254,6 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-    if (endpoint !== undefined) {
-      return { token: overrideToken, endpoint, email, confirmed: true }
-    }
-  }
-
   const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     if (doNavigate) {
@@ -295,23 +289,17 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
   }
 }
 
-export async function selectWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+export async function selectWorkspace (
+  workspace: string,
+  token?: string | null | undefined
+): Promise<[Status, WorkspaceLoginInfo | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, workspace, confirmed: true }]
-    }
-  }
-
-  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  token = token ?? getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[0] = 'login'
@@ -323,7 +311,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
 
   const request = {
     method: 'selectWorkspace',
-    params: [workspace]
+    params: [workspace, 'external']
   }
 
   try {
@@ -337,13 +325,15 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('Select workspace')
+      Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: true })
       Analytics.setWorkspace(workspace)
     } else {
+      Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: false })
       await handleStatusError('Select workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
+    Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -354,15 +344,6 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, workspace, confirmed: true }]
-    }
   }
 
   const token = getMetadata(presentation.metadata.Token)
@@ -404,14 +385,6 @@ export async function createMissingEmployee (workspace: string): Promise<[Status
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK]
-    }
-  }
-
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     return [unknownStatus('Please login')]
@@ -449,23 +422,32 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   tokens[loginInfo.workspace] = loginInfo.token
 
+  setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadataLocalStorage(login.metadata.LastToken, loginInfo.token)
+
   setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)
   setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
 }
 
-export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLoginInfo, navigateUrl?: string): void {
+export function navigateToWorkspace (
+  workspace: string,
+  loginInfo?: WorkspaceLoginInfo,
+  navigateUrl?: string,
+  replace = false
+): void {
   if (loginInfo == null) {
     return
   }
   setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadata(presentation.metadata.Workspace, loginInfo.workspace)
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
     try {
       const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
       if (loc.path[1] === workspace) {
-        navigate(loc)
+        navigate(loc, replace)
         return
       }
     } catch (err: any) {
@@ -474,9 +456,9 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   }
   const last = localStorage.getItem(`${locationStorageKeyId}_${workspace}`)
   if (last !== null) {
-    navigate(JSON.parse(last))
+    navigate(JSON.parse(last), replace)
   } else {
-    navigate({ path: [workbenchId, workspace] })
+    navigate({ path: [workbenchId, workspace] }, replace)
   }
 }
 
@@ -485,15 +467,6 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
-  }
-
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, workspace: DEV_WORKSPACE, confirmed: true }]
-    }
   }
 
   let token = getMetadata(presentation.metadata.Token)
@@ -531,7 +504,8 @@ export async function getInviteLink (
   expHours: number,
   mask: string,
   limit: number | undefined,
-  role: AccountRole
+  role: AccountRole,
+  navigateUrl?: string
 ): Promise<string> {
   const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
   const loc = getCurrentLocation()
@@ -540,6 +514,9 @@ export async function getInviteLink (
   loc.path.length = 2
   loc.query = {
     inviteId
+  }
+  if (navigateUrl !== undefined) {
+    loc.query.navigateUrl = navigateUrl
   }
   loc.fragment = undefined
 
@@ -559,7 +536,7 @@ export async function getInviteLinkId (
 ): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
-  const exp = expHours * 1000 * 60 * 60
+  const exp = expHours < 0 ? -1 : expHours * 1000 * 60 * 60
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
@@ -608,14 +585,6 @@ export async function join (
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, workspace: DEV_WORKSPACE, confirmed: true }]
-    }
-  }
-
   const request = {
     method: 'join',
     params: [email, password, inviteId]
@@ -656,14 +625,6 @@ export async function signUpJoin (
     throw new Error('accounts url not specified')
   }
 
-  const token = getMetadata(login.metadata.OverrideLoginToken)
-  if (token !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token, endpoint, email, workspace: DEV_WORKSPACE, confirmed: true }]
-    }
-  }
-
   const request = {
     method: 'signUpJoin',
     params: [email, password, first, last, inviteId]
@@ -698,18 +659,41 @@ export async function changePassword (oldPassword: string, password: string): Pr
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
   const token = getMetadata(presentation.metadata.Token) as string
 
   const request = {
     method: 'changePassword',
     params: [oldPassword, password]
+  }
+
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request)
+  })
+  const resp = await response.json()
+  if (resp.error !== undefined) {
+    const err = new PlatformError(resp.error)
+    Analytics.handleError(err)
+    throw err
+  }
+}
+
+export async function changeUsername (first: string, last: string): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token) as string
+
+  const request = {
+    method: 'changeUsername',
+    params: [first, last]
   }
 
   const response = await fetch(accountsUrl, {
@@ -735,13 +719,6 @@ export async function leaveWorkspace (email: string): Promise<void> {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
   const token = getMetadata(presentation.metadata.Token) as string
 
   const request = {
@@ -766,13 +743,6 @@ export async function sendInvite (email: string, personId?: Ref<Doc>, role?: Acc
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return
-    }
-  }
   const token = getMetadata(presentation.metadata.Token) as string
 
   const params = [email, personId, role]
@@ -799,13 +769,6 @@ export async function requestPassword (email: string): Promise<Status> {
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return OK
-    }
-  }
   const request = {
     method: 'requestPassword',
     params: [email]
@@ -837,13 +800,6 @@ export async function confirm (email: string): Promise<[Status, LoginInfo | unde
     throw new Error('accounts url not specified')
   }
 
-  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
-  if (overrideToken !== undefined) {
-    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-    if (endpoint !== undefined) {
-      return [OK, { token: overrideToken, endpoint, email, confirmed: true }]
-    }
-  }
   const request = {
     method: 'confirm',
     params: [email]
@@ -921,7 +877,7 @@ export function goTo (path: Pages, clearQuery: boolean = false): void {
   if (clearQuery) {
     loc.query = undefined
   }
-  navigate(loc)
+  navigate(loc, clearQuery)
 }
 
 export function getHref (path: Pages): string {
@@ -931,80 +887,58 @@ export function getHref (path: Pages): string {
   return host + url
 }
 
-export async function afterConfirm (): Promise<void> {
+export async function afterConfirm (clearQuery = false): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('createWorkspace')
+    goTo('createWorkspace', clearQuery)
   } else if (joinedWS.length === 1) {
-    const result = (await selectWorkspace(joinedWS[0].workspace))[1]
+    const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
+      setMetadata(presentation.metadata.Workspace, result.workspace)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-      tokens[result.workspace] = result.token
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+      setLoginInfo(result)
 
-      navigateToWorkspace(joinedWS[0].workspace, result)
+      navigateToWorkspace(joinedWS[0].workspace, result, undefined, clearQuery)
     }
   } else {
-    goTo('selectWorkspace')
+    goTo('selectWorkspace', clearQuery)
   }
 }
 
-export async function getEnpoint (): Promise<string | undefined> {
+export async function getLoginInfoFromQuery (): Promise<LoginInfo | undefined> {
+  const token = getCurrentLocation().query?.token
+
+  if (token === undefined) {
+    return undefined
+  }
+
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
   }
 
-  const endpoint = getMetadata(login.metadata.OverrideEndpoint)
-
-  if (endpoint !== undefined) {
-    return endpoint
-  }
-
-  const params: [] = []
-
   const request = {
-    method: 'getEndpoint',
-    params
+    method: 'getAccountInfoByToken',
+    params: [] as any[]
   }
 
   try {
     const response = await fetch(accountsUrl, {
       method: 'POST',
       headers: {
+        Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error != null) {
+      throw new PlatformError(result.error)
+    }
     return result.result
   } catch (err: any) {
-    console.error('get endpoint error', err)
-    Analytics.handleError(err)
-  }
-}
-
-export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | undefined> {
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-
-  if (accountsUrl === undefined) {
-    throw new Error('accounts url not specified')
-  }
-
-  try {
-    const response = await fetch(concatLink(accountsUrl, '/auth'), {
-      method: 'GET',
-      credentials: 'include'
-    })
-    const result = await response.json()
-    return result
-  } catch (err: any) {
-    console.error('login error', err)
     Analytics.handleError(err)
   }
 }
@@ -1016,12 +950,132 @@ export async function getProviders (): Promise<string[]> {
     throw new Error('accounts url not specified')
   }
 
+  for (let i = 0; i < 5; i++) {
+    try {
+      const response = await fetch(concatLink(accountsUrl, '/providers'))
+      const result = await response.json()
+      return result
+    } catch (err: any) {
+      if (i === 4) {
+        Analytics.handleError(err)
+        return []
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 100))
+    }
+  }
+  return []
+}
+
+export async function sendOtp (email: string): Promise<[Status, OtpInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'sendOtp',
+    params: [email]
+  }
+
   try {
-    const response = await fetch(concatLink(accountsUrl, '/providers'))
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
     const result = await response.json()
-    return result
+
+    if (result.error == null) {
+      Analytics.handleEvent('sendOtp')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Send otp error', result.error)
+    }
+    return [result.error ?? OK, result.result]
   } catch (err: any) {
+    console.error('Send otp error', err)
     Analytics.handleError(err)
-    return []
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function loginWithOtp (email: string, otp: string): Promise<[Status, LoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const request = {
+    method: 'validateOtp',
+    params: [email, otp]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+
+    if (result.error == null) {
+      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: true })
+      Analytics.setUser(email)
+    } else {
+      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
+      await handleStatusError('Login with otp error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    console.error('Login with otp error', err)
+    Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function doLoginNavigate (
+  result: LoginInfo | undefined,
+  updateStatus: (status: Status) => void,
+  navigateUrl?: string
+): Promise<void> {
+  if (result !== undefined) {
+    setMetadata(presentation.metadata.Token, result.token)
+    setMetadataLocalStorage(login.metadata.LastToken, result.token)
+    setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+    setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+    if (navigateUrl !== undefined) {
+      try {
+        const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+        const workspace = loc.path[1]
+        if (workspace !== undefined) {
+          const workspaces = await getWorkspaces()
+          if (workspaces.find((p) => p.workspace === workspace) !== undefined) {
+            updateStatus(new Status(Severity.INFO, login.status.ConnectingToServer, {}))
+
+            const [loginStatus, result] = await selectWorkspace(workspace, undefined)
+            updateStatus(loginStatus)
+            navigateToWorkspace(workspace, result, navigateUrl)
+            return
+          }
+        }
+      } catch (err: any) {
+        // Json parse error could be ignored
+      }
+    }
+    const loc = getCurrentLocation()
+    loc.path[1] = result.confirmed ? 'selectWorkspace' : 'confirmationSend'
+    loc.path.length = 2
+    if (navigateUrl !== undefined) {
+      loc.query = { ...loc.query, navigateUrl }
+    }
+    navigate(loc)
   }
 }

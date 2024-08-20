@@ -15,7 +15,7 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
   import { getContext } from 'svelte'
-  import ui, { deviceOptionsStore as deviceInfo, popupstore, showPopup } from '../..'
+  import ui, { deviceOptionsStore as deviceInfo, modalStore, showPopup } from '../..'
   import FontSizePopup from './FontSizePopup.svelte'
   import FontSize from './icons/FontSize.svelte'
 
@@ -39,7 +39,7 @@
       if (result) {
         setFontSize(result)
         current = fontsizes.findIndex((fs) => fs.id === result)
-        $popupstore = $popupstore
+        $modalStore = $modalStore
       }
       pressed = false
     })

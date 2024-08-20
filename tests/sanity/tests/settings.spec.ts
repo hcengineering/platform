@@ -1,20 +1,25 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from './utils'
+import { PlatformSetting, PlatformURI, generateId } from './utils'
 import { UserProfilePage } from './model/profile/user-profile-page'
 import { TemplatePage } from './model/tracker/templates-page'
+import { SettingsPage } from './model/settings-page'
+import { IssuesPage } from './model/tracker/issues-page'
+import { TaskTypes } from './model/types'
 
 test.use({
   storageState: PlatformSetting
 })
-test.describe('contact tests', () => {
+test.describe('settings tests', () => {
   let userProfilePage: UserProfilePage
   let templatePage: TemplatePage
+  let settingsPage: SettingsPage
   const platformUri = `${PlatformURI}/workbench/sanity-ws`
   const expectedProfileUrl = `${PlatformURI}/workbench/sanity-ws/setting/profile`
 
   test.beforeEach(async ({ page }) => {
     userProfilePage = new UserProfilePage(page)
     templatePage = new TemplatePage(page)
+    settingsPage = new SettingsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
@@ -36,6 +41,39 @@ test.describe('contact tests', () => {
     await templatePage.selectTextTemplates()
     await templatePage.createTemplate('t1', 'some text value')
     await templatePage.editTemplate('some more2 value')
+  })
+
+  test('add-task-types', async () => {
+    const spaceName = `TT-${generateId(4)}`
+    await settingsPage.navigateToWorkspace(platformUri)
+    await settingsPage.openProfileMenu()
+    await settingsPage.openSettings()
+    await settingsPage.createSpaceType(spaceName, 'Tracker')
+    await settingsPage.selectSpaceType(spaceName, 'Tracker')
+    await settingsPage.addTaskType('Issue', TaskTypes.TaskAndSubtask)
+    await settingsPage.checkTaskType('Issue', TaskTypes.TaskAndSubtask)
+    await settingsPage.openTaskType('Issue', TaskTypes.TaskAndSubtask)
+    await settingsPage.checkOpened(spaceName, 'Issue')
+  })
+
+  test('customize-task-types', async ({ page }) => {
+    const taskTypeName = `Bug-${generateId(4)}`
+    await settingsPage.navigateToWorkspace(platformUri)
+    await settingsPage.openProfileMenu()
+    await settingsPage.openSettings()
+    await settingsPage.selectSpaceType('Default', 'Tracker')
+    await settingsPage.addTaskType(taskTypeName, TaskTypes.TaskAndSubtask)
+    await settingsPage.checkTaskType(taskTypeName, TaskTypes.TaskAndSubtask)
+    await settingsPage.openTaskType(taskTypeName, TaskTypes.TaskAndSubtask)
+    await settingsPage.checkOpened('Default', taskTypeName)
+    await settingsPage.changeIcon()
+    await settingsPage.checkState('Todo')
+    await settingsPage.changeState('Todo', 'Needs Attention', 'Firework')
+    await settingsPage.checkState('New state')
+    await settingsPage.changeState('New state', 'Under Review', 'Sunshine')
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.clickOnApplicationButton()
+    await issuesPage.createAndOpenIssue('Minor bug', 'Appleseed John', 'Needs Attention', taskTypeName)
   })
 
   // TODO: Need rework.

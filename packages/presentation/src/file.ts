@@ -14,26 +14,78 @@
 //
 
 import { concatLink, type Blob, type Ref } from '@hcengineering/core'
-import { PlatformError, Severity, Status, getMetadata, getResource } from '@hcengineering/platform'
-import { type PopupAlignment } from '@hcengineering/ui'
-import { writable } from 'svelte/store'
+import { PlatformError, Severity, Status, getMetadata } from '@hcengineering/platform'
+import { v4 as uuid } from 'uuid'
 
 import plugin from './plugin'
-import type { BlobMetadata, FilePreviewExtension } from './types'
-import { createQuery } from './utils'
+import { decodeTokenPayload } from './utils'
+
+interface FileUploadError {
+  key: string
+  error: string
+}
+
+interface FileUploadSuccess {
+  key: string
+  id: string
+}
+
+type FileUploadResult = FileUploadSuccess | FileUploadError
+
+const defaultUploadUrl = '/files'
+const defaultFilesUrl = '/files/:workspace/:filename?file=:blobId&workspace=:workspace'
+
+function getFilesUrl (): string {
+  const filesUrl = getMetadata(plugin.metadata.FilesURL) ?? defaultFilesUrl
+  const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
+
+  return filesUrl.includes('://') ? filesUrl : concatLink(frontUrl, filesUrl)
+}
+
+export function getCurrentWorkspace (): string {
+  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').workspace
+}
+
+/**
+ * @public
+ */
+export function generateFileId (): string {
+  return uuid()
+}
+
+/**
+ * @public
+ */
+export function getUploadUrl (): string {
+  const template = getMetadata(plugin.metadata.UploadURL) ?? defaultUploadUrl
+
+  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
+}
+
+/**
+ * @public
+ */
+export function getFileUrl (file: string, filename?: string): string {
+  if (file.includes('://')) {
+    return file
+  }
+
+  const template = getFilesUrl()
+  return template
+    .replaceAll(':filename', encodeURIComponent(filename ?? ''))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
+    .replaceAll(':blobId', encodeURIComponent(file))
+}
 
 /**
  * @public
  */
 export async function uploadFile (file: File): Promise<Ref<Blob>> {
-  const uploadUrl = getMetadata(plugin.metadata.UploadURL)
+  const uploadUrl = getUploadUrl()
 
-  if (uploadUrl === undefined) {
-    throw Error('UploadURL is not defined')
-  }
-
+  const id = generateFileId()
   const data = new FormData()
-  data.append('file', file)
+  data.append('file', file, id)
 
   const resp = await fetch(uploadUrl, {
     method: 'POST',
@@ -51,17 +103,25 @@ export async function uploadFile (file: File): Promise<Ref<Blob>> {
     }
   }
 
-  return (await resp.text()) as Ref<Blob>
+  const result = (await resp.json()) as FileUploadResult[]
+  if (result.length !== 1) {
+    throw Error('Bad upload response')
+  }
+
+  if ('error' in result[0]) {
+    throw Error(`Failed to upload file: ${result[0].error}`)
+  }
+
+  return id as Ref<Blob>
 }
 
 /**
  * @public
  */
 export async function deleteFile (id: string): Promise<void> {
-  const uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? ''
+  const fileUrl = getFileUrl(id)
 
-  const url = concatLink(uploadUrl, `?file=${id}`)
-  const resp = await fetch(url, {
+  const resp = await fetch(fileUrl, {
     method: 'DELETE',
     headers: {
       Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
@@ -70,110 +130,5 @@ export async function deleteFile (id: string): Promise<void> {
 
   if (resp.status !== 200) {
     throw new Error('Failed to delete file')
-  }
-}
-
-/**
- * @public
- */
-export async function getFileMetadata (file: File, uuid: Ref<Blob>): Promise<BlobMetadata | undefined> {
-  const previewType = await getPreviewType(file.type, $previewTypes)
-  if (previewType?.metadataProvider === undefined) {
-    return undefined
-  }
-
-  const metadataProvider = await getResource(previewType.metadataProvider)
-  if (metadataProvider === undefined) {
-    return undefined
-  }
-
-  return await metadataProvider(file, uuid)
-}
-
-/**
- * @public
- */
-export const previewTypes = writable<FilePreviewExtension[]>([])
-const previewTypesQuery = createQuery(true)
-previewTypesQuery.query(plugin.class.FilePreviewExtension, {}, (result) => {
-  previewTypes.set(result)
-})
-
-let $previewTypes: FilePreviewExtension[] = []
-previewTypes.subscribe((it) => {
-  $previewTypes = it
-})
-
-/**
- * @public
- */
-export async function canPreviewFile (contentType: string, _previewTypes: FilePreviewExtension[]): Promise<boolean> {
-  for (const previewType of _previewTypes) {
-    if (await isApplicableType(previewType, contentType)) {
-      return true
-    }
-  }
-
-  return false
-}
-
-/**
- * @public
- */
-export async function getPreviewType (
-  contentType: string,
-  _previewTypes: FilePreviewExtension[]
-): Promise<FilePreviewExtension | undefined> {
-  const applicableTypes: FilePreviewExtension[] = []
-  for (const previewType of _previewTypes) {
-    if (await isApplicableType(previewType, contentType)) {
-      applicableTypes.push(previewType)
-    }
-  }
-
-  return applicableTypes.sort(comparePreviewTypes)[0]
-}
-
-/**
- * @public
- */
-export function getPreviewAlignment (contentType: string): PopupAlignment {
-  if (contentType.startsWith('image/')) {
-    return 'centered'
-  } else if (contentType.startsWith('video/')) {
-    return 'centered'
-  } else {
-    return 'float'
-  }
-}
-
-function getPreviewTypeRegExp (type: string): RegExp {
-  return new RegExp(`^${type.replaceAll('/', '\\/').replaceAll('*', '.*')}$`)
-}
-
-async function isApplicableType (
-  { contentType, availabilityChecker }: FilePreviewExtension,
-  _contentType: string
-): Promise<boolean> {
-  const checkAvailability = availabilityChecker !== undefined ? await getResource(availabilityChecker) : undefined
-  const isAvailable: boolean = checkAvailability === undefined || (await checkAvailability())
-
-  return (
-    isAvailable &&
-    (Array.isArray(contentType) ? contentType : [contentType]).some((type) =>
-      getPreviewTypeRegExp(type).test(_contentType)
-    )
-  )
-}
-
-function comparePreviewTypes (a: FilePreviewExtension, b: FilePreviewExtension): number {
-  if (a.order === undefined && b.order === undefined) {
-    return 0
-  } else if (a.order === undefined) {
-    return -1
-  } else if (b.order === undefined) {
-    return 1
-  } else {
-    return a.order - b.order
   }
 }

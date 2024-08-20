@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Data, Ref, Timestamp } from '@hcengineering/core'
+  import core, { Data, Ref, Timestamp } from '@hcengineering/core'
   import { Department, PublicHoliday, timeToTzDate } from '@hcengineering/hr'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { Button, DateRangePresenter, EditBox, Label } from '@hcengineering/ui'
@@ -40,7 +40,7 @@
 
   async function saveHoliday () {
     if (existingHoliday !== undefined) {
-      await client.updateDoc(hr.class.PublicHoliday, hr.space.HR, existingHoliday._id, {
+      await client.updateDoc(hr.class.PublicHoliday, core.space.Workspace, existingHoliday._id, {
         title,
         description
       })
@@ -51,7 +51,7 @@
         date: timeToTzDate(date),
         department
       }
-      await client.createDoc(hr.class.PublicHoliday, hr.space.HR, holiday)
+      await client.createDoc(hr.class.PublicHoliday, core.space.Workspace, holiday)
     }
   }
   findHoliday()

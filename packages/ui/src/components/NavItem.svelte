@@ -256,12 +256,16 @@
       background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
     &.selected {
-      cursor: auto;
+      cursor: default;
       background-color: var(--global-ui-highlight-BackgroundColor);
 
       // &:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
       //   font-weight: 700;
       // }
+      .hulyNavItem-actions {
+        order: 1;
+        margin-left: var(--spacing-0_5);
+      }
       .hulyNavItem-count {
         color: var(--global-secondary-TextColor);
       }

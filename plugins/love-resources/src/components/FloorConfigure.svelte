@@ -38,7 +38,6 @@
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
-  export let visibleNav: boolean
   export let excludedPersons: Ref<Contact>[] = []
 
   const client = getClient()
@@ -291,7 +290,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header allowFullsize adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       <ButtonIcon icon={IconAdd} size={'small'} on:click={addRoom} />

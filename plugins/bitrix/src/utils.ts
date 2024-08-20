@@ -361,7 +361,7 @@ export async function convert (
             description: '',
             title: vv,
             targetClass: attr.attributeOf,
-            space: tags.space.Tags,
+            space: core.space.Workspace,
             modifiedBy: document.modifiedBy,
             modifiedOn: document.modifiedOn
           }
@@ -379,7 +379,7 @@ export async function convert (
           weight: o.weight,
           modifiedBy: document.modifiedBy,
           modifiedOn: document.modifiedOn,
-          space: tags.space.Tags,
+          space: core.space.Workspace,
           bitrixId: vv
         }
         newExtraSyncDocs.push(ref)

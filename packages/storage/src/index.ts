@@ -13,15 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type Blob,
-  type DocumentUpdate,
-  type MeasureContext,
-  type Ref,
-  type WorkspaceId,
-  type WorkspaceIdWithUrl
-} from '@hcengineering/core'
-import type { BlobLookup } from '@hcengineering/core/src/classes'
+import { type Blob, type MeasureContext, type StorageIterator, type WorkspaceId } from '@hcengineering/core'
 import { type Readable } from 'stream'
 
 export type ListBlobResult = Omit<Blob, 'contentType' | 'version'>
@@ -34,11 +26,6 @@ export interface UploadedObjectInfo {
 export interface BlobStorageIterator {
   next: () => Promise<ListBlobResult | undefined>
   close: () => Promise<void>
-}
-
-export interface BlobLookupResult {
-  lookups: BlobLookup[]
-  updates?: Map<Ref<Blob>, DocumentUpdate<BlobLookup>>
 }
 
 export interface BucketInfo {
@@ -78,15 +65,21 @@ export interface StorageAdapter {
     length?: number
   ) => Promise<Readable>
 
-  // Lookup will extend Blob with lookup information.
-  lookup: (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]) => Promise<BlobLookupResult>
+  getUrl: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<string>
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
   defaultAdapter: string
   adapters?: Map<string, StorageAdapter>
 
-  syncBlobFromStorage: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<void>
+  syncBlobFromStorage: (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceId,
+    objectName: string,
+    provider?: string
+  ) => Promise<void>
+
+  find: (ctx: MeasureContext, workspaceId: WorkspaceId) => StorageIterator
 }
 
 /**
@@ -102,6 +95,13 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     return false
+  }
+
+  find (ctx: MeasureContext, workspaceId: WorkspaceId): StorageIterator {
+    return {
+      next: async (ctx) => undefined,
+      close: async (ctx) => {}
+    }
   }
 
   async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
@@ -164,8 +164,8 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     throw new Error('not implemented')
   }
 
-  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
-    return { lookups: [] }
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    throw new Error('not implemented')
   }
 }
 
@@ -198,4 +198,24 @@ export async function removeAllObjects (
     bulk = []
   }
   await iterator.close()
+}
+
+export async function objectsToArray (
+  ctx: MeasureContext,
+  storage: StorageAdapter,
+  workspaceId: WorkspaceId,
+  prefix?: string
+): Promise<ListBlobResult[]> {
+  // We need to list all files and delete them
+  const iterator = await storage.listStream(ctx, workspaceId, prefix)
+  const bulk: ListBlobResult[] = []
+  while (true) {
+    const obj = await iterator.next()
+    if (obj === undefined) {
+      break
+    }
+    bulk.push(obj)
+  }
+  await iterator.close()
+  return bulk
 }

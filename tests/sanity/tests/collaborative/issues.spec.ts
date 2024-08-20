@@ -69,11 +69,7 @@ test.describe('Collaborative test for issue', () => {
     await issuesPageSecond.openIssueByName(newIssue.title)
 
     const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-    await issuesDetailsPageSecond.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPageSecond.checkIssue(newIssue)
 
     await closePages()
   })
@@ -176,7 +172,7 @@ test.describe('Collaborative test for issue', () => {
       await issuesPageSecond.openIssueByName(issue.title)
 
       const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-      await issuesDetailsPageSecond.checkIssue({ ...issue })
+      await issuesDetailsPageSecond.checkIssue(issue)
     })
 
     await closePages()

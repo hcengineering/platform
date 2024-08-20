@@ -17,18 +17,6 @@ import core, { Account, AccountRole, systemAccountEmail } from '@hcengineering/c
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { SessionContext, type ServerStorage } from '@hcengineering/server-core'
 
-export function mergeTargets (current: string[] | undefined, prev: string[] | undefined): string[] | undefined {
-  if (current === undefined) return prev
-  if (prev === undefined) return current
-  const res: string[] = []
-  for (const value of current) {
-    if (prev.includes(value)) {
-      res.push(value)
-    }
-  }
-  return res
-}
-
 export async function getUser (storage: ServerStorage, ctx: SessionContext): Promise<Account> {
   if (ctx.userEmail === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))

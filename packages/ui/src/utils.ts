@@ -15,11 +15,12 @@
 
 import { generateId } from '@hcengineering/core'
 import type { IntlString, Metadata } from '@hcengineering/platform'
-import { setMetadata } from '@hcengineering/platform'
+import { setMetadata, translate } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
 import { NotificationPosition, NotificationSeverity, notificationsStore, type Notification } from '.'
 import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
+import ui, { DAY, HOUR, MINUTE } from '..'
 
 /**
  * @public
@@ -81,6 +82,21 @@ export function floorFractionDigits (n: number | string, amount: number): number
 /**
  * @public
  */
+export function humanReadableFileSize (size: number, base: 2 | 10 = 10, fractionDigits: number = 2): string {
+  const units =
+    base === 10
+      ? ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+      : ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+  const kb = base === 10 ? 1000 : 1024
+
+  const pow = size === 0 ? 0 : Math.floor(Math.log(size) / Math.log(kb))
+  const val = (1.0 * size) / Math.pow(kb, pow)
+  return `${val.toFixed(2)} ${units[pow]}`
+}
+
+/**
+ * @public
+ */
 export function addNotification (
   title: string,
   subTitle: string,
@@ -133,11 +149,6 @@ export function tableToCSV (tableId: string, separator = ','): string {
   }
   return csv.join('\n')
 }
-
-/**
- * @public
- */
-export const networkStatus = writable<number>(0)
 
 let attractorMx: number | undefined
 let attractorMy: number | undefined
@@ -287,3 +298,23 @@ export class ThrottledCaller {
 export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'
 
 export const rootBarExtensions = writable<Array<['left' | 'right', AnyComponent]>>([])
+
+export async function formatDuration (duration: number, language: string): Promise<string> {
+  let text = ''
+  const days = Math.floor(duration / DAY)
+  if (days > 0) {
+    text += await translate(ui.string.DaysShort, { value: days }, language)
+  }
+  const hours = Math.floor((duration % DAY) / HOUR)
+  if (hours > 0) {
+    text += ' '
+    text += await translate(ui.string.HoursShort, { value: hours }, language)
+  }
+  const minutes = Math.floor((duration % HOUR) / MINUTE)
+  if (minutes > 0) {
+    text += ' '
+    text += await translate(ui.string.MinutesShort, { value: minutes }, language)
+  }
+  text = text.trim()
+  return text
+}

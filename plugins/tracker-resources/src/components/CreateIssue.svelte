@@ -48,7 +48,7 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
   import {
     Component as ComponentType,
     Issue,
@@ -59,7 +59,8 @@
     IssueTemplate,
     Milestone,
     Project,
-    ProjectTargetPreference
+    ProjectTargetPreference,
+    TrackerEvents
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -220,9 +221,12 @@
 
   let currentProject: Project | undefined
 
+  let descriptionBox: AttachmentStyledBox | undefined
+
   $: updateIssueStatusId(object, currentProject)
   $: updateAssigneeId(object, currentProject)
   $: canSave =
+    descriptionBox != null &&
     getTitle(object.title ?? '').length > 0 &&
     object.status !== undefined &&
     kind !== undefined &&
@@ -268,7 +272,7 @@
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
       collection: 'labels',
-      space: tags.space.Tags,
+      space: core.space.Workspace,
       modifiedOn: 0,
       modifiedBy: '' as Ref<Account>,
       title: tag.title,
@@ -347,8 +351,6 @@
   const dispatch = createEventDispatcher()
   const spaceQuery = createQuery()
 
-  let descriptionBox: AttachmentStyledBox
-
   const key: KeyedAttribute = {
     key: 'labels',
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
@@ -409,7 +411,27 @@
   $: projectPreferences.query(tracker.class.ProjectTargetPreference, {}, (res) => {
     preferences = res
   })
-  $: spacePreferences = preferences.find((it) => it.attachedTo === _space)
+
+  async function updateCurrentProjectPref (currentProject: Ref<Project>): Promise<void> {
+    const spacePreferences = await client.findOne(tracker.class.ProjectTargetPreference, { attachedTo: currentProject })
+    if (spacePreferences === undefined) {
+      await client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
+        attachedTo: currentProject,
+        props: [],
+        usedOn: Date.now()
+      })
+    } else {
+      if (spacePreferences.usedOn + 60 * 1000 < Date.now()) {
+        await client.update(spacePreferences, {
+          usedOn: Date.now()
+        })
+      }
+    }
+  }
+
+  $: if (_space !== undefined) {
+    void updateCurrentProjectPref(_space)
+  }
 
   async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
@@ -425,10 +447,8 @@
 
     // TODO: We need a measure client and mark all operations with it as measure under one root,
     // to prevent other operations to infer our measurement.
-    const doneOp = await getClient().measure('tracker.createIssue')
-
     try {
-      const operations = client.apply(_id)
+      const operations = client.apply(_id, 'tracker.createIssue')
 
       const lastOne = await client.findOne<Issue>(
         tracker.class.Issue,
@@ -519,8 +539,8 @@
         }
       }
 
-      await operations.commit()
-      await descriptionBox.createAttachments(_id)
+      const result = await operations.commit()
+      await descriptionBox?.createAttachments(_id)
 
       const parents: IssueParentInfo[] =
         parentIssue != null
@@ -551,15 +571,18 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
-      void doneOp().then((res) => {
-        console.log('createIssue measure', res, Date.now() - d1)
+      Analytics.handleEvent(TrackerEvents.IssueCreated, {
+        ok: true,
+        id: value.identifier,
+        project: currentProject.identifier
       })
+      console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {
       resetObject()
       draftController.remove()
       descriptionBox?.removeDraft(false)
       console.error(err)
-      await doneOp() // Complete in case of error
+      Analytics.handleEvent(TrackerEvents.IssueCreated, { ok: false, project: currentProject.identifier })
       Analytics.handleError(err)
     }
   }
@@ -719,24 +742,6 @@
     originalIssue,
     preferences
   }
-
-  function updateCurrentProjectPref (currentProject: Ref<Project>): void {
-    if (spacePreferences === undefined) {
-      void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
-        attachedTo: currentProject,
-        props: [],
-        usedOn: Date.now()
-      })
-    } else {
-      void client.update(spacePreferences, {
-        usedOn: Date.now()
-      })
-    }
-  }
-
-  $: if (_space !== undefined) {
-    updateCurrentProjectPref(_space)
-  }
 </script>
 
 <FocusHandler {manager} />
@@ -750,6 +755,7 @@
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
   hideSubheader={parentIssue == null}
+  headerNoPadding
   noFade={true}
   on:changeContent
 >
@@ -787,11 +793,16 @@
     <DocCreateExtComponent manager={docCreateManager} kind={'header'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <div class="flex-row-center gap-2">
-      <div>
+    <div class="flex-row-center gap-2 pt-1 pb-1 pr-1">
+      <span class="overflow-label">
         <Label {label} />
-      </div>
-      <TaskKindSelector projectType={currentProject?.type} bind:value={kind} baseClass={tracker.class.Issue} />
+      </span>
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        bind:value={kind}
+        baseClass={tracker.class.Issue}
+        size={'small'}
+      />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />
@@ -993,7 +1004,7 @@
           showPreview
           removable
           on:remove={(result) => {
-            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+            if (result.detail !== undefined) descriptionBox?.removeAttachmentById(result.detail._id)
           }}
         />
       {/each}
@@ -1007,7 +1018,7 @@
       size={'large'}
       kind={'ghost'}
       on:click={() => {
-        descriptionBox.handleAttach()
+        descriptionBox?.handleAttach()
       }}
     />
     <DocCreateExtComponent manager={docCreateManager} kind={'footer'} space={currentProject} props={extraProps} />

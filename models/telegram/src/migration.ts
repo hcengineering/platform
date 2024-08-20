@@ -13,31 +13,27 @@
 // limitations under the License.
 //
 
+import core, { type Ref, type Space } from '@hcengineering/core'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { telegramId } from '@hcengineering/telegram'
-import telegram from './plugin'
-
-export async function createSpace (client: MigrationUpgradeClient): Promise<void> {
-  await createDefaultSpace(client, telegram.space.Telegram, {
-    name: 'Telegram',
-    description: 'Space for all telegram messages'
-  })
-}
+import { DOMAIN_TELEGRAM } from '.'
 
 export const telegramOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, telegramId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, telegramId, [
       {
-        state: 'defaults-v2',
-        func: createSpace
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'telegram:space:Telegram' as Ref<Space>, core.space.Workspace, [DOMAIN_TELEGRAM])
+        }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

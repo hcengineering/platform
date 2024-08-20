@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { type Ref, TxOperations } from '@hcengineering/core'
+import { type Space, TxOperations, type Ref } from '@hcengineering/core'
+import { type Department } from '@hcengineering/hr'
 import {
-  createDefaultSpace,
+  migrateSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -24,7 +25,6 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import hr, { DOMAIN_HR, hrId } from './index'
-import { type Department } from '@hcengineering/hr'
 
 async function createDepartment (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(hr.class.Department, {
@@ -33,7 +33,7 @@ async function createDepartment (tx: TxOperations): Promise<void> {
   if (current === undefined) {
     await tx.createDoc(
       hr.class.Department,
-      hr.space.HR,
+      core.space.Workspace,
       {
         name: 'Organization',
         description: '',
@@ -49,21 +49,21 @@ async function createDepartment (tx: TxOperations): Promise<void> {
 async function migrateDepartments (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_HR,
-    { _class: hr.class.PublicHoliday, space: { $ne: hr.space.HR } },
-    { space: hr.space.HR }
+    { _class: hr.class.PublicHoliday, space: { $ne: core.space.Workspace } },
+    { space: core.space.Workspace }
   )
-  const objects = await client.find(DOMAIN_HR, { space: { $ne: hr.space.HR }, _class: hr.class.Request })
+  const objects = await client.find(DOMAIN_HR, { space: { $ne: core.space.Workspace }, _class: hr.class.Request })
   for (const obj of objects) {
-    await client.update(DOMAIN_HR, { _id: obj._id }, { space: hr.space.HR, department: obj.space })
+    await client.update(DOMAIN_HR, { _id: obj._id }, { space: core.space.Workspace, department: obj.space })
   }
   await client.move(DOMAIN_SPACE, { _class: hr.class.Department }, DOMAIN_HR)
   const departments = await client.find<Department>(DOMAIN_HR, {
     _class: hr.class.Department,
-    space: { $ne: hr.space.HR }
+    space: { $ne: core.space.Workspace }
   })
   for (const department of departments) {
     const upd: Partial<Department> = {
-      space: hr.space.HR
+      space: core.space.Workspace
     }
     if (department._id !== hr.ids.Head) {
       upd.parent = department.space as unknown as Ref<Department>
@@ -83,15 +83,20 @@ export const hrOperation: MigrateOperation = {
       {
         state: 'migrateDepartments',
         func: migrateDepartments
+      },
+      {
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'hr:space:HR' as Ref<Space>, core.space.Workspace, [DOMAIN_HR])
+        }
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, hrId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, hrId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {
-          await createDefaultSpace(client, hr.space.HR, { name: 'HR', description: 'Human Resources' })
           const tx = new TxOperations(client, core.account.System)
           await createDepartment(tx)
         }

@@ -20,7 +20,8 @@ import core, {
 } from '@hcengineering/core'
 import { getResource, translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
-import view, { type AggregationManager } from '@hcengineering/view'
+import view, { type IAggregationManager } from '@hcengineering/view'
+import notification from '@hcengineering/notification'
 
 /**
  * @public
@@ -39,7 +40,7 @@ export interface DocSubScriber<T extends Doc = Doc> {
  * @public
  */
 export class AggregationMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
-  mgrs: Map<Ref<Class<Doc>>, AggregationManager> = new Map<Ref<Class<Doc>>, AggregationManager>()
+  mgrs: Map<Ref<Class<Doc>>, IAggregationManager<any>> = new Map<Ref<Class<Doc>>, IAggregationManager<any>>()
   docs: Doc[] | undefined
 
   subscribers: Map<string, DocSubScriber> = new Map<string, DocSubScriber>()
@@ -105,7 +106,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     const updatedQuery: DocumentQuery<T> = h.clone(ret.query ?? query)
     const finalOptions = h.clone(ret.options ?? options ?? {})
 
-    await this.updateQueryOptions<T>(allAttrs, h, statusFields, updatedQuery, finalOptions)
+    await this.updateQueryOptions<T>(allAttrs, h, statusFields, updatedQuery, finalOptions, _class)
 
     if (statusFields.length > 0) {
       this.subscribers.set(id, s)
@@ -121,17 +122,58 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     return { unsubscribe: ret.unsubscribe }
   }
 
-  private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<AggregationManager | undefined> {
+  // TODO: rework notifications to avoid using Account and remove it
+  private shouldAggregate (attrClass: Ref<Class<Doc>>, _class: Ref<Class<Doc>>): boolean {
+    if (attrClass !== core.class.Account) {
+      return true
+    }
+
+    const h = this.client.getHierarchy()
+    const skipAccountAggregation = [
+      notification.class.BrowserNotification,
+      notification.class.InboxNotification,
+      notification.class.MentionInboxNotification,
+      notification.class.CommonInboxNotification,
+      notification.class.ActivityInboxNotification,
+      notification.class.DocNotifyContext
+    ]
+
+    for (const skipClass of skipAccountAggregation) {
+      if (_class === skipClass) {
+        return false
+      }
+
+      if (h.isDerived(_class, skipClass)) {
+        return false
+      }
+    }
+    return true
+  }
+
+  private async getAggregationManager (_class: Ref<Class<Doc>>): Promise<IAggregationManager<any> | undefined> {
     let mgr = this.mgrs.get(_class)
 
     if (mgr === undefined) {
       const h = this.client.getHierarchy()
       const mixin = h.classHierarchyMixin(_class, view.mixin.Aggregation)
-      if (mixin?.createAggregationManager !== undefined) {
+      if (
+        mixin?.createAggregationManager !== undefined &&
+        mixin?.setStoreFunc !== undefined &&
+        mixin?.filterFunc !== undefined &&
+        mixin?._class !== undefined
+      ) {
         const f = await getResource(mixin.createAggregationManager)
-        mgr = f(this.client, () => {
-          this.refreshSubscribers()
-        })
+        const storeFunc = await getResource(mixin.setStoreFunc)
+        const filterFunc = await getResource(mixin.filterFunc)
+        mgr = f(
+          this.client,
+          () => {
+            this.refreshSubscribers()
+          },
+          storeFunc,
+          filterFunc,
+          _class
+        )
         this.mgrs.set(_class, mgr)
       }
     }
@@ -151,7 +193,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
 
     const fquery = h.clone(query ?? {})
 
-    await this.updateQueryOptions<T>(allAttrs, h, docFields, fquery, finalOptions)
+    await this.updateQueryOptions<T>(allAttrs, h, docFields, fquery, finalOptions, _class)
 
     return await this.provideFindAll(_class, fquery, finalOptions)
   }
@@ -161,13 +203,19 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     h: Hierarchy,
     docFields: Array<Attribute<Doc>>,
     query: DocumentQuery<T>,
-    finalOptions: FindOptions<T>
+    finalOptions: FindOptions<T>,
+    _class: Ref<Class<T>>
   ): Promise<void> {
     for (const attr of allAttrs.values()) {
       try {
         if (attr.type._class !== core.class.RefTo) {
           continue
         }
+
+        if (!this.shouldAggregate((attr.type as RefTo<Doc>).to, _class)) {
+          continue
+        }
+
         const mgr = await this.getAggregationManager((attr.type as RefTo<Doc>).to)
         if (mgr === undefined) {
           continue
@@ -258,8 +306,9 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
         const applyIf = etx as TxApplyIf
         void this.handleTx(...applyIf.txes)
       }
-      if (this.client.getHierarchy().isDerived(etx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(etx._class)) {
         const cud = etx as TxCUD<Doc>
+        if (cud.objectClass === core.class.BenchmarkDoc) continue
         const _class = this.client.getHierarchy().getClass(cud.objectClass)
         if (_class.label !== undefined) {
           const label = await translate(_class.label, {}, 'en')

@@ -34,6 +34,11 @@ export function createModel (builder: Builder): void {
     }
   )
 
+  builder.createDoc(serverNotification.class.NotificationProviderResources, core.space.Model, {
+    provider: gmail.providers.EmailNotificationProvider,
+    fn: serverGmail.function.SendEmailNotifications
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverGmail.trigger.OnMessageCreate,
     txMatch: {
@@ -44,6 +49,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(gmail.ids.EmailNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
-    func: serverGmail.function.IsIncomingMessage
+    func: serverGmail.function.IsIncomingMessageTypeMatch
   })
 }

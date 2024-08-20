@@ -295,6 +295,15 @@
   $: void translate(view.string.ActionPlaceholder, {}).then((res) => {
     phTraslate = res
   })
+  let timer: any
+  $: _search = search
+  function restartTimer (): void {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      search = _search
+      dispatch('change', _search)
+    }, 500)
+  }
 </script>
 
 <ActionContext
@@ -364,10 +373,14 @@
         class="actionsInput"
         bind:this={textHTML}
         type="text"
-        bind:value={search}
+        bind:value={_search}
         placeholder={phTraslate}
-        on:change
-        on:input
+        on:change={() => {
+          restartTimer()
+        }}
+        on:input={() => {
+          restartTimer()
+        }}
         on:keydown
       />
     </div>

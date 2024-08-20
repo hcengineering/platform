@@ -9,11 +9,11 @@ import core, {
   type WorkspaceId,
   makeCollaborativeDoc
 } from '@hcengineering/core'
-import { getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import { jsonToText } from '@hcengineering/text'
-import { type Db, MongoClient } from 'mongodb'
+import { type Db } from 'mongodb'
 
 export async function fixJsonMarkup (
   ctx: MeasureContext,
@@ -27,8 +27,9 @@ export async function fixJsonMarkup (
   })) as unknown as CoreClient
   const hierarchy = connection.getHierarchy()
 
-  const client = new MongoClient(mongoUrl)
-  const db = getWorkspaceDB(client, workspaceId)
+  const client = getMongoClient(mongoUrl)
+  const _client = await client.getClient()
+  const db = getWorkspaceDB(_client, workspaceId)
 
   try {
     const classes = hierarchy.getDescendants(core.class.Doc)
@@ -45,7 +46,7 @@ export async function fixJsonMarkup (
       await processFixJsonMarkupFor(ctx, domain, _class, filtered, workspaceId, db, storageAdapter)
     }
   } finally {
-    await client.close()
+    client.close()
     await connection.close()
   }
 }

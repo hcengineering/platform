@@ -13,25 +13,28 @@
 // limitations under the License.
 //
 
+import core, { type Ref, type Space } from '@hcengineering/core'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import preference, { preferenceId } from '@hcengineering/preference'
+import { DOMAIN_PREFERENCE, preferenceId } from '@hcengineering/preference'
 
 export const preferenceOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, preferenceId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, preferenceId, [
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, preference.space.Preference, { name: 'Preference' })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'preference:space:Preference' as Ref<Space>, core.space.Workspace, [
+            DOMAIN_PREFERENCE
+          ])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

@@ -108,6 +108,17 @@
     "UnstarChannel": "Unstar channel",
     "UnstarConversation": "Unstar conversation",
     "JoinChannelHeader": "Click \"Join\" to get started.",
-    "JoinChannelText": "Once you've joined, you'll be able to read all messages and contribute to the discussion."
+    "JoinChannelText": "Once you've joined, you'll be able to read all messages and contribute to the discussion.",
+    "NoMessagesInChannel": "Currently there are no messages",
+    "SendMessagesInChannel": "Send the first message to start the conversation",
+    "LatestMessages": "↓ Latest messages",
+    "Joined": "Joined",
+    "Left": "Left",
+    "Added": "Added",
+    "Removed": "Removed",
+    "CreatedChannelOn": "Created this channel on {date}",
+    "ChannelMessages": "Channel messages",
+    "JoinChannel": "Join channel",
+    "YouJoinedChannel": "You have been joined to channel"
   }
 }

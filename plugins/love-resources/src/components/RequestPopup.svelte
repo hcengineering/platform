@@ -16,12 +16,13 @@
   import { PersonAccount, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, playSound, stopSound } from '@hcengineering/presentation'
   import { Button, Label } from '@hcengineering/ui'
   import { JoinRequest, RequestStatus } from '@hcengineering/love'
   import love from '../plugin'
   import { myInfo, myOffice } from '../stores'
   import { connectRoom, isConnected } from '../utils'
+  import { onDestroy, onMount } from 'svelte'
 
   export let request: JoinRequest
 
@@ -35,13 +36,19 @@
       const person = $personByIdStore.get(me)
       if (person === undefined) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
-      await client.update(request, { status: RequestStatus.Approved })
     }
+    await client.update(request, { status: RequestStatus.Approved })
   }
 
   async function decline (): Promise<void> {
     await client.update(request, { status: RequestStatus.Rejected })
   }
+  onMount(() => {
+    playSound(love.sound.Knock, love.class.JoinRequest, true)
+  })
+  onDestroy(() => {
+    stopSound(love.sound.Knock)
+  })
 </script>
 
 <div class="antiPopup flex-col-center">

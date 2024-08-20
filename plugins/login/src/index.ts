@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Ref, Doc, AccountRole } from '@hcengineering/core'
+import { AccountRole, Doc, Ref, Timestamp } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -42,6 +42,7 @@ export interface Workspace {
  */
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
+  workspaceId: string
   creating?: boolean
   createProgress?: number
 }
@@ -56,15 +57,18 @@ export interface LoginInfo {
   email: string
 }
 
+export interface OtpInfo {
+  sent: boolean
+  retryOn: Timestamp
+}
+
 export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
     LoginTokens: '' as Metadata<Record<string, string>>,
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
-    LoginEmail: '' as Metadata<string>,
-    OverrideLoginToken: '' as Metadata<string>, // debug purposes
-    OverrideEndpoint: '' as Metadata<string>
+    LoginEmail: '' as Metadata<string>
   },
   component: {
     LoginApp: '' as AnyComponent,
@@ -82,14 +86,21 @@ export default plugin(loginId, {
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
     GetInviteLink: '' as Resource<
-    (expHours: number, mask: string, limit: number | undefined, role: AccountRole) => Promise<string>
+    (
+      expHours: number,
+      mask: string,
+      limit: number | undefined,
+      role: AccountRole,
+      navigateUrl?: string
+    ) => Promise<string>
     >,
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
-    SelectWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
+    SelectWorkspace: '' as Resource<
+    (workspace: string, token: string | null | undefined) => Promise<[Status, WorkspaceLoginInfo | undefined]>
+    >,
     FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     CreateEmployee: '' as Resource<(workspace: string) => Promise<[Status]>>,
-    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,
-    GetEndpoint: '' as Resource<() => Promise<string>>
+    GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>
   }
 })

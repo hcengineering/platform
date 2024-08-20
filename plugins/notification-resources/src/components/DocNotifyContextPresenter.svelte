@@ -27,7 +27,7 @@
 
   let object: Doc | undefined
 
-  $: objectQuery.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
+  $: objectQuery.query(value.objectClass, { _id: value.objectId, space: value.objectSpace }, (res) => {
     object = res[0]
   })
 
@@ -41,7 +41,7 @@
 
 {#if object}
   <div class="flex-presenter">
-    <NotifyContextIcon {value} size="small" />
+    <NotifyContextIcon {value} {object} size="small" />
     <div class="mr-4" />
 
     {#await getTitle(object) then title}

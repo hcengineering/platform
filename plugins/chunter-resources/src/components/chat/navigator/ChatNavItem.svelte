@@ -17,7 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
-  import { getActions } from '@hcengineering/view-resources'
+  import { getActions, getObjectLinkId } from '@hcengineering/view-resources'
   import {
     getNotificationsCount,
     InboxNotificationsClientImpl,
@@ -68,6 +68,8 @@
     actions = res
   })
 
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
   async function getChannelActions (context: DocNotifyContext | undefined, object: Doc): Promise<Action[]> {
     const result: Action[] = []
 
@@ -79,7 +81,8 @@
       icon: view.icon.Open,
       label: view.string.Open,
       action: async () => {
-        openChannel(object._id, object._class)
+        const id = await getObjectLinkId(linkProviders, object._id, object._class, object)
+        openChannel(id, object._class)
       }
     })
 
@@ -125,6 +128,7 @@
   {count}
   title={item.title}
   description={item.description}
+  secondaryNotifyMarker={(context?.lastViewedTimestamp ?? 0) < (context?.lastUpdateTimestamp ?? 0)}
   {actions}
   {type}
   on:click={() => {

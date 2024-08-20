@@ -14,24 +14,63 @@
 // limitations under the License.
 //
 
-import { type Class, type Ref } from '@hcengineering/core'
+import {
+  type Class,
+  type Client,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Mixin,
+  type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
+  type Tx,
+  type TxResult,
+  type WithLookup
+} from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui'
 import { type PresentationMiddlewareFactory } from './pipeline'
+import type { PreviewConfig } from './preview'
 import {
   type ComponentPointExtension,
-  type DocRules,
   type DocCreateExtension,
+  type DocRules,
   type FilePreviewExtension,
+  type InstantTransactions,
   type ObjectSearchCategory
 } from './types'
-import type { PreviewConfig } from './preview'
 
 /**
  * @public
  */
 export const presentationId = 'presentation' as Plugin
+
+/**
+ * @public
+ */
+export interface ClientHook {
+  findAll: <T extends Doc>(
+    client: Client,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<FindResult<T>>
+
+  findOne: <T extends Doc>(
+    client: Client,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<WithLookup<T> | undefined>
+
+  tx: (client: Client, tx: Tx) => Promise<TxResult>
+
+  searchFulltext: (client: Client, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
+}
 
 export default plugin(presentationId, {
   class: {
@@ -41,6 +80,9 @@ export default plugin(presentationId, {
     DocCreateExtension: '' as Ref<Class<DocCreateExtension>>,
     DocRules: '' as Ref<Class<DocRules>>,
     FilePreviewExtension: '' as Ref<Class<FilePreviewExtension>>
+  },
+  mixin: {
+    InstantTransactions: '' as Ref<Mixin<InstantTransactions>>
   },
   string: {
     Create: '' as IntlString,
@@ -84,13 +126,19 @@ export default plugin(presentationId, {
     FilePreviewExtension: '' as ComponentExtensionId
   },
   metadata: {
-    RequiredVersion: '' as Metadata<string>,
+    ModelVersion: '' as Metadata<string>,
+    FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
+    FilesURL: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
+    Endpoint: '' as Metadata<string>,
+    Workspace: '' as Metadata<string>,
     FrontUrl: '' as Asset,
-    PreviewConfig: '' as Metadata<PreviewConfig>
+    PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
+    ClientHook: '' as Metadata<ClientHook>,
+    SessionId: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

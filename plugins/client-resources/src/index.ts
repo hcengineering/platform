@@ -14,28 +14,19 @@
 //
 
 import clientPlugin from '@hcengineering/client'
+import type { ClientFactoryOptions } from '@hcengineering/client/src'
 import core, {
   AccountClient,
-  ClientConnectEvent,
   LoadModelResponse,
-  MeasureContext,
   Tx,
   TxHandler,
   TxPersistenceStore,
   TxWorkspaceEvent,
   WorkspaceEvent,
   concatLink,
-  createClient,
-  type ClientConnection
+  createClient
 } from '@hcengineering/core'
-import platform, {
-  Severity,
-  Status,
-  getMetadata,
-  getPlugins,
-  getResource,
-  setPlatformStatus
-} from '@hcengineering/platform'
+import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
 
 export { connect }
@@ -78,27 +69,22 @@ function decodeTokenPayload (token: string): any {
 export default async () => {
   return {
     function: {
-      GetClient: async (
-        token: string,
-        endpoint: string,
-        onUpgrade?: () => void,
-        onUnauthorized?: () => void,
-        onConnect?: (event: ClientConnectEvent, data: any) => void,
-        ctx?: MeasureContext
-      ): Promise<AccountClient> => {
+      GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
-        let client = createClient(
-          (handler: TxHandler) => {
+        const client = createClient(
+          async (handler: TxHandler) => {
             const url = concatLink(endpoint, `/${token}`)
 
             const upgradeHandler: TxHandler = (...txes: Tx[]) => {
               for (const tx of txes) {
+                if (tx?._class === core.class.TxModelUpgrade) {
+                  opt?.onUpgrade?.()
+                  return
+                }
                 if (tx?._class === core.class.TxWorkspaceEvent) {
                   const event = tx as TxWorkspaceEvent
-                  if (event.event === WorkspaceEvent.Upgrade) {
-                    onUpgrade?.()
-                  } else if (event.event === WorkspaceEvent.MaintenanceNotification) {
+                  if (event.event === WorkspaceEvent.MaintenanceNotification) {
                     void setPlatformStatus(
                       new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
                         time: event.params.timeMinutes
@@ -110,40 +96,37 @@ export default async () => {
               handler(...txes)
             }
             const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
-            const clientConnection = connect(
-              url,
-              upgradeHandler,
-              tokenPayload.workspace,
-              tokenPayload.email,
-              onUpgrade,
-              onUnauthorized,
-              onConnect
-            )
+
+            const newOpt = { ...opt }
             const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
+            let connectPromise: Promise<void> | undefined
             if ((connectTimeout ?? 0) > 0) {
-              return new Promise<ClientConnection>((resolve, reject) => {
+              connectPromise = new Promise<void>((resolve, reject) => {
                 const connectTO = setTimeout(() => {
                   if (!clientConnection.isConnected()) {
-                    clientConnection.onConnect = undefined
+                    newOpt.onConnect = undefined
                     void clientConnection?.close()
+                    void opt?.onDialTimeout?.()
                     reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                   }
                 }, connectTimeout)
-                clientConnection.onConnect = async (event) => {
+                newOpt.onConnect = (event) => {
                   // Any event is fine, it means server is alive.
                   clearTimeout(connectTO)
-                  resolve(clientConnection)
+                  resolve()
                 }
               })
             }
-            return Promise.resolve(clientConnection)
+            const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
+            if (connectPromise !== undefined) {
+              await connectPromise
+            }
+            return await Promise.resolve(clientConnection)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
           createModelPersistence(getWSFromToken(token)),
-          ctx
+          opt?.ctx
         )
-        // Check if we had dev hook for client.
-        client = hookClient(client)
         return await client
       }
     }
@@ -159,26 +142,30 @@ function createModelPersistence (workspace: string): TxPersistenceStore | undefi
     load: async () => {
       const db = await dbPromise
       if (db !== undefined) {
-        const transaction = db.transaction('model', 'readwrite') // (1)
-        const models = transaction.objectStore('model') // (2)
-        const model = await new Promise<{ id: string, model: LoadModelResponse } | undefined>((resolve) => {
-          const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(workspace)
-          storedValue.onsuccess = function () {
-            resolve(storedValue.result)
-          }
-          storedValue.onerror = function () {
-            resolve(undefined)
-          }
-        })
+        try {
+          const transaction = db.transaction('model', 'readwrite') // (1)
+          const models = transaction.objectStore('model') // (2)
+          const model = await new Promise<{ id: string, model: LoadModelResponse } | undefined>((resolve) => {
+            const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(workspace)
+            storedValue.onsuccess = function () {
+              resolve(storedValue.result)
+            }
+            storedValue.onerror = function () {
+              resolve(undefined)
+            }
+          })
 
-        if (model == null) {
-          return {
-            full: false,
-            transactions: [],
-            hash: ''
+          if (model == null) {
+            return {
+              full: false,
+              transactions: [],
+              hash: ''
+            }
           }
+          return model.model
+        } catch (err: any) {
+          // Assume no model is stored.
         }
-        return model.model
       }
       return {
         full: true,
@@ -195,24 +182,6 @@ function createModelPersistence (workspace: string): TxPersistenceStore | undefi
       }
     }
   }
-}
-
-async function hookClient (client: Promise<AccountClient>): Promise<AccountClient> {
-  const hook = getMetadata(clientPlugin.metadata.ClientHook)
-  if (hook !== undefined) {
-    const hookProc = await getResource(hook)
-    const _client = client
-    client = new Promise((resolve, reject) => {
-      _client
-        .then((res) => {
-          resolve(hookProc(res))
-        })
-        .catch((err) => {
-          reject(err)
-        })
-    })
-  }
-  return await client
 }
 
 function getWSFromToken (token: string): string {

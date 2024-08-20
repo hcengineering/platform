@@ -32,6 +32,7 @@
   import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
 
+  export let doc: Doc | undefined
   export let value: DisplayDocUpdateMessage
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
@@ -65,15 +66,20 @@
     attributeModel = model
   })
 
-  $: viewlet?.component && loadObject(value.objectId, value.objectClass)
+  $: viewlet?.component && loadObject(value.objectId, value.objectClass, value.space, doc)
 
-  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>, space: Ref<Space>, doc?: Doc): Promise<void> {
+    if (doc?._id === _id) {
+      object = doc
+      return
+    }
+
     const isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
 
     if (isObjectRemoved) {
       object = await buildRemovedDoc(client, _id, _class)
     } else {
-      objectQuery.query(_class, { _id }, (res) => {
+      objectQuery.query(_class, { _id, space }, (res) => {
         object = res[0]
       })
     }
@@ -124,6 +130,8 @@
         {attributeModel}
         {space}
         {viewlet}
+        {object}
+        message={value}
         preview
       />
     {/if}

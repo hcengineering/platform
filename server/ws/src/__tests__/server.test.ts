@@ -15,7 +15,7 @@
 //
 
 import { UNAUTHORIZED } from '@hcengineering/platform'
-import { readResponse, serialize } from '@hcengineering/rpc'
+import { RPCHandler } from '@hcengineering/rpc'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 import { start } from '../server'
@@ -45,6 +45,7 @@ import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
 
 describe('server', () => {
+  const handler = new RPCHandler()
   async function getModelDb (): Promise<ModelDb> {
     const txes = genMinModel()
     const hierarchy = new Hierarchy()
@@ -71,6 +72,7 @@ describe('server', () => {
       close: async () => {},
       storage: {} as unknown as ServerStorage,
       domains: async () => [],
+      groupBy: async () => new Set(),
       find: (ctx: MeasureContext, domain: Domain) => ({
         next: async (ctx: MeasureContext) => undefined,
         close: async (ctx: MeasureContext) => {}
@@ -85,6 +87,7 @@ describe('server', () => {
     sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
     port: 3335,
     productId: '',
+    brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
     externalStorage: createDummyStorageAdapter()
@@ -115,7 +118,7 @@ describe('server', () => {
       conn.close(1000)
     })
     conn.on('message', (msg: string) => {
-      const resp = readResponse(msg, false)
+      const resp = handler.readResponse(msg, false)
       expect(resp.result === 'hello')
       expect(resp.error?.code).toBe(UNAUTHORIZED.code)
       conn.close(1000)
@@ -131,12 +134,12 @@ describe('server', () => {
     // const start = Date.now()
     conn.on('open', () => {
       for (let i = 0; i < total; i++) {
-        conn.send(serialize({ method: 'tx', params: [], id: i }, false))
+        conn.send(handler.serialize({ method: 'tx', params: [], id: i }, false))
       }
     })
     let received = 0
     conn.on('message', (msg: string) => {
-      readResponse(msg, false)
+      handler.readResponse(msg, false)
       if (++received === total) {
         // console.log('resp:', resp, ' Time: ', Date.now() - start)
         conn.close(1000)
@@ -168,6 +171,7 @@ describe('server', () => {
           return toFindResult([d as unknown as T])
         },
         tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
+        groupBy: async () => new Set(),
         close: async () => {},
         storage: {} as unknown as ServerStorage,
         domains: async () => [],
@@ -185,6 +189,7 @@ describe('server', () => {
       sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
       port: 3336,
       productId: '',
+      brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
       externalStorage: createDummyStorageAdapter()
@@ -197,8 +202,8 @@ describe('server', () => {
         timeoutPromise,
         new Promise((resolve) => {
           newConn.on('open', () => {
-            newConn.send(serialize({ method: 'hello', params: [], id: -1 }, false))
-            newConn.send(serialize({ method: 'findAll', params: [], id: -1 }, false))
+            newConn.send(handler.serialize({ method: 'hello', params: [], id: -1 }, false))
+            newConn.send(handler.serialize({ method: 'findAll', params: [], id: -1 }, false))
             resolve(null)
           })
         })
@@ -214,13 +219,13 @@ describe('server', () => {
           newConn.on('message', (msg: Buffer) => {
             try {
               console.log('resp:', msg.toString())
-              const parsedMsg = readResponse(msg.toString(), false) // Hello
+              const parsedMsg = handler.readResponse(msg.toString(), false) // Hello
               if (!helloReceived) {
                 expect(parsedMsg.result === 'hello')
                 helloReceived = true
                 return
               }
-              responseMsg = readResponse(msg.toString(), false) // our message
+              responseMsg = handler.readResponse(msg.toString(), false) // our message
               resolve(null)
             } catch (err: any) {
               console.error(err)

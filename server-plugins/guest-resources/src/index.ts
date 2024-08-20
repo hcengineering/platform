@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import {
+import core, {
+  Branding,
   Doc,
   Hierarchy,
   Ref,
@@ -46,7 +47,7 @@ export async function OnPublicLinkCreate (tx: Tx, control: TriggerControl): Prom
   if (link.url !== '') return res
 
   const resTx = control.txFactory.createTxUpdateDoc(link._class, link.space, link._id, {
-    url: generateUrl(link._id, control.workspace)
+    url: generateUrl(link._id, control.workspace, control.branding?.front)
   })
 
   res.push(resTx)
@@ -54,22 +55,23 @@ export async function OnPublicLinkCreate (tx: Tx, control: TriggerControl): Prom
   return res
 }
 
-export function getPublicLinkUrl (workspace: WorkspaceIdWithUrl): string {
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+export function getPublicLinkUrl (workspace: WorkspaceIdWithUrl, brandedFront?: string): string {
+  const front = brandedFront ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${guestId}/${workspace.workspaceUrl}`
   return concatLink(front, path)
 }
 
-function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIdWithUrl): string {
+function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIdWithUrl, brandedFront?: string): string {
   const token = generateToken(guestAccountEmail, workspace, { linkId, guest: 'true' })
-  return `${getPublicLinkUrl(workspace)}?token=${token}`
+  return `${getPublicLinkUrl(workspace, brandedFront)}?token=${token}`
 }
 
 export async function getPublicLink (
   doc: Doc,
   client: TxOperations,
   workspace: WorkspaceIdWithUrl,
-  revokable: boolean = true
+  revokable: boolean = true,
+  branding: Branding | null
 ): Promise<string> {
   const current = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
   if (current !== undefined) {
@@ -79,11 +81,11 @@ export async function getPublicLink (
     return current.url
   }
   const id = generateId<PublicLink>()
-  const url = generateUrl(id, workspace)
+  const url = generateUrl(id, workspace, branding?.front)
   const fragment = getDocFragment(doc, client)
   await client.createDoc(
     guest.class.PublicLink,
-    guest.space.Links,
+    core.space.Workspace,
     {
       attachedTo: doc._id,
       location: {

@@ -2,6 +2,8 @@ import core, {
   WorkspaceEvent,
   generateId,
   getTypeOf,
+  type Branding,
+  type BrandingMap,
   type BulkUpdateEvent,
   type Class,
   type Doc,
@@ -13,6 +15,7 @@ import core, {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Hash } from 'crypto'
+import fs from 'fs'
 import type { SessionContext } from './types'
 
 /**
@@ -138,7 +141,11 @@ export class SessionContextImpl implements SessionContext {
     readonly sessionId: string,
     readonly admin: boolean | undefined,
     readonly derived: SessionContext['derived'],
-    readonly workspace: WorkspaceIdWithUrl
+    readonly workspace: WorkspaceIdWithUrl,
+    readonly branding: Branding | null,
+    readonly isAsyncContext: boolean,
+    readonly removedMap: Map<Ref<Doc>, Doc>,
+    readonly contextCache: Map<string, any>
   ) {}
 
   with<T>(
@@ -151,7 +158,20 @@ export class SessionContextImpl implements SessionContext {
       name,
       params,
       async (ctx) =>
-        await op(new SessionContextImpl(ctx, this.userEmail, this.sessionId, this.admin, this.derived, this.workspace)),
+        await op(
+          new SessionContextImpl(
+            ctx,
+            this.userEmail,
+            this.sessionId,
+            this.admin,
+            this.derived,
+            this.workspace,
+            this.branding,
+            this.isAsyncContext,
+            this.removedMap,
+            this.contextCache
+          )
+        ),
       fullParams
     )
   }
@@ -170,4 +190,18 @@ export function createBroadcastEvent (classes: Ref<Class<Doc>>[]): TxWorkspaceEv
     objectSpace: core.space.DerivedTx,
     space: core.space.DerivedTx
   }
+}
+
+export function loadBrandingMap (brandingPath?: string): BrandingMap {
+  let brandings: BrandingMap = {}
+  if (brandingPath !== undefined && brandingPath !== '') {
+    brandings = JSON.parse(fs.readFileSync(brandingPath, 'utf8'))
+
+    for (const [host, value] of Object.entries(brandings)) {
+      const protocol = value.protocol ?? 'https'
+      value.front = `${protocol}://${host}/`
+    }
+  }
+
+  return brandings
 }

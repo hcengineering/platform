@@ -15,26 +15,37 @@
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
   import { getBlobRef, type BlobMetadata } from '@hcengineering/presentation'
+  import { Loading } from '@hcengineering/ui'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
-  export let contentType: string
   export let metadata: BlobMetadata | undefined
+  export let fit: boolean = false
 
-  $: p = typeof value === 'string' ? getBlobRef(undefined, value, name) : getBlobRef(value, value._id)
+  $: p = getBlobRef(value, name)
+  $: width = metadata?.originalWidth ? `min(${metadata.originalWidth / metadata?.pixelRatio ?? 1}px, 100%)` : '100%'
+  $: height = metadata?.originalHeight
+    ? `min(${metadata.originalHeight / metadata?.pixelRatio ?? 1}px, ${fit ? '100%' : '80vh'})`
+    : '100%'
+  let loading = true
 </script>
 
 {#await p then blobRef}
-  <img class="w-full h-full img-fit" src={blobRef.src} srcset={blobRef.srcset} alt={name} />
+  {#if loading}
+    <div class="flex-center w-full h-full clear-mins">
+      <Loading />
+    </div>
+  {/if}
+  <img
+    on:load={() => {
+      loading = false
+    }}
+    class="object-contain mx-auto"
+    style:max-width={width}
+    style:max-height={height}
+    src={blobRef.src}
+    srcset={blobRef.srcset}
+    alt={name}
+    style:height={loading ? '0' : ''}
+  />
 {/await}
-
-<style lang="scss">
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-</style>

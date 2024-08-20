@@ -61,7 +61,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxCollectionCUD,
       'tx._class': core.class.TxCreateDoc
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

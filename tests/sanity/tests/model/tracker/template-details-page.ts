@@ -1,6 +1,7 @@
 import { expect, type Locator } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 import { Issue, NewIssue } from './types'
+import { convertEstimation } from '../../tracker/tracker.utils'
 
 export class TemplateDetailsPage extends CommonTrackerPage {
   inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
@@ -34,7 +35,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
       await expect(this.buttonComponent()).toHaveText(data.component)
     }
     if (data.estimation != null) {
-      await expect(this.buttonEstimation()).toHaveText(data.estimation)
+      await expect(this.buttonEstimation()).toHaveText(convertEstimation(data.estimation))
     }
   }
 

@@ -73,7 +73,10 @@ export const ImageNode = Node.create<ImageOptions>({
       title: {
         default: null
       },
-      align: getDataAttribute('align')
+      align: getDataAttribute('align'),
+      'data-file-type': {
+        default: null
+      }
     }
   },
 
@@ -94,7 +97,6 @@ export const ImageNode = Node.create<ImageOptions>({
       'data-type': this.name,
       'data-align': node.attrs.align
     }
-
     const imgAttributes = mergeAttributes(
       {
         'data-type': this.name
@@ -114,7 +116,6 @@ export const ImageNode = Node.create<ImageOptions>({
       const container = document.createElement('div')
       const imgElement = document.createElement('img')
       container.append(imgElement)
-
       const divAttributes = {
         class: 'text-editor-image-container',
         'data-type': this.name,
@@ -122,7 +123,9 @@ export const ImageNode = Node.create<ImageOptions>({
       }
 
       for (const [k, v] of Object.entries(divAttributes)) {
-        container.setAttribute(k, v)
+        if (v !== null) {
+          container.setAttribute(k, v)
+        }
       }
 
       const imgAttributes = mergeAttributes(
@@ -141,13 +144,20 @@ export const ImageNode = Node.create<ImageOptions>({
       if (fileId != null) {
         const setBrokenImg = setTimeout(() => {
           imgElement.src = this.options.loadingImgSrc ?? `platform://platform/files/workspace/?file=${fileId}`
-        }, 200)
+        }, 500)
         if (fileId != null) {
           void this.options.getBlobRef(fileId).then((val) => {
             clearTimeout(setBrokenImg)
             imgElement.src = val.src
             imgElement.srcset = val.srcset
           })
+        }
+      } else {
+        if (imgAttributes.srcset != null) {
+          imgElement.srcset = imgAttributes.srcset
+        }
+        if (imgAttributes.src != null) {
+          imgElement.src = imgAttributes.src
         }
       }
 

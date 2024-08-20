@@ -36,9 +36,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnDepartmentRemove,
     txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx.objectClass': hr.class.Department,
-      'tx._class': core.class.TxRemoveDoc
+      objectClass: hr.class.Department,
+      _class: core.class.TxRemoveDoc
     }
   })
 

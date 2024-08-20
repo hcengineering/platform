@@ -175,8 +175,8 @@ export const timeOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, timeId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, timeId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {
@@ -190,7 +190,7 @@ export const timeOperation: MigrateOperation = {
           await createOrUpdate(
             tx,
             tags.class.TagCategory,
-            tags.space.Tags,
+            core.space.Workspace,
             {
               icon: tags.icon.Tags,
               label: 'Other',

@@ -17,15 +17,16 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Data, Markup, Ref, generateId } from '@hcengineering/core'
+  import core, { Data, Markup, Ref, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
+  import { NewMessage, SharedMessage, GmailEvents } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
   import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { StyledTextEditor } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
@@ -68,7 +69,7 @@
   async function sendMsg (): Promise<void> {
     await client.createDoc<NewMessage>(
       plugin.class.NewMessage,
-      plugin.space.Gmail,
+      core.space.Workspace,
       {
         ...obj,
         content: markupToHTML(content),
@@ -81,6 +82,7 @@
       },
       objectId
     )
+    Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
     await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
     objectId = generateId()
     dispatch('close')
@@ -120,7 +122,7 @@
       const uuid = await uploadFile(file)
       await client.addCollection(
         attachmentP.class.Attachment,
-        plugin.space.Gmail,
+        core.space.Workspace,
         objectId,
         plugin.class.NewMessage,
         'attachments',
@@ -177,6 +179,7 @@
 
 <input
   bind:this={inputFile}
+  disabled={inputFile == null}
   multiple
   type="file"
   name="file"

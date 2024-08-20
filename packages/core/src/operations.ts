@@ -23,6 +23,7 @@ import {
   TxFactory,
   TxProcessor
 } from './tx'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -309,8 +310,8 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.removeDoc(doc._class, doc.space, doc._id)
   }
 
-  apply (scope: string): ApplyOperations {
-    return new ApplyOperations(this, scope)
+  apply (scope: string, measure?: string): ApplyOperations {
+    return new ApplyOperations(this, scope, measure)
   }
 
   async diffUpdate<T extends Doc = Doc>(
@@ -420,6 +421,12 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 }
 
+export interface CommitResult {
+  result: boolean
+  time: number
+  serverTime: number
+}
+
 /**
  * @public
  *
@@ -433,7 +440,8 @@ export class ApplyOperations extends TxOperations {
   notMatches: DocumentClassQuery<Doc>[] = []
   constructor (
     readonly ops: TxOperations,
-    readonly scope: string
+    readonly scope: string,
+    readonly measureName?: string
   ) {
     const txClient: Client = {
       getHierarchy: () => ops.client.getHierarchy(),
@@ -443,7 +451,7 @@ export class ApplyOperations extends TxOperations {
       findAll: (_class, query, options?) => ops.client.findAll(_class, query, options),
       searchFulltext: (query, options) => ops.client.searchFulltext(query, options),
       tx: async (tx): Promise<TxResult> => {
-        if (ops.getHierarchy().isDerived(tx._class, core.class.TxCUD)) {
+        if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)
         }
         return {}
@@ -462,23 +470,32 @@ export class ApplyOperations extends TxOperations {
     return this
   }
 
-  async commit (notify: boolean = true, extraNotify: Ref<Class<Doc>>[] = []): Promise<boolean> {
+  async commit (notify: boolean = true, extraNotify: Ref<Class<Doc>>[] = []): Promise<CommitResult> {
     if (this.txes.length > 0) {
-      return (
-        await ((await this.ops.tx(
-          this.ops.txFactory.createTxApplyIf(
-            core.space.Tx,
-            this.scope,
-            this.matches,
-            this.notMatches,
-            this.txes,
-            notify,
-            extraNotify
-          )
-        )) as Promise<TxApplyResult>)
-      ).success
+      const st = Date.now()
+      const result = await ((await this.ops.tx(
+        this.ops.txFactory.createTxApplyIf(
+          core.space.Tx,
+          this.scope,
+          this.matches,
+          this.notMatches,
+          this.txes,
+          this.measureName,
+          notify,
+          extraNotify
+        )
+      )) as Promise<TxApplyResult>)
+      const dnow = Date.now()
+      if (typeof window === 'object' && window !== null) {
+        console.log(`measure ${this.measureName}`, dnow - st, 'server time', result.serverTime)
+      }
+      return {
+        result: result.success,
+        time: dnow - st,
+        serverTime: result.serverTime
+      }
     }
-    return true
+    return { result: true, time: 0, serverTime: 0 }
   }
 }
 
@@ -503,7 +520,7 @@ export class TxBuilder extends TxOperations {
       findAll: async (_class, query, options?) => toFindResult([]),
       searchFulltext: async (query, options) => ({ docs: [] }),
       tx: async (tx): Promise<TxResult> => {
-        if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+        if (TxProcessor.isExtendsCUD(tx._class)) {
           this.txes.push(tx as TxCUD<Doc>)
         }
         return {}
@@ -522,12 +539,22 @@ export async function updateAttribute (
   _class: Ref<Class<Doc>>,
   attribute: { key: string, attr: AnyAttribute },
   value: any,
-  modifyBy?: Ref<Account>
+  saveModified: boolean = false,
+  analyticsProps: Record<string, any> = {}
 ): Promise<void> {
   const doc = object
   const attributeKey = attribute.key
   if ((doc as any)[attributeKey] === value) return
+  const modifiedOn = saveModified ? doc.modifiedOn : Date.now()
+  const modifiedBy = attribute.key === 'modifiedBy' ? value : saveModified ? doc.modifiedBy : undefined
   const attr = attribute.attr
+
+  const baseAnalyticsProps = {
+    objectClass: _class,
+    objectId: object._id,
+    attribute: attributeKey,
+    ...analyticsProps
+  }
   if (client.getHierarchy().isMixin(attr.attributeOf)) {
     await client.updateMixin(
       doc._id,
@@ -535,30 +562,43 @@ export async function updateAttribute (
       doc.space,
       attr.attributeOf,
       { [attributeKey]: value },
-      Date.now(),
-      modifyBy
+      modifiedOn,
+      modifiedBy
     )
+    Analytics.handleEvent('ChangeAttribute', { ...baseAnalyticsProps, value })
   } else {
     if (client.getHierarchy().isDerived(attribute.attr.type._class, core.class.ArrOf)) {
       const oldValue: any[] = (object as any)[attributeKey] ?? []
-      const val: any[] = value
+      const val: any[] = Array.isArray(value) ? value : [value]
       const toPull = oldValue.filter((it: any) => !val.includes(it))
 
       const toPush = val.filter((it) => !oldValue.includes(it))
       if (toPull.length > 0) {
-        await client.update(object, { $pull: { [attributeKey]: { $in: toPull } } }, false, Date.now(), modifyBy)
+        await client.update(object, { $pull: { [attributeKey]: { $in: toPull } } }, false, modifiedOn, modifiedBy)
+        Analytics.handleEvent('RemoveCollectionItems', {
+          ...baseAnalyticsProps,
+          removed: toPull
+        })
       }
       if (toPush.length > 0) {
         await client.update(
           object,
           { $push: { [attributeKey]: { $each: toPush, $position: 0 } } },
           false,
-          Date.now(),
-          modifyBy
+          modifiedOn,
+          modifiedBy
         )
+        Analytics.handleEvent('AddCollectionItems', {
+          ...baseAnalyticsProps,
+          added: toPush
+        })
       }
     } else {
-      await client.update(object, { [attributeKey]: value }, false, Date.now(), modifyBy)
+      await client.update(object, { [attributeKey]: value }, false, modifiedOn, modifiedBy)
+      Analytics.handleEvent('SetCollectionItems', {
+        ...baseAnalyticsProps,
+        value
+      })
     }
   }
 }

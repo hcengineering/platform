@@ -18,7 +18,7 @@
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory } from '@hcengineering/setting'
+  import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
     Component,
     Label,
@@ -34,15 +34,13 @@
     setMetadataLocalStorage,
     settingsSeparators,
     showPopup,
-    type AnyComponent
+    type AnyComponent,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { ComponentType, onDestroy } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
-
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
+  import { Analytics } from '@hcengineering/analytics'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
@@ -102,12 +100,15 @@
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     void closeClient()
+    Analytics.handleEvent(SettingsEvents.SignOut)
     navigate({ path: [loginId] })
   }
   function selectWorkspace (): void {
+    Analytics.handleEvent(SettingsEvents.SelectWorkspace)
     navigate({ path: [loginId, 'selectWorkspace'] })
   }
   function inviteWorkspace (): void {
+    Analytics.handleEvent(SettingsEvents.InviteToWorkspace)
     showPopup(login.component.InviteLink, {})
   }
 
@@ -121,9 +122,11 @@
 </script>
 
 <div class="hulyPanels-container">
-  {#if visibleNav}
+  {#if $deviceInfo.navigator.visible}
     <div
-      class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} border-left"
       class:border-right={category?.component === undefined}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
@@ -178,21 +181,26 @@
           <NavItem icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
         </NavFooter>
       </div>
-      <Separator name={'setting'} float={navFloat ? 'navigator' : true} index={0} color={'transparent'} />
+      <Separator
+        name={'setting'}
+        float={$deviceInfo.navigator.float ? 'navigator' : true}
+        index={0}
+        color={'transparent'}
+      />
     </div>
-    <Separator name={'setting'} float={navFloat} index={0} color={'transparent'} separatorSize={0} short />
+    <Separator
+      name={'setting'}
+      float={$deviceInfo.navigator.float}
+      index={0}
+      color={'transparent'}
+      separatorSize={0}
+      short
+    />
   {/if}
 
   <div class="antiPanel-component filledNav" style:flex-direction={'row'}>
     {#if category}
-      <Component
-        is={category.component}
-        props={{
-          kind: 'content',
-          visibleNav
-        }}
-        on:change={(event) => (visibleNav = event.detail)}
-      />
+      <Component is={category.component} props={{ kind: 'content' }} />
     {/if}
   </div>
   {#if asideComponent != null}

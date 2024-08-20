@@ -41,18 +41,24 @@
   let shownSpaces: Space[] = []
 
   $: if (model) {
-    const classes = getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c))
-    query.query(
-      core.class.Space,
-      {
-        _class: { $in: classes },
-        members: getCurrentAccount()._id
-      },
-      (result) => {
-        spaces = result
-      },
-      { sort: { name: SortingOrder.Ascending } }
+    const classes = Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
+      (it) => !hierarchy.isMixin(it)
     )
+    if (classes.length > 0) {
+      query.query(
+        classes.length === 1 ? classes[0] : core.class.Space,
+        {
+          ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
+          members: getCurrentAccount()._id
+        },
+        (result) => {
+          spaces = result
+        },
+        { sort: { name: SortingOrder.Ascending } }
+      )
+    } else {
+      query.unsubscribe()
+    }
   }
 
   let specials: SpecialNavModel[] = []

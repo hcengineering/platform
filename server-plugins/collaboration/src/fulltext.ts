@@ -35,6 +35,7 @@ import {
   FullTextPipelineStage,
   IndexedDoc,
   StorageAdapter,
+  collabStageId,
   contentStageId,
   docKey,
   docUpdKey,
@@ -46,10 +47,9 @@ import {
  */
 export class CollaborativeContentRetrievalStage implements FullTextPipelineStage {
   require = []
-  stageId = contentStageId
+  stageId = collabStageId
 
   extra = ['content', 'base64']
-  digest = '^digest'
 
   enabled = true
 
@@ -59,8 +59,6 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
   updateFields: DocUpdateHandler[] = []
 
   textLimit = 100 * 1024
-
-  stageValue: boolean | string = true
 
   constructor (
     readonly storageAdapter: StorageAdapter | undefined,
@@ -111,7 +109,7 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
 
             if (docInfo !== undefined) {
               const digest = docInfo.etag
-              const digestKey = docKey(val.name + this.digest, { _class: val.attributeOf })
+              const digestKey = docKey(val.name, { _class: val.attributeOf, digest: true })
               if (doc.attributes[digestKey] !== digest) {
                 ;(update as any)[docUpdKey(digestKey)] = digest
 

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Channel, findContacts, Organization } from '@hcengineering/contact'
+  import { Channel, ContactEvents, Organization, findContacts } from '@hcengineering/contact'
   import core, {
     AttachedData,
     fillDefaults,
@@ -34,6 +34,7 @@
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import Company from './icons/Company.svelte'
   import OrganizationPresenter from './OrganizationPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let onCreate: ((orgId: Ref<Organization>, client: TxOperations) => Promise<void>) | undefined = undefined
 
@@ -87,7 +88,7 @@
     if (onCreate !== undefined) {
       await onCreate?.(id, client)
     }
-
+    Analytics.handleEvent(ContactEvents.CompanyCreated, { id })
     dispatch('close', id)
   }
 

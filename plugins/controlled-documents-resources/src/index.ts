@@ -33,7 +33,7 @@ import {
 } from '@hcengineering/controlled-documents'
 import { type Resources } from '@hcengineering/platform'
 import { type ObjectSearchResult, getClient, MessageBox, getCollaboratorClient } from '@hcengineering/presentation'
-import { EmptyMarkup } from '@hcengineering/text-editor'
+import { EmptyMarkup } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { deleteObjects } from '@hcengineering/view-resources'
 
@@ -87,6 +87,7 @@ import DocumentApprovalRequestPresenter from './components/requests/DocumentAppr
 import ControlledStateFilterValuePresenter from './components/document/presenters/ControlledStateFilterValuePresenter.svelte'
 import DocumentMetaPresenter from './components/DocumentMetaPresenter.svelte'
 import CreateDocumentsSpace from './components/docspace/CreateDocumentsSpace.svelte'
+import CreateDocumentSpaceType from './components/docspace/CreateDocumentSpaceType.svelte'
 
 import Projects from './components/project/Projects.svelte'
 import ProjectPresenter from './components/project/ProjectPresenter.svelte'
@@ -116,6 +117,7 @@ import {
   createDocument,
   createTemplate
 } from './utils'
+import { comment, isCommentVisible } from './text'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 
@@ -305,6 +307,7 @@ export default async (): Promise<Resources> => ({
     QmsDocumentWizard,
     QmsTemplateWizard,
     CreateDocumentsSpace,
+    CreateDocumentSpaceType,
     DocumentSpacePresenter,
     DocumentPresenter,
     Documents,
@@ -370,7 +373,9 @@ export default async (): Promise<Resources> => ({
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
     IsLatestDraftDoc: isLatestDraftDoc,
     DocumentIdentifierProvider: documentIdentifierProvider,
-    ControlledDocumentTitleProvider: getControlledDocumentTitle
+    ControlledDocumentTitleProvider: getControlledDocumentTitle,
+    Comment: comment,
+    IsCommentVisible: isCommentVisible
   },
   actionImpl: {
     AddCollaborativeSectionAbove: addCollaborativeSectionAbove,

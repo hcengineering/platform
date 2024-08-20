@@ -41,7 +41,6 @@
     )
     await connectRoom(place.x, place.y, $myInfo, myPerson, room)
   }
-
   async function decline (): Promise<void> {
     await client.update(invite, { status: RequestStatus.Rejected })
   }

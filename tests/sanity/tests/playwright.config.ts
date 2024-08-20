@@ -2,6 +2,11 @@ import { devices, PlaywrightTestConfig } from '@playwright/test'
 import { config as dotenvConfig } from 'dotenv'
 dotenvConfig()
 
+let maxFailures: number | undefined
+if (process.env.TESTS_MAX_FAILURES !== undefined) {
+  maxFailures = parseInt(process.env.TESTS_MAX_FAILURES)
+}
+
 const config: PlaywrightTestConfig = {
   projects: [
     {
@@ -19,13 +24,17 @@ const config: PlaywrightTestConfig = {
           snapshots: true,
           screenshots: true,
           sources: true
+        },
+        contextOptions: {
+          reducedMotion: 'reduce'
         }
-      }
+      },
+      fullyParallel: false
     }
   ],
-  retries: 1,
+  retries: 2,
   timeout: 60000,
-  maxFailures: 5,
+  maxFailures,
   expect: {
     timeout: 15000
   },

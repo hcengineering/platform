@@ -32,7 +32,7 @@ import core, {
   type TxResult,
   type WorkspaceId
 } from '@hcengineering/core'
-import { type DbAdapter } from './adapter'
+import { type DbAdapter, type DomainHelperOperations } from './adapter'
 
 /**
  * @public
@@ -49,8 +49,20 @@ export class DummyDbAdapter implements DbAdapter {
 
   async init (): Promise<void> {}
 
+  helper (): DomainHelperOperations {
+    return {
+      create: async () => {},
+      exists: () => true,
+      listDomains: async () => new Set(),
+      createIndex: async () => {},
+      dropIndex: async () => {},
+      listIndexes: async () => [],
+      estimatedCount: async () => 0
+    }
+  }
+
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
+  async removeOldIndex (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]): Promise<void> {}
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
@@ -74,6 +86,10 @@ export class DummyDbAdapter implements DbAdapter {
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
+
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return new Set()
+  }
 }
 
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {

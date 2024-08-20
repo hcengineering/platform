@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { PersonAccount } from '@hcengineering/contact'
+import { type Person } from '@hcengineering/contact'
 import type { AttachedDoc, Class, Doc, Mixin, Ref, Timestamp, Tx } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -24,11 +24,11 @@ import { ChatMessage } from '@hcengineering/chunter'
  * @public
  */
 export interface Request extends AttachedDoc {
-  requested: Ref<PersonAccount>[]
-  approved: Ref<PersonAccount>[]
+  requested: Ref<Person>[]
+  approved: Ref<Person>[]
   approvedDates?: Timestamp[]
   requiredApprovesCount: number
-  rejected?: Ref<PersonAccount>
+  rejected?: Ref<Person>
   status: RequestStatus
   tx: Tx
   rejectedTx?: Tx

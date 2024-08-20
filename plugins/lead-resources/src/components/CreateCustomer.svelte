@@ -21,13 +21,13 @@
     Class,
     Data,
     Doc,
-    generateId,
-    makeCollaborativeDoc,
     MixinData,
     Ref,
-    WithLookup
+    WithLookup,
+    generateId,
+    makeCollaborativeDoc
   } from '@hcengineering/core'
-  import type { Customer } from '@hcengineering/lead'
+  import { Customer, LeadEvents } from '@hcengineering/lead'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor'
   import {
@@ -42,6 +42,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
   import lead from '../plugin'
 
   let firstName = ''
@@ -110,6 +111,7 @@
         }
       )
     }
+    Analytics.handleEvent(LeadEvents.CustomerCreated, { id })
   }
 
   const targets = [

@@ -33,6 +33,7 @@
   export let allowDeselect: boolean = false
   export let showDropdownIcon: boolean = false
 
+  export let dataId: string | undefined = undefined
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
@@ -67,6 +68,8 @@
     {kind}
     {justify}
     {disabled}
+    pressed={opened}
+    {dataId}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened) {
@@ -98,7 +101,12 @@
       }
     }}
   >
-    <span slot="content" class="overflow-label disabled" class:content-color={selectedItem === undefined}>
+    <span
+      slot="content"
+      class="overflow-label disabled"
+      class:mr-2={showDropdownIcon}
+      class:content-color={selectedItem === undefined}
+    >
       {#if $$slots.content}
         <slot name="content" />
       {:else if Array.isArray(selectedItem)}

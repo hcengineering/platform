@@ -2,6 +2,8 @@ import { type Locator, type Page, expect } from '@playwright/test'
 import { NewToDo, Slot } from './types'
 import { CalendarPage } from '../calendar-page'
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
+
 export class PlanningPage extends CalendarPage {
   readonly page: Page
 
@@ -13,6 +15,7 @@ export class PlanningPage extends CalendarPage {
   private readonly popup = (): Locator => this.page.locator('div.popup')
   private readonly panel = (): Locator => this.page.locator('div.hulyModal-container')
   private readonly toDosContainer = (): Locator => this.page.locator('div.toDos-container')
+  private readonly schedule = (): Locator => this.page.locator('div.hulyComponent.modal')
   readonly pageHeader = (): Locator =>
     this.page.locator('div[class*="navigator"] div[class*="header"]', { hasText: 'Planning' })
 
@@ -20,16 +23,19 @@ export class PlanningPage extends CalendarPage {
   readonly inputPopupCreateTitle = (): Locator => this.popup().locator('input[type="text"]')
   readonly inputPopupCreateDescription = (): Locator => this.popup().locator('div.tiptap')
   readonly inputPanelCreateDescription = (): Locator => this.panel().locator('div.tiptap')
-  readonly buttonPopupCreateDueDate = (): Locator =>
-    this.popup().locator('div.block:first-child div.flex-row-center button:nth-child(3)')
-
-  readonly buttonPanelCreateDueDate = (): Locator =>
-    this.panel().locator('div.slots-content div.flex-row-top.justify-between div.flex-row-center button:first-child')
-
+  readonly buttonPopupCreateDueDate = (): Locator => this.popup().locator('button#dueDateButton')
+  readonly buttonPanelCreateDueDate = (): Locator => this.panel().locator('button#dueDateButton')
   readonly buttonPopupCreatePriority = (): Locator => this.popup().locator('button#priorityButton')
   readonly buttonPanelCreatePriority = (): Locator => this.panel().locator('button#priorityButton')
   readonly buttonPopupCreateVisible = (): Locator => this.popup().locator('button#visibleButton')
   readonly buttonPanelCreateVisible = (): Locator => this.panel().locator('button#visibleButton')
+  readonly buttonPopupVisibleToEveryone = (): Locator =>
+    this.popup().getByRole('button', { name: 'Visible to everyone' })
+
+  readonly buttonPopupOnlyVisibleToYou = (): Locator =>
+    this.popup().getByRole('button', { name: 'Only visible to you' })
+
+  readonly buttonPopupSave = (): Locator => this.popup().getByRole('button', { name: 'Save' })
   readonly buttonPopupCreateAddLabel = (): Locator =>
     this.popup().locator('button.antiButton', { hasText: 'Add label' })
 
@@ -39,9 +45,9 @@ export class PlanningPage extends CalendarPage {
   readonly buttonPopupCreateAddSlot = (): Locator => this.popup().locator('button', { hasText: 'Add Slot' })
   readonly buttonPanelCreateAddSlot = (): Locator => this.panel().locator('button', { hasText: 'Add Slot' })
   readonly buttonCalendarToday = (): Locator => this.popup().locator('div.calendar button.day.today')
-  readonly buttonCreateToDo = (): Locator => this.popup().locator('button.antiButton', { hasText: 'Add ToDo' })
+  readonly buttonCreateToDo = (): Locator => this.popup().locator('button.antiButton', { hasText: 'Add Action Item' })
   readonly inputCreateToDoTitle = (): Locator =>
-    this.toDosContainer().locator('input[placeholder="Add todo, press Enter to save"]')
+    this.toDosContainer().locator('input[placeholder="Add Action Item, press Enter to save"]')
 
   readonly buttonCardClose = (): Locator =>
     this.panel().locator('.hulyHeader-container > .hulyHeader-buttonsGroup > .font-medium-14')
@@ -65,6 +71,46 @@ export class PlanningPage extends CalendarPage {
   readonly buttonMenuDelete = (): Locator => this.page.locator('button.ap-menuItem span', { hasText: 'Delete' })
   readonly buttonPopupSelectDateNextMonth = (): Locator =>
     this.popup().locator('div.header > div:last-child > button:last-child')
+
+  readonly selectInputToDo = (): Locator =>
+    this.toDosContainer().getByPlaceholder('Add Action Item, press Enter to save')
+
+  readonly selectTimeCell = (time: string, column: number = 1): Locator =>
+    this.schedule().locator(`div.time-cell:text-is('${time}')`).locator(`xpath=following::div[${column}]`)
+
+  readonly eventInSchedule = (title: string): Locator =>
+    this.schedule().locator('div.event-container', { hasText: title })
+
+  readonly toDoInToDos = (hasText: string): Locator =>
+    this.toDosContainer().locator('button.hulyToDoLine-container', { hasText })
+
+  readonly checkboxToDoInToDos = (hasText: string): Locator =>
+    this.toDoInToDos(hasText).locator('div.hulyToDoLine-checkbox')
+
+  async dragToCalendar (title: string, column: number, time: string, addHalf: boolean = false): Promise<void> {
+    await this.toDosContainer().getByRole('button', { name: title }).hover()
+
+    await expect(async () => {
+      await this.page.mouse.down()
+      const boundingBox = await this.selectTimeCell(time, column).boundingBox()
+      expect(boundingBox).toBeTruthy()
+      if (boundingBox != null) {
+        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
+        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + (addHalf ? 40 : 20))
+        await this.page.mouse.up()
+      }
+    }).toPass(retryOptions)
+  }
+
+  async checkInSchedule (title: string): Promise<void> {
+    await expect(this.eventInSchedule(title)).toBeVisible()
+  }
+
+  async markDoneInToDos (title: string): Promise<void> {
+    await this.toDoInToDos(title).hover()
+    await this.checkboxToDoInToDos(title).hover()
+    await this.checkboxToDoInToDos(title).click()
+  }
 
   async clickButtonCreateAddSlot (): Promise<void> {
     await this.buttonPanelCreateAddSlot().click({ force: true })

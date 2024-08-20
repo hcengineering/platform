@@ -39,7 +39,8 @@
     setCurrentProject,
     getProjectDocsHierarchy,
     isEditableProject,
-    createDocument
+    createDocument,
+    canCreateChildDocument
   } from '../../utils'
 
   import documents from '../../plugin'
@@ -116,7 +117,7 @@
   }
 
   async function selectProject (space: DocumentSpace): Promise<void> {
-    project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id)) ?? documents.ids.NoProject
+    project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id, true)) ?? documents.ids.NoProject
   }
 
   function handleDocumentSelected (doc: WithLookup<ProjectDocument>): void {
@@ -129,17 +130,19 @@
   async function getSpaceActions (space: DocumentSpace): Promise<Action[]> {
     const actions = await getActions(space)
 
-    const action: Action = {
-      icon: documents.icon.NewDocument,
-      label: documents.string.CreateDocument,
-      group: 'create',
-      action: async () => {
-        await createDocument(space)
-      }
-    }
-
-    if (spaceType?.projects === true && (await isEditableProject(project))) {
-      actions.push(action)
+    if (
+      spaceType?.projects === true &&
+      (await isEditableProject(project)) &&
+      (await canCreateChildDocument(space, true))
+    ) {
+      actions.push({
+        icon: documents.icon.NewDocument,
+        label: documents.string.CreateDocument,
+        group: 'create',
+        action: async () => {
+          await createDocument(space)
+        }
+      })
     }
 
     return orderActions(actions)

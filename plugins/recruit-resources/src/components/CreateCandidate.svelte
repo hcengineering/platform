@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import attachment from '@hcengineering/attachment'
+  import attachment, { AttachmentsEvents } from '@hcengineering/attachment'
   import contact, {
     AvatarType,
     Channel,
@@ -24,7 +24,7 @@
     Person
   } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
-  import {
+  import core, {
     Account,
     AttachedData,
     Data,
@@ -35,7 +35,8 @@
     Ref,
     toIdMap,
     TxProcessor,
-    WithLookup
+    WithLookup,
+    type Blob
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
@@ -50,7 +51,7 @@
     MultipleDraftController,
     deleteFile
   } from '@hcengineering/presentation'
-  import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
+  import { Candidate, CandidateDraft, RecruitEvents } from '@hcengineering/recruit'
   import { recognizeDocument } from '@hcengineering/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -71,6 +72,7 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import YesNo from './YesNo.svelte'
+  import { getCandidateIdentifier } from '../utils'
 
   export let shouldSaveDraft: boolean = true
 
@@ -184,7 +186,7 @@
     )
   })
 
-  async function createCandidate () {
+  async function createCandidate (): Promise<void> {
     const _id: Ref<Person> = generateId()
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
@@ -220,7 +222,7 @@
       }
     }
 
-    const applyOps = client.apply(_id)
+    const applyOps = client.apply(_id, 'create-candidate')
 
     await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(
@@ -230,10 +232,12 @@
       recruit.mixin.Candidate,
       candidateData
     )
+    const candidateIdentifier = getCandidateIdentifier(_id)
+    Analytics.handleEvent(RecruitEvents.TalentCreated, { _id: candidateIdentifier })
 
     if (object.resumeUuid !== undefined) {
       const resume = resumeDraft() as resumeFile
-      applyOps.addCollection(
+      await applyOps.addCollection(
         attachment.class.Attachment,
         contact.space.Contacts,
         _id,
@@ -241,12 +245,13 @@
         'attachments',
         {
           name: resume.name,
-          file: resume.uuid,
+          file: resume.uuid as Ref<Blob>,
           size: resume.size,
           type: resume.type,
           lastModified: resume.lastModified
         }
       )
+      Analytics.handleEvent(AttachmentsEvents.FilesAttached, { object: candidateIdentifier, count: 1 })
     }
     for (const channel of object.channels) {
       await applyOps.addCollection(
@@ -277,6 +282,7 @@
           description: '',
           category: findTagCategory(skill.title, categories)
         })
+        Analytics.handleEvent(RecruitEvents.SkillCreated, { skill: skill.tag })
       }
       await applyOps.addCollection(skill._class, skill.space, _id, recruit.mixin.Candidate, 'skills', {
         title: skill.title,
@@ -365,7 +371,7 @@
       const formattedSkills = (doc.skills.map((s) => s.toLowerCase()) ?? []).filter(
         (skill) => !namedElements.has(skill)
       )
-      const refactoredSkills = []
+      const refactoredSkills: any[] = []
       if (formattedSkills.length > 0) {
         const existingTags = Array.from(namedElements.keys()).filter((x) => x.length > 2)
         const regex = /\S+(?:[-+]\S+)+/g
@@ -418,7 +424,7 @@
           const category = findTagCategory(s, categories)
           const cinstance = categoriesMap.get(category)
           e = TxProcessor.createDoc2Doc(
-            client.txFactory.createTxCreateDoc(tags.class.TagElement, tags.space.Tags, {
+            client.txFactory.createTxCreateDoc(tags.class.TagElement, core.space.Workspace, {
               title,
               description: `Imported skill ${s} of ${cinstance?.label ?? ''}`,
               color: getColorNumberByText(s),
@@ -433,7 +439,7 @@
         if (e !== undefined) {
           newSkills.push(
             TxProcessor.createDoc2Doc(
-              client.txFactory.createTxCreateDoc(tags.class.TagReference, tags.space.Tags, {
+              client.txFactory.createTxCreateDoc(tags.class.TagReference, core.space.Workspace, {
                 title: e.title,
                 color: e.color,
                 tag: e._id,
@@ -507,7 +513,7 @@
         attachedTo: '' as Ref<Doc>,
         attachedToClass: recruit.mixin.Candidate,
         collection: 'skills',
-        space: tags.space.Tags,
+        space: core.space.Workspace,
         modifiedOn: 0,
         modifiedBy: '' as Ref<Account>,
         title: tag.title,
@@ -754,7 +760,7 @@
                 FilePreviewPopup,
                 {
                   file: object.resumeUuid,
-                  contentType: object.resumeType ?? 'application/pdf',
+                  contentType: object.resumeType,
                   name: object.resumeName
                 },
                 object.resumeType?.startsWith('image/') ? 'centered' : 'float'

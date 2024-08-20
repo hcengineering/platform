@@ -13,29 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { PersonAccountRefPresenter } from '@hcengineering/contact-resources'
-  import { Account, Ref } from '@hcengineering/core'
+  import contact, { Person, PersonAccount } from '@hcengineering/contact'
+  import { personAccountByIdStore, PersonRefPresenter } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
   import { createQuery, MessageViewer } from '@hcengineering/presentation'
   import { Request, RequestDecisionComment } from '@hcengineering/request'
   import { BooleanIcon, Label, ShowMore } from '@hcengineering/ui'
   import request from '../plugin'
 
   export let value: Request
-  let comments = new Map<Ref<Account>, RequestDecisionComment>()
+  let comments = new Map<Ref<Person> | undefined, RequestDecisionComment>()
 
   const query = createQuery()
   $: query.query(request.mixin.RequestDecisionComment, { attachedTo: value._id }, (res) => {
-    comments = new Map(res.map((r) => [r.modifiedBy, r]))
+    comments = new Map(
+      res.map((r) => {
+        const personAccount = $personAccountByIdStore.get(r.modifiedBy as Ref<PersonAccount>)
+        return [personAccount?.person, r]
+      })
+    )
   })
 
   interface RequestDecision {
-    employee: Ref<PersonAccount>
+    employee: Ref<Person>
     decision?: boolean
     comment?: RequestDecisionComment
   }
 
-  function convert (value: Request, comments: Map<Ref<Account>, RequestDecisionComment>): RequestDecision[] {
+  function convert (value: Request, comments: Map<Ref<Person> | undefined, RequestDecisionComment>): RequestDecision[] {
     const res: RequestDecision[] = []
     for (const emp of value.requested) {
       const decision = value.rejected === emp ? false : value.approved.includes(emp) ? true : undefined
@@ -63,7 +68,7 @@
   <tbody>
     {#each convert(value, comments) as requested}
       <tr class="antiTable-body__row">
-        <td><PersonAccountRefPresenter value={requested.employee} /></td>
+        <td><PersonRefPresenter value={requested.employee} /></td>
         <td><BooleanIcon value={requested.decision} /></td>
         <td
           >{#if requested.comment}

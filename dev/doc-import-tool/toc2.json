@@ -1,0 +1,34 @@
+{
+  "prefix": "I-SOP",
+  "type": "toc",
+  "metadata": {
+    "in": "page-header-table-row",
+    "headerIdx": 1,
+    "docName": {
+      "extract": { "row": 1, "col": 0, "slice": { "start": 7 } }
+    },
+    "docId": {
+      "extract": { "row": 2, "col": 1, "slice": { "start": 9, "end": -3 } }
+    }
+  },
+  "spec": {
+    "toc": {
+      "type": "toc",
+      "node": {
+        "type": "toc-paragraph-seq",
+        "params": {
+          "sectionHeaders": {
+            "tags": ["h1"]
+          },
+          "start": {
+            "patterns": ["Table of contents", "Table des matières", "CONTENTS", "TABLE OF CONTENTS"],
+            "tags": ["h1", "h2", "h3", "p"]
+          },
+          "end": {
+            "tags": ["h1"]
+          }
+        }
+      }
+    }
+  }
+}

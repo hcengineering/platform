@@ -107,7 +107,7 @@
 </script>
 
 <div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
-  {#await getBlobRef(value.$lookup?.file, value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
+  {#await getBlobRef(value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
     <img
       src={blobSrc.src}
       style:object-fit={getObjectFit(dimensions)}

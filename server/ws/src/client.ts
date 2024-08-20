@@ -17,6 +17,7 @@ import core, {
   AccountRole,
   TxFactory,
   TxProcessor,
+  reduceCalls,
   toIdMap,
   type Account,
   type Class,
@@ -36,8 +37,14 @@ import core, {
 } from '@hcengineering/core'
 import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-import { type ClientSessionCtx, type Session, type SessionRequest, type StatisticsElement } from './types'
-
+import {
+  type ClientSessionCtx,
+  type ConnectionSocket,
+  type Session,
+  type SessionRequest,
+  type StatisticsElement
+} from './types'
+import { handleSend } from './utils'
 /**
  * @public
  */
@@ -48,6 +55,8 @@ export class ClientSession implements Session {
   useCompression: boolean = true
   sessionId = ''
   lastRequest = Date.now()
+
+  broadcastTx: Tx[] = []
 
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
@@ -114,8 +123,15 @@ export class ClientSession implements Session {
           this.token.email,
           this.sessionId,
           this.token.extra?.admin === 'true',
-          [],
-          this._pipeline.storage.workspaceId
+          {
+            txes: [],
+            targets: {}
+          },
+          this._pipeline.storage.workspaceId,
+          this._pipeline.storage.branding,
+          false,
+          new Map(),
+          new Map()
         )
         await this._pipeline.tx(context, createTx)
         const acc = TxProcessor.createDoc2Doc(createTx)
@@ -143,8 +159,15 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      [],
-      this._pipeline.storage.workspaceId
+      {
+        txes: [],
+        targets: {}
+      },
+      this._pipeline.storage.workspaceId,
+      this._pipeline.storage.branding,
+      false,
+      new Map(),
+      new Map()
     )
     return await this._pipeline.findAll(context, _class, query, options)
   }
@@ -165,8 +188,15 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      [],
-      this._pipeline.storage.workspaceId
+      {
+        txes: [],
+        targets: {}
+      },
+      this._pipeline.storage.workspaceId,
+      this._pipeline.storage.branding,
+      false,
+      new Map(),
+      new Map()
     )
     await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
   }
@@ -180,14 +210,24 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      [],
-      this._pipeline.storage.workspaceId
+      {
+        txes: [],
+        targets: {}
+      },
+      this._pipeline.storage.workspaceId,
+      this._pipeline.storage.branding,
+      false,
+      new Map(),
+      new Map()
     )
 
     const result = await this._pipeline.tx(context, tx)
 
     // Send result immideately
     await ctx.sendResponse(result)
+    if (tx == null) {
+      return
+    }
 
     // We need to combine all derived data and check if we need to send it
 
@@ -205,18 +245,24 @@ export class ClientSession implements Session {
     }
 
     // Put current user as send target
-    toSendTarget.set(this.getUser(), [])
-    for (const txd of context.derived) {
-      if (txd.target === undefined) {
-        getTxes('') // be sure we have empty one
+    for (const txd of context.derived.txes) {
+      let target: string[] | undefined
+      for (const tt of Object.values(context.derived.targets ?? {})) {
+        target = tt(txd)
+        if (target !== undefined) {
+          break
+        }
+      }
+      if (target === undefined) {
+        getTxes('') // Be sure we have empty one
 
         // Also add to all other targeted sends
         for (const v of toSendTarget.values()) {
-          v.push(...txd.derived)
+          v.push(txd)
         }
       } else {
-        for (const t of txd.target) {
-          getTxes(t).push(...txd.derived)
+        for (const t of target) {
+          getTxes(t).push(txd)
         }
       }
     }
@@ -230,7 +276,6 @@ export class ClientSession implements Session {
         await this.sendWithPart(derived, ctx, target, exclude)
       } else {
         // Let's send after our response will go out
-        console.log('Broadcasting', derived.length, derived.length)
         await ctx.send(derived, target, exclude)
       }
     }
@@ -273,6 +318,47 @@ export class ClientSession implements Session {
     void handleSend(toSendAll, undefined, Array.from(toSendTarget.keys()))
   }
 
+  doBroadcast = reduceCalls(async (ctx: MeasureContext, socket: ConnectionSocket) => {
+    if (this.broadcastTx.length > 10000) {
+      const classes = new Set<Ref<Class<Doc>>>()
+      for (const dtx of this.broadcastTx) {
+        if (TxProcessor.isExtendsCUD(dtx._class)) {
+          classes.add((dtx as TxCUD<Doc>).objectClass)
+        }
+        const etx = TxProcessor.extractTx(dtx)
+        if (TxProcessor.isExtendsCUD(etx._class)) {
+          classes.add((etx as TxCUD<Doc>).objectClass)
+        }
+      }
+      const bevent = createBroadcastEvent(Array.from(classes))
+      this.broadcastTx = []
+      await socket.send(
+        ctx,
+        {
+          result: [bevent]
+        },
+        this.binaryMode,
+        this.useCompression
+      )
+    } else {
+      const txes = [...this.broadcastTx]
+      this.broadcastTx = []
+      await handleSend(ctx, socket, { result: txes }, 32 * 1024, this.binaryMode, this.useCompression)
+    }
+  })
+
+  timeout: any
+
+  broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
+    this.broadcastTx.push(...tx)
+    // We need to put into client broadcast queue, to send user requests first
+    // Collapse events in 1 second interval
+    clearTimeout(this.timeout)
+    this.timeout = setTimeout(() => {
+      void this.doBroadcast(ctx, socket)
+    }, 5)
+  }
+
   private async sendWithPart (
     derived: Tx[],
     ctx: ClientSessionCtx,
@@ -281,15 +367,14 @@ export class ClientSession implements Session {
   ): Promise<void> {
     const classes = new Set<Ref<Class<Doc>>>()
     for (const dtx of derived) {
-      if (this._pipeline.storage.hierarchy.isDerived(dtx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(dtx._class)) {
         classes.add((dtx as TxCUD<Doc>).objectClass)
       }
       const etx = TxProcessor.extractTx(dtx)
-      if (this._pipeline.storage.hierarchy.isDerived(etx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(etx._class)) {
         classes.add((etx as TxCUD<Doc>).objectClass)
       }
     }
-    console.log('Broadcasting compact bulk', derived.length)
     const bevent = createBroadcastEvent(Array.from(classes))
     await ctx.send([bevent], target, exclude)
   }

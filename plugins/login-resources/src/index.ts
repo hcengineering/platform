@@ -23,7 +23,6 @@ import {
   leaveWorkspace,
   selectWorkspace,
   sendInvite,
-  getEnpoint,
   fetchWorkspace,
   createMissingEmployee,
   getInviteLink
@@ -48,7 +47,6 @@ export default async () => ({
     CreateEmployee: createMissingEmployee,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
-    GetEndpoint: getEnpoint,
     GetInviteLink: getInviteLink
   }
 })
@@ -63,16 +61,26 @@ export const pages = [
   'join',
   'confirm',
   'confirmationSend',
-  'auth'
+  'auth',
+  'login-password'
 ] as const
 
+export enum OtpLoginSteps {
+  Email = 'email',
+  Otp = 'otp'
+}
+
+export enum LoginMethods {
+  Password = 'password',
+  Otp = 'otp'
+}
 export type Pages = (typeof pages)[number]
 
 export interface BottomAction {
   i18n: IntlString
   page?: Pages
   func: () => void
-  caption: IntlString
+  caption?: IntlString
 }
 
 export * from './utils'

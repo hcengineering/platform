@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   type AttachedDoc,
   type Class,
+  type Collection,
   type Doc,
   type DocIndexState,
   type DocumentQuery,
@@ -33,6 +35,7 @@ import core, {
   type TxCUD,
   type TxCollectionCUD,
   TxFactory,
+  TxProcessor,
   type TxResult,
   type WorkspaceId,
   docKey,
@@ -46,7 +49,6 @@ import { createStateDoc } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type StorageAdapter } from './storage'
 import type { FullTextAdapter, IndexedDoc, ServerStorage, WithFind } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -84,7 +86,7 @@ export class FullTextIndex implements WithFind {
         attachedToClass = txcol.objectClass
         tx = txcol.tx
       }
-      if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+      if (TxProcessor.isExtendsCUD(tx._class)) {
         const cud = tx as TxCUD<Doc>
 
         if (!isClassIndexable(this.hierarchy, cud.objectClass)) {
@@ -101,7 +103,8 @@ export class FullTextIndex implements WithFind {
             attachedTo,
             attachedToClass,
             space: tx.objectSpace,
-            removed: false
+            removed: false,
+            needIndex: true
           })
           stDocs.set(cud.objectId as Ref<DocIndexState>, { create: stDoc, updated: false, removed: false })
         } else {
@@ -128,7 +131,6 @@ export class FullTextIndex implements WithFind {
     await ctx.with('queue', {}, async (ctx) => {
       await this.indexer.queue(ctx, stDocs)
     })
-    this.indexer.triggerIndexing()
     return {}
   }
 
@@ -143,7 +145,7 @@ export class FullTextIndex implements WithFind {
 
     const ids: Set<Ref<Doc>> = new Set<Ref<Doc>>()
     const baseClass = this.hierarchy.getBaseClass(_class)
-    let classes = this.hierarchy.getDescendants(baseClass)
+    let classes = this.hierarchy.getDescendants(baseClass).filter((it) => !this.hierarchy.isMixin(it))
 
     const attrs = this.hierarchy.getAllAttributes(_class)
 
@@ -173,7 +175,8 @@ export class FullTextIndex implements WithFind {
         }
         if (attr.type._class === core.class.Collection) {
           // we need attached documents to be in classes
-          const dsc = this.hierarchy.getDescendants(attr.attributeOf)
+          const coll = attr.type as Collection<AttachedDoc>
+          const dsc = this.hierarchy.getDescendants(coll.of).filter((it) => !this.hierarchy.isMixin(it))
           classes = classes.concat(dsc)
         }
       }
@@ -287,9 +290,7 @@ function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefin
   const result = new Set<Ref<Doc>>()
   if (_id !== undefined) {
     if (typeof _id === 'string') {
-      if (!ids.has(_id)) {
-        return new Set()
-      } else {
+      if (ids.has(_id)) {
         result.add(_id)
       }
     } else if (_id.$in !== undefined) {
@@ -299,11 +300,13 @@ function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefin
         }
       }
     } else if (_id.$nin !== undefined) {
-      for (const id of ids) {
-        if (!_id.$nin.includes(id)) {
-          result.add(id)
-        }
+      for (const id of _id.$nin) {
+        ids.delete(id)
       }
+      return ids
+    } else if (_id.$ne !== undefined) {
+      ids.delete(_id.$ne)
+      return ids
     }
   } else {
     return ids

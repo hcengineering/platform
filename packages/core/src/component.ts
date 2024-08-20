@@ -30,10 +30,8 @@ import type {
   DomainIndexConfiguration,
   Enum,
   EnumOf,
-  FullTextData,
   FullTextSearchContext,
   Hyperlink,
-  IndexStageState,
   IndexingConfiguration,
   Interface,
   MigrationState,
@@ -114,6 +112,7 @@ export default plugin(coreId, {
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
     TypeHyperlink: '' as Ref<Class<Type<Hyperlink>>>,
     TypeNumber: '' as Ref<Class<Type<number>>>,
+    TypeFileSize: '' as Ref<Class<Type<number>>>,
     TypeMarkup: '' as Ref<Class<Type<string>>>,
     TypeRank: '' as Ref<Class<Type<Rank>>>,
     TypeRecord: '' as Ref<Class<Type<Record<any, any>>>>,
@@ -131,10 +130,8 @@ export default plugin(coreId, {
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
-    FulltextData: '' as Ref<Class<FullTextData>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DocIndexState: '' as Ref<Class<DocIndexState>>,
-    IndexStageState: '' as Ref<Class<IndexStageState>>,
     DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
     Configuration: '' as Ref<Class<Configuration>>,
@@ -156,7 +153,8 @@ export default plugin(coreId, {
     DerivedTx: '' as Ref<Space>,
     Model: '' as Ref<Space>,
     Space: '' as Ref<TypedSpace>,
-    Configuration: '' as Ref<Space>
+    Configuration: '' as Ref<Space>,
+    Workspace: '' as Ref<Space>
   },
   account: {
     System: '' as Ref<Account>,
@@ -199,6 +197,7 @@ export default plugin(coreId, {
     Array: '' as IntlString,
     Name: '' as IntlString,
     Enum: '' as IntlString,
+    Size: '' as IntlString,
     Description: '' as IntlString,
     ShortDescription: '' as IntlString,
     Descriptor: '' as IntlString,

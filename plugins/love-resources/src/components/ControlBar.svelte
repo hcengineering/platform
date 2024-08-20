@@ -16,30 +16,31 @@
   import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
+  import love, { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
   import { getResource } from '@hcengineering/platform'
   import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
   import {
     IconUpOutline,
     ModernButton,
+    PopupInstance,
     SplitButton,
     eventToHTMLElement,
+    getCurrentLocation,
     showPopup,
-    PopupInstance,
-    type CompAndProps,
-    type AnySvelteComponent
+    type AnySvelteComponent,
+    type CompAndProps
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import love, { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
   import plugin from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
     isCameraEnabled,
     isConnected,
+    isFullScreen,
     isMicEnabled,
     isRecording,
     isRecordingAvailable,
     isSharingEnabled,
-    isFullScreen,
     leaveRoom,
     record,
     screenSharing,
@@ -116,10 +117,22 @@
     }
   }
 
+  async function getLink (): Promise<string> {
+    const roomInfo = await client.findOne(love.class.RoomInfo, { room: room._id })
+    if (roomInfo !== undefined) {
+      const navigateUrl = getCurrentLocation()
+      navigateUrl.query = {
+        sessionId: roomInfo._id
+      }
+
+      const func = await getResource(login.function.GetInviteLink)
+      return await func(24, '', -1, AccountRole.Guest, encodeURIComponent(JSON.stringify(navigateUrl)))
+    }
+    return ''
+  }
+
   async function copyGuestLink (): Promise<void> {
-    const getLink = await getResource(login.function.GetInviteLink)
-    const link = await getLink(24 * 30, '', -1, AccountRole.Guest)
-    await copyTextToClipboard(link)
+    await copyTextToClipboard(getLink())
     linkCopied = true
     clearTimeout(linkTimeout)
     linkTimeout = setTimeout(() => {
@@ -207,7 +220,7 @@
         }}
       />
     {/if}
-    {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isConnected}
       <ModernButton
         icon={view.icon.Copy}
         tooltip={{ label: !linkCopied ? plugin.string.CopyGuestLink : view.string.Copied, direction: 'top' }}

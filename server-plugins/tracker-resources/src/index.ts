@@ -59,7 +59,7 @@ async function updateSubIssues (
  */
 export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issue.identifier}`
   const link = concatLink(front, path)
   return `<a href="${link}">${issue.identifier}</a> ${issue.title}`
@@ -298,12 +298,19 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
   switch (cud._class) {
     case core.class.TxCreateDoc: {
       const ccud = cud as TxCreateDoc<TimeSpendReport>
-      const res = [
-        control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-          $inc: { reportedTime: ccud.attributes.value }
-        })
-      ]
       const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+      const res = [
+        control.txFactory.createTxUpdateDoc<Issue>(
+          parentTx.objectClass,
+          parentTx.objectSpace,
+          parentTx.objectId,
+          {
+            $inc: { reportedTime: ccud.attributes.value }
+          },
+          false,
+          currentIssue.modifiedOn
+        )
+      ]
       currentIssue.reportedTime += ccud.attributes.value
       currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
       updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
@@ -314,20 +321,28 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       if (upd.operations.value !== undefined) {
         const logTxes = Array.from(
           await control.findAll(core.class.TxCollectionCUD, {
-            'tx.objectId': cud.objectId,
-            _id: { $nin: [parentTx._id] }
+            'tx.objectId': cud.objectId
           })
+        )
+          .filter((it) => it._id !== parentTx._id)
           // eslint-disable-next-line @typescript-eslint/unbound-method
-        ).map(TxProcessor.extractTx)
+          .map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
 
         const res: Tx[] = []
         const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
         if (doc !== undefined) {
           res.push(
-            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-              $inc: { reportedTime: upd.operations.value - doc.value }
-            })
+            control.txFactory.createTxUpdateDoc<Issue>(
+              parentTx.objectClass,
+              parentTx.objectSpace,
+              parentTx.objectId,
+              {
+                $inc: { reportedTime: upd.operations.value - doc.value }
+              },
+              false,
+              currentIssue.modifiedOn
+            )
           )
           currentIssue.reportedTime -= doc.value
           currentIssue.reportedTime += upd.operations.value
@@ -343,20 +358,27 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       if (!control.removedMap.has(parentTx.objectId)) {
         const logTxes = Array.from(
           await control.findAll(core.class.TxCollectionCUD, {
-            'tx.objectId': cud.objectId,
-            _id: { $nin: [parentTx._id] }
+            'tx.objectId': cud.objectId
           })
+        )
+          .filter((it) => it._id !== parentTx._id)
           // eslint-disable-next-line @typescript-eslint/unbound-method
-        ).map(TxProcessor.extractTx)
+          .map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
         if (doc !== undefined) {
-          const res = [
-            control.txFactory.createTxUpdateDoc<Issue>(parentTx.objectClass, parentTx.objectSpace, parentTx.objectId, {
-              $inc: { reportedTime: -1 * doc.value }
-            })
-          ]
-
           const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+          const res = [
+            control.txFactory.createTxUpdateDoc<Issue>(
+              parentTx.objectClass,
+              parentTx.objectSpace,
+              parentTx.objectId,
+              {
+                $inc: { reportedTime: -1 * doc.value }
+              },
+              false,
+              currentIssue.modifiedOn
+            )
+          ]
           currentIssue.reportedTime -= doc.value
           currentIssue.remainingTime = Math.max(0, currentIssue.estimation - currentIssue.reportedTime)
           updateIssueParentEstimations(currentIssue, res, control, currentIssue.parents, currentIssue.parents)
@@ -501,12 +523,17 @@ function updateIssueParentEstimations (
   }
 }
 
+async function issueLinkIdProvider (issue: Issue): Promise<string> {
+  return issue.identifier
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
     IssueHTMLPresenter: issueHTMLPresenter,
     IssueTextPresenter: issueTextPresenter,
-    IssueNotificationContentProvider: getIssueNotificationContent
+    IssueNotificationContentProvider: getIssueNotificationContent,
+    IssueLinkIdProvider: issueLinkIdProvider
   },
   trigger: {
     OnIssueUpdate,

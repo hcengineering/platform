@@ -13,26 +13,27 @@
 // limitations under the License.
 //
 
+import core, { type Ref, type Space } from '@hcengineering/core'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { settingId } from '@hcengineering/setting'
-import setting from './plugin'
+import { DOMAIN_SETTING } from '.'
 
 export const settingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, settingId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, settingId, [
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, setting.space.Setting, { name: 'Setting' })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'setting:space:Setting' as Ref<Space>, core.space.Workspace, [DOMAIN_SETTING])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

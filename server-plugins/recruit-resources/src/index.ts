@@ -46,7 +46,7 @@ function getSequenceId (doc: Vacancy | Applicant, control: TriggerControl): stri
  */
 export async function vacancyHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const vacancy = doc as Vacancy
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${recruitId}/${getSequenceId(vacancy, control)}`
   const link = concatLink(front, path)
   return `<a href="${link}">${vacancy.name}</a>`
@@ -65,7 +65,7 @@ export async function vacancyTextPresenter (doc: Doc): Promise<string> {
  */
 export async function applicationHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const applicant = doc as Applicant
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const id = getSequenceId(applicant, control)
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${recruitId}/${id}`
   const link = concatLink(front, path)
@@ -110,7 +110,8 @@ export default async () => ({
     VacancyHTMLPresenter: vacancyHTMLPresenter,
     VacancyTextPresenter: vacancyTextPresenter,
     ApplicationHTMLPresenter: applicationHTMLPresenter,
-    ApplicationTextPresenter: applicationTextPresenter
+    ApplicationTextPresenter: applicationTextPresenter,
+    LinkIdProvider: getSequenceId
   },
   trigger: {
     OnRecruitUpdate
@@ -121,10 +122,11 @@ async function handleVacancyUpdate (control: TriggerControl, cud: TxCUD<Doc>, re
     const updateTx = cud as TxUpdateDoc<Vacancy>
     if (updateTx.operations.company !== undefined) {
       // It could be null or new value
-      const txes = await control.findAll(core.class.TxCUD, {
-        objectId: updateTx.objectId,
-        _id: { $nin: [updateTx._id] }
-      })
+      const txes = (
+        await control.findAll(core.class.TxCUD, {
+          objectId: updateTx.objectId
+        })
+      ).filter((it) => it._id !== updateTx._id)
       const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
       if (vacancy.company != null) {
         // We have old value
@@ -161,10 +163,11 @@ async function handleVacancyRemove (control: TriggerControl, cud: TxCUD<Doc>, ac
   if (control.hierarchy.isDerived(cud.objectClass, recruit.class.Vacancy)) {
     const removeTx = actualTx as TxRemoveDoc<Vacancy>
     // It could be null or new value
-    const txes = await control.findAll(core.class.TxCUD, {
-      objectId: removeTx.objectId,
-      _id: { $nin: [removeTx._id] }
-    })
+    const txes = (
+      await control.findAll(core.class.TxCUD, {
+        objectId: removeTx.objectId
+      })
+    ).filter((it) => it._id !== removeTx._id)
     const vacancy = TxProcessor.buildDoc2Doc(txes) as Vacancy
     const res: Tx[] = []
     if (vacancy.company != null) {

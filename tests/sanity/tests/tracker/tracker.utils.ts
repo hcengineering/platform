@@ -13,11 +13,12 @@ export interface IssueProps {
   milestone?: string
   estimation?: string
   dueDate?: string
+  taskType?: string
 }
 
 export enum ViewletSelectors {
-  Table = '.tablist-container >> div.button:nth-child(1)',
-  Board = '.tablist-container >> div.button:nth-child(2)'
+  Table = 'label[data-view*="List"]',
+  Board = 'label[data-view*="Board"]'
 }
 
 export const PRIORITIES = ['No priority', 'Urgent', 'High', 'Medium', 'Low']
@@ -38,7 +39,7 @@ export async function navigate (page: Page): Promise<void> {
 }
 
 export async function setViewGroup (page: Page, groupName: string): Promise<void> {
-  await page.click('button:has-text("View")')
+  await page.click('button[data-id="btn-viewOptions"]')
   await page.click('.antiCard >> .grouping >> button >> nth=0')
   await page.click(`.menu-item:has-text("${groupName}")`)
   await expect(page.locator('.antiCard >> .grouping >> button >> nth=0')).toContainText(groupName)
@@ -47,7 +48,7 @@ export async function setViewGroup (page: Page, groupName: string): Promise<void
 }
 
 export async function setViewOrder (page: Page, orderName: string): Promise<void> {
-  await page.click('button:has-text("View")')
+  await page.click('button[data-id="btn-viewOptions"]')
   await page.click('.antiCard >> .ordering >> button')
   await page.click(`.menu-item:has-text("${orderName}")`)
   await expect(page.locator('.antiCard >> .ordering >> button')).toContainText(orderName)
@@ -56,8 +57,14 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
 }
 
 export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
-  const { name, description, status, assignee, labels, priority, component, milestone } = props
+  const { name, description, status, assignee, labels, priority, component, milestone, taskType } = props
   const af = 'form '
+
+  if (taskType !== undefined) {
+    await page.click(af + 'button[data-id="btnSelectTaskType"]')
+    await page.click(`.menu-item:has-text("${taskType}")`)
+  }
+
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
   await issueTitle.fill(name)
   await issueTitle.evaluate((e) => {
@@ -109,7 +116,10 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
 }
 
 export async function createComponent (page: Page, componentName: string): Promise<void> {
-  await page.click('text=Components')
+  await page
+    .locator('[id="navGroup-tracker\\:project\\:DefaultProject"]')
+    .getByRole('button', { name: 'Components' })
+    .click()
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
   )
@@ -120,7 +130,10 @@ export async function createComponent (page: Page, componentName: string): Promi
 }
 
 export async function createMilestone (page: Page, milestoneName: string): Promise<void> {
-  await page.click('text=Milestones')
+  await page
+    .locator('[id="navGroup-tracker\\:project\\:DefaultProject"]')
+    .getByRole('button', { name: 'Milestones' })
+    .click()
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/milestones`
   )
@@ -198,7 +211,7 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
   }
 
   if (props.estimation !== undefined) {
-    await expect(page.locator('#estimation-editor')).toHaveText(props.estimation)
+    await expect(page.locator('#estimation-editor')).toHaveText(convertEstimation(props.estimation))
   }
 
   if (props.dueDate !== undefined) {
@@ -244,7 +257,7 @@ export async function performPanelTest (page: Page, statuses: string[], panel: s
   const locator = page.locator('.list-container')
   const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
   await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')
-  await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
+  await page.locator(`.switcher-container span:has-text("${mode}")`).click()
   await page.click(ViewletSelectors.Table)
   for (const s of statuses) {
     await expect(locator).toContainText(s)
@@ -264,4 +277,20 @@ export async function performPanelTest (page: Page, statuses: string[], panel: s
       })
     ).toContainText(getIssueName(status), { timeout: 15000 })
   }
+}
+
+export function convertEstimation (estimation: number | string): string {
+  const hoursInWorkingDay = 8
+  const value = typeof estimation === 'string' ? parseFloat(estimation) : estimation
+
+  const days = Math.floor(value / hoursInWorkingDay)
+  const hours = Math.floor(value % hoursInWorkingDay)
+  const minutes = Math.floor((value % 1) * 60)
+  const result = [
+    ...(days === 0 ? [] : [`${days}d`]),
+    ...(hours === 0 ? [] : [`${hours}h`]),
+    ...(minutes === 0 ? [] : [`${minutes}m`])
+  ].join(' ')
+
+  return result === '' ? '0h' : result
 }

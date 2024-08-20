@@ -20,18 +20,12 @@ import core, {
   type Doc,
   type DocIndexState,
   type FullTextSearchContext,
-  generateId,
   getFullTextContext,
   type Hierarchy,
-  type IndexStageState,
-  type MeasureContext,
   type Obj,
   type Ref,
-  type Space,
-  TxFactory
+  type Space
 } from '@hcengineering/core'
-import { deepEqual } from 'fast-equals'
-import { type DbAdapter } from '../adapter'
 import plugin from '../plugin'
 import { type FullTextPipeline } from './types'
 
@@ -79,59 +73,6 @@ export function createStateDoc (
     modifiedOn: Date.now(),
     ...data
   }
-}
-
-/**
- * @public
- */
-export async function loadIndexStageStage (
-  ctx: MeasureContext,
-  storage: DbAdapter,
-  state: IndexStageState | undefined,
-  stageId: string,
-  field: string,
-  newValue: any
-): Promise<[boolean | string, IndexStageState]> {
-  if (state === undefined) {
-    ;[state] = await storage.findAll(ctx, core.class.IndexStageState, { stageId })
-  }
-  const attributes: Record<string, any> = state?.attributes ?? {}
-
-  let result: boolean | string | undefined = attributes?.index !== undefined ? `${attributes?.index as number}` : true
-
-  if (!deepEqual(attributes[field], newValue)) {
-    // Not match,
-    const newIndex = ((attributes.index as number) ?? 0) + 1
-    result = `${newIndex}`
-
-    const ops = new TxFactory(core.account.System, true)
-    const data = {
-      stageId,
-      attributes: {
-        [field]: newValue,
-        index: newIndex
-      }
-    }
-    if (state === undefined) {
-      const id: Ref<IndexStageState> = generateId()
-      await storage.tx(ctx, ops.createTxCreateDoc(core.class.IndexStageState, plugin.space.DocIndexState, data, id))
-      state = {
-        ...data,
-        _class: core.class.IndexStageState,
-        _id: id,
-        space: plugin.space.DocIndexState,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now()
-      }
-    } else {
-      await storage.tx(
-        ctx,
-        ops.createTxUpdateDoc(core.class.IndexStageState, plugin.space.DocIndexState, state._id, data)
-      )
-      state = { ...state, ...data, modifiedOn: Date.now() }
-    }
-  }
-  return [result, state]
 }
 
 /**

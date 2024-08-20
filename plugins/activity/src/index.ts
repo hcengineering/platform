@@ -67,6 +67,7 @@ export interface ActivityMessageControl<T extends Doc = Doc> extends Doc {
 
   // Skip field activity operations.
   skipFields?: (keyof T)[]
+  allowedFields?: (keyof T)[]
 }
 
 /**
@@ -235,6 +236,10 @@ export interface UserMentionInfo extends AttachedDoc {
   content: string
 }
 
+export type WithReferences<T extends Doc> = T & {
+  references?: number
+}
+
 /**
  * @public
  */
@@ -302,7 +307,14 @@ export default plugin(activityId, {
     Mentions: '' as IntlString,
     MentionedYouIn: '' as IntlString,
     Messages: '' as IntlString,
-    Thread: '' as IntlString
+    Thread: '' as IntlString,
+    ReactionNotificationTitle: '' as IntlString,
+    ReactionNotificationBody: '' as IntlString,
+    NewObject: '' as IntlString,
+    RemovedObject: '' as IntlString,
+    ChangedObject: '' as IntlString,
+    UnsetObject: '' as IntlString,
+    UpdatedObject: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

@@ -16,6 +16,7 @@
 import core, {
   generateId,
   toFindResult,
+  TxProcessor,
   type BenchmarkDoc,
   type Class,
   type Doc,
@@ -27,6 +28,9 @@ import core, {
   type ModelDb,
   type Ref,
   type Space,
+  type Tx,
+  type TxCreateDoc,
+  type TxResult,
   type WorkspaceId
 } from '@hcengineering/core'
 import type { DbAdapter } from '../adapter'
@@ -84,6 +88,30 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
     }
 
     return toFindResult<T>(result as T[])
+  }
+
+  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+    if (benchData === '') {
+      benchData = genData(1024 * 1024)
+    }
+    for (const t of tx) {
+      if (t._class === core.class.TxCreateDoc) {
+        const doc = TxProcessor.createDoc2Doc(t as TxCreateDoc<BenchmarkDoc>)
+        const request = doc.request
+
+        if (request?.size != null) {
+          const dataSize =
+            typeof request.size === 'number' ? request.size : request.size.from + Math.random() * request.size.to
+          return [
+            {
+              response: benchData.slice(0, dataSize)
+            }
+          ]
+        }
+      }
+    }
+
+    return [{}]
   }
 }
 /**

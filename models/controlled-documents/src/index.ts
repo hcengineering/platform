@@ -34,6 +34,7 @@ import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import print from '@hcengineering/model-print'
+import textEditor from '@hcengineering/text-editor'
 
 import documents from './plugin'
 import { definePermissions } from './permissions'
@@ -163,8 +164,8 @@ export function createModel (builder: Builder): void {
                 [documents.mixin.DocumentTemplate]: { $exists: false }
               },
               config: [
-                ['effective', documents.string.Effective, {}],
                 ['inProgress', documents.string.InProgress, {}],
+                ['effective', documents.string.Effective, {}],
                 ['archived', documents.string.Archived, {}],
                 ['all', documents.string.All, {}]
               ]
@@ -180,6 +181,7 @@ export function createModel (builder: Builder): void {
               query: {
                 [documents.mixin.DocumentTemplate]: { $exists: false }
               },
+              icon: documents.icon.Library,
               title: documents.string.Documents,
               config: [
                 ['effective', documents.string.Effective, {}],
@@ -866,6 +868,7 @@ export function createModel (builder: Builder): void {
   definePermissions(builder)
   defineNotifications(builder)
   defineSearch(builder)
+  defineTextActions(builder)
 }
 
 export function defineNotifications (builder: Builder): void {
@@ -902,9 +905,11 @@ export function defineNotifications (builder: Builder): void {
       field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     documents.notification.ContentNotification
@@ -922,10 +927,11 @@ export function defineNotifications (builder: Builder): void {
       field: 'state',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false,
-        [notification.providers.EmailNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{sender} changed {doc} status',
+        htmlTemplate: '<p>{sender} changed {doc} status</p>',
+        subjectTemplate: '{doc} status changed'
       }
     },
     documents.notification.StateNotification
@@ -941,16 +947,23 @@ export function defineNotifications (builder: Builder): void {
       label: documents.string.CoAuthors,
       group: documents.notification.DocumentsNotificationGroup,
       field: 'coAuthors',
-      txClasses: [core.class.TxUpdateDoc],
+      txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: documents.class.ControlledDocument,
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: false,
-        [notification.providers.EmailNotification]: false
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{sender} assigned you as a co-author of {doc}',
+        htmlTemplate: '<p>{sender} assigned you as a co-author of {doc}</p>',
+        subjectTemplate: 'Co-authoring assignment for {doc}'
       }
     },
     documents.notification.CoAuthorsNotification
   )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [documents.notification.StateNotification, documents.notification.ContentNotification]
+  })
 
   generateClassNotificationTypes(
     builder,
@@ -978,7 +991,7 @@ export function defineNotifications (builder: Builder): void {
       'changeControl',
       'coAuthors'
     ],
-    ['owner']
+    ['owner', 'comments', 'reviewers', 'approvers']
   )
 }
 
@@ -1006,6 +1019,18 @@ export function defineSearch (builder: Builder): void {
     },
     documents.completion.DocumentMetaCategory
   )
+}
+
+export function defineTextActions (builder: Builder): void {
+  // Comment category
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: documents.function.Comment,
+    icon: chunter.icon.Chunter,
+    visibilityTester: documents.function.IsCommentVisible,
+    label: chunter.string.Message,
+    category: 100,
+    index: 5
+  })
 }
 
 export { documentsOperation } from './migration'

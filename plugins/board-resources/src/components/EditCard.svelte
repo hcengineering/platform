@@ -19,7 +19,7 @@
   import core, { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { Button, EditBox, IconMoreH } from '@hcengineering/ui'
   import { DocAttributeBar, ParentsNavigator, invokeAction, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'

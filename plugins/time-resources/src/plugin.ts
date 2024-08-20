@@ -39,9 +39,6 @@ export default mergeIds(timeId, time, {
     WorkSlot: '' as IntlString,
     CreateToDo: '' as IntlString,
     Inbox: '' as IntlString,
-    Days: '' as IntlString,
-    Hours: '' as IntlString,
-    Minutes: '' as IntlString,
     All: '' as IntlString,
     Done: '' as IntlString,
     ToDos: '' as IntlString,
@@ -63,6 +60,11 @@ export default mergeIds(timeId, time, {
     MyWork: '' as IntlString,
     WorkSchedule: '' as IntlString,
     SummaryDuration: '' as IntlString,
-    TeamPlanner: '' as IntlString
+    TeamPlanner: '' as IntlString,
+
+    UnassignToDo: '' as IntlString,
+    UnassignToDoConfirm: '' as IntlString,
+    ReassignToDo: '' as IntlString,
+    ReassignToDoConfirm: '' as IntlString
   }
 })

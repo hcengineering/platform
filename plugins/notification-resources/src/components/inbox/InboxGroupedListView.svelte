@@ -104,6 +104,7 @@
     count={displayData.length}
     highlightIndex={displayData.findIndex(([context]) => context === selectedContext)}
     noScroll
+    minHeight="5.625rem"
     kind="full-size"
     colorsSchema="lumia"
     lazy={true}
@@ -132,6 +133,9 @@
   .root {
     &:focus {
       outline: 0;
+    }
+    :global(.list-item) {
+      border-radius: 0;
     }
   }
 </style>

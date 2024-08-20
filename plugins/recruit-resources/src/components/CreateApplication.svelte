@@ -20,6 +20,7 @@
   import { EmployeeBox, ExpandRightDouble, UserBox } from '@hcengineering/contact-resources'
   import {
     Account,
+    AccountRole,
     Class,
     Client,
     Doc,
@@ -28,10 +29,9 @@
     Ref,
     SortingOrder,
     Space,
+    Status as TaskStatus,
     fillDefaults,
     generateId,
-    Status as TaskStatus,
-    AccountRole,
     getCurrentAccount,
     hasAccountRole
   } from '@hcengineering/core'
@@ -43,10 +43,10 @@
     createQuery,
     getClient
   } from '@hcengineering/presentation'
-  import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
+  import { recruitId, type Applicant, type Candidate, type Vacancy, RecruitEvents } from '@hcengineering/recruit'
   import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
   import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import ui, {
     Button,
     ColorPopup,
@@ -67,6 +67,8 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getCandidateIdentifier, getSequenceId } from '../utils'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
@@ -132,8 +134,11 @@
     if (candidateInstance === undefined) {
       throw new Error('contact not found')
     }
+
+    const ops = client.apply(generateId(), recruitId + '.Create.CreateApplication')
+
     if (!client.getHierarchy().hasMixin(candidateInstance, recruit.mixin.Candidate)) {
-      await client.createMixin<Contact, Candidate>(
+      await ops.createMixin<Contact, Candidate>(
         candidateInstance._id,
         candidateInstance._class,
         candidateInstance.space,
@@ -144,7 +149,7 @@
 
     const number = (incResult as any).object.sequence
 
-    await client.addCollection(
+    await ops.addCollection(
       recruit.class.Applicant,
       _space,
       candidateInstance._id,
@@ -166,11 +171,18 @@
 
     await descriptionBox.createAttachments()
 
-    if (_comment.trim().length > 0) {
-      await client.addCollection(chunter.class.ChatMessage, _space, doc._id, recruit.class.Applicant, 'comments', {
+    if (_comment.trim().length > 0 && !isEmptyMarkup(_comment)) {
+      await ops.addCollection(chunter.class.ChatMessage, _space, doc._id, recruit.class.Applicant, 'comments', {
         message: _comment
       })
     }
+    await ops.commit()
+
+    Analytics.handleEvent(RecruitEvents.ApplicationCreated, {
+      id: `APP-${number}`,
+      talent: getCandidateIdentifier(candidateInstance._id),
+      vacancy: vacancy ? getSequenceId(vacancy) : ''
+    })
   }
 
   async function invokeValidate (

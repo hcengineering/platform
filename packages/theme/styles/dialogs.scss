@@ -44,6 +44,10 @@
     &.withSub.thinHeader { padding: 1rem 1.5rem 0; }
     &.thinHeader:not(.withSub) { padding: 1rem 1.5rem; }
     &:not(.withSub, .thinHeader) { padding: 1.5rem; }
+    &.noPadding {
+      padding: 0 1.5rem;
+      min-height: 4.75rem;
+    }
 
     &__title-wrap {
       display: flex;
@@ -338,6 +342,9 @@
     min-height: 0;
 
     &.rounded { border-radius: 0 0 .5rem .5rem; }
+    &:has(audio) {
+      flex-grow: 0;
+    }
   }
 
   .footer {

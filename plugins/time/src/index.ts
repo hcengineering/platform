@@ -14,12 +14,26 @@
 //
 
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
-import { AttachedDoc, Class, Doc, Hierarchy, Markup, Mixin, Ref, Space, Timestamp, Type } from '@hcengineering/core'
+import {
+  AttachedDoc,
+  Class,
+  CollectionSize,
+  Doc,
+  Hierarchy,
+  Markup,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp,
+  Type
+} from '@hcengineering/core'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { Event, Visibility } from '@hcengineering/calendar'
 import { AnyComponent } from '@hcengineering/ui'
 import { Person } from '@hcengineering/contact'
 import type { Rank } from '@hcengineering/rank'
+
+export * from './analytics'
 
 /**
  * @public
@@ -51,6 +65,13 @@ export interface ToDo extends AttachedDoc {
   attachedSpace?: Ref<Space>
   labels?: number
   rank: Rank
+}
+
+/**
+ * @public
+ */
+export interface Todoable {
+  todos?: CollectionSize<ToDo>
 }
 
 /**

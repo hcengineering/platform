@@ -82,11 +82,7 @@ test.describe('Workspace tests', () => {
     await issuesPage.openIssueByName(newIssue.title)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
+    await issuesDetailsPage.checkIssue(newIssue)
   })
 
   test('Check validation steps description for the create flow', async ({ page }) => {
@@ -154,6 +150,7 @@ test.describe('Workspace tests', () => {
 
     const leftSideMenuPage2 = new LeftSideMenuPage(page2)
     await leftSideMenuPage2.clickTracker()
+    await page2.close()
   })
 
   test('Create a workspace with join link - existing account', async ({ page, browser }) => {
@@ -198,6 +195,7 @@ test.describe('Workspace tests', () => {
 
     const leftSideMenuPage2 = new LeftSideMenuPage(page2)
     await leftSideMenuPage2.clickTracker()
+    await page2.close()
   })
 
   test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
@@ -225,6 +223,7 @@ test.describe('Workspace tests', () => {
       // Use the tracker in the second context
       const leftSideMenuPageSecond = new LeftSideMenuPage(pageSecond)
       await leftSideMenuPageSecond.clickTracker()
+      await pageSecond.close()
     })
   })
 

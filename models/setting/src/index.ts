@@ -349,8 +349,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       alias: settingId,
       hidden: true,
-      component: setting.component.Settings,
-      modern: true
+      component: setting.component.Settings
     },
     setting.ids.SettingApp
   )
@@ -454,7 +453,7 @@ export function createModel (builder: Builder): void {
     },
     label: setting.string.HideAttribute,
     input: 'any',
-    icon: view.icon.Setting,
+    icon: view.icon.EyeCrossed,
     category: setting.category.Settings,
     target: core.class.Attribute,
     context: {
@@ -474,7 +473,7 @@ export function createModel (builder: Builder): void {
     },
     label: setting.string.ShowAttribute,
     input: 'any',
-    icon: view.icon.Setting,
+    icon: view.icon.Eye,
     category: setting.category.Settings,
     target: core.class.Attribute,
     context: {
@@ -566,10 +565,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>Integration with {doc} was disabled</p>',
         subjectTemplate: 'Integration with {doc} was disabled'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     setting.ids.IntegrationDisabledNotification
   )
@@ -605,7 +601,8 @@ export function createModel (builder: Builder): void {
       {
         id: 'properties',
         label: setting.string.Properties,
-        component: setting.component.SpaceTypePropertiesSectionEditor
+        component: setting.component.SpaceTypePropertiesSectionEditor,
+        withoutContainer: true
       },
       {
         id: 'roles',

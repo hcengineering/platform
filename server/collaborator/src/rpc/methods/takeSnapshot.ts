@@ -30,8 +30,13 @@ export async function takeSnapshot (
   payload: TakeSnapshotRequest,
   params: RpcMethodParams
 ): Promise<TakeSnapshotResponse> {
+<<<<<<< HEAD
   const { documentId, snapshot } = payload
   const { hocuspocus, storage } = params
+=======
+  const { documentId, snapshotName, createdBy } = payload
+  const { hocuspocus, storageAdapter } = params
+>>>>>>> develop
   const { workspaceId } = context
 
   const version: YDocVersion = {
@@ -42,7 +47,11 @@ export async function takeSnapshot (
   }
 
   const { collaborativeDoc } = parseDocumentId(documentId)
+<<<<<<< HEAD
   const { versionId } = collaborativeDocParse(collaborativeDoc)
+=======
+  const { documentId: contentDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
+>>>>>>> develop
   if (versionId !== CollaborativeDocVersionHead) {
     throw new Error('invalid document version')
   }
@@ -52,10 +61,28 @@ export async function takeSnapshot (
   })
 
   try {
+<<<<<<< HEAD
     const ydoc = connection.document ?? new YDoc()
 
     await ctx.with('snapshot', {}, async () => {
       await takeCollaborativeDocSnapshot(storage, workspaceId, collaborativeDoc, ydoc, version, ctx)
+=======
+    // load history document directly from storage
+    const historyDocumentId = collaborativeHistoryDocId(contentDocumentId)
+    const yHistory =
+      (await ctx.with('yDocFromStorage', {}, async () => {
+        return await yDocFromStorage(ctx, storageAdapter, workspaceId, historyDocumentId)
+      })) ?? new YDoc()
+
+    await ctx.with('createYdocSnapshot', {}, async () => {
+      await connection.transact((yContent) => {
+        createYdocSnapshot(yContent, yHistory, version)
+      })
+    })
+
+    await ctx.with('yDocToStorage', {}, async () => {
+      await yDocToStorage(ctx, storageAdapter, workspaceId, historyDocumentId, yHistory)
+>>>>>>> develop
     })
 
     return { ...version }

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   type Class,
   DOMAIN_DOC_INDEX_STATE,
@@ -24,20 +25,17 @@ import core, {
   type MeasureContext,
   type ModelDb,
   type Ref,
-  SortingOrder,
   TxFactory,
   type WorkspaceId,
   _getOperator,
   docKey,
   groupByArray,
-  setObjectValue,
-  toFindResult
+  setObjectValue
 } from '@hcengineering/core'
 import { type DbAdapter } from '../adapter'
 import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
 import { type FullTextPipeline, type FullTextPipelineStage } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 export * from './content'
 export * from './field'
@@ -74,10 +72,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   indexing: Promise<void> | undefined
 
-  // Temporary skipped items
-  skipped = new Map<Ref<DocIndexState>, number>()
-
   indexId = indexCounter++
+
+  updateTriggerTimer: any
+  updateOps = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
+  uploadOps: DocIndexState[] = []
 
   constructor (
     private readonly storage: DbAdapter,
@@ -95,7 +94,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   async cancel (): Promise<void> {
     this.cancelling = true
     clearTimeout(this.updateBroadcast)
-    clearTimeout(this.skippedReiterationTimeout)
+    clearInterval(this.updateTriggerTimer)
+    // We need to upload all bulk changes.
+    await this.processUpload(this.metrics)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
@@ -107,7 +108,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await this.storage.tx(
       this.metrics,
       ops.createTxUpdateDoc(doc._class, doc.space, doc._id, {
-        removed: true
+        removed: true,
+        needIndex: true
       })
     )
   }
@@ -146,7 +148,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     }
   }
 
-  updateDoc (doc: DocIndexState, tx: DocumentUpdate<DocIndexState>, updateDate: boolean): DocIndexState {
+  updateDoc (doc: DocIndexState, tx: DocumentUpdate<DocIndexState>, finish: boolean): DocIndexState {
     for (const key in tx) {
       if (key.startsWith('$')) {
         const operator = _getOperator(key)
@@ -161,11 +163,31 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       doc.space = doc.attributes[spaceKey]
     }
 
-    if (updateDate) {
+    if (finish) {
       doc.modifiedBy = core.account.System
       doc.modifiedOn = Date.now()
     }
     return doc
+  }
+
+  async processUpload (ctx: MeasureContext): Promise<void> {
+    const ops = this.updateOps
+    this.updateOps = new Map()
+    const toUpload = this.uploadOps
+    this.uploadOps = []
+    if (toUpload.length > 0) {
+      await ctx.with('upload', {}, async () => {
+        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, toUpload)
+      })
+    }
+    if (ops.size > 0) {
+      await ctx.with('update', {}, async () => {
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
+      })
+    }
+    if (toUpload.length > 0 || ops.size > 0) {
+      this.triggerIndexing()
+    }
   }
 
   async queue (
@@ -175,27 +197,21 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const entries = Array.from(updates.entries())
     const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
     if (uploads.length > 0) {
-      await ctx.with('upload', {}, async () => {
-        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, uploads)
-      })
+      this.uploadOps.push(...uploads)
     }
 
     const onlyUpdates = entries.filter((it) => it[1].create === undefined)
 
     if (onlyUpdates.length > 0) {
-      const ops = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
       for (const u of onlyUpdates) {
         const upd: DocumentUpdate<DocIndexState> = { removed: u[1].removed }
 
         // We need to clear only first state, to prevent multiple index operations to happen.
         ;(upd as any)['stages.' + this.stages[0].stageId] = false
-        ops.set(u[0], upd)
+        upd.needIndex = true
+        this.updateOps.set(u[0], upd)
       }
-      await ctx.with('upload', {}, async () => {
-        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
-      })
     }
-    this.triggerIndexing()
   }
 
   add (doc: DocIndexState): void {
@@ -205,7 +221,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   // Update are commulative
   async update (
     docId: Ref<DocIndexState>,
-    mark: boolean | string,
+    mark: boolean,
     update: DocumentUpdate<DocIndexState>,
     flush?: boolean
   ): Promise<void> {
@@ -213,7 +229,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (udoc !== undefined) {
       await this.stageUpdate(udoc, update)
 
-      udoc = this.updateDoc(udoc, update, mark !== false)
+      udoc = this.updateDoc(udoc, update, mark)
       this.toIndex.set(docId, udoc)
     }
 
@@ -221,7 +237,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       udoc = this.extraIndex.get(docId)
       if (udoc !== undefined) {
         await this.stageUpdate(udoc, update)
-        udoc = this.updateDoc(udoc, update, mark !== false)
+        udoc = this.updateDoc(udoc, update, mark)
         this.extraIndex.set(docId, udoc)
       }
     }
@@ -248,6 +264,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // Filter unsupported stages
       udoc.stages = update.stages
 
+      const stg = Object.values(udoc.stages)
+      if (!stg.includes(false) && stg.length === this.stages.length) {
+        // Check if all marks are true, we need to clear needIndex.
+        udoc.needIndex = false
+      }
+
       if (Object.keys(update).length > 0) {
         this.currentStages[stageId] = (this.currentStages[stageId] ?? 0) + 1
         this.stageChanged++
@@ -264,14 +286,48 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await this.flush(flush ?? false)
   }
 
+  // Update are commulative
+  async updateNeedIndex (docId: Ref<DocIndexState>, value: boolean, flush?: boolean): Promise<void> {
+    const update = { needIndex: value }
+    let udoc = this.toIndex.get(docId)
+    if (udoc !== undefined) {
+      await this.stageUpdate(udoc, update)
+
+      udoc = this.updateDoc(udoc, update, true)
+      this.toIndex.set(docId, udoc)
+    }
+
+    if (udoc === undefined) {
+      udoc = this.extraIndex.get(docId)
+      if (udoc !== undefined) {
+        await this.stageUpdate(udoc, update)
+        udoc = this.updateDoc(udoc, update, true)
+        this.extraIndex.set(docId, udoc)
+      }
+    }
+
+    if (udoc === undefined) {
+      // Some updated, document, let's load it.
+      udoc = (await this.storage.load(this.metrics, DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
+    }
+
+    const current = this.pending.get(docId)
+    if (current === undefined) {
+      this.pending.set(docId, update)
+    } else {
+      this.pending.set(docId, { ...current, ...update })
+    }
+
+    await this.flush(flush ?? false)
+  }
+
   triggerCounts = 0
 
   triggerIndexing = (): void => {}
-  skippedReiterationTimeout: any
   currentStages: Record<string, number> = {}
 
-  private filterCurrentStages (udoc: DocIndexState): Record<string, string | boolean> {
-    const result: Record<string, string | boolean> = {}
+  private filterCurrentStages (udoc: DocIndexState): Record<string, boolean> {
+    const result: Record<string, boolean> = {}
     for (const [k, v] of Object.entries(udoc.stages ?? {})) {
       if (this.currentStages[k] !== undefined) {
         result[k] = v
@@ -288,6 +344,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async startIndexing (): Promise<void> {
     this.indexing = this.doIndexing()
+
+    clearTimeout(this.updateTriggerTimer)
+    this.updateTriggerTimer = setInterval(() => {
+      void this.processUpload(this.metrics)
+    }, 250)
   }
 
   async initializeStages (): Promise<void> {
@@ -302,48 +363,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   broadcastClasses = new Set<Ref<Class<Doc>>>()
   updateBroadcast: any = undefined
 
-  indexesCreated = false
-
   async doIndexing (): Promise<void> {
     // Check model is upgraded to support indexer.
 
-    if (!this.indexesCreated) {
-      this.indexesCreated = true
-      // We need to be sure we have individual indexes per stage.
-      const oldStagesRegex = [/fld-v.*/, /cnt-v.*/, /fts-v.*/, /sum-v.*/]
-      for (const st of this.stages) {
-        if (this.cancelling) {
-          return
-        }
-        const regexp = oldStagesRegex.find((r) => r.test(st.stageId))
-        if (regexp !== undefined) {
-          await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, regexp, new RegExp(st.stageId))
-        }
-        await this.storage.createIndexes(DOMAIN_DOC_INDEX_STATE, {
-          indexes: [
-            {
-              ['stages.' + st.stageId]: 1
-            },
-            {
-              _class: 1,
-              _id: 1,
-              ['stages.' + st.stageId]: 1,
-              removed: 1
-            }
-          ]
-        })
-      }
-    }
-
-    try {
-      this.hierarchy.getClass(core.class.DocIndexState)
-    } catch (err: any) {
-      this.metrics.warn('Models is not upgraded to support indexer', {
-        indexId: this.indexId,
-        workspace: this.workspace.name
-      })
-      return
-    }
     await this.metrics.with('init-states', {}, async () => {
       await this.initStates()
     })
@@ -354,10 +376,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       this.stageChanged = 0
       await this.metrics.with('initialize-stages', { workspace: this.workspace.name }, async () => {
         await this.initializeStages()
-      })
-
-      await this.metrics.with('process-remove', { workspace: this.workspace.name }, async () => {
-        await this.processRemove()
       })
 
       const _classes = await this.metrics.with(
@@ -383,22 +401,19 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           // We need to send index update event
           clearTimeout(this.updateBroadcast)
           this.updateBroadcast = setTimeout(() => {
-            this.broadcastUpdate(Array.from(this.broadcastClasses.values()))
-            this.broadcastClasses.clear()
+            this.broadcastClasses.delete(core.class.DocIndexState)
+            if (this.broadcastClasses.size > 0) {
+              const toSend = Array.from(this.broadcastClasses.values())
+              this.broadcastClasses.clear()
+              this.broadcastUpdate(toSend)
+            }
           }, 5000)
 
           await new Promise((resolve) => {
             this.triggerIndexing = () => {
               this.triggerCounts++
               resolve(null)
-              clearTimeout(this.skippedReiterationTimeout)
             }
-            this.skippedReiterationTimeout = setTimeout(() => {
-              // Force skipped reiteration, just decrease by -1
-              for (const [s, v] of Array.from(this.skipped.entries())) {
-                this.skipped.set(s, v - 1)
-              }
-            }, 60000)
           })
         }
       }
@@ -407,196 +422,173 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   private async processIndex (ctx: MeasureContext): Promise<Ref<Class<Doc>>[]> {
-    let idx = 0
     const _classUpdate = new Set<Ref<Class<Doc>>>()
-    for (const st of this.stages) {
-      if (this.cancelling) {
-        return []
-      }
-      idx++
-      await rateLimiter.exec(async () => {
-        while (true) {
-          try {
-            if (this.cancelling) {
-              return Array.from(_classUpdate.values())
-            }
-            if (!st.enabled) {
-              break
-            }
-            await ctx.with('flush', {}, async () => {
-              await this.flush(true)
-            })
-            const toSkip = Array.from(this.skipped.entries())
-              .filter((it) => it[1] > 3)
-              .map((it) => it[0])
-
-            let result = await ctx.with(
-              'get-to-index',
-              {},
-              async (ctx) =>
-                await this.storage.findAll(
-                  ctx,
-                  core.class.DocIndexState,
-                  {
-                    [`stages.${st.stageId}`]: { $ne: st.stageValue },
-                    _id: { $nin: toSkip },
-                    removed: false
-                  },
-                  {
-                    sort: { modifiedOn: SortingOrder.Descending },
-                    limit: globalIndexer.processingSize
-                  }
-                )
-            )
-            const toRemove: DocIndexState[] = []
-            // Check and remove missing class documents.
-            result = toFindResult(
-              result.filter((doc) => {
-                const _class = this.model.findObject(doc.objectClass)
-                if (_class === undefined) {
-                  // no _class present, remove doc
-                  toRemove.push(doc)
-                  return false
-                }
-                return true
-              }),
-              result.total
-            )
-
-            if (toRemove.length > 0) {
-              try {
-                await this.storage.clean(
-                  this.metrics,
-                  DOMAIN_DOC_INDEX_STATE,
-                  toRemove.map((it) => it._id)
-                )
-              } catch (err: any) {
-                Analytics.handleError(err)
-                // QuotaExceededError, ignore
-              }
-            }
-
-            if (result.length > 0) {
-              this.metrics.info('Full text: Indexing', {
-                indexId: this.indexId,
-                stageId: st.stageId,
-                workspace: this.workspace.name,
-                ...this.currentStages
-              })
-            } else {
-              // Nothing to index, check on next cycle.
-              break
-            }
-
-            this.toIndex = new Map(result.map((it) => [it._id, it]))
-
-            this.extraIndex.clear()
-            this.stageChanged = 0
-            // Find documents matching query
-            const toIndex = this.matchStates(st)
-
-            if (toIndex.length > 0) {
-              // Do Indexing
-              this.currentStage = st
-
-              await ctx.with('collect-' + st.stageId, {}, async (ctx) => {
-                await st.collect(toIndex, this, ctx)
-              })
-              if (this.cancelling) {
-                break
-              }
-
-              toIndex.forEach((it) => _classUpdate.add(it.objectClass))
-
-              // go with next stages if they accept it
-              for (const nst of this.stages.slice(idx)) {
-                const toIndex2 = this.matchStates(nst)
-                if (toIndex2.length > 0) {
-                  this.currentStage = nst
-                  await ctx.with('collect-' + nst.stageId, {}, async (ctx) => {
-                    await nst.collect(toIndex2, this, ctx)
-                  })
-                }
-                if (this.cancelling) {
-                  break
-                }
-              }
-            } else {
-              break
-            }
-
-            // Check items with not updated state.
-            for (const d of toIndex) {
-              if (d.stages?.[st.stageId] === false) {
-                this.skipped.set(d._id, (this.skipped.get(d._id) ?? 0) + 1)
-              } else {
-                this.skipped.delete(d._id)
-              }
-            }
-          } catch (err: any) {
-            Analytics.handleError(err)
-            this.metrics.error('error during index', { error: err })
+    await rateLimiter.exec(async () => {
+      while (true) {
+        try {
+          if (this.cancelling) {
+            return Array.from(_classUpdate.values())
           }
+          await ctx.with('flush', {}, async () => {
+            await this.flush(true)
+          })
+
+          let result: DocIndexState[] | undefined = await ctx.with('get-indexable', {}, async () => {
+            const q: DocumentQuery<DocIndexState> = {
+              needIndex: true
+            }
+            return await this.storage.findAll(ctx, core.class.DocIndexState, q, {
+              limit: globalIndexer.processingSize,
+              skipClass: true,
+              skipSpace: true
+            })
+          })
+          if (result === undefined) {
+            // No more results
+            break
+          }
+
+          await this.processRemove(result)
+          result = result.filter((it) => !it.removed)
+          const toRemove: DocIndexState[] = []
+          // Check and remove missing class documents.
+          result = result.filter((doc) => {
+            const _class = this.model.findObject(doc.objectClass)
+            if (_class === undefined) {
+              // no _class present, remove doc
+              toRemove.push(doc)
+              return false
+            }
+            return true
+          })
+
+          if (toRemove.length > 0) {
+            try {
+              await this.storage.clean(
+                this.metrics,
+                DOMAIN_DOC_INDEX_STATE,
+                toRemove.map((it) => it._id)
+              )
+            } catch (err: any) {
+              Analytics.handleError(err)
+              // QuotaExceededError, ignore
+            }
+          }
+
+          if (result.length > 0) {
+            this.metrics.info('Full text: Indexing', {
+              indexId: this.indexId,
+              workspace: this.workspace.name,
+              ...this.currentStages
+            })
+          } else {
+            // Nothing to index, check on next cycle.
+            break
+          }
+          const retry: DocIndexState[] = []
+
+          await this.processStages(result, ctx, _classUpdate)
+
+          // Force clear needIndex, it will be re trigger if some propogate will happen next.
+          if (!this.cancelling) {
+            for (const u of result) {
+              const stg = Object.values(u.stages)
+              if (!stg.includes(false) && stg.length === this.stages.length) {
+                // Check if all marks are true, we need to clear needIndex.
+                u.needIndex = false
+                await this.updateNeedIndex(u._id, false)
+              } else {
+                // Mark as retry on
+                retry.push(u)
+              }
+            }
+          }
+          if (retry.length > 0) {
+            await this.processStages(retry, ctx, _classUpdate)
+            if (!this.cancelling) {
+              for (const u of retry) {
+                // Since retry is happen, it shoudl be marked already.
+                u.needIndex = false
+                await this.updateNeedIndex(u._id, false)
+              }
+            }
+          }
+        } catch (err: any) {
+          Analytics.handleError(err)
+          this.metrics.error('error during index', { error: err })
         }
-      })
-    }
+      }
+    })
     return Array.from(_classUpdate.values())
   }
 
-  private async processRemove (): Promise<void> {
-    let total = 0
-    while (true) {
-      const result = await this.storage.findAll(
-        this.metrics,
-        core.class.DocIndexState,
-        {
-          removed: true
-        },
-        {
-          limit: 1000,
-          projection: {
-            _id: 1,
-            stages: 1,
-            objectClass: 1
-          }
-        }
-      )
-
-      this.toIndex = new Map(result.map((it) => [it._id, it]))
-
+  private async processStages (
+    result: DocIndexState[],
+    ctx: MeasureContext,
+    _classUpdate: Set<Ref<Class<Doc>>>
+  ): Promise<void> {
+    this.toIndex = new Map(result.map((it) => [it._id, it]))
+    for (const st of this.stages) {
       this.extraIndex.clear()
+      this.stageChanged = 0
+      // Find documents matching query
+      const toIndex = this.matchStates(st)
 
-      const toIndex = Array.from(this.toIndex.values())
-      const toRemoveIds = []
-      for (const st of this.stages) {
-        if (toIndex.length > 0) {
-          // Do Indexing
-          this.currentStage = st
-          await st.remove(toIndex, this)
-        } else {
+      if (toIndex.length > 0) {
+        // Do Indexing
+        this.currentStage = st
+
+        await ctx.with('collect-' + st.stageId, {}, async (ctx) => {
+          await st.collect(toIndex, this, ctx)
+        })
+        if (this.cancelling) {
           break
         }
-      }
-      // If all stages are complete, remove document
-      const allStageIds = this.stages.map((it) => it.stageId)
-      for (const doc of toIndex) {
-        if (allStageIds.every((it) => doc.stages[it])) {
-          toRemoveIds.push(doc._id)
-        }
-      }
 
-      await this.flush(true)
-      if (toRemoveIds.length > 0) {
-        await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
-        total += toRemoveIds.length
-        this.metrics.info('indexer', {
-          _classes: Array.from(groupByArray(toIndex, (it) => it.objectClass).keys()),
-          total,
-          count: toRemoveIds.length
-        })
+        toIndex.forEach((it) => _classUpdate.add(it.objectClass))
+      } else {
+        continue
+      }
+    }
+  }
+
+  private async processRemove (docs: DocIndexState[]): Promise<void> {
+    let total = 0
+    this.toIndex = new Map(docs.map((it) => [it._id, it]))
+
+    this.extraIndex.clear()
+
+    const toIndex = Array.from(this.toIndex.values()).filter((it) => it.removed)
+    if (toIndex.length === 0) {
+      return
+    }
+    const toRemoveIds = []
+    for (const st of this.stages) {
+      if (toIndex.length > 0) {
+        // Do Indexing
+        this.currentStage = st
+        await st.remove(toIndex, this)
       } else {
         break
       }
+    }
+    // If all stages are complete, remove document
+    const allStageIds = this.stages.map((it) => it.stageId)
+    for (const doc of toIndex) {
+      if (allStageIds.every((it) => doc.stages[it])) {
+        toRemoveIds.push(doc._id)
+      }
+    }
+
+    await this.flush(true)
+    if (toRemoveIds.length > 0) {
+      await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
+      total += toRemoveIds.length
+      this.metrics.info('indexer', {
+        _classes: Array.from(groupByArray(toIndex, (it) => it.objectClass).keys()),
+        total,
+        count: toRemoveIds.length
+      })
     }
   }
 
@@ -612,7 +604,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const require = [...st.require].filter((it) => this.stages.find((q) => q.stageId === it && q.enabled))
     for (const o of this.toIndex.values()) {
       // We need to contain all state values
-      if (require.every((it) => o.stages?.[it])) {
+      if (require.every((it) => o.stages?.[it]) && !(o.stages?.[st.stageId] ?? false)) {
         toIndex.push(o)
       }
     }

@@ -17,5 +17,5 @@ import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClien
 
 export const attachmentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

@@ -23,6 +23,7 @@ import serverNotification from '@hcengineering/server-notification'
 import serverRecruit from '@hcengineering/server-recruit'
 import serverContact from '@hcengineering/server-contact'
 import contact from '@hcengineering/contact'
+import serverView from '@hcengineering/server-view'
 
 export { serverRecruitId } from '@hcengineering/server-recruit'
 
@@ -41,6 +42,22 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverRecruit.function.VacancyTextPresenter
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, serverView.mixin.ServerLinkIdProvider, {
+    encode: serverRecruit.function.LinkIdProvider
+  })
+
+  builder.mixin(recruit.class.Opinion, core.class.Class, serverView.mixin.ServerLinkIdProvider, {
+    encode: serverRecruit.function.LinkIdProvider
+  })
+
+  builder.mixin(recruit.class.Review, core.class.Class, serverView.mixin.ServerLinkIdProvider, {
+    encode: serverRecruit.function.LinkIdProvider
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, serverView.mixin.ServerLinkIdProvider, {
+    encode: serverRecruit.function.LinkIdProvider
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -76,7 +93,7 @@ export function createModel (builder: Builder): void {
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
     {
-      func: serverNotification.function.IsUserEmployeeInFieldValue
+      func: serverNotification.function.IsUserEmployeeInFieldValueTypeMatch
     }
   )
 }

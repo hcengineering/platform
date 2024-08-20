@@ -50,6 +50,14 @@
       "allowWarningsOnSuccess": false
     },
     {
+      "name": "_phase:format",
+      "dependencies": {
+        "self": ["_phase:build"]
+      },
+      "ignoreMissingScript": true,
+      "allowWarningsOnSuccess": false
+    },
+    {
       "name": "_phase:svelte-check",
       "dependencies": {
         "self": ["_phase:build"]
@@ -81,10 +89,21 @@
         "self": ["_phase:build", "_phase:package", "_phase:bundle"]
       },
       "ignoreMissingScript": true,
-      "allowWarningsOnSuccess": false
+      "allowWarningsOnSuccess": true
     }
   ],
-  "commands": [   
+  "commands": [
+    {
+      "commandKind": "bulk",
+      "name": "format",
+      "summary": "Format",
+      "description": "Perform a formatting",
+      "enableParallelism": true,
+      "incremental": false,
+      "ignoreMissingScript": true,
+      "safeForSimultaneousRushProcesses": true,
+      "disableBuildCache": true
+    },   
     {
       "commandKind": "phased",
       "name": "build:watch",
@@ -98,17 +117,6 @@
         "alwaysWatch": true,
         "watchPhases": ["_phase:build", "_phase:validate"]
       }
-    },
-    {
-      "commandKind": "bulk",
-      "name": "format",
-      "summary": "Format",
-      "description": "Perform a formatting",
-      "enableParallelism": true,
-      "incremental": false,
-      "ignoreMissingScript": true,
-      "safeForSimultaneousRushProcesses": true,
-      "disableBuildCache": true
     },
     {      
       "summary": "svelte-check",
@@ -124,7 +132,11 @@
       "summary": "build",
       "phases": ["_phase:build"],
       "enableParallelism": true,
-      "incremental": true
+      "incremental": true,
+      "watchOptions": {
+        "alwaysWatch": false,
+        "watchPhases": ["_phase:build"]
+      }
     },
     {
       "commandKind": "phased",
@@ -193,12 +205,12 @@
       "incremental": true
     },
     {
-      "commandKind": "global",
-      "name": "docker:up",
-      "summary": "Up development build",
-      "description": "Up development build",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+      "summary": "docker:rebuild",
+      "commandKind": "phased",
+      "name": "docker:rebuild",
+      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
+      "enableParallelism": true,
+      "incremental": false
     },
     {
       "summary": "docker:staging",
@@ -219,6 +231,38 @@
       "ignoreMissingScript": true,
       "disableBuildCache": true,
       "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "commandKind": "global",
+      "name": "docker",
+      "summary": "Build docker with platform",
+      "description": "use to build all docker containers required for platform",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush docker:build -p 20 --to @hcengineering/pod-server --to @hcengineering/pod-front --to @hcengineering/prod --to @hcengineering/pod-account --to @hcengineering/pod-collaborator --to @hcengineering/tool --to @hcengineering/pod-print --to @hcengineering/pod-sign --to @hcengineering/pod-analytics-collector --to @hcengineering/rekoni-service --to @hcengineering/pod-ai-bot"
+    },        
+    {
+      "commandKind": "global",
+      "name": "docker:up",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:local",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev/local-mongo && docker compose -p dev up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
+      "name": "tool:upgrade",
+      "summary": "Upgrade all local models",
+      "description": "Upgrade all local models",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev/tool && rushx run-local upgrade -f"
     },
     {
       "commandKind": "global",

@@ -2,7 +2,7 @@
   "name": "@hcengineering/love-assets",
   "version": "0.6.0",
   "main": "src/index.ts",
-  "author": "Uberflow Contributors",
+  "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
   "scripts": {

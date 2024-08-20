@@ -17,13 +17,14 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
-  import { generateId, getCurrentAccount, Markup, Ref, toIdMap } from '@hcengineering/core'
+  import core, { generateId, getCurrentAccount, Markup, Ref, toIdMap } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { EmptyMarkup, StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { StyledTextEditor } from '@hcengineering/text-editor-resources'
+  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
   import {
     Button,
     EditBox,
@@ -34,11 +35,11 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
+  import { GmailEvents } from '@hcengineering/gmail'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
   import Connect from './Connect.svelte'
   import IntegrationSelector from './IntegrationSelector.svelte'
-  import { markupToHTML } from '@hcengineering/text'
 
   export let value: Contact[] | Contact
   const contacts = Array.isArray(value) ? value : [value]
@@ -83,7 +84,7 @@
       templateProvider.set(contact.class.Contact, target)
       const htmlContent = markupToHTML(content)
       const message = await templateProvider.fillTemplate(htmlContent)
-      const id = await client.createDoc(plugin.class.NewMessage, plugin.space.Gmail, {
+      const id = await client.createDoc(plugin.class.NewMessage, core.space.Workspace, {
         subject,
         content: message,
         to: channel.value,
@@ -94,11 +95,12 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
+      Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
       await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,
-          plugin.space.Gmail,
+          core.space.Workspace,
           id,
           plugin.class.NewMessage,
           'attachments',
@@ -145,7 +147,7 @@
       const uuid = await uploadFile(file)
       await client.addCollection(
         attachmentP.class.Attachment,
-        plugin.space.Gmail,
+        core.space.Workspace,
         attachmentParentId,
         plugin.class.NewMessage,
         'attachments',
@@ -261,6 +263,7 @@
 
   <input
     bind:this={inputFile}
+    disabled={inputFile == null}
     multiple
     type="file"
     name="file"

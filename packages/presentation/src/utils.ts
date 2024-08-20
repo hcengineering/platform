@@ -17,13 +17,12 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
-  concatLink,
+  TxProcessor,
   getCurrentAccount,
   reduceCalls,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
-  type BlobLookup,
   type Class,
   type Client,
   type Collection,
@@ -32,11 +31,8 @@ import core, {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type MeasureClient,
-  type MeasureDoneOperation,
   type Mixin,
   type Obj,
-  type Blob as PlatformBlob,
   type Ref,
   type RefTo,
   type SearchOptions,
@@ -44,6 +40,8 @@ import core, {
   type SearchResult,
   type Space,
   type Tx,
+  type TxApplyIf,
+  type TxCUD,
   type TxResult,
   type TypeAny,
   type WithLookup
@@ -54,14 +52,15 @@ import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteCo
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
-import { get } from 'svelte/store'
+import { get, writable, type Writable } from 'svelte/store'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
 export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
-let client: TxOperations & MeasureClient
+let rawLiveQuery: LQ
+let client: TxOperations & Client & OptimisticTxes
 let pipeline: PresentationPipeline
 
 const txListeners: Array<(...tx: Tx[]) => void> = []
@@ -71,6 +70,10 @@ const txListeners: Array<(...tx: Tx[]) => void> = []
  */
 export function addTxListener (l: (tx: Tx) => void): void {
   txListeners.push(l)
+}
+
+export function getRawLiveQuery (): LQ {
+  return rawLiveQuery
 }
 
 /**
@@ -83,33 +86,67 @@ export function removeTxListener (l: (tx: Tx) => void): void {
   }
 }
 
-class UIClient extends TxOperations implements Client, MeasureClient {
+export interface OptimisticTxes {
+  pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
+}
+
+class UIClient extends TxOperations implements Client, OptimisticTxes {
+  hook = getMetadata(plugin.metadata.ClientHook)
   constructor (
-    client: MeasureClient,
+    client: Client,
     private readonly liveQuery: Client
   ) {
     super(client, getCurrentAccount()._id)
   }
 
-  afterMeasure: Tx[] = []
-  measureOp?: MeasureDoneOperation
+  protected pendingTxes = new Set<Ref<Tx>>()
+  protected _pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
+
+  get pendingCreatedDocs (): typeof this._pendingCreatedDocs {
+    return this._pendingCreatedDocs
+  }
 
   async doNotify (...tx: Tx[]): Promise<void> {
-    if (this.measureOp !== undefined) {
-      this.afterMeasure.push(...tx)
-    } else {
-      try {
-        await pipeline.notifyTx(...tx)
+    const pending = get(this._pendingCreatedDocs)
+    let pendingUpdated = false
+    tx.forEach((t) => {
+      if (this.pendingTxes.has(t._id)) {
+        this.pendingTxes.delete(t._id)
 
-        await liveQuery.tx(...tx)
+        // Only CUD tx can be pending now
+        const innerTx = TxProcessor.extractTx(t) as TxCUD<Doc>
 
-        txListeners.forEach((it) => {
-          it(...tx)
-        })
-      } catch (err: any) {
-        Analytics.handleError(err)
-        console.log(err)
+        if (innerTx._class === core.class.TxCreateDoc) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete pending[innerTx.objectId]
+          pendingUpdated = true
+        }
       }
+    })
+    if (pendingUpdated) {
+      this._pendingCreatedDocs.set(pending)
+    }
+
+    // We still want to notify about all transactions because there might be queries created after
+    // the early applied transaction
+    // For old queries there's a check anyway that prevents the same document from being added twice
+    await this.provideNotify(...tx)
+  }
+
+  private async provideNotify (...tx: Tx[]): Promise<void> {
+    try {
+      await pipeline.notifyTx(...tx)
+
+      await liveQuery.tx(...tx)
+
+      await rawLiveQuery.tx(...tx)
+
+      txListeners.forEach((it) => {
+        it(...tx)
+      })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.log(err)
     }
   }
 
@@ -118,6 +155,9 @@ class UIClient extends TxOperations implements Client, MeasureClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    if (this.hook !== undefined) {
+      return await this.hook.findAll(this.liveQuery, _class, query, options)
+    }
     return await this.liveQuery.findAll(_class, query, options)
   }
 
@@ -126,72 +166,118 @@ class UIClient extends TxOperations implements Client, MeasureClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
+    if (this.hook !== undefined) {
+      return await this.hook.findOne(this.liveQuery, _class, query, options)
+    }
     return await this.liveQuery.findOne(_class, query, options)
   }
 
   override async tx (tx: Tx): Promise<TxResult> {
+    void this.notifyEarly(tx)
+    if (this.hook !== undefined) {
+      return await this.hook.tx(this.client, tx)
+    }
     return await this.client.tx(tx)
   }
 
-  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return await this.client.searchFulltext(query, options)
+  private async notifyEarly (tx: Tx): Promise<void> {
+    if (tx._class === core.class.TxApplyIf) {
+      const applyTx = tx as TxApplyIf
+
+      if (applyTx.match.length !== 0 || applyTx.notMatch.length !== 0) {
+        // Cannot early apply conditional transactions
+        return
+      }
+
+      await Promise.all(
+        applyTx.txes.map(async (atx) => {
+          await this.notifyEarly(atx)
+        })
+      )
+      return
+    }
+
+    if (!TxProcessor.isExtendsCUD(tx._class)) {
+      return
+    }
+
+    const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+    // Can pre-build some configuration later from the model if this will be too slow.
+    const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
+    if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
+      return
+    }
+
+    if (innerTx._class === core.class.TxCreateDoc) {
+      const pending = get(this._pendingCreatedDocs)
+      pending[innerTx.objectId] = true
+      this._pendingCreatedDocs.set(pending)
+    }
+
+    this.pendingTxes.add(tx._id)
+    await this.provideNotify(tx)
   }
 
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    // return await (this.client as MeasureClient).measure(operationName)
-    const mop = await (this.client as MeasureClient).measure(operationName)
-    this.measureOp = mop
-    return async () => {
-      const result = await mop()
-      this.measureOp = undefined
-      if (this.afterMeasure.length > 0) {
-        const txes = this.afterMeasure
-        this.afterMeasure = []
-        for (const tx of txes) {
-          await this.doNotify(tx)
-        }
-      }
-      return result
+  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    if (this.hook !== undefined) {
+      return await this.hook.searchFulltext(this.client, query, options)
     }
+    return await this.client.searchFulltext(query, options)
   }
 }
 
 /**
  * @public
  */
-export function getClient (): TxOperations & MeasureClient {
+export function getClient (): TxOperations & Client & OptimisticTxes {
   return client
 }
 
+let txQueue: Tx[] = []
+
 /**
  * @public
  */
-export async function setClient (_client: MeasureClient): Promise<void> {
+export async function setClient (_client: Client): Promise<void> {
   if (liveQuery !== undefined) {
     await liveQuery.close()
+  }
+  if (rawLiveQuery !== undefined) {
+    await rawLiveQuery.close()
   }
   if (pipeline !== undefined) {
     await pipeline.close()
   }
+
+  const needRefresh = liveQuery !== undefined
+  rawLiveQuery = new LQ(_client)
+
   const factories = await _client.findAll(plugin.class.PresentationMiddlewareFactory, {})
   const promises = factories.map(async (it) => await getResource(it.createPresentationMiddleware))
   const creators = await Promise.all(promises)
   // eslint-disable-next-line @typescript-eslint/unbound-method
   pipeline = PresentationPipelineImpl.create(_client, [OptimizeQueryMiddleware.create, ...creators])
 
-  const needRefresh = liveQuery !== undefined
   liveQuery = new LQ(pipeline)
+
   const uiClient = new UIClient(pipeline, liveQuery)
+
   client = uiClient
 
+  const notifyCaller = reduceCalls(async () => {
+    const t = txQueue
+    txQueue = []
+    await uiClient.doNotify(...t)
+  })
+
   _client.notify = (...tx: Tx[]) => {
-    void uiClient.doNotify(...tx)
+    txQueue.push(...tx)
+    void notifyCaller()
   }
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient(true)
   }
 }
-
 /**
  * @public
  */
@@ -361,39 +447,12 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
-export async function getBlobHref (
-  _blob: PlatformBlob | undefined,
-  file: Ref<PlatformBlob>,
-  filename?: string
-): Promise<string> {
-  let blob = _blob as BlobLookup
-  if (blob?.downloadUrl === undefined) {
-    blob = (await getClient().findOne(core.class.Blob, { _id: file })) as BlobLookup
-  }
-  return blob?.downloadUrl ?? getFileUrl(file, filename)
-}
-
 export function getCurrentWorkspaceUrl (): string {
   const wsId = get(workspaceId)
   if (wsId == null) {
     return getRawCurrentLocation().path[1]
   }
   return wsId
-}
-
-/**
- * @public
- */
-export function getFileUrl (file: Ref<PlatformBlob>, filename?: string): string {
-  if (file.includes('://')) {
-    return file
-  }
-  const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
-  let uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? ''
-  if (!uploadUrl.includes('://')) {
-    uploadUrl = concatLink(frontUrl ?? '', uploadUrl)
-  }
-  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}`
 }
 
 export function sizeToWidth (size: string): number | undefined {
@@ -444,17 +503,17 @@ export async function getBlobURL (blob: Blob): Promise<string> {
 /**
  * @public
  */
-export async function copyTextToClipboard (text: string): Promise<void> {
+export async function copyTextToClipboard (text: string | Promise<string>): Promise<void> {
   try {
     // Safari specific behavior
     // see https://bugs.webkit.org/show_bug.cgi?id=222262
     const clipboardItem = new ClipboardItem({
-      'text/plain': Promise.resolve(text)
+      'text/plain': text instanceof Promise ? text : Promise.resolve(text)
     })
     await navigator.clipboard.write([clipboardItem])
   } catch {
     // Fallback to default clipboard API implementation
-    await navigator.clipboard.writeText(text)
+    await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
   }
 }
 
@@ -607,7 +666,11 @@ export function isAdminUser (): boolean {
 }
 
 export function isSpace (space: Doc): space is Space {
-  return getClient().getHierarchy().isDerived(space._class, core.class.Space)
+  return isSpaceClass(space._class)
+}
+
+export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
+  return getClient().getHierarchy().isDerived(_class, core.class.Space)
 }
 
 export function setPresentationCookie (token: string, workspaceId: string): void {
@@ -619,4 +682,14 @@ export function setPresentationCookie (token: string, workspaceId: string): void
       `; path=${path}`
   }
   setToken('/files/' + workspaceId)
+}
+
+export const upgradeDownloadProgress = writable(0)
+
+export function setDownloadProgress (percent: number): void {
+  if (Number.isNaN(percent)) {
+    return
+  }
+
+  upgradeDownloadProgress.set(Math.round(percent))
 }

@@ -2,6 +2,7 @@ import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import core, {
   ClientConnectEvent,
+  concatLink,
   getCurrentAccount,
   MeasureMetricsContext,
   metricsToString,
@@ -13,10 +14,9 @@ import core, {
   type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
-import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import { broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
-  getCurrentWorkspaceUrl,
   purgeClient,
   refreshClient,
   setClient,
@@ -27,7 +27,6 @@ import {
   getCurrentLocation,
   locationStorageKeyId,
   navigate,
-  networkStatus,
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -35,14 +34,11 @@ import plugin from './plugin'
 import { workspaceCreating } from './utils'
 
 export const versionError = writable<string | undefined>(undefined)
+const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
 let _client: AccountClient | undefined
 let _clientSet: boolean = false
-
-addEventListener(client.event.NetworkRequests, async (event: string, val: number) => {
-  networkStatus.set(val)
-})
 
 export async function disconnect (): Promise<void> {
   if (_client !== undefined) {
@@ -74,42 +70,51 @@ export async function connect (title: string): Promise<Client | undefined> {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   let token = tokens[ws]
 
-  if (
-    token === undefined &&
-    (getMetadata(presentation.metadata.Token) !== undefined ||
-      fetchMetadataLocalStorage(login.metadata.LastToken) != null)
-  ) {
-    const selectWorkspace = await getResource(login.function.SelectWorkspace)
-    const loginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
-    if (loginInfo !== undefined) {
-      tokens[ws] = loginInfo.token
-      token = loginInfo.token
-      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-    }
+  const selectWorkspace = await getResource(login.function.SelectWorkspace)
+  const workspaceLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws, token))[1])
+  if (workspaceLoginInfo !== undefined) {
+    tokens[ws] = workspaceLoginInfo.token
+    token = workspaceLoginInfo.token
+    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
   }
+
   setMetadata(presentation.metadata.Token, token)
 
-  const fetchWorkspace = await getResource(login.function.FetchWorkspace)
-  let loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
-  if (loginInfo?.creating === true) {
-    while (true) {
-      if (ws !== getCurrentLocation().path[1]) return
-      workspaceCreating.set(loginInfo?.createProgress ?? 0)
-      loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
-      workspaceCreating.set(loginInfo?.createProgress)
-      if (loginInfo?.creating === false) {
-        workspaceCreating.set(-1)
-        break
+  if (workspaceLoginInfo?.creating === true) {
+    const fetchWorkspace = await getResource(login.function.FetchWorkspace)
+    let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+    if (loginInfo?.creating === true) {
+      while (true) {
+        if (ws !== getCurrentLocation().path[1]) return
+        workspaceCreating.set(loginInfo?.createProgress ?? 0)
+        loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+        if (loginInfo === undefined) {
+          // something went wrong, workspace not exist, redirect to login
+          navigate({
+            path: [loginId]
+          })
+          return
+        }
+        workspaceCreating.set(loginInfo?.createProgress)
+        if (loginInfo?.creating === false) {
+          workspaceCreating.set(-1)
+          break
+        }
+        await new Promise<void>((resolve) => setTimeout(resolve, 1000))
       }
-      await new Promise<void>((resolve) => setTimeout(resolve, 1000))
     }
   }
 
-  setPresentationCookie(token, getCurrentWorkspaceUrl())
+  if (workspaceLoginInfo !== undefined) {
+    setPresentationCookie(token, workspaceLoginInfo.workspaceId)
+  }
 
-  const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
-  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
-  if (token === undefined || endpoint === null || email === null) {
+  setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo?.endpoint)
+
+  const endpoint = workspaceLoginInfo?.endpoint // fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
+  const email = workspaceLoginInfo?.email // fetchMetadataLocalStorage(login.metadata.LoginEmail)
+  if (token == null || endpoint == null || email == null) {
     const navigateUrl = encodeURIComponent(JSON.stringify(loc))
     navigate({
       path: [loginId],
@@ -136,23 +141,17 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   _token = token
 
-  let version: Version | undefined
-  let serverEndpoint = endpoint.replace(/^ws/g, 'http')
-  if (serverEndpoint.endsWith('/')) {
-    serverEndpoint = serverEndpoint.substring(0, serverEndpoint.length - 1)
-  }
   const clientFactory = await getResource(client.function.GetClient)
+  let version: Version | undefined
   const newClient = await ctx.with(
     'create-client',
     {},
     async (ctx) =>
-      await clientFactory(
-        token,
-        endpoint,
-        () => {
+      await clientFactory(token, endpoint, {
+        onUpgrade: () => {
           location.reload()
         },
-        () => {
+        onUnauthorized: () => {
           clearMetadata(ws)
           navigate({
             path: [loginId],
@@ -160,7 +159,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           })
         },
         // We need to refresh all active live queries and clear old queries.
-        (event: ClientConnectEvent, data: any) => {
+        onConnect: (event: ClientConnectEvent, data: any) => {
           console.log('WorkbenchClient: onConnect', event)
           if (event === ClientConnectEvent.Maintenance) {
             if (data != null && data.total !== 0) {
@@ -171,6 +170,9 @@ export async function connect (title: string): Promise<Client | undefined> {
             return
           }
           try {
+            if (event === ClientConnectEvent.Connected) {
+              setMetadata(presentation.metadata.SessionId, data)
+            }
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
               void ctx.with('refresh client', {}, async () => {
                 await refreshClient(tokenChanged)
@@ -196,24 +198,33 @@ export async function connect (title: string): Promise<Client | undefined> {
 
                 if (currentVersionStr !== reconnectVersionStr) {
                   // It seems upgrade happened
-                  // location.reload()
+                  location.reload()
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
-                const serverVersion: { version: string } = await ctx.with(
-                  'fetch-server-version',
-                  {},
-                  async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
-                )
 
                 console.log(
                   'Server version',
-                  serverVersion.version,
+                  reconnectVersionStr,
                   version !== undefined ? versionToString(version) : ''
                 )
-                if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-                  versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
-                } else {
-                  versionError.set(undefined)
+
+                if (reconnectVersionStr !== '' && currentVersionStr !== reconnectVersionStr) {
+                  if (typeof sessionStorage !== 'undefined') {
+                    if (sessionStorage.getItem(versionStorageKey) !== reconnectVersionStr) {
+                      sessionStorage.setItem(versionStorageKey, reconnectVersionStr)
+                      location.reload()
+                    }
+                  }
+                  versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
+                }
+
+                const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
+                const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
+                if (currentFrontVersion !== undefined) {
+                  const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+                  if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                    location.reload()
+                  }
                 }
               }
             })()
@@ -221,8 +232,15 @@ export async function connect (title: string): Promise<Client | undefined> {
             console.error(err)
           }
         },
-        ctx
-      )
+        ctx,
+        onDialTimeout: async () => {
+          const newLoginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws, token))[1])
+          if (newLoginInfo?.endpoint !== endpoint) {
+            console.log('endpoint changed, reloading')
+            location.reload()
+          }
+        }
+      })
   )
 
   _client = newClient
@@ -262,7 +280,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     )
     console.log('Model version', version)
 
-    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    const requiredVersion = getMetadata(presentation.metadata.ModelVersion)
     if (requiredVersion !== undefined && version !== undefined && requiredVersion !== '') {
       console.log('checking min model version', requiredVersion)
       const versionStr = versionToString(version)
@@ -272,31 +290,10 @@ export async function connect (title: string): Promise<Client | undefined> {
         return undefined
       }
     }
-
-    try {
-      const serverVersion: { version: string } = await ctx.with(
-        'find-server-version',
-        {},
-        async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
-      )
-
-      console.log('Server version', serverVersion.version, version !== undefined ? versionToString(version) : '')
-      if (
-        serverVersion.version !== '' &&
-        (version === undefined || serverVersion.version !== versionToString(version))
-      ) {
-        const versionStr = version !== undefined ? versionToString(version) : 'unknown'
-        versionError.set(`${versionStr} => ${serverVersion.version}`)
-        return
-      }
-    } catch (err: any) {
-      versionError.set('server version not available')
-      return
-    }
   } catch (err: any) {
     console.error(err)
     Analytics.handleError(err)
-    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    const requiredVersion = getMetadata(presentation.metadata.ModelVersion)
     console.log('checking min model version', requiredVersion)
     if (requiredVersion !== undefined) {
       versionError.set(`'unknown' => ${requiredVersion}`)
@@ -349,9 +346,14 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
+  const currentWorkspace = getMetadata(presentation.metadata.Workspace)
+  if (currentWorkspace !== undefined) {
+    setPresentationCookie('', currentWorkspace)
+  }
+
   setMetadata(presentation.metadata.Token, null)
+  setMetadata(presentation.metadata.Workspace, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  setPresentationCookie('', getCurrentWorkspaceUrl())
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()

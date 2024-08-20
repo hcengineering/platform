@@ -13,8 +13,77 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
 import { startBackup } from '@hcengineering/backup-service'
+import { MeasureMetricsContext, metricsToString, newMetrics } from '@hcengineering/core'
+import { DummyDbAdapter, DummyFullTextAdapter, type PipelineFactory } from '@hcengineering/server-core'
+import { createServerPipeline } from '@hcengineering/server-pipeline'
+import { configureAnalytics, SplitLogger } from '@hcengineering/analytics-service'
+import { writeFile } from 'fs/promises'
+import { join } from 'path'
 
-const ctx = new MeasureMetricsContext('backup-service', {})
-startBackup(ctx)
+const metricsContext = new MeasureMetricsContext(
+  'github',
+  {},
+  {},
+  newMetrics(),
+  new SplitLogger('backup-service', {
+    root: join(process.cwd(), 'logs'),
+    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+  })
+)
+
+const sentryDSN = process.env.SENTRY_DSN
+
+configureAnalytics(sentryDSN, {})
+Analytics.setTag('application', 'backup-service')
+
+let oldMetricsValue = ''
+
+const intTimer = setInterval(() => {
+  const val = metricsToString(metricsContext.metrics, 'Backup', 140)
+  if (val !== oldMetricsValue) {
+    oldMetricsValue = val
+    void writeFile('metrics.txt', val).catch((err) => {
+      console.error(err)
+    })
+  }
+}, 30000)
+
+const onClose = (): void => {
+  clearInterval(intTimer)
+  metricsContext.info('Closed')
+}
+
+startBackup(metricsContext, (mongoUrl, storageAdapter) => {
+  const factory: PipelineFactory = createServerPipeline(
+    metricsContext,
+    mongoUrl,
+    {
+      externalStorage: storageAdapter,
+      fullTextUrl: '',
+      indexParallel: 0,
+      indexProcessing: 0,
+      disableTriggers: true,
+      rekoniUrl: '',
+      usePassedCtx: true
+    },
+    {
+      adapters: {
+        FullTextBlob: {
+          factory: async () => new DummyDbAdapter(),
+          url: ''
+        }
+      },
+      fulltextAdapter: {
+        factory: async () => new DummyFullTextAdapter(),
+        stages: () => [],
+        url: ''
+      }
+    }
+  )
+  return factory
+})
+
+process.on('SIGINT', onClose)
+process.on('SIGTERM', onClose)

@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -23,12 +23,6 @@ import { start } from '.'
 
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
-
-  const transactorEndpoint = process.env.TRANSACTOR_URL
-  if (transactorEndpoint === undefined) {
-    console.error('please provide transactor url')
-    process.exit(1)
-  }
 
   const url = process.env.MONGO_URL
   if (url === undefined) {
@@ -93,6 +87,12 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  const version = process.env.VERSION
+  if (version === undefined) {
+    console.error('please provide version requirement')
+    process.exit(1)
+  }
+
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')
@@ -100,30 +100,38 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   }
 
   let previewConfig = process.env.PREVIEW_CONFIG
-
   if (previewConfig === undefined) {
     // Use universal preview config
-    previewConfig = `*|${uploadUrl}/:workspace?file=:file.:format&size=:size`
+    previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
   }
+
+  let filesUrl = process.env.FILES_URL
+  if (filesUrl === undefined) {
+    filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
+  }
+
+  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
 
   const brandingUrl = process.env.BRANDING_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
   const config = {
-    transactorEndpoint,
     elasticUrl,
     storageAdapter,
     accountsUrl,
     uploadUrl,
+    filesUrl,
     modelVersion,
+    version,
     gmailUrl,
     telegramUrl,
     rekoniUrl,
     calendarUrl,
     collaboratorUrl,
     brandingUrl,
-    previewConfig
+    previewConfig,
+    pushPublicKey
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

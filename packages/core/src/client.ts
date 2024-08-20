@@ -47,17 +47,10 @@ export interface Client extends Storage, FulltextStorage {
   close: () => Promise<void>
 }
 
-export type MeasureDoneOperation = () => Promise<{ time: number, serverTime: number }>
-
-export interface MeasureClient extends Client {
-  // Will perform on server operation measure and will return a local client time and on server time
-  measure: (operationName: string) => Promise<MeasureDoneOperation>
-}
-
 /**
  * @public
  */
-export interface AccountClient extends MeasureClient {
+export interface AccountClient extends Client {
   getAccount: () => Promise<Account>
 }
 
@@ -97,14 +90,13 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
   // If hash is passed, will return LoadModelResponse
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
   getAccount: () => Promise<Account>
-
-  measure: (operationName: string) => Promise<MeasureDoneOperation>
 }
 
-class ClientImpl implements AccountClient, BackupClient, MeasureClient {
+class ClientImpl implements AccountClient, BackupClient {
   notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
+  private readonly appliedModelTransactions = new Set<Ref<Tx>>()
   constructor (private readonly conn: ClientConnection) {}
 
   setModel (hierarchy: Hierarchy, model: ModelDb): void {
@@ -156,26 +148,26 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
     if (tx.objectSpace === core.space.Model) {
       this.hierarchy.tx(tx)
       await this.model.tx(tx)
+      this.appliedModelTransactions.add(tx._id)
     }
-
     // We need to handle it on server, before performing local live query updates.
-    const result = await this.conn.tx(tx)
-    return result
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    return await this.conn.measure(operationName)
+    return await this.conn.tx(tx)
   }
 
   async updateFromRemote (...tx: Tx[]): Promise<void> {
     for (const t of tx) {
       try {
         if (t.objectSpace === core.space.Model) {
-          this.hierarchy.tx(t)
-          await this.model.tx(t)
+          const hasTx = this.appliedModelTransactions.has(t._id)
+          if (!hasTx) {
+            this.hierarchy.tx(t)
+            await this.model.tx(t)
+          } else {
+            this.appliedModelTransactions.delete(t._id)
+          }
         }
       } catch (err) {
-        console.error('failed to apply model transaction, skipping', t)
+        // console.error('failed to apply model transaction, skipping', t)
         continue
       }
     }
@@ -277,6 +269,10 @@ export async function createClient (
   const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
   conn.onConnect = async (event) => {
     console.log('Client: onConnect', event)
+    if (event === ClientConnectEvent.Maintenance) {
+      await oldOnConnect?.(ClientConnectEvent.Maintenance)
+      return
+    }
     // Find all new transactions and apply
     const loadModelResponse = await ctx.with(
       'connect',
@@ -479,7 +475,11 @@ async function buildModel (
       try {
         hierarchy.tx(tx)
       } catch (err: any) {
-        console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
+        ctx.warn('failed to apply model transaction, skipping', {
+          _id: tx._id,
+          _class: tx._class,
+          message: err?.message
+        })
       }
     }
   })

@@ -58,7 +58,7 @@
   $: query.query(
     calendar.class.Event,
     {
-      _class: { $nin: [calendar.class.ReccuringEvent] },
+      _class: { $ne: calendar.class.ReccuringEvent },
       calendar: { $in: calendarIds },
       date: { $lte: toDate },
       dueDate: { $gte: fromDate },

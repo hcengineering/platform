@@ -44,7 +44,7 @@
   const dispatch = createEventDispatcher()
 
   let input: HTMLInputElement
-  let phTraslate: string = ''
+  let phTranslate: string = ''
 
   $: {
     if (
@@ -57,7 +57,7 @@
     }
   }
   $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
-    phTraslate = res
+    phTranslate = res
   })
 
   function handleInput (): void {
@@ -143,7 +143,7 @@
         bind:this={input}
         type="Password"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={handleInput}
         on:change
         on:keydown
@@ -160,7 +160,7 @@
         type="number"
         class="number"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={handleInput}
         on:change
         on:keydown
@@ -176,7 +176,7 @@
         bind:this={input}
         type="text"
         bind:value
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={handleInput}
         on:change
         on:keydown

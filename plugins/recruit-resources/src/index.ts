@@ -70,12 +70,15 @@ import {
   getAppIdentifier,
   getAppTitle,
   getObjectLink,
+  getReviewIdentifier,
   getRevTitle,
   getSequenceId,
   getSequenceLink,
   getTalentId,
+  getVacancyIdentifier,
   getVacTitle,
   objectLinkProvider,
+  parseLinkId,
   resolveLocation
 } from './utils'
 
@@ -399,6 +402,8 @@ export default async (): Promise<Resources> => ({
   function: {
     AppTitleProvider: getAppTitle,
     AppIdentifierProvider: getAppIdentifier,
+    VacancyIdentifierProvider: getVacancyIdentifier,
+    ReviewIdentifierProvider: getReviewIdentifier,
     VacTitleProvider: getVacTitle,
     RevTitleProvider: getRevTitle,
     IdProvider: getSequenceId,
@@ -411,7 +416,8 @@ export default async (): Promise<Resources> => ({
     GetIdObjectLinkFragment: getObjectLink,
     HideDoneState: hideDoneState,
     HideArchivedVacancies: hideArchivedVacancies,
-    ApplicantHasEmail: applicantHasEmail
+    ApplicantHasEmail: applicantHasEmail,
+    ParseLinkId: parseLinkId
   },
   resolver: {
     Location: resolveLocation

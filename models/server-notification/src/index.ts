@@ -14,21 +14,24 @@
 // limitations under the License.
 //
 
-import { type Builder, Mixin } from '@hcengineering/model'
+import { type Builder, Mixin, Model } from '@hcengineering/model'
 
-import core, { type Account, type Doc, type Ref, type Tx } from '@hcengineering/core'
-import { TClass } from '@hcengineering/model-core'
+import core, { type Ref } from '@hcengineering/core'
+import { TClass, TDoc } from '@hcengineering/model-core'
 import { TNotificationType } from '@hcengineering/model-notification'
-import notification, { type NotificationType } from '@hcengineering/notification'
+import notification, { type NotificationProvider } from '@hcengineering/notification'
 import { type Resource } from '@hcengineering/platform'
-import serverCore, { type TriggerControl } from '@hcengineering/server-core'
+import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   type HTMLPresenter,
+  type NotificationContentProvider,
   type NotificationPresenter,
+  type NotificationProviderFunc,
+  type NotificationProviderResources,
   type Presenter,
   type TextPresenter,
   type TypeMatch,
-  type NotificationContentProvider
+  type TypeMatchFunc
 } from '@hcengineering/server-notification'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
@@ -50,21 +53,23 @@ export class TNotificationPresenter extends TClass implements NotificationPresen
 
 @Mixin(serverNotification.mixin.TypeMatch, notification.class.NotificationType)
 export class TTypeMatch extends TNotificationType implements TypeMatch {
-  func!: Resource<
-  (tx: Tx, doc: Doc, user: Ref<Account>, type: NotificationType, control: TriggerControl) => Promise<boolean>
-  >
+  func!: TypeMatchFunc
+}
+
+@Model(serverNotification.class.NotificationProviderResources, core.class.Doc)
+export class TNotificationProviderResources extends TDoc implements NotificationProviderResources {
+  provider!: Ref<NotificationProvider>
+  fn!: Resource<NotificationProviderFunc>
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(THTMLPresenter, TTextPresenter, TTypeMatch, TNotificationPresenter)
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnActivityNotificationViewed,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
-      objectClass: notification.class.ActivityInboxNotification
-    }
-  })
+  builder.createModel(
+    THTMLPresenter,
+    TTextPresenter,
+    TTypeMatch,
+    TNotificationPresenter,
+    TNotificationProviderResources
+  )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnAttributeCreate,

@@ -42,6 +42,20 @@
     "ConfirmationSent": "A message has been sent to your email containing a link to confirm your address.",
     "ConfirmationSent2": "Please follow the link to complete your sign up.",
     "Slogan": "A unique place to manage all of your work\nWelcome to the Platform",
-    "ContinueWith": "Continue with {provider}"
+    "ContinueWith": "Continue with {provider}",
+    "HaventReceivedCode": "Haven't received the code?",
+    "ResendCode": "Resend code",
+    "WrongEmail": "Wrong email?",
+    "ChangeEmail": "Change email",
+    "SentTo": "We've sent a code to ",
+    "CanFindCode": "Can't find your code? Check your spam folder.",
+    "LoginWithPassword": "Login with password",
+    "LoginWithCode": "Login with code",
+    "FillInProfile": "Fill in your profile",
+    "SetUpPassword": "Set up your password",
+    "Next": "Next",
+    "Skip": "Skip",
+    "SignUpCompleted": "Sign up completed",
+    "StartUsingHuly": "Start using Huly"
   }
 }

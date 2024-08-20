@@ -29,10 +29,10 @@
   export let withSearch: boolean = true
 
   let search: string = ''
-  let phTraslate: string = ''
+  let phTranslate: string = ''
   $: if (placeholder) {
     translate(placeholder, {}, $themeStore.language).then((res) => {
-      phTraslate = res
+      phTranslate = res
     })
   }
   const dispatch = createEventDispatcher()
@@ -82,7 +82,7 @@
         bind:this={searchInput}
         type="text"
         bind:value={search}
-        placeholder={phTraslate}
+        placeholder={phTranslate}
         on:input={(ev) => {}}
         on:change
       />

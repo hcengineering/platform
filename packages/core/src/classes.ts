@@ -15,6 +15,7 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { DocumentQuery } from './storage'
 
 /**
  * @public
@@ -122,6 +123,7 @@ export enum IndexKind {
    * Also mean to include into Elastic search.
    */
   Indexed,
+
   // Same as indexed but for descending
   IndexedDsc
 }
@@ -438,6 +440,8 @@ export interface Permission extends Doc {
 export interface Account extends Doc {
   email: string
   role: AccountRole
+
+  person?: Ref<Doc>
 }
 
 /**
@@ -495,14 +499,6 @@ export function versionToString (version: Version | Data<Version>): string {
 }
 
 /**
- * Blob data from s3 storage
- * @public
- */
-export interface FullTextData extends Doc {
-  data: any
-}
-
-/**
  * @public
  *
  * Define status for full text indexing
@@ -516,7 +512,9 @@ export interface DocIndexState extends Doc {
   generationId?: string
 
   // States for stages
-  stages: Record<string, boolean | string>
+  stages: Record<string, boolean>
+
+  needIndex: boolean
 
   removed: boolean
 
@@ -526,14 +524,6 @@ export interface DocIndexState extends Doc {
   // Full Summary
   fullSummary?: string | null
   shortSummary?: string | null
-}
-
-/**
- * @public
- */
-export interface IndexStageState extends Doc {
-  stageId: string
-  attributes: Record<string, any>
 }
 
 /**
@@ -631,6 +621,12 @@ export type FieldIndex<T extends Doc> = {
   [P in keyof T]?: IndexOrder
 } & Record<string, IndexOrder>
 
+export interface FieldIndexConfig<T extends Doc> {
+  sparse?: boolean
+  filter?: Omit<DocumentQuery<T>, '$search'>
+  keys: FieldIndex<T> | string
+}
+
 /**
  * @public
  *
@@ -638,7 +634,7 @@ export type FieldIndex<T extends Doc> = {
  */
 export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   // Define a list of extra index definitions.
-  indexes: (FieldIndex<T> | string)[]
+  indexes: (string | FieldIndexConfig<T>)[]
   searchDisabled?: boolean
 }
 
@@ -651,7 +647,7 @@ export interface DomainIndexConfiguration extends Doc {
   disabled?: (FieldIndex<Doc> | string)[]
 
   // Additional indexes we could like to enabled
-  indexes?: (FieldIndex<Doc> | string)[]
+  indexes?: (FieldIndexConfig<Doc> | string)[]
 
   skip?: string[]
 }
@@ -661,6 +657,7 @@ export interface BaseWorkspaceInfo {
   productId: string
   disabled?: boolean
   version?: Data<Version>
+  branding?: string
 
   workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
   workspaceName?: string // An displayed workspace name
@@ -671,4 +668,6 @@ export interface BaseWorkspaceInfo {
 
   creating?: boolean
   createProgress?: number // Some progress
+
+  endpoint: string
 }

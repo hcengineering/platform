@@ -13,17 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
   import setting from '@hcengineering/setting'
   import { Header, Breadcrumb } from '@hcengineering/ui'
   import PluginCard from './PluginCard.svelte'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const accountId = getCurrentAccount()._id
   const typeQuery = createQuery()
@@ -45,10 +40,11 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.Integrations} label={setting.string.Integrations} size={'large'} isCurrent />
   </Header>
-  <div class="ac-body__cards-container">
+
+  <div class="cards_grid">
     {#each integrationTypes as integrationType (integrationType._id)}
       {#if integrationType.allowMultiple}
         {#each getIntegrations(integrationType._id, integrations) as integration (integration._id)}
@@ -61,3 +57,14 @@
     {/each}
   </div>
 </div>
+
+<style lang="scss">
+  .cards_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, auto));
+    grid-auto-rows: minmax(12.5rem, auto);
+    grid-gap: 1.5rem;
+    padding: 1.5rem;
+    overflow: auto;
+  }
+</style>

@@ -79,7 +79,7 @@
 </script>
 
 {#if message}
-  <div class="root">
+  <div class="activityMessage-actionPopup">
     {#each inlineActions as inline}
       {#if inline.icon}
         {#await getResource(inline.action) then action}
@@ -88,6 +88,7 @@
             size={inline.actionProps?.size ?? 'small'}
             icon={inline.icon}
             iconProps={inline.actionProps?.iconProps}
+            dataId={inline._id}
             action={(ev) => action(message, ev, { onOpen, onClose })}
           />
         {/await}
@@ -96,18 +97,19 @@
 
     {#if withActionMenu}
       <ActivityMessageAction
-        size="small"
         icon={IconMoreV}
-        opened={isActionMenuOpened}
-        action={showMenu}
         label={view.string.MoreActions}
+        size={'small'}
+        opened={isActionMenuOpened}
+        dataId={'btnMoreActions'}
+        action={showMenu}
       />
     {/if}
   </div>
 {/if}
 
 <style lang="scss">
-  .root {
+  .activityMessage-actionPopup {
     display: flex;
     align-items: center;
     border-radius: 0.375rem;

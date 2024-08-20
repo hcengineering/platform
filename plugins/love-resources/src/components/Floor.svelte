@@ -26,7 +26,6 @@
 
   export let rooms: Room[] = []
   export let floor: Ref<Floor>
-  export let visibleNav: boolean
 
   const dispatch = createEventDispatcher()
 
@@ -45,7 +44,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header allowFullsize adaptive={'disabled'}>
     <Breadcrumb title={selectedFloor?.name ?? ''} size={'large'} isCurrent />
     <svelte:fragment slot="actions">
       {#if editable}

@@ -80,6 +80,10 @@
   }
 
   async function chooseToken (): Promise<void> {
+    if (page === 'auth') {
+      // token handled by auth page
+      return
+    }
     if (getMetadata(presentation.metadata.Token) == null) {
       const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
       if (lastToken != null) {

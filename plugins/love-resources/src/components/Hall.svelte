@@ -13,50 +13,76 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Contact, Person } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { Floor as FloorType, Office, Room, isOffice } from '@hcengineering/love'
-  import { activeFloor, floors, rooms } from '../stores'
+  import love, { Floor as FloorType, Office, Room, RoomInfo, isOffice } from '@hcengineering/love'
+  import { getClient } from '@hcengineering/presentation'
+  import { deviceOptionsStore as deviceInfo, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { onDestroy, onMount } from 'svelte'
+  import { activeFloor, floors, infos, invites, myInfo, myRequests, rooms, storePromise } from '../stores'
+  import { connectToMeeting, tryConnect } from '../utils'
   import Floor from './Floor.svelte'
   import FloorConfigure from './FloorConfigure.svelte'
   import Floors from './Floors.svelte'
-  import { Contact, Person } from '@hcengineering/contact'
-
-  export let visibleNav: boolean
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   function getRooms (rooms: Room[], floor: Ref<FloorType>): Room[] {
     return rooms.filter((p) => p.floor === floor)
   }
 
   let selectedFloor = $activeFloor === '' ? $floors[0]?._id : $activeFloor
-
   let configure: boolean = false
+  let replacedPanel: HTMLElement
 
   let excludedPersons: Ref<Contact>[] = []
   $: excludedPersons = $rooms
     .filter((p) => isOffice(p) && p.person !== null)
     .map((p) => (p as Office).person) as Ref<Person>[]
+
+  $: $deviceInfo.replacedPanel = replacedPanel
+  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
+
+  async function connectToSession (sessionId: string): Promise<void> {
+    const client = getClient()
+    const info = await client.findOne(love.class.RoomInfo, { _id: sessionId as Ref<RoomInfo> })
+    if (info === undefined) return
+    const room = $rooms.find((p) => p._id === info.room)
+    if (room === undefined) return
+    tryConnect(
+      $personByIdStore,
+      $myInfo,
+      room,
+      $infos.filter((p) => p.room === room._id),
+      $myRequests,
+      $invites
+    )
+  }
+
+  onMount(async () => {
+    const loc = getCurrentLocation()
+    const { sessionId, meetId, ...query } = loc.query ?? {}
+    loc.query = Object.keys(query).length === 0 ? undefined : query
+    navigate(loc, true)
+    if (sessionId != null) {
+      await $storePromise
+      await connectToSession(sessionId)
+    } else if (meetId != null) {
+      await $storePromise
+      await connectToMeeting($personByIdStore, $myInfo, $infos, $myRequests, $invites, meetId)
+    }
+  })
 </script>
 
-<Floors bind:visibleNav {navFloat} {appsDirection} bind:floor={selectedFloor} bind:configure />
-<div class="antiPanel-component filledNav">
+<Floors bind:floor={selectedFloor} bind:configure />
+<div class="antiPanel-component filledNav" bind:this={replacedPanel}>
   {#if configure}
     <FloorConfigure
       rooms={getRooms($rooms, selectedFloor)}
       floor={selectedFloor}
-      {visibleNav}
       {excludedPersons}
-      on:change={(event) => (visibleNav = event.detail)}
       on:configure={() => (configure = false)}
     />
   {:else}
-    <Floor
-      rooms={getRooms($rooms, selectedFloor)}
-      floor={selectedFloor}
-      {visibleNav}
-      on:change={(event) => (visibleNav = event.detail)}
-      on:configure={() => (configure = true)}
-    />
+    <Floor rooms={getRooms($rooms, selectedFloor)} floor={selectedFloor} on:configure={() => (configure = true)} />
   {/if}
 </div>

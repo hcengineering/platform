@@ -16,6 +16,7 @@
   import { Button, eventToHTMLElement, IconFilter, showPopup } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import activity, { ActivityMessagesFilter } from '@hcengineering/activity'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { getClient } from '@hcengineering/presentation'
   import { ActivityMessagesFilterPopup } from '@hcengineering/activity-resources'
 
@@ -41,4 +42,11 @@
   }
 </script>
 
-<Button icon={IconFilter} iconProps={{ size: 'small' }} kind="icon" on:click={handleClick} />
+<Button
+  icon={IconFilter}
+  kind={'regular'}
+  size={'medium'}
+  pressed={selectedFilters[0] !== activity.ids.AllFilter}
+  showTooltip={{ label: view.string.Filter }}
+  on:click={handleClick}
+/>

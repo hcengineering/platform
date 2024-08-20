@@ -92,10 +92,7 @@
       { ...nameQuery, ...senderQuery, ...spaceQuery, ...dateQuery, ...fileTypeQuery },
       {
         sort: sortModeToOptionObject(selectedSort_),
-        limit: 200,
-        lookup: {
-          file: core.class.Blob
-        }
+        limit: 200
       }
     )
     isLoading = false
@@ -121,12 +118,7 @@
     </div>
   </div>
 {/if}
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} on:change={() => {}} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-  </div>
+<div class="hulyHeader-container background-comp-header-color">
   <FileBrowserFilters
     {requestedSpaceClasses}
     {spaceId}
@@ -136,13 +128,13 @@
     bind:selectedFileTypeId
   />
 </div>
+<div class="hulyHeader-container justify-between">
+  <span class="caption-color ml-4">
+    <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
+  </span>
+  <FileBrowserSortMenu bind:selectedSort />
+</div>
 <div class="group">
-  <div class="groupHeader">
-    <div class="eGroupHeaderCount">
-      <Label label={attachment.string.FileBrowserFileCounter} params={{ results: attachments?.length ?? 0 }} />
-    </div>
-    <FileBrowserSortMenu bind:selectedSort />
-  </div>
   {#if isLoading}
     <div class="flex-grow">
       <Loading />
@@ -167,16 +159,5 @@
     flex-direction: column;
     padding: 1rem 0 1rem 0.5rem;
     height: 100%;
-  }
-
-  .groupHeader {
-    margin: 0 1.5rem 0.75rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-
-    .eGroupHeaderCount {
-      font-size: 0.75rem;
-      color: var(--caption-color);
-    }
   }
 </style>

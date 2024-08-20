@@ -14,11 +14,11 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --sourcemap=inline --minify --platform=node > bundle/bundle.js",
+    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --sourcemap=inline --platform=node --external:*.node --external:bufferutil --external:snappy > bundle/bundle.js",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/backup",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/backup staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/backup",
-    "run-local": "cross-env ACCOUNTS_URL=http://localhost:3000/ SECRET=secret MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws://localhost:3333 BUCKET_NAME=backups INTERVAL=30 ts-node src/index.ts",
+    "run-local": "cross-env ACCOUNTS_URL=http://localhost:3000/ SECRET=secret MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost BUCKET_NAME=backups INTERVAL=30 ts-node src/index.ts",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
     "_phase:build": "compile transpile src",
@@ -47,12 +47,15 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-pipeline": "^0.6.0",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/core": "^0.6.32",
     "dotenv": "~16.0.0",
-    "@hcengineering/backup-service": "^0.6.0"
+    "@hcengineering/backup-service": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
+    "@hcengineering/analytics-service": "^0.6.0"
   }
 }

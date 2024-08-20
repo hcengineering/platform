@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
+  import core, { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, Component, Loading } from '@hcengineering/ui'
@@ -14,6 +14,7 @@
 
   export let createItemDialog: AnySvelteComponent | undefined = undefined
   export let createItemLabel: IntlString | undefined = undefined
+  export let createItemEvent: string | undefined = undefined
   export let createItemDialogProps = { shouldSaveDraft: true }
 
   const hierarchy = getClient().getHierarchy()
@@ -44,6 +45,7 @@
     preferenceQuery.query(
       view.class.ViewletPreference,
       {
+        space: core.space.Workspace,
         attachedTo: { $in: configurationRaw.map((it) => it._id) }
       },
       (res) => {
@@ -91,6 +93,7 @@
         createItemDialog,
         createItemDialogProps,
         createItemLabel,
+        createItemEvent,
         viewlet,
         viewOptions,
         viewOptionsConfig: viewlet.viewOptions?.other,

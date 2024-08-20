@@ -338,6 +338,7 @@
       onChange={handleMembersChanged}
       kind={'regular'}
       size={'large'}
+      allowGuests
     />
 
     {#each roles as role}

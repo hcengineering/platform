@@ -24,10 +24,10 @@ export { serverDriveId } from '@hcengineering/server-drive'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverDrive.trigger.OnFileDelete,
+    trigger: serverDrive.trigger.OnFileVersionDelete,
     txMatch: {
       _class: core.class.TxRemoveDoc,
-      objectClass: drive.class.File
+      objectClass: drive.class.FileVersion
     }
   })
 
@@ -39,4 +39,18 @@ export function createModel (builder: Builder): void {
       collectDocs: serverDrive.function.FindFolderResources
     }
   )
+
+  builder.mixin(drive.class.File, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      icon: drive.icon.File,
+      title: 'name'
+    }
+  })
+
+  builder.mixin(drive.class.Folder, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchConfig: {
+      icon: drive.icon.Folder,
+      title: 'name'
+    }
+  })
 }

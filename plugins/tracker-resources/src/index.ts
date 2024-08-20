@@ -30,13 +30,14 @@ import core, {
   type Ref,
   type RelatedDocument,
   type TxOperations,
+  type DocManager,
   AccountRole
 } from '@hcengineering/core'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { type Status, translate, type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
-import { type Issue, type Milestone, type Project } from '@hcengineering/tracker'
-import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
+import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
+import { closePanel, getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
 import ComponentPresenter from './components/components/ComponentPresenter.svelte'
@@ -89,6 +90,7 @@ import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svel
 import IssueExtra from './components/issues/IssueExtra.svelte'
 import IssueStatusPresenter from './components/issues/IssueStatusPresenter.svelte'
 import {
+  getIssueIdByIdentifier,
   getIssueTitle,
   getTitle,
   issueIdentifierProvider,
@@ -121,7 +123,7 @@ import ComponentSelector from './components/components/ComponentSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
-import { deleteObject, deleteObjects } from '@hcengineering/view-resources'
+import { deleteObject, deleteObjects, AggregationManager } from '@hcengineering/view-resources'
 import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMilestonePopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
@@ -142,7 +144,7 @@ import {
   subIssueQuery
 } from './utils'
 
-import { ComponentAggregationManager, grouppingComponentManager } from './component'
+import { componentStore, grouppingComponentManager } from './component'
 import PriorityIcon from './components/activity/PriorityIcon.svelte'
 import StatusIcon from './components/activity/StatusIcon.svelte'
 import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
@@ -266,6 +268,7 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
         await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => {
           console.error(err)
         })
+        closePanel()
       }
     }
   )
@@ -590,6 +593,14 @@ export async function importTasks (tasks: File, space: Ref<Project>): Promise<vo
   }
 }
 
+function filterComponents (doc: Component, target: Component): boolean {
+  return doc.label.toLowerCase().trim() === target.label.toLowerCase().trim() && doc._id !== target._id
+}
+
+function setStore (manager: DocManager<Component>): void {
+  componentStore.set(manager)
+}
+
 export default async (): Promise<Resources> => ({
   activity: {
     PriorityIcon,
@@ -689,6 +700,7 @@ export default async (): Promise<Resources> => ({
     ComponentTitleProvider: getComponentTitle,
     MilestoneTitleProvider: getMilestoneTitle,
     GetIssueId: getTitle,
+    GetIssueIdByIdentifier: getIssueIdByIdentifier,
     GetIssueLink: issueLinkProvider,
     GetIssueLinkFragment: issueLinkFragmentProvider,
     GetIssueTitle: getIssueTitle,
@@ -708,7 +720,9 @@ export default async (): Promise<Resources> => ({
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
     IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
-    GetIssueStatusCategories: getIssueStatusCategories
+    GetIssueStatusCategories: getIssueStatusCategories,
+    SetComponentStore: setStore,
+    ComponentFilterFunction: filterComponents
   },
   actionImpl: {
     Move: move,
@@ -724,7 +738,7 @@ export default async (): Promise<Resources> => ({
   },
   aggregation: {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    CreateComponentAggregationManager: ComponentAggregationManager.create,
+    CreateComponentAggregationManager: AggregationManager.create,
     GrouppingComponentManager: grouppingComponentManager
   }
 })

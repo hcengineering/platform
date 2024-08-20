@@ -25,6 +25,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="menu-item" on:click={() => dispatch('close', 1)}>
@@ -57,6 +58,7 @@
       {/if}
     </div>
   {/if}
+  <div class="menu-space" />
 </div>
 
 <style lang="scss">

@@ -2,7 +2,7 @@
   import { Class, Doc, Ref, toIdMap } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
-  import { ButtonKind, DropdownLabels } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, DropdownLabels } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { selectedTaskTypeStore, taskTypeStore } from '../..'
 
@@ -11,7 +11,9 @@
   export let focusIndex: number = -1
   export let baseClass: Ref<Class<Doc>> | undefined = undefined
   export let kind: ButtonKind = 'regular'
+  export let size: ButtonSize = 'medium'
   export let allTypes = false
+
   const client = getClient()
 
   $: taskTypeDescriptors = toIdMap(client.getModel().findAllSync(task.class.TaskTypeDescriptor, {}))
@@ -45,5 +47,14 @@
 </script>
 
 {#if projectType !== undefined && items.length > 1}
-  <DropdownLabels {focusIndex} {kind} {items} bind:selected={value} enableSearch={false} on:selected={change} />
+  <DropdownLabels
+    {focusIndex}
+    {kind}
+    {size}
+    {items}
+    dataId={'btnSelectTaskType'}
+    bind:selected={value}
+    enableSearch={false}
+    on:selected={change}
+  />
 {/if}

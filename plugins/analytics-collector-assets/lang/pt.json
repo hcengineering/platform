@@ -1,0 +1,13 @@
+{
+  "string": {
+    "AnalyticsChannelDescription": "User: {user}; Workspace id: {workspace}",
+    "Error": "Error: ",
+    "InProject": " in project ",
+    "NavigateToSpecial": "{app}: open {special}",
+    "OpenSpecial": "open {special} ",
+    "Set": "Set ",
+    "To": " to ",
+    "Open": "open ",
+    "Workbench": "Workbench: "
+  }
+}

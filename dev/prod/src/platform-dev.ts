@@ -13,21 +13,18 @@
 // limitations under the License.
 //
 
-import { addLocation } from '@hcengineering/platform'
+import { devModelId } from '@hcengineering/devmodel'
+import { PresentationClientHook } from '@hcengineering/devmodel-resources'
 import login from '@hcengineering/login'
-import { setMetadata } from '@hcengineering/platform'
-import devmodel, { devModelId } from '@hcengineering/devmodel'
-import client from '@hcengineering/client'
+import { addLocation, setMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 
 export function configurePlatformDevServer() {  
-  console.log('Use Endpoint override:', process.env.LOGIN_ENDPOINT)
-  setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
-
   // Set devmodel to hook client to be able to present all activity
   enableDevModel()
 }
 
 function enableDevModel() {
-  setMetadata(client.metadata.ClientHook, devmodel.hook.Hook)
+  setMetadata(presentation.metadata.ClientHook, new PresentationClientHook())
   addLocation(devModelId, () => import(/* webpackChunkName: "devmodel" */ '@hcengineering/devmodel-resources'))
 }

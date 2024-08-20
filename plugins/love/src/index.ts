@@ -1,5 +1,6 @@
+import { Event } from '@hcengineering/calendar'
 import { Person } from '@hcengineering/contact'
-import { Class, Doc, Ref, Space } from '@hcengineering/core'
+import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
@@ -10,6 +11,8 @@ import { Action } from '@hcengineering/view'
 export const loveId = 'love' as Plugin
 export type { ScreenSource } from './utils'
 export const GRID_WIDTH = 15
+
+export * from './analytics'
 
 export enum RoomAccess {
   Open,
@@ -50,12 +53,17 @@ export interface ParticipantInfo extends Doc {
   room: Ref<Room>
   x: number
   y: number
+  sessionId: string | null
 }
 
 export interface RoomInfo extends Doc {
   persons: Ref<Person>[]
   room: Ref<Room>
   isOffice: boolean
+}
+
+export interface Meeting extends Event {
+  room: Ref<Room>
 }
 
 export enum RequestStatus {
@@ -96,6 +104,9 @@ const love = plugin(loveId, {
     DevicesPreference: '' as Ref<Class<DevicesPreference>>,
     RoomInfo: '' as Ref<Class<RoomInfo>>,
     Invite: '' as Ref<Class<Invite>>
+  },
+  mixin: {
+    Meeting: '' as Ref<Mixin<Meeting>>
   },
   action: {
     ToggleMic: '' as Ref<Action>,
@@ -140,12 +151,14 @@ const love = plugin(loveId, {
     ExitFullScreen: '' as Asset,
     Invite: '' as Asset
   },
+  sound: {
+    Knock: '' as Asset
+  },
   metadata: {
     WebSocketURL: '' as Metadata<string>,
     ServiceEnpdoint: '' as Metadata<string>
   },
   space: {
-    Rooms: '' as Ref<Space>,
     Drive: '' as Ref<Drive>
   },
   component: {

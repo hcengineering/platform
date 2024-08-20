@@ -35,6 +35,7 @@
   export let createItemDialog: AnyComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined = undefined
   export let createItemLabel: IntlString | undefined
+  export let createItemEvent: string | undefined
   export let viewOptions: ViewOptions
   export let props: Record<string, any> = {}
 
@@ -88,6 +89,7 @@
       {createItemDialog}
       {createItemDialogProps}
       {createItemLabel}
+      {createItemEvent}
       {viewOptions}
       {props}
       {listProvider}

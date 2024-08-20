@@ -25,6 +25,7 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
+import contact from '@hcengineering/contact'
 
 import activity from './plugin'
 import { activityId, DOMAIN_ACTIVITY } from './index'
@@ -195,8 +196,18 @@ export const activityOperation: MigrateOperation = {
             ({ attachedToClass }) => attachedToClass
           )
         }
+      },
+      {
+        state: 'migrate-employee-space-v1',
+        func: async () => {
+          await client.update<ActivityMessage>(
+            DOMAIN_ACTIVITY,
+            { space: 'contact:space:Employee' as Ref<Space> },
+            { space: contact.space.Contacts }
+          )
+        }
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

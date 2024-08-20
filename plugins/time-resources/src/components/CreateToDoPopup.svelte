@@ -16,12 +16,12 @@
   import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { TimeEvents, ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
   import { Calendar, generateEventId } from '@hcengineering/calendar'
   import tagsPlugin, { TagReference } from '@hcengineering/tags'
   import { createEventDispatcher } from 'svelte'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
   import { PersonAccount } from '@hcengineering/contact'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
   import task, { makeRank } from '@hcengineering/task'
@@ -29,6 +29,7 @@
   import DueDateEditor from './DueDateEditor.svelte'
   import Workslots from './Workslots.svelte'
   import time from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let object: Doc | undefined
 
@@ -84,7 +85,7 @@
         rank: makeRank(undefined, latestTodo?.rank)
       }
     )
-    const _calendar = `${acc._id}_calendar` as Ref<Calendar>
+    Analytics.handleEvent(TimeEvents.ToDoCreated, { id })
     for (const slot of slots) {
       await ops.addCollection(time.class.WorkSlot, calendar.space.Calendar, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
@@ -99,6 +100,7 @@
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
         reminders: []
       })
+      Analytics.handleEvent(TimeEvents.ToDoScheduled, { id })
     }
     for (const tag of tags) {
       await ops.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
@@ -111,7 +113,7 @@
   let _calendar: Ref<Calendar> = `${currentUser._id}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, members: currentUser._id }, (res) => {
+  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, createdBy: currentUser._id }, (res) => {
     if (res.length > 0) {
       _calendar = res[0]._id
     }

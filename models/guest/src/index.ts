@@ -12,7 +12,7 @@ import core, { TDoc } from '@hcengineering/model-core'
 import { type Location } from '@hcengineering/ui'
 import guest from './plugin'
 
-const GUEST_DOMAIN = 'guest' as Domain
+export const GUEST_DOMAIN = 'guest' as Domain
 
 @Model(guest.class.PublicLink, core.class.Doc, GUEST_DOMAIN)
 export class TPublicLink extends TDoc implements PublicLink {

@@ -15,7 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
+import client, { ClientSocket, ClientSocketReadyState, type ClientFactoryOptions } from '@hcengineering/client'
 import core, {
   Account,
   Class,
@@ -28,7 +28,6 @@ import core, {
   FindOptions,
   FindResult,
   LoadModelResponse,
-  MeasureDoneOperation,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -38,14 +37,12 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
-  TxWorkspaceEvent,
-  WorkspaceEvent,
   generateId,
   toFindResult
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
-import { HelloRequest, HelloResponse, ReqId, readResponse, serialize, type Response } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, RPCHandler, ReqId, type Response } from '@hcengineering/rpc'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -94,14 +91,16 @@ class Connection implements ClientConnection {
 
   private pingResponse: number = Date.now()
 
+  private helloRecieved: boolean = false
+
+  rpcHandler = new RPCHandler()
+
   constructor (
     private readonly url: string,
     private readonly handler: TxHandler,
     readonly workspace: string,
     readonly email: string,
-    private readonly onUpgrade?: () => void,
-    private readonly onUnauthorized?: () => void,
-    readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
+    readonly opt?: ClientFactoryOptions
   ) {
     if (typeof sessionStorage !== 'undefined') {
       // Find local session id in session storage only if user refresh a page.
@@ -176,7 +175,7 @@ class Connection implements ClientConnection {
   }
 
   isConnected (): boolean {
-    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN
+    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN && this.helloRecieved
   }
 
   delay = 0
@@ -228,7 +227,7 @@ class Connection implements ClientConnection {
         Analytics.handleError(new PlatformError(resp.error))
         this.closed = true
         this.websocket?.close()
-        this.onUnauthorized?.()
+        this.opt?.onUnauthorized?.()
       }
       console.error(resp.error)
       return
@@ -237,15 +236,19 @@ class Connection implements ClientConnection {
     if (resp.id === -1) {
       this.delay = 0
       if (resp.result?.state === 'upgrading') {
-        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        void this.opt?.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
         this.upgrading = true
         this.delay = 3
         return
       }
       if (resp.result === 'hello') {
+        // We need to clear dial timer, since we recieve hello response.
+        clearTimeout(this.dialTimer)
+        this.dialTimer = null
+        this.helloRecieved = true
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
-          this.onUpgrade?.()
+          this.opt?.onUpgrade?.()
         }
 
         this.upgrading = false
@@ -262,8 +265,9 @@ class Connection implements ClientConnection {
           v.reconnect?.()
         }
 
-        void this.onConnect?.(
-          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
+        void this.opt?.onConnect?.(
+          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
+          this.sessionId
         )
         this.schedulePing(socketId)
         return
@@ -356,12 +360,9 @@ class Connection implements ClientConnection {
       const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
 
       for (const tx of txArr) {
-        if (
-          (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
-          tx?._class === core.class.TxModelUpgrade
-        ) {
+        if (tx?._class === core.class.TxModelUpgrade) {
           console.log('Processing upgrade', this.workspace, this.email)
-          this.onUpgrade?.()
+          this.opt?.onUpgrade?.()
           return
         }
       }
@@ -399,11 +400,15 @@ class Connection implements ClientConnection {
     this.websocket = wsocket
     const opened = false
 
-    this.dialTimer = setTimeout(() => {
-      if (!opened && !this.closed) {
-        this.scheduleOpen(true)
-      }
-    }, dialTimeout)
+    if (this.dialTimer != null) {
+      this.dialTimer = setTimeout(() => {
+        this.dialTimer = null
+        if (!opened && !this.closed) {
+          void this.opt?.onDialTimeout?.()
+          this.scheduleOpen(true)
+        }
+      }, dialTimeout)
+    }
 
     wsocket.onmessage = (event: MessageEvent) => {
       if (this.closed) {
@@ -414,19 +419,17 @@ class Connection implements ClientConnection {
       }
       if (event.data instanceof Blob) {
         void event.data.arrayBuffer().then((data) => {
-          const resp = readResponse<any>(data, this.binaryMode)
+          const resp = this.rpcHandler.readResponse<any>(data, this.binaryMode)
           this.handleMsg(socketId, resp)
         })
       } else {
-        const resp = readResponse<any>(event.data, this.binaryMode)
+        const resp = this.rpcHandler.readResponse<any>(event.data, this.binaryMode)
         this.handleMsg(socketId, resp)
       }
     }
     wsocket.onclose = (ev) => {
-      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         wsocket.close()
-        clearTimeout(this.dialTimer)
         return
       }
       // console.log('client websocket closed', socketId, ev?.reason)
@@ -439,7 +442,7 @@ class Connection implements ClientConnection {
       }
       const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
       const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
-      clearTimeout(this.dialTimer)
+      this.helloRecieved = false
       const helloRequest: HelloRequest = {
         method: 'hello',
         params: [],
@@ -447,11 +450,10 @@ class Connection implements ClientConnection {
         binary: useBinary,
         compression: useCompression
       }
-      this.websocket?.send(serialize(helloRequest, false))
+      this.websocket?.send(this.rpcHandler.serialize(helloRequest, false))
     }
 
     wsocket.onerror = (event: any) => {
-      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         return
       }
@@ -481,8 +483,9 @@ class Connection implements ClientConnection {
 
     if (data.once === true) {
       // Check if has same request already then skip
+      const dparams = JSON.stringify(data.params)
       for (const [, v] of this.requests) {
-        if (v.method === data.method && JSON.stringify(v.params) === JSON.stringify(data.params)) {
+        if (v.method === data.method && JSON.stringify(v.params) === dparams) {
           // We have same unanswered, do not add one more.
           return
         }
@@ -501,8 +504,9 @@ class Connection implements ClientConnection {
     const sendData = async (): Promise<void> => {
       if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
         promise.startTime = Date.now()
+
         this.websocket?.send(
-          serialize(
+          this.rpcHandler.serialize(
             {
               method: data.method,
               params: data.params,
@@ -527,26 +531,6 @@ class Connection implements ClientConnection {
     void sendData()
     void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
-  }
-
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
-    const dateNow = Date.now()
-
-    // Send measure-start
-    const mid = await this.sendRequest({
-      method: 'measure',
-      params: [operationName]
-    })
-    return async () => {
-      const serverTime: number = await this.sendRequest({
-        method: 'measure-done',
-        params: [operationName, mid]
-      })
-      return {
-        time: Date.now() - dateNow,
-        serverTime
-      }
-    }
   }
 
   async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
@@ -666,11 +650,7 @@ export function connect (
   handler: TxHandler,
   workspace: string,
   user: string,
-  onUpgrade?: () => void,
-  onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent, data?: any) => void
+  opt?: ClientFactoryOptions
 ): ClientConnection {
-  return new Connection(url, handler, workspace, user, onUpgrade, onUnauthorized, async (event, data) => {
-    onConnect?.(event, data)
-  })
+  return new Connection(url, handler, workspace, user, opt)
 }

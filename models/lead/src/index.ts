@@ -47,16 +47,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(lead.mixin.Customer, core.class.Class, activity.mixin.ActivityDoc, {})
 
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: lead.class.Lead,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
   builder.mixin(lead.class.Funnel, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
@@ -117,7 +107,7 @@ export function createModel (builder: Builder): void {
             accessLevel: AccountRole.User,
             componentProps: {
               _class: lead.mixin.Customer,
-              icon: lead.icon.Lead,
+              icon: contact.icon.Person,
               label: lead.string.Customers
             },
             position: 'top'
@@ -125,12 +115,13 @@ export function createModel (builder: Builder): void {
           {
             id: 'funnels',
             component: workbench.component.SpecialView,
-            icon: view.icon.List,
+            icon: lead.icon.Funnels,
             label: lead.string.Funnels,
             position: 'bottom',
             accessLevel: AccountRole.User,
             componentProps: {
               _class: lead.class.Funnel,
+              icon: lead.icon.Funnels,
               label: lead.string.Funnels,
               createComponent: lead.component.CreateFunnel,
               createLabel: lead.string.CreateFunnel
@@ -226,6 +217,12 @@ export function createModel (builder: Builder): void {
         'status',
         'attachments',
         'comments',
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         'modifiedOn',
         {
           key: '$lookup.attachedTo.$lookup.channels',
@@ -293,6 +290,12 @@ export function createModel (builder: Builder): void {
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.attachedTo.$lookup.channels',
@@ -367,11 +370,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
         subjectTemplate: '{doc} was assigned to you'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     lead.ids.AssigneeNotification
   )
@@ -420,9 +419,11 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: lead.class.Funnel,
       spaceSubscribe: true,
-      providers: {
-        [notification.providers.PlatformNotification]: false,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     lead.ids.LeadCreateNotification
@@ -442,7 +443,7 @@ export function createModel (builder: Builder): void {
         groupDepth: 1
       },
       options: lookupLeadOptions,
-      config: ['attachedTo', 'attachments', 'comments', 'dueDate', 'assignee'],
+      config: ['attachedTo', 'status', 'attachments', 'comments', 'dueDate', 'assignee'],
       configOptions: {
         strict: true
       }

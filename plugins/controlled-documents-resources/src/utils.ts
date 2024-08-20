@@ -15,6 +15,7 @@ import core, {
   type AttachedData,
   type Class,
   type Doc,
+  type DocumentQuery,
   type Hierarchy,
   type Ref,
   type Tx,
@@ -30,10 +31,11 @@ import core, {
 } from '@hcengineering/core'
 import { type IntlString, getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, { copyDocumentContent, getClient } from '@hcengineering/presentation'
-import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
+import { type Person, type Employee, type PersonAccount } from '@hcengineering/contact'
 import request, { RequestStatus } from '@hcengineering/request'
-import textEditor, { isEmptyMarkup } from '@hcengineering/text-editor'
-import { getEventPositionElement, showPopup, type Location } from '@hcengineering/ui'
+import textEditor from '@hcengineering/text-editor'
+import { isEmptyMarkup } from '@hcengineering/text'
+import { getEventPositionElement, showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
 import { type KeyFilter } from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
 import documents, {
@@ -311,16 +313,6 @@ export async function sendReviewRequest (
   controlledDoc: ControlledDocument,
   reviewers: Array<Ref<Employee>>
 ): Promise<void> {
-  const reviewersAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: reviewers } })
-
-  if (reviewersAccounts.length === 0) {
-    return
-  }
-
-  if (reviewersAccounts.length < reviewers.length) {
-    console.warn('Number of user accounts is less than requested for document review request')
-  }
-
   const approveTx = client.txFactory.createTxUpdateDoc(controlledDoc._class, controlledDoc.space, controlledDoc._id, {
     controlledState: ControlledDocumentState.Reviewed
   })
@@ -336,7 +328,7 @@ export async function sendReviewRequest (
     controlledDoc._class,
     documents.class.DocumentReviewRequest,
     controlledDoc.space,
-    reviewersAccounts.map((u) => u._id),
+    reviewers,
     approveTx,
     undefined,
     true
@@ -348,16 +340,6 @@ export async function sendApprovalRequest (
   controlledDoc: ControlledDocument,
   approvers: Array<Ref<Employee>>
 ): Promise<void> {
-  const approversAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: approvers } })
-
-  if (approversAccounts.length === 0) {
-    return
-  }
-
-  if (approversAccounts.length < approvers.length) {
-    console.warn('Number of user accounts is less than requested for document approval request')
-  }
-
   const approveTx = client.txFactory.createTxUpdateDoc(controlledDoc._class, controlledDoc.space, controlledDoc._id, {
     controlledState: ControlledDocumentState.Approved
   })
@@ -377,7 +359,7 @@ export async function sendApprovalRequest (
     controlledDoc._class,
     documents.class.DocumentApprovalRequest,
     controlledDoc.space,
-    approversAccounts.map((u) => u._id),
+    approvers,
     approveTx,
     rejectTx,
     true
@@ -390,7 +372,7 @@ async function createRequest<T extends Doc> (
   attachedToClass: Ref<Class<T>>,
   reqClass: Ref<Class<Request>>,
   space: Ref<DocumentSpace>,
-  users: Array<Ref<PersonAccount>>,
+  users: Array<Ref<Person>>,
   approveTx: Tx,
   rejectedTx?: Tx,
   areAllApprovesRequired = true
@@ -427,7 +409,7 @@ export async function completeRequest (
 ): Promise<void> {
   const req = await getActiveRequest(client, reqClass, controlledDoc)
 
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const me = (getCurrentAccount() as PersonAccount).person
 
   if (req == null || !req.requested.includes(me) || req.approved.includes(me)) {
     return
@@ -463,7 +445,7 @@ export async function rejectRequest (
     return
   }
 
-  const me = getCurrentAccount()._id as Ref<PersonAccount>
+  const me = (getCurrentAccount() as PersonAccount).person
 
   await saveComment(rejectionNote, req)
 
@@ -623,7 +605,8 @@ export async function canCreateChildTemplate (
 }
 
 export async function canCreateChildDocument (
-  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[]
+  doc?: Document | Document[] | DocumentSpace | DocumentSpace[] | ProjectDocument | ProjectDocument[],
+  includeProjects = false
 ): Promise<boolean> {
   if (doc === null || doc === undefined) {
     return false
@@ -643,7 +626,7 @@ export async function canCreateChildDocument (
 
   if (isSpace(hierarchy, doc)) {
     const spaceType = await client.findOne(documents.class.DocumentSpaceType, { _id: doc.type })
-    return spaceType?.projects !== true
+    return includeProjects || spaceType?.projects !== true
   }
 
   if (isProjectDocument(hierarchy, doc)) {
@@ -689,16 +672,22 @@ export function setCurrentProject (space: Ref<DocumentSpace>, project: Ref<Proje
   }
 }
 
-async function getLatestProject (space: Ref<DocumentSpace>): Promise<Project | undefined> {
+async function getLatestProject (space: Ref<DocumentSpace>, includeReadonly = false): Promise<Project | undefined> {
   const client = getClient()
-  return await client.findOne(
-    documents.class.Project,
-    { space },
-    { limit: 1, sort: { createdOn: SortingOrder.Descending } }
-  )
+
+  // TODO we should use better approach on selecting the latest available project
+  // consider assigning sequential numbers to projects
+  const query: DocumentQuery<Project> = includeReadonly ? { space } : { space, readonly: false }
+  return await client.findOne(documents.class.Project, query, {
+    limit: 1,
+    sort: { createdOn: SortingOrder.Descending }
+  })
 }
 
-export async function getLatestProjectId (spaceRef: Ref<DocumentSpace>): Promise<Ref<Project> | undefined> {
+export async function getLatestProjectId (
+  spaceRef: Ref<DocumentSpace>,
+  includeReadonly = false
+): Promise<Ref<Project> | undefined> {
   const client = getClient()
   const space = await client.findOne(
     documents.class.DocumentSpace,
@@ -714,7 +703,7 @@ export async function getLatestProjectId (spaceRef: Ref<DocumentSpace>): Promise
 
   if (space !== undefined) {
     if (space.$lookup?.type?.projects ?? false) {
-      const project = await getLatestProject(spaceRef)
+      const project = await getLatestProject(spaceRef, includeReadonly)
       return project?._id
     } else {
       return documents.ids.NoProject
@@ -826,4 +815,19 @@ export async function createTemplate (space: OrgSpace): Promise<void> {
   const project = await getLatestProjectId(space._id)
   wizardOpened({ $$currentStep: 'info', location: { space: space._id, project: project ?? documents.ids.NoProject } })
   showPopup(documents.component.QmsTemplateWizard, {})
+}
+
+export function formatSignatureDate (date: number): string {
+  const timeZone: string = getUserTimezone()
+
+  return new Date(date).toLocaleDateString('default', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone,
+    timeZoneName: 'short',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric'
+  })
 }

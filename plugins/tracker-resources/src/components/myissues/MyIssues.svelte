@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { PersonAccount } from '@hcengineering/contact'
   import { Doc, DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
+  import type { IntlString, Asset } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
@@ -26,6 +26,7 @@
   import IssuesView from '../issues/IssuesView.svelte'
 
   export let config: [string, IntlString, object][] = []
+  export let icon: Asset | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const currentUser = getCurrentAccount() as PersonAccount
@@ -74,16 +75,16 @@
     { sort: { _id: 1 }, projection: { _id: 1 } }
   )
 
-  const archivedProjectQuery = createQuery()
-  let archived: Ref<Project>[] = []
+  const allProjectQuery = createQuery()
+  let allProjects: Pick<Project, '_class' | '_id' | 'archived'>[] = []
 
-  archivedProjectQuery.query(
+  allProjectQuery.query(
     tracker.class.Project,
-    { archived: true },
+    {},
     (res) => {
-      archived = res.map((it) => it._id)
+      allProjects = res
     },
-    { projection: { _id: 1 } }
+    { projection: { _id: 1, archived: 1 } }
   )
 
   $: queries = { assigned, active, backlog, created, subscribed }
@@ -94,7 +95,7 @@
   $: if (mode !== undefined) {
     query = { ...(queries as any)[mode] }
     if (query?.space === undefined) {
-      query = { ...query, space: { $nin: archived } }
+      query = { ...query, space: { $in: allProjects.filter((it) => !it.archived).map((it) => it._id) } }
     }
     modeSelectorProps = {
       config,
@@ -105,5 +106,5 @@
 </script>
 
 {#if query !== undefined && modeSelectorProps !== undefined}
-  <IssuesView {query} space={undefined} title={tracker.string.MyIssues} {modeSelectorProps} />
+  <IssuesView {query} space={undefined} {icon} title={tracker.string.MyIssues} {modeSelectorProps} />
 {/if}

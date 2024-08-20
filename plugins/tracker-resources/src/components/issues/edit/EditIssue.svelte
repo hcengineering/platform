@@ -15,9 +15,7 @@
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
-  import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource } from '@hcengineering/platform'
   import presentation, {
     ActionContext,
     ComponentExtensions,
@@ -27,7 +25,7 @@
   } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { Issue } from '@hcengineering/tracker'
+  import { Issue, TrackerEvents } from '@hcengineering/tracker'
   import {
     AnyComponent,
     Button,
@@ -43,8 +41,11 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { Analytics } from '@hcengineering/analytics'
+
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { generateIssueShortLink } from '../../../issues'
+  import { generateIssueShortLink, getIssueIdByIdentifier } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
@@ -52,13 +53,13 @@
   import SubIssueSelector from './SubIssueSelector.svelte'
   import SubIssues from './SubIssues.svelte'
 
-  export let _id: Ref<Issue>
+  export let _id: Ref<Issue> | string
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
   export let readonly: boolean = false
 
-  let lastId: Ref<Doc> = _id
+  let lastId: Ref<Issue> | undefined
+
   const queryClient = createQuery()
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -70,28 +71,39 @@
   let descriptionBox: AttachmentStyleBoxCollabEditor
   let showAllMixins: boolean
 
-  const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
+  const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  $: read(_id)
-  function read (_id: Ref<Doc>): void {
-    if (lastId !== _id) {
+  let issueId: Ref<Issue> | undefined
+
+  $: void getIssueIdByIdentifier(_id).then((res) => {
+    issueId = res ?? (_id as Ref<Issue>)
+
+    if (lastId === undefined) {
+      lastId = issueId
+    }
+  })
+
+  $: read(issueId)
+
+  function read (_id?: Ref<Issue>): void {
+    if (_id && lastId && lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void inboxClient.then((client) => client.readDoc(getClient(), prev))
+      void inboxClient.readDoc(getClient(), prev)
     }
   }
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    if (issueId === undefined) return
+    void inboxClient.readDoc(getClient(), issueId)
   })
 
-  $: _id !== undefined &&
-    _class !== undefined &&
+  $: if (issueId !== undefined && _class !== undefined) {
     queryClient.query<Issue>(
       _class,
-      { _id },
+      { _id: issueId },
       async (result) => {
-        if (lastId !== _id) {
+        if (lastId !== issueId) {
           await save()
         }
         ;[issue] = result
@@ -103,6 +115,7 @@
         limit: 1
       }
     )
+  }
 
   $: canSave = title.trim().length > 0
   $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent
@@ -117,6 +130,7 @@
 
     if (trimmedTitle.length > 0 && trimmedTitle !== issue.title?.trim()) {
       await client.update(issue, { title: trimmedTitle })
+      Analytics.handleEvent(TrackerEvents.IssueTitleUpdated, { issue: issue.identifier ?? issue._id })
     }
   }
 
@@ -181,9 +195,9 @@
     isAside={true}
     isSub={false}
     {embedded}
-    {kind}
     withoutActivity={false}
     printAside={true}
+    adaptive={'default'}
     bind:content
     bind:innerWidth
     on:open
@@ -222,13 +236,20 @@
 
     <svelte:fragment slot="utils">
       {#if !readonly}
-        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          dataId={'btnMoreActions'}
+          on:click={showContextMenu}
+        />
         <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
         <Button
           icon={setting.icon.Setting}
           kind={'icon'}
           iconProps={{ size: 'medium' }}
           showTooltip={{ label: setting.string.ClassSetting }}
+          dataId={'btnClassSetting'}
           on:click={(ev) => {
             ev.stopPropagation()
             const loc = getCurrentResolvedLocation()
@@ -247,6 +268,7 @@
         iconProps={{ size: 'medium' }}
         kind={'icon'}
         selected={showAllMixins}
+        dataId={'btnMixin'}
         on:click={() => {
           showAllMixins = !showAllMixins
         }}
@@ -273,6 +295,7 @@
         {readonly}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
+        identifier={issue?.identifier}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
         boundary={content}
         on:saved={(evt) => {

@@ -18,8 +18,14 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { activityMessagesComparator, combineActivityMessages, messageInFocus } from '@hcengineering/activity-resources'
 import {
+  activityMessagesComparator,
+  combineActivityMessages,
+  isActivityMessageClass,
+  isReactionMessage,
+  messageInFocus
+} from '@hcengineering/activity-resources'
+import core, {
   SortingOrder,
   getCurrentAccount,
   type Class,
@@ -31,45 +37,67 @@ import {
 } from '@hcengineering/core'
 import notification, {
   NotificationStatus,
-  decodeObjectURI,
-  encodeObjectURI,
   notificationId,
   type ActivityInboxNotification,
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification,
-  type MentionInboxNotification
+  type MentionInboxNotification,
+  type BaseNotificationType,
+  type NotificationProvider,
+  type NotificationProviderSetting,
+  type NotificationTypeSetting
 } from '@hcengineering/notification'
-import { MessageBox, getClient } from '@hcengineering/presentation'
+import { MessageBox, getClient, createQuery } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
+  locationStorageKeyId,
   navigate,
   parseLocation,
   showPopup,
   type Location,
-  type ResolvedLocation,
-  locationStorageKeyId
+  type ResolvedLocation
 } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
+import chunter, { type ThreadMessage } from '@hcengineering/chunter'
+import { getMetadata } from '@hcengineering/platform'
+import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
+import { getObjectLinkId } from '@hcengineering/view-resources'
+import { Analytics } from '@hcengineering/analytics'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
-import { getMetadata } from '@hcengineering/platform'
+
+export const providersSettings = writable<NotificationProviderSetting[]>([])
+export const typesSettings = writable<NotificationTypeSetting[]>([])
+
+const providerSettingsQuery = createQuery(true)
+const typeSettingsQuery = createQuery(true)
+
+export function loadNotificationSettings (): void {
+  providerSettingsQuery.query(
+    notification.class.NotificationProviderSetting,
+    { space: core.space.Workspace },
+    (res) => {
+      providersSettings.set(res)
+    }
+  )
+
+  typeSettingsQuery.query(notification.class.NotificationTypeSetting, { space: core.space.Workspace }, (res) => {
+    typesSettings.set(res)
+  })
+}
+
+loadNotificationSettings()
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  if (docNotifyContext.hidden) {
-    return false
-  }
-  return docNotifyContext.isPinned !== true
+  return !docNotifyContext.isPinned
 }
 
 export async function hasDocNotifyContextUnpinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  if (docNotifyContext.hidden) {
-    return false
-  }
-  return docNotifyContext.isPinned === true
+  return docNotifyContext.isPinned
 }
 
 /**
@@ -100,8 +128,7 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
 
-  const doneOp = await getClient().measure('readNotifyContext')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'readNotifyContext')
   try {
     await inboxClient.readNotifications(
       ops,
@@ -110,7 +137,6 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -126,8 +152,7 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
     return
   }
 
-  const doneOp = await getClient().measure('unReadNotifyContext')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'unReadNotifyContext')
 
   try {
     await inboxClient.unreadNotifications(
@@ -147,7 +172,6 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -159,13 +183,12 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     return
   }
 
-  const doneOp = await getClient().measure('archiveContextNotifications')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'archiveContextNotifications')
 
   try {
     const notifications = await ops.findAll(
       notification.class.InboxNotification,
-      { docNotifyContext: doc._id, archived: { $ne: true } },
+      { docNotifyContext: doc._id, archived: false },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
@@ -175,7 +198,6 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -187,8 +209,7 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     return
   }
 
-  const doneOp = await getClient().measure('unarchiveContextNotifications')
-  const ops = getClient().apply(doc._id)
+  const ops = getClient().apply(doc._id, 'unarchiveContextNotifications')
 
   try {
     const notifications = await ops.findAll(
@@ -202,7 +223,6 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     }
   } finally {
     await ops.commit()
-    await doneOp()
   }
 }
 
@@ -255,9 +275,9 @@ async function updateMeInCollaborators (
 /**
  * @public
  */
-export async function unsubscribe (object: DocNotifyContext): Promise<void> {
+export async function unsubscribe (context: DocNotifyContext): Promise<void> {
   const client = getClient()
-  await updateMeInCollaborators(client, object.attachedToClass, object.attachedTo, OpWithMe.Remove)
+  await updateMeInCollaborators(client, context.objectClass, context.objectId, OpWithMe.Remove)
 }
 
 /**
@@ -470,7 +490,7 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
 
 async function generateLocation (
   loc: Location,
-  _id: Ref<Doc>,
+  _id: string,
   _class: Ref<Class<Doc>>
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
@@ -511,12 +531,13 @@ async function generateLocation (
   }
 }
 
-export function openInboxDoc (
+async function navigateToInboxDoc (
+  providers: LinkIdProvider[],
   _id?: Ref<Doc>,
   _class?: Ref<Class<Doc>>,
   thread?: Ref<ActivityMessage>,
   message?: Ref<ActivityMessage>
-): void {
+): Promise<void> {
   const loc = getLocation()
 
   if (loc.path[2] !== notificationId) {
@@ -524,14 +545,13 @@ export function openInboxDoc (
   }
 
   if (_id === undefined || _class === undefined) {
-    loc.query = { message: null }
-    loc.path.length = 3
-    localStorage.setItem(`${locationStorageKeyId}_${notificationId}`, JSON.stringify(loc))
-    navigate(loc)
+    resetInboxContext()
     return
   }
 
-  loc.path[3] = encodeObjectURI(_id, _class)
+  const id = await getObjectLinkId(providers, _id, _class)
+
+  loc.path[3] = encodeObjectURI(id, _class)
 
   if (thread !== undefined) {
     loc.path[4] = thread
@@ -543,7 +563,87 @@ export function openInboxDoc (
 
   loc.query = { ...loc.query, message: message ?? null }
   messageInFocus.set(message)
+  Analytics.handleEvent('inbox.ReadDoc', { objectId: id, objectClass: _class, thread, message })
   navigate(loc)
+}
+
+export function resetInboxContext (): void {
+  const loc = getLocation()
+
+  if (loc.path[2] !== notificationId) {
+    return
+  }
+
+  loc.query = { message: null }
+  loc.path.length = 3
+
+  localStorage.setItem(`${locationStorageKeyId}_${notificationId}`, JSON.stringify(loc))
+
+  navigate(loc)
+}
+
+export async function selectInboxContext (
+  linkProviders: LinkIdProvider[],
+  context: DocNotifyContext,
+  notification?: WithLookup<InboxNotification>
+): Promise<void> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const { objectId, objectClass } = context
+
+  if (isMentionNotification(notification) && isActivityMessageClass(notification.mentionedInClass)) {
+    const selectedMsg = notification.mentionedIn as Ref<ActivityMessage>
+
+    void navigateToInboxDoc(
+      linkProviders,
+      objectId,
+      objectClass,
+      isActivityMessageClass(objectClass) ? (objectId as Ref<ActivityMessage>) : undefined,
+      selectedMsg
+    )
+
+    return
+  }
+  if (hierarchy.isDerived(objectClass, activity.class.ActivityMessage)) {
+    const message = (notification as WithLookup<ActivityInboxNotification>)?.$lookup?.attachedTo
+
+    if (objectClass === chunter.class.ThreadMessage) {
+      const thread = await client.findOne(
+        chunter.class.ThreadMessage,
+        {
+          _id: objectId as Ref<ThreadMessage>
+        },
+        { projection: { _id: 1, attachedTo: 1 } }
+      )
+
+      void navigateToInboxDoc(linkProviders, objectId, objectClass, thread?.attachedTo, thread?._id)
+      return
+    }
+
+    if (isReactionMessage(message)) {
+      void navigateToInboxDoc(linkProviders, objectId, objectClass, undefined, objectId as Ref<ActivityMessage>)
+      return
+    }
+
+    const selectedMsg = (notification as ActivityInboxNotification)?.attachedTo
+
+    void navigateToInboxDoc(
+      linkProviders,
+      objectId,
+      objectClass,
+      selectedMsg !== undefined ? (objectId as Ref<ActivityMessage>) : undefined,
+      selectedMsg ?? (objectId as Ref<ActivityMessage>)
+    )
+    return
+  }
+
+  void navigateToInboxDoc(
+    linkProviders,
+    objectId,
+    objectClass,
+    undefined,
+    (notification as ActivityInboxNotification)?.attachedTo
+  )
 }
 
 export const pushAllowed = writable<boolean>(false)
@@ -616,7 +716,7 @@ export async function subscribePush (): Promise<boolean> {
           userVisibleOnly: true,
           applicationServerKey: publicKey
         })
-        await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+        await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
           user: getCurrentAccount()._id,
           endpoint: subscription.endpoint,
           keys: {
@@ -630,7 +730,7 @@ export async function subscribePush (): Promise<boolean> {
           endpoint: current.endpoint
         })
         if (exists === undefined) {
-          await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+          await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
             user: getCurrentAccount()._id,
             endpoint: current.endpoint,
             keys: {
@@ -687,4 +787,40 @@ export function notificationsComparator (notifications1: InboxNotification, noti
   }
 
   return 0
+}
+
+export function isNotificationAllowed (type: BaseNotificationType, providerId: Ref<NotificationProvider>): boolean {
+  const client = getClient()
+  const provider = client.getModel().findAllSync(notification.class.NotificationProvider, { _id: providerId })[0]
+  if (provider === undefined) return false
+
+  const providerSetting = get(providersSettings).find((it) => it.attachedTo === providerId)
+  if (providerSetting !== undefined && !providerSetting.enabled) return false
+  if (providerSetting === undefined && !provider.defaultEnabled) return false
+
+  const providerDefaults = client.getModel().findAllSync(notification.class.NotificationProviderDefaults, {})
+
+  if (providerDefaults.some((it) => it.provider === provider._id && it.ignoredTypes.includes(type._id))) {
+    return false
+  }
+
+  if (provider.ignoreAll === true) {
+    const excludedIgnore = providerDefaults.some(
+      (it) => provider._id === it.provider && it.excludeIgnore !== undefined && it.excludeIgnore.includes(type._id)
+    )
+
+    if (!excludedIgnore) return false
+  }
+
+  const setting = get(typesSettings).find((it) => it.attachedTo === provider._id && it.type === type._id)
+
+  if (setting !== undefined) {
+    return setting.enabled
+  }
+
+  if (providerDefaults.some((it) => it.provider === provider._id && it.enabledTypes.includes(type._id))) {
+    return true
+  }
+
+  return type.defaultEnabled
 }

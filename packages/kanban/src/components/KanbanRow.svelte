@@ -74,8 +74,15 @@
   let limitedObjects: IdMap<DocWithRank> = new Map()
 
   const docQuery = createQuery()
-
-  $: groupQuery = { ...query, [groupByKey]: typeof state === 'object' ? { $in: state.values } : state }
+  $: groupQuery = {
+    ...query,
+    [groupByKey]:
+      typeof state === 'object'
+        ? state.name !== undefined
+          ? { $in: state.values.flatMap((x) => x._id) }
+          : undefined
+        : state
+  }
 
   $: void limiter.add(async () => {
     docQuery.query(

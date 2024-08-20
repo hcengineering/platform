@@ -16,7 +16,7 @@ describe('config-parse', () => {
   })
   it('single-minio-named', async () => {
     const cfg: StorageConfiguration = { default: '', storages: [] }
-    parseStorageEnv('minio|myminio|localhost:9000?accessKey=minio&secretKey=minio2', cfg)
+    parseStorageEnv('minio,myminio|localhost:9000?accessKey=minio&secretKey=minio2', cfg)
     expect(cfg.default).toEqual('myminio')
     const minio = cfg.storages[0] as MinioConfig
     expect(minio.endpoint).toEqual('localhost')

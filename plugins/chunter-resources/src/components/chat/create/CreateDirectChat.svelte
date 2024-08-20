@@ -31,7 +31,7 @@
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const myAccId = getCurrentAccount()._id
+  const myAcc = getCurrentAccount() as PersonAccount
   const query = createQuery()
 
   let employeeIds: Ref<Employee>[] = []
@@ -52,7 +52,7 @@
 
   async function createDirectMessage (): Promise<void> {
     const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
-    const accIds = [myAccId, ...employeeAccounts.filter(({ _id }) => _id !== myAccId).map(({ _id }) => _id)].sort()
+    const accIds = [myAcc._id, ...employeeAccounts.filter(({ _id }) => _id !== myAcc._id).map(({ _id }) => _id)].sort()
 
     const existingDms = await client.findAll(chunter.class.DirectMessage, {})
 
@@ -75,23 +75,25 @@
       }))
 
     const context = await client.findOne(notification.class.DocNotifyContext, {
-      user: myAccId,
-      attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage
+      person: myAcc.person,
+      objectId: dmId,
+      objectClass: chunter.class.DirectMessage
     })
 
     if (context !== undefined) {
-      await client.diffUpdate(context, { hidden: false })
       openChannel(dmId, chunter.class.DirectMessage)
 
       return
     }
 
-    await client.createDoc(notification.class.DocNotifyContext, dmId, {
-      user: myAccId,
-      attachedTo: dmId,
-      attachedToClass: chunter.class.DirectMessage,
-      hidden: false
+    const space = await client.findOne(contact.class.PersonSpace, { person: myAcc.person }, { projection: { _id: 1 } })
+    if (!space) return
+    await client.createDoc(notification.class.DocNotifyContext, space._id, {
+      user: myAcc._id,
+      objectId: dmId,
+      objectClass: chunter.class.DirectMessage,
+      objectSpace: core.space.Space,
+      isPinned: false
     })
 
     openChannel(dmId, chunter.class.DirectMessage)

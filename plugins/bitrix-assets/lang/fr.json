@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "URL du jeton Bitrix24",
+    "Bitrix": "",
+    "BitrixDesc": "Intégration Bitrix 24",
+    "Settings": "Configurer",
+    "NotAllowed": "Non autorisé sans droits administratifs",
+    "BitrixEntityType": "Correspondance des entités",
+    "FieldMapping": "Correspondance des champs",
+    "AddField": "Ajouter une correspondance",
+    "Attribute": "Attribut",
+    "MapField": "Correspondre...",
+    "BitrixImport": "Synchroniser avec Bitrix",
+    "AddMapping": "Ajouter une correspondance d'entité",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "Extension pour l'intégration de Bitrix 24"
+  }
+}

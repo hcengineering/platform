@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { ActionIcon, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
+  import { ActionIcon, IconAdd, showPopup, ModernEditbox, Spinner } from '@hcengineering/ui'
   import { SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
-  import { ToDoPriority } from '@hcengineering/time'
+  import { TimeEvents, ToDoPriority } from '@hcengineering/time'
   import { getClient } from '@hcengineering/presentation'
   import CreateToDoPopup from './CreateToDoPopup.svelte'
   import time from '../plugin'
   import { makeRank } from '@hcengineering/task'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let fullSize: boolean = false
   let value: string = ''
+  let disabled: boolean = false
 
   const client = getClient()
   const acc = getCurrentAccount() as PersonAccount
@@ -30,16 +32,24 @@
         sort: { rank: SortingOrder.Ascending }
       }
     )
-    await ops.addCollection(time.class.ToDo, time.space.ToDos, time.ids.NotAttached, time.class.ToDo, 'todos', {
-      title: name,
-      description,
-      user: acc.person,
-      workslots: 0,
-      priority: ToDoPriority.NoPriority,
-      visibility: 'private',
-      rank: makeRank(undefined, latestTodo?.rank)
-    })
+    const id = await ops.addCollection(
+      time.class.ToDo,
+      time.space.ToDos,
+      time.ids.NotAttached,
+      time.class.ToDo,
+      'todos',
+      {
+        title: name,
+        description,
+        user: acc.person,
+        workslots: 0,
+        priority: ToDoPriority.NoPriority,
+        visibility: 'private',
+        rank: makeRank(undefined, latestTodo?.rank)
+      }
+    )
     await ops.commit()
+    Analytics.handleEvent(TimeEvents.ToDoCreated, { id })
     clear()
   }
 
@@ -58,16 +68,22 @@
     width={fullSize ? '100%' : ''}
     size={'medium'}
     autoAction={false}
+    {disabled}
     bind:value
     on:keydown={(e) => {
       if (e.key === 'Enter') {
-        save()
+        disabled = true
+        save().finally(() => (disabled = false))
         e.preventDefault()
         e.stopPropagation()
       }
     }}
   >
-    <ActionIcon icon={IconAdd} action={openPopup} size={'small'} />
+    {#if disabled}
+      <Spinner size={'small'} />
+    {:else}
+      <ActionIcon icon={IconAdd} action={openPopup} size={'small'} />
+    {/if}
   </ModernEditbox>
 </div>
 

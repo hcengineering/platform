@@ -13,33 +13,28 @@
 // limitations under the License.
 //
 
+import core, { type Ref, type Space } from '@hcengineering/core'
 import { inventoryId } from '@hcengineering/inventory'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import inventory from './plugin'
+import { DOMAIN_INVENTORY } from '.'
 
 export const inventoryOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, inventoryId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, inventoryId, [
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, inventory.space.Category, {
-            name: 'Categories',
-            description: 'Space for all inventory categories'
-          })
-          await createDefaultSpace(client, inventory.space.Products, {
-            name: 'Products',
-            description: 'Space for all inventory products'
-          })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'inventory:space:Category' as Ref<Space>, core.space.Workspace, [DOMAIN_INVENTORY])
+          await migrateSpace(client, 'inventory:space:Products' as Ref<Space>, core.space.Workspace, [DOMAIN_INVENTORY])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

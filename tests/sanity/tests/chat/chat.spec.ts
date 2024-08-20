@@ -1,13 +1,13 @@
-import { test, expect } from '@playwright/test'
-import { PlatformURI, generateTestData } from '../utils'
-import { LeftSideMenuPage } from '../model/left-side-menu-page'
-import { ChunterPage } from '../model/chunter-page'
-import { ChannelPage } from '../model/channel-page'
+import { expect, test } from '@playwright/test'
 import { ApiEndpoint } from '../API/Api'
-import { LoginPage } from '../model/login-page'
+import { ChannelPage } from '../model/channel-page'
+import { ChunterPage } from '../model/chunter-page'
 import { SignUpData } from '../model/common-types'
-import { faker } from '@faker-js/faker'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { LoginPage } from '../model/login-page'
+import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
+import { PlatformURI, generateTestData, getInviteLink, generateUser, createAccount } from '../utils'
 
 test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -20,12 +20,7 @@ test.describe('channel tests', () => {
 
   test.beforeEach(async ({ page, request }) => {
     data = generateTestData()
-    newUser2 = {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      email: faker.internet.email(),
-      password: '1234'
-    }
+    newUser2 = generateUser()
 
     leftSideMenuPage = new LeftSideMenuPage(page)
     chunterPage = new ChunterPage(page)
@@ -36,7 +31,9 @@ test.describe('channel tests', () => {
     await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
     await (await page.goto(`${PlatformURI}`))?.finished()
     await loginPage.login(data.userName, '1234')
-    await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
+    const swp = new SelectWorkspacePage(page)
+    await swp.selectWorkspace(data.workspaceName)
+    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
   })
 
   test('create new private channel and check if the messages stays on it', async ({ browser, page }) => {
@@ -95,6 +92,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, false)
+    await page2.close()
   })
 
   test('create new public channel tests and check if the new user have access to it by default', async ({
@@ -124,6 +122,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
+    await page2.close()
   })
 
   test('create new private channel and test if the user can exchange the messages', async ({ browser, page }) => {
@@ -153,11 +152,13 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
     await channelPageSecond.clickJoinChannelButton()
     await channelPageSecond.clickChooseChannel(data.channelName)
+    const checkJoinButton = await page2.locator('button[data-id="btnJoin"]').isVisible({ timeout: 1500 })
+    if (checkJoinButton) await page2.locator('button[data-id="btnJoin"]').click()
     await channelPageSecond.checkMessageExist('Test message', true, 'Test message')
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
-    await channelPage.clickOnClosePopupButton()
     await channelPage.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
+    await page2.close()
   })
 
   test('create new private channel add user to it', async ({ browser, page }) => {
@@ -185,6 +186,7 @@ test.describe('channel tests', () => {
     await channelPage.clickChannelTab()
     await channelPage.clickOnUser(data.lastName + ' ' + data.firstName)
     await channelPage.addMemberToChannel(newUser2.lastName + ' ' + newUser2.firstName)
+    await channelPage.pressEscape()
     await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.checkIfChannelDefaultExist(true, data.channelName)
     await channelPageSecond.clickChannelTab()
@@ -195,6 +197,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist('One two', true, 'One two')
     await channelPage.clickChooseChannel(data.channelName)
     await channelPage.checkMessageExist('One two', true, 'One two')
+    await page2.close()
   })
 
   test('go to general channel add user to it', async ({ browser, page }) => {
@@ -225,6 +228,7 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('general')
     await channelPage.checkMessageExist('One two', true, 'One two')
+    await page2.close()
   })
 
   test('go to random channel add user to it', async ({ browser, page }) => {
@@ -255,6 +259,7 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('random')
     await channelPage.checkMessageExist('One two', true, 'One two')
+    await page2.close()
   })
 
   test('check if user can add emoji', async () => {
@@ -352,7 +357,7 @@ test.describe('channel tests', () => {
     await chunterPage.createPrivateChannel(data.channelName, false)
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.clickOnOpenChannelDetails()
-    await channelPage.changeChannelPrivacyOrAutoJoin('N/A', 'Yes', 'Yes')
+    await channelPage.changeChannelPrivacyOrAutoJoin('N/A', 'Yes', 'Yes', true)
   })
 
   test('Check if the user can be added through preview tab', async ({ browser, page }) => {
@@ -374,6 +379,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.clickOnOpenChannelDetails()
     await channelPageSecond.checkIfUserIsAdded(data.lastName + ' ' + data.firstName, false)
+    await page2.close()
   })
 
   test('Check if we can create new public channel tests and check if the new user have can be added through preview', async ({
@@ -400,5 +406,28 @@ test.describe('channel tests', () => {
     await channelPage.clickChannel(data.channelName)
     await channelPage.clickOnOpenChannelDetails()
     await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
+    await page2.close()
+  })
+
+  test('Checking backlinks in the Chat', async ({ browser, page, request }) => {
+    await createAccount(request, newUser2)
+    const linkText = await getInviteLink(page)
+    const page2 = await browser.newPage()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const channelPageSecond = new ChannelPage(page2)
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+    await leftSideMenuPageSecond.clickChunter()
+
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('general')
+    const mentionName = `${newUser2.lastName} ${newUser2.firstName}`
+    await channelPage.sendMention(mentionName)
+    await channelPage.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
+
+    await channelPageSecond.clickChannel('general')
+    await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
+    await page2.close()
   })
 })

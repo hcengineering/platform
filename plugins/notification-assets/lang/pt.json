@@ -47,6 +47,15 @@
     "UnstarDocument": "Desmarcar documento",
     "Push": "Push",
     "EnablePush": "Ativar notificações push",
-    "NotificationBlockedInBrowser": "Notificações bloqueadas no navegador. Por favor habilite las notificaciones en la configuración de su navegador."
+    "NotificationBlockedInBrowser": "Notificações bloqueadas no navegador. Por favor habilite las notificaciones en la configuración de su navegador.",
+    "General": "Geral",
+    "InboxNotificationsDescription": "Receba notificações pessoais em sua caixa de entrada do Huly.",
+    "PushNotificationsDescription": "Receba notificações pessoais no desktop.",
+    "Sound": "Som",
+    "SoundNotificationsDescription": "Receba notificações sonoras para eventos.",
+    "CommonNotificationCollectionAdded":  "{senderName} adicionou {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} removeu {collection}",
+    "NoAccessToObject": "Você não tem mais acesso a este objeto",
+    "ViewIn": "Ver em {app}"
   }
 }

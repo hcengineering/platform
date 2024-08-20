@@ -20,7 +20,7 @@ import task from '@hcengineering/model-task'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
-import { trackerId } from '@hcengineering/tracker'
+import { TrackerEvents, trackerId } from '@hcengineering/tracker'
 import { type KeyBinding, type ViewAction } from '@hcengineering/view'
 import tracker from './plugin'
 
@@ -124,6 +124,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'edit'
       },
+      analyticsEvent: TrackerEvents.ProjectArchived,
       override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProject
@@ -145,6 +146,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'edit'
       },
+      analyticsEvent: TrackerEvents.ProjectDeleted,
       override: [view.action.Archive, view.action.Delete]
     },
     tracker.action.DeleteProjectClean
@@ -187,7 +189,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         group: 'remove'
       },
       visibilityTester: view.function.CanDeleteObject,
-      override: [view.action.Delete]
+      override: [view.action.Delete],
+      analyticsEvent: TrackerEvents.IssueDeleted
     },
     tracker.action.DeleteIssue
   )
@@ -218,7 +221,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         application: tracker.app.Tracker,
         group: 'create'
       },
-      override: [tracker.action.NewIssueGlobal]
+      override: [tracker.action.NewIssueGlobal],
+      analyticsEvent: TrackerEvents.NewIssueBindingCalled
     },
     tracker.action.NewIssue
   )
@@ -239,7 +243,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       context: {
         mode: [],
         group: 'create'
-      }
+      },
+      analyticsEvent: TrackerEvents.IssueCreateFromGlobalActionCalled
     },
     tracker.action.NewIssueGlobal
   )
@@ -729,7 +734,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       category: tracker.category.Tracker,
       target: core.class.Space,
       query: {
-        _class: { $nin: [tracker.class.Project] }
+        _class: { $ne: tracker.class.Project }
       },
       context: {
         mode: ['context'],

@@ -31,7 +31,7 @@
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
+  import { IssueStatus, Project, TimeReportDayType, TrackerEvents } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -49,6 +49,8 @@
   import { IconPicker } from '@hcengineering/view-resources'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
+
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
 
@@ -234,8 +236,11 @@
       isSaving = true
       await ops.createDoc(tracker.class.Project, core.space.Space, { ...projectData, type: typeId }, projectId)
       const succeeded = await ops.commit()
-
-      if (succeeded) {
+      Analytics.handleEvent(TrackerEvents.ProjectCreated, {
+        ok: succeeded.result,
+        id: projectData.identifier
+      })
+      if (succeeded.result) {
         // Add space type's mixin with roles assignments
         await client.createMixin(
           projectId,
@@ -513,6 +518,7 @@
         onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
+        allowGuests
       />
     </div>
 

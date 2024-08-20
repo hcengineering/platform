@@ -14,20 +14,26 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobSrcFor, type BlobMetadata } from '@hcengineering/presentation'
+  import { getFileUrl } from '@hcengineering/presentation'
 
-  export let value: Blob | Ref<Blob>
+  export let value: Ref<Blob>
   export let name: string
-  export let contentType: string
-  export let metadata: BlobMetadata | undefined
+  export let fit: boolean = false
 </script>
 
-{#await getBlobSrcFor(value, name) then href}
-  <iframe src={href + '#view=FitH&navpanes=0'} class="w-full h-full" title={name} />
-{/await}
+<iframe class:fit src={getFileUrl(value, name) + '#view=FitH&navpanes=0'} title={name} />
 
 <style lang="scss">
   iframe {
+    width: 100%;
     border: none;
+
+    &.fit {
+      min-height: 100%;
+    }
+    &:not(.fit) {
+      height: 80vh;
+      min-height: 20rem;
+    }
   }
 </style>

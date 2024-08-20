@@ -13,12 +13,13 @@ import {
   type WorkspaceId
 } from '@hcengineering/core'
 import type { RawDBAdapter, RawDBAdapterStream } from '@hcengineering/server-core'
-import { type Document, type Filter, type FindCursor, type Sort } from 'mongodb'
+import { type Document, type Filter, type FindCursor, type MongoClient, type Sort } from 'mongodb'
 import { toArray, uploadDocuments } from './storage'
 import { getMongoClient, getWorkspaceDB } from './utils'
 
 export function createRawMongoDBAdapter (url: string): RawDBAdapter {
   const client = getMongoClient(url)
+  let mongoClient: MongoClient | undefined
 
   const collectSort = (options: FindOptions<Doc>): Sort | undefined => {
     if (options?.sort === undefined) {
@@ -41,18 +42,19 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
     workspace: WorkspaceId,
     domain: Domain,
     query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+    options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
   ): Promise<{
       cursor: FindCursor<T>
       total: number
     }> {
-    const db = getWorkspaceDB(await client.getClient(), workspace)
+    mongoClient = mongoClient ?? (await client.getClient())
+    const db = getWorkspaceDB(mongoClient, workspace)
     const coll = db.collection(domain)
     let cursor = coll.find<T>(query as Filter<Document>, {
       checkKeys: false
     })
 
-    let total: number = -1
+    const total: number = -1
     if (options != null) {
       if (options.sort !== undefined) {
         const sort = collectSort(options)
@@ -61,9 +63,6 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
         }
       }
       if (options.limit !== undefined || typeof query._id === 'string') {
-        if (options.total === true) {
-          total = await coll.countDocuments(query)
-        }
         cursor = cursor.limit(options.limit ?? 1)
       }
     }
@@ -76,16 +75,20 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       workspace: WorkspaceId,
       domain: Domain,
       query: DocumentQuery<T>,
-      options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+      options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
     ): Promise<FindResult<T>> {
-      let { cursor, total } = await getCursor(workspace, domain, query, options)
+      const { cursor, total } = await ctx.with(
+        'get-cursor',
+        {},
+        async () => await getCursor(workspace, domain, query, options)
+      )
 
       // Error in case of timeout
       try {
-        const res = await toArray<T>(cursor)
-        if (options?.total === true && options?.limit === undefined) {
-          total = res.length
-        }
+        const res = await ctx.with('to-array', {}, async () => await toArray<T>(cursor), {
+          ...query,
+          ...options
+        })
         return toFindResult(res, total)
       } catch (e) {
         console.error('error during executing cursor in findAll', cutObjectArray(query), options, e)
@@ -97,7 +100,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       workspace: WorkspaceId,
       domain: Domain,
       query: DocumentQuery<T>,
-      options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+      options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
     ): Promise<RawDBAdapterStream<T>> {
       const { cursor } = await getCursor(workspace, domain, query, options)
 
@@ -109,7 +112,8 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       }
     },
     upload: async (ctx: MeasureContext, workspace, domain, docs) => {
-      const db = getWorkspaceDB(await client.getClient(), workspace)
+      mongoClient = mongoClient ?? (await client.getClient())
+      const db = getWorkspaceDB(mongoClient, workspace)
       const coll = db.collection(domain)
       await uploadDocuments(ctx, docs, coll)
     },
@@ -117,7 +121,8 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       client.close()
     },
     clean: async (ctx, workspace, domain, docs) => {
-      const db = getWorkspaceDB(await client.getClient(), workspace)
+      mongoClient = mongoClient ?? (await client.getClient())
+      const db = getWorkspaceDB(mongoClient, workspace)
       const coll = db.collection<Doc>(domain)
       await coll.deleteMany({ _id: { $in: docs } })
     },
@@ -128,7 +133,8 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       operations: Map<Ref<Doc>, DocumentUpdate<Doc>>
     ): Promise<void> => {
       await ctx.with('update', { domain }, async () => {
-        const db = getWorkspaceDB(await client.getClient(), workspace)
+        mongoClient = mongoClient ?? (await client.getClient())
+        const db = getWorkspaceDB(mongoClient, workspace)
         const coll = db.collection(domain)
 
         // remove old and insert new ones
@@ -137,7 +143,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
         while (ops.length > 0) {
           const part = ops.splice(0, skip)
           try {
-            await ctx.with('bulk-write', {}, async () => {
+            await ctx.with('raw-bulk-write', {}, async () => {
               await coll.bulkWrite(
                 part.map((it) => {
                   const { $unset, ...set } = it[1] as any
@@ -158,7 +164,10 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
                       }
                     }
                   }
-                })
+                }),
+                {
+                  ordered: false
+                }
               )
             })
           } catch (err: any) {

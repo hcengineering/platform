@@ -281,13 +281,17 @@ describe('query', () => {
 
     const expectedLength = 2
     let attempt = 0
+    let x: undefined | ((s: any) => void)
+    const y = new Promise((resolve) => (x = resolve))
+
     const pp = new Promise((resolve) => {
       liveQuery.query<Space>(core.class.Space, { private: false }, (result) => {
         expect(result).toHaveLength(expectedLength - attempt)
+        if (attempt === 0) x?.(null)
         if (attempt++ === expectedLength) resolve(null)
       })
     })
-
+    await y
     const spaces = await liveQuery.findAll(core.class.Space, {})
     for (const space of spaces) {
       await factory.removeDoc(space._class, space.space, space._id)
@@ -300,11 +304,14 @@ describe('query', () => {
 
     const expectedLength = 2
     let attempt = 0
+    let x: undefined | ((s: any) => void)
+    const y = new Promise((resolve) => (x = resolve))
     const pp = new Promise((resolve) => {
       liveQuery.query<Space>(
         core.class.Space,
         { private: false },
         (result) => {
+          if (attempt === 0) x?.(null)
           expect(result).toHaveLength(attempt++ === expectedLength ? 0 : 1)
           if (attempt === expectedLength) resolve(null)
         },
@@ -312,6 +319,7 @@ describe('query', () => {
       )
     })
 
+    await y
     const spaces = await liveQuery.findAll(core.class.Space, {})
     for (const space of spaces) {
       await factory.removeDoc(space._class, space.space, space._id)
@@ -415,6 +423,14 @@ describe('query', () => {
             } else {
               expect(comment.$lookup?.space).toBeUndefined()
               attempt++
+              void factory.createDoc(
+                core.class.Space,
+                futureSpace.space,
+                {
+                  ...futureSpace
+                },
+                futureSpace._id
+              )
             }
           }
         },
@@ -422,14 +438,6 @@ describe('query', () => {
       )
     })
 
-    await factory.createDoc(
-      core.class.Space,
-      futureSpace.space,
-      {
-        ...futureSpace
-      },
-      futureSpace._id
-    )
     await pp
   })
 
@@ -580,14 +588,13 @@ describe('query', () => {
             } else {
               expect((comment.$lookup?.space as Doc)?._id).toEqual(futureSpace)
               attempt++
+              void factory.removeDoc(core.class.Space, core.space.Model, futureSpace)
             }
           }
         },
         { lookup: { space: core.class.Space } }
       )
     })
-
-    await factory.removeDoc(core.class.Space, core.space.Model, futureSpace)
 
     await pp
   })
@@ -941,5 +948,32 @@ describe('query', () => {
     })
     const result = await resolveP
     expect(result.length).toEqual(2)
+  })
+
+  it('check query mixin projection', async () => {
+    const { liveQuery, factory } = await getClient()
+
+    let projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
+    expect(projects.length).toEqual(0)
+    const project = await factory.createDoc(test.class.TestProject, core.space.Space, {
+      archived: false,
+      description: '',
+      members: [],
+      private: false,
+      prjName: 'test project',
+      name: 'qwe'
+    })
+
+    projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
+    expect(projects.length).toEqual(0)
+    await factory.createMixin(project, test.class.TestProject, core.space.Space, test.mixin.TestProjectMixin, {
+      someField: 'qwe'
+    })
+    // We need to process all events before we could do query again
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 100)
+    })
+    projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
+    expect(projects.length).toEqual(1)
   })
 })

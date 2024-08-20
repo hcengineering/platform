@@ -21,9 +21,6 @@
     "WorkItem": "Item de trabalho",
     "Inbox": "Caixa de entrada",
     "All": "Tudo",
-    "Days": "{days}d",
-    "Hours": "{hours}h",
-    "Minutes": "{minutes}m",
     "AddToDo": "Adicionar tarefa",
     "CreateToDo": "Adicionar tarefa, pressione Enter para guardar",
     "ToDos": "Tarefas pendentes",
@@ -57,6 +54,11 @@
     "NewToDoDetails": "Nova tarefa pendente: {details}",
     "MarkedAsDone": "Concluído",
     "WorkSchedule": "Horário de trabalho",
-    "SummaryDuration": "Sumário"
+    "SummaryDuration": "Sumário",
+
+    "UnassignToDo": "Remover tarefa atribuída",
+    "UnassignToDoConfirm": "Você deseja remover a tarefa atribuída? A tarefa será removida do planejamento do responsável.",
+    "ReassignToDo": "Alterar responsável pela tarefa",
+    "ReassignToDoConfirm": "Você deseja alterar o responsável pela tarefa? A tarefa será removida do planejamento atual do responsável."
   }
 }

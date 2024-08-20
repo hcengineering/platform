@@ -23,7 +23,9 @@
     ButtonGroup,
     Scroller,
     panelSeparators,
-    ButtonItem
+    ButtonItem,
+    Header,
+    HeaderAdaptive
   } from '../../'
   import IconClose from './icons/Close.svelte'
   import IconDetails from './icons/Details.svelte'
@@ -44,9 +46,14 @@
   export let useMaxWidth: boolean | undefined = undefined
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
-  export let kind: 'default' | 'modern' = 'default'
   export let printHeader = true
   export let printAside = false
+  export let adaptive: HeaderAdaptive = 'default'
+  export let hideBefore: boolean = false
+  export let hideSearch: boolean = true
+  export let hideActions: boolean = false
+  export let hideExtra: boolean = false
+  export let overflowExtra: boolean = false
 
   export function getAside (): string | boolean {
     if (customAside) return selectedAside
@@ -147,7 +154,7 @@
 
 <div
   bind:this={el}
-  class="popupPanel panel {kind}"
+  class="popupPanel panel"
   class:withPageHeader={$$slots['page-header'] !== undefined}
   class:withPageFooter={$$slots['page-footer'] !== undefined}
   class:embedded
@@ -156,48 +163,45 @@
     checkPanel()
   }}
 >
-  <div class="popupPanel-title" class:no-print={!printHeader} class:indent={allowClose}>
-    {#if allowClose}
-      <div class="no-print">
+  <Header
+    type={'type-panel'}
+    noPrint={!printHeader}
+    {adaptive}
+    {hideBefore}
+    {hideSearch}
+    {hideActions}
+    {hideExtra}
+    {overflowExtra}
+  >
+    <svelte:fragment slot="beforeTitle">
+      {#if allowClose}
         <Button
           id={'btnPClose'}
           focusIndex={10001}
           icon={IconClose}
           iconProps={{ size: 'medium' }}
           kind={'icon'}
+          noPrint
           on:click={() => {
             dispatch('close')
           }}
         />
-        <div class="antiHSpacer x2" />
-      </div>
-    {/if}
-    <div class="popupPanel-title__content">
-      {#if !withoutTitle}<slot name="title" />{/if}
-    </div>
-    <slot name="pre-utils" />
-    <div class="flex-row-center ml-3 no-print">
-      <slot name="utils" />
-      {#if $$slots.aside && isAside}
-        {#if customAside}
-          <ButtonGroup
-            items={customAside}
-            props={{ kind: 'icon', iconProps: { size: 'medium' } }}
-            bind:selected={selectedAside}
-            on:select={handleSelectAside}
-          />
-        {:else}
-          <Button
-            id={'btnPAside'}
-            focusIndex={10008}
-            icon={IconDetails}
-            iconProps={{ size: 'medium', filled: asideShown }}
-            kind={'icon'}
-            selected={asideShown}
-            on:click={handleAside}
-          />
+        {#if $$slots.beforeTitle}
+          <div class="hulyHeader-divider short no-print" />
         {/if}
       {/if}
+      <slot name="beforeTitle" />
+    </svelte:fragment>
+
+    {#if !withoutTitle}<slot name="title" />{/if}
+
+    <svelte:fragment slot="search">
+      <slot name="search" />
+    </svelte:fragment>
+    <svelte:fragment slot="actions">
+      <slot name="actions" />
+      <slot name="pre-utils" />
+      <slot name="utils" />
       {#if useMaxWidth !== undefined}
         <Button
           focusIndex={10009}
@@ -224,9 +228,32 @@
           }}
         />
       {/if}
-    </div>
-    <slot name="post-utils" />
-  </div>
+      {#if $$slots.aside && isAside}
+        {#if customAside}
+          <ButtonGroup
+            items={customAside}
+            props={{ kind: 'icon', iconProps: { size: 'medium' } }}
+            bind:selected={selectedAside}
+            on:select={handleSelectAside}
+          />
+        {:else}
+          <Button
+            id={'btnPAside'}
+            focusIndex={10008}
+            icon={IconDetails}
+            iconProps={{ size: 'medium', filled: asideShown }}
+            kind={'icon'}
+            selected={asideShown}
+            on:click={handleAside}
+          />
+        {/if}
+      {/if}
+      <slot name="post-utils" />
+    </svelte:fragment>
+    <svelte:fragment slot="extra">
+      <slot name="extra" />
+    </svelte:fragment>
+  </Header>
   <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown>
     {#if $deviceInfo.isMobile}
       <Scroller horizontal padding={'.5rem .75rem'}>

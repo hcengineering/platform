@@ -101,6 +101,7 @@ test.describe('contact tests', () => {
     await contractPage.checkIfPersonIsDeleted(first, last, 1)
     await contractPage.personRightClickOption(first, last, ButtonAction.NewApplication)
     await contractPage.addNewApplication('Test Application', 'CR Chen Rosamund')
+    await page.waitForTimeout(1000)
     await contractPage.clickOnEmployee(first, last)
     await contractPage.checkStateApplication('HR Interview')
   })

@@ -1,5 +1,5 @@
 import { toFindResult, type FindResult, type MeasureContext } from '@hcengineering/core'
-import { readRequest, type Response } from '@hcengineering/rpc'
+import { type Response } from '@hcengineering/rpc'
 import type { Token } from '@hcengineering/server-token'
 import type { AddSessionActive, AddSessionResponse, ConnectionSocket, HandleRequestFunction, Session } from './types'
 
@@ -11,17 +11,23 @@ export interface WebsocketData {
   url: string
 }
 
-export function doSessionOp (data: WebsocketData, op: (session: AddSessionActive) => void): void {
+export function doSessionOp (
+  data: WebsocketData,
+  op: (session: AddSessionActive, msg: Buffer) => void,
+  msg: Buffer
+): void {
   if (data.session instanceof Promise) {
+    // We need to copy since we will out of protected buffer area
+    const msgCopy = Buffer.copyBytesFrom(msg)
     void data.session.then((_session) => {
       data.session = _session
       if ('session' in _session) {
-        op(_session)
+        op(_session, msgCopy)
       }
     })
   } else {
     if (data.session !== undefined && 'session' in data.session) {
-      op(data.session)
+      op(data.session, msg)
     }
   }
 }
@@ -34,8 +40,16 @@ export function processRequest (
   buff: any,
   handleRequest: HandleRequestFunction
 ): void {
-  const request = readRequest(buff, session.binaryMode)
-  handleRequest(context, session, cs, request, workspaceId)
+  try {
+    const request = cs.readRequest(buff, session.binaryMode)
+    handleRequest(context, session, cs, request, workspaceId)
+  } catch (err: any) {
+    if (((err.message as string) ?? '').includes('Data read, but end of buffer not reached')) {
+      // ignore it
+    } else {
+      throw err
+    }
+  }
 }
 
 export async function sendResponse (

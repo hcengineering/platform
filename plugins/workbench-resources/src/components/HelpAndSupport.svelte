@@ -16,7 +16,7 @@
   import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support, { docsLink, reportBugLink, supportLink } from '@hcengineering/support'
+  import support, { docsLink, reportBugLink, supportLink, privacyPolicyLink } from '@hcengineering/support'
   import {
     AnySvelteComponent,
     Button,
@@ -37,6 +37,8 @@
   import RightArrowIcon from './icons/Collapsed.svelte'
   import DocumentationIcon from './icons/Documentation.svelte'
   import KeyboardIcon from './icons/Keyboard.svelte'
+  import { WorkbenchEvents } from '@hcengineering/workbench'
+  import { Analytics } from '@hcengineering/analytics'
 
   let shortcuts = false
   let actions: Action[] = []
@@ -94,6 +96,7 @@
       description: workbench.string.OpenPlatformGuide,
       onClick: () => {
         window.open(docsLink, '_blank')
+        Analytics.handleEvent(WorkbenchEvents.DocumentationOpened)
       }
     },
     {
@@ -108,6 +111,7 @@
       description: workbench.string.HowToWorkFaster,
       onClick: () => {
         shortcuts = true
+        Analytics.handleEvent(WorkbenchEvents.KeyboardShortcutsOpened)
       }
     }
   ]
@@ -199,6 +203,9 @@
     </Scroller>
   {/if}
   <div class="footer">
+    <a href={privacyPolicyLink} target="_blank">
+      <Button id="privacy-policy" kind={'ghost'} label={support.string.PrivacyPolicy} stopPropagation={false} />
+    </a>
     <a href={reportBugLink} target="_blank">
       <Button id="report-a-bug" kind={'primary'} label={support.string.ReportBug} stopPropagation={false} />
     </a>

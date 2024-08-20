@@ -17,7 +17,7 @@
   import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskKindSelector } from '@hcengineering/task-resources'
-  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { StyledTextArea } from '@hcengineering/text-editor-resources'
   import {
     Component as ComponentType,
     IssuePriority,

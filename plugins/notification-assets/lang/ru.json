@@ -48,6 +48,15 @@
     "Push": "Push",
     "Unreads": "Непрочитанные",
     "EnablePush": "Включить Push-уведомления",
-    "NotificationBlockedInBrowser": "Уведомления заблокированы в вашем браузере. Пожалуйста, включите уведомления в настройках браузера"
+    "NotificationBlockedInBrowser": "Уведомления заблокированы в вашем браузере. Пожалуйста, включите уведомления в настройках браузера",
+    "General": "Основное",
+    "InboxNotificationsDescription": "Получайте персональные уведомления на свой почтовый ящик Huly.",
+    "PushNotificationsDescription": "Получайте персональные уведомления на рабочий стол.",
+    "Sound": "Звук",
+    "SoundNotificationsDescription": "Получайте звуковые уведомления о событиях.",
+    "CommonNotificationCollectionAdded":  "{senderName} добавил {collection}",
+    "CommonNotificationCollectionRemoved": "{senderName} удалил {collection}",
+    "NoAccessToObject": "У вас больше нет доступа к этому объекту",
+    "ViewIn": "Посмотреть в {app}"
   }
 }

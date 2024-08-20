@@ -24,6 +24,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
+  import { Asset } from '@hcengineering/platform'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -49,10 +50,14 @@
   export let hideFooter = false
   export let skipLabel = false
   export let hoverable = true
+  export let pending = false
+  export let stale = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
+
+  export let socialIcon: Asset | undefined = undefined
 
   const client = getClient()
 
@@ -104,6 +109,42 @@
   }
 
   $: isShort = canDisplayShort(type, isSaved)
+
+  function isInside (x: number, y: number, rect: DOMRect): boolean {
+    return x >= rect.left && y >= rect.top && x <= rect.right && y <= rect.bottom
+  }
+
+  function isTextClicked (element: HTMLElement | null, x: number, y: number): boolean {
+    if (element == null) {
+      return false
+    }
+
+    const nodes = element.childNodes
+    const range = document.createRange()
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+
+      if (node.nodeType !== Node.TEXT_NODE) continue
+
+      range.selectNodeContents(node)
+
+      if (isInside(x, y, range.getBoundingClientRect())) {
+        return true
+      }
+    }
+    return false
+  }
+
+  function handleContextMenu (event: MouseEvent): void {
+    const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
+    if (showCustomPopup) {
+      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
+        isActionsOpened = false
+      })
+      isActionsOpened = true
+    }
+  }
 </script>
 
 {#if !isHidden}
@@ -122,13 +163,9 @@
       class:actionsOpened={isActionsOpened}
       class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
+      class:stale
       on:click={onClick}
-      on:contextmenu={(evt) => {
-        showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
-          isActionsOpened = false
-        })
-        isActionsOpened = true
-      }}
+      on:contextmenu={handleContextMenu}
     >
       {#if showNotify && !embedded && !isShort}
         <div class="notify" />
@@ -140,7 +177,7 @@
           <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
         </span>
       {:else}
-        <div class="min-w-6 mt-1 relative">
+        <div class="min-w-6 mt-1 relative flex-no-shrink">
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
@@ -151,6 +188,11 @@
           {#if isSaved}
             <div class="saveMarker">
               <Icon icon={activity.icon.BookmarkFilled} size="xx-small" />
+            </div>
+          {/if}
+          {#if socialIcon}
+            <div class="socialIcon">
+              <Icon icon={socialIcon} size="x-small" />
             </div>
           {/if}
         </div>
@@ -195,7 +237,7 @@
       </div>
 
       {#if withActions && !readonly}
-        <div class="actions" class:opened={isActionsOpened}>
+        <div class="actions" class:pending class:opened={isActionsOpened}>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
@@ -251,13 +293,15 @@
       top: -0.75rem;
       right: 0.75rem;
 
-      &.opened {
+      &.opened:not(.pending) {
         visibility: visible;
       }
     }
 
     &:hover > .actions {
-      visibility: visible;
+      &:not(.pending) {
+        visibility: visible;
+      }
     }
 
     &:hover > .time {
@@ -268,6 +312,7 @@
       display: flex;
       justify-content: end;
       width: 2.5rem;
+      min-width: 2.5rem;
       visibility: hidden;
       margin-top: 0.125rem;
     }
@@ -292,6 +337,10 @@
           background-color: var(--global-ui-BackgroundColor);
         }
       }
+    }
+
+    &.stale {
+      opacity: 0.5;
     }
   }
 
@@ -349,5 +398,21 @@
     height: max-content;
     flex-shrink: 1;
     padding: 0;
+  }
+
+  .socialIcon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: var(--spacing-1);
+    border-radius: 50%;
+    background: var(--theme-bg-color);
+    border: 1px solid var(--global-ui-BorderColor);
+    bottom: -0.375rem;
+    right: -0.375rem;
+    color: var(--content-color);
   }
 </style>

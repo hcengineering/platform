@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   AttachedDoc,
   BulkUpdateEvent,
@@ -53,12 +54,12 @@ import core, {
   generateId,
   getObjectValue,
   matchQuery,
+  reduceCalls,
   resultSort,
   toFindResult
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
-import { Analytics } from '@hcengineering/analytics'
 
 const CACHE_SIZE = 100
 
@@ -75,7 +76,7 @@ interface Query {
   total: number
   callbacks: Map<string, Callback>
 
-  requested?: Promise<void>
+  refresh: () => Promise<void>
 }
 
 interface DocumentRef {
@@ -311,6 +312,12 @@ export class LiveQuery implements WithTx, Client {
     return this.clone(q.result)[0] as WithLookup<T>
   }
 
+  private optionsCompare (opt1?: FindOptions<Doc>, opt2?: FindOptions<Doc>): boolean {
+    const { ctx: _1, ..._opt1 } = (opt1 ?? {}) as any
+    const { ctx: _2, ..._opt2 } = (opt2 ?? {}) as any
+    return deepEqual(_opt1, _opt2)
+  }
+
   private findQuery<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -318,8 +325,9 @@ export class LiveQuery implements WithTx, Client {
   ): Query | undefined {
     const queries = this.queries.get(_class)
     if (queries === undefined) return
+
     for (const q of queries) {
-      if (!deepEqual(query, q.query) || !deepEqual(options, q.options)) continue
+      if (!deepEqual(query, q.query) || !this.optionsCompare(options, q.options)) continue
       return q
     }
   }
@@ -392,7 +400,8 @@ export class LiveQuery implements WithTx, Client {
       result,
       total: 0,
       options: options as FindOptions<Doc>,
-      callbacks: new Map()
+      callbacks: new Map(),
+      refresh: reduceCalls(() => this.doRefresh(q))
     }
     q.callbacks.set(callback.callbackId, callback.callback as unknown as Callback)
     queries.push(q)
@@ -836,18 +845,8 @@ export class LiveQuery implements WithTx, Client {
     return this.getHierarchy().clone(results) as T[]
   }
 
-  private async refresh (q: Query, reRequest: boolean = false): Promise<void> {
-    if (q.requested !== undefined && !reRequest) {
-      // we already asked for refresh, just wait.
-      await q.requested
-      return
-    }
-    if (reRequest && q.requested !== undefined) {
-      await q.requested
-    }
-    q.requested = this.doRefresh(q)
-    await q.requested
-    q.requested = undefined
+  private async refresh (q: Query): Promise<void> {
+    await q.refresh()
   }
 
   private async doRefresh (q: Query): Promise<void> {
@@ -968,6 +967,10 @@ export class LiveQuery implements WithTx, Client {
     result: LookupData<T>
   ): Promise<void> {
     for (const key in lookup._id) {
+      if ((doc as any)[key] === undefined || (doc as any)[key] === 0) {
+        continue
+      }
+
       const value = lookup._id[key]
 
       let _class: Ref<Class<Doc>>
@@ -1115,15 +1118,21 @@ export class LiveQuery implements WithTx, Client {
       for (const resDoc of docs) {
         const obj = getObjectValue(objWay, resDoc)
         if (obj === undefined) continue
-        const value = getObjectValue('$lookup.' + key, obj)
+        let value = getObjectValue('$lookup.' + key, obj)
+        const reverseCheck = reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id
+        if (value == null && reverseCheck) {
+          value = []
+          obj.$lookup[key] = value
+        }
         if (Array.isArray(value)) {
-          if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc)) {
-            if (reverseLookupKey !== undefined && (doc as any)[reverseLookupKey] === obj._id) {
-              if ((value as Doc[]).find((p) => p._id === doc._id) === undefined) {
-                value.push(doc)
-                needCallback = true
-              }
+          if (this.client.getHierarchy().isDerived(doc._class, core.class.AttachedDoc) && reverseCheck) {
+            const idx = (value as Doc[]).findIndex((p) => p._id === doc._id)
+            if (idx === -1) {
+              value.push(doc)
+            } else {
+              value[idx] = doc
             }
+            needCallback = true
           }
         } else {
           if (obj[key] === doc._id) {
@@ -1279,97 +1288,93 @@ export class LiveQuery implements WithTx, Client {
     const docCache = new Map<string, Doc>()
     for (const tx of txes) {
       if (tx._class === core.class.TxWorkspaceEvent) {
-        await this.checkUpdateEvents(tx as TxWorkspaceEvent)
-        await this.changePrivateHandler(tx as TxWorkspaceEvent)
+        const evt = tx as TxWorkspaceEvent
+        await this.checkUpdateEvents(evt)
+        await this.changePrivateHandler(evt)
       }
       result.push(await this._tx(tx, docCache))
     }
     return result
   }
 
-  triggerCounter = 0
-  searchTriggerTimer: any
+  triggerInProgress = true
 
   private async checkUpdateEvents (evt: TxWorkspaceEvent, trigger = true): Promise<void> {
-    clearTimeout(this.searchTriggerTimer)
-
-    // We need to add trigger once more, since elastic could have a huge lag with document availability.
-    if (trigger || this.triggerCounter > 0) {
-      if (trigger) {
-        this.triggerCounter = 2 // Schedule 2 refreshes on every 10 seconds.
+    if (this.triggerInProgress) {
+      this.triggerInProgress = false
+      const h = this.client.getHierarchy()
+      function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
+        return (
+          classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
+        )
       }
-      setTimeout(() => {
-        this.triggerCounter--
-        void this.checkUpdateEvents(evt, false)
-      }, 10000)
-    }
-
-    const h = this.client.getHierarchy()
-    function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
-      return classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
-    }
-    if (evt.event === WorkspaceEvent.IndexingUpdate) {
-      const indexingParam = evt.params as IndexingUpdateEvent
-      for (const q of [...this.queue]) {
-        if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
-          if (!this.removeFromQueue(q)) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
+      if (evt.event === WorkspaceEvent.IndexingUpdate) {
+        const indexingParam = evt.params as IndexingUpdateEvent
+        for (const q of [...this.queue]) {
+          if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
+            if (!this.removeFromQueue(q)) {
+              try {
+                await this.refresh(q)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
+              }
+            } else {
+              const queries = this.queries.get(q._class)
+              const pos = queries?.indexOf(q) ?? -1
+              if (pos >= 0 && queries !== undefined) {
+                queries.splice(pos, 1)
+                if (queries?.length === 0) {
+                  this.queries.delete(q._class)
+                }
+              }
             }
-          } else {
-            const queries = this.queries.get(q._class)
-            const pos = queries?.indexOf(q) ?? -1
-            if (pos >= 0 && queries !== undefined) {
-              queries.splice(pos, 1)
-              if (queries?.length === 0) {
-                this.queries.delete(q._class)
+          }
+        }
+        for (const v of this.queries.values()) {
+          for (const q of v) {
+            if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
+              try {
+                await this.refresh(q)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
               }
             }
           }
         }
       }
-      for (const v of this.queries.values()) {
-        for (const q of v) {
-          if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
-            }
-          }
-        }
-      }
-    }
-    if (evt.event === WorkspaceEvent.BulkUpdate) {
-      const params = evt.params as BulkUpdateEvent
-      for (const q of [...this.queue]) {
-        if (hasClass(q, params._class)) {
-          if (!this.removeFromQueue(q)) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
-            }
-          }
-        }
-      }
-      for (const v of this.queries.values()) {
-        for (const q of v) {
+      if (evt.event === WorkspaceEvent.BulkUpdate) {
+        const params = evt.params as BulkUpdateEvent
+        for (const q of [...this.queue]) {
           if (hasClass(q, params._class)) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
+            if (!this.removeFromQueue(q)) {
+              try {
+                await this.refresh(q)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
+              }
+            }
+          }
+        }
+        for (const v of this.queries.values()) {
+          for (const q of v) {
+            if (hasClass(q, params._class)) {
+              try {
+                await this.refresh(q)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
+              }
             }
           }
         }
       }
+      setTimeout(() => {
+        this.triggerInProgress = true
+        void this.checkUpdateEvents(evt, false)
+      }, 20000)
     }
   }
 
@@ -1448,7 +1453,7 @@ export class LiveQuery implements WithTx, Client {
                 } else {
                   const d = await this.findOne(lookupClass, { _id: pops[pkey] }, { lookup: nestedLookup })
                   if (d !== undefined) {
-                    pp[pkey].push()
+                    pp[pkey].push(d)
                   }
                 }
               }

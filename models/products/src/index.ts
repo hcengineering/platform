@@ -280,7 +280,8 @@ function defineSpaceType (builder: Builder): void {
       icon: products.icon.ProductsApplication,
       baseClass: products.class.Product,
       availablePermissions: [...productPermissions],
-      projectClass: products.class.ProductVersion
+      projectClass: products.class.ProductVersion,
+      withProjects: true
     },
     products.spaceTypeDescriptor.ProductType
   )
@@ -454,6 +455,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: products.class.Product,
+              icon: products.icon.Product,
               label: products.string.Products
             },
             position: 'top'
@@ -465,6 +467,7 @@ function defineApplication (builder: Builder): void {
             component: workbench.component.SpecialView,
             componentProps: {
               _class: products.class.ProductVersion,
+              icon: products.icon.ProductVersion,
               label: products.string.ProductVersions
             },
             position: 'top'

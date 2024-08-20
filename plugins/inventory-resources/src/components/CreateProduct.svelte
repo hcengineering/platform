@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, Doc, generateId, Ref } from '@hcengineering/core'
+  import core, { Account, Doc, generateId, Ref } from '@hcengineering/core'
   import { Category, Product } from '@hcengineering/inventory'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { Button, DropdownLabels, DropdownTextItem, EditBox } from '@hcengineering/ui'
@@ -26,7 +26,7 @@
     attachedTo: '' as Ref<Doc>,
     attachedToClass: inventory.class.Category,
     _class: inventory.class.Product,
-    space: inventory.space.Products,
+    space: core.space.Workspace,
     _id: generateId(),
     collection: 'products',
     modifiedOn: Date.now(),

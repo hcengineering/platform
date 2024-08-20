@@ -14,7 +14,17 @@
 -->
 <script lang="ts">
   import { Channel, Person, getName } from '@hcengineering/contact'
-  import core, { Doc, DocumentUpdate, Mixin, Ref, RefTo, Tx, TxOperations, TxProcessor } from '@hcengineering/core'
+  import core, {
+    ArrOf,
+    Doc,
+    DocumentUpdate,
+    Mixin,
+    Ref,
+    RefTo,
+    Tx,
+    TxOperations,
+    TxProcessor
+  } from '@hcengineering/core'
   import { Card, createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
   import { Toggle } from '@hcengineering/ui'
   import { isCollectionAttr } from '@hcengineering/view-resources'
@@ -224,13 +234,14 @@
 
     const h = client.getHierarchy()
     // Move all possible references to Account and Employee and replace to target one.
+    const ancestors = h.getAncestors(contact.class.Person)
     const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
       const to = it.type as RefTo<Doc>
       return (
-        to.to === contact.class.Person ||
-        to.to === contact.mixin.Employee ||
         to.to === core.class.Account ||
-        to.to === contact.class.PersonAccount
+        to.to === contact.class.PersonAccount ||
+        h.getBaseClass(to.to) === contact.class.Person ||
+        ancestors.includes(to.to)
       )
     })
 
@@ -239,55 +250,61 @@
         continue
       }
       const to = attr.type as RefTo<Doc>
-      if (to.to === contact.mixin.Employee || to.to === contact.class.Person) {
-        const descendants = h.getDescendants(attr.attributeOf)
-        for (const d of descendants) {
-          if (h.isDerived(d, core.class.Tx)) {
-            continue
-          }
-          if (h.findDomain(d) !== undefined) {
-            while (true) {
-              const values = await client.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
-              if (values.length === 0) {
-                break
-              }
+      const descendants = h.getDescendants(attr.attributeOf)
+      for (const d of descendants) {
+        if (h.isDerived(d, core.class.Tx) || h.isDerived(d, core.class.BenchmarkDoc)) {
+          continue
+        }
+        if (h.findDomain(d) !== undefined) {
+          while (true) {
+            const values = await client.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
+            if (values.length === 0) {
+              break
+            }
 
-              const builder = client.apply(sourceAccount._id)
-              for (const v of values) {
-                await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
-              }
-              if (builder.txes.length > 0) {
-                await builder.commit()
-              }
+            const builder = client.apply(sourceAccount._id)
+            for (const v of values) {
+              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
+            }
+            if (builder.txes.length > 0) {
+              await builder.commit()
             }
           }
         }
       }
     }
-    const arrs = await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })
+    const arrs = (await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })).filter((it) => {
+      const to = it.type as ArrOf<Doc>
+      if (to.of._class !== core.class.RefTo) return false
+      const refTo = to.of as RefTo<Doc>
+      return (
+        refTo.to === core.class.Account ||
+        refTo.to === contact.class.PersonAccount ||
+        h.getBaseClass(refTo.to) === contact.class.Person ||
+        ancestors.includes(refTo.to)
+      )
+    })
+
     for (const attr of arrs) {
       if (attr.name === '_id') {
         continue
       }
-      const to = attr.type as RefTo<Doc>
-      if (to.to === contact.mixin.Employee || to.to === contact.class.Person) {
-        const descendants = h.getDescendants(attr.attributeOf)
-        for (const d of descendants) {
-          if (h.isDerived(d, core.class.Tx)) {
-            continue
-          }
-          if (h.findDomain(d) !== undefined) {
-            while (true) {
-              const values = await client.findAll(attr.attributeOf, { [attr.name]: sourceAccount._id }, { limit: 100 })
-              if (values.length === 0) {
-                break
-              }
-              const builder = client.apply(sourceAccount._id)
-              for (const v of values) {
-                await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
-              }
-              await builder.commit()
+      const descendants = h.getDescendants(attr.attributeOf)
+      for (const d of descendants) {
+        if (h.isDerived(d, core.class.Tx) || h.isDerived(d, core.class.BenchmarkDoc)) {
+          continue
+        }
+        if (h.findDomain(d) !== undefined) {
+          while (true) {
+            const values = await client.findAll(attr.attributeOf, { [attr.name]: sourceAccount._id }, { limit: 100 })
+            if (values.length === 0) {
+              break
             }
+            const builder = client.apply(sourceAccount._id)
+            for (const v of values) {
+              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
+            }
+            await builder.commit()
           }
         }
       }

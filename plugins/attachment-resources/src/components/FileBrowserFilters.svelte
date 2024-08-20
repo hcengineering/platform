@@ -44,7 +44,7 @@
   <SpaceMultiBoxList
     _classes={requestedSpaceClasses}
     label={attachment.string.FileBrowserFilterIn}
-    selectedItems={spaceId ? [spaceId] : []}
+    selectedItems={selectedSpaces}
     kind={'ghost'}
     size={'medium'}
     on:update={(evt) => {

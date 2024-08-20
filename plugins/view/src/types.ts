@@ -22,6 +22,7 @@ import {
   Class,
   Client,
   Doc,
+  DocManager,
   DocumentQuery,
   FindOptions,
   Hierarchy,
@@ -373,29 +374,39 @@ export interface Groupping extends Class<Doc> {
 /**
  * @public
  */
-export interface AggregationManager {
+export interface IAggregationManager<T extends Doc> {
   close: () => void
   notifyTx: (...tx: Tx[]) => Promise<void>
-  categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
-  getAttrClass: () => Ref<Class<Doc>>
-  updateSorting?: (finalOptions: FindOptions<Doc>, attr: AnyAttribute) => Promise<void>
+  categorize: (target: Array<Ref<T>>, attr: AnyAttribute) => Promise<Array<Ref<T>>>
+  getAttrClass: () => Ref<Class<T>>
+  updateSorting?: (finalOptions: FindOptions<T>, attr: AnyAttribute) => Promise<void>
 }
 
 /**
  * @public
  */
-export type AggregationManagerResource = Resource<AggregationManager>
+export type AggregationManagerResource = Resource<IAggregationManager<any>>
 
 /**
  * @public
  */
-export type CreateAggregationManagerFunc = Resource<(client: Client, lqCallback: () => void) => AggregationManager>
+export type CreateAggregationManagerFunc = Resource<
+(
+  client: Client,
+  lqCallback: () => void,
+  setStore: (manager: DocManager<any>) => void,
+  categorizingFunc: (doc: any, target: any) => boolean,
+  _class: Ref<Class<any>>
+) => IAggregationManager<any>
+>
 
 /**
  * @public
  */
 export interface Aggregation extends Class<Doc> {
   createAggregationManager: CreateAggregationManagerFunc
+  setStoreFunc: Resource<(manager: DocManager<any>) => void>
+  filterFunc: Resource<(doc: Doc, target: Doc) => boolean>
 }
 
 /**
@@ -526,6 +537,8 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // Available only for workspace owners
   secured?: boolean
   allowedForEditableContent?: boolean
+
+  analyticsEvent?: string
 }
 
 /**
@@ -754,6 +767,11 @@ export type OrderOption = [string, SortingOrder]
  */
 export interface LinkProvider extends Class<Doc> {
   encode: Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+}
+
+export interface LinkIdProvider extends Class<Doc> {
+  encode: Resource<(doc: Doc) => Promise<string>>
+  decode: Resource<(id: string) => Promise<Ref<Doc> | undefined>>
 }
 
 /**

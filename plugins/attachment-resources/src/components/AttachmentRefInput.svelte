@@ -25,7 +25,9 @@
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, EmptyMarkup, ReferenceInput, type RefAction } from '@hcengineering/text-editor'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
+  import { AttachIcon, ReferenceInput } from '@hcengineering/text-editor-resources'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
@@ -50,6 +52,7 @@
   export let placeholder: IntlString | undefined = undefined
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
+  export let skipAttachmentsPreload = false
 
   let refInput: ReferenceInput
 
@@ -72,12 +75,33 @@
 
   let refContainer: HTMLElement
 
+  const existingAttachmentsQuery = createQuery()
+  let existingAttachments: Ref<Attachment>[] = []
+
+  $: if (Array.from(attachments.keys()).length > 0) {
+    existingAttachmentsQuery.query(
+      attachment.class.Attachment,
+      {
+        space,
+        attachedTo: objectId,
+        attachedToClass: _class,
+        _id: { $in: Array.from(attachments.keys()) }
+      },
+      (res) => {
+        existingAttachments = res.map((p) => p._id)
+      }
+    )
+  } else {
+    existingAttachments = []
+    existingAttachmentsQuery.unsubscribe()
+  }
+
   $: objectId && updateAttachments(objectId)
 
-  async function updateAttachments (objectId: Ref<Doc>) {
+  async function updateAttachments (objectId: Ref<Doc>): Promise<void> {
     draftAttachments = $draftsStore[draftKey]
     if (draftAttachments && shouldSaveDraft) {
-      attachments.clear()
+      attachments = new Map()
       newAttachments.clear()
       Object.entries(draftAttachments).map((file) => {
         return attachments.set(file[0] as Ref<Attachment>, file[1])
@@ -87,7 +111,8 @@
       })
       originalAttachments.clear()
       removedAttachments.clear()
-    } else {
+      query.unsubscribe()
+    } else if (!skipAttachmentsPreload) {
       query.query(
         attachment.class.Attachment,
         {
@@ -96,24 +121,25 @@
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
-        },
-        {
-          lookup: {
-            file: core.class.Blob
-          }
         }
       )
+    } else {
+      attachments = new Map()
+      newAttachments.clear()
+      originalAttachments.clear()
+      removedAttachments.clear()
+      query.unsubscribe()
     }
   }
 
-  async function saveDraft () {
+  function saveDraft (): void {
     if (shouldSaveDraft) {
       draftAttachments = Object.fromEntries(attachments)
       draftController.save(draftAttachments)
     }
   }
 
-  async function createAttachment (file: File) {
+  async function createAttachment (file: File): Promise<void> {
     try {
       const uuid = await uploadFile(file)
       const metadata = await getFileMetadata(file, uuid)
@@ -137,14 +163,17 @@
       })
       newAttachments.add(_id)
       attachments = attachments
+      dispatch('update', { message: content, attachments: attachments.size })
       saveDraft()
     } catch (err: any) {
-      setPlatformStatus(unknownError(err))
+      void setPlatformStatus(unknownError(err))
     }
   }
 
   async function saveAttachment (doc: Attachment): Promise<void> {
-    await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    if (!existingAttachments.includes(doc._id)) {
+      await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    }
   }
 
   async function fileSelected (): Promise<void> {
@@ -182,6 +211,7 @@
       await createAttachments()
     }
     attachments = attachments
+    dispatch('update', { message: content, attachments: attachments.size })
     saveDraft()
   }
 
@@ -209,9 +239,12 @@
         }
       })
     }
+    if (!saved && shouldSaveDraft) {
+      void createAttachments()
+    }
   })
 
-  export function removeDraft (removeFiles: boolean) {
+  export function removeDraft (removeFiles: boolean): void {
     draftController.remove()
     if (removeFiles) {
       newAttachments.forEach((p) => {
@@ -238,14 +271,14 @@
     return Promise.all(promises).then()
   }
 
-  async function onMessage (event: CustomEvent) {
+  async function onMessage (event: CustomEvent): Promise<void> {
     loading = true
     await createAttachments()
     loading = false
     dispatch('message', { message: event.detail, attachments: attachments.size })
   }
 
-  async function onUpdate (event: CustomEvent) {
+  function onUpdate (event: CustomEvent): void {
     dispatch('update', { message: event.detail, attachments: attachments.size })
   }
 
@@ -285,9 +318,10 @@
   }
 </script>
 
-<div class="no-print" bind:this={refContainer}>
+<div class="flex-col no-print" bind:this={refContainer}>
   <input
     bind:this={inputFile}
+    disabled={inputFile == null}
     multiple
     type="file"
     name="file"
@@ -297,7 +331,7 @@
   />
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
-    class="container"
+    class="flex-col"
     on:dragover|preventDefault={() => {}}
     on:dragleave={() => {}}
     on:drop|preventDefault|stopPropagation={fileDrop}
@@ -305,7 +339,7 @@
     <ReferenceInput
       {focusIndex}
       bind:this={refInput}
-      {content}
+      bind:content
       {iconSend}
       {labelSend}
       {showSend}
@@ -337,7 +371,7 @@
       {placeholder}
     >
       <div slot="header">
-        {#if attachments.size || progress}
+        {#if attachments.size > 0 || progress}
           <div class="flex-row-center list scroll-divider-color">
             {#if progress}
               <div class="flex p-3">
@@ -350,7 +384,7 @@
                   value={attachment}
                   removable
                   on:remove={(result) => {
-                    if (result !== undefined) removeAttachment(attachment)
+                    if (result !== undefined) void removeAttachment(attachment)
                   }}
                 />
               </div>

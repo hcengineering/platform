@@ -16,7 +16,6 @@
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
@@ -33,12 +32,9 @@
 
   import training from '../plugin'
 
-  export let visibleNav: boolean = true
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
-  const dispatch = createEventDispatcher()
   let space: TypedSpace | null = null
   let spaceType: SpaceType | null = null
   let roles: Role[] | null = null
@@ -87,7 +83,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={training.icon.Training} label={training.string.Trainings} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
@@ -107,6 +103,7 @@
             }}
             kind="regular"
             size="large"
+            allowGuests
           />
         {/each}
       </div>

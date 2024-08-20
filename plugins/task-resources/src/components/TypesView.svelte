@@ -17,7 +17,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Project, ProjectType, ProjectTypeDescriptor } from '@hcengineering/task'
-  import { AnyComponent, Button, Component, IconAdd, Loading, SearchEdit, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconAdd, Loading, SearchInput, showPopup, Header } from '@hcengineering/ui'
   import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import { FilterBar, FilterButton, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import { selectedTaskTypeStore, selectedTypeStore, taskTypeStore } from '..'
@@ -72,13 +72,8 @@
   }
 </script>
 
-<div class="ac-header full divide caption-height">
-  <div class="ac-header__wrap-title mr-3">
-    <TypeSelector baseClass={_class} />
-    <!-- <span class="ac-header__title"><Label {label} /></span> -->
-  </div>
-
-  <div class="ac-header-full medium-gap mb-1">
+<Header adaptive={'freezeActions'} hideActions={!(createLabel !== undefined && createComponent)}>
+  <svelte:fragment slot="beforeTitle">
     <ViewletSelector
       bind:viewlet
       bind:preference
@@ -89,6 +84,16 @@
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <TypeSelector baseClass={_class} />
+
+  <svelte:fragment slot="search">
+    <SearchInput bind:value={search} collapsed on:change={(e) => (search = e.detail)} />
+    <FilterButton {_class} {space} />
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
     {#if createLabel !== undefined && createComponent}
       <Button
         icon={IconAdd}
@@ -100,20 +105,8 @@
         }}
       />
     {/if}
-  </div>
-</div>
-<div class="ac-header full divide search-start">
-  <div class="ac-header-full small-gap">
-    <SearchEdit bind:value={search} />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-    <div class="buttons-divider" />
-    <FilterButton {_class} {space} />
-  </div>
-  <div class="ac-header-full medium-gap">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
-    <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
-  </div>
-</div>
+  </svelte:fragment>
+</Header>
 
 {#if !viewlet?.$lookup?.descriptor?.component || viewlet?.attachTo !== _class || (preference !== undefined && viewlet?._id !== preference.attachedTo)}
   <Loading />
@@ -127,6 +120,7 @@
       resultQuery = mergeQueries(query, e.detail)
     }}
   />
+
   <Component
     is={viewlet.$lookup.descriptor.component}
     props={{

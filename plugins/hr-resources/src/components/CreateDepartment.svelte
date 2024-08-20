@@ -15,14 +15,16 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { EmployeeBox } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
+  import { Department, HrEvents } from '@hcengineering/hr'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
   import DepartmentEditor from './DepartmentEditor.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
-  export let parent = hr.ids.Head
+  export let parent: Ref<Department> = hr.ids.Head
 
   const dispatch = createEventDispatcher()
 
@@ -36,7 +38,7 @@
   const client = getClient()
 
   async function createDepartment () {
-    const id = await client.createDoc(hr.class.Department, hr.space.HR, {
+    const id = await client.createDoc(hr.class.Department, core.space.Workspace, {
       name,
       description: '',
       parent,
@@ -44,7 +46,7 @@
       teamLead: lead,
       managers: []
     })
-
+    Analytics.handleEvent(HrEvents.DepartmentCreated, { id, lead })
     dispatch('close', id)
   }
   const manager = createFocusManager()

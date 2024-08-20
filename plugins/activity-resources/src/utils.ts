@@ -1,17 +1,23 @@
-import { get } from 'svelte/store'
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { type Doc, type Ref, type TxOperations, getCurrentAccount, isOtherHour } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import core, {
+  getCurrentAccount,
+  isOtherHour,
+  type Doc,
+  type Ref,
+  type TxOperations,
+  type Space
+} from '@hcengineering/core'
+import { getClient, isSpace } from '@hcengineering/presentation'
 import {
-  type Location,
-  getEventPositionElement,
-  closePopup,
-  showPopup,
   EmojiPopup,
-  getCurrentResolvedLocation
+  closePopup,
+  getCurrentResolvedLocation,
+  getEventPositionElement,
+  showPopup,
+  type Location
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
-import preference from '@hcengineering/preference'
+import { get } from 'svelte/store'
 
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
@@ -59,7 +65,7 @@ export async function addReactionAction (
   const client = getClient()
   const reactions: Reaction[] =
     (message.reactions ?? 0) > 0
-      ? await client.findAll<Reaction>(activity.class.Reaction, { attachedTo: message._id })
+      ? await client.findAll<Reaction>(activity.class.Reaction, { attachedTo: message._id, space: message.space })
       : []
   const element = getEventPositionElement(ev)
 
@@ -77,7 +83,7 @@ export async function saveForLater (message?: ActivityMessage): Promise<void> {
   closePopup()
   const client = getClient()
 
-  await client.createDoc(activity.class.SavedMessage, preference.space.Preference, {
+  await client.createDoc(activity.class.SavedMessage, core.space.Workspace, {
     attachedTo: message._id
   })
 }
@@ -168,4 +174,8 @@ export function canGroupMessages (message: MessageData, prevMessage?: MessageDat
 export function shouldScrollToActivity (): boolean {
   const loc = getCurrentResolvedLocation()
   return getMessageFromLoc(loc) !== undefined
+}
+
+export function getSpace (doc: Doc): Ref<Space> {
+  return isSpace(doc) ? doc._id : doc.space
 }

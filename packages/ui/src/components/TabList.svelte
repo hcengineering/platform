@@ -21,7 +21,7 @@
   import DropdownLabelsIntl from './DropdownLabelsIntl.svelte'
   import { Scroller, checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
 
-  export let selected: string | string[] = ''
+  export let selected: string | number | Array<string | number> = ''
   export let multiselect: boolean = false
   export let items: TabItem[]
   export let kind: 'normal' | 'regular' | 'plain' | 'separated' | 'separated-free' = 'normal'
@@ -37,7 +37,7 @@
   if (multiselect && selected === '') selected = []
   if (selected === '') selected = items[0].id
 
-  const getSelected = (id: string, selected: string | string[]): boolean => {
+  const getSelected = (id: string | number, selected: string | number | Array<string | number>): boolean => {
     let res: boolean = false
     if (multiselect && Array.isArray(selected)) res = selected.filter((it) => it === id).length > 0
     else if (selected === id) res = true
@@ -104,7 +104,7 @@
               <div class="color" style:background-color={item.color} />
             {/if}
             {#if item.label || item.labelIntl}
-              <span class="flex-center overflow-label" class:ml-1-5={item.icon || item.color}>
+              <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
                 {#if item.label}
                   {item.label}
                 {:else if item.labelIntl}

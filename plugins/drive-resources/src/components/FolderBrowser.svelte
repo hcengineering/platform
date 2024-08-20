@@ -15,27 +15,33 @@
 <script lang="ts">
   import { type Doc, type DocumentQuery, type Ref, type WithLookup } from '@hcengineering/core'
   import drive, { type Drive, type Folder } from '@hcengineering/drive'
+  import { Scroller, SearchInput, Panel, Button, IconMoreH } from '@hcengineering/ui'
   import { Viewlet, ViewOptions } from '@hcengineering/view'
-  import { Scroller, SearchEdit } from '@hcengineering/ui'
   import {
     FilterBar,
     FilterButton,
     ViewletContentView,
     ViewletSelector,
-    ViewletSettingButton
+    ViewletSettingButton,
+    DocAttributeBar,
+    showMenu
   } from '@hcengineering/view-resources'
 
-  import { createFiles } from '../utils'
+  import DrivePresenter from './DrivePresenter.svelte'
+  import FolderHeader from './FolderHeader.svelte'
+  import FileDropArea from './FileDropArea.svelte'
 
   export let space: Ref<Drive>
   export let parent: Ref<Folder>
+  export let object: Drive | Folder | undefined = undefined
   export let readonly: boolean = false
+  export let embedded: boolean = false
+  export let type: 'drive' | 'folder'
 
   const _class = drive.class.Resource
 
+  $: object = type === 'drive' ? (object as Drive) : (object as Folder)
   $: query = { space, parent }
-
-  let dragover = false
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
   let viewOptions: ViewOptions | undefined
@@ -51,55 +57,56 @@
     searchQuery = search === '' ? { ...query } : { ...query, $search: search }
   }
 
-  async function handleDrop (e: DragEvent): Promise<void> {
-    if (readonly) {
-      return
-    }
-    // progress = true
-    const list = e.dataTransfer?.files
-    if (list !== undefined && list.length !== 0) {
-      await createFiles(list, space, parent)
-    }
-    // progress = false
-  }
+  const getDrive = (obj: Drive | Folder): Drive => obj as Drive
+  const getFolder = (obj: Drive | Folder): Folder => obj as Folder
 </script>
 
-{#if space !== undefined}
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="antiComponent"
-    class:solid={dragover}
-    on:dragover|preventDefault={() => {
-      dragover = true
-    }}
-    on:dragleave={() => {
-      dragover = false
-    }}
-    on:drop|preventDefault|stopPropagation={(ev) => {
-      void handleDrop(ev)
-    }}
-  >
-    <div class="ac-header full divide caption-height">
-      <div class="ac-header-full small-gap">
-        <SearchEdit bind:value={search} on:change={() => {}} />
-        <div class="buttons-divider" />
-        <FilterButton {_class} {space} />
-      </div>
-      <div class="ac-header-full medium-gap">
-        <ViewletSettingButton bind:viewOptions bind:viewlet />
-        <ViewletSelector bind:viewlet viewletQuery={{ attachTo: _class }} />
-      </div>
-    </div>
+{#if space !== undefined && object}
+  <Panel {embedded} allowClose={false} selectedAside={false}>
+    <svelte:fragment slot="beforeTitle">
+      <ViewletSelector bind:viewlet viewletQuery={{ attachTo: _class }} />
+      <ViewletSettingButton bind:viewOptions bind:viewlet />
+    </svelte:fragment>
+    <svelte:fragment slot="title">
+      {#if type === 'drive'}
+        <DrivePresenter value={getDrive(object)} shouldShowAvatar={false} disabled noUnderline />
+      {:else}
+        <FolderHeader object={getFolder(object)} />
+      {/if}
+    </svelte:fragment>
+    <svelte:fragment slot="search">
+      <SearchInput bind:value={search} collapsed />
+      <FilterButton {_class} {space} />
+    </svelte:fragment>
+    <svelte:fragment slot="utils">
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={(ev) => {
+          showMenu(ev, { object })
+        }}
+      />
+    </svelte:fragment>
+    <svelte:fragment slot="aside">
+      <Scroller>
+        <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
+        <div class="space-divider bottom" />
+      </Scroller>
+    </svelte:fragment>
 
     {#if viewlet !== undefined && viewOptions}
       <FilterBar {_class} {space} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
-      <div class="popupPanel rowContent">
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="popupPanel-body" on:contextmenu>
         {#if viewlet}
-          <Scroller horizontal={true}>
-            <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />
-          </Scroller>
+          <FileDropArea {space} {parent} canDrop={() => !readonly}>
+            <Scroller horizontal={true}>
+              <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />
+            </Scroller>
+          </FileDropArea>
         {/if}
       </div>
     {/if}
-  </div>
+  </Panel>
 {/if}

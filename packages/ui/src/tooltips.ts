@@ -1,6 +1,7 @@
 import { type IntlString } from '@hcengineering/platform'
-import { writable } from 'svelte/store'
+import { derived } from 'svelte/store'
 import type { AnyComponent, AnySvelteComponent, LabelAndProps, TooltipAlignment } from './types'
+import { modalStore } from './modals'
 
 const emptyTooltip: LabelAndProps = {
   label: undefined,
@@ -14,11 +15,21 @@ const emptyTooltip: LabelAndProps = {
   kind: 'tooltip'
 }
 let storedValue: LabelAndProps = emptyTooltip
-export const tooltipstore = writable<LabelAndProps>(emptyTooltip)
+export const tooltipstore = derived(modalStore, (modals) => {
+  if (modals.length === 0) {
+    return emptyTooltip
+  }
+  const tooltip = modals.filter((m) => m?.type === 'tooltip')
+  return tooltip.length > 0 ? (tooltip[0] as LabelAndProps) : emptyTooltip
+})
 
 let toHandler: any
 export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   if (options === undefined) {
+    return {}
+  }
+  if (options.label === undefined && options.component === undefined) {
+    // No tooltip
     return {}
   }
   let opt = options
@@ -39,7 +50,7 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
             opt.kind,
             opt.keys
           )
-        }, 250)
+        }, 10)
       } else {
         showTooltip(
           opt.label,
@@ -106,24 +117,30 @@ export function showTooltip (
     props,
     anchor,
     onUpdate,
-    kind,
-    keys
+    kind: kind ?? 'tooltip',
+    keys,
+    type: 'tooltip'
   }
-  tooltipstore.update((old) => {
-    if (old.component === storedValue.component) {
-      if (old.kind !== undefined && storedValue.kind === undefined) {
-        storedValue.kind = old.kind
+  modalStore.update((old) => {
+    const tooltip = old.find((m) => m?.type === 'tooltip') as LabelAndProps | undefined
+    if (tooltip !== undefined && tooltip.component === storedValue.component) {
+      if (tooltip.kind !== undefined && storedValue.kind === undefined) {
+        storedValue.kind = tooltip.kind
       }
       if (storedValue.kind === undefined) {
         storedValue.kind = 'tooltip'
       }
     }
-    return storedValue
+    old.push(storedValue)
+    return old
   })
 }
 
 export function closeTooltip (): void {
   clearTimeout(toHandler)
   storedValue = emptyTooltip
-  tooltipstore.set(emptyTooltip)
+  modalStore.update((old) => {
+    old = old.filter((m) => m?.type !== 'tooltip')
+    return old
+  })
 }

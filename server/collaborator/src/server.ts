@@ -15,17 +15,21 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
+import type { MongoClientReference } from '@hcengineering/mongo'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
-import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
 
+<<<<<<< HEAD
 import type { StorageAdapter } from '@hcengineering/server-core'
+=======
+>>>>>>> develop
 import { Config } from './config'
 import { Context } from './context'
 import { AuthenticationExtension } from './extensions/authentication'
@@ -34,6 +38,7 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
+import { TransformerFactory } from './types'
 
 /**
  * @public
@@ -43,7 +48,16 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
+<<<<<<< HEAD
 export async function start (ctx: MeasureContext, config: Config, minio: StorageAdapter): Promise<Shutdown> {
+=======
+export async function start (
+  ctx: MeasureContext,
+  config: Config,
+  storageAdapter: StorageAdapter,
+  mongoClient: MongoClientReference
+): Promise<Shutdown> {
+>>>>>>> develop
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })
@@ -51,39 +65,22 @@ export async function start (ctx: MeasureContext, config: Config, minio: Storage
   const app = express()
   app.use(cors())
   app.use(bp.json())
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
-
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 1,
-      memLevel: 9
-    })
-  )
-
-  const extensions = [
-    ServerKit.configure({
-      image: {
-        getBlobRef: async (fileId, name, size) => {
-          const sz = size !== undefined ? `&size=${size}` : ''
-          return {
-            src: `${config.UploadUrl}?file=${fileId}`,
-            srcset: `${config.UploadUrl}?file=${fileId}${sz}`
-          }
-        }
-      }
-    })
-  ]
 
   const extensionsCtx = ctx.newChild('extensions', {})
 
-  const transformer = new MarkupTransformer(extensions)
+  const transformerFactory: TransformerFactory = (workspaceId) => {
+    const extensions = [
+      ServerKit.configure({
+        image: {
+          getBlobRef: async (fileId, name, size) => {
+            const src = await storageAdapter.getUrl(ctx, workspaceId, fileId)
+            return { src, srcset: '' }
+          }
+        }
+      })
+    ]
+    return new MarkupTransformer(extensions)
+  }
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -126,7 +123,11 @@ export async function start (ctx: MeasureContext, config: Config, minio: Storage
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
+<<<<<<< HEAD
         adapter: new PlatformStorageAdapter({ minio }, transformer)
+=======
+        adapter: new PlatformStorageAdapter(storageAdapter, mongo, transformerFactory)
+>>>>>>> develop
       })
     ]
   })
@@ -188,8 +189,13 @@ export async function start (ctx: MeasureContext, config: Config, minio: Storage
       rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
       await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
+          const transformer = transformerFactory(token.workspace)
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
+<<<<<<< HEAD
             return await method(ctx, context, request.payload, { hocuspocus, storage: minio, transformer })
+=======
+            return await method(ctx, context, request.payload, { hocuspocus, storageAdapter, transformer })
+>>>>>>> develop
           })
           res.status(200).send(response)
         } catch (err: any) {
@@ -201,22 +207,7 @@ export async function start (ctx: MeasureContext, config: Config, minio: Storage
 
   const wss = new WebSocketServer({
     noServer: true,
-    perMessageDeflate: {
-      zlibDeflateOptions: {
-        chunkSize: 32 * 1024,
-        memLevel: 9,
-        level: 1
-      },
-      zlibInflateOptions: {
-        chunkSize: 32 * 1024,
-        memLevel: 9,
-        level: 1
-      },
-      // Below options specified as default values.
-      concurrencyLimit: 10, // Limits zlib concurrency for perf.
-      threshold: 1024 // Size (in bytes) below which messages
-      // should not be compressed if context takeover is disabled.
-    }
+    perMessageDeflate: false
   })
 
   wss.on('connection', (incoming: WebSocket, request: IncomingMessage) => {

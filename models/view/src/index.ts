@@ -20,6 +20,7 @@ import {
   DOMAIN_MODEL,
   type Data,
   type Doc,
+  type DocManager,
   type DocumentQuery,
   type Domain,
   type Ref,
@@ -90,7 +91,8 @@ import {
   type ObjectIcon,
   type ObjectTooltip,
   type AttrPresenter,
-  type AttributeCategory
+  type AttributeCategory,
+  type LinkIdProvider
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -273,6 +275,8 @@ export class TGroupping extends TClass implements Groupping {
 @Mixin(view.mixin.Aggregation, core.class.Class)
 export class TAggregation extends TClass implements Aggregation {
   createAggregationManager!: CreateAggregationManagerFunc
+  setStoreFunc!: Resource<(manager: DocManager<any>) => void>
+  filterFunc!: Resource<(doc: Doc, target: Doc) => boolean>
 }
 
 @Mixin(view.mixin.ObjectIcon, core.class.Class)
@@ -350,6 +354,12 @@ export class TLinkPresenter extends TDoc implements LinkPresenter {
 @Mixin(view.mixin.LinkProvider, core.class.Class)
 export class TLinkProvider extends TClass implements LinkProvider {
   encode!: Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+}
+
+@Mixin(view.mixin.LinkIdProvider, core.class.Class)
+export class TLinkIdProvider extends TClass implements LinkIdProvider {
+  encode!: Resource<(doc: Doc) => Promise<string>>
+  decode!: Resource<(id: string) => Promise<Ref<Doc> | undefined>>
 }
 
 @Mixin(view.mixin.ObjectPanel, core.class.Class)
@@ -450,7 +460,8 @@ export function createModel (builder: Builder): void {
     TObjectIdentifier,
     TObjectTooltip,
     TObjectIcon,
-    TAttrPresenter
+    TAttrPresenter,
+    TLinkIdProvider
   )
 
   classPresenter(
@@ -478,6 +489,7 @@ export function createModel (builder: Builder): void {
     view.component.MarkupEditorPopup,
     view.component.MarkupDiffPresenter
   )
+  classPresenter(builder, core.class.TypeFileSize, view.component.FileSizePresenter, view.component.FileSizePresenter)
 
   builder.mixin(core.class.TypeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
     editor: view.component.HTMLEditor
@@ -489,6 +501,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.InlineAttributEditor, {
     editor: view.component.CollaborativeDocEditor
+  })
+
+  builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
+    presenter: view.component.MarkupDiffPresenter
   })
 
   builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {

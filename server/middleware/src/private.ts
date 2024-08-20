@@ -26,13 +26,14 @@ import core, {
   Ref,
   Tx,
   TxCUD,
+  TxProcessor,
   systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
-import { getUser, mergeTargets } from './utils'
+import { getUser } from './utils'
 
 /**
  * @public
@@ -50,7 +51,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
     let target: string[] | undefined
-    if (this.storage.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+    if (TxProcessor.isExtendsCUD(tx._class)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
       if (this.targetDomains.includes(domain)) {
@@ -65,12 +66,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         }
       }
     }
-    const res = await this.provideTx(ctx, tx)
-    // Add target to all broadcasts
-    ctx.derived.forEach((it) => {
-      it.target = mergeTargets(target, it.target)
-    })
-    return res
+    return await this.provideTx(ctx, tx)
   }
 
   override async findAll<T extends Doc>(
@@ -103,7 +99,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
         )
         ;(findResult as FindResult<Doc> as FindResult<Tx>).filter(
           (p) =>
-            !hierarchy.isDerived(p._class, core.class.TxCUD) ||
+            !TxProcessor.isExtendsCUD(p._class) ||
             !targetClasses.has((p as TxCUD<Doc>).objectClass) ||
             p.createdBy === account._id
         )

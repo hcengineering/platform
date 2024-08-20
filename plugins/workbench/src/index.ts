@@ -43,7 +43,6 @@ export interface Application extends Doc {
   navHeaderComponent?: AnyComponent
   accessLevel?: AccountRole
   navFooterComponent?: AnyComponent
-  modern?: boolean
 }
 
 /**
@@ -136,6 +135,8 @@ export interface SpaceView extends Class<Obj> {
  */
 export const workbenchId = 'workbench' as Plugin
 
+export * from './analytics'
+
 export default plugin(workbenchId, {
   class: {
     Application: '' as Ref<Class<Application>>,
@@ -154,7 +155,8 @@ export default plugin(workbenchId, {
   string: {
     Archive: '' as IntlString,
     View: '' as IntlString,
-    ServerUnderMaintenance: '' as IntlString
+    ServerUnderMaintenance: '' as IntlString,
+    UpgradeDownloadProgress: '' as IntlString
   },
   icon: {
     Search: '' as Asset

@@ -3,7 +3,7 @@
   import { EditBox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { Floor } from '@hcengineering/love'
 
   export let id: Ref<Floor> | undefined = undefined
@@ -20,11 +20,11 @@
   }
 
   async function createFloor (): Promise<void> {
-    await client.createDoc(love.class.Floor, love.space.Rooms, { name })
+    await client.createDoc(love.class.Floor, core.space.Workspace, { name })
   }
   async function updateFloor (): Promise<void> {
     if (id === undefined) return
-    await client.updateDoc(love.class.Floor, love.space.Rooms, id, { name })
+    await client.updateDoc(love.class.Floor, core.space.Workspace, id, { name })
   }
 </script>
 

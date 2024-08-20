@@ -60,6 +60,8 @@
     "UpdateSpaceDescription": "Grants users ability to update the space",
     "ArchiveSpaceDescription": "Grants users ability to archive the space",
     "AutoJoin": "Auto join",
-    "AutoJoinDescr": "Automatically join new employees to this space"
+    "AutoJoinDescr": "Automatically join new employees to this space",
+    "BlobSize": "Size",
+    "BlobContentType": "Content type"
   }
 }

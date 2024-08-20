@@ -19,7 +19,7 @@
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { getDisplayTime, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon, Label, Scroller } from '@hcengineering/ui'
+  import { Label, Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
   import { ActivityMessagePresenter, savedMessagesStore } from '@hcengineering/activity-resources'
 
@@ -27,6 +27,7 @@
   import { savedAttachmentsStore } from '../utils'
   import Header from '../../Header.svelte'
   import { openMessageFromSpecial } from '../../../navigation'
+  import BlankView from '../../BlankView.svelte'
 
   const client = getClient()
 
@@ -66,81 +67,54 @@
   }
 </script>
 
-<div class="ac-header full divide caption-height" style="padding: 0.5rem 1rem">
-  <Header icon={activity.icon.Bookmark} intlLabel={chunter.string.Saved} titleKind="breadcrumbs" />
-</div>
+<Header icon={chunter.icon.Bookmarks} intlLabel={chunter.string.Saved} titleKind={'breadcrumbs'} />
 
-<div class="body h-full w-full clear-mins">
-  <Scroller padding={'.75rem .5rem'} bottomPadding={'.75rem'}>
-    {#if savedMessages.length > 0 || savedAttachments.length > 0}
-      {#each savedMessages as message}
-        {#if message.$lookup?.attachedTo}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
+<Scroller padding={'.75rem .5rem'} bottomPadding={'.75rem'}>
+  {#if savedMessages.length > 0 || savedAttachments.length > 0}
+    {#each savedMessages as message}
+      {#if message.$lookup?.attachedTo}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
 
-          <ActivityMessagePresenter
-            value={message.$lookup?.attachedTo}
-            onClick={() => {
-              handleMessageClicked(message.$lookup?.attachedTo)
-            }}
-          />
-        {/if}
-      {/each}
-      {#each savedAttachments as attach}
-        {#if attach.$lookup?.attachedTo}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div
-            class="attachmentContainer flex-no-shrink clear-mins"
-            on:click={() => openAttachment(attach.$lookup?.attachedTo)}
-          >
-            <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
-            <div class="label">
-              <Label
-                label={chunter.string.SharedBy}
-                params={{
-                  name: getName(attach.$lookup.attachedTo, $personAccountByIdStore, $personByIdStore),
-                  time: getDisplayTime(attach.modifiedOn)
-                }}
-              />
-            </div>
+        <ActivityMessagePresenter
+          value={message.$lookup?.attachedTo}
+          onClick={() => {
+            handleMessageClicked(message.$lookup?.attachedTo)
+          }}
+        />
+      {/if}
+    {/each}
+    {#each savedAttachments as attach}
+      {#if attach.$lookup?.attachedTo}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="attachmentContainer flex-no-shrink clear-mins"
+          on:click={() => openAttachment(attach.$lookup?.attachedTo)}
+        >
+          <AttachmentPreview value={attach.$lookup.attachedTo} isSaved={true} />
+          <div class="label">
+            <Label
+              label={chunter.string.SharedBy}
+              params={{
+                name: getName(attach.$lookup.attachedTo, $personAccountByIdStore, $personByIdStore),
+                time: getDisplayTime(attach.modifiedOn)
+              }}
+            />
           </div>
-        {/if}
-      {/each}
-    {:else}
-      <div class="empty">
-        <Icon icon={activity.icon.Bookmark} size="large" />
-        <div class="an-element__label header">
-          <Label label={chunter.string.EmptySavedHeader} />
         </div>
-        <span class="an-element__label">
-          <Label label={chunter.string.EmptySavedText} />
-        </span>
-      </div>
-    {/if}
-  </Scroller>
-</div>
+      {/if}
+    {/each}
+  {:else}
+    <BlankView
+      icon={activity.icon.Bookmark}
+      header={chunter.string.EmptySavedHeader}
+      label={chunter.string.EmptySavedText}
+    />
+  {/if}
+</Scroller>
 
 <style lang="scss">
-  .body {
-    background-color: var(--theme-panel-color);
-  }
-  .empty {
-    display: flex;
-    align-self: center;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    height: inherit;
-    width: 30rem;
-  }
-
-  .header {
-    font-weight: 600;
-    margin: 1rem;
-  }
-
   .attachmentContainer {
     cursor: pointer;
     padding: 2rem;

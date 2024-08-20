@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import { Label, Menu, showPopup } from '@hcengineering/ui'
+  import { Label, Menu, showPopup, ModernButton, IconOptions } from '@hcengineering/ui'
   import { FileBrowserSortMode } from '..'
   import attachment from '../plugin'
 
@@ -71,15 +71,12 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="sortMenu" on:click={(event) => showSortMenu(event)}>
-  <Label label={attachment.string.FileBrowserSort} />
-  <Label label={sortModeToString(selectedSort)} />
-</div>
-
-<style lang="scss">
-  .sortMenu {
-    cursor: pointer;
-  }
-</style>
+<ModernButton
+  icon={IconOptions}
+  iconSize={'small'}
+  label={sortModeToString(selectedSort)}
+  kind={'tertiary'}
+  size={'small'}
+  tooltip={{ label: attachment.string.FileBrowserSort }}
+  on:click={(event) => showSortMenu(event)}
+/>

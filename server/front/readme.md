@@ -5,7 +5,6 @@ Front service is suited to deliver application bundles and resource assets, it a
 ## Configuration
 
 * SERVER_PORT: Specifies the port number on which the server will listen.
-* TRANSACTOR_URL: Specifies the URL of the transactor.
 * MONGO_URL: Specifies the URL of the MongoDB database.
 * ELASTIC_URL: Specifies the URL of the Elasticsearch service.
 * ACCOUNTS_URL: Specifies the URL of the accounts service.
@@ -23,15 +22,17 @@ Front service is suited to deliver application bundles and resource assets, it a
 
 ## Preview service configuration
 
-PREVIEW_CONFIG env variable foremat.
+PREVIEW_CONFIG env variable format.
 
 A `;` separated list of triples, providerName|previewUrl|supportedFormats.
 
 - providerName - a provider name should be same as in Storage configuration.
-- previewUrl - an Url with :workspace, :blobId, :downloadFile, :size, :format placeholders, they will be replaced in UI with an appropriate blob values.
+  It coult be empty and it will match by content types.
+- previewUrl - an Url with :workspace, :blobId, :downloadFile, :size placeholders, they will be replaced in UI with an appropriate blob values.
 - supportedFormats - a `,` separated list of file extensions.
+- contentTypes - a ',' separated list of content type patterns.
 
-PREVIEW_CONFIG=*|https://front.hc.engineering/files/:workspace/api/preview/?format=:format&width=:size&image=:downloadFile
+PREVIEW_CONFIG=https://front.hc.engineering/files/:workspace/api/preview/?width=:size&image=:downloadFile
 
 ## Variables
 
@@ -39,7 +40,6 @@ PREVIEW_CONFIG=*|https://front.hc.engineering/files/:workspace/api/preview/?form
 - :blobId - an uniq blob _id identifier.
 - :size - a numeric value to determine required size of the image, image will not be upscaled, only downscaled. If -1 is passed, original image size value will be used.
 - :downloadFile - an URI encoded component value of full download URI, could be presigned uri to S3 storage.
-- :format - an a conversion file format, `avif`,`webp` etc.
 
 ## Passing default variant.
 
@@ -49,7 +49,7 @@ providerName could be set to `*` in this case it will be default preview provide
 
 If no preview config are specified, a default one targating a front service preview/resize functionality will be used.
 
-`/files/${getCurrentWorkspaceUrl()}?file=:blobId.:format&size=:size`
+`/files/${getCurrentWorkspaceUrl()}?file=:blobId&size=:size`
 
 ## Testing with dev-production/etc.
 

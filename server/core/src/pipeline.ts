@@ -28,7 +28,8 @@ import {
   type SearchResult,
   type StorageIterator,
   type Tx,
-  type TxResult
+  type TxResult,
+  type Branding
 } from '@hcengineering/core'
 import { type DbConfiguration } from './configuration'
 import { createServerStorage } from './server'
@@ -49,7 +50,9 @@ export async function createPipeline (
   conf: DbConfiguration,
   constructors: MiddlewareCreator[],
   upgrade: boolean,
-  broadcast: BroadcastFunc
+  broadcast: BroadcastFunc,
+  branding: Branding | null,
+  disableTriggers?: boolean
 ): Promise<Pipeline> {
   const broadcastHandlers: BroadcastFunc[] = [broadcast]
   const _broadcast: BroadcastFunc = (
@@ -65,7 +68,9 @@ export async function createPipeline (
     async (ctx) =>
       await createServerStorage(ctx, conf, {
         upgrade,
-        broadcast: _broadcast
+        broadcast: _broadcast,
+        branding,
+        disableTriggers
       })
   )
   const pipelineResult = await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), storage, constructors)
@@ -110,6 +115,12 @@ class PipelineImpl implements Pipeline {
     return this.head !== undefined
       ? await this.head.findAll(ctx, _class, query, options)
       : await this.storage.findAll(ctx.ctx, _class, query, options)
+  }
+
+  async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
+    return this.head !== undefined
+      ? await this.head.groupBy(ctx, domain, field)
+      : await this.storage.groupBy(ctx, domain, field)
   }
 
   async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {

@@ -1,58 +1,64 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright © 2023 Hardcore Engineering Inc
 //
 
 // Add this to the VERY top of the first file loaded in your app
+import { Analytics } from '@hcengineering/analytics'
 import contactPlugin from '@hcengineering/contact'
+import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
-import { serverConfigFromEnv } from '@hcengineering/server'
+import { getMetricsContext, serverConfigFromEnv } from '@hcengineering/server'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverCore, { type StorageConfiguration } from '@hcengineering/server-core'
+import serverCore, { type StorageConfiguration, loadBrandingMap } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverToken from '@hcengineering/server-token'
-import { start } from '.'
 import { serverFactories } from '@hcengineering/server-ws/src/factories'
+import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import serverTelegram from '@hcengineering/server-telegram'
+import serverAiBot from '@hcengineering/server-ai-bot'
+import { join } from 'path'
+import { start } from '.'
 const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
 
-const config = serverConfigFromEnv()
+configureAnalytics(process.env.SENTRY_DSN, {})
+Analytics.setTag('application', 'transactor')
 
+// Force create server metrics context with proper logging
+getMetricsContext(
+  () =>
+    new MeasureMetricsContext(
+      'server',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('server', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+)
+
+setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
+
+const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
-
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
-setMetadata(serverCore.metadata.CursorMaxTimeMS, cursorMaxTime)
+setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.FrontUrl, config.frontUrl)
-setMetadata(serverCore.metadata.UploadURL, config.uploadUrl)
+setMetadata(serverCore.metadata.FilesUrl, config.filesUrl)
 setMetadata(serverToken.metadata.Secret, config.serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
 setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
 setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
 setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
-setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
 setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverCore.metadata.CollaboratorUrl, config.collaboratorUrl)
+setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
+setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-console.log(
-  `starting server on ${config.serverPort} git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${
-    process.env.MODEL_VERSION ?? ''
-  }`
-)
 const shutdown = start(config.url, {
   fullTextUrl: config.elasticUrl,
   storageConfig,
@@ -60,10 +66,11 @@ const shutdown = start(config.url, {
   port: config.serverPort,
   serverFactory,
   indexParallel: 2,
-  indexProcessing: 50,
+  indexProcessing: 500,
   productId: '',
-  enableCompression: config.enableCompression,
-  accountsUrl: config.accountsUrl
+  brandingMap: loadBrandingMap(config.brandingPath),
+  accountsUrl: config.accountsUrl,
+  enableCompression: config.enableCompression
 })
 
 const close = (): void => {
@@ -74,12 +81,8 @@ const close = (): void => {
   })
 }
 
-process.on('uncaughtException', (e) => {
-  console.error(e)
-})
-
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
 process.on('SIGINT', close)

@@ -17,13 +17,14 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
-  import { Document } from '@hcengineering/document'
+  import { Document, DocumentEvents } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { Heading, TableOfContents } from '@hcengineering/text-editor'
+  import { Heading } from '@hcengineering/text-editor'
+  import { TableOfContents } from '@hcengineering/text-editor-resources'
   import {
     Button,
     ButtonItem,
@@ -49,8 +50,9 @@
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
-  import { starDocument, unstarDocument } from '..'
+  import { starDocument, unstarDocument, unlockContent } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -62,9 +64,9 @@
   export let _id: Ref<Document>
   export let readonly: boolean = false
   export let embedded: boolean = false
-  export let kind: 'default' | 'modern' = 'default'
 
-  $: readonly = $restrictionStore.readonly
+  $: locked = doc?.lockedBy != null
+  $: readonly = $restrictionStore.readonly || locked
 
   export function canClose (): boolean {
     return false
@@ -183,11 +185,11 @@
     {
       id: 'references',
       icon: document.icon.References
-    },
-    {
-      id: 'history',
-      icon: document.icon.History
     }
+    // {
+    //   id: 'history',
+    //   icon: document.icon.History
+    // }
   ]
   let selectedAside: string | boolean = false
 
@@ -220,6 +222,10 @@
   let content: HTMLElement
 
   const manager = createFocusManager()
+
+  onMount(() => {
+    Analytics.handleEvent(DocumentEvents.DocumentOpened, { id: _id })
+  })
 </script>
 
 <FocusHandler {manager} />
@@ -238,7 +244,7 @@
     useMaxWidth={false}
     printHeader={false}
     {embedded}
-    {kind}
+    adaptive={'default'}
     bind:content
     bind:innerWidth
     floatAside={false}
@@ -248,6 +254,23 @@
     <svelte:fragment slot="title">
       <ParentsNavigator element={doc} />
       <DocumentPresenter value={doc} breadcrumb noUnderline />
+      {#if locked}
+        <div class="ml-2">
+          <Button
+            icon={document.icon.Lock}
+            iconProps={{ size: 'x-small' }}
+            label={document.string.Locked}
+            kind={'link-bordered'}
+            size={'small'}
+            noFocus
+            on:click={async () => {
+              if (doc !== undefined) {
+                await unlockContent(doc)
+              }
+            }}
+          />
+        </div>
+      {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="utils">

@@ -77,7 +77,7 @@
   })
 
   async function createTagElementFnc (): Promise<void> {
-    const res = await createTagElement(title, targetClass, category, description, color)
+    const res = await createTagElement(title, targetClass, category, description, color, keyTitle)
     dispatch('close', res)
   }
 

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-  import { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { getClient } from '@hcengineering/presentation'
+  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import activity, { ActivityMessage, ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
+  import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
 
@@ -53,26 +53,46 @@
   onDestroy(() => {
     unsubscribe()
     unsubscribeLocation()
+    dataProvider?.destroy()
+    dataProvider = undefined
   })
 
+  let refsLoaded = false
+
   $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId)
+  $: void updateDataProvider(object._id, selectedMessageId)
 
-  function updateDataProvider (
-    attachedTo: Ref<Doc>,
-    _class: Ref<Class<ActivityMessage>>,
-    lastViewedTimestamp?: Timestamp,
-    selectedMessageId?: Ref<ActivityMessage>
-  ): void {
+  async function updateDataProvider (attachedTo: Ref<Doc>, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
       const loadAll = isDocChannel
-      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp ?? 0, selectedMessageId, loadAll)
+      const ctx =
+        context ??
+        (await client.findOne(notification.class.DocNotifyContext, {
+          objectId: object._id,
+          user: getCurrentAccount()._id
+        }))
+      const hasRefs = ((object as WithReferences<Doc>).references ?? 0) > 0
+      refsLoaded = hasRefs
+      const space = isSpace(object) ? object._id : object.space
+      dataProvider = new ChannelDataProvider(
+        ctx,
+        space,
+        attachedTo,
+        activity.class.ActivityMessage,
+        selectedMessageId,
+        loadAll,
+        hasRefs
+      )
     }
+  }
+
+  $: if (dataProvider && !refsLoaded && ((object as WithReferences<Doc>).references ?? 0) > 0) {
+    dataProvider.loadRefs()
+    refsLoaded = true
   }
 </script>
 
@@ -84,7 +104,7 @@
     skipLabels={!isDocChannel}
     selectedFilters={filters}
     startFromBottom
-    {selectedMessageId}
+    bind:selectedMessageId
     {collection}
     provider={dataProvider}
     {isAsideOpened}

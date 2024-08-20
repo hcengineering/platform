@@ -23,7 +23,7 @@ export class ContractPage {
     this.page.locator(`.hulyNavItem-container:has-text("${Employee}")`)
 
   readonly employeeButton = (Employee: string): Locator =>
-    this.page.locator(`button:not(.hulyNavItem-container):has-text("${Employee}")`)
+    this.page.locator(`button:not(.hulyNavItem-container, .hulyBreadcrumb-container):has-text("${Employee}")`)
 
   readonly firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]')
   readonly lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]')
@@ -68,6 +68,7 @@ export class ContractPage {
   readonly stateApplication = (role: string): Locator => this.page.getByRole('cell', { name: role })
   readonly commentApplication = (): Locator => this.page.getByRole('button', { name: '1', exact: true })
   readonly commentDescription = (): Locator => this.page.getByText('Test Application')
+  readonly buttonClosePanel = (): Locator => this.page.locator('button#btnPClose')
 
   // ACTIONS
 
@@ -248,5 +249,9 @@ export class ContractPage {
     await expect(this.stateApplication(role)).toBeVisible()
     await this.commentApplication().hover()
     await expect(this.commentDescription()).toBeVisible()
+  }
+
+  async closePanel (): Promise<void> {
+    await this.buttonClosePanel().click()
   }
 }

@@ -21,6 +21,7 @@ import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
+import gmail from '@hcengineering/model-gmail'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
@@ -30,10 +31,9 @@ import view, { createAction, showColorsViewOption, actionTemplates as viewTempla
 import workbench, { createNavigateAction, type Application } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type IntlString } from '@hcengineering/platform'
-import { recruitId, type Applicant } from '@hcengineering/recruit'
+import { recruitId, type Applicant, RecruitEvents } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
-import gmail from '@hcengineering/model-gmail'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
@@ -53,26 +53,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(recruit.class.Review, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(recruit.mixin.Candidate, core.class.Class, activity.mixin.ActivityDoc, {})
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: recruit.class.Vacancy,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: recruit.class.Applicant,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: recruit.class.Vacancy,
@@ -118,7 +98,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy']
+    fields: ['createdBy', 'assignee']
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Mixin, view.mixin.ObjectFactory, {
@@ -203,6 +183,7 @@ export function createModel (builder: Builder): void {
               _class: recruit.mixin.Candidate,
               icon: contact.icon.Person,
               label: recruit.string.Talents,
+              createEvent: RecruitEvents.PlusTalentButtonClicked,
               createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate,
               createComponentProps: { shouldSaveDraft: false }
@@ -226,6 +207,7 @@ export function createModel (builder: Builder): void {
             position: 'event',
             componentProps: {
               labelTasks: recruit.string.Applications,
+              icon: recruit.icon.AssignedToMe,
               _class: recruit.class.Applicant,
               config: [
                 ['assigned', view.string.Assigned, {}],
@@ -474,6 +456,12 @@ export function createModel (builder: Builder): void {
         'status',
         'attachments',
         'comments',
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         'modifiedOn',
         '$lookup.space.company',
         {
@@ -492,7 +480,7 @@ export function createModel (builder: Builder): void {
         sortable: true
       },
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       }
     },
@@ -512,7 +500,7 @@ export function createModel (builder: Builder): void {
         }
       },
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       }
     },
@@ -603,6 +591,12 @@ export function createModel (builder: Builder): void {
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
+        {
+          key: '',
+          label: tracker.string.RelatedIssues,
+          presenter: tracker.component.RelatedIssueSelector,
+          displayProps: { key: 'related', suffix: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.space.company',
@@ -802,7 +796,7 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       },
       viewOptions: {
@@ -900,12 +894,16 @@ export function createModel (builder: Builder): void {
     titleProvider: recruit.function.RevTitleProvider
   })
 
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: recruit.function.ReviewIdentifierProvider
+  })
+
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: recruit.function.VacTitleProvider
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.ObjectIdentifier, {
-    provider: recruit.function.VacTitleProvider
+    provider: recruit.function.VacancyIdentifierProvider
   })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.LinkProvider, {
@@ -930,6 +928,26 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.mixin.VacancyList, core.class.Class, view.mixin.LinkProvider, {
     encode: recruit.function.GetIdObjectLinkFragment
+  })
+
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
   })
 
   builder.createDoc(
@@ -1290,11 +1308,7 @@ export function createModel (builder: Builder): void {
         htmlTemplate: '<p>{doc} was assigned to you by {sender}</p>',
         subjectTemplate: '{doc} was assigned to you'
       },
-      providers: {
-        [notification.providers.PlatformNotification]: true,
-        [notification.providers.BrowserNotification]: true,
-        [notification.providers.EmailNotification]: true
-      }
+      defaultEnabled: true
     },
     recruit.ids.AssigneeNotification
   )
@@ -1330,9 +1344,11 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc, core.class.TxUpdateDoc],
       objectClass: recruit.class.Applicant,
       spaceSubscribe: true,
-      providers: {
-        [notification.providers.PlatformNotification]: false,
-        [notification.providers.BrowserNotification]: false
+      defaultEnabled: false,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
       }
     },
     recruit.ids.ApplicationCreateNotification

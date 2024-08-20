@@ -5,13 +5,8 @@
   import { DevicesPreference } from '@hcengineering/love'
   import love from '../plugin'
   import { myPreferences } from '../stores'
-  import { createEventDispatcher } from 'svelte'
   import { krispProcessor } from '../utils'
   import { isKrispNoiseFilterSupported } from '@livekit/krisp-noise-filter'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
 
@@ -66,7 +61,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={love.icon.Love} label={love.string.Settings} size={'large'} isCurrent />
   </Header>
   <div class="flex-row-stretch flex-grow p-10">

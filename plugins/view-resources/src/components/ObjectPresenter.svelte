@@ -27,10 +27,10 @@
   export let accent: boolean = false
   export let colorInherit: boolean = false
   export let shouldShowAvatar: boolean = true
-  export let noUnderline: boolean = false
+  export let noUnderline: boolean = true
   export let disabled: boolean = false
   export let shouldShowName: boolean = true
-  export let shrink: number = 0
+  export let shrink: number = 1
   export let exact = false
 
   const client = getClient()

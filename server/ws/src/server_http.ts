@@ -15,29 +15,24 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineering/core'
-import { UNAUTHORIZED } from '@hcengineering/platform'
-import { serialize, type Response } from '@hcengineering/rpc'
+import { UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
+import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
-import compression from 'compression'
 import cors from 'cors'
 import express, { type Response as ExpressResponse } from 'express'
 import http, { type IncomingMessage } from 'http'
 import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { getStatistics, wipeStatistics } from './stats'
-import {
-  LOGGING_ENABLED,
-  type ConnectionSocket,
-  type HandleRequestFunction,
-  type PipelineFactory,
-  type SessionManager
-} from './types'
+import { LOGGING_ENABLED, type ConnectionSocket, type HandleRequestFunction, type SessionManager } from './types'
 
-import type { StorageAdapter } from '@hcengineering/server-core'
+import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import 'bufferutil'
 import 'utf-8-validate'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+
+const rpcHandler = new RPCHandler()
 
 /**
  * @public
@@ -68,21 +63,6 @@ export function startHttpServer (
 
   const app = express()
   app.use(cors())
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
-
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 1,
-      memLevel: 9
-    })
-  )
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 
@@ -100,16 +80,17 @@ export function startHttpServer (
       const token = req.query.token as string
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      const json = JSON.stringify({
+      const jsonData = {
         ...getStatistics(ctx, sessions, admin),
-        users: getUsers,
+        users: getUsers(),
         admin
-      })
+      }
+      const json = JSON.stringify(jsonData)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(json)
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
+      ctx.error('error', { err })
       res.writeHead(404, {})
       res.end()
     }
@@ -158,7 +139,7 @@ export function startHttpServer (
       res.end()
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
+      ctx.error('error', { err })
       res.writeHead(404, {})
       res.end()
     }
@@ -176,21 +157,29 @@ export function startHttpServer (
 
       const name = req.query.name as string
       const contentType = req.query.contentType as string
+      const size = parseInt((req.query.size as string) ?? '-1')
 
       void ctx
         .with(
           'storage upload',
           { workspace: payload.workspace.name },
-          async () => await externalStorage.put(ctx, payload.workspace, name, req, contentType),
+          async (ctx) =>
+            await externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
           { file: name, contentType }
         )
         .then(() => {
           res.writeHead(200, { 'Cache-Control': 'no-cache' })
           res.end()
         })
+        .catch((err) => {
+          Analytics.handleError(err)
+          ctx.error('/api/v1/blob put error', { err })
+          res.writeHead(404, {})
+          res.end()
+        })
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
+      ctx.error('/api/v1/blob put error', { err })
       res.writeHead(404, {})
       res.end()
     }
@@ -209,19 +198,31 @@ export function startHttpServer (
 
       const range = req.headers.range
       if (range !== undefined) {
-        void ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-          await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
-        })
+        void ctx
+          .with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+          })
+          .catch((err) => {
+            Analytics.handleError(err)
+            ctx.error('/api/v1/blob get error', { err })
+            res.writeHead(404, {})
+            res.end()
+          })
       } else {
-        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res))
+        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res)).catch((err) => {
+          Analytics.handleError(err)
+          ctx.error('/api/v1/blob get error', { err })
+          res.writeHead(404, {})
+          res.end()
+        })
       }
     } catch (err: any) {
       Analytics.handleError(err)
+      ctx.error('/api/v1/blob get error', { err })
     }
   })
 
   const httpServer = http.createServer(app)
-
   const wss = new WebSocketServer({
     noServer: true,
     perMessageDeflate: enableCompression
@@ -229,13 +230,13 @@ export function startHttpServer (
           zlibDeflateOptions: {
             // See zlib defaults.
             chunkSize: 32 * 1024,
-            memLevel: 9,
+            memLevel: 1,
             level: 1
           },
           zlibInflateOptions: {
             chunkSize: 32 * 1024,
             level: 1,
-            memLevel: 9
+            memLevel: 1
           },
           serverNoContextTakeover: true,
           clientNoContextTakeover: true,
@@ -277,53 +278,78 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+          void cs
+            .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
+            .then(() => {
+              // No connection to account service, retry from client.
+              setTimeout(() => {
+                cs.close()
+              }, 1000)
+            })
         }
         if ('upgrade' in s) {
           void cs
             .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
             .then(() => {
-              cs.close()
+              setTimeout(() => {
+                cs.close()
+              }, 5000)
             })
         }
+      })
+      void webSocketData.session.catch((err) => {
+        ctx.error('unexpected error in websocket', { err })
       })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
       try {
-        let buff: any | undefined
+        let buff: Buffer | undefined
         if (msg instanceof Buffer) {
-          buff = Buffer.copyBytesFrom(msg)
+          buff = msg
         } else if (Array.isArray(msg)) {
-          buff = Buffer.copyBytesFrom(Buffer.concat(msg))
+          buff = Buffer.concat(msg)
         }
         if (buff !== undefined) {
-          doSessionOp(webSocketData, (s) => {
-            processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
-          })
+          doSessionOp(
+            webSocketData,
+            (s, buff) => {
+              s.context.measure('receive-data', buff?.length ?? 0)
+              processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
+            },
+            buff
+          )
         }
       } catch (err: any) {
         Analytics.handleError(err)
         if (LOGGING_ENABLED) {
-          ctx.error('message error', err)
+          ctx.error('message error', { err })
         }
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', async (code: number, reason: Buffer) => {
-      doSessionOp(webSocketData, (s) => {
-        if (!(s.session.workspaceClosed ?? false)) {
-          // remove session after 1seconds, give a time to reconnect.
-          void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
-        }
-      })
+      doSessionOp(
+        webSocketData,
+        (s) => {
+          if (!(s.session.workspaceClosed ?? false)) {
+            // remove session after 1seconds, give a time to reconnect.
+            void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
+          }
+        },
+        Buffer.from('')
+      )
     })
 
     ws.on('error', (err) => {
-      doSessionOp(webSocketData, (s) => {
-        console.error(s.session.getUser(), 'error', err)
-      })
+      doSessionOp(
+        webSocketData,
+        (s) => {
+          ctx.error('error', { err, user: s.session.getUser() })
+        },
+        Buffer.from('')
+      )
     })
   }
   wss.on('connection', handleConnection as any)
@@ -357,12 +383,12 @@ export function startHttpServer (
           error: UNAUTHORIZED,
           result: 'hello'
         }
-        ws.send(serialize(resp, false), { binary: false })
+        ws.send(rpcHandler.serialize(resp, false), { binary: false })
         ws.onmessage = (msg) => {
           const resp: Response<any> = {
             error: UNAUTHORIZED
           }
-          ws.send(serialize(resp, false), { binary: false })
+          ws.send(rpcHandler.serialize(resp, false), { binary: false })
         }
       })
     }
@@ -396,7 +422,14 @@ export function startHttpServer (
 }
 function createWebsocketClientSocket (
   ws: WebSocket,
-  data: { remoteAddress: string, userAgent: string, language: string, email: string, mode: any, model: any }
+  data: {
+    remoteAddress: string
+    userAgent: string
+    language: string
+    email: string
+    mode: any
+    model: any
+  }
 ): ConnectionSocket {
   const cs: ConnectionSocket = {
     id: generateId(),
@@ -405,34 +438,26 @@ function createWebsocketClientSocket (
       cs.isClosed = true
       ws.close()
     },
+    readRequest: (buffer: Buffer, binary: boolean) => {
+      return rpcHandler.readRequest(buffer, binary)
+    },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
-      const smsg = serialize(msg, binary)
+      const smsg = rpcHandler.serialize(msg, binary)
 
       ctx.measure('send-data', smsg.length)
-      await new Promise<void>((resolve, reject) => {
-        const doSend = (): void => {
-          if (ws.readyState !== ws.OPEN || cs.isClosed) {
-            return
+      const st = Date.now()
+      if (ws.readyState !== ws.OPEN || cs.isClosed) {
+        return
+      }
+      ws.send(smsg, { binary: true, compress: compression }, (err) => {
+        if (err != null) {
+          if (!`${err.message}`.includes('WebSocket is not open')) {
+            ctx.error('send error', { err })
+            Analytics.handleError(err)
           }
-          if (ws.bufferedAmount > 16 * 1024) {
-            setTimeout(doSend)
-            return
-          }
-          ws.send(smsg, { binary: true, compress: compression }, (err) => {
-            if (err != null) {
-              if (!`${err.message}`.includes('WebSocket is not open')) {
-                ctx.error('send error', { err })
-                Analytics.handleError(err)
-                reject(err)
-              }
-              // In case socket not open, just resolve
-              resolve()
-            }
-            resolve()
-          })
         }
-        doSend()
+        ctx.measure('msg-send-delta', Date.now() - st)
       })
       return smsg.length
     }

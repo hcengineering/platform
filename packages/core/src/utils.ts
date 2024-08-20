@@ -15,6 +15,7 @@
 
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
+import { DOMAIN_BENCHMARK } from './benchmark'
 import {
   Account,
   AccountRole,
@@ -28,7 +29,6 @@ import {
   DocIndexState,
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   FullTextSearchContext,
@@ -158,6 +158,7 @@ export interface IndexKeyOptions {
   _class?: Ref<Class<Obj>>
   docId?: Ref<DocIndexState>
   extra?: string[]
+  digest?: boolean
 }
 /**
  * @public
@@ -171,7 +172,8 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  return opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`
+  const digestName = opt?.digest === true ? name + '^digest' : name
+  return opt?._class === undefined ? digestName : `${opt?._class}%${digestName}${extra}`
 }
 
 /**
@@ -182,6 +184,7 @@ export function extractDocKey (key: string): {
   attr: string
   docId?: Ref<DocIndexState>
   extra: string[]
+  digest: boolean
 } {
   let k = key
   if (k.startsWith(attributesPrefix)) {
@@ -204,8 +207,14 @@ export function extractDocKey (key: string): {
   }
   const extra = attr.split('#')
   attr = extra.splice(0, 1)[0]
+  const digestPos = attr.indexOf('^digest')
+  let digest = false
+  if (digestPos !== -1) {
+    attr = attr.substring(0, digestPos)
+    digest = true
+  }
 
-  return { docId, attr, _class, extra }
+  return { docId, attr, _class, extra, digest }
 }
 
 /**
@@ -306,29 +315,36 @@ export class AggregateValue {
  */
 export type CategoryType = number | string | undefined | Ref<Doc> | AggregateValue
 
+export interface IDocManager<T extends Doc> {
+  get: (ref: Ref<T>) => T | undefined
+  getDocs: () => T[]
+  getIdMap: () => IdMap<T>
+  filter: (predicate: (value: T) => boolean) => T[]
+}
+
 /**
  * @public
  */
-export class DocManager {
-  protected readonly byId: IdMap<Doc>
+export class DocManager<T extends Doc> implements IDocManager<T> {
+  protected readonly byId: IdMap<T>
 
-  constructor (protected readonly docs: Doc[]) {
+  constructor (protected readonly docs: T[]) {
     this.byId = toIdMap(docs)
   }
 
-  get (ref: Ref<Doc>): Doc | undefined {
+  get (ref: Ref<T>): T | undefined {
     return this.byId.get(ref)
   }
 
-  getDocs (): Doc[] {
+  getDocs (): T[] {
     return this.docs
   }
 
-  getIdMap (): IdMap<Doc> {
+  getIdMap (): IdMap<T> {
     return this.byId
   }
 
-  filter (predicate: (value: Doc) => boolean): Doc[] {
+  filter (predicate: (value: T) => boolean): T[] {
     return this.docs.filter(predicate)
   }
 }
@@ -349,11 +365,15 @@ export class RateLimiter {
     this.rate = rate
   }
 
+  notify: (() => void)[] = []
+
   async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
     const processingId = this.idCounter++
 
-    while (this.processingQueue.size > this.rate) {
-      await Promise.race(this.processingQueue.values())
+    while (this.processingQueue.size >= this.rate) {
+      await new Promise<void>((resolve) => {
+        this.notify.push(resolve)
+      })
     }
     try {
       const p = op(args)
@@ -361,6 +381,10 @@ export class RateLimiter {
       return await p
     } finally {
       this.processingQueue.delete(processingId)
+      const n = this.notify.shift()
+      if (n !== undefined) {
+        n()
+      }
     }
   }
 
@@ -368,10 +392,7 @@ export class RateLimiter {
     if (this.processingQueue.size < this.rate) {
       void this.exec(op, args)
     } else {
-      while (this.processingQueue.size > this.rate) {
-        await Promise.race(this.processingQueue.values())
-      }
-      void this.exec(op, args)
+      await this.exec(op, args)
     }
   }
 
@@ -583,9 +604,10 @@ export const isEnum =
 export async function checkPermission (
   client: TxOperations,
   _id: Ref<Permission>,
-  _space: Ref<TypedSpace>
+  _space: Ref<TypedSpace>,
+  space?: TypedSpace
 ): Promise<boolean> {
-  const space = await client.findOne(core.class.TypedSpace, { _id: _space })
+  space = space ?? (await client.findOne(core.class.TypedSpace, { _id: _space }))
   const type = await client
     .getModel()
     .findOne(core.class.SpaceType, { _id: space?.type }, { lookup: { _id: { roles: core.class.Role } } })
@@ -697,8 +719,8 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
     domain === DOMAIN_TX ||
     domain === DOMAIN_MODEL ||
     domain === DOMAIN_BLOB ||
-    domain === DOMAIN_FULLTEXT_BLOB ||
-    domain === DOMAIN_TRANSIENT
+    domain === DOMAIN_TRANSIENT ||
+    domain === DOMAIN_BENCHMARK
   ) {
     hierarchy.setClassifierProp(c, 'class_indexed', false)
     return false

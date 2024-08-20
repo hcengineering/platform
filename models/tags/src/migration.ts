@@ -1,23 +1,24 @@
+import core, { type Ref, type Space } from '@hcengineering/core'
 import {
-  createDefaultSpace,
-  tryUpgrade,
+  migrateSpace,
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { tagsId } from '@hcengineering/tags'
-import tags from './plugin'
+import { DOMAIN_TAGS } from '.'
 
 export const tagsOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, tagsId, [
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, tagsId, [
       {
-        state: 'create-defaults-v2',
-        func: async (client) => {
-          await createDefaultSpace(client, tags.space.Tags, { name: 'Tags', description: 'Space for all tags' })
+        state: 'removeDeprecatedSpace',
+        func: async (client: MigrationClient) => {
+          await migrateSpace(client, 'tags:space:Tags' as Ref<Space>, core.space.Workspace, [DOMAIN_TAGS])
         }
       }
     ])
-  }
+  },
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

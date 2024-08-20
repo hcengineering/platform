@@ -261,7 +261,8 @@ export const coreOperation: MigrateOperation = {
       { objectClass: { $nin: allIndexed } },
       {
         $set: {
-          removed: true
+          removed: true,
+          needIndex: true
         }
       }
     )
@@ -290,13 +291,19 @@ export const coreOperation: MigrateOperation = {
         func: migrateStatusTransactions
       },
       {
+        state: 'add-need-index',
+        func: async (client: MigrationClient) => {
+          await client.update(DOMAIN_DOC_INDEX_STATE, {}, { $set: { needIndex: true } })
+        }
+      },
+      {
         state: 'collaborative-content-to-storage',
         func: migrateCollaborativeContentToStorage
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, coreId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, coreId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

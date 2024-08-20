@@ -208,10 +208,10 @@
 
   const checkSizes = (): void => {
     if (sState === SeparatorState.FLOAT) {
-      if (parentElement) initSize(parentElement, panel)
+      if (parentElement != null && panel != null) initSize(parentElement, panel)
     } else if (sState === SeparatorState.NORMAL) {
-      if (prevElement) initSize(prevElement, prevElSize)
-      if (nextElement) initSize(nextElement, nextElSize, true)
+      if (prevElement != null && prevElSize != null) initSize(prevElement, prevElSize)
+      if (nextElement != null && nextElSize != null) initSize(nextElement, nextElSize, true)
     }
   }
 

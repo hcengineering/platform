@@ -3,7 +3,7 @@
     "Document": "Document",
     "ParentDocument": "Parent document",
     "ChildDocument": "Child document",
-    "CreateDocument": "Create a document",
+    "CreateDocument": "Create document",
     "Documents": "Documents",
     "CreateAnVersion": "Create new version",
     "DocumentNamePlaceholder": "Untitled",
@@ -38,7 +38,7 @@
 
     "Description": "Description",
 
-    "CopyDocumentUrl": "Copy Document URL to clipboard",
+    "CopyDocumentUrl": "Copy document URL to clipboard",
 
     "ViewMode": "View",
     "EditMode": "Edit",
@@ -48,13 +48,13 @@
     "Star": "Star",
     "Unstar": "Unstar",
 
+    "Lock": "Lock",
+    "Unlock": "Unlock",
+    "Locked": "Locked",
+
     "ConfigLabel": "Documents",
     "ConfigDescription": "Extension for collaborative document editing",
 
-    "UnassignToDo": "Unassign Todo",
-    "UnassignToDoConfirm": "Do you want to unassign Todo? The Todo will be removed from the assignee planning.",
-    "ReassignToDo": "Change Todo assignee",
-    "ReassignToDoConfirm": "Do you want to change Todo assignee? The Todo will be removed from the current assignee's planning.",
     "Icon": "Icon",
     "Color": "Color",
     "RoleLabel": "Role: {role}",

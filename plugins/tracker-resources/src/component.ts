@@ -16,104 +16,21 @@
 import {
   AggregateValue,
   AggregateValueData,
-  type AnyAttribute,
   type Class,
-  type Client,
   type Doc,
+  DocManager,
   type DocumentQuery,
   type Hierarchy,
   type Ref,
-  SortingOrder,
   type Space,
-  type Tx,
   type WithLookup,
   matchQuery
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
-import tracker, { type Component, ComponentManager } from '@hcengineering/tracker'
-import { type AggregationManager, type GrouppingManager } from '@hcengineering/view'
+import { type Component } from '@hcengineering/tracker'
+import { type GrouppingManager } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 
-export const componentStore = writable<ComponentManager>(new ComponentManager([]))
-
-/**
- * @public
- */
-export class ComponentAggregationManager implements AggregationManager {
-  docs: Doc[] | undefined
-  mgr: ComponentManager | Promise<ComponentManager> | undefined
-  query: (() => void) | undefined
-  lq: LiveQuery
-  lqCallback: () => void
-
-  private constructor (client: Client, lqCallback: () => void) {
-    this.lq = new LiveQuery(client)
-    this.lqCallback = lqCallback ?? (() => {})
-  }
-
-  static create (client: Client, lqCallback: () => void): ComponentAggregationManager {
-    return new ComponentAggregationManager(client, lqCallback)
-  }
-
-  private async getManager (): Promise<ComponentManager> {
-    if (this.mgr !== undefined) {
-      if (this.mgr instanceof Promise) {
-        this.mgr = await this.mgr
-      }
-      return this.mgr
-    }
-    this.mgr = new Promise<ComponentManager>((resolve) => {
-      this.query = this.lq.query(
-        tracker.class.Component,
-        {},
-        (res) => {
-          const first = this.docs === undefined
-          this.docs = res
-          this.mgr = new ComponentManager(res)
-          componentStore.set(this.mgr)
-          if (!first) {
-            this.lqCallback()
-          }
-          resolve(this.mgr)
-        },
-        {
-          sort: {
-            label: SortingOrder.Ascending
-          }
-        }
-      )
-    })
-
-    return await this.mgr
-  }
-
-  close (): void {
-    this.query?.()
-  }
-
-  async notifyTx (...tx: Tx[]): Promise<void> {
-    await this.lq.tx(...tx)
-  }
-
-  getAttrClass (): Ref<Class<Doc>> {
-    return tracker.class.Component
-  }
-
-  async categorize (target: Array<Ref<Doc>>, attr: AnyAttribute): Promise<Array<Ref<Doc>>> {
-    const mgr = await this.getManager()
-    for (const sid of [...target]) {
-      const c = mgr.getIdMap().get(sid as Ref<Component>) as WithLookup<Component>
-      if (c !== undefined) {
-        let components = mgr.getDocs()
-        components = components.filter(
-          (it) => it.label.toLowerCase().trim() === c.label.toLowerCase().trim() && it._id !== c._id
-        )
-        target.push(...components.map((it) => it._id))
-      }
-    }
-    return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
-  }
-}
+export const componentStore = writable<DocManager<Component>>(new DocManager([]))
 
 /**
  * @public
@@ -136,6 +53,7 @@ export function groupByComponentCategories (categories: any[]): AggregateValue[]
 
   const usedSpaces = new Set<Ref<Space>>()
   const componentsList: Array<WithLookup<Component>> = []
+  // console.log('mgr docs', mgr.getDocs())
   for (const v of categories) {
     const component = mgr.getIdMap().get(v)
     if (component !== undefined) {

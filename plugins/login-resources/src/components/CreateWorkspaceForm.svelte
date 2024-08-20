@@ -14,14 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Status, Severity, OK, setMetadata } from '@hcengineering/platform'
+  import { Status, Severity, OK } from '@hcengineering/platform'
 
   import Form from './Form.svelte'
-  import { createWorkspace, getAccount, goTo } from '../utils'
-  import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { createWorkspace, getAccount, goTo, setLoginInfo } from '../utils'
+  import { getCurrentLocation, navigate } from '@hcengineering/ui'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
-  import presentation from '@hcengineering/presentation'
   import { onMount } from 'svelte'
   import { LoginInfo } from '@hcengineering/login'
 
@@ -61,13 +60,8 @@
       status = loginStatus
 
       if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-        tokens[result.workspace] = result.token
-        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+        setLoginInfo(result)
+
         navigate({ path: [workbenchId, result.workspace] })
       }
     }

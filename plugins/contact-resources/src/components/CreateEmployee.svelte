@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, Employee, PersonAccount } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, ContactEvents, Employee, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -23,6 +23,7 @@
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
   import EditableAvatar from './EditableAvatar.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let canSave: boolean = true
   export let onCreate: ((id: Ref<Employee>) => Promise<void>) | undefined = undefined
@@ -94,6 +95,7 @@
       if (onCreate) {
         await onCreate(id)
       }
+      Analytics.handleEvent(ContactEvents.EmployeeCreated, { id, email: mail })
       dispatch('close', id)
     } finally {
       saving = false

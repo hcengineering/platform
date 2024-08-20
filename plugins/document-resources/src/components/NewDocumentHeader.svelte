@@ -25,6 +25,9 @@
     showPopup
   } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
+  import { DocumentEvents } from '@hcengineering/document'
+
   import document from '../plugin'
   import { getDocumentIdFromFragment } from '../utils'
   import CreateDocument from './CreateDocument.svelte'
@@ -53,6 +56,7 @@
   $: parent = getDocumentIdFromFragment(currentFragment ?? '')
 
   async function newDocument (): Promise<void> {
+    Analytics.handleEvent(DocumentEvents.CreateDocumentButtonClicked)
     showPopup(CreateDocument, { space: currentSpace, parent }, 'top', async (id) => {
       if (id !== undefined && id !== null) {
         const doc = await client.findOne(document.class.Document, { _id: id })
