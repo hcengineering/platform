@@ -38,11 +38,8 @@ import core, {
   type Hierarchy,
   type Markup,
   type MeasureContext,
-<<<<<<< HEAD
   type Mixin,
-=======
   type MigrationState,
->>>>>>> develop
   type Ref,
   type RefTo,
   type RelatedDocument,
@@ -1216,10 +1213,6 @@ async function updateId (
         for (const [attrName, attr] of attrs) {
           if (attr.type._class === core.class.TypeMarkup) {
             const markup = (contentDoc as any)[attrName] as Markup
-            const newMarkup = markup.replaceAll(doc._id, newId)
-            await update(h, db, contentDoc, { [attrName]: newMarkup })
-          } else if (attr.type._class === core.class.TypeCollaborativeMarkup) {
-            const markup = (contentDoc as any)[attrName]
             const newMarkup = markup.replaceAll(doc._id, newId)
             await update(h, db, contentDoc, { [attrName]: newMarkup })
           } else if (attr.type._class === core.class.TypeCollaborativeDoc) {

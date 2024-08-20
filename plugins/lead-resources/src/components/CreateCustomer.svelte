@@ -29,7 +29,7 @@
   } from '@hcengineering/core'
   import { Customer, LeadEvents } from '@hcengineering/lead'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
-  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor'
+  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
     createFocusManager,

@@ -26,7 +26,7 @@
     WithLookup
   } from '@hcengineering/core'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 

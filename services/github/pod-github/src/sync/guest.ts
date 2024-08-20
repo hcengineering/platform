@@ -5,7 +5,7 @@
 import { Branding, TxOperations, WorkspaceIdWithUrl } from '@hcengineering/core'
 import { MarkupMarkType, MarkupNode, MarkupNodeType, traverseMarkupNode } from '@hcengineering/text'
 import { getPublicLink } from '@hcengineering/server-guest-resources'
-import { Issue } from '@hcengineering/tracker'
+import { Task } from '@hcengineering/task'
 
 const githubLinkText = process.env.LINK_TEXT ?? 'Huly&reg;:'
 
@@ -46,7 +46,7 @@ export async function stripGuestLink (markdown: MarkupNode): Promise<void> {
 }
 export async function appendGuestLink (
   client: TxOperations,
-  doc: Issue,
+  doc: Task,
   markdown: MarkupNode,
   workspace: WorkspaceIdWithUrl,
   branding: Branding | null

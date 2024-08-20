@@ -27,7 +27,7 @@ export async function copyContent (
   params: RpcMethodParams
 ): Promise<CopyContentResponse> {
   const { documentId, sourceField, targetField, snapshot } = payload
-  const { hocuspocus, storage } = params
+  const { hocuspocus, storageAdapter } = params
   const { workspaceId } = context
 
   const connection = await ctx.with('connect', {}, async () => {
@@ -53,7 +53,7 @@ export async function copyContent (
       }
 
       await ctx.with('snapshot', {}, async () => {
-        await takeCollaborativeDocSnapshot(storage, workspaceId, collaborativeDoc, ydoc, version, ctx)
+        await takeCollaborativeDocSnapshot(storageAdapter, workspaceId, collaborativeDoc, ydoc, version, ctx)
       })
     }
   } finally {

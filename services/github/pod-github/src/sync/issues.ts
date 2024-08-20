@@ -10,7 +10,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
-  AttachedData,
+  CreateAttachedData,
   Doc,
   DocumentUpdate,
   Ref,
@@ -19,8 +19,7 @@ import core, {
   TxOperations,
   cutObjectArray,
   generateId,
-  getCollaborativeDoc,
-  getCollaborativeDocId
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import task, { TaskType, calcRank } from '@hcengineering/task'
 import { isEmptyMarkup } from '@hcengineering/text'
@@ -47,7 +46,7 @@ import {
 } from '../types'
 import { IssueExternalData, issueDetails } from './githubTypes'
 import { appendGuestLink } from './guest'
-import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget } from './issueBase'
+import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget, IssueUpdate, WithMarkup } from './issueBase'
 import { syncConfig } from './syncConfig'
 import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
 
@@ -214,7 +213,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         break
       }
       case 'edited': {
-        const update: DocumentUpdate<Issue> = {}
+        const update: IssueUpdate = {}
         const du: DocumentUpdate<DocSyncInfo> = {}
         if (event.changes.body !== undefined) {
           update.description = await this.provider.getMarkup(integration, event.issue.body, this.stripGuestLink)
@@ -373,6 +372,10 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         return { needSync: githubSyncVersion }
       }
 
+      const description = await this.ctx.withLog('query collaborative description', {}, async () => {
+        return await this.collaborator.getContent((existing as Issue).description, 'description')
+      })
+
       this.ctx.info('create github issue', {
         title: (existing as Issue).title,
         number: (existing as Issue).number,
@@ -382,7 +385,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         'create github issue',
         {},
         async () => {
-          this.createPromise = this.createGithubIssue(container, existing as Issue, repository)
+          this.createPromise = this.createGithubIssue(container, { ...(existing as Issue), description }, repository)
           return await this.createPromise
         },
         { id: (existing as Issue).identifier, workspace: this.provider.getWorkspaceId().name }
@@ -612,13 +615,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
     } else {
       try {
-        const collaborativeDoc = getCollaborativeDoc(getCollaborativeDocId(existing._id, 'description'))
         const description = await this.ctx.withLog(
           'query collaborative description',
           {},
           async () => {
-            const content = await this.collaborator.getContent(collaborativeDoc, 'description')
-            return isEmptyMarkup(content) ? (existing as Issue).description : content
+            return await this.collaborator.getContent((existing as Issue).description, 'description')
           },
           { url: issueExternal.url }
         )
@@ -657,9 +658,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
   async performIssueFieldsUpdate (
     info: DocSyncInfo,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     platformUpdate: DocumentUpdate<Issue>,
-    issueData: Pick<Issue, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
+    issueData: Pick<WithMarkup<Issue>, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
     container: ContainerFocus,
     issueExternal: IssueExternalData,
     okit: Octokit,
@@ -751,7 +752,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
   async createGithubIssue (
     container: ContainerFocus,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     repository: GithubIntegrationRepository
   ): Promise<IssueExternalData | undefined> {
     const existingIssue = existing
@@ -847,8 +848,13 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     const number = (incResult as any).object.sequence
 
-    const value: AttachedData<Issue> = {
-      ...issueData,
+    const issueId = info._id as unknown as Ref<Issue>
+
+    const { description, ...update } = issueData
+
+    const value: CreateAttachedData<Issue> = {
+      ...update,
+      description: makeCollaborativeDoc(issueId, 'description'),
       kind: taskType,
       component: null,
       milestone: null,
@@ -865,9 +871,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       reports: 0,
       relations: [],
       childInfo: [],
-      identifier: `${prj.identifier}-${number}`
+      identifier: `${prj.identifier}-${number}`,
+      $markup: { description }
     }
-    const issueId = info._id as unknown as Ref<Issue>
 
     await this.client.addCollection(
       tracker.class.Issue,

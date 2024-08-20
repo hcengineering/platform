@@ -18,7 +18,6 @@
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import core, { Data, Markup, Ref, generateId } from '@hcengineering/core'
-  import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { NewMessage, SharedMessage, GmailEvents } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'

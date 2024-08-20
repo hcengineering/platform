@@ -24,7 +24,7 @@ import core, {
   Ref,
   TxOperations,
   generateId,
-  getCollaborativeDoc,
+  makeCollaborativeDoc,
   systemAccountEmail,
   type Blob
 } from '@hcengineering/core'
@@ -101,7 +101,7 @@ async function createDocument (
     abstract: '',
     effectiveDate: 0,
     reviewInterval: DEFAULT_PERIODIC_REVIEW_INTERVAL,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
     snapshots: 0,
     plannedEffectiveDate: 0
   }
@@ -169,7 +169,7 @@ async function createTemplateIfNotExist (
     approvers: [],
     coAuthors: [],
     changeControl: ccRecordId,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
     snapshots: 0,
     plannedEffectiveDate: 0
   }
@@ -214,8 +214,8 @@ async function createSections (
 
   const h = txops.getHierarchy()
 
-  const { space, collaboratorApiURL, token, workspaceId } = config
-  const collaborator = getCollaboratorClient(txops.getHierarchy(), workspaceId, token, collaboratorApiURL)
+  const { space, collaboratorURL, token, workspaceId } = config
+  const collaborator = getCollaboratorClient(txops.getHierarchy(), workspaceId, token, collaboratorURL)
 
   console.log('Creating document sections')
 

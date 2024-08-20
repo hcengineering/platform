@@ -18,7 +18,7 @@
   import { ChatMessagePopup } from '@hcengineering/chunter-resources'
   import { Ref } from '@hcengineering/core'
   import { IconForward, createQuery, getClient } from '@hcengineering/presentation'
-  import { CollaborativeTextEditor } from '@hcengineering/text-editor'
+  import { CollaborativeTextEditor } from '@hcengineering/text-editor-resources'
   import { Issue } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'

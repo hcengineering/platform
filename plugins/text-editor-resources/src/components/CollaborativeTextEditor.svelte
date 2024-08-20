@@ -71,16 +71,10 @@
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
   export let field: string
 
-<<<<<<< HEAD:packages/text-editor/src/components/CollaborativeTextEditor.svelte
   export let objectClass: Ref<Class<Doc>> | undefined = undefined
   export let objectId: Ref<Doc> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
-=======
-  export let objectClass: Ref<Class<Doc>> | undefined
-  export let objectId: Ref<Doc> | undefined
   export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined
->>>>>>> develop:plugins/text-editor-resources/src/components/CollaborativeTextEditor.svelte
+  export let objectAttr: string | undefined = undefined
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined

@@ -15,7 +15,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
-import type { MongoClientReference } from '@hcengineering/mongo'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
@@ -26,10 +25,6 @@ import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
 
-<<<<<<< HEAD
-import type { StorageAdapter } from '@hcengineering/server-core'
-=======
->>>>>>> develop
 import { Config } from './config'
 import { Context } from './context'
 import { AuthenticationExtension } from './extensions/authentication'
@@ -48,16 +43,11 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
-<<<<<<< HEAD
-export async function start (ctx: MeasureContext, config: Config, minio: StorageAdapter): Promise<Shutdown> {
-=======
 export async function start (
   ctx: MeasureContext,
   config: Config,
-  storageAdapter: StorageAdapter,
-  mongoClient: MongoClientReference
+  storageAdapter: StorageAdapter
 ): Promise<Shutdown> {
->>>>>>> develop
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })
@@ -123,11 +113,7 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-<<<<<<< HEAD
-        adapter: new PlatformStorageAdapter({ minio }, transformer)
-=======
-        adapter: new PlatformStorageAdapter(storageAdapter, mongo, transformerFactory)
->>>>>>> develop
+        adapter: new PlatformStorageAdapter(storageAdapter)
       })
     ]
   })
@@ -191,11 +177,7 @@ export async function start (
         try {
           const transformer = transformerFactory(token.workspace)
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-<<<<<<< HEAD
-            return await method(ctx, context, request.payload, { hocuspocus, storage: minio, transformer })
-=======
             return await method(ctx, context, request.payload, { hocuspocus, storageAdapter, transformer })
->>>>>>> develop
           })
           res.status(200).send(response)
         } catch (err: any) {

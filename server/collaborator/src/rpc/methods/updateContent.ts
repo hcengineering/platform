@@ -31,7 +31,7 @@ export async function updateContent (
   params: RpcMethodParams
 ): Promise<UpdateContentResponse> {
   const { documentId, field, markup, snapshot } = payload
-  const { hocuspocus, transformer, storage } = params
+  const { hocuspocus, transformer, storageAdapter } = params
   const { workspaceId } = context
 
   const update = await ctx.with('transform', {}, () => {
@@ -66,7 +66,7 @@ export async function updateContent (
       }
 
       await ctx.with('snapshot', {}, async () => {
-        await takeCollaborativeDocSnapshot(storage, workspaceId, collaborativeDoc, ydoc, version, ctx)
+        await takeCollaborativeDocSnapshot(storageAdapter, workspaceId, collaborativeDoc, ydoc, version, ctx)
       })
     }
   } finally {
