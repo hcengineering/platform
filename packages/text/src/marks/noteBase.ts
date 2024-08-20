@@ -1,4 +1,5 @@
 import { Mark } from '@tiptap/core'
+import { getDataAttribute } from '../nodes'
 
 export const name = 'note'
 export enum NoteKind {
@@ -33,43 +34,20 @@ export const NoteBaseExtension = Mark.create({
     ]
   },
 
-  renderHTML ({ HTMLAttributes }) {
-    return ['span', { ...HTMLAttributes, 'data-mark': this.name }, 0]
+  renderHTML ({ HTMLAttributes, mark }) {
+    return [
+      'span',
+      { ...HTMLAttributes, 'data-mark': this.name, class: `theme-text-editor-note-anchor ${mark.attrs.kind}` },
+      0
+    ]
   },
 
   addAttributes () {
     return {
       title: {
-        default: null,
-        parseHTML: (element) => {
-          return element.getAttribute('title')
-        },
-        renderHTML: (attributes) => {
-          if (attributes.title == null) {
-            return {}
-          }
-
-          return {
-            title: attributes.title
-          }
-        }
+        default: null
       },
-      kind: {
-        default: NoteKind.Neutral,
-        parseHTML: (element) => {
-          return element.getAttribute('data-kind')
-        },
-        renderHTML: (attributes) => {
-          if (attributes.kind == null) {
-            return {}
-          }
-
-          return {
-            'data-kind': attributes.kind,
-            class: `theme-text-editor-note-anchor ${attributes.kind}`
-          }
-        }
-      }
+      kind: getDataAttribute('kind', { default: NoteKind.Neutral })
     }
   }
 })
