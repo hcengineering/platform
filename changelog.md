@@ -2,6 +2,22 @@
 
 Changelog.
 
+## [0.6.281] - 2024-08-20
+
+* 🐛 BUG FIXES: Does not send email confirmation when signup with otp (#6292)* 🐛 BUG FIXES: Build print and sign services for arm64 (#6321)
+* QFIX: Change default filter for my docs in controlled documents (#6290)* QFIX: Fix duplicates in inbox from multiple accounts (#6306)
+* UBERF-7690: Local mongo setup configuration (#6335)* UBERF-7690: Performance fixes (#6336)* UBERF-7690: Use query joiner for server/trigger requests (#6339)* UBERF-7690: Skip space security for >=85% of spaces and do on result check (#6338)* UBERF-7690: Operation log support + fixes (#6337)* UBERF-7690: Trigger improvements (#6340)
+* UBERF-7790: Fix connection timeout issue (#6301)
+* UBERF-7836: Fix github integeration (#6313)
+* UBERF-7854: Fix live query $lookup update (#6304)
+* UBERF-7865: Fix wrong access to not created collection (#6315)* UBERF-7865: Final fix (#6316)
+* [PART-1]: New analytics events (#6319)
+* UBERF-7856: Fix desktop publishing CI (#6308)
+
+## [0.6.280a] - 2024-08-12
+
+* UBERF-7865: Final fix (#6316)
+
 ## [0.6.280] - 2024-08-11
 
 * UBERF-7836: Fix github integeration (#6313)
