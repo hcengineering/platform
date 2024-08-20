@@ -42,7 +42,7 @@ function getCollaborator (workspace: WorkspaceId, hierarchy: Hierarchy): Collabo
   return getCollaboratorClient(hierarchy, workspace, token, collaboratorUrl)
 }
 
-async function OnMarkupCreate (tx: Tx, { hierarchy, txFactory, workspace, ctx }: TriggerControl): Promise<Tx[]> {
+async function OnMarkupCreate (tx: Tx, { hierarchy, workspace, ctx }: TriggerControl): Promise<Tx[]> {
   const cudTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
 
   let mixin: Ref<Mixin<Doc>> | undefined

@@ -73,8 +73,8 @@ import {
 } from './utils'
 
 /**
-  * @public
-  */
+ * @public
+ */
 export type WithMarkup<T> = {
   [P in keyof T]: T[P] extends CollaborativeDoc ? Markup : T[P]
 }

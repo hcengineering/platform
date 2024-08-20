@@ -22,7 +22,6 @@ import core, {
   makeCollaborativeDoc
 } from '@hcengineering/core'
 import task, { TaskType, calcRank } from '@hcengineering/task'
-import { isEmptyMarkup } from '@hcengineering/text'
 import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
 import { Issue as GithubIssue, IssuesEvent, ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import github, {
