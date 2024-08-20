@@ -1,7 +1,6 @@
 services:
   account:
     environment:
-      - MONGO_URL=mongodb://mongodb:27018
       - DB_URL=postgresql://postgres:example@postgres:5432
   transactor:
     environment:
