@@ -244,14 +244,14 @@
 
   {#if headings.length > 0}
     <div class="tocContent only-print">
-      <TableOfContentsContent items={headings} />
+      <TableOfContentsContent items={headings} enumerated={true} />
     </div>
     <div class="pagebreak" />
   {/if}
 
   <div class="root relative">
     <div class="toc">
-      <TableOfContents items={headings} on:select={(ev) => handleShowHeading(ev.detail)} />
+      <TableOfContents items={headings} enumerated={true} on:select={(ev) => handleShowHeading(ev.detail)} />
     </div>
     <Scroller>
       <div class="content">
@@ -312,6 +312,33 @@
     @media print {
       margin-left: -1rem;
       overflow: visible;
+    }
+
+    // Workaround to quickly enumerate headings for controlled docs
+    :global(h1) {
+      counter-increment: h1;
+      counter-reset: h2;
+
+      &::before {
+        content: counter(h1) '. ';
+      }
+    }
+
+    :global(h2) {
+      counter-increment: h2;
+      counter-reset: h3;
+
+      &::before {
+        content: counter(h1) '.' counter(h2) '. ';
+      }
+    }
+
+    :global(h3) {
+      counter-increment: h3;
+
+      &::before {
+        content: counter(h1) '.' counter(h2) '.' counter(h3) '. ';
+      }
     }
   }
 
