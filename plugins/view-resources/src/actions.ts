@@ -123,7 +123,7 @@ export async function invokeAction (
   props?: Record<string, any>
 ): Promise<void> {
   const impl = await getResource(action.action)
-  Analytics.handleEvent(action._id)
+  Analytics.handleEvent(action.analyticsEvent ?? action._id)
   await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, {
     ...action.actionProps,
     ...props

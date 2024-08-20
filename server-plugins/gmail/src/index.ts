@@ -32,7 +32,7 @@ export default plugin(serverGmailId, {
     OnMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
-    IsIncomingMessage: '' as TypeMatchFunc,
+    IsIncomingMessageTypeMatch: '' as TypeMatchFunc,
     FindMessages: '' as Resource<ObjectDDParticipantFunc>,
     SendEmailNotifications: '' as Resource<NotificationProviderFunc>
   }

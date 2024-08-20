@@ -56,6 +56,7 @@
     "SoundNotificationsDescription": "接收事件的声音通知。",
     "CommonNotificationCollectionAdded":  "{senderName} 添加了 {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} 移除了 {collection}",
-    "NoAccessToObject": "您不再可以访问此对象"
+    "NoAccessToObject": "您不再可以访问此对象",
+    "ViewIn": "在 {app} 中查看"
   }
 }

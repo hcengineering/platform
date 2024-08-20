@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person, PersonAccount } from '@hcengineering/contact'
+  import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, getCurrentAccount, Ref, Space, WithLookup } from '@hcengineering/core'
   import { getClient, MessageViewer } from '@hcengineering/presentation'
@@ -142,6 +142,10 @@
 
   let attachments: Attachment[] | undefined = undefined
   $: attachments = value?.$lookup?.attachments as Attachment[] | undefined
+
+  $: socialProvider = value?.provider
+    ? client.getModel().findAllSync(contact.class.ChannelProvider, { _id: value.provider })[0]
+    : undefined
 </script>
 
 {#if inline && object}
@@ -173,6 +177,7 @@
     {skipLabel}
     {pending}
     {stale}
+    socialIcon={socialProvider?.icon}
     showDatePreposition={hideLink}
     {type}
     {onClick}

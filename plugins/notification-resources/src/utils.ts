@@ -61,11 +61,12 @@ import {
   type ResolvedLocation
 } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
-
 import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import { getMetadata } from '@hcengineering/platform'
 import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId } from '@hcengineering/view-resources'
+import { Analytics } from '@hcengineering/analytics'
+
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
 
@@ -562,6 +563,7 @@ async function navigateToInboxDoc (
 
   loc.query = { ...loc.query, message: message ?? null }
   messageInFocus.set(message)
+  Analytics.handleEvent('inbox.ReadDoc', { objectId: id, objectClass: _class, thread, message })
   navigate(loc)
 }
 

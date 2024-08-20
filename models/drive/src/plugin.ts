@@ -17,6 +17,7 @@ import type { Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { driveId } from '@hcengineering/drive'
 import drive from '@hcengineering/drive-resources/src/plugin'
+import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 import {
@@ -54,6 +55,12 @@ export default mergeIds(driveId, drive, {
     FileLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CanRenameFile: '' as Resource<ViewActionAvailabilityFunction>,
     CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>
+  },
+  completion: {
+    FileQuery: '' as Resource<ObjectSearchFactory>,
+    FileCategory: '' as Ref<ObjectSearchCategory>,
+    FolderQuery: '' as Resource<ObjectSearchFactory>,
+    FolderCategory: '' as Ref<ObjectSearchCategory>
   },
   viewlet: {
     Grid: '' as Ref<ViewletDescriptor>,
@@ -93,6 +100,8 @@ export default mergeIds(driveId, drive, {
     Parent: '' as IntlString,
     Path: '' as IntlString,
     Drives: '' as IntlString,
+    Files: '' as IntlString,
+    Folders: '' as IntlString,
     Version: '' as IntlString,
     Restore: '' as IntlString
   }

@@ -18,7 +18,6 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
   TxProcessor,
-  concatLink,
   getCurrentAccount,
   reduceCalls,
   type AnyAttribute,
@@ -34,7 +33,6 @@ import core, {
   type Hierarchy,
   type Mixin,
   type Obj,
-  type Blob as PlatformBlob,
   type Ref,
   type RefTo,
   type SearchOptions,
@@ -455,22 +453,6 @@ export function getCurrentWorkspaceUrl (): string {
     return getRawCurrentLocation().path[1]
   }
   return wsId
-}
-
-/**
- * @public
- */
-export function getFileUrl (file: Ref<PlatformBlob>, filename?: string, useToken?: boolean): string {
-  if (file.includes('://')) {
-    return file
-  }
-  const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
-  let uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? ''
-  if (!uploadUrl.includes('://')) {
-    uploadUrl = concatLink(frontUrl ?? '', uploadUrl)
-  }
-  const token = getMetadata(plugin.metadata.Token) ?? ''
-  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}${useToken === true ? `&token=${token}` : ''}`
 }
 
 export function sizeToWidth (size: string): number | undefined {

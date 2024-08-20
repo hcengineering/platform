@@ -250,6 +250,14 @@
     },
     {
       "commandKind": "global",
+      "name": "docker:local",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev/local-mongo && docker compose -p dev up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
       "name": "tool:upgrade",
       "summary": "Upgrade all local models",
       "description": "Upgrade all local models",

@@ -22,7 +22,8 @@
     IconDetails,
     Label,
     SearchInput,
-    Header
+    Header,
+    HeaderAdaptive
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -49,7 +50,7 @@
   export let titleKind: 'default' | 'breadcrumbs' = 'default'
   export let withFilters: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
-  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'default'
+  export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
 
   const client = getClient()

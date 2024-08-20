@@ -1,10 +1,8 @@
 import client, { ClientSocket } from '@hcengineering/client'
-import { Client, Doc, Ref, Space } from '@hcengineering/core'
+import { Client } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import FormData from 'form-data'
 import mime from 'mime'
-import fetch from 'node-fetch'
 import { Api } from 'telegram'
 import WebSocket from 'ws'
 import config from './config'
@@ -56,55 +54,6 @@ export async function getFiles (msg: Api.Message): Promise<AttachedFile[]> {
   if (file == null) return []
   const obj: AttachedFile = { ...props, file: typeof file === 'string' ? Buffer.from(file) : file }
   return [obj]
-}
-
-export async function uploadFile (
-  file: AttachedFile,
-  token: string,
-  opts?: { space: Ref<Space>, attachedTo: Ref<Doc> }
-): Promise<string> {
-  const uploadUrl = config.UploadUrl
-  if (uploadUrl === undefined) {
-    throw Error('UploadURL is not defined')
-  }
-
-  const data = new FormData()
-  data.append(
-    'file',
-    Object.assign(file.file, {
-      lastModified: file.lastModified,
-      size: file.size,
-      name: file.name,
-      type: file.type
-    })
-  )
-
-  const params =
-    opts !== undefined
-      ? [
-          ['space', opts.space],
-          ['attachedTo', opts.attachedTo]
-        ]
-          .filter((x): x is [string, Ref<any>] => x[1] !== undefined)
-          .map(([name, value]) => `${name}=${value}`)
-          .join('&')
-      : ''
-  const suffix = params === '' ? params : `?${params}`
-
-  const url = `${uploadUrl}${suffix}`
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + token
-    },
-    body: data
-  })
-
-  if (resp.status !== 200) {
-    throw Error(`Failed to upload file: ${resp.statusText}`)
-  }
-
-  return await resp.text()
 }
 
 export async function createPlatformClient (token: string): Promise<Client> {

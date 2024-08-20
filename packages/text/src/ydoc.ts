@@ -13,12 +13,30 @@
 // limitations under the License.
 //
 
+import { Markup } from '@hcengineering/core'
 import { Extensions, getSchema } from '@tiptap/core'
 import { Node, Schema } from 'prosemirror-model'
-import { prosemirrorJSONToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
-import { Doc, applyUpdate, encodeStateAsUpdate } from 'yjs'
+import { prosemirrorJSONToYDoc, prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
+import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { defaultExtensions } from './extensions'
 import { MarkupNode } from './markup/model'
+import { jsonToMarkup, markupToPmNode } from './markup/utils'
+
+/**
+ * @public
+ */
+export function markupToYDoc (markup: Markup, field: string): YDoc {
+  const node = markupToPmNode(markup)
+  return prosemirrorToYDoc(node, field)
+}
+
+/**
+ * @public
+ */
+export function yDocToMarkup (ydoc: YDoc, field: string): Markup {
+  const json = yDocToProsemirrorJSON(ydoc, field)
+  return jsonToMarkup(json as MarkupNode)
+}
 
 /**
  * Get ProseMirror node from Y.Doc content
@@ -31,20 +49,22 @@ export function yDocContentToNode (
   schema?: Schema,
   extensions?: Extensions
 ): Node {
-  const ydoc = new Doc()
+  const ydoc = new YDoc()
   const uint8arr = new Uint8Array(content)
   applyUpdate(ydoc, uint8arr)
 
   return yDocToNode(ydoc, field, schema, extensions)
 }
 
+const defaultSchema = getSchema(defaultExtensions)
+
 /**
  * Get ProseMirror node from Y.Doc
  *
  * @public
  */
-export function yDocToNode (ydoc: Doc, field?: string, schema?: Schema, extensions?: Extensions): Node {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+export function yDocToNode (ydoc: YDoc, field?: string, schema?: Schema, extensions?: Extensions): Node {
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   try {
     const body = yDocToProsemirrorJSON(ydoc, field)
@@ -61,12 +81,12 @@ export function yDocToNode (ydoc: Doc, field?: string, schema?: Schema, extensio
  * @public
  */
 export function yDocContentToNodes (content: ArrayBuffer, schema?: Schema, extensions?: Extensions): Node[] {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   const nodes: Node[] = []
 
   try {
-    const ydoc = new Doc()
+    const ydoc = new YDoc()
     const uint8arr = new Uint8Array(content)
     applyUpdate(ydoc, uint8arr)
 
@@ -93,12 +113,12 @@ export function updateYDocContent (
   updateFn: (body: Record<string, any>) => Record<string, any>,
   schema?: Schema,
   extensions?: Extensions
-): Doc | undefined {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+): YDoc | undefined {
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   try {
-    const ydoc = new Doc()
-    const res = new Doc({ gc: false })
+    const ydoc = new YDoc()
+    const res = new YDoc({ gc: false })
     const uint8arr = new Uint8Array(content)
     applyUpdate(ydoc, uint8arr)
 
@@ -121,10 +141,10 @@ export function updateYDocContent (
  *
  * @public
  */
-export function YDocFromContent (content: MarkupNode, field: string, schema?: Schema, extensions?: Extensions): Doc {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+export function YDocFromContent (content: MarkupNode, field: string, schema?: Schema, extensions?: Extensions): YDoc {
+  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
-  const res = new Doc({ gc: false })
+  const res = new YDoc({ gc: false })
 
   const yDoc = prosemirrorJSONToYDoc(schema, content, field)
   const update = encodeStateAsUpdate(yDoc)

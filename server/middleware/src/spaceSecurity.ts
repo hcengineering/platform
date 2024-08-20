@@ -42,7 +42,8 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   generateId,
-  systemAccountEmail
+  systemAccountEmail,
+  toFindResult
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
@@ -491,6 +492,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const isSpace = this.storage.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
 
+    let clientFilterSpaces: Set<Ref<Space>> | undefined
+
     if (!isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
@@ -514,13 +517,26 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           } else if (spaces.result.length === 1) {
             ;(newQuery as any)[field] = spaces.result[0]
           } else {
-            ;(newQuery as any)[field] = { $in: spaces.result }
+            // Check if spaces > 85% of all domain spaces, in this case return all and filter on client.
+            if (spaces.result.length / spaces.domainSpaces.size > 0.85 && options?.limit === undefined) {
+              clientFilterSpaces = new Set(spaces.result)
+              delete newQuery.space
+            } else {
+              ;(newQuery as any)[field] = { $in: spaces.result }
+            }
           }
         }
       }
     }
 
-    const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    let findResult = await this.provideFindAll(ctx, _class, newQuery, options)
+    if (clientFilterSpaces !== undefined) {
+      findResult = toFindResult(
+        findResult.filter((it) => (clientFilterSpaces as Set<Ref<Space>>).has(it.space)),
+        findResult.total,
+        findResult.lookupMap
+      )
+    }
     if (!isOwner(account, ctx) && account.role !== AccountRole.DocGuest) {
       if (options?.lookup !== undefined) {
         for (const object of findResult) {

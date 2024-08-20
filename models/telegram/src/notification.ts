@@ -17,6 +17,8 @@ import { type Builder } from '@hcengineering/model'
 import notification from '@hcengineering/model-notification'
 import core from '@hcengineering/model-core'
 import contact from '@hcengineering/model-contact'
+import chunter from '@hcengineering/chunter'
+import love from '@hcengineering/love'
 
 import telegram from './plugin'
 
@@ -66,7 +68,17 @@ export function defineNotifications (builder: Builder): void {
 
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.InboxNotificationProvider,
-    ignoredTypes: [notification.ids.CollaboratoAddNotification],
+    ignoredTypes: [],
     enabledTypes: [telegram.ids.NewMessageNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: telegram.providers.TelegramNotificationProvider,
+    ignoredTypes: [
+      notification.ids.CollaboratoAddNotification,
+      love.ids.InviteNotification,
+      love.ids.KnockNotification
+    ],
+    enabledTypes: [chunter.ids.DMNotification, chunter.ids.ThreadNotification]
   })
 }

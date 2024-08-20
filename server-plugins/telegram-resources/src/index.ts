@@ -34,13 +34,17 @@ import telegram, { TelegramMessage, TelegramNotificationRecord } from '@hcengine
 import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
 import setting, { Integration } from '@hcengineering/setting'
 import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
-import { getMetadata, getResource } from '@hcengineering/platform'
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import serverTelegram from '@hcengineering/server-telegram'
-import { getTranslatedNotificationContent, getTextPresenter } from '@hcengineering/server-notification-resources'
+import {
+  getTranslatedNotificationContent,
+  getTextPresenter,
+  getNotificationLink
+} from '@hcengineering/server-notification-resources'
 import { generateToken } from '@hcengineering/server-token'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import { markupToHTML } from '@hcengineering/text'
-import activity, { ActivityMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -86,13 +90,13 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
 /**
  * @public
  */
-export async function IsIncomingMessage (
+export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
-  user: Ref<Account>,
+  user: Ref<Account>[],
   type: NotificationType,
   control: TriggerControl
-): Promise<boolean> {
+): boolean {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
@@ -162,6 +166,14 @@ async function activityMessageToHtml (control: TriggerControl, message: Activity
   return undefined
 }
 
+function isReactionMessage (message?: ActivityMessage): boolean {
+  return (
+    message !== undefined &&
+    message._class === activity.class.DocUpdateMessage &&
+    (message as DocUpdateMessage).objectClass === activity.class.Reaction
+  )
+}
+
 async function getTranslatedData (
   data: InboxNotification,
   doc: Doc,
@@ -171,6 +183,7 @@ async function getTranslatedData (
     title: string
     quote: string | undefined
     body: string
+    link: string
   }> {
   const { hierarchy } = control
 
@@ -189,15 +202,19 @@ async function getTranslatedData (
   if (hierarchy.isDerived(doc._class, activity.class.ActivityMessage)) {
     const html = await activityMessageToHtml(control, doc as ActivityMessage)
     if (html !== undefined) {
-      title = ''
       quote = html
     }
+  }
+
+  if (isReactionMessage(message)) {
+    title = await translate(activity.string.Reacted, {})
   }
 
   return {
     title,
     quote,
-    body
+    body,
+    link: await getNotificationLink(control, doc, message?._id)
   }
 }
 
@@ -217,7 +234,7 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   const botUrl = getMetadata(serverTelegram.metadata.BotUrl)
 
   if (botUrl === undefined || botUrl === '') {
-    console.log('Please provide telegram bot service url to enable telegram notifications.')
+    control.ctx.error('Please provide telegram bot service url to enable telegram notifications.')
     return []
   }
 
@@ -226,7 +243,7 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
   }
 
   try {
-    const { title, body, quote } = await getTranslatedData(data, doc, control, message)
+    const { title, body, quote, link } = await getTranslatedData(data, doc, control, message)
     const record: TelegramNotificationRecord = {
       notificationId: data._id,
       account: receiver._id,
@@ -234,7 +251,8 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
       sender: data.intlParams?.senderName?.toString() ?? formatName(sender.person?.name ?? 'System'),
       title,
       quote,
-      body
+      body,
+      link
     }
 
     await fetch(concatLink(botUrl, '/notify'), {
@@ -246,7 +264,11 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
       body: JSON.stringify([record])
     })
   } catch (err) {
-    console.log('Could not send telegram notification', err)
+    control.ctx.error('Could not send telegram notification', {
+      err,
+      notificationId: data._id,
+      receiver: receiver.account.email
+    })
   }
 
   return []
@@ -258,7 +280,7 @@ export default async () => ({
     OnMessageCreate
   },
   function: {
-    IsIncomingMessage,
+    IsIncomingMessageTypeMatch,
     FindMessages,
     GetCurrentEmployeeTG,
     GetIntegrationOwnerTG,

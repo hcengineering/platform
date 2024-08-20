@@ -24,6 +24,7 @@ import { TextMessage } from '@telegraf/entity/types/types'
 import config from './config'
 import { PlatformWorker } from './worker'
 import { getBotCommands, getCommandsHelp } from './utils'
+import { NotificationRecord } from './types'
 
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
@@ -42,6 +43,9 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectedMessage
 
     await ctx.replyWithHTML(message)
+    if (record.telegramUsername !== ctx.from?.username) {
+      await worker.updateTelegramUsername(record, ctx.from?.username)
+    }
   } else {
     const connectMessage = await translate(telegram.string.ConnectMessage, { app: config.App }, lang)
     const message = welcomeMessage + '\n\n' + commandsHelp + '\n\n' + connectMessage
@@ -87,22 +91,56 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
     return
   }
 
-  const code = await worker.generateCode(id)
+  const code = await worker.generateCode(id, ctx.from?.username)
   await ctx.reply(`*${code}*`, { parse_mode: 'MarkdownV2' })
 }
 
-async function onReply (id: number, message: TextMessage, replyTo: number, worker: PlatformWorker): Promise<boolean> {
-  const userRecord = await worker.getUserRecord(id)
+async function findNotificationRecord (
+  worker: PlatformWorker,
+  from: number,
+  replyTo: number,
+  email: string
+): Promise<NotificationRecord | undefined> {
+  const record = await worker.getNotificationRecord(replyTo, email)
+
+  if (record !== undefined) {
+    return record
+  }
+
+  const reply = await worker.getReply(from, replyTo)
+
+  if (reply === undefined) {
+    return undefined
+  }
+
+  return await worker.getNotificationRecordById(reply.notificationId, email)
+}
+
+async function onReply (
+  from: number,
+  message: TextMessage,
+  messageId: number,
+  replyTo: number,
+  worker: PlatformWorker,
+  username?: string
+): Promise<boolean> {
+  const userRecord = await worker.getUserRecord(from)
 
   if (userRecord === undefined) {
     return false
   }
 
-  const notification = await worker.getNotificationRecord(replyTo, userRecord.email)
+  if (userRecord.telegramUsername !== username) {
+    await worker.updateTelegramUsername(userRecord, username)
+  }
+
+  const notification = await findNotificationRecord(worker, from, replyTo, userRecord.email)
 
   if (notification === undefined) {
     return false
   }
+
+  await worker.saveReply({ replyId: messageId, telegramId: from, notificationId: notification.notificationId })
 
   return await worker.reply(notification, htmlToMarkup(toHTML(message)))
 }
@@ -127,7 +165,14 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
     }
 
     const replyTo = message.reply_to_message
-    const isReplied = await onReply(id, message as TextMessage, replyTo.message_id, worker)
+    const isReplied = await onReply(
+      id,
+      message as TextMessage,
+      message.message_id,
+      replyTo.message_id,
+      worker,
+      ctx.from.username
+    )
 
     if (isReplied) {
       await ctx.react('👍')

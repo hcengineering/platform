@@ -30,6 +30,9 @@ export class SentryAnalyticProvider implements AnalyticProvider {
   setUser(email: string): void {
     Sentry.setUser({ email })
   }
+  logout(): void {
+    Sentry.setUser(null)
+  }
   setTag(key: string, value: string): void {
     Sentry.setTag(key, value)
   }

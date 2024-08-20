@@ -94,7 +94,6 @@ export type DbAdapterHandler = (
   domain: Domain,
   event: 'add' | 'update' | 'delete' | 'read',
   count: number,
-  time: number,
   helper: DomainHelperOperations
 ) => void
 /**

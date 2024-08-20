@@ -345,6 +345,7 @@
   }
 
   .popupPanel-body {
+    overflow: hidden;
     position: relative;
     display: flex;
     min-width: 0;
@@ -363,6 +364,7 @@
       justify-content: center;
     }
     &__main, &__mobile, &__aside {
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       min-width: 0;
@@ -563,6 +565,9 @@
   @media print {
     overflow: visible;
   }
+}
+.popupPanel .popupPanel-body__aside .popupPanel-body__aside-grid + .popupPanel-title {
+  border-top: 1px solid var(--theme-divider-color);
 }
 
 // Full size state

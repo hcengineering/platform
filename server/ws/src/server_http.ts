@@ -80,12 +80,13 @@ export function startHttpServer (
       const token = req.query.token as string
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      const json = JSON.stringify({
+      const jsonData = {
         ...getStatistics(ctx, sessions, admin),
-        users: getUsers,
+        users: getUsers(),
         admin
-      })
+      }
+      const json = JSON.stringify(jsonData)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(json)
     } catch (err: any) {
       Analytics.handleError(err)

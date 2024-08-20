@@ -15,12 +15,13 @@
 <script lang="ts">
   import { Data } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { IssueDraft, IssueTemplate, IssueTemplateChild } from '@hcengineering/tracker'
+  import { IssueDraft, IssueTemplate, IssueTemplateChild, TrackerEvents } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { EditBoxPopup } from '@hcengineering/view-resources'
+  import { EditBoxPopup, getObjectId } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let value: IssueTemplateChild | IssueTemplate | Data<IssueTemplate> | IssueDraft
   export let isEditable: boolean = true
@@ -54,6 +55,8 @@
 
     if ('_class' in value) {
       await client.update(value, { estimation: newEstimation })
+      const id = await getObjectId(value, client.getHierarchy())
+      Analytics.handleEvent(TrackerEvents.IssueSetEstimate, { objectId: id, objectClass: value._class })
     }
     dispatch('change', newEstimation)
     value.estimation = newEstimation

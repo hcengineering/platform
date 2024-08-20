@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { AttachedData, Ref, generateId } from '@hcengineering/core'
-  import { Document, Teamspace } from '@hcengineering/document'
+  import { Document, Teamspace, DocumentEvents } from '@hcengineering/document'
   import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -31,6 +31,8 @@
   import view from '@hcengineering/view'
   import { IconPicker, ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
+
   import document from '../plugin'
   import { createEmptyDocument } from '../utils'
   import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
@@ -78,6 +80,7 @@
 
   async function create (): Promise<void> {
     await createEmptyDocument(client, id, _space, _parent ?? document.ids.NoParent, object)
+    Analytics.handleEvent(DocumentEvents.DocumentCreated, { id, parent: _parent })
     dispatch('close', id)
   }
 

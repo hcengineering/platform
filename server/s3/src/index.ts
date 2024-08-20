@@ -24,8 +24,8 @@ import core, {
   type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
-
-import {
+import { getMetadata } from '@hcengineering/platform'
+import serverCore, {
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -433,6 +433,12 @@ export class S3Service implements StorageAdapter {
     const range = length !== undefined ? `bytes=${offset}-${offset + length}` : `bytes=${offset}-`
     return await this.doGet(ctx, workspaceId, objectName, range)
   }
+
+  @withContext('getUrl')
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
+  }
 }
 
 export function processConfigFromEnv (storageConfig: StorageConfiguration): string | undefined {
@@ -450,7 +456,7 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
     return 'S3_SECRET_KEY'
   }
 
-  const minioConfig: S3Config = {
+  const config: S3Config = {
     kind: 's3',
     name: 's3',
     region: 'auto',
@@ -458,6 +464,6 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
     accessKey,
     secretKey
   }
-  storageConfig.storages.push(minioConfig)
+  storageConfig.storages.push(config)
   storageConfig.default = 's3'
 }

@@ -33,6 +33,8 @@ import { AnyComponent } from '@hcengineering/ui'
 import { Person } from '@hcengineering/contact'
 import type { Rank } from '@hcengineering/rank'
 
+export * from './analytics'
+
 /**
  * @public
  */

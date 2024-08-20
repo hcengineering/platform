@@ -35,6 +35,7 @@
     Scroller,
     showPopup
   } from '@hcengineering/ui'
+  import { GmailEvents } from '@hcengineering/gmail'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
   import Connect from './Connect.svelte'
@@ -94,6 +95,7 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
+      Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
       await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(

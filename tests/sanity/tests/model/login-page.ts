@@ -21,6 +21,9 @@ export class LoginPage {
   recoveryLogin = (): Locator => this.page.getByRole('link', { name: 'Log In' })
   recoverySignUp = (): Locator => this.page.getByRole('link', { name: 'Sign Up' })
 
+  profileButton = (): Locator => this.page.locator('#profile-button')
+  popupItemButton = (hasText: string): Locator => this.page.locator('div.popup button[class*="menu"]', { hasText })
+
   // ACTIONS
   async goto (): Promise<void> {
     await (await this.page.goto(`${PlatformURI}/login/login`))?.finished()
@@ -50,7 +53,19 @@ export class LoginPage {
     await this.buttonLogin().click()
   }
 
+  async openProfileMenu (): Promise<void> {
+    await this.profileButton().click()
+  }
+
   // ASSERTS
+
+  async checkingNeedReLogin (): Promise<void> {
+    if (await this.profileButton().isVisible()) {
+      await this.openProfileMenu()
+      await this.popupItemButton('Sign out').click()
+      await this.loginWithPassword().waitFor({ state: 'visible', timeout: 15000 })
+    }
+  }
 
   async checkIfErrorMessageIsShown (): Promise<void> {
     await expect(this.invalidPasswordMessage()).toContainText('Invalid password')

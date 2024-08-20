@@ -5,5 +5,6 @@
   "UPLOAD_URL":"/files",
   "REKONI_URL": "http://localhost:4004",
   "PRINT_URL": "http://localhost:4005",
-  "SIGN_URL": "http://localhost:4006"
+  "SIGN_URL": "http://localhost:4006",
+  "ANALYTICS_COLLECTOR_URL":"http://localhost:4007"
 }

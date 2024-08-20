@@ -20,7 +20,8 @@
     NotificationGroup,
     NotificationType,
     NotificationTypeSetting,
-    NotificationProviderDefaults
+    NotificationProviderDefaults,
+    NotificationProviderSetting
   } from '@hcengineering/notification'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -132,12 +133,13 @@
 
   async function getFilteredProviders (
     providers: NotificationProvider[],
-    types: BaseNotificationType[]
+    types: BaseNotificationType[],
+    providersSettings: NotificationProviderSetting[]
   ): Promise<NotificationProvider[]> {
     const result: NotificationProvider[] = []
 
     for (const provider of providers) {
-      const providerSetting = $providersSettings.find((p) => p.attachedTo === provider._id)
+      const providerSetting = providersSettings.find((p) => p.attachedTo === provider._id)
 
       if (providerSetting !== undefined && !providerSetting.enabled) continue
       if (providerSetting === undefined && !provider.defaultEnabled) continue
@@ -164,7 +166,7 @@
 
   let filteredProviders: NotificationProvider[] = []
 
-  $: void getFilteredProviders(providers, types).then((result) => {
+  $: void getFilteredProviders(providers, types, $providersSettings).then((result) => {
     filteredProviders = result
   })
 

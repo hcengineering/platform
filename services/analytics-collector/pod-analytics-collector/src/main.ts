@@ -15,26 +15,45 @@
 
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
+import { Analytics } from '@hcengineering/analytics'
+import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import serverClient from '@hcengineering/server-client'
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { join } from 'path'
 
 import config from './config'
 import { createServer, listen } from './server'
 import { Collector } from './collector'
 import { registerLoaders } from './loaders'
-import serverClient from '@hcengineering/server-client'
+
+const ctx = new MeasureMetricsContext(
+  'analytics-collector-service',
+  {},
+  {},
+  newMetrics(),
+  new SplitLogger('analytics-collector-service', {
+    root: join(process.cwd(), 'logs'),
+    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+  })
+)
+
+configureAnalytics(config.SentryDSN, config)
+Analytics.setTag('application', 'analytics-collector-service')
 
 export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
 
-  console.log('Analytics service')
-  console.log(config.AccountsUrl)
-  console.log(config.DbURL)
-  console.log(config.SupportWorkspace)
+  ctx.info('Analytics service started', {
+    accountsUrl: config.AccountsUrl,
+    dbUrl: config.DbURL,
+    supportWorkspace: config.SupportWorkspace
+  })
 
   registerLoaders()
 
-  const collector = new Collector()
+  const collector = new Collector(ctx)
 
   const app = createServer(collector)
   const server = listen(app, config.Port)

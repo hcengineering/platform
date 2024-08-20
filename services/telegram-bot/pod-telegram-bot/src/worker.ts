@@ -15,8 +15,9 @@
 
 import type { Collection } from 'mongodb'
 import { Account, Ref, SortingOrder } from '@hcengineering/core'
+import { InboxNotification } from '@hcengineering/notification'
 
-import { UserRecord, NotificationRecord, OtpRecord } from './types'
+import { UserRecord, NotificationRecord, OtpRecord, ReplyRecord } from './types'
 import { getDB } from './storage'
 import { WorkspaceClient } from './workspace'
 import { getNewOtp } from './utils'
@@ -32,7 +33,8 @@ export class PlatformWorker {
   private constructor (
     private readonly usersStorage: Collection<UserRecord>,
     private readonly notificationsStorage: Collection<NotificationRecord>,
-    private readonly otpStorage: Collection<OtpRecord>
+    private readonly otpStorage: Collection<OtpRecord>,
+    private readonly repliesStorage: Collection<ReplyRecord>
   ) {
     this.intervalId = setInterval(
       () => {
@@ -64,11 +66,7 @@ export class PlatformWorker {
     }
   }
 
-  async getUsersRecords (): Promise<UserRecord[]> {
-    return await this.usersStorage.find().toArray()
-  }
-
-  async addUser (id: number, email: string): Promise<UserRecord | undefined> {
+  async addUser (id: number, email: string, telegramUsername?: string): Promise<UserRecord | undefined> {
     const emailRes = await this.usersStorage.findOne({ email })
 
     if (emailRes !== null) {
@@ -83,9 +81,16 @@ export class PlatformWorker {
       return
     }
 
-    const insertResult = await this.usersStorage.insertOne({ telegramId: id, email })
+    const insertResult = await this.usersStorage.insertOne({ telegramId: id, email, telegramUsername })
 
     return (await this.usersStorage.findOne({ _id: insertResult.insertedId })) ?? undefined
+  }
+
+  async updateTelegramUsername (userRecord: UserRecord, telegramUsername?: string): Promise<void> {
+    await this.usersStorage.updateOne(
+      { telegramId: userRecord.telegramId, email: userRecord.email },
+      { $set: { telegramUsername } }
+    )
   }
 
   async addNotificationRecord (record: NotificationRecord): Promise<void> {
@@ -100,8 +105,23 @@ export class PlatformWorker {
     await this.usersStorage.deleteOne({ account: _id })
   }
 
+  async saveReply (record: ReplyRecord): Promise<void> {
+    await this.repliesStorage.insertOne(record)
+  }
+
+  async getReply (id: number, replyTo: number): Promise<ReplyRecord | undefined> {
+    return (await this.repliesStorage.findOne({ telegramId: id, replyId: replyTo })) ?? undefined
+  }
+
   async getNotificationRecord (id: number, email: string): Promise<NotificationRecord | undefined> {
     return (await this.notificationsStorage.findOne({ telegramId: id, email })) ?? undefined
+  }
+
+  async getNotificationRecordById (
+    notificationId: Ref<InboxNotification>,
+    email: string
+  ): Promise<NotificationRecord | undefined> {
+    return (await this.notificationsStorage.findOne({ notificationId, email })) ?? undefined
   }
 
   async getUserRecord (id: number): Promise<UserRecord | undefined> {
@@ -148,10 +168,10 @@ export class PlatformWorker {
       throw new Error('Invalid OTP')
     }
 
-    return await this.addUser(otpData.telegramId, email)
+    return await this.addUser(otpData.telegramId, email, otpData.telegramUsername)
   }
 
-  async generateCode (telegramId: number): Promise<string> {
+  async generateCode (telegramId: number, telegramUsername?: string): Promise<string> {
     const now = Date.now()
     const otpData = (
       await this.otpStorage.find({ telegramId }).sort({ createdOn: SortingOrder.Descending }).limit(1).toArray()
@@ -168,25 +188,26 @@ export class PlatformWorker {
     const timeToLive = config.OtpTimeToLiveSec * 1000
     const expires = now + timeToLive
 
-    await this.otpStorage.insertOne({ telegramId, code: newCode, expires, createdOn: now })
+    await this.otpStorage.insertOne({ telegramId, code: newCode, expires, createdOn: now, telegramUsername })
 
     return newCode
   }
 
   static async createStorages (): Promise<
-  [Collection<UserRecord>, Collection<NotificationRecord>, Collection<OtpRecord>]
+  [Collection<UserRecord>, Collection<NotificationRecord>, Collection<OtpRecord>, Collection<ReplyRecord>]
   > {
     const db = await getDB()
     const userStorage = db.collection<UserRecord>('users')
     const notificationsStorage = db.collection<NotificationRecord>('notifications')
     const otpStorage = db.collection<OtpRecord>('otp')
+    const repliesStorage = db.collection<ReplyRecord>('replies')
 
-    return [userStorage, notificationsStorage, otpStorage]
+    return [userStorage, notificationsStorage, otpStorage, repliesStorage]
   }
 
   static async create (): Promise<PlatformWorker> {
-    const [userStorage, notificationsStorage, otpStorage] = await PlatformWorker.createStorages()
+    const [userStorage, notificationsStorage, otpStorage, repliesStorage] = await PlatformWorker.createStorages()
 
-    return new PlatformWorker(userStorage, notificationsStorage, otpStorage)
+    return new PlatformWorker(userStorage, notificationsStorage, otpStorage, repliesStorage)
   }
 }

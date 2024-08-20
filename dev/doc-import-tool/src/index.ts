@@ -14,13 +14,14 @@
 //
 import { Employee } from '@hcengineering/contact'
 import documents, { DocumentSpace } from '@hcengineering/controlled-documents'
-import { Ref, getWorkspaceId, systemAccountEmail } from '@hcengineering/core'
+import { MeasureMetricsContext, Ref, getWorkspaceId, systemAccountEmail } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import serverCore from '@hcengineering/server-core'
+import serverClientPlugin from '@hcengineering/server-client'
+import { type StorageAdapter } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { program } from 'commander'
 
-import serverClientPlugin from '@hcengineering/server-client'
 import { importDoc } from './commands'
 import { Config } from './config'
 import { getBackend } from './convert/convert'
@@ -29,6 +30,8 @@ import { getBackend } from './convert/convert'
  * @public
  */
 export function docImportTool (): void {
+  const ctx = new MeasureMetricsContext('doc-import-tool', {})
+
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.error('please provide server secret')
@@ -49,15 +52,24 @@ export function docImportTool (): void {
 
   const uploadUrl = process.env.UPLOAD_URL ?? '/files'
 
-  const frontUrl = process.env.FRONT_URL
-  if (frontUrl === undefined) {
-    console.log('Please provide front url')
+  const mongodbUri = process.env.MONGO_URL
+  if (mongodbUri === undefined) {
+    console.log('Please provide mongodb url')
     process.exit(1)
   }
 
   setMetadata(serverClientPlugin.metadata.Endpoint, accountUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
-  setMetadata(serverCore.metadata.FrontUrl, frontUrl)
+
+  async function withStorage (mongodbUri: string, f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
+    const adapter = buildStorageFromConfig(storageConfigFromEnv(), mongodbUri)
+    try {
+      await f(adapter)
+    } catch (err: any) {
+      console.error(err)
+    }
+    await adapter.close()
+  }
 
   program.version('0.0.1')
 
@@ -79,7 +91,8 @@ export function docImportTool (): void {
             cmd.spec
           }, space: ${cmd.space}, backend: ${cmd.backend}`
         )
-        try {
+
+        await withStorage(mongodbUri, async (storageAdapter) => {
           const workspaceId = getWorkspaceId(workspace)
 
           const config: Config = {
@@ -90,14 +103,13 @@ export function docImportTool (): void {
             specFile: cmd.spec,
             space: cmd.space,
             uploadURL: uploadUrl,
+            storageAdapter,
             collaboratorApiURL: collaboratorApiUrl,
             token: generateToken(systemAccountEmail, workspaceId)
           }
 
-          await importDoc(config)
-        } catch (err: any) {
-          console.trace(err)
-        }
+          await importDoc(ctx, config)
+        })
       }
     )
 

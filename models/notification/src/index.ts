@@ -16,6 +16,7 @@
 
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
+import { type PersonSpace } from '@hcengineering/contact'
 import {
   AccountRole,
   DOMAIN_MODEL,
@@ -49,7 +50,6 @@ import {
   UX,
   type Builder
 } from '@hcengineering/model'
-import { type PersonSpace } from '@hcengineering/contact'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, template } from '@hcengineering/model-view'
@@ -201,7 +201,6 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
     objectId!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
     objectClass!: Ref<Class<Doc>>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
@@ -556,8 +555,8 @@ export function createModel (builder: Builder): void {
       group: notification.ids.NotificationGroup,
       defaultEnabled: true,
       templates: {
-        textTemplate: '{sender} mentioned you in {doc} {message}',
-        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {message}',
+        textTemplate: '{sender} mentioned you in {doc}: {message}',
+        htmlTemplate: '<p><b>{sender}</b> mentioned you in {doc}:</p> <p>{message}</p> <p>{link}</p>',
         subjectTemplate: 'You were mentioned in {doc}'
       }
     },
@@ -632,7 +631,7 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_NOTIFICATION,
-    indexes: [{ keys: { user: 1, archived: 1 } }],
+    indexes: [{ keys: { user: 1, archived: 1, space: 1 } }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
 
@@ -647,7 +646,8 @@ export function createModel (builder: Builder): void {
       { isViewed: 1 },
       { hidden: 1 },
       { createdOn: -1 },
-      { attachedTo: 1 }
+      { attachedTo: 1 },
+      { space: 1 }
     ]
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

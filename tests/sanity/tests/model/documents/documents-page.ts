@@ -23,8 +23,18 @@ export class DocumentsPage extends CommonPage {
   readonly buttonDocument = (name: string): Locator =>
     this.page.locator('button.hulyNavItem-container > span[class*="label"]', { hasText: name })
 
+  readonly buttonDocumentsApp = (): Locator => this.page.locator('button[id$="document:string:DocumentApplication"]')
   readonly divTeamspacesParent = (): Locator =>
-    this.page.locator('div#navGroup-tree-teamspaces').locator('xpath=../button[1]')
+    this.page.locator('button.hulyNavGroup-header', { hasText: 'Teamspaces' })
+
+  readonly buttonTeamspaces = (): Locator =>
+    this.page.locator('button.hulyNavItem-container', { hasText: 'Teamspaces' })
+
+  readonly rowTeamspace = (hasText: string): Locator =>
+    this.page.locator('div.hulyComponent td ', { hasText }).locator('xpath=..')
+
+  readonly buttonJoinTeamspace = (hasText: string): Locator =>
+    this.page.locator('div.hulyComponent td ', { hasText }).locator('xpath=..').locator('button[type="submit"]')
 
   readonly buttonCreateTeamspace = (): Locator => this.page.locator('button#tree-teamspaces')
   readonly formNewTeamspace = (): Locator => this.page.locator('form[id="document:string:NewTeamspace"]')
@@ -36,6 +46,7 @@ export class DocumentsPage extends CommonPage {
     this.formNewTeamspace().locator('div[id="teamspace-description"] input')
 
   readonly inputModalNewTeamspacePrivate = (): Locator => this.formNewTeamspace().locator('[id="teamspace-private"]')
+  readonly inputModalNewTeamspaceAutoJoin = (): Locator => this.formNewTeamspace().locator('[id="teamspace-autoJoin"]')
   readonly buttonModalNewTeamspaceCreate = (): Locator => this.formNewTeamspace().locator('button[type="submit"]')
   readonly buttonModalEditTeamspaceTitle = (): Locator =>
     this.formEditTeamspace().locator('div[id="teamspace-title"] input')
@@ -56,11 +67,14 @@ export class DocumentsPage extends CommonPage {
     await this.divTeamspacesParent().hover()
     await this.buttonCreateTeamspace().click()
     await this.inputModalNewTeamspaceTitle().fill(data.title)
-    if (data.description != null) {
+    if (data?.description !== undefined) {
       await this.inputModalNewTeamspaceDescription().fill(data.description)
     }
-    if (data.private != null) {
+    if (data.private === true) {
       await this.inputModalNewTeamspacePrivate().click()
+    }
+    if (data.autoJoin === true) {
+      await this.inputModalNewTeamspaceAutoJoin().click()
     }
     await this.buttonModalNewTeamspaceCreate().click()
   }
@@ -148,5 +162,18 @@ export class DocumentsPage extends CommonPage {
 
   async fillMoveDocumentForm (newSpace: string): Promise<void> {
     await this.popupMoveDocument.moveToSpace(newSpace)
+  }
+
+  async clickDocumentsApp (): Promise<void> {
+    await this.buttonDocumentsApp().click()
+  }
+
+  async clickTeamspaces (): Promise<void> {
+    await this.buttonTeamspaces().click()
+  }
+
+  async joinTeamspace (name: string): Promise<void> {
+    await expect(this.rowTeamspace(name)).toBeVisible()
+    await this.buttonJoinTeamspace(name).click()
   }
 }

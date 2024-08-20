@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, findContacts, Organization } from '@hcengineering/contact'
+  import { Channel, ContactEvents, findContacts, Organization } from '@hcengineering/contact'
   import core, { AttachedData, fillDefaults, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, IconInfo, Label } from '@hcengineering/ui'
@@ -25,6 +25,7 @@
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import Company from './icons/Company.svelte'
   import OrganizationPresenter from './OrganizationPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let onCreate: ((orgId: Ref<Organization>, client: TxOperations) => Promise<void>) | undefined = undefined
 
@@ -66,7 +67,7 @@
     if (onCreate !== undefined) {
       await onCreate?.(id, client)
     }
-
+    Analytics.handleEvent(ContactEvents.CompanyCreated, { id })
     dispatch('close', id)
   }
 

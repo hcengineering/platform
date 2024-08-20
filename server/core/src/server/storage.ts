@@ -22,7 +22,10 @@ import core, {
   DOMAIN_TX,
   TxFactory,
   TxProcessor,
+  addOperation,
+  registerOperationLog,
   toFindResult,
+  updateOperationLog,
   type Account,
   type AttachedDoc,
   type Branding,
@@ -39,8 +42,10 @@ import core, {
   type Hierarchy,
   type LoadModelResponse,
   type MeasureContext,
+  type Metrics,
   type Mixin,
   type ModelDb,
+  type OperationLog,
   type Ref,
   type SearchOptions,
   type SearchQuery,
@@ -78,6 +83,7 @@ import type {
   TriggerControl
 } from '../types'
 import { SessionContextImpl, createBroadcastEvent } from '../utils'
+import { QueryJoiner } from './utils'
 
 interface DomainInfo {
   exists: boolean
@@ -101,6 +107,8 @@ export class TServerStorage implements ServerStorage {
 
   emptyAdapter = new DummyDbAdapter()
 
+  joiner: QueryJoiner
+
   constructor (
     private readonly _domains: Record<string, string>,
     private readonly defaultAdapter: string,
@@ -122,6 +130,9 @@ export class TServerStorage implements ServerStorage {
     this.hierarchy = hierarchy
     this.fulltext = indexFactory(this)
     this.branding = options.branding
+    this.joiner = new QueryJoiner((ctx, _class, query, options) => {
+      return this.liveQuery.findAll(_class, query, { ...options, ctx } as any)
+    })
 
     this.setModel(model)
   }
@@ -149,7 +160,7 @@ export class TServerStorage implements ServerStorage {
       }
     }
     for (const adapter of this.adapters.values()) {
-      adapter.on?.((domain, event, count, time, helper) => {
+      adapter.on?.((domain, event, count, helper) => {
         const info = this.getDomainInfo(domain)
         const oldDocuments = info.documents
         switch (event) {
@@ -199,27 +210,27 @@ export class TServerStorage implements ServerStorage {
       },
       close: async () => {},
       findAll: async (_class, query, options) => {
-        return await metrics.with('query', {}, async (ctx) => {
-          const results = await this.findAll(ctx, _class, query, options)
-          return toFindResult(
-            results.map((v) => {
-              return this.hierarchy.updateLookupMixin(_class, v, options)
-            }),
-            results.total
-          )
-        })
+        const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? metrics
+        delete (options as ServerFindOptions<Doc>)?.ctx
+
+        const results = await this.findAll(_ctx, _class, query, options)
+        return toFindResult(
+          results.map((v) => {
+            return this.hierarchy.updateLookupMixin(_class, v, options)
+          }),
+          results.total
+        )
       },
       findOne: async (_class, query, options) => {
-        return (
-          await metrics.with('query', {}, async (ctx) => {
-            const results = await this.findAll(ctx, _class, query, { ...options, limit: 1 })
-            return toFindResult(
-              results.map((v) => {
-                return this.hierarchy.updateLookupMixin(_class, v, options)
-              }),
-              results.total
-            )
-          })
+        const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? metrics
+        delete (options as ServerFindOptions<Doc>)?.ctx
+
+        const results = await this.findAll(_ctx, _class, query, { ...options, limit: 1 })
+        return toFindResult(
+          results.map((v) => {
+            return this.hierarchy.updateLookupMixin(_class, v, options)
+          }),
+          results.total
         )[0]
       },
       tx: async (tx) => {
@@ -258,12 +269,12 @@ export class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (ctx: MeasureContext, removedDocs: Map<Ref<Doc>, Doc>, ...txes: Tx[]): Promise<TxResult[]> {
+  private async routeTx (ctx: SessionOperationContext, ...txes: Tx[]): Promise<TxResult[]> {
     const result: TxResult[] = []
 
     const domainGroups = new Map<Domain, TxCUD<Doc>[]>()
 
-    const processPart = async (domain: Domain, txes: TxCUD<Doc>[]): Promise<void> => {
+    const routeToAdapter = async (domain: Domain, txes: TxCUD<Doc>[]): Promise<void> => {
       if (txes.length > 0) {
         // Find all deleted documents
 
@@ -274,15 +285,18 @@ export class TServerStorage implements ServerStorage {
           const toDeleteDocs = await ctx.with(
             'adapter-load',
             { domain },
-            async () => await adapter.load(ctx, domain, toDelete)
+            async () => await adapter.load(ctx.ctx, domain, toDelete),
+            { count: toDelete.length }
           )
 
           for (const ddoc of toDeleteDocs) {
-            removedDocs.set(ddoc._id, ddoc)
+            ctx.removedMap.set(ddoc._id, ddoc)
           }
         }
 
-        const r = await ctx.with('adapter-tx', { domain }, async (ctx) => await adapter.tx(ctx, ...txes))
+        const r = await ctx.with('adapter-tx', { domain }, async (ctx) => await adapter.tx(ctx.ctx, ...txes), {
+          txes: txes.length
+        })
 
         // Update server live queries.
         await this.liveQuery.tx(...txes)
@@ -298,7 +312,7 @@ export class TServerStorage implements ServerStorage {
       const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
       if (!TxProcessor.isExtendsCUD(txCUD._class)) {
         // Skip unsupported tx
-        ctx.error('Unsupported transaction', tx)
+        ctx.ctx.error('Unsupported transaction', tx)
         continue
       }
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
@@ -311,7 +325,7 @@ export class TServerStorage implements ServerStorage {
       group.push(txCUD)
     }
     for (const [domain, txes] of domainGroups.entries()) {
-      await processPart(domain, txes)
+      await routeToAdapter(domain, txes)
     }
     return result
   }
@@ -321,14 +335,14 @@ export class TServerStorage implements ServerStorage {
     _class: Ref<Class<D>>,
     modifiedBy: Ref<Account>,
     modifiedOn: number,
-    attachedTo: D,
+    attachedTo: Pick<Doc, '_class' | 'space'>,
     update: DocumentUpdate<D>
   ): Promise<Tx> {
     const txFactory = new TxFactory(modifiedBy, true)
     const baseClass = this.hierarchy.getBaseClass(_class)
     if (baseClass !== _class) {
       // Mixin operation is required.
-      const tx = txFactory.createTxMixin(_id, attachedTo._class, attachedTo.space, _class, update)
+      const tx = txFactory.createTxMixin<Doc, Doc>(_id, attachedTo._class, attachedTo.space, _class, update)
       tx.modifiedOn = modifiedOn
 
       return tx
@@ -340,7 +354,11 @@ export class TServerStorage implements ServerStorage {
     }
   }
 
-  private async updateCollection (ctx: MeasureContext, tx: Tx, findAll: ServerStorage['findAll']): Promise<Tx[]> {
+  private async updateCollection (
+    ctx: SessionOperationContext,
+    tx: Tx,
+    findAll: ServerStorage['findAll']
+  ): Promise<Tx[]> {
     if (tx._class !== core.class.TxCollectionCUD) {
       return []
     }
@@ -361,7 +379,7 @@ export class TServerStorage implements ServerStorage {
       return []
     }
 
-    const oldAttachedTo = (await findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+    const oldAttachedTo = (await findAll(ctx.ctx, _class, { _id }, { limit: 1 }))[0]
     let oldTx: Tx | null = null
     if (oldAttachedTo !== undefined) {
       const attr = this.hierarchy.findAttribute(oldAttachedTo._class, colTx.collection)
@@ -375,7 +393,7 @@ export class TServerStorage implements ServerStorage {
 
     const newAttachedToClass = operations.attachedToClass ?? _class
     const newAttachedToCollection = operations.collection ?? colTx.collection
-    const newAttachedTo = (await findAll(ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
+    const newAttachedTo = (await findAll(ctx.ctx, newAttachedToClass, { _id: operations.attachedTo }, { limit: 1 }))[0]
     let newTx: Tx | null = null
     const newAttr = this.hierarchy.findAttribute(newAttachedToClass, newAttachedToCollection)
     if (newAttachedTo !== undefined && newAttr !== undefined) {
@@ -393,10 +411,9 @@ export class TServerStorage implements ServerStorage {
   }
 
   private async processCollection (
-    ctx: MeasureContext,
+    ctx: SessionOperationContext,
     txes: Tx[],
-    findAll: ServerStorage['findAll'],
-    removedMap: Map<Ref<Doc>, Doc>
+    findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
     const result: Tx[] = []
     for (const tx of txes) {
@@ -418,13 +435,22 @@ export class TServerStorage implements ServerStorage {
           result.push(...(await this.updateCollection(ctx, tx, findAll)))
         }
 
-        if ((isCreateTx || isDeleteTx) && !removedMap.has(_id)) {
-          const attachedTo = (await findAll(ctx, _class, { _id }, { limit: 1 }))[0]
+        if ((isCreateTx || isDeleteTx) && !ctx.removedMap.has(_id)) {
+          // TODO: Why we need attachedTo to be found? It uses attachedTo._class, attachedTo.space only inside
+          // We found case for Todos, we could attach a collection with
+          const attachedTo = (await findAll(ctx.ctx, _class, { _id }, { limit: 1 }))[0]
           if (attachedTo !== undefined) {
             result.push(
-              await this.getCollectionUpdateTx(_id, _class, tx.modifiedBy, colTx.modifiedOn, attachedTo, {
-                $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
-              })
+              await this.getCollectionUpdateTx(
+                _id,
+                _class,
+                tx.modifiedBy,
+                colTx.modifiedOn,
+                attachedTo, // { _class: colTx.objectClass, space: colTx.objectSpace },
+                {
+                  $inc: { [colTx.collection]: isCreateTx ? 1 : -1 }
+                }
+              )
             )
           }
         }
@@ -530,10 +556,9 @@ export class TServerStorage implements ServerStorage {
   }
 
   private async processRemove (
-    ctx: MeasureContext,
+    ctx: SessionOperationContext,
     txes: Tx[],
-    findAll: ServerStorage['findAll'],
-    removedMap: Map<Ref<Doc>, Doc>
+    findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
     const result: Tx[] = []
 
@@ -543,29 +568,26 @@ export class TServerStorage implements ServerStorage {
         continue
       }
       const rtx = actualTx as TxRemoveDoc<Doc>
-      const object = removedMap.get(rtx.objectId)
+      const object = ctx.removedMap.get(rtx.objectId)
       if (object === undefined) {
         continue
       }
-      result.push(...(await this.deleteClassCollections(ctx, object._class, rtx.objectId, findAll, removedMap)))
+      result.push(...(await this.deleteClassCollections(ctx, object._class, rtx.objectId, findAll)))
       const mixins = this.getMixins(object._class, object)
       for (const mixin of mixins) {
-        result.push(
-          ...(await this.deleteClassCollections(ctx, mixin, rtx.objectId, findAll, removedMap, object._class))
-        )
+        result.push(...(await this.deleteClassCollections(ctx, mixin, rtx.objectId, findAll, object._class)))
       }
 
-      result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll, removedMap)))
+      result.push(...(await this.deleteRelatedDocuments(ctx, object, findAll)))
     }
     return result
   }
 
   private async deleteClassCollections (
-    ctx: MeasureContext,
+    ctx: SessionOperationContext,
     _class: Ref<Class<Doc>>,
     objectId: Ref<Doc>,
     findAll: ServerStorage['findAll'],
-    removedMap: Map<Ref<Doc>, Doc>,
     to?: Ref<Class<Doc>>
   ): Promise<Tx[]> {
     const attributes = this.hierarchy.getAllAttributes(_class, to)
@@ -573,9 +595,9 @@ export class TServerStorage implements ServerStorage {
     for (const attribute of attributes) {
       if (this.hierarchy.isDerived(attribute[1].type._class, core.class.Collection)) {
         const collection = attribute[1].type as Collection<AttachedDoc>
-        const allAttached = await findAll(ctx, collection.of, { attachedTo: objectId })
+        const allAttached = await findAll(ctx.ctx, collection.of, { attachedTo: objectId })
         for (const attached of allAttached) {
-          result.push(...this.deleteObject(ctx, attached, removedMap))
+          result.push(...this.deleteObject(ctx.ctx, attached, ctx.removedMap))
         }
       }
     }
@@ -605,10 +627,9 @@ export class TServerStorage implements ServerStorage {
   }
 
   private async deleteRelatedDocuments (
-    ctx: MeasureContext,
+    ctx: SessionOperationContext,
     object: Doc,
-    findAll: ServerStorage['findAll'],
-    removedMap: Map<Ref<Doc>, Doc>
+    findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
     const result: Tx[] = []
     const objectClass = this.hierarchy.getClass(object._class)
@@ -619,10 +640,10 @@ export class TServerStorage implements ServerStorage {
       )
       const collector = await getResource(removeParticipand.collectDocs)
       const docs = await collector(object, this.hierarchy, async (_class, query, options) => {
-        return await findAll(ctx, _class, query, options)
+        return await findAll(ctx.ctx, _class, query, options)
       })
       for (const d of docs) {
-        result.push(...this.deleteObject(ctx, d, removedMap))
+        result.push(...this.deleteObject(ctx.ctx, d, ctx.removedMap))
       }
     }
     return result
@@ -736,8 +757,7 @@ export class TServerStorage implements ServerStorage {
   private async processDerived (
     ctx: SessionOperationContext,
     txes: Tx[],
-    findAll: ServerStorage['findAll'],
-    removedMap: Map<Ref<Doc>, Doc>
+    findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
     const fAll =
       (mctx: MeasureContext) =>
@@ -748,25 +768,22 @@ export class TServerStorage implements ServerStorage {
         ): Promise<FindResult<T>> =>
           findAll(mctx, clazz, query, options)
 
-    const removed = await ctx.with('process-remove', {}, (ctx) =>
-      this.processRemove(ctx.ctx, txes, findAll, removedMap)
-    )
-    const collections = await ctx.with('process-collection', {}, (ctx) =>
-      this.processCollection(ctx.ctx, txes, findAll, removedMap)
-    )
+    const removed = await ctx.with('process-remove', {}, (ctx) => this.processRemove(ctx, txes, findAll))
+    const collections = await ctx.with('process-collection', {}, (ctx) => this.processCollection(ctx, txes, findAll))
     const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
 
     const applyTxes: Tx[] = []
 
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'txes' | 'apply'> = {
       operationContext: ctx,
-      removedMap,
+      removedMap: ctx.removedMap,
       workspace: this.workspaceId,
       branding: this.options.branding,
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.serviceAdaptersManager,
       findAll: fAll(ctx.ctx),
       findAllCtx: findAll,
+      contextCache: ctx.contextCache,
       modelDb: this.modelDb,
       hierarchy: this.hierarchy,
       applyCtx: async (ctx, tx, needResult) => {
@@ -778,8 +795,15 @@ export class TServerStorage implements ServerStorage {
         return {}
       },
       // Will create a live query if missing and return values immediately if already asked.
-      queryFind: async (_class, query, options) => {
-        return await this.liveQuery.queryFind(_class, query, options)
+      queryFind: (ctx: MeasureContext, _class, query, options) => {
+        const domain = this.hierarchy.findDomain(_class)
+        return ctx.with('query-find', { domain }, (ctx) => {
+          const { ctx: octx, ...pureOptions } = ((options as ServerFindOptions<Doc>) ?? {}) as any
+          return addOperation(ctx, 'query-find', { domain, _class, query: query as any, options: pureOptions }, () =>
+            // We sure ctx is required to be passed
+            this.liveQuery.queryFind(_class, query, { ...options, ctx } as any)
+          )
+        })
       }
     }
     const triggers = await ctx.with(
@@ -817,16 +841,14 @@ export class TServerStorage implements ServerStorage {
                   { txes: [], targets: {} },
                   this.workspaceId,
                   this.options.branding,
-                  true
+                  true,
+                  ctx.removedMap,
+                  ctx.contextCache
                 )
                 const aresult = await performAsync(applyCtx)
 
-                if (aresult.length > 0) {
-                  await this.apply(applyCtx, aresult)
-                }
-
-                if (applyTxes.length > 0) {
-                  await this.apply(applyCtx, applyTxes)
+                if (aresult.length > 0 || applyTxes.length > 0) {
+                  await this.apply(applyCtx, aresult.concat(applyTxes))
                 }
                 // We need to broadcast changes
                 const combinedTxes = applyCtx.derived.txes.concat(aresult)
@@ -849,22 +871,19 @@ export class TServerStorage implements ServerStorage {
 
     const derived = [...removed, ...collections, ...moves, ...triggers]
 
-    return await this.processDerivedTxes(derived, ctx, findAll, removedMap)
+    return await this.processDerivedTxes(derived, ctx, findAll)
   }
 
   private async processDerivedTxes (
     derived: Tx[],
     ctx: SessionOperationContext,
-    findAll: ServerStorage['findAll'],
-    removedMap: Map<Ref<Doc>, Doc>
+    findAll: ServerStorage['findAll']
   ): Promise<Tx[]> {
-    derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
-
-    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...derived))
-
     const nestedTxes: Tx[] = []
     if (derived.length > 0) {
-      nestedTxes.push(...(await this.processDerived(ctx, derived, findAll, removedMap)))
+      derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
+      await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, ...derived))
+      nestedTxes.push(...(await this.processDerived(ctx, derived, findAll)))
     }
 
     const res = [...derived, ...nestedTxes]
@@ -949,21 +968,29 @@ export class TServerStorage implements ServerStorage {
   async processTxes (ctx: SessionOperationContext, txes: Tx[]): Promise<TxResult> {
     // store tx
     const _findAll: ServerStorage['findAll'] = async <T extends Doc>(
-      ctx: MeasureContext,
+      _ctx: MeasureContext,
       clazz: Ref<Class<T>>,
       query: DocumentQuery<T>,
       options?: FindOptions<T>
     ): Promise<FindResult<T>> => {
-      return await this.findAll(ctx, clazz, query, { ...options, prefix: 'server' })
+      return await _ctx.with(
+        'findAll',
+        { _class: clazz },
+        async (ctx) => await this.joiner.findAll(ctx, clazz, query, { ...options, prefix: 'server' } as any),
+        {
+          query,
+          options
+        }
+      )
     }
     const txToStore: Tx[] = []
     const modelTx: Tx[] = []
     const applyTxes: Tx[] = []
     const txToProcess: Tx[] = []
-    const removedMap = new Map<Ref<Doc>, Doc>()
     const onEnds: (() => void)[] = []
     const result: TxResult[] = []
     const derived: Tx[] = [...txes].filter((it) => it._class !== core.class.TxApplyIf)
+    let txPromise: Promise<TxResult[]> | undefined
 
     try {
       this.fillTxes(txes, txToStore, modelTx, txToProcess, applyTxes)
@@ -995,21 +1022,22 @@ export class TServerStorage implements ServerStorage {
         await this.modelDb.tx(tx)
       }
       if (txToStore.length > 0) {
-        await ctx.with(
+        txPromise = ctx.with(
           'domain-tx',
           {},
           async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore),
           {
-            count: txToStore.length
+            count: txToStore.length,
+            txes: Array.from(new Set(txToStore.map((it) => it._class)))
           }
         )
       }
-      result.push(...(await ctx.with('routeTx', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))), {
-        count: txToProcess.length
-      })
-
-      // invoke triggers and store derived objects
-      derived.push(...(await this.processDerived(ctx, txToProcess, _findAll, removedMap)))
+      if (txToProcess.length > 0) {
+        const routerResult = await ctx.with('routeTx', {}, (ctx) => this.routeTx(ctx, ...txToProcess))
+        result.push(...routerResult, { count: txToProcess.length })
+        // invoke triggers and store derived objects
+        derived.push(...(await this.processDerived(ctx, txToProcess, _findAll)))
+      }
 
       // index object
       const ftx = [...txToProcess, ...derived]
@@ -1022,6 +1050,10 @@ export class TServerStorage implements ServerStorage {
           },
           { count: txToProcess.length + derived.length }
         )
+      }
+      if (txPromise !== undefined) {
+        // Wait for main Tx to be stored
+        await txPromise
       }
     } catch (err: any) {
       ctx.ctx.error('error process tx', { error: err })
@@ -1046,13 +1078,18 @@ export class TServerStorage implements ServerStorage {
       st = Date.now()
     }
 
+    let op: OperationLog | undefined
+    let opLogMetrics: Metrics | undefined
+
     const result = await ctx.with(
       measureName !== undefined ? `📶 ${measureName}` : 'client-tx',
       { _class: tx._class },
       async (ctx) => {
+        ;({ opLogMetrics, op } = registerOperationLog(ctx.ctx))
         return await this.processTxes(ctx, [tx])
       }
     )
+    updateOperationLog(opLogMetrics, op)
 
     if (measureName !== undefined && st !== undefined) {
       ;(result as TxApplyResult).serverTime = Date.now() - st

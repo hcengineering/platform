@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { ApiEndpoint } from '../API/Api'
 import { ChannelPage } from '../model/channel-page'
@@ -8,7 +7,7 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
-import { PlatformURI, generateTestData } from '../utils'
+import { PlatformURI, generateTestData, getInviteLink, generateUser, createAccount } from '../utils'
 
 test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -21,12 +20,7 @@ test.describe('channel tests', () => {
 
   test.beforeEach(async ({ page, request }) => {
     data = generateTestData()
-    newUser2 = {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      email: faker.internet.email(),
-      password: '1234'
-    }
+    newUser2 = generateUser()
 
     leftSideMenuPage = new LeftSideMenuPage(page)
     chunterPage = new ChunterPage(page)
@@ -415,13 +409,9 @@ test.describe('channel tests', () => {
     await page2.close()
   })
 
-  test('Checking backlinks in the Chat', async ({ browser, page }) => {
-    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    await leftSideMenuPage.openProfileMenu()
-    await leftSideMenuPage.inviteToWorkspace()
-    await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
-    await leftSideMenuPage.clickOnCloseInvite()
+  test('Checking backlinks in the Chat', async ({ browser, page, request }) => {
+    await createAccount(request, newUser2)
+    const linkText = await getInviteLink(page)
     const page2 = await browser.newPage()
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)

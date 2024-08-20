@@ -77,7 +77,7 @@
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
         "outputCapture": "std",
-        "SES_URL": "http://localhost:8091",
+        "SES_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
@@ -103,14 +103,15 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "UPLOAD_URL": "/files",
         "SERVER_PORT": "8087",
-        "VERSION": null,
         "COLLABORATOR_URL": "ws://localhost:3078",
         "COLLABORATOR_API_URL": "http://localhost:3078",
         "CALENDAR_URL": "http://localhost:8095",
         "GMAIL_URL": "http://localhost:8088",
         "TELEGRAM_URL": "http://localhost:8086",
-        "MODEL_VERSION": ""
+        "MODEL_VERSION": "",
+        "VERSION": ""
       },
+      "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
       "sourceMaps": true,
@@ -127,7 +128,6 @@
         "SECRET": "secret",
         "METRICS_CONSOLE": "true",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "UPLOAD_URL": "/files",
         "MONGO_URL": "mongodb://localhost:27017",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -281,7 +281,8 @@
         "SERVER_SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
         "COLLABORATOR_API_URL": "http://localhost:3078",
-        "FRONT_URL": "http://localhost:8080"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "MONGO_URL": "mongodb://localhost:27017"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -347,28 +348,6 @@
       "protocol": "inspector"
     },
     {
-      "name": "Debug AI bot",
-      "type": "node",
-      "request": "launch",
-      "args": ["src/index.ts"],
-      "env": {
-        "ACCOUNTS_URL": "http://localhost:3000",
-        "MONGO_URL": "mongodb://localhost:27017",
-        "PORT": "4008",
-        "SERVER_SECRET": "secret",
-        "SUPPORT_WORKSPACE": "support",
-        "FIRST_NAME": "Jolie",
-        "LAST_NAME": "AI",
-        "AVATAR_PATH": "./assets/avatar.png",
-        "AVATAR_CONTENT_TYPE": ".png"
-      },
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
       "name": "Debug analytics collector",
       "type": "node",
       "request": "launch",
@@ -414,6 +393,25 @@
       "cwd": "${workspaceRoot}/services/ai-bot/pod-ai-bot",
       "protocol": "inspector",
       "outputCapture": "std"
+    },
+    {
+      "name": "Debug telegram bot",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "4020",
+        "BOT_TOKEN": "token",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "MONGO_DB": "telegram-bot",
+        "SECRET": "secret",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "SERVICE_ID": "telegram-bot-service"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
     }
   ]
 }

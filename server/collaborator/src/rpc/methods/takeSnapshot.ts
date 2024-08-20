@@ -37,7 +37,7 @@ export async function takeSnapshot (
   params: RpcMethodParams
 ): Promise<TakeSnapshotResponse> {
   const { documentId, snapshotName, createdBy } = payload
-  const { hocuspocus, minio } = params
+  const { hocuspocus, storageAdapter } = params
   const { workspaceId } = context
 
   const version: YDocVersion = {
@@ -48,7 +48,7 @@ export async function takeSnapshot (
   }
 
   const { collaborativeDoc } = parseDocumentId(documentId)
-  const { documentId: minioDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
+  const { documentId: contentDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
   if (versionId !== CollaborativeDocVersionHead) {
     throw new Error('invalid document version')
   }
@@ -58,11 +58,11 @@ export async function takeSnapshot (
   })
 
   try {
-    // load history document directly from minio
-    const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
+    // load history document directly from storage
+    const historyDocumentId = collaborativeHistoryDocId(contentDocumentId)
     const yHistory =
-      (await ctx.with('yDocFromMinio', {}, async () => {
-        return await yDocFromStorage(ctx, minio, workspaceId, historyDocumentId)
+      (await ctx.with('yDocFromStorage', {}, async () => {
+        return await yDocFromStorage(ctx, storageAdapter, workspaceId, historyDocumentId)
       })) ?? new YDoc()
 
     await ctx.with('createYdocSnapshot', {}, async () => {
@@ -71,8 +71,8 @@ export async function takeSnapshot (
       })
     })
 
-    await ctx.with('yDocToMinio', {}, async () => {
-      await yDocToStorage(ctx, minio, workspaceId, historyDocumentId, yHistory)
+    await ctx.with('yDocToStorage', {}, async () => {
+      await yDocToStorage(ctx, storageAdapter, workspaceId, historyDocumentId, yHistory)
     })
 
     return { ...version }

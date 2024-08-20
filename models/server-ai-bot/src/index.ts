@@ -65,6 +65,7 @@ export class TAIBotTransferEvent extends TAIBotEvent implements AIBotTransferEve
   toEmail!: string
   toWorkspace!: string
   fromWorkspace!: string
+  fromWorkspaceUrl!: string
   messageId!: Ref<ChatMessage>
   parentMessageId?: Ref<ChatMessage>
 }

@@ -16,7 +16,7 @@ import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestam
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Handler, IntegrationType } from '@hcengineering/setting'
+import { Handler, IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 /**

@@ -290,9 +290,7 @@ function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefin
   const result = new Set<Ref<Doc>>()
   if (_id !== undefined) {
     if (typeof _id === 'string') {
-      if (!ids.has(_id)) {
-        return new Set()
-      } else {
+      if (ids.has(_id)) {
         result.add(_id)
       }
     } else if (_id.$in !== undefined) {
@@ -302,11 +300,13 @@ function getResultIds (ids: Set<Ref<Doc>>, _id: ObjQueryType<Ref<Doc>> | undefin
         }
       }
     } else if (_id.$nin !== undefined) {
-      for (const id of ids) {
-        if (!_id.$nin.includes(id)) {
-          result.add(id)
-        }
+      for (const id of _id.$nin) {
+        ids.delete(id)
       }
+      return ids
+    } else if (_id.$ne !== undefined) {
+      ids.delete(_id.$ne)
+      return ids
     }
   } else {
     return ids

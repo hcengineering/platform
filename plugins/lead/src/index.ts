@@ -103,3 +103,5 @@ const lead = plugin(leadId, {
  * @public
  */
 export default lead
+
+export * from './analytics'

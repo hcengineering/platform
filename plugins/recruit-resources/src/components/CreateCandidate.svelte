@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import attachment from '@hcengineering/attachment'
+  import attachment, { AttachmentsEvents } from '@hcengineering/attachment'
   import contact, {
     AvatarType,
     Channel,
@@ -51,7 +51,7 @@
     MultipleDraftController,
     deleteFile
   } from '@hcengineering/presentation'
-  import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
+  import { Candidate, CandidateDraft, RecruitEvents } from '@hcengineering/recruit'
   import { recognizeDocument } from '@hcengineering/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -72,6 +72,7 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import YesNo from './YesNo.svelte'
+  import { getCandidateIdentifier } from '../utils'
 
   export let shouldSaveDraft: boolean = true
 
@@ -231,6 +232,8 @@
       recruit.mixin.Candidate,
       candidateData
     )
+    const candidateIdentifier = getCandidateIdentifier(_id)
+    Analytics.handleEvent(RecruitEvents.TalentCreated, { _id: candidateIdentifier })
 
     if (object.resumeUuid !== undefined) {
       const resume = resumeDraft() as resumeFile
@@ -248,6 +251,7 @@
           lastModified: resume.lastModified
         }
       )
+      Analytics.handleEvent(AttachmentsEvents.FilesAttached, { object: candidateIdentifier, count: 1 })
     }
     for (const channel of object.channels) {
       await applyOps.addCollection(
@@ -278,6 +282,7 @@
           description: '',
           category: findTagCategory(skill.title, categories)
         })
+        Analytics.handleEvent(RecruitEvents.SkillCreated, { skill: skill.tag })
       }
       await applyOps.addCollection(skill._class, skill.space, _id, recruit.mixin.Candidate, 'skills', {
         title: skill.title,

@@ -19,9 +19,10 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { closePopup, showPopup } from '@hcengineering/ui'
   import { deleteObjects } from '@hcengineering/view-resources'
-  import { ToDo, WorkSlot } from '@hcengineering/time'
+  import { TimeEvents, ToDo, WorkSlot } from '@hcengineering/time'
   import time from '../plugin'
   import Workslots from './Workslots.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let todo: ToDo
 
@@ -75,6 +76,7 @@
       visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
       reminders: []
     })
+    Analytics.handleEvent(TimeEvents.ToDoScheduled, { id: todo._id })
   }
 
   async function remove (e: CustomEvent<{ _id: Ref<WorkSlot> }>): Promise<void> {

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
-  import { Document, Teamspace } from '@hcengineering/document'
+  import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     IconWithEmoji,
@@ -34,6 +34,7 @@
   import { getDocumentIdFromFragment, createEmptyDocument } from '../../utils'
   import DocHierarchy from './DocHierarchy.svelte'
   import DocTreeElement from './DocTreeElement.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let space: Teamspace
   export let model: SpacesNavModel
@@ -95,12 +96,13 @@
         icon: IconAdd,
         label: document.string.CreateDocument,
         action: async (ctx: any, evt: Event) => {
+          Analytics.handleEvent(DocumentEvents.PlusDocumentButtonClicked, { parent: doc._id })
           const id: Ref<Document> = generateId()
           await createEmptyDocument(client, id, doc.space, doc._id, {})
-
+          Analytics.handleEvent(DocumentEvents.DocumentCreated, { id, parent: doc._id })
           const object = await client.findOne(document.class.Document, { _id: id })
           if (object !== undefined) {
-            openDoc(client.getHierarchy(), object)
+            void openDoc(client.getHierarchy(), object)
           }
         }
       }
@@ -120,6 +122,7 @@
         }
       })
     }
+
     return result
   }
 </script>

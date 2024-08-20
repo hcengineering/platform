@@ -23,6 +23,7 @@ import {
   FindOptions,
   FindResult,
   Hierarchy,
+  MeasureContext,
   Ref,
   Tx,
   TxCreateDoc,
@@ -38,6 +39,7 @@ import serverNotification, {
 } from '@hcengineering/server-notification'
 import { getContentByTemplate } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
+import { ActivityMessage } from '@hcengineering/activity'
 
 /**
  * @public
@@ -86,18 +88,19 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
 /**
  * @public
  */
-export async function IsIncomingMessage (
+export function IsIncomingMessageTypeMatch (
   tx: Tx,
   doc: Doc,
   user: Ref<Account>,
   type: NotificationType,
   control: TriggerControl
-): Promise<boolean> {
+): boolean {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<Message>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
 }
 
 export async function sendEmailNotification (
+  ctx: MeasureContext,
   text: string,
   html: string,
   subject: string,
@@ -106,7 +109,7 @@ export async function sendEmailNotification (
   try {
     const sesURL = getMetadata(serverNotification.metadata.SesUrl)
     if (sesURL === undefined || sesURL === '') {
-      console.log('Please provide email service url to enable email confirmations.')
+      ctx.error('Please provide email service url to enable email notifications.')
       return
     }
     await fetch(concatLink(sesURL, '/send'), {
@@ -122,7 +125,7 @@ export async function sendEmailNotification (
       })
     })
   } catch (err) {
-    console.log('Could not send email notification', err)
+    ctx.error('Could not send email notification', { err, receiver })
   }
 }
 
@@ -132,7 +135,8 @@ async function notifyByEmail (
   doc: Doc | undefined,
   sender: SenderInfo,
   receiver: ReceiverInfo,
-  data: InboxNotification
+  data: InboxNotification,
+  message?: ActivityMessage
 ): Promise<void> {
   const account = receiver.account
 
@@ -143,10 +147,9 @@ async function notifyByEmail (
   const senderPerson = sender.person
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
 
-  const content = await getContentByTemplate(doc, senderName, type, control, '', data)
-
+  const content = await getContentByTemplate(doc, senderName, type, control, '', data, message)
   if (content !== undefined) {
-    await sendEmailNotification(content.text, content.html, content.subject, account.email)
+    await sendEmailNotification(control.ctx, content.text, content.html, content.subject, account.email)
   }
 }
 
@@ -156,7 +159,8 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   object: Doc,
   data: InboxNotification,
   receiver: ReceiverInfo,
-  sender: SenderInfo
+  sender: SenderInfo,
+  message?: ActivityMessage
 ): Promise<Tx[]> => {
   if (types.length === 0) {
     return []
@@ -167,7 +171,7 @@ const SendEmailNotifications: NotificationProviderFunc = async (
   }
 
   for (const type of types) {
-    await notifyByEmail(control, type._id, object, sender, receiver, data)
+    await notifyByEmail(control, type._id, object, sender, receiver, data, message)
   }
 
   return []
@@ -179,7 +183,7 @@ export default async () => ({
     OnMessageCreate
   },
   function: {
-    IsIncomingMessage,
+    IsIncomingMessageTypeMatch,
     FindMessages,
     SendEmailNotifications
   }

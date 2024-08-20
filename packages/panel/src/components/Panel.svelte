@@ -19,7 +19,14 @@
 
   import activity from '@hcengineering/activity'
   import { Doc } from '@hcengineering/core'
-  import { Component, deviceOptionsStore as deviceInfo, Panel, Scroller, resizeObserver } from '@hcengineering/ui'
+  import {
+    Component,
+    deviceOptionsStore as deviceInfo,
+    Panel,
+    Scroller,
+    resizeObserver,
+    HeaderAdaptive
+  } from '@hcengineering/ui'
   import type { ButtonItem } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
 
@@ -47,7 +54,7 @@
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
   export let printHeader: boolean = true
   export let printAside: boolean = false
-  export let adaptive: 'default' | 'freezeActions' | 'doubleRow' | 'disabled' = 'disabled'
+  export let adaptive: HeaderAdaptive = 'disabled'
   export let hideBefore: boolean = false
   export let hideSearch: boolean = true
   export let hideActions: boolean = false

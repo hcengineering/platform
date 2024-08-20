@@ -1,10 +1,11 @@
 import { expect, type Locator } from '@playwright/test'
 import path from 'path'
+import { createIssue, toTime } from '../../tracker/tracker.utils'
 import { attachScreenshot, iterateLocator } from '../../utils'
 import { CommonTrackerPage } from './common-tracker-page'
 import { NewIssue } from './types'
-import { createIssue, toTime } from '../../tracker/tracker.utils'
 
+const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 export class IssuesPage extends CommonTrackerPage {
   modelSelectorAll = (): Locator => this.page.locator('label[data-id="tab-all"]')
   issues = (): Locator => this.page.locator('text="Issues"')
@@ -170,10 +171,10 @@ export class IssuesPage extends CommonTrackerPage {
     await this.page.keyboard.press('Escape')
   }
 
-  async createAndOpenIssue (name: string, assignee: string, status: string): Promise<void> {
+  async createAndOpenIssue (name: string, assignee: string, status: string, taskType?: string): Promise<void> {
     try {
       await this.notificationTimeoutSetting('5000')
-      await createIssue(this.page, { name, assignee, status })
+      await createIssue(this.page, { name, assignee, status, taskType })
       await this.page.waitForSelector(`text="${name}"`)
       await this.viewIssueButton().click()
     } finally {
@@ -492,15 +493,14 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async searchIssueByName (issueName: string): Promise<void> {
-    for (let i = 0; i < 5; i++) {
+    await expect(async () => {
       await this.inputSearchIcon().click()
       await this.inputSearch().fill(issueName)
       const v = await this.inputSearch().inputValue()
       if (v === issueName) {
         await this.inputSearch().press('Enter')
-        break
       }
-    }
+    }).toPass(retryOptions)
   }
 
   async openIssueByName (issueName: string): Promise<void> {
@@ -557,9 +557,9 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkIssuesCount (issueName: string, count: number, timeout?: number): Promise<void> {
-    await expect(this.issueAnchorByName(issueName)).toHaveCount(count, {
-      timeout: timeout !== undefined ? timeout * 1000 : undefined
-    })
+    await expect(async () => {
+      await expect(this.issueAnchorByName(issueName)).toHaveCount(count)
+    }).toPass(retryOptions)
   }
 
   async selectTemplate (templateName: string): Promise<void> {
@@ -573,7 +573,9 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkAttachmentsCount (issueName: string, count: string): Promise<void> {
-    await expect(this.attachmentContentButton(issueName)).toHaveText(count)
+    await expect(async () => {
+      await expect(this.attachmentContentButton(issueName)).toHaveText(count)
+    }).toPass(retryOptions)
   }
 
   async addAttachmentToIssue (issueName: string, filePath: string): Promise<void> {

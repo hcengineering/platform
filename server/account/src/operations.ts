@@ -232,6 +232,8 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
   productId: string
 
+  workspaceId: string
+
   creating?: boolean
   createProgress?: number
 }
@@ -635,6 +637,7 @@ export async function selectWorkspace (
       email,
       token,
       workspace: workspaceUrl,
+      workspaceId: workspaceInfo.workspace,
       productId,
       creating: workspaceInfo.creating,
       createProgress: workspaceInfo.createProgress
@@ -667,6 +670,7 @@ export async function selectWorkspace (
       email,
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
       workspace: workspaceUrl,
+      workspaceId: workspaceInfo.workspace,
       productId,
       creating: workspaceInfo.creating,
       createProgress: workspaceInfo.createProgress
@@ -689,6 +693,7 @@ export async function selectWorkspace (
           email,
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
           workspace: workspaceUrl,
+          workspaceId: workspaceInfo.workspace,
           productId,
           creating: workspaceInfo.creating,
           createProgress: workspaceInfo.createProgress
@@ -1304,7 +1309,7 @@ export async function createWorkspace (
           mongodbUri,
           {
             externalStorage: storageAdapter,
-            fullTextUrl: 'http://localost:9200',
+            fullTextUrl: 'http://localhost:9200',
             indexParallel: 0,
             indexProcessing: 0,
             rekoniUrl: '',
@@ -1371,7 +1376,9 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
     { targets: {}, txes: [] },
     wsUrl,
     null,
-    false
+    false,
+    new Map(),
+    new Map()
   )
 
   return {
@@ -1976,7 +1983,7 @@ async function createPersonAccount (
     client ??
     (await connect(getEndpoint(ctx, workspaceInfo, EndpointKind.Internal), getWorkspaceId(workspace, productId)))
   try {
-    const ops = new TxOperations(connection, core.account.System)
+    const ops = new TxOperations(connection, core.account.System).apply('create-person' + generateId())
 
     const name = combineName(account.first, account.last)
     // Check if PersonAccount is not exists
@@ -2026,6 +2033,7 @@ async function createPersonAccount (
         }
       }
     }
+    await ops.commit()
   } finally {
     if (client === undefined) {
       await connection.close()

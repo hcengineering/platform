@@ -31,7 +31,7 @@ import view, { createAction, showColorsViewOption, actionTemplates as viewTempla
 import workbench, { createNavigateAction, type Application } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type IntlString } from '@hcengineering/platform'
-import { recruitId, type Applicant } from '@hcengineering/recruit'
+import { recruitId, type Applicant, RecruitEvents } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
 
@@ -183,6 +183,7 @@ export function createModel (builder: Builder): void {
               _class: recruit.mixin.Candidate,
               icon: contact.icon.Person,
               label: recruit.string.Talents,
+              createEvent: RecruitEvents.PlusTalentButtonClicked,
               createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate,
               createComponentProps: { shouldSaveDraft: false }
@@ -479,7 +480,7 @@ export function createModel (builder: Builder): void {
         sortable: true
       },
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       }
     },
@@ -499,7 +500,7 @@ export function createModel (builder: Builder): void {
         }
       },
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       }
     },
@@ -795,7 +796,7 @@ export function createModel (builder: Builder): void {
       descriptor: task.viewlet.Kanban,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       baseQuery: {
-        isDone: { $ne: true },
+        isDone: false,
         '$lookup.space.archived': false
       },
       viewOptions: {

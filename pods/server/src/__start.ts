@@ -5,7 +5,7 @@
 // Add this to the VERY top of the first file loaded in your app
 import { Analytics } from '@hcengineering/analytics'
 import contactPlugin from '@hcengineering/contact'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { getMetricsContext, serverConfigFromEnv } from '@hcengineering/server'
@@ -39,13 +39,15 @@ getMetricsContext(
     )
 )
 
+setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
+
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.FrontUrl, config.frontUrl)
-setMetadata(serverCore.metadata.UploadURL, config.uploadUrl)
+setMetadata(serverCore.metadata.FilesUrl, config.filesUrl)
 setMetadata(serverToken.metadata.Secret, config.serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
 setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)

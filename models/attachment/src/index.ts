@@ -199,7 +199,8 @@ export function createModel (builder: Builder): void {
       { modifiedBy: 1 },
       { createdBy: 1 },
       { createdOn: -1 },
-      { state: 1 }
+      { state: 1 },
+      { _class: 1 }
     ]
   })
 }

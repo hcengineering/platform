@@ -21,7 +21,7 @@ import { AnalyticEvent, AnalyticEventType } from '@hcengineering/analytics-colle
 import { Config } from '../platform'
 
 export class AnalyticsCollectorProvider implements AnalyticProvider {
-  private readonly collectIntervalMs =  1000
+  private readonly collectIntervalMs =  5000
 
   private readonly events: AnalyticEvent[] = []
 
@@ -85,10 +85,10 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
     this.setTag('workspace', ws)
   }
 
-  handleEvent(event: string): void {
+  handleEvent(event: string, params: Record<string, string>): void {
     this.events.push({
       event: AnalyticEventType.CustomEvent,
-      params: { event },
+      params: { ...params, event },
       timestamp: Date.now()
     })
   }
@@ -108,4 +108,6 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
       timestamp: Date.now()
     })
   }
+
+  logout(): void {}
 }

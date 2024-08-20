@@ -1,8 +1,13 @@
-import { Browser, BrowserContext, Locator, Page, expect } from '@playwright/test'
+import { Browser, BrowserContext, Locator, Page, expect, APIRequestContext } from '@playwright/test'
 import { allure } from 'allure-playwright'
 import { faker } from '@faker-js/faker'
 import { TestData } from './chat/types'
 import path from 'path'
+import { LeftSideMenuPage } from './model/left-side-menu-page'
+import { SignUpData } from './model/common-types'
+import { ApiEndpoint } from './API/Api'
+import { SelectWorkspacePage } from './model/select-workspace-page'
+import { LoginPage } from './model/login-page'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -166,4 +171,45 @@ export async function uploadFile (page: Page, fileName: string, fileUploadTestId
 
   // Replace with a more reliable condition for determining when the upload is complete, if possible.
   await page.waitForTimeout(2000)
+}
+
+export async function getInviteLink (page: Page): Promise<string | null> {
+  const leftSideMenuPage = new LeftSideMenuPage(page)
+  await leftSideMenuPage.openProfileMenu()
+  await leftSideMenuPage.inviteToWorkspace()
+  await leftSideMenuPage.getInviteLink()
+  const linkText = await page.locator('.antiPopup .link').textContent()
+  expect(linkText).not.toBeNull()
+  await leftSideMenuPage.clickOnCloseInvite()
+  return linkText
+}
+
+export function generateUser (): SignUpData {
+  return {
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    email: faker.internet.email(),
+    password: '1234'
+  }
+}
+
+export async function createAccount (request: APIRequestContext, data: SignUpData): Promise<void> {
+  const api: ApiEndpoint = new ApiEndpoint(request)
+  await api.createAccount(data.email, data.password, data.firstName, data.lastName)
+}
+
+export async function reLogin (page: Page, data: TestData): Promise<void> {
+  const loginPage: LoginPage = new LoginPage(page)
+  await loginPage.checkingNeedReLogin()
+  await (await page.goto(`${PlatformURI}`))?.finished()
+  await loginPage.login(data.userName, '1234')
+  const swp = new SelectWorkspacePage(page)
+  await swp.selectWorkspace(data.workspaceName)
+}
+
+export async function createAccountAndWorkspace (page: Page, request: APIRequestContext, data: TestData): Promise<void> {
+  const api: ApiEndpoint = new ApiEndpoint(request)
+  await api.createAccount(data.userName, '1234', data.firstName, data.lastName)
+  await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
+  await reLogin(page, data)
 }

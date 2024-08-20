@@ -18,7 +18,7 @@
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
-  import setting, { SettingsCategory } from '@hcengineering/setting'
+  import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
     Component,
     Label,
@@ -40,6 +40,7 @@
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { ComponentType, onDestroy } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
+  import { Analytics } from '@hcengineering/analytics'
 
   let category: SettingsCategory | undefined
   let categoryId: string = ''
@@ -99,12 +100,15 @@
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
     setMetadataLocalStorage(login.metadata.LoginEmail, null)
     void closeClient()
+    Analytics.handleEvent(SettingsEvents.SignOut)
     navigate({ path: [loginId] })
   }
   function selectWorkspace (): void {
+    Analytics.handleEvent(SettingsEvents.SelectWorkspace)
     navigate({ path: [loginId, 'selectWorkspace'] })
   }
   function inviteWorkspace (): void {
+    Analytics.handleEvent(SettingsEvents.InviteToWorkspace)
     showPopup(login.component.InviteLink, {})
   }
 

@@ -44,11 +44,9 @@ export async function getValue (control: TriggerControl, context: Record<string,
 }
 
 async function getEmployee (control: TriggerControl, _id: Ref<Account>): Promise<Person | undefined> {
-  const employeeAccount = (
-    await control.modelDb.findAll(contact.class.PersonAccount, {
-      _id: _id as Ref<PersonAccount>
-    })
-  )[0]
+  const employeeAccount = control.modelDb.findAllSync(contact.class.PersonAccount, {
+    _id: _id as Ref<PersonAccount>
+  })[0]
   if (employeeAccount !== undefined) {
     const employee = (
       await control.findAll(contact.class.Person, {

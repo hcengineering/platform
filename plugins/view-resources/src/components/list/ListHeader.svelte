@@ -36,6 +36,8 @@
   } from '@hcengineering/ui'
   import { AttributeModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
+
   import view from '../../plugin'
   import { SelectionFocusProvider, selectionLimit } from '../../selection'
   import { noCategory } from '../../viewOptions'
@@ -56,6 +58,7 @@
   export let createItemDialog: AnyComponent | AnySvelteComponent | undefined
   export let createItemDialogProps: Record<string, any> | undefined
   export let createItemLabel: IntlString | undefined
+  export let createItemEvent: string | undefined
   export let extraHeaders: AnyComponent[] | undefined
   export let props: Record<string, any> = {}
   export let newObjectProps: (doc: Doc | undefined) => Record<string, any> | undefined
@@ -77,6 +80,9 @@
 
   const handleCreateItem = (event: MouseEvent) => {
     if (createItemDialog === undefined) return
+    if (createItemEvent) {
+      Analytics.handleEvent(createItemEvent)
+    }
     showPopup(
       createItemDialog,
       { ...(createItemDialogProps ?? {}), ...newObjectProps(items[0]) },

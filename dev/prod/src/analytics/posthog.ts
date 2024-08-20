@@ -22,8 +22,11 @@ export class PosthogAnalyticProvider implements AnalyticProvider {
       name: `${ws}` 
     })
   }
-  handleEvent(event: string): void {
-    posthog.capture(event)
+  logout(): void {
+    posthog.reset()
+  }
+  handleEvent(event: string, params: Record<string, any>): void {
+    posthog.capture(event, params)
   }
   handleError(error: Error): void {
     posthog.capture(error.message)

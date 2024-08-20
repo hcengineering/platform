@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
+import type { StorageAdapter } from '@hcengineering/server-core'
+
 import { type Db } from 'mongodb'
 import { decode64 } from './base64'
 import config from './config'
@@ -28,17 +31,27 @@ export class GmailController {
 
   protected static _instance: GmailController
 
-  private constructor (private readonly mongo: Db) {
+  private constructor (
+    private readonly ctx: MeasureContext,
+    private readonly mongo: Db,
+    private readonly storageAdapter: StorageAdapter
+  ) {
     this.credentials = JSON.parse(config.Credentials)
     GmailController._instance = this
   }
 
-  static getGmailController (mongo?: Db): GmailController {
+  static create (ctx: MeasureContext, mongo: Db, storageAdapter: StorageAdapter): GmailController {
+    if (GmailController._instance !== undefined) {
+      throw new Error('GmailController already exists')
+    }
+    return new GmailController(ctx, mongo, storageAdapter)
+  }
+
+  static getGmailController (): GmailController {
     if (GmailController._instance !== undefined) {
       return GmailController._instance
     }
-    if (mongo === undefined) throw new Error('GmailController not exist')
-    return new GmailController(mongo)
+    throw new Error('GmailController not exist')
   }
 
   async startAll (): Promise<void> {
@@ -108,7 +121,7 @@ export class GmailController {
     let res = this.workspaces.get(workspace)
     if (res === undefined) {
       try {
-        res = await WorkspaceClient.create(this.credentials, this.mongo, workspace)
+        res = await WorkspaceClient.create(this.ctx, this.credentials, this.mongo, this.storageAdapter, workspace)
         this.workspaces.set(workspace, res)
       } catch (err) {
         console.error(`Couldn't create workspace worker for ${workspace}, reason: `, err)

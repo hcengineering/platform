@@ -46,4 +46,5 @@ export class SentryAnalyticProvider implements AnalyticProvider {
   }
 
   navigate (path: string): void {}
+  logout (): void {}
 }

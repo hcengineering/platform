@@ -74,7 +74,6 @@ export default mergeIds(viewId, view, {
     HTMLEditor: '' as AnyComponent,
     CollaborativeHTMLEditor: '' as AnyComponent,
     CollaborativeDocEditor: '' as AnyComponent,
-    CollaborativeDocActivityPresenter: '' as AnyComponent,
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,

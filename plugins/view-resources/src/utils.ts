@@ -1496,6 +1496,14 @@ export const permissionsStore = writable<PermissionsStore>({
   whitelist: new Set()
 })
 
+const spaceSpaceQuery = createQuery(true)
+
+export const spaceSpace = writable<TypedSpace | undefined>(undefined)
+
+spaceSpaceQuery.query(core.class.TypedSpace, { _id: core.space.Space }, (res) => {
+  spaceSpace.set(res[0])
+})
+
 const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
 type TargetClassesProjection = Record<Ref<Class<Space>>, number>
@@ -1623,4 +1631,15 @@ export async function parseLinkId<T extends Doc> (
   const _id = await decodeFn(id)
 
   return (_id ?? id) as Ref<T>
+}
+
+export async function getObjectId (object: Doc, hierarchy: Hierarchy): Promise<string> {
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    return await encodeFn(object)
+  }
+
+  return object._id
 }

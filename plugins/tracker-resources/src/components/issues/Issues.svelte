@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery, Ref } from '@hcengineering/core'
-  import type { IntlString, Asset } from '@hcengineering/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus, Project } from '@hcengineering/tracker'
   import { IModeSelector, resolvedLocationStore } from '@hcengineering/ui'
@@ -41,18 +41,20 @@
   let query: DocumentQuery<Issue> | undefined = undefined
   let modeSelectorProps: IModeSelector | undefined = undefined
 
-  const archivedProjectQuery = createQuery()
-  let archived: Ref<Project>[] = []
+  const allProjectQuery = createQuery()
+  let allProjects: Pick<Project, '_id' | '_class' | 'archived'>[] = []
 
-  archivedProjectQuery.query(
+  allProjectQuery.query(
     tracker.class.Project,
-    { archived: true },
+    {},
     (res) => {
-      archived = res.map((it) => it._id)
+      allProjects = res
     },
-    { projection: { _id: 1 } }
+    { projection: { _id: 1, archived: 1 } }
   )
-  $: spaceQuery = currentSpace ? { space: currentSpace } : { space: { $nin: archived } }
+  $: spaceQuery = currentSpace
+    ? { space: currentSpace }
+    : { space: { $in: allProjects.filter((it) => !it.archived).map((it) => it._id) } }
 
   $: all = { ...baseQuery, ...spaceQuery }
 

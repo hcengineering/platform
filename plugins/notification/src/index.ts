@@ -427,7 +427,8 @@ const notification = plugin(notificationId, {
     CommonNotificationCollectionRemoved: '' as IntlString,
     SoundNotificationsDescription: '' as IntlString,
     Sound: '' as IntlString,
-    NoAccessToObject: '' as IntlString
+    NoAccessToObject: '' as IntlString,
+    ViewIn: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,

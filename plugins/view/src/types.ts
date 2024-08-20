@@ -537,6 +537,8 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // Available only for workspace owners
   secured?: boolean
   allowedForEditableContent?: boolean
+
+  analyticsEvent?: string
 }
 
 /**

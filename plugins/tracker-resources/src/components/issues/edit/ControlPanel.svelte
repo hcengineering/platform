@@ -209,7 +209,15 @@
   {#if keys.length > 0}
     <div class="divider" />
     {#each keys as key (typeof key === 'string' ? key : key.key)}
-      <AttributeBarEditor {readonly} {key} _class={issue._class} object={issue} showHeader={true} size={'medium'} />
+      <AttributeBarEditor
+        {readonly}
+        {key}
+        identifier={issue.identifier}
+        _class={issue._class}
+        object={issue}
+        showHeader={true}
+        size={'medium'}
+      />
     {/each}
   {/if}
 
@@ -220,6 +228,7 @@
       {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
         <AttributeBarEditor
           {key}
+          identifier={issue.identifier}
           _class={mixin._id}
           {readonly}
           object={hierarchy.as(issue, mixin._id)}

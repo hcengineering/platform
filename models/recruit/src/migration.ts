@@ -60,6 +60,16 @@ export const recruitOperation: MigrateOperation = {
         func: async (client: MigrationClient) => {
           await migrateSpace(client, 'recruit:space:Reviews' as Ref<Space>, core.space.Workspace, [DOMAIN_CALENDAR])
         }
+      },
+      {
+        state: 'migrate-applicants',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_TASK,
+            { _class: recruit.class.Applicant, isDone: { $nin: [false, true] } },
+            { isDone: false }
+          )
+        }
       }
     ])
   },

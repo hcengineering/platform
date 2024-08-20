@@ -55,6 +55,7 @@ import {
   UX
 } from '@hcengineering/model'
 import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
@@ -432,6 +433,22 @@ function defineFolder (builder: Builder): void {
     encode: drive.function.FolderLinkProvider
   })
 
+  // Search
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      title: drive.string.Folders,
+      icon: drive.icon.Drive,
+      label: presentation.string.Search,
+      query: drive.completion.FolderQuery,
+      context: ['search', 'mention', 'spotlight'],
+      classToSearch: drive.class.Folder
+    },
+    drive.completion.FolderCategory
+  )
+
   // Actions
 
   builder.mixin(drive.class.Folder, core.class.Class, view.mixin.IgnoreActions, {
@@ -565,6 +582,22 @@ function defineFile (builder: Builder): void {
     ofClass: drive.class.File,
     components: { input: chunter.component.ChatMessageInput }
   })
+
+  // Search
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      title: drive.string.Files,
+      icon: drive.icon.Drive,
+      label: presentation.string.Search,
+      query: drive.completion.FileQuery,
+      context: ['search', 'mention', 'spotlight'],
+      classToSearch: drive.class.File
+    },
+    drive.completion.FileCategory
+  )
 
   // Actions
 

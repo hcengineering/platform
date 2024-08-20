@@ -27,7 +27,7 @@
     getCurrentAccount,
     WithLookup
   } from '@hcengineering/core'
-  import document, { Teamspace } from '@hcengineering/document'
+  import document, { Teamspace, DocumentEvents } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
@@ -45,6 +45,7 @@
   import view from '@hcengineering/view'
   import { IconPicker, SpaceTypeSelector } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   import documentRes from '../../plugin'
 
@@ -207,6 +208,7 @@
       rolesAssignment
     )
 
+    Analytics.handleEvent(DocumentEvents.TeamspaceCreated, { id: teamspaceId })
     close(teamspaceId)
   }
 
@@ -408,7 +410,7 @@
         <Label label={core.string.AutoJoin} />
         <span><Label label={core.string.AutoJoinDescr} /></span>
       </div>
-      <Toggle bind:on={autoJoin} />
+      <Toggle id={'teamspace-autoJoin'} bind:on={autoJoin} />
     </div>
 
     {#each roles as role}

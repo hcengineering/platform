@@ -2,9 +2,11 @@
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import type { TagReference } from '@hcengineering/tags'
-  import tags from '@hcengineering/tags'
+  import tags, { TagReference, TagsEvents } from '@hcengineering/tags'
   import { Icon, Label, getEventPopupPositionElement, showPopup } from '@hcengineering/ui'
+  import { getObjectId } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
+
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
   import TagIcon from './icons/TagIcon.svelte'
@@ -18,6 +20,7 @@
   let items: TagReference[] = []
   const query = createQuery()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   $: query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
     items = result
@@ -31,7 +34,11 @@
     })
   }
   async function removeTag (tag: TagReference): Promise<void> {
-    if (tag !== undefined) await client.remove(tag)
+    if (tag !== undefined) {
+      await client.remove(tag)
+      const id = await getObjectId(object, hierarchy)
+      Analytics.handleEvent(TagsEvents.TagRemoved, { object: id })
+    }
   }
 </script>
 

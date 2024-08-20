@@ -16,9 +16,11 @@
   import { AttachedData, DocumentQuery, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
-  import { Component, Issue, IssueTemplate, Project } from '@hcengineering/tracker'
+  import { Component, Issue, IssueTemplate, Project, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonShape, ButtonSize, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
+
   import { activeComponent } from '../../issues'
   import tracker from '../../plugin'
   import ComponentSelector from './ComponentSelector.svelte'
@@ -54,12 +56,20 @@
       await Promise.all(
         value.map(async (p) => {
           if ('_class' in p) {
+            Analytics.handleEvent(TrackerEvents.IssueComponentAdded, {
+              issue: p.identifier ?? p._id,
+              component: newComponentId
+            })
             await client.update(p, { component: newComponentId })
           }
         })
       )
     } else {
       if ('_class' in value) {
+        Analytics.handleEvent(TrackerEvents.IssueComponentAdded, {
+          issue: (value as Issue).identifier ?? value._id,
+          component: newComponentId
+        })
         await client.update(value, { component: newComponentId })
       }
     }

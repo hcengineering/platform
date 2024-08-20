@@ -25,6 +25,18 @@ export interface MetricsData {
   }[]
 }
 
+export interface OperationLogEntry {
+  op: string
+  params: ParamsType
+  start: number
+  end: number
+}
+export interface OperationLog {
+  ops: OperationLogEntry[]
+  start: number
+  end: number
+}
+
 /**
  * @public
  */
@@ -32,6 +44,8 @@ export interface Metrics extends MetricsData {
   namedParams: ParamsType
   params: Record<string, Record<string, MetricsData>>
   measurements: Record<string, Metrics>
+
+  opLog?: Record<string, OperationLog>
 }
 
 /**
@@ -53,8 +67,11 @@ export interface MeasureLogger {
  * @public
  */
 export interface MeasureContext {
+  id?: string
   // Create a child metrics context
   newChild: (name: string, params: ParamsType, fullParams?: FullParamsType, logger?: MeasureLogger) => MeasureContext
+
+  metrics?: Metrics
 
   with: <T>(
     name: string,

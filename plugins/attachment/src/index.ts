@@ -20,6 +20,8 @@ import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import { AnyComponent } from '@hcengineering/ui'
 
+export * from './analytics'
+
 /**
  * @public
  */

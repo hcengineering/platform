@@ -27,7 +27,7 @@ import {
   type ChannelInfo
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
-import contact, { type Person } from '@hcengineering/contact'
+import contact, { type ChannelProvider as SocialChannelProvider, type Person } from '@hcengineering/contact'
 import {
   type Class,
   type Doc,
@@ -98,6 +98,9 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
     shortLabel: attachment.string.Files
   })
     attachments?: number
+
+  @Prop(TypeRef(contact.class.ChannelProvider), core.string.Object)
+    provider?: Ref<SocialChannelProvider>
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)

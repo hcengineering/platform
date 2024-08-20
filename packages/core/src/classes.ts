@@ -440,6 +440,8 @@ export interface Permission extends Doc {
 export interface Account extends Doc {
   email: string
   role: AccountRole
+
+  person?: Ref<Doc>
 }
 
 /**
