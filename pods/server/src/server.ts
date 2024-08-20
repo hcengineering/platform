@@ -66,7 +66,7 @@ export function start (
         [serverAiBotId]: {
           factory: createAIBotAdapter,
           db: '%ai-bot',
-          url: rawDbUrl
+          url: rawDbUrl ?? mainDbUrl
         }
       }
     }

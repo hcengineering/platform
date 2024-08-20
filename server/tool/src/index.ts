@@ -143,8 +143,6 @@ export async function initModel (
   } catch (err: any) {
     ctx.error('Failed to create workspace', { error: err })
     throw err
-  } finally {
-    await storageAdapter.close()
   }
 }
 

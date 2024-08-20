@@ -49,6 +49,8 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import {
+  estimateDocSize,
+  updateHashForDoc,
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
@@ -56,6 +58,7 @@ import {
   type StorageAdapter,
   type TxAdapter
 } from '@hcengineering/server-core'
+import { createHash } from 'crypto'
 import { type PoolClient } from 'pg'
 import {
   convertDoc,
@@ -709,8 +712,134 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return []
   }
 
-  find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
-    throw new Error('Method not implemented.')
+  async * fetchRows (query: string): AsyncGenerator<any, void, unknown> {
+    const cursorQuery = `${query} DECLARE my_cursor CURSOR FOR SELECT * FROM your_table;`
+    await this.client.query(cursorQuery);
+  
+    let fetchMore = true;
+  
+    while (fetchMore) {
+      const result = await this.client.query('FETCH 100 FROM my_cursor;')
+  
+      for (const row of result.rows) {
+        yield row;
+      }
+  
+      fetchMore = result.rows.length > 0
+    }
+  
+    await this.client.query('CLOSE my_cursor;')
+  }
+
+  find (_ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
+    const ctx = _ctx.newChild('find', { domain })
+
+    const getCursorName = () => {
+      return `cursor_${translateDomain(this.workspaceId.name)}_${translateDomain(domain)}_${mode}`
+    }
+
+    let initialized: boolean = false
+    let mode: 'hashed' | 'non_hashed' = 'hashed'
+    let cursorName = getCursorName()
+    const bulkUpdate = new Map<Ref<Doc>, string>()
+
+    const close = async (cursorName: string) => {
+      try {
+        await this.client.query(`CLOSE ${cursorName}`)
+        await this.client.query(`COMMIT`)
+        ctx.info('Cursor closed', { cursorName })
+      } catch (err) {
+        ctx.error('Error while closing cursor', { cursorName, err })
+      }
+    }
+
+    const init = async (projection: string, query: string) => {
+      cursorName = getCursorName()
+      await this.client.query(`BEGIN`)
+      await this.client.query(`DECLARE ${cursorName} CURSOR FOR SELECT ${projection} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1 AND ${query}`, [this.workspaceId.name])
+      ctx.info('Cursor initialized', { cursorName })
+    }
+
+    const next = async (): Promise<Doc | null> => {
+      const result = await this.client.query(`FETCH 1 FROM ${cursorName}`)
+      if (result.rows.length === 0) {
+        return null
+      }
+      return result.rows[0] !== undefined ? parseDoc(result.rows[0]) : null
+    }
+
+    const flush = async (flush = false): Promise<void> => {
+      if (bulkUpdate.size > 1000 || flush) {
+        if (bulkUpdate.size > 0) {
+          await ctx.with(
+            'bulk-write-find',
+            {},
+            async () => {
+              const updates = new Map(Array.from(bulkUpdate.entries()).map((it) => [it[0], { '%hash%': it[1] }]))
+              await this.update(ctx, domain, updates)
+            }
+          )
+        }
+        bulkUpdate.clear()
+      }
+    }
+
+    return {
+      next: async () => {
+        if (!initialized) {
+          await init('_id, data', `data ->> '%hash%' IS NOT NULL AND data ->> '%hash%' <> ''`)
+          initialized = true
+        }
+        let d = await ctx.with('next', { mode }, async () => await next())
+        if (d == null && mode === 'hashed') {
+          await close(cursorName)
+          mode = 'non_hashed'
+          await init('*', `data ->> '%hash%' IS NULL OR data ->> '%hash%' = ''`)
+          d = await ctx.with('next', { mode }, async () => await next())
+        }
+        if (d == null) {
+          return undefined
+        }
+        let digest: string | null = (d as any)['%hash%']
+        if ('%hash%' in d) {
+          delete d['%hash%']
+        }
+        const pos = (digest ?? '').indexOf('|')
+        if (digest == null || digest === '') {
+          const cs = ctx.newChild('calc-size', {})
+          const size = estimateDocSize(d)
+          cs.end()
+
+          const hash = createHash('sha256')
+          updateHashForDoc(hash, d)
+          digest = hash.digest('base64')
+
+          bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+
+          await ctx.with('flush', {}, async () => {
+            await flush()
+          })
+          return {
+            id: d._id,
+            hash: digest,
+            size
+          }
+        } else {
+          return {
+            id: d._id,
+            hash: digest.slice(0, pos),
+            size: parseInt(digest.slice(pos + 1), 16)
+          }
+        }
+      },
+      close: async () => {
+        await ctx.with('flush', {}, async () => {
+          await flush(true)
+        })
+        await close(cursorName)
+        ctx.end()
+      }
+    }
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
@@ -727,7 +856,21 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await this.insert(domain, docs)
+    return await this.retryTxn(async (client) => {
+      while (docs.length > 0) {
+        const part = docs.splice(0, 1)
+        const vals = part
+          .map((doc) => {
+            const d = convertDoc(doc, this.workspaceId.name)
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${escapeBackticks(JSON.stringify(d.data))}')`
+          })
+          .join(', ')
+        await client.query(
+          `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals} 
+          ON CONFLICT (_id, "workspaceId") DO UPDATE SET _class = EXCLUDED._class, "createdBy" = EXCLUDED."createdBy", "modifiedBy" = EXCLUDED."modifiedBy", "modifiedOn" = EXCLUDED."modifiedOn", "createdOn" = EXCLUDED."createdOn", space = EXCLUDED.space, "attachedTo" = EXCLUDED."attachedTo", data = EXCLUDED.data;`
+        )
+      }
+    })
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
@@ -766,7 +909,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
         for (const [_id, ops] of operations) {
           const doc = map.get(_id)
           if (doc === undefined) continue
-          ;(ops as any)['%hash%'] = null
+          if ((ops as any)['%hash%'] === undefined) {
+            ;(ops as any)['%hash%'] = null
+          }
           TxProcessor.applyUpdate(doc, ops)
           const converted = convertDoc(doc, this.workspaceId.name)
           await client.query(`UPDATE ${translateDomain(domain)} SET data = $3 WHERE _id = $1 AND "workspaceId" = $2`, [

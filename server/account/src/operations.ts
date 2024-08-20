@@ -1325,7 +1325,7 @@ export async function createWorkspace (
           dbUrls,
           {
             externalStorage: storageAdapter,
-            fullTextUrl: '',
+            fullTextUrl: 'http://localhost:9200',
             indexParallel: 0,
             indexProcessing: 0,
             rekoniUrl: '',
