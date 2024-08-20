@@ -43,11 +43,7 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
-export async function start (
-  ctx: MeasureContext,
-  config: Config,
-  storageAdapter: StorageAdapter
-): Promise<Shutdown> {
+export async function start (ctx: MeasureContext, config: Config, storageAdapter: StorageAdapter): Promise<Shutdown> {
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })

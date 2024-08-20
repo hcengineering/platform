@@ -42,7 +42,7 @@ export async function takeSnapshot (
   }
 
   const { collaborativeDoc } = parseDocumentId(documentId)
-  const { documentId: contentDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
+  const { versionId } = collaborativeDocParse(collaborativeDoc)
   if (versionId !== CollaborativeDocVersionHead) {
     throw new Error('invalid document version')
   }

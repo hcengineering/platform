@@ -156,7 +156,7 @@ async function migrateStatusTransactions (client: MigrationClient): Promise<void
 
 async function migrateCollaborativeContentToStorage (client: MigrationClient): Promise<void> {
   const ctx = new MeasureMetricsContext('migrate_content', {})
-  const storageAdapter = client.storageAdapter as StorageAdapter
+  const storageAdapter = client.storageAdapter
 
   const hierarchy = client.hierarchy
   const classes = hierarchy.getDescendants(core.class.Doc)

@@ -38,9 +38,7 @@ import { Context } from '../context'
 import { CollabStorageAdapter } from './adapter'
 
 export class PlatformStorageAdapter implements CollabStorageAdapter {
-  constructor (
-    private readonly storage: StorageAdapter
-  ) {}
+  constructor (private readonly storage: StorageAdapter) {}
 
   async loadDocument (ctx: MeasureContext, documentId: DocumentId, context: Context): Promise<YDoc | undefined> {
     // try to load document content

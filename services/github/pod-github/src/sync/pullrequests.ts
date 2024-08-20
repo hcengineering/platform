@@ -19,7 +19,6 @@ import core, {
   makeCollaborativeDoc
 } from '@hcengineering/core'
 import task, { TaskType, calcRank, makeRank } from '@hcengineering/task'
-import { isEmptyMarkup } from '@hcengineering/text'
 import time, { ToDo, ToDoPriority } from '@hcengineering/time'
 import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
 import { OctokitResponse } from '@octokit/types'
