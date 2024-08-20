@@ -71,7 +71,8 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
 
       for (const d of result) {
         if (d.$lookup !== undefined) {
-          const newDoc = clone(d)
+          const newDoc: any = { ...d }
+          newDoc.$lookup = clone(d.$lookup)
           newResult.push(newDoc)
           for (const [k, v] of Object.entries(d.$lookup)) {
             if (!Array.isArray(v)) {
@@ -83,22 +84,36 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
         }
       }
       const lookupMap = Object.fromEntries(Array.from(Object.values(idClassMap)).map((it) => [it.id, it.doc]))
-      if (Object.keys(lookupMap).length > 0) {
-        return toFindResult(newResult, result.total, lookupMap)
-      }
+      return this.cleanQuery<T>(toFindResult(newResult, result.total, lookupMap), query, lookupMap)
     }
 
     // We need to get rid of simple query parameters matched in documents
+    return this.cleanQuery<T>(result, query)
+  }
+
+  private cleanQuery<T extends Doc>(
+    result: FindResult<T>,
+    query: DocumentQuery<T>,
+    lookupMap?: Record<string, Doc>
+  ): FindResult<T> {
+    const newResult: T[] = []
     for (const doc of result) {
+      let _doc = doc
+      let cloned = false
       for (const [k, v] of Object.entries(query)) {
         if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
-          if ((doc as any)[k] === v) {
+          if ((_doc as any)[k] === v) {
+            if (!cloned) {
+              _doc = { ...doc } as any
+              cloned = true
+            }
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete (doc as any)[k]
+            delete (_doc as any)[k]
           }
         }
       }
+      newResult.push(_doc)
     }
-    return result
+    return toFindResult(newResult, result.total, lookupMap)
   }
 }
