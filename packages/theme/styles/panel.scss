@@ -364,11 +364,15 @@
       justify-content: center;
     }
     &__main, &__mobile, &__aside {
-      // overflow: hidden;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       min-width: 0;
       min-height: 0;
+
+      @media print {
+        overflow: visible;
+      }
     }
     &__main, &__aside {
       height: 100%;
