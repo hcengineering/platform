@@ -20,10 +20,11 @@ body = """
     ## [unreleased]\n
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}\
-    {% for commit in commits %}\
-        * {{ group | striptags | trim | upper }}: {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+    * {{ group | striptags | trim | upper }}: \
+      {% for commit in commits %}\
+        · {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
             {% if commit.breaking %}[**breaking**] {% endif %}\
-            {{ commit.message | trim | upper_first }}\
+            {{ commit.message | trim | upper_first }} \
     {% endfor %}
 {% endfor %}\n
 """
@@ -47,11 +48,8 @@ filter_unconventional = true
 split_commits = false
 # regex for preprocessing the commit messages
 commit_preprocessors = [
-  # Replace issue numbers
-  #{ pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](<REPO>/issues/${2}))"},
-  # Check spelling of the commit with https://github.com/crate-ci/typos
-  # If the spelling is incorrect, it will be automatically fixed.
-  #{ pattern = '.*', replace_command = 'typos --write-changes -' },
+   { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/hcengineering/platform/issues/${2}))"},
+    { pattern = "Merge pull request #([0-9]+) from [^ ]+", replace = "PR [#${1}](https://github.com/hcengineering/platform/pull/${1}):"},
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
