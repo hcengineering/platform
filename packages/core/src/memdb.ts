@@ -189,6 +189,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
 
   /**
    * Only in model find without lookups and sorting.
+   * Do not clone results, so be aware modifications are not allowed.
    */
   findAllSync<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): FindResult<T> {
     let result: WithLookup<Doc>[]
@@ -210,9 +211,13 @@ export abstract class MemDb extends TxProcessor implements Storage {
     }
     const total = result.length
     result = result.slice(0, options?.limit)
-    const tresult = this.hierarchy.clone(result) as WithLookup<T>[]
-    const res = tresult.map((it) => this.hierarchy.updateLookupMixin(_class, it, options))
-    return toFindResult(res, total)
+
+    return toFindResult(
+      result.map((it) => {
+        return baseClass !== _class ? this.hierarchy.as(it, _class) : it
+      }) as WithLookup<T>[],
+      total
+    )
   }
 
   addDoc (doc: Doc): void {
