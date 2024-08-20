@@ -712,29 +712,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return []
   }
 
-  async * fetchRows (query: string): AsyncGenerator<any, void, unknown> {
-    const cursorQuery = `${query} DECLARE my_cursor CURSOR FOR SELECT * FROM your_table;`
-    await this.client.query(cursorQuery);
-  
-    let fetchMore = true;
-  
-    while (fetchMore) {
-      const result = await this.client.query('FETCH 100 FROM my_cursor;')
-  
-      for (const row of result.rows) {
-        yield row;
-      }
-  
-      fetchMore = result.rows.length > 0
-    }
-  
-    await this.client.query('CLOSE my_cursor;')
-  }
-
   find (_ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
     const ctx = _ctx.newChild('find', { domain })
 
-    const getCursorName = () => {
+    const getCursorName = (): string => {
       return `cursor_${translateDomain(this.workspaceId.name)}_${translateDomain(domain)}_${mode}`
     }
 
@@ -743,21 +724,22 @@ abstract class PostgresAdapterBase implements DbAdapter {
     let cursorName = getCursorName()
     const bulkUpdate = new Map<Ref<Doc>, string>()
 
-    const close = async (cursorName: string) => {
+    const close = async (cursorName: string): Promise<void> => {
       try {
         await this.client.query(`CLOSE ${cursorName}`)
-        await this.client.query(`COMMIT`)
-        ctx.info('Cursor closed', { cursorName })
+        await this.client.query('COMMIT')
       } catch (err) {
         ctx.error('Error while closing cursor', { cursorName, err })
       }
     }
 
-    const init = async (projection: string, query: string) => {
+    const init = async (projection: string, query: string): Promise<void> => {
       cursorName = getCursorName()
-      await this.client.query(`BEGIN`)
-      await this.client.query(`DECLARE ${cursorName} CURSOR FOR SELECT ${projection} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1 AND ${query}`, [this.workspaceId.name])
-      ctx.info('Cursor initialized', { cursorName })
+      await this.client.query('BEGIN')
+      await this.client.query(
+        `DECLARE ${cursorName} CURSOR FOR SELECT ${projection} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1 AND ${query}`,
+        [this.workspaceId.name]
+      )
     }
 
     const next = async (): Promise<Doc | null> => {
@@ -771,14 +753,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
         if (bulkUpdate.size > 0) {
-          await ctx.with(
-            'bulk-write-find',
-            {},
-            async () => {
-              const updates = new Map(Array.from(bulkUpdate.entries()).map((it) => [it[0], { '%hash%': it[1] }]))
-              await this.update(ctx, domain, updates)
-            }
-          )
+          await ctx.with('bulk-write-find', {}, async () => {
+            const updates = new Map(Array.from(bulkUpdate.entries()).map((it) => [it[0], { '%hash%': it[1] }]))
+            await this.update(ctx, domain, updates)
+          })
         }
         bulkUpdate.clear()
       }
@@ -787,14 +765,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return {
       next: async () => {
         if (!initialized) {
-          await init('_id, data', `data ->> '%hash%' IS NOT NULL AND data ->> '%hash%' <> ''`)
+          await init('_id, data', "data ->> '%hash%' IS NOT NULL AND data ->> '%hash%' <> ''")
           initialized = true
         }
         let d = await ctx.with('next', { mode }, async () => await next())
         if (d == null && mode === 'hashed') {
           await close(cursorName)
           mode = 'non_hashed'
-          await init('*', `data ->> '%hash%' IS NULL OR data ->> '%hash%' = ''`)
+          await init('*', "data ->> '%hash%' IS NULL OR data ->> '%hash%' = ''")
           d = await ctx.with('next', { mode }, async () => await next())
         }
         if (d == null) {
