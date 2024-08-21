@@ -4,6 +4,7 @@
   import { type Doc } from '@hcengineering/core'
   import { CollaborationIds, type Ydoc } from '@hcengineering/text-editor'
   import {
+    CollaborationDiffViewer,
     StringDiffViewer,
     TiptapCollabProvider,
     createTiptapCollaborationData,
@@ -15,67 +16,25 @@
     ControlledDocumentSnapshot,
     ControlledDocumentState,
     Document,
-    DocumentSection,
     DocumentState
   } from '@hcengineering/controlled-documents'
   import plugin from '../../plugin'
   import {
     $controlledDocument as controlledDocument,
-    $controlledDocumentSections as sections,
     $comparedDocument as compareTo,
-    $comparedDocumentSections as compareToSections,
     $documentComparisonVersions as documentComparisonVersions,
-    ComparisonSectionPair,
-    comparisonRequested,
-    loadComparedDocumentSectionsFx
+    comparisonRequested
   } from '../../stores/editors/document'
   import { COLLABORATOR_URL, TOKEN, getTranslatedControlledDocStates, getTranslatedDocumentStates } from '../../utils'
-  import DocumentSectionPairDiffViewer from './DocumentSectionPairDiffViewer.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const ydoc = getContext<Ydoc>(CollaborationIds.Doc)
 
-  let collapsedPairIndices = new Set<number>()
   let comparedYdoc: Ydoc | undefined = undefined
   let comparedProvider: TiptapCollabProvider | undefined = undefined
   let loading = true
-  const isLoadPending = loadComparedDocumentSectionsFx.pending
-
-  const handleSectionDiffPairs = (firstSections: DocumentSection[], secondSections: DocumentSection[]) => {
-    const result: ComparisonSectionPair[] = []
-    const firstSectionKeys = new Set(firstSections.map((section) => section.key))
-    const secondSectionKeys = new Set(secondSections.map((section) => section.key))
-    let secondIndex = 0
-    let firstIndex = 0
-    while (firstIndex < firstSections.length) {
-      const firstSection = firstSections[firstIndex]
-      if (secondSectionKeys.has(firstSection.key)) {
-        while (secondIndex < secondSections.length && !firstSectionKeys.has(secondSections[secondIndex].key)) {
-          result.push([null, { section: secondSections[secondIndex], index: secondIndex + 1 }])
-          secondIndex++
-        }
-      }
-      if (secondIndex < secondSections.length && firstSection.key === secondSections[secondIndex].key) {
-        result.push([
-          { section: firstSection, index: firstIndex + 1 },
-          { section: secondSections[secondIndex], index: secondIndex + 1 }
-        ])
-        secondIndex++
-      } else {
-        result.push([{ section: firstSection, index: firstIndex + 1 }, null])
-      }
-      firstIndex++
-    }
-
-    while (secondIndex < secondSections.length) {
-      result.push([null, { section: secondSections[secondIndex], index: secondIndex + 1 }])
-      secondIndex++
-    }
-
-    return result
-  }
 
   const handleSelect = (event: CustomEvent<ListItem>) => {
     const version = $documentComparisonVersions.find((item) => item._id === event.detail._id)
@@ -142,8 +101,6 @@
     comparedProvider.loaded.then(() => (loading = false))
   }
 
-  $: sectionDiffPairs = handleSectionDiffPairs($sections, $compareToSections)
-
   onDestroy(() => {
     comparedProvider?.destroy()
   })
@@ -167,35 +124,29 @@
     on:selected={handleSelect}
   />
 </div>
-{#if loading || $isLoadPending}
+{#if loading}
   <Loading />
 {:else}
   <Scroller>
-    <div class="antiAccordion">
-      <div class="pl-7">
-        <DocumentTitle>
-          <StringDiffViewer
-            value={$controlledDocument?.title ?? ''}
-            compareTo={(isDocument($compareTo) ? $compareTo : $controlledDocument)?.title ?? ''}
-          />
-        </DocumentTitle>
-      </div>
-      {#each sectionDiffPairs as pair, index}
-        <DocumentSectionPairDiffViewer
-          {pair}
-          firstYdoc={ydoc}
-          secondYdoc={comparedYdoc}
-          expanded={!collapsedPairIndices.has(index)}
-          on:toggle={() => {
-            if (collapsedPairIndices.has(index)) {
-              collapsedPairIndices.delete(index)
-            } else {
-              collapsedPairIndices.add(index)
-            }
-            collapsedPairIndices = new Set(collapsedPairIndices)
-          }}
+    <div class="root">
+      <DocumentTitle>
+        <StringDiffViewer
+          value={$controlledDocument?.title ?? ''}
+          compareTo={(isDocument($compareTo) ? $compareTo : $controlledDocument)?.title ?? ''}
         />
-      {/each}
+      </DocumentTitle>
+      <CollaborationDiffViewer field="content" comparedField="content" {ydoc} {comparedYdoc} />
+      <div class="bottomSpacing" />
     </div>
   </Scroller>
 {/if}
+
+<style lang="scss">
+  .root {
+    padding: 0 3.25rem;
+  }
+
+  .bottomSpacing {
+    padding-bottom: 30vh;
+  }
+</style>

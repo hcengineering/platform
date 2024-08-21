@@ -2,10 +2,23 @@
 // Copyright @ 2022-2023 Hardcore Engineering Inc.
 //
 
-import { type Data, type Ref, TxOperations, generateId, DOMAIN_TX, getCollaborativeDoc } from '@hcengineering/core'
+import {
+  type Data,
+  type Ref,
+  TxOperations,
+  generateId,
+  DOMAIN_TX,
+  getCollaborativeDoc,
+  MeasureMetricsContext,
+  type Class,
+  type Doc,
+  SortingOrder
+} from '@hcengineering/core'
 import {
   createDefaultSpace,
   createOrUpdate,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -23,8 +36,18 @@ import {
   type ControlledDocument,
   createChangeControl
 } from '@hcengineering/controlled-documents'
+import {
+  loadCollaborativeDoc,
+  saveCollaborativeDoc,
+  YXmlElement,
+  YXmlText,
+  YAbstractType,
+  clone
+} from '@hcengineering/collaboration'
+import attachment, { type Attachment } from '@hcengineering/attachment'
+import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 
-import documents from './index'
+import documents, { DOMAIN_DOCUMENTS } from './index'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
   const existingSpace = await tx.findOne(documents.class.DocumentSpace, {
@@ -70,39 +93,6 @@ async function createQualityDocumentsSpace (tx: TxOperations): Promise<void> {
       },
       documents.space.QualityDocuments
     )
-  }
-}
-
-async function fixChangeControlsForDocs (tx: TxOperations): Promise<void> {
-  const defaultCCSpec: Data<ChangeControl> = {
-    description: '',
-    reason: '',
-    impact: '',
-    impactedDocuments: []
-  }
-  const controlledDocuments = await tx.findAll(
-    documents.class.ControlledDocument,
-    {},
-    { lookup: { changeControl: documents.class.ChangeControl } }
-  )
-
-  for (const cdoc of controlledDocuments) {
-    const existingCC = await tx.findOne(documents.class.ChangeControl, { _id: cdoc.changeControl })
-
-    if (existingCC !== undefined) {
-      continue
-    }
-
-    const newCc = await tx.createDoc(
-      documents.class.ChangeControl,
-      cdoc.space,
-      defaultCCSpec,
-      cdoc.changeControl?.length > 0 ? cdoc.changeControl : undefined
-    )
-
-    if (cdoc.changeControl === undefined) {
-      await tx.update(cdoc, { changeControl: newCc })
-    }
   }
 }
 
@@ -152,15 +142,10 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         major: 0,
         minor: 1,
         state: DocumentState.Effective,
-        sections: 0,
         commentSequence: 0,
         content: getCollaborativeDoc(generateId())
       },
-      ccCategory,
-      undefined,
-      {
-        title: 'Section 1'
-      }
+      ccCategory
     )
 
     if (!success) {
@@ -284,12 +269,103 @@ async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
   )
 }
 
+async function migrateDocSections (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('migrate_doc_sections', {})
+  const storage = client.storageAdapter
+
+  const targetDocuments = await client.find<ControlledDocument>(DOMAIN_DOCUMENTS, {
+    _class: documents.class.ControlledDocument
+  })
+  const attachmentsOps: { filter: MigrationDocumentQuery<Attachment>, update: MigrateUpdate<Attachment> }[] = []
+
+  for (const document of targetDocuments) {
+    const targetSections: any = await client.find(
+      DOMAIN_DOCUMENTS,
+      {
+        _class: 'documents:class:CollaborativeDocumentSection' as Ref<Class<Doc>>,
+        attachedTo: document._id
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+
+    // Migrate sections headers + content
+    try {
+      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
+      if (ydoc === undefined) {
+        ctx.error('collaborative document content not found', { document: document.title })
+        continue
+      }
+
+      if (ydoc.share.has('content')) {
+        // Already migrated?
+        continue
+      }
+
+      const content = ydoc.getXmlFragment('content')
+
+      ydoc.transact((tr) => {
+        for (const section of targetSections) {
+          const sectionTemplate = section['documents:mixin:DocumentTemplateSection']
+          const sectionNote = sectionTemplate?.description ?? sectionTemplate?.guidance
+          const titleXml = new YXmlText()
+          titleXml.insert(
+            0,
+            section.title,
+            sectionNote !== undefined && sectionNote !== ''
+              ? { note: { kind: 'neutral', title: sectionNote } }
+              : undefined
+          )
+
+          const sectionContent = ydoc.getXmlFragment(section.collaboratorSectionId)
+          const sectionTitle = new YXmlElement('heading')
+          sectionTitle.setAttribute('level', 1 as any)
+          sectionTitle.insert(0, [titleXml])
+
+          content.push([
+            sectionTitle,
+            ...(sectionContent
+              .toArray()
+              .map((item) =>
+                item instanceof YAbstractType ? (item instanceof YXmlElement ? clone(item) : item.clone()) : item
+              ) as any)
+          ])
+        }
+      })
+
+      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
+    } catch (err) {
+      ctx.error('error collaborative document content migration', { error: err, document: document.title })
+    }
+
+    attachmentsOps.push({
+      filter: {
+        _class: attachment.class.Attachment,
+        attachedTo: { $in: targetSections.map((s: any) => s._id) }
+      },
+      update: {
+        attachedTo: document._id,
+        attachedToClass: document._class
+      }
+    })
+  }
+
+  if (attachmentsOps.length > 0) {
+    await client.bulk(DOMAIN_ATTACHMENT, attachmentsOps)
+  }
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentsId, [
       {
         state: 'migrateSpaceTypes',
         func: migrateSpaceTypes
+      },
+      {
+        state: 'migrateDocSections',
+        func: migrateDocSections
       }
     ])
   },
@@ -305,7 +381,6 @@ export const documentsOperation: MigrateOperation = {
           await createTemplateSequence(tx)
           await createTagCategories(tx)
           await createDocumentCategories(tx)
-          await fixChangeControlsForDocs(tx)
           await createProductChangeControlTemplate(tx)
         }
       }
