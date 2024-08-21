@@ -13,26 +13,19 @@
 // limitations under the License.
 //
 
-import { Channel } from '@hcengineering/chunter'
+import { Db, MongoClient } from 'mongodb'
 
-export enum AnalyticEventType {
-  SetUser = 'setUser',
-  SetTag = 'setTag',
-  Navigation = 'navigation',
-  Error = 'error',
-  CustomEvent = 'customEvent'
+let client: MongoClient | undefined
+
+export const getDB = async (mongoUrl: string, db: string): Promise<Db> => {
+  client = new MongoClient(mongoUrl)
+  await client.connect()
+
+  return client.db(db)
 }
 
-export interface AnalyticEvent {
-  event: AnalyticEventType
-  params: Record<string, any>
-  timestamp: number
-}
-
-export interface OnboardingChannel extends Channel {
-  workspaceId: string
-  workspaceName: string
-  workspaceUrl: string
-  email: string
-  userName: string
+export const closeDB: () => Promise<void> = async () => {
+  if (client !== undefined) {
+    await client.close()
+  }
 }

@@ -16,18 +16,20 @@
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Class, Doc, getCurrentAccount, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
-  import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
+  import chunter, { ChatMessage, ChatMessageViewlet, InlineButton } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
+  import { getMetadata } from '@hcengineering/platform'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
+  import InlineButtons from '../InlineButtons.svelte'
 
   export let value: WithLookup<ChatMessage> | undefined
   export let doc: Doc | undefined = undefined
@@ -142,6 +144,8 @@
 
   let attachments: Attachment[] | undefined = undefined
   $: attachments = value?.$lookup?.attachments as Attachment[] | undefined
+  let inlineButtons: InlineButton[] = []
+  $: inlineButtons = (value?.$lookup?.inlineButtons ?? []) as InlineButton[]
 
   $: socialProvider = value?.provider
     ? client.getModel().findAllSync(contact.class.ChannelProvider, { _id: value.provider })[0]
@@ -192,12 +196,14 @@
             <div class="clear-mins">
               <MessageViewer message={value.message} />
               <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
+              <InlineButtons {value} {inlineButtons} />
             </div>
           </ShowMore>
         {:else}
           <div class="clear-mins">
             <MessageViewer message={value.message} />
             <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
+            <InlineButtons {value} {inlineButtons} />
           </div>
         {/if}
       {:else if object}

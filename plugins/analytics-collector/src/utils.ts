@@ -13,6 +13,6 @@
 // limitations under the License.
 //
 
-export function getAnalyticsChannelName (worksapce: string, email: string): string {
+export function getOnboardingChannelName (worksapce: string, email: string): string {
   return `${email}; ${worksapce}`
 }

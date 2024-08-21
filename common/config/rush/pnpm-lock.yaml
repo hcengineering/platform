@@ -29085,7 +29085,7 @@ packages:
     dev: false
 
   file:projects/pod-analytics-collector.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-15hQZSiqnsgeZDg3n3AE2D2mx6xBToMB+2z+nDKLAKbaa+XAjMyj7J/Z9nLwfjs2EX6Z8x10JoPvs4au/SXxlA==, tarball: file:projects/pod-analytics-collector.tgz}
+    resolution: {integrity: sha512-yI8I34c2a494+asythOlmttV21kO9Aw5M3Oo7U4pu8icO1fyZpqsT9DslZh6794Pz/KUAEr6olNsrLtjr8786A==, tarball: file:projects/pod-analytics-collector.tgz}
     id: file:projects/pod-analytics-collector.tgz
     name: '@rush-temp/pod-analytics-collector'
     version: 0.0.0
@@ -29109,6 +29109,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      mongodb: 6.8.0
       prettier: 3.2.5
       puppeteer: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -29116,14 +29117,21 @@ packages:
       typescript: 5.3.3
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
       - '@babel/core'
       - '@jest/types'
+      - '@mongodb-js/zstd'
       - '@swc/core'
       - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
       - bufferutil
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
       - node-notifier
+      - snappy
+      - socks
       - supports-color
       - utf-8-validate
     dev: false

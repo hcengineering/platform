@@ -21,6 +21,7 @@ import { AnalyticEvent } from '@hcengineering/analytics-collector'
 
 import { ApiError } from './error'
 import { Collector } from './collector'
+import { Action } from './types'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {
@@ -106,18 +107,6 @@ function isContentValid (body: any[]): boolean {
   })
 }
 
-function handleGetEventsRequest (req: Request, res: Response, collector: Collector): void {
-  const qStart = req.query.start as string
-  const qEnd = req.query.end as string
-
-  const start = qStart != null ? parseInt(qStart) : undefined
-  const end = qEnd != null ? parseInt(qEnd) : undefined
-
-  res.status(200)
-  res.contentType('application/json')
-  res.send(collector.getEvents(start, end))
-}
-
 export function createServer (collector: Collector): Express {
   const app = express()
   app.use(cors())
@@ -143,10 +132,32 @@ export function createServer (collector: Collector): Express {
     })
   )
 
-  app.get(
-    '/events',
-    wrapRequest(async (req, res) => {
-      handleGetEventsRequest(req, res, collector)
+  app.post(
+    '/action',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || Array.isArray(req.body)) {
+        throw new ApiError(400)
+      }
+
+      const name = req.body.name
+      const messageId = req.body.messageId
+      const channelId = req.body.channelId
+      const _id = req.body._id
+
+      if (name == null || messageId == null || channelId == null || _id == null) {
+        throw new ApiError(400)
+      }
+
+      const action: Action = {
+        _id,
+        name,
+        messageId,
+        channelId
+      }
+      await collector.processAction(action, token)
+
+      res.status(200)
+      res.json({})
     })
   )
 

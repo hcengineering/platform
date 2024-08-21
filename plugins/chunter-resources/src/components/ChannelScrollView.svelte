@@ -23,7 +23,8 @@
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
     canGroupMessages,
-    messageInFocus
+    messageInFocus,
+    sortActivityMessages
   } from '@hcengineering/activity-resources'
   import { Class, Doc, generateId, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -360,7 +361,7 @@
     clearTimeout(messagesToReadAccumulatorTimer)
     messagesToReadAccumulatorTimer = setTimeout(() => {
       const messagesToRead = [...messagesToReadAccumulator]
-      void readChannelMessages(messagesToRead, notifyContext)
+      void readChannelMessages(sortActivityMessages(messagesToRead), notifyContext)
     }, 500)
   }
 

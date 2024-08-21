@@ -251,6 +251,17 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
     [
+      analyticsCollectorModel,
+      analyticsCollectorId,
+      {
+        label: inventory.string.ConfigLabel,
+        description: inventory.string.ConfigDescription,
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
+    [
       hrModel,
       hrId,
       {
@@ -349,7 +360,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [printModel, printId],
-    [analyticsCollectorModel, analyticsCollectorId],
     [driveModel, driveId],
     [
       documentsModel,

@@ -30,6 +30,7 @@ import activity, { type ActivityMessage, type ActivityReference } from '@hcengin
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
+import chunter from '@hcengineering/chunter'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -285,7 +286,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         sort: { createdOn: SortingOrder.Descending },
         lookup: {
-          _id: { attachments: attachment.class.Attachment }
+          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
         }
       }
     )
@@ -331,7 +332,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
         limit: limit ?? this.limit,
         sort: { createdOn: isBackward ? SortingOrder.Descending : SortingOrder.Ascending },
         lookup: {
-          _id: { attachments: attachment.class.Attachment }
+          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
         }
       }
     )

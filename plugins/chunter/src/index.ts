@@ -14,7 +14,7 @@
 //
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
-import type { Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { DocNotifyContext, NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -54,6 +54,7 @@ export interface ChatMessage extends ActivityMessage {
   attachments?: number
   editedOn?: Timestamp
   provider?: Ref<SocialChannelProvider>
+  inlineButtons?: number
 }
 
 /**
@@ -82,6 +83,13 @@ export interface ChatInfo extends Doc {
 
 export interface ChannelInfo extends DocNotifyContext {
   hidden: boolean
+}
+
+export interface InlineButton extends AttachedDoc {
+  name: string
+  url: string
+  titleIntl?: IntlString
+  title?: string
 }
 
 /**
@@ -117,6 +125,9 @@ export default plugin(chunterId, {
     ChatMessagePreview: '' as AnyComponent,
     ThreadMessagePreview: '' as AnyComponent
   },
+  activity: {
+    MembersChangedMessage: '' as AnyComponent
+  },
   class: {
     ThreadMessage: '' as Ref<Class<ThreadMessage>>,
     ChunterSpace: '' as Ref<Class<ChunterSpace>>,
@@ -124,7 +135,8 @@ export default plugin(chunterId, {
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
-    ChatInfo: '' as Ref<Class<ChatInfo>>
+    ChatInfo: '' as Ref<Class<ChatInfo>>,
+    InlineButton: '' as Ref<Class<InlineButton>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>,
