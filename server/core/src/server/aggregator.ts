@@ -10,8 +10,8 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
-import { type RawDBAdapter } from '../adapter'
 
+import { getMetadata } from '@hcengineering/platform'
 import {
   type BlobStorageIterator,
   type BucketInfo,
@@ -20,6 +20,9 @@ import {
   type StorageAdapterEx,
   type UploadedObjectInfo
 } from '@hcengineering/storage'
+
+import { type RawDBAdapter } from '../adapter'
+import serverCore from '../plugin'
 import { type StorageConfig, type StorageConfiguration } from '../types'
 
 class NoSuchKeyError extends Error {
@@ -367,8 +370,10 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
   @withContext('aggregator-getUrl', {})
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<string> {
-    const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
-    return await provider.getUrl(ctx, workspaceId, stat.storageId)
+    // const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
+    // return await provider.getUrl(ctx, workspaceId, stat.storageId)
+    const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', name)
   }
 }
 
