@@ -68,14 +68,6 @@
       topic: description
     })
 
-    await client.createDoc(notification.class.DocNotifyContext, space._id, {
-      user: account._id,
-      objectId: channelId,
-      objectClass: chunter.class.Channel,
-      objectSpace: core.space.Space,
-      isPinned: false
-    })
-
     openChannel(channelId, chunter.class.Channel)
   }
 
