@@ -34,6 +34,7 @@ export async function moveFiles (
 
   for (const [name, adapter] of exAdapter.adapters.entries()) {
     if (name === target) continue
+    console.log('moving from', name)
 
     const iterator = await adapter.listStream(ctx, workspaceId)
     while (true) {
@@ -44,9 +45,13 @@ export async function moveFiles (
       if (blob === undefined) continue
       if (blob.provider === target) continue
 
-      const readable = await exAdapter.get(ctx, workspaceId, data._id)
-      const stream = readable.pipe(new PassThrough())
-      await exAdapter.put(ctx, workspaceId, data._id, stream, blob.contentType, blob.size)
+      try {
+        const readable = await exAdapter.get(ctx, workspaceId, data._id)
+        const stream = readable.pipe(new PassThrough())
+        await exAdapter.put(ctx, workspaceId, data._id, stream, blob.contentType, blob.size)
+      } catch (err) {
+        console.error('failed to process blob', name, data._id, err)
+      }
 
       count += 1
       if (count % 100 === 0) {
