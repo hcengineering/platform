@@ -47,6 +47,9 @@ export async function moveFiles (
 
       try {
         const readable = await exAdapter.get(ctx, workspaceId, data._id)
+        readable.on('end', () => {
+          readable.destroy()
+        })
         const stream = readable.pipe(new PassThrough())
         await exAdapter.put(ctx, workspaceId, data._id, stream, blob.contentType, blob.size)
       } catch (err) {
