@@ -9,13 +9,15 @@
     'top-left': NotificationPosition.TopLeft,
     'top-right': NotificationPosition.TopRight
   }
+
+  const maxVisibleNotifications = 3
 </script>
 
 <slot />
 <div class="notifications">
   {#each Object.entries(positionByClassName) as [className, position]}
     <div class={className} style:z-index={9999}>
-      {#each $store as notification (notification.id)}
+      {#each $store.slice(0, maxVisibleNotifications) as notification (notification.id)}
         {#if notification.position === position}
           <Notification {notification} />
         {/if}
