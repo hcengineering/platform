@@ -186,6 +186,42 @@ export async function migrateNotificationsSpace (client: MigrationClient): Promi
   await client.deleteMany(DOMAIN_USER_NOTIFY, { _class: notification.class.BrowserNotification })
 }
 
+export async function migrateDuplicateContexts (client: MigrationClient): Promise<void> {
+  const personSpaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace }, {})
+
+  for (const space of personSpaces) {
+    const contexts = await client.find<DocNotifyContext>(
+      DOMAIN_DOC_NOTIFY,
+      { _class: notification.class.DocNotifyContext, space: space._id },
+      {}
+    )
+    const toRemove = new Set<Ref<DocNotifyContext>>()
+    const contextByUser = new Map<string, DocNotifyContext>()
+
+    for (const context of contexts) {
+      const key = context.objectId + '.' + context.user
+      const existContext = contextByUser.get(key)
+
+      if (existContext != null) {
+        const existLastViewedTimestamp = existContext.lastViewedTimestamp ?? 0
+        const newLastViewedTimestamp = context.lastViewedTimestamp ?? 0
+        if (existLastViewedTimestamp > newLastViewedTimestamp) {
+          toRemove.add(context._id)
+        } else {
+          toRemove.add(existContext._id)
+          contextByUser.set(key, context)
+        }
+      } else {
+        contextByUser.set(key, context)
+      }
+    }
+    if (toRemove.size > 0) {
+      await client.deleteMany(DOMAIN_DOC_NOTIFY, { _id: { $in: Array.from(toRemove) } })
+      await client.deleteMany(DOMAIN_NOTIFICATION, { docNotifyContext: { $in: Array.from(toRemove) } })
+    }
+  }
+}
+
 export async function migrateSettings (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_PREFERENCE,
@@ -343,6 +379,10 @@ export const notificationOperation: MigrateOperation = {
             { objectSpace: core.space.Space }
           )
         }
+      },
+      {
+        state: 'migrate-duplicated-contexts-v1',
+        func: migrateDuplicateContexts
       }
     ])
 

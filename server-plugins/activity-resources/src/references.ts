@@ -227,7 +227,8 @@ export async function getPersonNotificationTxes (
       doc.space,
       originTx.modifiedOn,
       notifyResult,
-      notification.class.MentionInboxNotification
+      notification.class.MentionInboxNotification,
+      originTx
     )
     res.push(...txes)
   } else {

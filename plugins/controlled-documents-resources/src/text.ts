@@ -18,8 +18,7 @@ import documents, {
   DocumentState,
   type EditorMode,
   type ControlledDocument,
-  type DocumentReviewRequest,
-  type DocumentSection
+  type DocumentReviewRequest
 } from '@hcengineering/controlled-documents'
 import { generateId, getCurrentAccount, type Ref } from '@hcengineering/core'
 import { type PersonAccount } from '@hcengineering/contact'
@@ -147,15 +146,6 @@ export async function comment (editor: Editor, event: MouseEvent, ctx: ActionCon
     return
   }
 
-  const client = getClient()
-  const section = (await client.findOne(objectClass, {
-    _id: objectId
-  })) as DocumentSection
-
-  if (section === undefined) {
-    return
-  }
-
   let selectedNodeId = editor.extensionStorage[nodeUuidName].activeNodeUuid
 
   if (selectedNodeId == null) {
@@ -168,8 +158,7 @@ export async function comment (editor: Editor, event: MouseEvent, ctx: ActionCon
 
   await showAddCommentPopupFx({
     element: getNodeElement(editor, selectedNodeId),
-    nodeId: selectedNodeId,
-    sectionKey: section.key
+    nodeId: selectedNodeId
   })
 
   selectNode(editor, selectedNodeId)
@@ -182,20 +171,12 @@ export async function isCommentVisible (editor: Editor, ctx: ActionContext): Pro
   }
 
   const client = getClient()
-  if (!client.getHierarchy().isDerived(objectClass, documents.class.DocumentSection)) {
-    return false
-  }
-
-  const section = (await client.findOne(objectClass, {
-    _id: objectId
-  })) as DocumentSection
-
-  if (section === undefined) {
+  if (!client.getHierarchy().isDerived(objectClass, documents.class.ControlledDocument)) {
     return false
   }
 
   const doc = await client.findOne(documents.class.ControlledDocument, {
-    _id: section.attachedTo as Ref<ControlledDocument>
+    _id: objectId as Ref<ControlledDocument>
   })
 
   if (doc === undefined) {

@@ -1,5 +1,5 @@
-//
-// Copyright © 2022-2023 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,14 +11,20 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { type DocumentSection } from '@hcengineering/controlled-documents'
+-->
+<script lang="ts">
+  import textEditor from '@hcengineering/text-editor'
+  import { Card } from '@hcengineering/presentation'
 
-export interface ComparisonSectionData {
-  section: DocumentSection
-  index: number
-}
+  export let text: string
+</script>
 
-export type ComparisonSectionPair =
-  | [ComparisonSectionData, null]
-  | [null, ComparisonSectionData]
-  | [ComparisonSectionData, ComparisonSectionData]
+<Card label={textEditor.string.Note} width="small" thinHeader={true} hideFooter={true} okAction={() => {}} on:close>
+  <div class="note">{text}</div>
+</Card>
+
+<style lang="scss">
+  .note {
+    white-space: pre-wrap;
+  }
+</style>

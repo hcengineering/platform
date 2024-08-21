@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import core, {
-  type AttachedData,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -25,26 +24,22 @@ import core, {
   type Client,
   type WithLookup,
   SortingOrder,
-  generateId,
   getCurrentAccount,
   checkPermission
 } from '@hcengineering/core'
-import { type IntlString, getMetadata, getResource, translate } from '@hcengineering/platform'
-import presentation, { copyDocumentContent, getClient } from '@hcengineering/presentation'
+import { type IntlString, getMetadata, translate } from '@hcengineering/platform'
+import presentation, { getClient } from '@hcengineering/presentation'
 import { type Person, type Employee, type PersonAccount } from '@hcengineering/contact'
 import request, { RequestStatus } from '@hcengineering/request'
 import textEditor from '@hcengineering/text-editor'
 import { isEmptyMarkup } from '@hcengineering/text'
-import { getEventPositionElement, showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
+import { showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
 import { type KeyFilter } from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
 import documents, {
-  type AttachmentsDocumentSection,
-  type CollaborativeDocumentSection,
   type ControlledDocument,
   type Document,
   type DocumentRequest,
-  type DocumentSection,
   type DocumentTemplate,
   type DocumentSpace,
   type DocumentCategory,
@@ -56,15 +51,12 @@ import documents, {
   type ProjectMeta,
   ControlledDocumentState,
   DocumentState,
-  calcRank,
-  genRanks,
   getDocumentName,
   getDocumentId
 } from '@hcengineering/controlled-documents'
 import { type Request } from '@hcengineering/request'
 
 import documentsResources from './plugin'
-import GuidanceEditor from './components/document/editors/GuidanceEditor.svelte'
 import { getProjectDocumentLink } from './navigation'
 import { wizardOpened } from './stores/wizards/create-document'
 
@@ -75,13 +67,9 @@ export const COLLABORATOR_URL = getMetadata(textEditor.metadata.CollaboratorUrl)
 
 export const isDocumentCommentAttachedTo = (
   value: DocumentComment | null | undefined,
-  location: { sectionKey: string | null, nodeId?: string | null }
+  location: { nodeId?: string | null }
 ): boolean => {
   if (value === null || value === undefined) {
-    return false
-  }
-
-  if (value.sectionKey !== location.sectionKey) {
     return false
   }
 
@@ -132,36 +120,6 @@ export function isDocumentTemplate (hierarchy: Hierarchy, doc: Doc): doc is Docu
 
 export function isProjectDocument (hierarchy: Hierarchy, doc: Doc): doc is ProjectDocument {
   return hierarchy.isDerived(doc._class, documents.class.ProjectDocument)
-}
-
-export function createCollaborativeSection (
-  document: Document,
-  section: AttachedData<DocumentSection>,
-  copyFrom?: CollaborativeDocumentSection
-): AttachedData<CollaborativeDocumentSection> {
-  const collaboratorSectionId = generateId()
-  if (copyFrom != null) {
-    if (document.content !== undefined) {
-      void copyDocumentContent(document.content, copyFrom.collaboratorSectionId, collaboratorSectionId)
-    }
-  }
-
-  return {
-    ...section,
-    collaboratorSectionId,
-    attachments: 0
-  }
-}
-
-export function createAttachmentsSection (
-  document: Document,
-  section: AttachedData<DocumentSection>,
-  copyFrom?: DocumentSection
-): AttachedData<AttachmentsDocumentSection> {
-  return {
-    ...section,
-    attachments: 0
-  }
 }
 
 export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
@@ -227,80 +185,6 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
   const project = projectDoc?.project ?? documents.ids.NoProject
 
   return getProjectDocumentLink(targetDocument, project)
-}
-
-export async function appendSection (document: Document, sectionType: Class<DocumentSection>): Promise<void> {
-  if (document === undefined) {
-    return
-  }
-
-  const client = getClient()
-
-  const lastSection = await client.findOne(
-    documents.class.DocumentSection,
-    { attachedTo: document._id, attachedToClass: document._class },
-    { sort: { rank: SortingOrder.Descending } }
-  )
-
-  await addSectionBetween(client, document, sectionType, lastSection, undefined)
-}
-
-export async function addSectionBetween (
-  client: TxOperations,
-  document: Document,
-  sectionType: Class<DocumentSection>,
-  first?: DocumentSection,
-  second?: DocumentSection,
-  copyFrom?: DocumentSection
-): Promise<void> {
-  if (document === undefined) {
-    return
-  }
-
-  const hierarchy = client.getHierarchy()
-
-  const defaultTitle = await translate(documentsResources.string.Untitled, {})
-  const copy = await translate(documentsResources.string.Copy, {})
-  let sectionData: AttachedData<DocumentSection> = {
-    title: copyFrom != null ? `${copyFrom.title} (${copy})` : defaultTitle,
-    rank: calcRank(first, second),
-    key: generateId()
-  }
-
-  if (hierarchy.hasMixin(sectionType, documents.mixin.DocumentSectionCreator)) {
-    const { creator } = hierarchy.as(sectionType, documents.mixin.DocumentSectionCreator)
-    const create = await getResource(creator)
-
-    sectionData = create(document, sectionData, copyFrom)
-  }
-
-  const sectionId = await client.addCollection(
-    sectionType._id,
-    document.space,
-    document._id,
-    document._class,
-    'sections',
-    sectionData
-  )
-
-  const isDocumentTemplate = hierarchy.hasMixin(document, documents.mixin.DocumentTemplate)
-
-  if (isDocumentTemplate) {
-    let description = ''
-    let guidance = ''
-
-    if (copyFrom != null && hierarchy.hasMixin(copyFrom, documents.mixin.DocumentTemplateSection)) {
-      const templateSection = hierarchy.as(copyFrom, documents.mixin.DocumentTemplateSection)
-      description = templateSection.description ?? ''
-      guidance = templateSection.guidance ?? ''
-    }
-
-    await client.updateMixin(sectionId, sectionType._id, document.space, documents.mixin.DocumentTemplateSection, {
-      mandatory: false,
-      description,
-      guidance
-    })
-  }
 }
 
 export interface TeamPopupData {
@@ -472,35 +356,6 @@ export type StatesTags = {
   [K in DocumentState]: DocumentStateTagType
 }
 
-export async function changeSectionIndex (
-  client: TxOperations,
-  section: DocumentSection,
-  newIndex: number
-): Promise<void> {
-  const sections = await client.findAll(
-    documents.class.DocumentSection,
-    { attachedTo: section.attachedTo },
-    { sort: { rank: SortingOrder.Ascending } }
-  )
-  if (sections.length === 0) {
-    return
-  }
-
-  const oldIndex = sections.findIndex((s) => s._id === section._id)
-  if (oldIndex === newIndex) {
-    return
-  }
-
-  let newSections = [...sections.slice(0, oldIndex), ...sections.slice(oldIndex + 1)]
-  newSections = [...newSections.slice(0, newIndex), section, ...newSections.slice(newIndex)]
-
-  const ranks = genRanks(sections.length)
-  for (const i of Array(sections.length).keys()) {
-    const rank = ranks.next().value as string
-    await client.update(newSections[i], { rank })
-  }
-}
-
 export const statesTags: StatesTags = {
   [DocumentState.Draft]: 'draft',
   [DocumentState.Effective]: 'effective',
@@ -535,34 +390,6 @@ export const loginIntlFieldNames: Readonly<{ [K in keyof LoginInfo]: IntlString 
 }
 
 export type DocumentStateTagType = 'effective' | 'inProgress' | 'rejected' | 'draft' | 'obsolete'
-
-export type GuidanceEditorMode = 'readonly' | 'canEdit' | 'editing'
-
-export function openGuidanceEditor (
-  client: TxOperations,
-  section: DocumentSection,
-  index: number,
-  mode: GuidanceEditorMode,
-  ev?: MouseEvent
-): void {
-  showPopup(
-    GuidanceEditor,
-    { section, index, mode, width: mode !== 'editing' ? '30rem' : undefined },
-    mode === 'editing' || ev == null ? 'center' : getEventPositionElement(ev),
-    async (res) => {
-      if (res == null) return
-
-      const { reopenMode, guidance } = res
-      if (reopenMode != null) {
-        openGuidanceEditor(client, section, index, reopenMode)
-      } else if (mode === 'editing' && guidance != null) {
-        await client.updateMixin(section._id, section._class, section.space, documents.mixin.DocumentTemplateSection, {
-          guidance
-        })
-      }
-    }
-  )
-}
 
 export function isDocOwner (ownableDocument: { owner?: Ref<Employee> }): boolean {
   const currentPerson = (getCurrentAccount() as PersonAccount)?.person

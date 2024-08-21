@@ -136,7 +136,8 @@ export async function getCommonNotificationTxes (
   space: Ref<Space>,
   modifiedOn: Timestamp,
   notifyResult: NotifyResult,
-  _class = notification.class.CommonInboxNotification
+  _class = notification.class.CommonInboxNotification,
+  tx?: TxCUD<Doc>
 ): Promise<Tx[]> {
   if (notifyResult.size === 0 || !notifyResult.has(notification.providers.InboxNotificationProvider)) {
     return []
@@ -156,7 +157,9 @@ export async function getCommonNotificationTxes (
     notifyContexts,
     data,
     _class,
-    modifiedOn
+    modifiedOn,
+    true,
+    tx
   )
 
   if (notificationTx !== undefined) {
@@ -340,7 +343,8 @@ export async function pushInboxNotifications (
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
-  shouldUpdateTimestamp = true
+  shouldUpdateTimestamp = true,
+  tx?: TxCUD<Doc>
 ): Promise<TxCreateDoc<InboxNotification> | undefined> {
   const context = getDocNotifyContext(control, contexts, objectId, receiver._id)
   let docNotifyContextId: Ref<DocNotifyContext>
@@ -353,7 +357,8 @@ export async function pushInboxNotifications (
       objectClass,
       objectSpace,
       receiver,
-      shouldUpdateTimestamp ? modifiedOn : undefined
+      shouldUpdateTimestamp ? modifiedOn : undefined,
+      tx
     )
   } else {
     docNotifyContextId = context._id
@@ -618,7 +623,8 @@ export async function pushActivityInboxNotifications (
     data,
     notification.class.ActivityInboxNotification,
     activityMessage.modifiedOn,
-    shouldUpdateTimestamp
+    shouldUpdateTimestamp,
+    originTx
   )
 }
 
@@ -675,7 +681,8 @@ async function createNotifyContext (
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>,
   receiver: ReceiverInfo,
-  updateTimestamp?: Timestamp
+  updateTimestamp?: Timestamp,
+  tx?: TxCUD<Doc>
 ): Promise<Ref<DocNotifyContext>> {
   const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, receiver.space, {
     user: receiver._id,
@@ -683,6 +690,7 @@ async function createNotifyContext (
     objectClass,
     objectSpace,
     isPinned: false,
+    tx: tx?._id,
     lastUpdateTimestamp: updateTimestamp
   })
   await ctx.with('apply', {}, () => control.apply([createTx]))
@@ -770,7 +778,8 @@ export async function getNotificationTxes (
           message.attachedToClass,
           message.space,
           receiver,
-          params.shouldUpdateTimestamp ? originTx.modifiedOn : undefined
+          params.shouldUpdateTimestamp ? originTx.modifiedOn : undefined,
+          tx
         )
       }
     }
@@ -1632,7 +1641,7 @@ async function updateCollaborators (ctx: MeasureContext, control: TriggerControl
     if (info === undefined) continue
     const context = getDocNotifyContext(control, contexts, objectId, info._id)
     if (context !== undefined) continue
-    await createNotifyContext(ctx, control, objectId, objectClass, objectSpace, info)
+    await createNotifyContext(ctx, control, objectId, objectClass, objectSpace, info, undefined, tx)
   }
 
   await removeContexts(ctx, contexts, removedCollaborators as Ref<PersonAccount>[], control)

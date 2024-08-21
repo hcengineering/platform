@@ -26,20 +26,14 @@ import { type TextActionVisibleFunction, type TextActionFunction } from '@hcengi
 
 export default mergeIds(documentsId, documents, {
   component: {
-    DocumentTemplateSectionPresenter: '' as AnyComponent,
-    ContentSectionPresenter: '' as AnyComponent,
-    AttachmentSectionPresenter: '' as AnyComponent,
     DocumentVersions: '' as AnyComponent,
     EditDocumentContent: '' as AnyComponent,
     EditDocumentAttachment: '' as AnyComponent,
-    TemplateSectionPresenter: '' as AnyComponent,
 
     // new model components
     CategoryPresenter: '' as AnyComponent,
     Categories: '' as AnyComponent,
     DocumentTemplates: '' as AnyComponent,
-    CollaborativeSectionPresenter: '' as AnyComponent,
-    AttachmentsSectionPresenter: '' as AnyComponent,
     StateFilterValuePresenter: '' as AnyComponent,
     ControlledStateFilterValuePresenter: '' as AnyComponent,
 
@@ -63,12 +57,6 @@ export default mergeIds(documentsId, documents, {
     IsCommentVisible: '' as Resource<TextActionVisibleFunction>
   },
   actionImpl: {
-    AddCollaborativeSectionAbove: '' as ViewAction,
-    AddCollaborativeSectionBelow: '' as ViewAction,
-    DeleteCollaborativeSection: '' as ViewAction,
-    Duplicate: '' as ViewAction,
-    EditDescription: '' as ViewAction,
-    EditGuidance: '' as ViewAction,
     CreateChildDocument: '' as ViewAction,
     CreateChildTemplate: '' as ViewAction,
     CreateDocument: '' as ViewAction,

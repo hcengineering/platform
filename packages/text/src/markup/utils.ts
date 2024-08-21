@@ -27,8 +27,8 @@ import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
 
 /** @public */
-export function getMarkup (editor: Editor): Markup {
-  return jsonToMarkup(editor.getJSON() as MarkupNode)
+export function getMarkup (editor?: Editor): Markup {
+  return jsonToMarkup(editor?.getJSON() as MarkupNode)
 }
 
 /** @public */

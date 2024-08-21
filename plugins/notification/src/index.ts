@@ -27,6 +27,7 @@ import {
   Space,
   Timestamp,
   Tx,
+  TxCUD,
   TxOperations
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
@@ -286,6 +287,9 @@ export interface DocNotifyContext extends Doc<PersonSpace> {
   isPinned: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp
+
+  // Only for debug
+  tx?: Ref<TxCUD<Doc>>
 }
 
 /**

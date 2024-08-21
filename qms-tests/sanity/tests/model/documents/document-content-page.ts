@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import { Content, DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../types'
+import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../types'
 import { DocumentCommonPage } from './document-common-page'
-import { iterateLocator, PlatformPassword } from '../../utils'
+import { PlatformPassword } from '../../utils'
 import { DocumentHistoryPage } from './document-history-page'
 
 export class DocumentContentPage extends DocumentCommonPage {
@@ -41,8 +41,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly textPageHeader: Locator
   readonly buttonSelectNewOwnerChangeByQaraManager: Locator
   readonly textId: Locator
-  readonly sectionsLocatorViewRight: Locator
-  readonly sectionsLocatorEditRight: Locator
+  readonly contentLocator: Locator
   readonly addSpaceButton: Locator
   readonly inputSpaceName: Locator
   readonly roleSelector: Locator
@@ -123,8 +122,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.textPageHeader = page.locator('div.hulyNavPanel-header')
     this.buttonSelectNewOwnerChangeByQaraManager = page.locator('div.popup button[type="submit"]')
     this.textId = page.locator('div.flex:has(div.label:text("ID")) div.field')
-    this.sectionsLocatorViewRight = page.locator('div.section span.label')
-    this.sectionsLocatorEditRight = page.locator('div.section span.label input')
+    this.contentLocator = page.locator('div.textInput div.tiptap')
     this.addSpaceButton = page.locator('#tree-orgspaces')
     this.inputSpaceName = page.getByPlaceholder('New documents space')
     this.roleSelector = page.getByRole('button', { name: 'Members' })
@@ -162,14 +160,6 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async clickDocumentHeader (name: string): Promise<void> {
     await this.page.getByRole('button', { name }).click()
-  }
-
-  async updateSectionTitle (sectionId: string, title: string): Promise<void> {
-    await this.page
-      .locator('span.hdr-alignment:not([class*="label"])', { hasText: sectionId })
-      .locator('xpath=..')
-      .locator('span.label input')
-      .fill(title)
   }
 
   async clickOnAddCategoryButton (): Promise<void> {
@@ -245,29 +235,25 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async addContentToTheSection (content: Content): Promise<void> {
-    const section = await this.getSectionLocator(content.sectionTitle)
-    await section
-      .locator('xpath=../../../../../../../..')
-      .locator('div.content-container div.tiptap')
-      .clear({ force: true })
+  async addContent (content: string, append: boolean = false, newParagraph: boolean = false): Promise<void> {
+    if (newParagraph) {
+      await this.contentLocator.press('Enter')
+    }
 
-    await section
-      .locator('xpath=../../../../../../../..')
-      .locator('div.content-container div.tiptap')
-      .fill(content.content)
+    if (append) {
+      await this.contentLocator.pressSequentially(content)
+    } else {
+      await this.contentLocator.fill(content)
+    }
   }
 
-  async checkContentForTheSection (content: Content): Promise<void> {
-    const section = await this.getSectionLocator(content.sectionTitle)
-    const parentLocator =
-      (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
-        ? '../../../../../../../..'
-        : '../../../..'
+  async replaceContent (content: string): Promise<void> {
+    await this.contentLocator.clear({ force: true })
+    await this.contentLocator.fill(content)
+  }
 
-    await expect(section.locator(`xpath=${parentLocator}`).locator('div.content-container div.tiptap')).toHaveText(
-      content.content
-    )
+  async checkContent (content: string): Promise<void> {
+    await expect(this.contentLocator).toHaveText(content)
   }
 
   async executeMoreActions (action: string): Promise<void> {
@@ -349,6 +335,13 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async clickHistoryTab (): Promise<void> {
     await this.buttonHistoryTab.first().click()
+  }
+
+  async createNewDraft (): Promise<void> {
+    await this.buttonEditDocument.click()
+    // It's important to wait for the draft status to make sure the content
+    // is editable for the next steps
+    await this.checkDocumentStatus(DocumentStatus.DRAFT)
   }
 
   async checkIfHistoryVersionExists (description: string): Promise<void> {
@@ -464,20 +457,6 @@ export class DocumentContentPage extends DocumentCommonPage {
     await documentContentPageSecond.clickDocumentHeader(completeDocument.title + ' ' + prevVersion)
   }
 
-  async addMessageToTheSectionTitle (title: string, message: string, closePopup: boolean = true): Promise<void> {
-    const locator = await this.getSectionLocator(title)
-    const parentLocator =
-      (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING ? '../../../../..' : '../..'
-
-    await locator.locator(`xpath=${parentLocator}`).hover()
-    await locator.locator(`xpath=${parentLocator}`).locator('div.tools button[type="button"]').click()
-    await this.addMessage(message)
-
-    if (closePopup) {
-      await this.closeNewMessagePopup()
-    }
-  }
-
   async closeNewMessagePopup (): Promise<void> {
     await this.textPageHeader.press('Escape', { delay: 300 })
     await this.textPageHeader.click({ force: true, delay: 300, position: { x: 1, y: 1 } })
@@ -502,18 +481,6 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.buttonSubmit.click()
   }
 
-  async addNewSection (startSectionId: string, direction: 'above' | 'below'): Promise<void> {
-    await this.page.locator('span.hdr-alignment:not([class*="label"])', { hasText: startSectionId }).hover()
-
-    await this.page
-      .locator('span.hdr-alignment:not([class*="label"])', { hasText: startSectionId })
-      .locator('xpath=../../..')
-      .locator('div.tools[draggable="true"]')
-      .click()
-
-    await this.selectFromDropdown(this.page, `Add new section ${direction}`)
-  }
-
   async changeCurrentRight (newRight: DocumentRights): Promise<void> {
     await this.buttonCurrentRights.click()
     await this.selectMenuItem(this.page, newRight)
@@ -536,30 +503,5 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.buttonSelectNewOwner.click()
     await this.selectListItemWithSearch(this.page, newOwner)
     await this.buttonSelectNewOwnerChangeByQaraManager.click()
-  }
-
-  private async getSectionLocator (title: string): Promise<Locator> {
-    let result: Locator | null = null
-    const sectionsLocator = iterateLocator(
-      (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
-        ? this.sectionsLocatorEditRight
-        : this.sectionsLocatorViewRight
-    )
-    for await (const locator of sectionsLocator) {
-      const value =
-        (await this.buttonCurrentRights.textContent()) === DocumentRights.EDITING
-          ? await locator.inputValue()
-          : ((await locator.textContent()) ?? '').trim()
-      if (value === title) {
-        result = locator
-        break
-      }
-    }
-
-    if (result == null) {
-      throw new Error('Section not found')
-    }
-
-    return result
   }
 }

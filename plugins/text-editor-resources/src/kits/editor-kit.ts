@@ -23,6 +23,7 @@ import ListKeymap from '@tiptap/extension-list-keymap'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 
+import { NoteExtension, type NoteOptions } from '../components/extension/note'
 import { FileExtension, type FileOptions } from '../components/extension/fileExt'
 import { HardBreakExtension } from '../components/extension/hardBreak'
 import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
@@ -47,6 +48,7 @@ export interface EditorKitOptions extends DefaultKitOptions {
   })
   | false
   mode?: 'full' | 'compact'
+  note?: NoteOptions | false
   submit?: SubmitOptions | false
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
@@ -258,6 +260,10 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                     }
                   })
                 ])
+              }
+
+              if (mode !== 'compact' && this.options.note !== false) {
+                staticKitExtensions.push([1000, NoteExtension.configure(this.options.note ?? {})])
               }
 
               const allKitExtensions = [...tableKitExtensions, ...modelKitExtensions, ...staticKitExtensions]

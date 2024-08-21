@@ -9,11 +9,7 @@
     "Requests": "Запросы",
     "EffectiveDate": "Дата выпуска",
     "PlannedEffectiveDate": "Планируемая дата выпуска",
-    "Section": "Section",
     "Rank": "Ранг",
-    "CollaborativeSection": "Коллаборативная секция",
-    "CollaboratorSectionId": "ID коллаборационной секции",
-    "AttachmentsSection": "Секция прикрепленных файлов",
     "DocumentRequest": "Запрос",
     "DocumentReviewRequest": "Запрос рецензии документа",
     "DocumentApprovalRequest": "Запрос утверждения документа",
@@ -22,7 +18,6 @@
     "Guidance": "Руководство",
     "Required": "Обязательно",
     "Description": "Описание",
-    "SectionTemplate": "Шаблон секции",
     "Major": "Мажорная",
     "Minor": "Минорная",
     "Patch": "Патч",
@@ -104,8 +99,6 @@
     "DocumentCodePlaceholder": "ДОК-1",
     "DocumentPrefixPlaceholder": "ДОК",
     "DocumentPrefix": "Префикс документов",
-    "Sections": "Разделы",
-    "TemplateSectionTitle": "Заголовок",
     "DocumentTemplateCreateLabel": "Шалблон",
     "DocumentCategoryCreateLabel": "Категория",
     "CreateDocumentCategory": "Создать категорию документа",
@@ -114,6 +107,7 @@
     "AttachmentsMax": "Максимальное число допустимых файлов",
     "Resolve": "Пометить выполненным",
     "Unresolve": "Пометить невыполненным",
+    "Pending": "В ожидании",
     "Resolved": "Выполненный",
     "ShowResolved": "Показать выполненные",
     "Ordering": "Сортировка",
@@ -152,12 +146,6 @@
     "ChangeControl": "Контроль Изменений",
     "ReviewInterval": "Интервал ревью",
 
-    "DocTemplateDeleteSectionTitle": "Подтверждение удаления секции",
-    "DocTemplateDeleteSectionConfirm": "Вы действительно хотите навсегда удалить секцию \"{section}\" из шаблона?",
-
-    "AddSectionAbove": "Добавить новую секцию сверху",
-    "AddSectionBelow": "Добавить новую секцию снизу",
-
     "SelectReviewers": "Выберите рецензентов",
     "SelectApprovers": "Выберите утверждающих",
     "RequestsToReviewTheDoc": "запрашивает у вас рецензию на документ",
@@ -179,8 +167,6 @@
     "InfoStepTitle": "Инфо",
     "TeamStepTitle": "Команда",
 
-    "Duplicate": "Дублировать",
-
     "TitleAndDescr": "Заголовок и описание",
     "Reason": "Причина",
     "AbstractPlaceholder": "О чем этот документ? Кто будет его использовать и как? ...",
@@ -193,7 +179,6 @@
     "EditDocument": "Редактировать документ",
 
     "Key": "Ключ",
-    "SectionKey": "Ключ секции",
     "CommentsSequence": "Последовательность комментариев",
 
     "Email": "Email",
