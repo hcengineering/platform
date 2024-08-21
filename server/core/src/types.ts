@@ -47,6 +47,7 @@ import type { Asset, Resource } from '@hcengineering/platform'
 import { type Readable } from 'stream'
 import { type ServiceAdaptersManager } from './service'
 import { type StorageAdapter } from './storage'
+import { type DbAdapter } from './adapter'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -78,6 +79,7 @@ export interface ServerStorage extends LowLevelStorage {
   workspaceId: WorkspaceIdWithUrl
   branding: Branding | null
   storageAdapter: StorageAdapter
+  getAdapter: (domain: Domain, requireExists: boolean) => DbAdapter
 }
 
 /**

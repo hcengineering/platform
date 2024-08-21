@@ -14,12 +14,15 @@
 //
 
 import {
+  type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
+  type DocumentUpdate,
   type Domain,
   type FindOptions,
   type FindResult,
+  type Iterator,
   type MeasureContext,
   type ModelDb,
   type Ref,
@@ -28,8 +31,7 @@ import {
   type SearchResult,
   type StorageIterator,
   type Tx,
-  type TxResult,
-  type Branding
+  type TxResult
 } from '@hcengineering/core'
 import { type DbConfiguration } from './configuration'
 import { createServerStorage } from './server'
@@ -85,6 +87,14 @@ class PipelineImpl implements Pipeline {
   readonly modelDb: ModelDb
   private constructor (readonly storage: ServerStorage) {
     this.modelDb = storage.modelDb
+  }
+
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    return await this.storage.traverse(domain, query, options)
   }
 
   static async create (
@@ -161,5 +171,17 @@ class PipelineImpl implements Pipeline {
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await this.storage.clean(ctx, domain, docs)
+  }
+
+  async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    return await this.storage.rawFindAll(domain, query, options)
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {
+    await this.storage.rawUpdate(domain, query, operations)
   }
 }

@@ -21,6 +21,7 @@ import WebSocket from 'ws'
 import { start } from '../server'
 
 import {
+  type DocumentUpdate,
   Hierarchy,
   MeasureMetricsContext,
   ModelDb,
@@ -82,6 +83,18 @@ describe('server', () => {
       clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
       searchFulltext: async (ctx, query, options) => {
         return { docs: [] }
+      },
+      rawFindAll: async <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => [],
+      rawUpdate: async <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => {},
+      traverse: async <T extends Doc>(
+        domain: Domain,
+        query: DocumentQuery<T>,
+        options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+      ) => {
+        return {
+          next: async () => [],
+          close: async () => {}
+        }
       }
     }),
     sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
@@ -184,6 +197,18 @@ describe('server', () => {
         clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
         searchFulltext: async (ctx, query, options) => {
           return { docs: [] }
+        },
+        rawFindAll: async <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => [],
+        rawUpdate: async <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => {},
+        traverse: async <T extends Doc>(
+          domain: Domain,
+          query: DocumentQuery<T>,
+          options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+        ) => {
+          return {
+            next: async () => [],
+            close: async () => {}
+          }
         }
       }),
       sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),

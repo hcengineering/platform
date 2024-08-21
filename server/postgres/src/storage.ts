@@ -22,10 +22,13 @@ import core, {
   type Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
+  type FindOptions,
   type FindResult,
+  generateId,
   groupByArray,
   type Hierarchy,
   isOperator,
+  type Iterator,
   type Lookup,
   type MeasureContext,
   type ModelDb,
@@ -49,14 +52,14 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 import {
-  estimateDocSize,
-  updateHashForDoc,
   type DbAdapter,
   type DbAdapterHandler,
   type DomainHelperOperations,
+  estimateDocSize,
   type ServerFindOptions,
   type StorageAdapter,
-  type TxAdapter
+  type TxAdapter,
+  updateHashForDoc
 } from '@hcengineering/server-core'
 import { createHash } from 'crypto'
 import { type PoolClient } from 'pg'
@@ -94,6 +97,54 @@ abstract class PostgresAdapterBase implements DbAdapter {
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
   }
 
+  async traverse<T extends Doc>(
+    _domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    const cursorName = `cursor_${translateDomain(this.workspaceId.name)}_${translateDomain(_domain)}_${generateId()}`
+    let initialized: boolean = false
+
+    const close = async (cursorName: string): Promise<void> => {
+      await this.client.query(`CLOSE ${cursorName}`)
+      await this.client.query('COMMIT')
+    }
+
+    const init = async (): Promise<void> => {
+      const domain = translateDomain(_domain)
+      const sqlChunks: string[] = [`CURSOR FOR SELECT * FROM ${domain}`]
+      sqlChunks.push(`WHERE ${this.buildRawQuery(domain, query, options)}`)
+      if (options?.sort !== undefined) {
+        sqlChunks.push(this.buildRawOrder(domain, options.sort))
+      }
+      if (options?.limit !== undefined) {
+        sqlChunks.push(`LIMIT ${options.limit}`)
+      }
+      const finalSql: string = [sqlChunks].join(' ')
+      await this.client.query('BEGIN')
+      await this.client.query(`DECLARE ${cursorName} ${finalSql}`)
+    }
+
+    const next = async (count: number): Promise<T[] | null> => {
+      if (!initialized) {
+        await init()
+        initialized = true
+      }
+      const result = await this.client.query(`FETCH ${count} FROM ${cursorName}`)
+      if (result.rows.length === 0) {
+        return null
+      }
+      return result.rows.map(parseDoc<T>)
+    }
+
+    return {
+      next,
+      close: async () => {
+        await close(cursorName)
+      }
+    }
+  }
+
   helper (): DomainHelperOperations {
     return this._helper
   }
@@ -104,6 +155,79 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   async close (): Promise<void> {
     this.refClient.close()
+  }
+
+  async rawFindAll<T extends Doc>(_domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    const domain = translateDomain(_domain)
+    const select = `SELECT * FROM ${domain}`
+    const sqlChunks: string[] = []
+    sqlChunks.push(`WHERE ${this.buildRawQuery(domain, query, options)}`)
+    if (options?.sort !== undefined) {
+      sqlChunks.push(this.buildRawOrder(domain, options.sort))
+    }
+    if (options?.limit !== undefined) {
+      sqlChunks.push(`LIMIT ${options.limit}`)
+    }
+    const finalSql: string = [select, ...sqlChunks].join(' ')
+    const result = await this.client.query(finalSql)
+    return result.rows.map((p) => parseDocWithProjection(p, options?.projection))
+  }
+
+  buildRawOrder<T extends Doc>(domain: string, sort: SortingQuery<T>): string {
+    const res: string[] = []
+    for (const key in sort) {
+      const val = sort[key]
+      if (val === undefined) {
+        continue
+      }
+      if (typeof val === 'number') {
+        res.push(`${this.transformKey(core.class.Doc, key, false)} ${val === 1 ? 'ASC' : 'DESC'}`)
+      } else {
+        // todo handle custom sorting
+      }
+    }
+    return `ORDER BY ${res.join(', ')}`
+  }
+
+  buildRawQuery<T extends Doc>(domain: string, query: DocumentQuery<T>, options?: FindOptions<T>): string {
+    const res: string[] = []
+    res.push(`"workspaceId" = '${this.workspaceId.name}'`)
+    for (const key in query) {
+      const value = query[key]
+      const tkey = this.transformKey(core.class.Doc, key, false)
+      const translated = this.translateQueryValue(tkey, value, false)
+      if (translated !== undefined) {
+        res.push(translated)
+      }
+    }
+    return res.join(' AND ')
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {
+    const translatedQuery = this.buildRawQuery(domain, query)
+    await this.retryTxn(async (client) => {
+      const res = await client.query(`SELECT * FROM ${translateDomain(domain)} WHERE ${translatedQuery} FOR UPDATE`, [
+        this.workspaceId.name
+      ])
+      const docs = res.rows.map(parseDoc)
+      for (const doc of docs) {
+        if (doc === undefined) continue
+        if ((operations as any)['%hash%'] === undefined) {
+          ;(operations as any)['%hash%'] = null
+        }
+        TxProcessor.applyUpdate(doc, operations)
+        const converted = convertDoc(doc, this.workspaceId.name)
+        await client.query(`UPDATE ${translateDomain(domain)} SET data = $3 WHERE _id = $1 AND "workspaceId" = $2`, [
+          doc._id,
+          this.workspaceId.name,
+          converted.data
+        ])
+      }
+    })
   }
 
   async findAll<T extends Doc>(
@@ -149,7 +273,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         return toFindResult(res, total)
       }
     } catch (err) {
-      console.log(err)
+      ctx.error('Error in findAll', { err })
       throw err
     }
   }
@@ -765,6 +889,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return {
       next: async () => {
         if (!initialized) {
+          if (recheck === true) {
+            await this.retryTxn(async (client) => {
+              await client.query(
+                `UPDATE ${translateDomain(domain)} SET jsonb_set(data, '{%hash%}', 'NULL', true) WHERE "workspaceId" = $1 AND data ->> '%hash%' IS NOT NULL`,
+                [this.workspaceId.name]
+              )
+            })
+          }
           await init('_id, data', "data ->> '%hash%' IS NOT NULL AND data ->> '%hash%' <> ''")
           initialized = true
         }
@@ -859,19 +991,20 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    try {
-      const result = await ctx.with('groupBy', { domain }, async (ctx) => {
+    const key = isDataField(field) ? `data ->> '${field}'` : `"${field}"`
+    const result = await ctx.with('groupBy', { domain }, async (ctx) => {
+      try {
         const result = await this.client.query(
-          `SELECT DISTINCT ${field} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`,
+          `SELECT DISTINCT ${key} as ${field} FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`,
           [this.workspaceId.name]
         )
         return new Set(result.rows.map((r) => r[field]))
-      })
-      return result
-    } catch (err) {
-      ctx.error('Error while grouping by', { domain, field })
-      throw err
-    }
+      } catch (err) {
+        ctx.error('Error while grouping by', { domain, field })
+        throw err
+      }
+    })
+    return result
   }
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {

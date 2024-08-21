@@ -16,6 +16,7 @@
 import core, {
   DOMAIN_MODEL,
   DOMAIN_TX,
+  type Iterator,
   SortingOrder,
   TxProcessor,
   addOperation,
@@ -161,6 +162,103 @@ abstract class MongoAdapterBase implements DbAdapter {
     protected readonly options?: DbAdapterOptions
   ) {
     this._db = new DBCollectionHelper(db)
+  }
+
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    let cursor = this.db.collection(domain).find<T>(this.translateRawQuery(query))
+    if (options?.limit !== undefined) {
+      cursor = cursor.limit(options.limit)
+    }
+    if (options !== null && options !== undefined) {
+      if (options.sort !== undefined) {
+        const sort: Sort = {}
+        for (const key in options.sort) {
+          const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
+          sort[key] = order
+        }
+        cursor = cursor.sort(sort)
+      }
+    }
+    return {
+      next: async (size: number) => {
+        const docs: T[] = []
+        while (docs.length < size && (await cursor.hasNext())) {
+          try {
+            const d = await cursor.next()
+            if (d !== null) {
+              docs.push(d)
+            } else {
+              break
+            }
+          } catch (err) {
+            console.error(err)
+            return null
+          }
+        }
+        return docs
+      },
+      close: async () => {
+        await cursor.close()
+      }
+    }
+  }
+
+  private translateRawQuery<T extends Doc>(query: DocumentQuery<T>): Filter<Document> {
+    const translated: any = {}
+    for (const key in query) {
+      const value = (query as any)[key]
+      if (value !== null && typeof value === 'object') {
+        const keys = Object.keys(value)
+        if (keys[0] === '$like') {
+          const pattern = value.$like as string
+          translated[key] = {
+            $regex: `^${pattern.split('%').join('.*')}$`,
+            $options: 'i'
+          }
+          continue
+        }
+      }
+      translated[key] = value
+    }
+    return translated
+  }
+
+  async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    let cursor = this.db.collection(domain).find<T>(this.translateRawQuery(query))
+    if (options?.limit !== undefined) {
+      cursor = cursor.limit(options.limit)
+    }
+    if (options !== null && options !== undefined) {
+      if (options.sort !== undefined) {
+        const sort: Sort = {}
+        for (const key in options.sort) {
+          const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
+          sort[key] = order
+        }
+        cursor = cursor.sort(sort)
+      }
+    }
+    return await cursor.toArray()
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {
+    if (isOperator(operations)) {
+      await this.db
+        .collection(domain)
+        .updateMany(this.translateRawQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
+    } else {
+      await this.db
+        .collection(domain)
+        .updateMany(this.translateRawQuery(query), { $set: { ...operations, '%hash%': null } })
+    }
   }
 
   abstract init (): Promise<void>

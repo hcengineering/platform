@@ -20,6 +20,7 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  type Iterator,
   TxFactory,
   TxProcessor,
   addOperation,
@@ -137,6 +138,15 @@ export class TServerStorage implements ServerStorage {
     this.setModel(model)
   }
 
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    const adapter = this.getAdapter(domain, false)
+    return await adapter.traverse(domain, query, options)
+  }
+
   async initDomainInfo (): Promise<void> {
     const adapterDomains = new Map<DbAdapter, Set<Domain>>()
     for (const d of this.hierarchy.domains()) {
@@ -251,7 +261,7 @@ export class TServerStorage implements ServerStorage {
     await this.serviceAdaptersManager.close()
   }
 
-  private getAdapter (domain: Domain, requireExists: boolean): DbAdapter {
+  getAdapter (domain: Domain, requireExists: boolean): DbAdapter {
     const name = this._domains[domain] ?? this.defaultAdapter
     const adapter = this.adapters.get(name)
     if (adapter === undefined) {
@@ -523,6 +533,21 @@ export class TServerStorage implements ServerStorage {
       },
       { clazz, query, options }
     )
+    return result
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {
+    const adapter = this.getAdapter(domain, false)
+    await adapter.rawUpdate(domain, query, operations)
+  }
+
+  async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    const adapter = this.getAdapter(domain, false)
+    const result = await adapter.rawFindAll(domain, query, options)
     return result
   }
 

@@ -15,7 +15,8 @@
 
 import type { Doc, Domain, Ref } from './classes'
 import { MeasureContext, type FullParamsType, type ParamsType } from './measurements'
-import type { Tx } from './tx'
+import { DocumentQuery, FindOptions } from './storage'
+import type { DocumentUpdate, Tx } from './tx'
 
 /**
  * @public
@@ -73,6 +74,23 @@ export interface LowLevelStorage {
 
   // Low level direct group API
   groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
+
+  // migrations
+  rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
+
+  rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  // Traverse documents
+  traverse: <T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ) => Promise<Iterator<T>>
+}
+
+export interface Iterator<T extends Doc> {
+  next: (count: number) => Promise<T[] | null>
+  close: () => Promise<void>
 }
 
 export interface Branding {

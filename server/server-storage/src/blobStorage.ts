@@ -23,6 +23,7 @@ import core, {
   FindResult,
   Hierarchy,
   IndexingConfiguration,
+  Iterator,
   MeasureContext,
   ModelDb,
   Ref,
@@ -36,6 +37,7 @@ import { createMongoAdapter } from '@hcengineering/mongo'
 import { PlatformError, unknownError } from '@hcengineering/platform'
 import {
   DbAdapter,
+  DbAdapterHandler,
   StorageAdapter,
   type DomainHelperOperations,
   type StorageAdapterEx
@@ -48,6 +50,29 @@ class StorageBlobAdapter implements DbAdapter {
     readonly ctx: MeasureContext,
     readonly blobAdapter: DbAdapter // A real blob adapter for Blob documents.
   ) {}
+
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    return await this.blobAdapter.traverse(domain, query, options)
+  }
+
+  init?: ((domains?: string[], excludeDomains?: string[]) => Promise<void>) | undefined
+  on?: ((handler: DbAdapterHandler) => void) | undefined
+
+  async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    return await this.blobAdapter.rawFindAll(domain, query, options)
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {
+    await this.blobAdapter.rawUpdate(domain, query, operations)
+  }
 
   async findAll<T extends Doc>(
     ctx: MeasureContext,

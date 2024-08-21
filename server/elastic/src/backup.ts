@@ -24,6 +24,7 @@ import {
   FindResult,
   Hierarchy,
   IndexingConfiguration,
+  Iterator,
   MeasureContext,
   Ref,
   StorageIterator,
@@ -33,7 +34,7 @@ import {
   WorkspaceId
 } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import serverCore, { DbAdapter, type DomainHelperOperations } from '@hcengineering/server-core'
+import serverCore, { DbAdapter, DbAdapterHandler, type DomainHelperOperations } from '@hcengineering/server-core'
 
 function getIndexName (): string {
   return getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
@@ -61,10 +62,21 @@ class ElasticDataAdapter implements DbAdapter {
     this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
   }
 
+  init?: ((domains?: string[], excludeDomains?: string[]) => Promise<void>) | undefined
+  on?: ((handler: DbAdapterHandler) => void) | undefined
+
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    throw new Error('Method not implemented.')
+  }
+
   helper (): DomainHelperOperations {
     return {
       create: async () => {},
-      exists: () => true,
+      exists: async () => true,
       listDomains: async () => new Set(),
       createIndex: async () => {},
       dropIndex: async () => {},
@@ -115,6 +127,18 @@ class ElasticDataAdapter implements DbAdapter {
   }
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
+  async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    throw new Error('Method not implemented.')
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {
     throw new Error('Method not implemented.')
   }
 

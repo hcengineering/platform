@@ -45,7 +45,6 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-ws": "^0.6.11",
-    "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/elastic": "^0.6.0",
     "elastic-apm-node": "~3.26.0",

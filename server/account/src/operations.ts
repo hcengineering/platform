@@ -1317,53 +1317,52 @@ export async function createWorkspace (
           await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 10) })
         })
       })
-      try {
-        registerServerPlugins()
-        registerStringLoaders()
-        const factory: PipelineFactory = createServerPipeline(
-          ctx,
-          dbUrls,
-          {
-            externalStorage: storageAdapter,
-            fullTextUrl: 'http://localhost:9200',
-            indexParallel: 0,
-            indexProcessing: 0,
-            rekoniUrl: '',
-            usePassedCtx: true
-          },
-          {
-            fulltextAdapter: {
-              factory: async () => new DummyFullTextAdapter(),
-              url: '',
-              stages: (adapter, storage, storageAdapter, contentAdapter) =>
-                createIndexStages(
-                  ctx.newChild('stages', {}),
-                  wsUrl,
-                  branding,
-                  adapter,
-                  storage,
-                  storageAdapter,
-                  contentAdapter,
-                  0,
-                  0
-                )
-            }
+      registerServerPlugins()
+      registerStringLoaders()
+      const pipelineFactory: PipelineFactory = createServerPipeline(
+        ctx,
+        dbUrls,
+        {
+          externalStorage: storageAdapter,
+          fullTextUrl: 'http://localhost:9200',
+          indexParallel: 0,
+          indexProcessing: 0,
+          rekoniUrl: '',
+          usePassedCtx: true
+        },
+        {
+          fulltextAdapter: {
+            factory: async () => new DummyFullTextAdapter(),
+            url: '',
+            stages: (adapter, storage, storageAdapter, contentAdapter) =>
+              createIndexStages(
+                ctx.newChild('stages', {}),
+                wsUrl,
+                branding,
+                adapter,
+                storage,
+                storageAdapter,
+                contentAdapter,
+                0,
+                0
+              )
           }
-        )
+        }
+      )
 
-        const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
-
+      const pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+      try {
         const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
 
-        await updateModel(ctx, wsId, migrationOperation, client, ctxModellogger, async (value) => {
+        await updateModel(ctx, wsId, migrationOperation, client, pipeline, ctxModellogger, async (value) => {
           await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 10) })
         })
 
         await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
           await updateInfo({ createProgress: 30 + Math.round((Math.min(value, 100) / 100) * 70) })
         })
-        await pipeline.close()
       } finally {
+        await pipeline.close()
         await storageAdapter.close()
       }
     } catch (err: any) {
@@ -1433,7 +1432,7 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
 export async function upgradeWorkspace (
   ctx: MeasureContext,
   version: Data<Version>,
-  txes: Tx[],
+  rawTxes: Tx[],
   migrationOperation: [string, MigrateOperation][],
   productId: string,
   db: Db,
@@ -1462,17 +1461,71 @@ export async function upgradeWorkspace (
     toVersion: versionStr,
     workspace: ws.workspace
   })
-  await upgradeModel(
+
+  const { mongodbUri, dbUrl, txes } = prepareTools(rawTxes)
+  const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
+
+  const wsUrl: WorkspaceIdWithUrl = {
+    name: ws.workspace,
+    productId: ws.productId,
+    workspaceName: ws.workspaceName ?? '',
+    workspaceUrl: ws.workspaceUrl ?? ''
+  }
+
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+
+  const pipelineFactory: PipelineFactory = createServerPipeline(
     ctx,
-    getEndpoint(ctx, ws, EndpointKind.Internal),
-    getWorkspaceId(ws.workspace, productId),
-    txes,
-    migrationOperation,
-    logger,
-    false,
-    async (value) => {},
-    forceIndexes
+    dbUrls,
+    {
+      externalStorage: storageAdapter,
+      fullTextUrl: 'http://localhost:9200',
+      indexParallel: 0,
+      indexProcessing: 0,
+      rekoniUrl: '',
+      usePassedCtx: true
+    },
+    {
+      fulltextAdapter: {
+        factory: async () => new DummyFullTextAdapter(),
+        url: '',
+        stages: (adapter, storage, storageAdapter, contentAdapter) =>
+          createIndexStages(
+            ctx.newChild('stages', {}),
+            wsUrl,
+            null,
+            adapter,
+            storage,
+            storageAdapter,
+            contentAdapter,
+            0,
+            0
+          )
+      }
+    }
   )
+
+  const pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+
+  try {
+    await upgradeModel(
+      ctx,
+      getEndpoint(ctx, ws, EndpointKind.Internal),
+      wsUrl,
+      txes,
+      pipeline,
+      storageAdapter,
+      migrationOperation,
+      logger,
+      false,
+      async (value) => {},
+      forceIndexes
+    )
+  } finally {
+    await storageAdapter.close()
+    await pipeline.close()
+  }
 
   await db.collection(WORKSPACE_COLLECTION).updateOne(
     { _id: ws._id },

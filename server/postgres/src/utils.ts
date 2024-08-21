@@ -240,12 +240,16 @@ export class DBCollectionHelper implements DomainHelperOperations {
   ) {}
 
   domains = new Set<Domain>()
-  async create (domain: Domain): Promise<void> {
-    throw new Error('Method not implemented.')
-  }
+  async create (domain: Domain): Promise<void> {}
 
-  exists (domain: Domain): boolean {
-    throw new Error('Method not implemented.')
+  async exists (domain: Domain): Promise<boolean> {
+    const exists = await this.client.query(`
+      SELECT tablename
+      FROM pg_tables
+      WHERE schemaname = 'public'
+      AND tablename = ${translateDomain(domain)}
+    `)
+    return exists.rows.length > 0
   }
 
   async listDomains (): Promise<Set<Domain>> {
@@ -257,7 +261,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   async dropIndex (domain: Domain, name: string): Promise<void> {}
 
   async listIndexes (domain: Domain): Promise<{ name: string }[]> {
-    throw new Error('Method not implemented.')
+    return []
   }
 
   async estimatedCount (domain: Domain): Promise<number> {

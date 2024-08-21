@@ -23,6 +23,7 @@ import core, {
   type FindResult,
   type Hierarchy,
   type IndexingConfiguration,
+  type Iterator,
   type MeasureContext,
   ModelDb,
   type Ref,
@@ -32,12 +33,25 @@ import core, {
   type TxResult,
   type WorkspaceId
 } from '@hcengineering/core'
-import { type DbAdapter, type DomainHelperOperations } from './adapter'
+import { type DbAdapterHandler, type DbAdapter, type DomainHelperOperations } from './adapter'
 
 /**
  * @public
  */
 export class DummyDbAdapter implements DbAdapter {
+  on?: ((handler: DbAdapterHandler) => void) | undefined
+
+  async traverse<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ): Promise<Iterator<T>> {
+    return {
+      next: async () => [],
+      close: async () => {}
+    }
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
@@ -52,7 +66,7 @@ export class DummyDbAdapter implements DbAdapter {
   helper (): DomainHelperOperations {
     return {
       create: async () => {},
-      exists: () => true,
+      exists: async () => true,
       listDomains: async () => new Set(),
       createIndex: async () => {},
       dropIndex: async () => {},
@@ -90,6 +104,16 @@ export class DummyDbAdapter implements DbAdapter {
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
     return new Set()
   }
+
+  async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+    return []
+  }
+
+  async rawUpdate<T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    operations: DocumentUpdate<T>
+  ): Promise<void> {}
 }
 
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {

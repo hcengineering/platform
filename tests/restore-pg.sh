@@ -3,7 +3,7 @@
 # Restore workspace contents in mongo/elastic
 ./tool-pg.sh backup-restore ./sanity-ws sanity-ws
 
-./tool-pg.sh upgrade-workspace sanity-ws --indexes
+./tool-pg.sh upgrade-workspace sanity-ws
 
 # Re-assign user to workspace.
 ./tool-pg.sh assign-workspace user1 sanity-ws
