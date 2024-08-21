@@ -34,7 +34,8 @@ import {
   type Ref,
   type Space,
   type Timestamp,
-  type Tx
+  type Tx,
+  type TxCUD
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -216,6 +217,8 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
 
   @Prop(TypeBoolean(), notification.string.Pinned)
     isPinned!: boolean
+
+  tx?: Ref<TxCUD<Doc>>
 }
 
 @Model(notification.class.InboxNotification, core.class.Doc, DOMAIN_NOTIFICATION)
