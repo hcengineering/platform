@@ -84,6 +84,7 @@
       bind:this={elements[object._id]}
       on:click={handleItemHighlight(object)}
       on:keydown={handleItemHighlight(object)}
+      data-testid="comment"
     >
       <DocumentCommentThread
         value={object}

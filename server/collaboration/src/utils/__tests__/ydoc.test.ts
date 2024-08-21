@@ -15,7 +15,7 @@
 
 import { Doc as YDoc, XmlElement as YXmlElement, XmlText as YXmlText, encodeStateVector } from 'yjs'
 
-import { yDocCopyXmlField, yDocFromBuffer, yDocToBuffer } from '../ydoc'
+import { clone, yDocCopyXmlField, yDocFromBuffer, yDocToBuffer } from '../ydoc'
 
 describe('ydoc', () => {
   it('yDocFromBuffer converts ydoc to a buffer', async () => {
@@ -62,5 +62,22 @@ describe('ydoc', () => {
       yDocCopyXmlField(ydoc, 'source', 'target')
       expect(target.toJSON()).toEqual(source.toJSON())
     })
+  })
+
+  it('clones YXmlElement', () => {
+    const ydoc = new YDoc()
+    const source = ydoc.getXmlElement('source')
+    const target = ydoc.getXmlFragment('target')
+
+    const src = new YXmlElement('paragraph')
+    src.setAttribute('class', 'text')
+    src.setAttribute('size', 1024 as any)
+    src.insert(0, [new YXmlText('foo')])
+    source.insert(0, [src])
+
+    const dst = clone(src)
+    target.insert(0, [dst])
+
+    expect(src.toJSON()).toEqual(dst.toJSON())
   })
 })

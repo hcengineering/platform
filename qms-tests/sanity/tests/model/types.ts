@@ -12,10 +12,6 @@ export interface Location {
   space?: string
   parent?: string
 }
-export interface Content {
-  sectionTitle: string
-  content: string
-}
 
 export interface UserSignUp {
   firstName: string
