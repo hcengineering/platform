@@ -151,7 +151,7 @@ export function isAllowed (
   notificationControl: NotificationProviderControl
 ): boolean {
   const providerSetting = (notificationControl.byProvider.get(provider._id) ?? []).find(
-    ({ attachedTo, modifiedBy }) => modifiedBy === receiver
+    ({ createdBy }) => createdBy === receiver
   )
 
   if (providerSetting !== undefined && !providerSetting.enabled) {
@@ -168,7 +168,7 @@ export function isAllowed (
     return false
   }
   const setting = (notificationControl.settingsByProvider.get(provider._id) ?? []).find(
-    (it) => it.type === type._id && it.modifiedBy === receiver
+    (it) => it.type === type._id && it.createdBy === receiver
   )
 
   if (setting !== undefined) {
