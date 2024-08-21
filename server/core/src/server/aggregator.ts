@@ -256,12 +256,8 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
   @withContext('aggregator-get', {})
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Readable> {
-    // const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
-    const provider = this.adapters.get(this.defaultAdapter)
-    if (provider === undefined) {
-      throw new NoSuchKeyError('No such provider found')
-    }
-    return await provider.get(ctx, workspaceId, name)
+    const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
+    return await provider.get(ctx, workspaceId, stat.storageId)
   }
 
   @withContext('find-provider', {})

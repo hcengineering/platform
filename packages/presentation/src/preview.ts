@@ -74,8 +74,6 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
       ' 2x, ' +
       fu.replaceAll(':size', `${width * 3}`) +
       ' 3x'
-  } else {
-    result += downloadUrl
   }
 
   return result
