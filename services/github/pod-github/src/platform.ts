@@ -38,6 +38,7 @@ import { registerLoaders } from './loaders'
 import { createNotification } from './notifications'
 import { errorToObj } from './sync/utils'
 import { GithubIntegrationRecord, GithubUserRecord } from './types'
+import { UserManager } from './users'
 import { GithubWorker, syncUser } from './worker'
 
 export interface InstallationRecord {
@@ -62,11 +63,13 @@ export class PlatformWorker {
   mongoRef!: MongoClientReference
 
   integrationCollection!: Collection<GithubIntegrationRecord>
-  usersCollection!: Collection<GithubUserRecord>
+
   periodicTimer: any
   periodicSyncPromise: Promise<void> | undefined
 
   canceled = false
+
+  userManager!: UserManager
 
   private constructor (
     readonly ctx: MeasureContext,
@@ -84,7 +87,8 @@ export class PlatformWorker {
 
     const db = mongoClient.db(config.ConfigurationDB)
     this.integrationCollection = db.collection<GithubIntegrationRecord>('installations')
-    this.usersCollection = db.collection<GithubUserRecord>('users')
+
+    this.userManager = new UserManager(db.collection<GithubUserRecord>('users'))
 
     const storageConfig = storageConfigFromEnv()
     this.storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
@@ -167,7 +171,7 @@ export class PlatformWorker {
   }
 
   private async findUsersWorkspaces (): Promise<Map<string, GithubUserRecord[]>> {
-    const i = this.usersCollection.find({})
+    const i = this.userManager.getAllUsers()
     const workspaces = new Map<string, GithubUserRecord[]>()
     while (await i.hasNext()) {
       const userInfo = await i.next()
@@ -180,19 +184,16 @@ export class PlatformWorker {
         }
       }
     }
+    await i.close()
     return workspaces
   }
 
   public async getUsers (workspace: string): Promise<GithubUserRecord[]> {
-    return await this.usersCollection
-      .find<GithubUserRecord>({
-      [`accounts.${workspace}`]: { $exists: true }
-    })
-      .toArray()
+    return await this.userManager.getUsers(workspace)
   }
 
   public async getUser (login: string): Promise<GithubUserRecord | undefined> {
-    return (await this.usersCollection.find<GithubUserRecord>({ _id: login }).toArray()).shift()
+    return await this.userManager.getAccount(login)
   }
 
   async mapInstallation (
@@ -349,12 +350,13 @@ export class PlatformWorker {
           scope: resultJson.scope,
           accounts: { [payload.workspace]: payload.accountId }
         }
-        const [existingUser] = await this.usersCollection.find({ _id: user.data.login }).toArray()
-        if (existingUser === undefined) {
-          await this.usersCollection.insertOne(dta)
+        await this.userManager.updateUser(dta)
+        const existingUser = await this.userManager.getAccount(user.data.login)
+        if (existingUser == null) {
+          await this.userManager.insertUser(dta)
         } else {
           dta.accounts = { ...existingUser.accounts, [payload.workspace]: payload.accountId }
-          await this.usersCollection.updateOne({ _id: dta._id }, { $set: dta } as any)
+          await this.userManager.updateUser(dta)
         }
 
         // Update workspace client login info.
@@ -522,17 +524,17 @@ export class PlatformWorker {
         auth.refreshTokenExpiresIn = dta.refreshTokenExpiresIn
         auth.scope = dta.scope
 
-        await this.usersCollection.updateOne({ _id: dta._id }, { $set: dta } as any)
+        await this.userManager.updateUser(dta)
       }
     }
   }
 
   async getAccount (login: string): Promise<GithubUserRecord | undefined> {
-    return (await this.usersCollection.findOne({ _id: login })) ?? undefined
+    return await this.userManager.getAccount(login)
   }
 
   async getAccountByRef (workspace: string, ref: Ref<Account>): Promise<GithubUserRecord | undefined> {
-    return (await this.usersCollection.findOne({ [`accounts.${workspace}`]: ref })) ?? undefined
+    return await this.userManager.getAccountByRef(workspace, ref)
   }
 
   private async updateInstallation (installationId: number): Promise<void> {
@@ -826,11 +828,11 @@ export class PlatformWorker {
       if (event.payload.action === 'revoked') {
         const sender = event.payload.sender
 
-        const records = await this.usersCollection.find({ _id: sender.login }).toArray()
-        for (const r of records) {
-          await this.revokeUserAuth(r)
+        const record = await this.getAccount(sender.login)
+        if (record !== undefined) {
+          await this.revokeUserAuth(record)
+          await this.userManager.removeUser(sender.login)
         }
-        await this.usersCollection.deleteOne({ _id: sender.login })
       }
     })
 

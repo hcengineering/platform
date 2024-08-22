@@ -31,6 +31,7 @@ import core, {
   concatLink,
   generateId,
   groupByArray,
+  reduceCalls,
   toIdMap,
   type Blob,
   type MigrationState
@@ -1058,7 +1059,7 @@ export class GithubWorker implements IntegrationManager {
       if (this.updateRequests > 0) {
         this.updateRequests = 0 // Just in case
         await this.updateIntegrations()
-        await this.performFullSync()
+        void this.performFullSync()
       }
 
       const { projects, repositories } = await this.collectActiveProjects()
@@ -1397,7 +1398,11 @@ export class GithubWorker implements IntegrationManager {
     this.triggerSync()
   }
 
-  async performFullSync (): Promise<void> {
+  performFullSync = reduceCalls(async () => {
+    await this._performFullSync()
+  })
+
+  async _performFullSync (): Promise<void> {
     // Wait previous active sync
     for (const integration of this.integrations.values()) {
       await this.ctx.withLog('external sync', { installation: integration.installationName }, async () => {
