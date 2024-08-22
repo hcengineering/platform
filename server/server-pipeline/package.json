@@ -101,7 +101,6 @@
     "@hcengineering/server-training-resources": "^0.1.0",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
-    "@hcengineering/openai": "^0.6.0",
     "@hcengineering/translate": "^0.6.0",
     "@hcengineering/login-assets": "^0.6.0",
     "@hcengineering/onboard-assets": "^0.6.0",

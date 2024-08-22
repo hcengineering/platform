@@ -1548,11 +1548,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/openai",
-      "projectFolder": "server-plugins/openai",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/translate",
       "projectFolder": "server/translate",
       "shouldPublish": false
@@ -1560,11 +1555,6 @@
     {
       "packageName": "@hcengineering/model-server-translate",
       "projectFolder": "models/server-translate",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-server-openai",
-      "projectFolder": "models/server-openai",
       "shouldPublish": false
     },
     {

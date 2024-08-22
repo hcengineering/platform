@@ -73,7 +73,6 @@ import core, {
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
-import { openAIConfigDefaults } from '@hcengineering/openai'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -93,7 +92,6 @@ import {
 import { changeConfiguration } from './configuration'
 import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles } from './storage'
 
@@ -309,32 +307,6 @@ export function devTool (
         }
       })
     })
-
-  program
-    .command('openai <workspace>')
-    .description('assign workspace')
-    .requiredOption('-t, --token <token>', 'OpenAI token')
-    .option('-h, --host <host>', 'OpenAI API Host', openAIConfigDefaults.endpoint)
-    .option('--enable <value>', 'Enable or disable', true)
-    .option('--embeddings <embeddings>', 'Enable or disable embeddings generation', true)
-    .option('--tokenLimit <tokenLimit>', 'Acceptable token limit', `${openAIConfigDefaults.tokenLimit}`)
-    .action(
-      async (
-        workspace: string,
-        cmd: { token: string, host: string, enable: string, tokenLimit: string, embeddings: string }
-      ) => {
-        console.log(`enabling OpenAI for workspace ${workspace}...`)
-        const wsid = getWorkspaceId(workspace, productId)
-        const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-        await openAIConfig(endpoint, workspace, productId, {
-          token: cmd.token,
-          endpoint: cmd.host,
-          enabled: cmd.enable === 'true',
-          tokenLimit: parseInt(cmd.tokenLimit),
-          embeddings: cmd.embeddings === 'true'
-        })
-      }
-    )
 
   program
     .command('show-user <email>')

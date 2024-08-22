@@ -464,9 +464,6 @@ dependencies:
   '@rush-temp/model-server-notification':
     specifier: file:./projects/model-server-notification.tgz
     version: file:projects/model-server-notification.tgz
-  '@rush-temp/model-server-openai':
-    specifier: file:./projects/model-server-openai.tgz
-    version: file:projects/model-server-openai.tgz
   '@rush-temp/model-server-products':
     specifier: file:./projects/model-server-products.tgz
     version: file:projects/model-server-products.tgz
@@ -566,9 +563,6 @@ dependencies:
   '@rush-temp/onboard-resources':
     specifier: file:./projects/onboard-resources.tgz
     version: file:projects/onboard-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(file-loader@6.2.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(webpack@5.90.3)
-  '@rush-temp/openai':
-    specifier: file:./projects/openai.tgz
-    version: file:projects/openai.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/panel':
     specifier: file:./projects/panel.tgz
     version: file:projects/panel.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -25113,7 +25107,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-Vlw7yfM/X0ViZ1mzmcJFVPAZk/2hp4l768lxErLF/sA2HKsRUCAvkjbzfHmImsK5e2WycFWOWwnUJu9p1irQWQ==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-MzZXj700B09rHWIeXhV8qKlv9OTeZvERBG/Clv+H6OyU9CR03EZpiYEYM725EjYKMTvso1XWsYbjEBfwBi0LYg==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -27145,7 +27139,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz:
-    resolution: {integrity: sha512-GYOekXK7++TNstTuTVtmUp1crs2chkWBmgdMBGzWaKVnuYbvHCKSfaNhaZfnAKV3ZnXc4nrbFbq6MUZgu97hnQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-CGsFwuvoNA494VSF007Kq0J3C+9iQrspmkFbYCRkrrrpBgY+nWtveFOtCFabCqkmfKLjQ+e3JPl5IBBZ8u/ypQ==, tarball: file:projects/model-all.tgz}
     name: '@rush-temp/model-all'
     version: 0.0.0
     dependencies:
@@ -27302,7 +27296,7 @@ packages:
     dev: false
 
   file:projects/model-controlled-documents.tgz:
-    resolution: {integrity: sha512-Fg2GDNEA/E5UucxJtuVYq9G9aPq2BTBbo5HYwk64AzpWOfYEI0mzv+FAeAeTMPRKwZR8TDKxKgNCmmMXsmo/PQ==, tarball: file:projects/model-controlled-documents.tgz}
+    resolution: {integrity: sha512-mBRvO5kEuPrWKHjTZdQFnzV5CyVAysglTX/XFVp7Hlx8lEbRcWI91ZnU/BhOn2vTw7B3ZFCiVRDd8lgh8fAJJA==, tarball: file:projects/model-controlled-documents.tgz}
     name: '@rush-temp/model-controlled-documents'
     version: 0.0.0
     dependencies:
@@ -27321,7 +27315,7 @@ packages:
     dev: false
 
   file:projects/model-core.tgz:
-    resolution: {integrity: sha512-CbejItmOqGGWqUDIH8lag6srILkEB4ydxks6y/nKZdcQ5z+I3RWW7td/P1nPbsccIyYg+9AIgd1R7N8LSPh8DA==, tarball: file:projects/model-core.tgz}
+    resolution: {integrity: sha512-zEK+S8loxsZcxXH31h/0nAbjHb8XwgZ4t7wCgVb6SdHMFZ4Ysqt/ttLE3mT1vJXlYYpb4wWNGAPjq1HVK2Da+Q==, tarball: file:projects/model-core.tgz}
     name: '@rush-temp/model-core'
     version: 0.0.0
     dependencies:
@@ -28016,25 +28010,6 @@ packages:
   file:projects/model-server-notification.tgz:
     resolution: {integrity: sha512-BvMEE2VscXwLg1NPi1BYAraQLKEn13QZP1XPLb28ykYqF5qKljVSm19G5JV2RhnV/OsZcjYdakCsVpuY8XiLMA==, tarball: file:projects/model-server-notification.tgz}
     name: '@rush-temp/model-server-notification'
-    version: 0.0.0
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
-  file:projects/model-server-openai.tgz:
-    resolution: {integrity: sha512-L6OzKdWORrO+k3k1VpKKCED60uWC4pQvqDDPjhG0EzcL0A+RwgPq8EuxrRZfXVVgp6QpDKUA5xrscXKx1N+ZmA==, tarball: file:projects/model-server-openai.tgz}
-    name: '@rush-temp/model-server-openai'
     version: 0.0.0
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
@@ -28844,41 +28819,6 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/openai.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-FTxDecAefUxIdNRC3gHwqZrNJpHI6Mi/fDduPFKm4YCxy3jpzFgWTKeRRpIQ2AZTQ6Cw4cWANh0VAI2DyTo8Ig==, tarball: file:projects/openai.tgz}
-    id: file:projects/openai.tgz
-    name: '@rush-temp/openai'
-    version: 0.0.0
-    dependencies:
-      '@types/html-to-text': 8.1.1
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      fast-equals: 5.0.1
-      got: 11.8.6
-      html-to-text: 9.0.5
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-    dev: false
-
   file:projects/panel.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
     resolution: {integrity: sha512-1v1IuSTwDSjPgaZsKWG4tEUINvY3KtFNYXDHvUVkefqJm280nZg5G4QnphrKdOseOxHN7zaSq5CoVxURn1hV2g==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
@@ -29550,7 +29490,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-cbeFqSKcEIP6H/55Ux47qcZ1os7nwgBryGQGIF3DILmB/1J7wc6dlbJizE6S7/f3PON5c3H5s7VY2NmpVzhD5g==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-ZxtZx6xD8K6aE/+YNCmfUaRxZCU8LQdOEhhPY32sdCdD/JbTI0TiooPxFTqJ7ywmFt2P/QIUgGi+KbYqzjxOlQ==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -32124,7 +32064,7 @@ packages:
     dev: false
 
   file:projects/server-pipeline.tgz:
-    resolution: {integrity: sha512-qGocP2RKEaAspOP4lJZzIYkjIk/hbsYMGGyC4oO62GgWyfBw3O6o2u2R9sU/Jtkkeu2/GBIxkkAc9XEzQ4LbDQ==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-LU5dxarK3XG4FXu2W/Wmu1IZh93faWFIdjKmurdgNZ9AV2Mv7B6fTALyVZoA0O7gysXFNDlxvH/qq7PyfAHivQ==, tarball: file:projects/server-pipeline.tgz}
     name: '@rush-temp/server-pipeline'
     version: 0.0.0
     dependencies:
@@ -34194,7 +34134,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-eZQ8XE+deR+AVtEVrG2p1xfsPLpLfDF4HkcWFNK9SXarUz05pP5xp2KPLXLiVYBbG81Qx56t5jjWi6bMaboTwQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-s4tgmvq13d9Vu2xJD59Y4BtMgYqxVoNIlyghB5y5WEqLiTHUr7FZ4nSnaTWkg96K0KOAH6LsUvPOrD4W1eW8NA==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
