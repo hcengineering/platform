@@ -16,7 +16,6 @@ export type AuthProvider = (
   router: Router<any, any>,
   accountsUrl: string,
   db: Db,
-  productId: string,
   frontUrl: string,
   brandings: BrandingMap
 ) => string | undefined
@@ -26,7 +25,6 @@ export function registerProviders (
   app: Koa<Koa.DefaultState, Koa.DefaultContext>,
   router: Router<any, any>,
   db: Db,
-  productId: string,
   serverSecret: string,
   frontUrl: string | undefined,
   brandings: BrandingMap
@@ -59,12 +57,12 @@ export function registerProviders (
     })
   })
 
-  registerToken(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
+  registerToken(ctx, passport, router, accountsUrl, db, frontUrl, brandings)
 
   const res: string[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub]
   for (const provider of providers) {
-    const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
+    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings)
     if (value !== undefined) res.push(value)
   }
 

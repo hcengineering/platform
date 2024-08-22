@@ -66,7 +66,6 @@ const shutdown = start(config.url, {
   serverFactory,
   indexParallel: 2,
   indexProcessing: 500,
-  productId: '',
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
   enableCompression: config.enableCompression

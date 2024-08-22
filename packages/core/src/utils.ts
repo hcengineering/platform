@@ -122,7 +122,6 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
  */
 export interface WorkspaceId {
   name: string
-  productId: string
 }
 
 /**
@@ -136,20 +135,20 @@ export interface WorkspaceIdWithUrl extends WorkspaceId {
 /**
  * @public
  *
- * Combine workspace with productId, if not equal ''
+ * Previously was combining workspace with productId, if not equal ''
+ * Now just returning workspace as is. Keeping it to simplify further refactoring of ws id.
  */
-export function getWorkspaceId (workspace: string, productId: string = ''): WorkspaceId {
+export function getWorkspaceId (workspace: string): WorkspaceId {
   return {
-    name: workspace,
-    productId
+    name: workspace
   }
 }
 
 /**
  * @public
  */
-export function toWorkspaceString (id: WorkspaceId, sep = '@'): string {
-  return id.name + (id.productId === '' ? '' : sep + id.productId)
+export function toWorkspaceString (id: WorkspaceId): string {
+  return id.name
 }
 
 const attributesPrefix = 'attributes.'

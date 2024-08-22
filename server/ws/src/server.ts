@@ -271,7 +271,6 @@ class TSessionManager implements SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
-    productId: string,
     sessionId: string | undefined,
     accountsUrl: string
   ): Promise<
@@ -279,7 +278,7 @@ class TSessionManager implements SessionManager {
     | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
     | { error: any }
     > {
-    const wsString = toWorkspaceString(token.workspace, '@')
+    const wsString = toWorkspaceString(token.workspace)
 
     let workspaceInfo: WorkspaceLoginInfo | undefined
     try {
@@ -429,7 +428,6 @@ class TSessionManager implements SessionManager {
       createdBy: '',
       createdOn: Date.now(),
       lastVisit: Date.now(),
-      productId: '',
       createProgress: 100,
       creating: false,
       disabled: false,
@@ -983,7 +981,6 @@ export function start (
     port: number
     pipelineFactory: PipelineFactory
     sessionFactory: (token: Token, pipeline: Pipeline) => Session
-    productId: string
     brandingMap: BrandingMap
     serverFactory: ServerFactory
     enableCompression?: boolean
@@ -1008,7 +1005,6 @@ export function start (
     ctx,
     opt.pipelineFactory,
     opt.port,
-    opt.productId,
     opt.enableCompression ?? false,
     opt.accountsUrl,
     opt.externalStorage

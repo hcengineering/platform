@@ -99,7 +99,6 @@ class BackupWorker {
       index++
       rootCtx.info('\n\nBACKUP WORKSPACE ', {
         workspace: ws.workspace,
-        productId: ws.productId,
         index,
         total: workspaces.length
       })
@@ -112,19 +111,18 @@ class BackupWorker {
         const storage = await createStorageBackupStorage(
           ctx,
           this.storageAdapter,
-          getWorkspaceId(this.config.BucketName, ws.productId),
+          getWorkspaceId(this.config.BucketName),
           ws.workspace
         )
         const wsUrl: WorkspaceIdWithUrl = {
           name: ws.workspace,
-          productId: ws.productId,
           workspaceName: ws.workspaceName ?? '',
           workspaceUrl: ws.workspaceUrl ?? ''
         }
         const pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
 
         await ctx.with('backup', { workspace: ws.workspace }, async (ctx) => {
-          await backup(ctx, ws.endpoint, getWorkspaceId(ws.workspace, ws.productId), storage, {
+          await backup(ctx, ws.endpoint, getWorkspaceId(ws.workspace), storage, {
             skipDomains: [],
             force: false,
             recheck: false,

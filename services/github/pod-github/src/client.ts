@@ -17,7 +17,6 @@ import config from './config'
  */
 export async function createPlatformClient (
   workspace: string,
-  productId: string,
   timeout: number,
   reconnect?: (event: ClientConnectEvent) => void
 ): Promise<Client> {
@@ -33,8 +32,7 @@ export async function createPlatformClient (
   const token = generateToken(
     config.SystemEmail,
     {
-      name: workspace,
-      productId
+      name: workspace
     },
     { mode: 'github' }
   )

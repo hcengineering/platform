@@ -43,6 +43,6 @@ const intTimer = setInterval(() => {
 
 const brandingPath = process.env.BRANDING_PATH
 
-serveAccount(metricsContext, getModelVersion(), txes, migrateOperations, '', loadBrandingMap(brandingPath), () => {
+serveAccount(metricsContext, getModelVersion(), txes, migrateOperations, loadBrandingMap(brandingPath), () => {
   clearInterval(intTimer)
 })
