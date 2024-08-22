@@ -52,9 +52,14 @@ export async function moveFiles (
       }
 
       try {
-        await retryOnFailure(ctx, 5, async () => {
-          await moveFile(ctx, exAdapter, workspaceId, blob)
-        }, 50)
+        await retryOnFailure(
+          ctx,
+          5,
+          async () => {
+            await moveFile(ctx, exAdapter, workspaceId, blob)
+          },
+          50
+        )
       } catch (err) {
         console.error('failed to process blob', name, data._id, err)
       }
@@ -70,7 +75,12 @@ export async function moveFiles (
   console.log('...done', workspaceId.name, count)
 }
 
-async function moveFile (ctx: MeasureContext, exAdapter: StorageAdapterEx, workspaceId: WorkspaceId, blob: Blob): Promise<void> {
+async function moveFile (
+  ctx: MeasureContext,
+  exAdapter: StorageAdapterEx,
+  workspaceId: WorkspaceId,
+  blob: Blob
+): Promise<void> {
   const readable = await exAdapter.get(ctx, workspaceId, blob._id)
   try {
     readable.on('end', () => {
