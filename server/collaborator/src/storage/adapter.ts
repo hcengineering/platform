@@ -20,5 +20,14 @@ import { Context } from '../context'
 
 export interface CollabStorageAdapter {
   loadDocument: (ctx: MeasureContext, documentId: DocumentId, context: Context) => Promise<YDoc | undefined>
-  saveDocument: (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context) => Promise<void>
+  saveDocument: (
+    ctx: MeasureContext,
+    documentId: DocumentId,
+    document: YDoc,
+    context: Context,
+    markup: {
+      old: Record<string, string>
+      new: Record<string, string>
+    }
+  ) => Promise<void>
 }

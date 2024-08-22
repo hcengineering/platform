@@ -3,12 +3,9 @@ import {
   AttachedDoc,
   type Attribute,
   Class,
-  CollaborativeDoc,
-  collaborativeDocFromLastVersion,
   Collection,
   Doc,
   Hierarchy,
-  Markup,
   MeasureContext,
   Mixin,
   Ref,
@@ -18,18 +15,15 @@ import {
   TxCUD,
   TxMixin,
   TxProcessor,
-  TxUpdateDoc,
-  WorkspaceId
+  TxUpdateDoc
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
 import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
-import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
+import { TriggerControl } from '@hcengineering/server-core'
 import { translate } from '@hcengineering/platform'
-import { loadCollaborativeDoc } from '@hcengineering/collaboration'
-import { EmptyMarkup, yDocToMarkup } from '@hcengineering/text'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -301,9 +295,13 @@ export async function getTxAttributesUpdates (
       continue
     }
 
+    if (attrClass === core.class.TypeCollaborativeDoc) {
+      // collaborative documents activity is handled by collaborator
+      continue
+    }
+
     if (
       hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
-      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc) ||
       mixin === notification.mixin.Collaborators
     ) {
       if (docDiff === undefined) {
@@ -329,16 +327,6 @@ export async function getTxAttributesUpdates (
       } else {
         prevValue = rawPrevValue
       }
-    }
-
-    // we don't want to show collaborative documents in activity
-    // instead we show their content as Markup
-    // TODO this should be generalized via activity extension
-    const attrType = mixin !== undefined ? hierarchy.findAttribute(mixin, key) : clazz
-    if (attrType?.type?._class === core.class.TypeCollaborativeDoc) {
-      attrClass = isMixin ? attrClass : core.class.TypeMarkup
-      attrValue = await getMarkup(ctx, control.storageAdapter, control.workspace, attrValue, key)
-      prevValue = await getMarkup(ctx, control.storageAdapter, control.workspace, prevValue, key)
     }
 
     let setAttr = []
@@ -423,17 +411,4 @@ export function getCollectionAttribute (
   }
 
   return undefined
-}
-
-async function getMarkup (
-  ctx: MeasureContext,
-  storage: StorageAdapter,
-  workspace: WorkspaceId,
-  value: CollaborativeDoc,
-  field: string
-): Promise<Markup> {
-  if (value === undefined) return EmptyMarkup
-  value = collaborativeDocFromLastVersion(value)
-  const ydoc = await loadCollaborativeDoc(storage, workspace, value, ctx)
-  return ydoc !== undefined ? yDocToMarkup(ydoc, field) : EmptyMarkup
 }
