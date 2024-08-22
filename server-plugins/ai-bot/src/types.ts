@@ -22,7 +22,6 @@ export interface AIBotServiceAdapter extends ServiceAdapter {
 
 export interface WorkspaceInfoRecord {
   workspace: string
-  productId: string
   active: boolean
   avatarPath?: string
   avatarLastModified?: number

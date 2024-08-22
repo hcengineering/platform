@@ -13,7 +13,6 @@ export function registerGithub (
   router: Router<any, any>,
   accountsUrl: string,
   db: Db,
-  productId: string,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {
@@ -71,21 +70,11 @@ export function registerGithub (
           const state = safeParseAuthState(ctx.query?.state)
           const branding = getBranding(brandings, state?.branding)
           if (state.inviteId != null && state.inviteId !== '') {
-            loginInfo = await joinWithProvider(
-              measureCtx,
-              db,
-              productId,
-              null,
-              email,
-              first,
-              last,
-              state.inviteId as any,
-              {
-                githubId: ctx.state.user.id
-              }
-            )
+            loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any, {
+              githubId: ctx.state.user.id
+            })
           } else {
-            loginInfo = await loginWithProvider(measureCtx, db, productId, null, email, first, last, {
+            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last, {
               githubId: ctx.state.user.id
             })
           }

@@ -14,12 +14,11 @@
 //
 import documents, {
   type Document,
-  type DocumentSection,
   type DocumentState,
   type DocumentSpace,
   documentsId
 } from '@hcengineering/controlled-documents'
-import { type Client, type AttachedData, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 import type { KeyFilter, SortFunc, ViewActionAvailabilityFunction } from '@hcengineering/view'
@@ -32,10 +31,6 @@ export default mergeIds(documentsId, documents, {
     ProjectPresenter: '' as AnyComponent,
     ProjectRefPresenter: '' as AnyComponent,
     Revision: '' as AnyComponent,
-    EditTemplateSections: '' as AnyComponent,
-    CollaborativeSectionEditor: '' as AnyComponent,
-    AttachmentsSectionEditor: '' as AnyComponent,
-    DocumentSectionDeletePopup: '' as AnyComponent,
 
     // New model components
     EditDocumentCategory: '' as AnyComponent,
@@ -86,7 +81,6 @@ export default mergeIds(documentsId, documents, {
     DocumentPrefix: '' as IntlString,
     DocumentCodePlaceholder: '' as IntlString,
     DocumentPrefixPlaceholder: '' as IntlString,
-    TemplateSectionTitle: '' as IntlString,
     DocumentTemplateCreateLabel: '' as IntlString,
     DomainTitle: '' as IntlString,
     MetaAbstract: '' as IntlString,
@@ -115,12 +109,6 @@ export default mergeIds(documentsId, documents, {
     MakeDocumentEffective: '' as IntlString,
     CreateDraftQmsTemplates: '' as IntlString,
 
-    DocTemplateDeleteSectionTitle: '' as IntlString,
-    DocTemplateDeleteSectionConfirm: '' as IntlString,
-
-    AddSectionAbove: '' as IntlString,
-    AddSectionBelow: '' as IntlString,
-
     SelectReviewers: '' as IntlString,
     SelectApprovers: '' as IntlString,
     RequestsToReviewTheDoc: '' as IntlString,
@@ -139,9 +127,6 @@ export default mergeIds(documentsId, documents, {
     NoApprovalsDescription: '' as IntlString,
     CurrentVersion: '' as IntlString,
 
-    EditDescription: '' as IntlString,
-    EditGuidance: '' as IntlString,
-
     NewDocument: '' as IntlString,
     NewDocumentCategory: '' as IntlString,
     NewDocumentTemplate: '' as IntlString,
@@ -150,8 +135,6 @@ export default mergeIds(documentsId, documents, {
     TemplateStepTitle: '' as IntlString,
     InfoStepTitle: '' as IntlString,
     TeamStepTitle: '' as IntlString,
-
-    Duplicate: '' as IntlString,
 
     TitleAndDescr: '' as IntlString,
     AbstractPlaceholder: '' as IntlString,
@@ -236,13 +219,6 @@ export default mergeIds(documentsId, documents, {
     ToReview: '' as IntlString
   },
   function: {
-    AttachmentsSectionCreator: '' as Resource<
-    (
-      document: Document,
-      section: AttachedData<DocumentSection>,
-      copyFrom?: DocumentSection
-    ) => AttachedData<DocumentSection>
-    >,
     CanCreateTemplate: '' as Resource<ViewActionAvailabilityFunction<DocumentSpace>>,
     CanCreateDocument: '' as Resource<ViewActionAvailabilityFunction<DocumentSpace>>,
     CanCreateChildTemplate: '' as Resource<ViewActionAvailabilityFunction<Document>>,
@@ -251,13 +227,6 @@ export default mergeIds(documentsId, documents, {
     CheckAreTemplatesDisabled: '' as Resource<() => Promise<boolean>>,
     CheckAreDomainsDisabled: '' as Resource<() => Promise<boolean>>,
     CheckIsLibraryDisabled: '' as Resource<() => Promise<boolean>>,
-    CollaborativeSectionCreator: '' as Resource<
-    (
-      document: Document,
-      section: AttachedData<DocumentSection>,
-      copyFrom?: DocumentSection
-    ) => AttachedData<DocumentSection>
-    >,
     DocumentStateSort: '' as SortFunc,
     GetAllDocumentStates: '' as Resource<() => Promise<DocumentState[]>>,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,

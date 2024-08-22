@@ -14,8 +14,8 @@
  -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { DraftController, draftsStore, getClient, deleteFile } from '@hcengineering/presentation'
+  import core, { AttachedData, Doc, Ref, SortingOrder, makeCollaborativeDoc } from '@hcengineering/core'
+  import { DraftController, draftsStore, getClient, deleteFile, updateMarkup } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { makeRank } from '@hcengineering/task'
   import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'
@@ -71,7 +71,7 @@
       const childId = subIssue._id
       const cvalue: AttachedData<Issue> = {
         title: subIssue.title.trim(),
-        description: subIssue.description,
+        description: makeCollaborativeDoc(childId, 'description'),
         assignee: subIssue.assignee,
         component: subIssue.component,
         milestone: subIssue.milestone,
@@ -92,6 +92,7 @@
         kind: subIssue.kind,
         identifier: `${project.identifier}-${number}`
       }
+      await updateMarkup(cvalue.description, { description: subIssue.description })
       await client.addCollection(
         tracker.class.Issue,
         project._id,

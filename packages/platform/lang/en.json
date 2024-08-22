@@ -18,7 +18,6 @@
     "WorkspaceRateLimit": "Server is busy, Please wait a bit and try again",
     "AccountAlreadyConfirmed": "Account already confirmed",
     "WorkspaceAlreadyExists": "Workspace already exists",
-    "ProductIdMismatch": "Product Mismatch",
     "InvalidOtp": "Invalid code"
   }
 }

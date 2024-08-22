@@ -81,6 +81,13 @@ export interface ChatInfo extends Doc {
   timestamp: Timestamp
 }
 
+export interface TypingInfo extends Doc {
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
+  person: Ref<Person>
+  lastTyping: Timestamp
+}
+
 export interface ChannelInfo extends DocNotifyContext {
   hidden: boolean
 }
@@ -136,7 +143,8 @@ export default plugin(chunterId, {
     ChatMessage: '' as Ref<Class<ChatMessage>>,
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
     ChatInfo: '' as Ref<Class<ChatInfo>>,
-    InlineButton: '' as Ref<Class<InlineButton>>
+    InlineButton: '' as Ref<Class<InlineButton>>,
+    TypingInfo: '' as Ref<Class<TypingInfo>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>,
@@ -191,7 +199,9 @@ export default plugin(chunterId, {
     Added: '' as IntlString,
     Removed: '' as IntlString,
     CreatedChannelOn: '' as IntlString,
-    YouJoinedChannel: '' as IntlString
+    YouJoinedChannel: '' as IntlString,
+    AndMore: '' as IntlString,
+    IsTyping: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

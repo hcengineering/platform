@@ -30,8 +30,5 @@ loadMetadata(documents.icon, {
   StateObsolete: `${icons}#state-obsolete`,
   ArrowUp: `${icons}#arrow-up`,
   ArrowDown: `${icons}#arrow-down`,
-  Duplicate: `${icons}#duplicate`,
-  EditDescription: `${icons}#edit-description`,
-  EditGuidance: `${icons}#edit-guidance`,
   Configure: `${icons}#configure`
 })

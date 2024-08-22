@@ -54,6 +54,10 @@ export function getSrcSet (_blob: Ref<Blob>, width?: number): string {
 }
 
 function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | undefined): string {
+  if (blob.includes('://')) {
+    return ''
+  }
+
   let url = cfg.previewUrl.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
   const downloadUrl = getFileUrl(blob)
 
@@ -74,8 +78,6 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
       ' 2x, ' +
       fu.replaceAll(':size', `${width * 3}`) +
       ' 3x'
-  } else {
-    result += downloadUrl
   }
 
   return result

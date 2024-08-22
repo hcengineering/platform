@@ -51,8 +51,7 @@ export class SignController {
 
   private async createPlatformClient (workspace: string): Promise<Client> {
     const token = generateToken(config.SystemEmail, {
-      name: workspace,
-      productId: ''
+      name: workspace
     })
     const endpoint = await getTransactorEndpoint(token)
     const connection = await createClient(endpoint, token)

@@ -1056,7 +1056,6 @@ export async function removeDuplicateIds (
   ctx: MeasureContext,
   mongodbUri: string,
   storageAdapter: StorageAdapter,
-  productId: string,
   accountsUrl: string,
   initWorkspacesStr: string
 ): Promise<void> {
@@ -1066,13 +1065,13 @@ export async function removeDuplicateIds (
   // disable spaces while change hardocded ids
   const skippedDomains: string[] = [DOMAIN_DOC_INDEX_STATE, DOMAIN_BENCHMARK, DOMAIN_TX, DOMAIN_SPACE]
   try {
-    const workspaces = await listWorkspacesRaw(_client.db(ACCOUNT_DB), productId)
+    const workspaces = await listWorkspacesRaw(_client.db(ACCOUNT_DB))
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
     const initWorkspaces = initWorkspacesStr.split(';')
     const initWS = workspaces.filter((p) => initWorkspaces.includes(p.workspace))
     const ids = new Map<string, RelatedDocument[]>()
     for (const workspace of initWS) {
-      const workspaceId = getWorkspaceId(workspace.workspace, productId)
+      const workspaceId = getWorkspaceId(workspace.workspace)
       const db = getWorkspaceDB(_client, workspaceId)
 
       const txex = await db.collection(DOMAIN_TX).find<TxCUD<Doc>>({}).toArray()
@@ -1125,7 +1124,7 @@ export async function removeDuplicateIds (
       if (initWorkspaces.includes(workspace.workspace)) continue
 
       ctx.info(`Processing workspace ${workspace.workspaceName ?? workspace.workspace}`)
-      const workspaceId = getWorkspaceId(workspace.workspace, productId)
+      const workspaceId = getWorkspaceId(workspace.workspace)
       const db = getWorkspaceDB(_client, workspaceId)
       const check = await db.collection(DOMAIN_MIGRATION).findOne({ state, plugin: workspace.workspace })
       if (check != null) continue
@@ -1212,10 +1211,6 @@ async function updateId (
         for (const [attrName, attr] of attrs) {
           if (attr.type._class === core.class.TypeMarkup) {
             const markup = (contentDoc as any)[attrName] as Markup
-            const newMarkup = markup.replaceAll(doc._id, newId)
-            await update(h, db, contentDoc, { [attrName]: newMarkup })
-          } else if (attr.type._class === core.class.TypeCollaborativeMarkup) {
-            const markup = (contentDoc as any)[attrName]
             const newMarkup = markup.replaceAll(doc._id, newId)
             await update(h, db, contentDoc, { [attrName]: newMarkup })
           } else if (attr.type._class === core.class.TypeCollaborativeDoc) {

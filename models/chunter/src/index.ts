@@ -25,7 +25,8 @@ import {
   type ThreadMessage,
   type ChatInfo,
   type ChannelInfo,
-  type InlineButton
+  type InlineButton,
+  type TypingInfo
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
 import contact, { type ChannelProvider as SocialChannelProvider, type Person } from '@hcengineering/contact'
@@ -36,7 +37,8 @@ import {
   DOMAIN_MODEL,
   type Ref,
   type Timestamp,
-  IndexKind
+  IndexKind,
+  DOMAIN_TRANSIENT
 } from '@hcengineering/core'
 import {
   type Builder,
@@ -159,12 +161,21 @@ export class TChatInfo extends TDoc implements ChatInfo {
   timestamp!: Timestamp
 }
 
+
 @Model(chunter.class.InlineButton, core.class.Doc, DOMAIN_CHUNTER)
 export class TInlineButton extends TAttachedDoc implements InlineButton {
   name!: string
   url!: string
   titleIntl?: IntlString
   title?: string
+}
+
+@Model(chunter.class.TypingInfo, core.class.Doc, DOMAIN_TRANSIENT)
+export class TTypingInfo extends TDoc implements TypingInfo {
+  objectId!: Ref<Doc>
+  objectClass!: Ref<Class<Doc>>
+  person!: Ref<Person>
+  lastTyping!: Timestamp
 }
 
 export function createModel (builder: Builder): void {
@@ -178,7 +189,8 @@ export function createModel (builder: Builder): void {
     TObjectChatPanel,
     TChatInfo,
     TChannelInfo,
-    TInlineButton
+    TInlineButton,
+    TTypingInfo
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

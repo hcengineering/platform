@@ -5,17 +5,7 @@ import { type ServerFactory } from './types'
  */
 export const serverFactories: Record<string, ServerFactory> = {
   ws: startHttpServer,
-  uweb: (
-    sessions,
-    handleRequest,
-    ctx,
-    pipelineFactory,
-    port,
-    productId,
-    enableCompression,
-    accountsUrl,
-    externalStorage
-  ) => {
+  uweb: (sessions, handleRequest, ctx, pipelineFactory, port, enableCompression, accountsUrl, externalStorage) => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const serverHttp = require('./server_u')
@@ -25,7 +15,6 @@ export const serverFactories: Record<string, ServerFactory> = {
         ctx,
         pipelineFactory,
         port,
-        productId,
         enableCompression,
         accountsUrl,
         externalStorage
@@ -38,7 +27,6 @@ export const serverFactories: Record<string, ServerFactory> = {
         ctx,
         pipelineFactory,
         port,
-        productId,
         enableCompression,
         accountsUrl,
         externalStorage

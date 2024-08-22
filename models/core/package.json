@@ -31,6 +31,8 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/storage": "^0.6.0"
+    "@hcengineering/storage": "^0.6.0",
+    "@hcengineering/collaboration": "^0.6.0",
+    "@hcengineering/text": "^0.6.5"
   }
 }

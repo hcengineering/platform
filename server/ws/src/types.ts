@@ -153,7 +153,6 @@ export interface SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
-    productId: string,
     sessionId: string | undefined,
     accountsUrl: string
   ) => Promise<AddSessionResponse>
@@ -197,7 +196,6 @@ export type ServerFactory = (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string,
   enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter

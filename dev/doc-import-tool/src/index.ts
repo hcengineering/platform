@@ -44,8 +44,8 @@ export function docImportTool (): void {
     process.exit(1)
   }
 
-  const collaboratorApiUrl = process.env.COLLABORATOR_API_URL
-  if (collaboratorApiUrl === undefined) {
+  const collaboratorUrl = process.env.COLLABORATOR_URL
+  if (collaboratorUrl === undefined) {
     console.error('please provide collaborator url')
     process.exit(1)
   }
@@ -104,7 +104,7 @@ export function docImportTool (): void {
             space: cmd.space,
             uploadURL: uploadUrl,
             storageAdapter,
-            collaboratorApiURL: collaboratorApiUrl,
+            collaboratorURL: collaboratorUrl,
             token: generateToken(systemAccountEmail, workspaceId)
           }
 

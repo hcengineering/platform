@@ -4,31 +4,34 @@ import { DocumentCommonPage } from './document-common-page'
 export class DocumentCommentsPage extends DocumentCommonPage {
   readonly page: Page
   readonly buttonDocumentTitle: Locator
+  readonly comments: Locator
 
   constructor (page: Page) {
     super(page)
     this.page = page
     this.buttonDocumentTitle = page.locator('button.version-item span.name')
+    this.comments = page.locator('div[data-float="aside"]').getByTestId('comment')
   }
 
-  async checkCommentExist (message: string, count: number = 1): Promise<void> {
-    await expect(this.page.locator('div[data-float="aside"] div.root span', { hasText: message })).toHaveCount(count)
+  getCommentLocator (message: string): Locator {
+    return this.comments.filter({
+      has: this.page.locator('div.activityMessage p.p-inline', { hasText: message })
+    })
   }
 
-  async resolveComments (message: string, position: string = '1'): Promise<void> {
-    await this.page
-      .locator('div[data-float="aside"] div.root span', { hasText: message })
-      .locator('xpath=..')
-      .locator('span:first-child', { hasText: position })
-      .hover()
+  async checkCommentExist (message: string): Promise<void> {
+    await expect(this.getCommentLocator(message)).toBeVisible()
+  }
 
-    await this.page
-      .locator('div[data-float="aside"] div.root span', { hasText: message })
-      .locator('xpath=..')
-      .locator('span:first-child', { hasText: position })
-      .locator('xpath=../..')
-      .locator('div.tools button')
-      .click()
+  async checkCommentDoesNotExist (message: string): Promise<void> {
+    await expect(this.getCommentLocator(message)).toHaveCount(0)
+  }
+
+  async resolveComment (message: string): Promise<void> {
+    const commentLocator = this.getCommentLocator(message)
+
+    await commentLocator.hover()
+    await commentLocator.locator('div.tools button').click()
   }
 
   async resolveAllComments (): Promise<void> {
@@ -43,38 +46,18 @@ export class DocumentCommentsPage extends DocumentCommonPage {
     await expect(this.page.locator('div[data-float="aside"] div.root span', { hasText: message })).toHaveCount(0)
   }
 
-  async checkCommentCanBeResolved (message: string, position: number): Promise<void> {
-    await this.page
-      .locator('div[data-float="aside"] div.root span', { hasText: message })
-      .locator('xpath=..')
-      .locator('span:first-child', { hasText: String(position) })
-      .hover()
+  async checkCommentCanBeResolved (message: string): Promise<void> {
+    const commentLocator = this.getCommentLocator(message)
 
-    await expect(
-      this.page
-        .locator('div[data-float="aside"] div.root span', { hasText: message })
-        .locator('xpath=..')
-        .locator('span:first-child', { hasText: String(position) })
-        .locator('xpath=../..')
-        .locator('div.tools button')
-    ).toBeEnabled()
+    await commentLocator.hover()
+    await expect(commentLocator.locator('div.tools button')).toBeEnabled()
   }
 
   async checkCommentCanNotBeResolved (message: string, position: number): Promise<void> {
-    await this.page
-      .locator('div[data-float="aside"] div.root span', { hasText: message })
-      .locator('xpath=..')
-      .locator('span:first-child', { hasText: String(position) })
-      .hover()
+    const commentLocator = this.getCommentLocator(message)
 
-    await expect(
-      this.page
-        .locator('div[data-float="aside"] div.root span', { hasText: message })
-        .locator('xpath=..')
-        .locator('span:first-child', { hasText: String(position) })
-        .locator('xpath=../..')
-        .locator('div.tools button')
-    ).not.toBeVisible()
+    await commentLocator.hover()
+    await expect(commentLocator.locator('div.tools button')).not.toBeVisible()
   }
 
   async addReplyInPopupByCommentId (commentId: number, replyText: string): Promise<void> {
@@ -96,7 +79,7 @@ export class DocumentCommentsPage extends DocumentCommonPage {
       .locator('div.popup div.root div.header > div > span:first-child', { hasText: String(commentId) })
       .locator('xpath=../../../..')
     // check header
-    await expect(comment.locator('div.header > div > span:last-child')).toHaveText(header)
+    await expect(comment.locator('div.header > div:first-child')).toContainText(header)
     // can be resolved
     await comment.locator('div.header div.tools button').hover()
     await expect(comment.locator('div.header div.tools button')).toBeEnabled()
@@ -119,7 +102,7 @@ export class DocumentCommentsPage extends DocumentCommonPage {
       .locator('div.box div.root div.header > div > span:first-child', { hasText: String(commentId) })
       .locator('xpath=../../../..')
     // check header
-    await expect(comment.locator('div.header > div > span:last-child')).toHaveText(header)
+    await expect(comment.locator('div.header > div:first-child')).toContainText(header)
     // can be resolved
     await comment.locator('div.header > div > span:last-child').hover()
     await expect(comment.locator('div.header div.tools button')).toBeEnabled()

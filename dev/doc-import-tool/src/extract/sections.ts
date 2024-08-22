@@ -1,6 +1,5 @@
 import { Document } from 'domhandler'
-import { Markup, Ref, generateId } from '@hcengineering/core'
-import { DocumentSection } from '@hcengineering/controlled-documents'
+import { Markup } from '@hcengineering/core'
 
 import { GenericNodeSpec, NodeType, SectionSpec, SectionType, TocSectionSpec } from './types'
 import { AnyContainer, createNodeExtractor } from './nodes'
@@ -11,7 +10,6 @@ import { AnyContainer, createNodeExtractor } from './nodes'
  * can be found in a document (TOC, history, etc.)
  */
 export interface ExtractedSection {
-  id: Ref<DocumentSection>
   type: SectionType
   title: string
   content: Markup
@@ -25,7 +23,6 @@ export function extractSections (doc: Document, sectionSpecs: SectionSpec[]): Ex
     try {
       const extractedSection = sectionExtractor.extract(doc)
       sections.push({
-        id: generateId(),
         type: section.type,
         title: extractedSection.getTitle(),
         content: extractedSection.getContent()

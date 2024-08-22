@@ -20,7 +20,7 @@ const getSecret = (): string => {
  * @public
  */
 export function generateToken (email: string, workspace: WorkspaceId, extra?: Record<string, string>): string {
-  return encode({ ...(extra ?? {}), email, workspace: workspace.name, productId: workspace.productId }, getSecret())
+  return encode({ ...(extra ?? {}), email, workspace: workspace.name }, getSecret())
 }
 
 /**
@@ -28,6 +28,6 @@ export function generateToken (email: string, workspace: WorkspaceId, extra?: Re
  */
 export function decodeToken (token: string, verify: boolean = true): Token {
   const value = decode(token, getSecret(), !verify)
-  const { email, workspace, productId, ...extra } = value
-  return { email, workspace: getWorkspaceId(workspace, productId), extra }
+  const { email, workspace, ...extra } = value
+  return { email, workspace: getWorkspaceId(workspace), extra }
 }

@@ -66,7 +66,7 @@
         handleOkClick()
       } else if (event.key === 'Enter') {
         // ignore customized editable divs to not interrupt multiline behavior
-        if (!target.isContentEditable) {
+        if (!target.isContentEditable && target.nodeName !== 'TEXTAREA') {
           event.preventDefault()
           focusManager?.next(1)
         }

@@ -116,7 +116,6 @@ export interface BackupSnapshot {
 export interface BackupInfo {
   workspace: string
   version: string
-  productId: string
   snapshots: BackupSnapshot[]
   snapshotsIndex?: number
   lastTxId?: string
@@ -566,7 +565,6 @@ export async function backup (
 
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
-      productId: workspaceId.productId,
       version: '0.6.2',
       snapshots: []
     }
@@ -581,7 +579,6 @@ export async function backup (
     backupInfo.version = '0.6.2'
 
     backupInfo.workspace = workspaceId.name
-    backupInfo.productId = workspaceId.productId
 
     // Skip backup if there is no transaction changes.
     const lastTx = await connection.findOne(

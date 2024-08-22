@@ -21,7 +21,7 @@ describe('aggregator tests', () => {
     const aggr = new AggregatorStorageAdapter(adapters, 'mem2', blobs)
 
     const testCtx = new MeasureMetricsContext('test', {})
-    const ws1: WorkspaceId = { name: 'ws1', productId: '' }
+    const ws1: WorkspaceId = { name: 'ws1' }
     return { mem1, mem2, aggr, ws1, testCtx }
   }
   it('not reuse existing storage', async () => {

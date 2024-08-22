@@ -16,11 +16,9 @@ import core, {
   WithLookup,
   cutObjectArray,
   generateId,
-  getCollaborativeDoc,
-  getCollaborativeDocId
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import task, { TaskType, calcRank, makeRank } from '@hcengineering/task'
-import { isEmptyMarkup } from '@hcengineering/text'
 import time, { ToDo, ToDoPriority } from '@hcengineering/time'
 import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
 import { OctokitResponse } from '@octokit/types'
@@ -59,12 +57,14 @@ import {
   toReviewDecision,
   toReviewState
 } from './githubTypes'
-import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget } from './issueBase'
+import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget, WithMarkup } from './issueBase'
 import { syncConfig } from './syncConfig'
 import { errorToObj, getSinceRaw, gqlp, guessStatus, isGHWriteAllowed, syncDerivedDocuments, syncRunner } from './utils'
 
 type GithubPullRequestData = GithubIssueData &
 Omit<GithubPullRequest, keyof Issue | 'commits' | 'reviews' | 'reviewComments'>
+
+type GithubPullRequestUpdate = DocumentUpdate<WithMarkup<GithubPullRequest>>
 
 export class PullRequestSyncManager extends IssueSyncManagerBase implements DocSyncManager {
   externalDerivedSync = true
@@ -194,7 +194,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         break
       }
       case 'edited': {
-        const update: DocumentUpdate<GithubPullRequest> = {}
+        const update: GithubPullRequestUpdate = {}
         const du: DocumentUpdate<DocSyncInfo> = {}
         if (event.changes.title !== undefined) {
           update.title = event.pull_request.title
@@ -584,9 +584,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           'query collaborative pull request description',
           {},
           async () => {
-            const collaborativeDoc = getCollaborativeDoc(getCollaborativeDocId(existing._id, 'description'))
-            const content = await this.collaborator.getContent(collaborativeDoc, 'description')
-            return isEmptyMarkup(content) ? (existing as Issue).description : content
+            const content = await this.collaborator.getContent((existing as any).description)
+            return content.description
           },
           { url: pullRequestExternal.url }
         )
@@ -987,7 +986,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     info: DocSyncInfo,
     existing: Issue,
     platformUpdate: DocumentUpdate<Issue>,
-    issueData: Pick<Issue, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
+    issueData: Pick<WithMarkup<Issue>, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
     container: ContainerFocus,
     issueExternal: IssueExternalData,
     okit: Octokit,
@@ -1162,10 +1161,14 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       account
     )
 
+    const prId = info._id as unknown as Ref<GithubPullRequest>
+
+    const { description, ...data } = pullRequestData
     const project = (incResult as any).object as Project
     const number = project.sequence
     const value: AttachedData<GithubPullRequest> = {
-      ...pullRequestData,
+      ...data,
+      description: makeCollaborativeDoc(prId, 'description'),
       kind: taskType,
       component: null,
       milestone: null,
@@ -1188,7 +1191,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       reviews: 0
     }
 
-    const prId = info._id as unknown as Ref<GithubPullRequest>
+    await this.collaborator.updateContent(value.description, { description })
+
     await client.addCollection(
       github.class.GithubPullRequest,
       info.space,

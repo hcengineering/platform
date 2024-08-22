@@ -54,12 +54,7 @@
   })
 
   const handleItemHighlight = (item: DocumentComment) => () => {
-    if (item.sectionKey === undefined) {
-      return
-    }
-
     documentCommentsLocationNavigateRequested({
-      sectionKey: item.sectionKey,
       nodeId: item.nodeId ?? null
     })
   }
@@ -84,10 +79,12 @@
 </RightPanelTabHeader>
 {#if $documentComments.length > 0}
   {#each $documentComments as object}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       bind:this={elements[object._id]}
       on:click={handleItemHighlight(object)}
       on:keydown={handleItemHighlight(object)}
+      data-testid="comment"
     >
       <DocumentCommentThread
         value={object}

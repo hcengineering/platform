@@ -55,6 +55,13 @@ export default plugin(textEditorId, {
     Blockquote: '' as IntlString,
     Code: '' as IntlString,
     CodeBlock: '' as IntlString,
+    Note: '' as IntlString,
+    ConfigureNote: '' as IntlString,
+    Set: '' as IntlString,
+    Update: '' as IntlString,
+    Remove: '' as IntlString,
+    NotePlaceholder: '' as IntlString,
+    SampleText: '' as IntlString,
     Send: '' as IntlString,
     FullDescription: '' as IntlString,
     NoFullDescription: '' as IntlString,
@@ -107,6 +114,7 @@ export default plugin(textEditorId, {
     AlignRight: '' as Asset,
     MoreH: '' as Asset,
     Expand: '' as Asset,
-    ScaleOut: '' as Asset
+    ScaleOut: '' as Asset,
+    Note: '' as Asset
   }
 })

@@ -132,7 +132,6 @@ export default plugin(presentationId, {
     UploadURL: '' as Metadata<string>,
     FilesURL: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
-    CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
     Workspace: '' as Metadata<string>,

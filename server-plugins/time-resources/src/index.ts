@@ -241,7 +241,9 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     object._class,
     object.space,
     createTx.modifiedOn,
-    notifyResult
+    notifyResult,
+    notification.class.CommonInboxNotification,
+    tx
   )
 
   await control.apply(txes)
