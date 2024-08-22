@@ -13,19 +13,24 @@
 // limitations under the License.
 //
 
-import { Db, MongoClient } from 'mongodb'
+import { MongoClientReference, getMongoClient } from '@hcengineering/mongo'
+import { MongoClient } from 'mongodb'
 
+import config from './config'
+
+const clientRef: MongoClientReference = getMongoClient(config.MongoUrl)
 let client: MongoClient | undefined
 
-export const getDB = async (mongoUrl: string, db: string): Promise<Db> => {
-  client = new MongoClient(mongoUrl)
-  await client.connect()
+export const getDB = (() => {
+  return async () => {
+    if (client === undefined) {
+      client = await clientRef.getClient()
+    }
 
-  return client.db(db)
-}
+    return client.db(config.MongoDb)
+  }
+})()
 
 export const closeDB: () => Promise<void> = async () => {
-  if (client !== undefined) {
-    await client.close()
-  }
+  clientRef.close()
 }

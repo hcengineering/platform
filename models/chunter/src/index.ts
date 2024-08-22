@@ -161,7 +161,6 @@ export class TChatInfo extends TDoc implements ChatInfo {
   timestamp!: Timestamp
 }
 
-
 @Model(chunter.class.InlineButton, core.class.Doc, DOMAIN_CHUNTER)
 export class TInlineButton extends TAttachedDoc implements InlineButton {
   name!: string

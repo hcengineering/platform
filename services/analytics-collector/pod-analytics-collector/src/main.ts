@@ -25,7 +25,7 @@ import config from './config'
 import { createServer, listen } from './server'
 import { Collector } from './collector'
 import { registerLoaders } from './loaders'
-import { getDB } from './storage'
+import { closeDB, getDB } from './storage'
 
 const ctx = new MeasureMetricsContext(
   'analytics-collector-service',
@@ -53,7 +53,7 @@ export const main = async (): Promise<void> => {
 
   registerLoaders()
 
-  const db = await getDB(config.MongoUrl, config.MongoDb)
+  const db = await getDB()
   const collector = new Collector(ctx, db)
 
   const app = createServer(collector)
@@ -61,6 +61,7 @@ export const main = async (): Promise<void> => {
 
   const shutdown = (): void => {
     void collector.close()
+    void closeDB()
     server.close(() => process.exit())
   }
 
