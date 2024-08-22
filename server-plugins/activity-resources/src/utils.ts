@@ -300,10 +300,7 @@ export async function getTxAttributesUpdates (
       continue
     }
 
-    if (
-      hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
-      mixin === notification.mixin.Collaborators
-    ) {
+    if (hierarchy.isDerived(attrClass, core.class.TypeMarkup) || mixin === notification.mixin.Collaborators) {
       if (docDiff === undefined) {
         docDiff = await getDocDiff(control, updateObject._class, updateObject._id, originTx._id, mixin, objectCache)
       }
