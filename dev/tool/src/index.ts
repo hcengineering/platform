@@ -1044,7 +1044,8 @@ export function devTool (
   program
     .command('move-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .action(async (cmd: { workspace: string }) => {
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
+    .action(async (cmd: { workspace: string, blobLimit: string }) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
@@ -1063,7 +1064,7 @@ export function devTool (
               }
 
               const wsId = getWorkspaceId(workspace.workspace, productId)
-              await moveFiles(toolCtx, wsId, exAdapter)
+              await moveFiles(toolCtx, wsId, exAdapter, parseInt(cmd.blobLimit))
             }
           } catch (err: any) {
             console.error(err)
