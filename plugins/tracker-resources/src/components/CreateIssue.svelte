@@ -21,8 +21,8 @@
   import core, {
     Account,
     Class,
-    CreateDocData,
     Doc,
+    DocData,
     Ref,
     SortingOrder,
     fillDefaults,
@@ -43,7 +43,8 @@
     SpaceSelector,
     createQuery,
     getClient,
-    getMarkup
+    getMarkup,
+    updateMarkup
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
@@ -469,7 +470,7 @@
 
       const identifier = `${currentProject?.identifier}-${number}`
 
-      const value: CreateDocData<Issue> = {
+      const value: DocData<Issue> = {
         title: getTitle(object.title),
         description: makeCollaborativeDoc(_id, 'description'),
         assignee: object.assignee,
@@ -501,10 +502,7 @@
         relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
         childInfo: [],
         kind,
-        identifier,
-        $markup: {
-          description: object.description
-        }
+        identifier
       }
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
@@ -541,6 +539,7 @@
 
       const result = await operations.commit()
       await descriptionBox?.createAttachments(_id)
+      await updateMarkup(value.description, { description: object.description })
 
       const parents: IssueParentInfo[] =
         parentIssue != null

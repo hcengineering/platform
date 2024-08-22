@@ -17,13 +17,11 @@ import type { KeysByType } from 'simplytyped'
 import type {
   Account,
   Arr,
-  AttachedData,
   AttachedDoc,
   Class,
   Data,
   Doc,
   Domain,
-  Markup,
   Mixin,
   PropertyType,
   Ref,
@@ -31,7 +29,6 @@ import type {
   Timestamp
 } from './classes'
 import { clone } from './clone'
-import { CollaborativeDoc } from './collaboration'
 import core from './component'
 import { setObjectValue } from './objvalue'
 import { _getOperator } from './operator'
@@ -96,23 +93,8 @@ export interface TxCUD<T extends Doc> extends Tx {
 /**
  * @public
  */
-export type CreateData<T extends Doc> = Data<T> & MarkupOptions<T>
-
-/**
- * @public
- */
-export type CreateAttachedData<T extends AttachedDoc> = AttachedData<T> & MarkupOptions<T>
-
-/**
- * @public
- */
-export type CreateDocData<T extends Doc> = T extends AttachedDoc ? CreateAttachedData<T> : CreateData<T>
-
-/**
- * @public
- */
 export interface TxCreateDoc<T extends Doc> extends TxCUD<T> {
-  attributes: CreateData<T>
+  attributes: Data<T>
 }
 
 /**
@@ -170,16 +152,14 @@ export interface TxApplyResult {
  */
 export type MixinData<D extends Doc, M extends D> = Omit<M, keyof D> &
 PushOptions<Omit<M, keyof D>> &
-IncOptions<Omit<M, keyof D>> &
-MarkupOptions<Omit<M, keyof D>>
+IncOptions<Omit<M, keyof D>>
 
 /**
  * @public
  */
 export type MixinUpdate<D extends Doc, M extends D> = Partial<Omit<M, keyof D>> &
 PushOptions<Omit<M, keyof D>> &
-IncOptions<Omit<M, keyof D>> &
-MarkupOptions<Omit<M, keyof D>>
+IncOptions<Omit<M, keyof D>>
 
 /**
  * Define Create/Update for mixin attributes.
@@ -195,13 +175,6 @@ export interface TxMixin<D extends Doc, M extends D> extends TxCUD<D> {
  */
 export type ArrayAsElement<T> = {
   [P in keyof T]: T[P] extends Arr<infer X> ? Partial<X> | PullArray<X> | X : never
-}
-
-/**
- * @public
- */
-export type CollaborativeDocAsMarkup<T> = {
-  [P in keyof T]-?: T[P] extends CollaborativeDoc ? Markup : never
 }
 
 /**
@@ -323,13 +296,6 @@ export interface SpaceUpdate {
 /**
  * @public
  */
-export interface MarkupOptions<T extends Data<Doc>> {
-  $markup?: Partial<OmitNever<CollaborativeDocAsMarkup<T>>>
-}
-
-/**
- * @public
- */
 export type DocumentUpdate<T extends Doc> = Partial<Data<T>> &
 PushOptions<T> &
 SetEmbeddedOptions<T> &
@@ -394,10 +360,9 @@ export abstract class TxProcessor implements WithTx {
   }
 
   static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>, doClone = true): T {
-    const attributes = Object.fromEntries(Object.entries(tx.attributes).filter(([key]) => !key.startsWith('$')))
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
-      ...(doClone ? clone(attributes) : attributes),
+      ...(doClone ? clone(tx.attributes) : tx.attributes),
       _id: tx.objectId,
       _class: tx.objectClass,
       space: tx.objectSpace,
@@ -554,7 +519,7 @@ export class TxFactory {
   createTxCreateDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
-    attributes: CreateData<T>,
+    attributes: Data<T>,
     objectId?: Ref<T>,
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>

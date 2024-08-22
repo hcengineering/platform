@@ -1303,11 +1303,10 @@ class MongoAdapter extends MongoAdapterBase {
       modifiedBy: tx.modifiedBy,
       modifiedOn: tx.modifiedOn
     }
-    const attributes = this.excludeUnsupportedOperations(tx.attributes)
-    if (isOperator(attributes)) {
-      const operator = Object.keys(attributes)[0]
+    if (isOperator(tx.attributes)) {
+      const operator = Object.keys(tx.attributes)[0]
       if (operator === '$move') {
-        const keyval = (attributes as any).$move
+        const keyval = (tx.attributes as any).$move
         const arr = tx.mixin + '.' + Object.keys(keyval)[0]
         const desc = keyval[arr]
         const ops: any = [
@@ -1322,7 +1321,7 @@ class MongoAdapter extends MongoAdapterBase {
         bulk.bulkOperations.push(...ops)
         return
       }
-      const update = { ...this.translateMixinAttrs(tx.mixin, attributes), $set: { ...modifyOp } }
+      const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
 
       bulk.bulkOperations.push({
         updateOne: {
@@ -1332,7 +1331,7 @@ class MongoAdapter extends MongoAdapterBase {
       })
       return
     }
-    const update = { ...this.translateMixinAttrs(tx.mixin, attributes), ...modifyOp }
+    const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), ...modifyOp }
 
     let upd = bulk.update.get(tx.objectId)
     if (upd === undefined) {
@@ -1343,11 +1342,6 @@ class MongoAdapter extends MongoAdapterBase {
     for (const [k, v] of Object.entries(update)) {
       ;(upd as any)[k] = v
     }
-  }
-
-  private excludeUnsupportedOperations (attributes: Record<string, any>): Record<string, any> {
-    const operations = ['$markup', '$pushMixin']
-    return Object.fromEntries(Object.entries(attributes).filter(([key]) => !operations.includes(key)))
   }
 
   private translateMixinAttrs (mixin: Ref<Mixin<Doc>>, attributes: Record<string, any>): Record<string, any> {
@@ -1376,11 +1370,10 @@ class MongoAdapter extends MongoAdapterBase {
   }
 
   protected txUpdateDoc (bulk: OperationBulk, tx: TxUpdateDoc<Doc>): void {
-    const operations = this.excludeUnsupportedOperations(tx.operations)
-    if (isOperator(operations)) {
-      const operator = Object.keys(operations)[0]
+    if (isOperator(tx.operations)) {
+      const operator = Object.keys(tx.operations)[0]
       if (operator === '$move') {
-        const keyval = (operations as any).$move
+        const keyval = (tx.operations as any).$move
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr]
 
@@ -1419,7 +1412,7 @@ class MongoAdapter extends MongoAdapterBase {
         ]
         bulk.bulkOperations.push(...ops)
       } else if (operator === '$update') {
-        const keyval = (operations as any).$update
+        const keyval = (tx.operations as any).$update
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr] as QueryUpdate<any>
         const ops = [
@@ -1477,7 +1470,7 @@ class MongoAdapter extends MongoAdapterBase {
             updateOne: {
               filter: { _id: tx.objectId },
               update: {
-                ...operations,
+                ...tx.operations,
                 $set: {
                   modifiedBy: tx.modifiedBy,
                   modifiedOn: tx.modifiedOn,

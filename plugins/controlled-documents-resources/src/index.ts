@@ -206,7 +206,9 @@ async function deleteCollaborativeSection (section: CollaborativeDocumentSection
         await deleteObjects(client, [section], false)
 
         if (document !== undefined) {
-          await getCollaboratorClient().updateContent(document.content, section.collaboratorSectionId, EmptyMarkup)
+          await getCollaboratorClient().updateContent(document.content, {
+            [section.collaboratorSectionId]: EmptyMarkup
+          })
         }
       }
     },

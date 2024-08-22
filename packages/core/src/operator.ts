@@ -163,10 +163,6 @@ function $unset (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
-function $markup (document: Doc, keyval: Record<string, PropertyType>): void {
-  // do nothing
-}
-
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
@@ -174,8 +170,7 @@ const operators: Record<string, _OperatorFunc> = {
   $move,
   $pushMixin,
   $inc,
-  $unset,
-  $markup
+  $unset
 }
 
 /**

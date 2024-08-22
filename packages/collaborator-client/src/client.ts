@@ -16,7 +16,6 @@
 import {
   Account,
   CollaborativeDoc,
-  Hierarchy,
   Markup,
   Ref,
   Timestamp,
@@ -38,19 +37,17 @@ export interface DocumentSnapshotParams {
 /** @public */
 export interface GetContentRequest {
   documentId: DocumentId
-  field: string
 }
 
 /** @public */
 export interface GetContentResponse {
-  markup: string
+  content: Record<string, Markup>
 }
 
 /** @public */
 export interface UpdateContentRequest {
   documentId: DocumentId
-  field: string
-  markup: Markup
+  content: Record<string, Markup>
   snapshot?: DocumentSnapshotParams
 }
 
@@ -107,11 +104,10 @@ export interface TakeSnapshotResponse {
 /** @public */
 export interface CollaboratorClient {
   // field operations
-  getContent: (collaborativeDoc: CollaborativeDoc, field: string) => Promise<Markup>
+  getContent: (collaborativeDoc: CollaborativeDoc) => Promise<Record<string, Markup>>
   updateContent: (
     document: CollaborativeDoc,
-    field: string,
-    value: Markup,
+    content: Record<string, Markup>,
     snapshot?: DocumentSnapshotParams
   ) => Promise<CollaborativeDoc>
   copyContent: (
@@ -128,19 +124,13 @@ export interface CollaboratorClient {
 }
 
 /** @public */
-export function getClient (
-  hierarchy: Hierarchy,
-  workspaceId: WorkspaceId,
-  token: string,
-  collaboratorUrl: string
-): CollaboratorClient {
+export function getClient (workspaceId: WorkspaceId, token: string, collaboratorUrl: string): CollaboratorClient {
   const url = collaboratorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-  return new CollaboratorClientImpl(hierarchy, workspaceId, token, url)
+  return new CollaboratorClientImpl(workspaceId, token, url)
 }
 
 class CollaboratorClientImpl implements CollaboratorClient {
   constructor (
-    private readonly hierarchy: Hierarchy,
     private readonly workspace: WorkspaceId,
     private readonly token: string,
     private readonly collaboratorUrl: string
@@ -167,26 +157,25 @@ class CollaboratorClientImpl implements CollaboratorClient {
     return result
   }
 
-  async getContent (document: CollaborativeDoc, field: string): Promise<Markup> {
+  async getContent (document: CollaborativeDoc): Promise<Record<string, Markup>> {
     const workspace = this.workspace.name
 
     const documentId = formatMinioDocumentId(workspace, document)
-    const payload: GetContentRequest = { documentId, field }
+    const payload: GetContentRequest = { documentId }
     const res = (await this.rpc('getContent', payload)) as GetContentResponse
 
-    return res.markup ?? ''
+    return res.content ?? {}
   }
 
   async updateContent (
     document: CollaborativeDoc,
-    field: string,
-    markup: Markup,
+    content: Record<string, Markup>,
     snapshot?: DocumentSnapshotParams
   ): Promise<CollaborativeDoc> {
     const workspace = this.workspace.name
 
     const documentId = formatMinioDocumentId(workspace, document)
-    const payload: UpdateContentRequest = { documentId, field, markup, snapshot }
+    const payload: UpdateContentRequest = { documentId, content, snapshot }
     await this.rpc('updateContent', payload)
 
     return snapshot !== undefined ? collaborativeDocWithLastVersion(document, snapshot.versionId) : document

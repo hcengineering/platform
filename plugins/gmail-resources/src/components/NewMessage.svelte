@@ -17,7 +17,7 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import core, { Data, Markup, Ref, generateId } from '@hcengineering/core'
+  import core, { Data, Markup, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage, GmailEvents } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -38,7 +38,7 @@
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  let objectId: Ref<NewMessage> = generateId()
+  let objectId = generateId()
 
   let progress = false
 
@@ -66,7 +66,7 @@
   $: templateProvider !== undefined && templateProvider.set(contact.class.Contact, object)
 
   async function sendMsg (): Promise<void> {
-    await client.createDoc<NewMessage>(
+    await client.createDoc(
       plugin.class.NewMessage,
       core.space.Workspace,
       {

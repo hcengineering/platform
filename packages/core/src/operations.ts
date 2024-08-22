@@ -1,6 +1,18 @@
 import { deepEqual } from 'fast-equals'
 import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
-import type { Account, AnyAttribute, AttachedDoc, Class, Data, Doc, Mixin, Ref, Space, Timestamp } from './classes'
+import type {
+  Account,
+  AnyAttribute,
+  AttachedData,
+  AttachedDoc,
+  Class,
+  Data,
+  Doc,
+  Mixin,
+  Ref,
+  Space,
+  Timestamp
+} from './classes'
 import { Client } from './client'
 import core from './component'
 import type {
@@ -13,16 +25,7 @@ import type {
   TxResult,
   WithLookup
 } from './storage'
-import {
-  CreateAttachedData,
-  CreateData,
-  DocumentClassQuery,
-  Tx,
-  TxApplyResult,
-  TxCUD,
-  TxFactory,
-  TxProcessor
-} from './tx'
+import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } from './tx'
 import { Analytics } from '@hcengineering/analytics'
 
 /**
@@ -82,7 +85,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
   async createDoc<T extends Doc>(
     _class: Ref<Class<T>>,
     space: Ref<Space>,
-    attributes: CreateData<T>,
+    attributes: Data<T>,
     id?: Ref<T>,
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>
@@ -105,7 +108,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     attachedTo: Ref<T>,
     attachedToClass: Ref<Class<T>>,
     collection: Extract<keyof T, string> | string,
-    attributes: CreateAttachedData<P>,
+    attributes: AttachedData<P>,
     id?: Ref<P>,
     modifiedOn?: Timestamp,
     modifiedBy?: Ref<Account>

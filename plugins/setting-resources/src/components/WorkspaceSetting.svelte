@@ -34,7 +34,7 @@
   async function onAvatarDone (e: any): Promise<void> {
     if (workspaceSettings === undefined) {
       const avatar = await avatarEditor.createAvatar()
-      await client.createDoc<WorkspaceSetting>(
+      await client.createDoc(
         setting.class.WorkspaceSetting,
         core.space.Workspace,
         { icon: avatar.avatar },

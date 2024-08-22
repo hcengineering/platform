@@ -38,7 +38,6 @@ import core, {
   type Hierarchy,
   type Markup,
   type MeasureContext,
-  type Mixin,
   type MigrationState,
   type Ref,
   type RefTo,
@@ -944,7 +943,7 @@ export async function restoreHrTaskTypesFromUpdates (
         const taskTargetClassId = `${taskTypeId}:type:mixin` as Ref<Class<Task>>
         const ofClassClass = hierarchy.getClass(recruit.class.Applicant)
 
-        await db.collection<TxCreateDoc<Mixin<Doc>>>(DOMAIN_TX).insertOne({
+        await db.collection<TxCreateDoc<Doc>>(DOMAIN_TX).insertOne({
           _id: generateId(),
           _class: core.class.TxCreateDoc,
           space: core.space.Tx,
@@ -997,7 +996,7 @@ export async function restoreHrTaskTypesFromUpdates (
       const targetClassId = `${projectTypeId}:type:mixin` as Ref<Class<Task>>
       const ofClassClass = hierarchy.getClass(recruit.class.Vacancy)
 
-      await db.collection<TxCreateDoc<Mixin<Doc>>>(DOMAIN_TX).insertOne({
+      await db.collection<TxCreateDoc<Doc>>(DOMAIN_TX).insertOne({
         _id: generateId(),
         _class: core.class.TxCreateDoc,
         space: core.space.Tx,

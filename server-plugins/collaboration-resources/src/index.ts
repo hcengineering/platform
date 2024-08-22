@@ -13,75 +13,10 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
-import type {
-  CollaborativeDoc,
-  CreateData,
-  Doc,
-  Hierarchy,
-  Markup,
-  Mixin,
-  MixinData,
-  Ref,
-  Tx,
-  TxCUD,
-  TxCreateDoc,
-  TxMixin,
-  TxRemoveDoc,
-  WorkspaceId
-} from '@hcengineering/core'
-import core, { TxProcessor, collaborativeDocParse, systemAccountEmail } from '@hcengineering/core'
+import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
+import core, { TxProcessor } from '@hcengineering/core'
 import { removeCollaborativeDoc } from '@hcengineering/collaboration'
-import { getMetadata } from '@hcengineering/platform'
-import serverCore, { type TriggerControl } from '@hcengineering/server-core'
-import { generateToken } from '@hcengineering/server-token'
-
-function getCollaborator (workspace: WorkspaceId, hierarchy: Hierarchy): CollaboratorClient {
-  const token = generateToken(systemAccountEmail, workspace, {})
-  const collaboratorUrl = getMetadata(serverCore.metadata.CollaboratorUrl) ?? ''
-  return getCollaboratorClient(hierarchy, workspace, token, collaboratorUrl)
-}
-
-async function OnMarkupCreate (tx: Tx, { hierarchy, workspace, ctx }: TriggerControl): Promise<Tx[]> {
-  const cudTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
-
-  let mixin: Ref<Mixin<Doc>> | undefined
-  let attributes: CreateData<Doc> | MixinData<Doc, Doc>
-  if (cudTx._class === core.class.TxCreateDoc) {
-    attributes = (cudTx as TxCreateDoc<Doc>).attributes
-  } else if (cudTx._class === core.class.TxMixin) {
-    attributes = (cudTx as TxMixin<Doc, Doc>).attributes
-    mixin = (cudTx as TxMixin<Doc, Doc>).mixin
-  } else {
-    return []
-  }
-
-  const res: Tx[] = []
-
-  if (attributes?.$markup !== undefined) {
-    const collaborator = getCollaborator(workspace, hierarchy)
-
-    for (const [k, v] of Object.entries<Markup>(attributes.$markup)) {
-      const attr = hierarchy.getAttribute(mixin ?? cudTx.objectClass, k)
-      if (!hierarchy.isDerived(attr.type._class, core.class.TypeCollaborativeDoc)) continue
-
-      const collaborativeDoc = (attributes as any)[k] as CollaborativeDoc
-      if (collaborativeDoc !== undefined) {
-        const { lastVersionId } = collaborativeDocParse(collaborativeDoc)
-
-        await ctx.with('update-content', {}, async () => {
-          await collaborator.updateContent(collaborativeDoc, k, v, {
-            versionId: lastVersionId,
-            versionName: lastVersionId,
-            createdBy: tx.modifiedBy
-          })
-        })
-      }
-    }
-  }
-
-  return res
-}
+import { type TriggerControl } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -123,7 +58,6 @@ export async function OnDelete (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnMarkupCreate,
     OnDelete
   }
 })

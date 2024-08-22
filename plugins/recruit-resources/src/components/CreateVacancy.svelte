@@ -18,6 +18,7 @@
   import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
   import core, {
     Account,
+    AttachedData,
     Data,
     Ref,
     Role,
@@ -29,7 +30,14 @@
     makeCollaborativeDoc
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Card, InlineAttributeBar, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    Card,
+    InlineAttributeBar,
+    MessageBox,
+    createQuery,
+    getClient,
+    updateMarkup
+  } from '@hcengineering/presentation'
   import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { ProjectType, makeRank } from '@hcengineering/task'
@@ -175,40 +183,30 @@
 
     const resId: Ref<Issue> = generateId()
     const identifier = `${project?.identifier}-${number}`
-    await client.addCollection(
-      tracker.class.Issue,
-      space,
-      parent,
-      tracker.class.Issue,
-      'subIssues',
-      {
-        title: template.title + ` (${name})`,
-        description: makeCollaborativeDoc(resId, 'description'),
-        assignee: template.assignee,
-        component: template.component,
-        milestone: template.milestone,
-        number,
-        status: project?.defaultIssueStatus as Ref<IssueStatus>,
-        priority: template.priority,
-        rank,
-        comments: 0,
-        subIssues: 0,
-        dueDate: null,
-        parents: [],
-        reportedTime: 0,
-        remainingTime: 0,
-        estimation: template.estimation,
-        reports: 0,
-        relations: [{ _id: id, _class: recruit.class.Vacancy }],
-        childInfo: [],
-        kind: taskType._id,
-        identifier,
-        $markup: {
-          description: template.description
-        }
-      },
-      resId
-    )
+    const data: AttachedData<Issue> = {
+      title: template.title + ` (${name})`,
+      description: makeCollaborativeDoc(resId, 'description'),
+      assignee: template.assignee,
+      component: template.component,
+      milestone: template.milestone,
+      number,
+      status: project?.defaultIssueStatus as Ref<IssueStatus>,
+      priority: template.priority,
+      rank,
+      comments: 0,
+      subIssues: 0,
+      dueDate: null,
+      parents: [],
+      reportedTime: 0,
+      remainingTime: 0,
+      estimation: template.estimation,
+      reports: 0,
+      relations: [{ _id: id, _class: recruit.class.Vacancy }],
+      childInfo: [],
+      kind: taskType._id,
+      identifier
+    }
+    await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', data, resId)
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
       for (const label of tagElements) {
@@ -219,6 +217,7 @@
         })
       }
     }
+    await updateMarkup(data.description, { description: template.description })
     return resId
   }
 
@@ -245,10 +244,7 @@
       members,
       autoJoin: typeType.autoJoin ?? false,
       owners: [getCurrentAccount()._id],
-      type: typeId,
-      $markup: {
-        fullDescription
-      }
+      type: typeId
     }
 
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
@@ -275,6 +271,7 @@
       }
     }
 
+    await updateMarkup(data.fullDescription, { fullDescription })
     await descriptionBox.createAttachments()
 
     // Add vacancy mixin with roles assignment

@@ -19,10 +19,10 @@ import {
   type UpdateContentRequest,
   type UpdateContentResponse
 } from '@hcengineering/collaborator-client'
+import { YDocVersion, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
-import { YDocVersion, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
 
 export async function updateContent (
   ctx: MeasureContext,
@@ -30,13 +30,18 @@ export async function updateContent (
   payload: UpdateContentRequest,
   params: RpcMethodParams
 ): Promise<UpdateContentResponse> {
-  const { documentId, field, markup, snapshot } = payload
+  const { documentId, content, snapshot } = payload
   const { hocuspocus, transformer, storageAdapter } = params
   const { workspaceId } = context
 
-  const update = await ctx.with('transform', {}, () => {
-    const ydoc = transformer.toYdoc(markup, field)
-    return encodeStateAsUpdate(ydoc)
+  const updates = await ctx.with('transform', {}, () => {
+    const updates: Record<string, Uint8Array> = {}
+
+    Object.entries(content).forEach(([field, markup]) => {
+      const ydoc = transformer.toYdoc(markup, field)
+      updates[field] = encodeStateAsUpdate(ydoc)
+    })
+    return updates
   })
 
   const connection = await ctx.with('connect', {}, async () => {
@@ -46,10 +51,12 @@ export async function updateContent (
   try {
     await ctx.with('update', {}, async () => {
       await connection.transact((document) => {
-        const fragment = document.getXmlFragment(field)
         document.transact(() => {
-          fragment.delete(0, fragment.length)
-          applyUpdate(document, update)
+          Object.entries(updates).forEach(([field, update]) => {
+            const fragment = document.getXmlFragment(field)
+            fragment.delete(0, fragment.length)
+            applyUpdate(document, update)
+          })
         })
       })
     })

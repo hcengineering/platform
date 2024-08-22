@@ -10,7 +10,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
-  CreateAttachedData,
+  AttachedData,
   Doc,
   DocumentUpdate,
   Ref,
@@ -372,7 +372,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
 
       const description = await this.ctx.withLog('query collaborative description', {}, async () => {
-        return await this.collaborator.getContent((existing as Issue).description, 'description')
+        const content = await this.collaborator.getContent((existing as Issue).description)
+        return content.description ?? ''
       })
 
       this.ctx.info('create github issue', {
@@ -618,7 +619,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           'query collaborative description',
           {},
           async () => {
-            return await this.collaborator.getContent((existing as Issue).description, 'description')
+            const content = await this.collaborator.getContent((existing as Issue).description)
+            return content.description ?? ''
           },
           { url: issueExternal.url }
         )
@@ -851,7 +853,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     const { description, ...update } = issueData
 
-    const value: CreateAttachedData<Issue> = {
+    const value: AttachedData<Issue> = {
       ...update,
       description: makeCollaborativeDoc(issueId, 'description'),
       kind: taskType,
@@ -870,9 +872,10 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       reports: 0,
       relations: [],
       childInfo: [],
-      identifier: `${prj.identifier}-${number}`,
-      $markup: { description }
+      identifier: `${prj.identifier}-${number}`
     }
+
+    await this.collaborator.updateContent(value.description, { description })
 
     await this.client.addCollection(
       tracker.class.Issue,

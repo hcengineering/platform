@@ -22,9 +22,9 @@ import {
   collaborativeDocParse,
   collaborativeDocUnchain
 } from '@hcengineering/core'
+import { StorageAdapter } from '@hcengineering/server-core'
 import { Doc as YDoc } from 'yjs'
 
-import { StorageAdapter } from '@hcengineering/server-core'
 import { yDocBranch } from '../history/branch'
 import { YDocVersion } from '../history/history'
 import { createYdocSnapshot, restoreYdocSnapshot } from '../history/snapshot'
@@ -106,7 +106,7 @@ export async function saveCollaborativeDoc (
 }
 
 /** @public */
-export async function saveCollaborativeDocVersion (
+async function saveCollaborativeDocVersion (
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   documentId: string,
@@ -119,6 +119,10 @@ export async function saveCollaborativeDocVersion (
       await ctx.with('yDocToStorage', {}, async () => {
         await yDocToStorage(ctx, storageAdapter, workspace, documentId, ydoc)
       })
+
+      // const json = yDocToJSON(ydoc)
+      // putCollaborativeDocMarkup(ctx, storageAdapter, workspace, col)
+      // await storageAdapter.put(ctx, workspace, collaborativeMarkupDocId(documentId), JSON.stringify, 'application/json')
     } else {
       console.warn('Cannot save non HEAD document version', documentId, versionId)
     }

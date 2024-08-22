@@ -28,7 +28,7 @@
     makeCollaborativeDoc
   } from '@hcengineering/core'
   import { Customer, LeadEvents } from '@hcengineering/lead'
-  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
   import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
@@ -83,11 +83,10 @@
       candidate.avatarProps = info.avatarProps
     }
     const candidateData: MixinData<Contact, Customer> = {
-      description: makeCollaborativeDoc(customerId, 'description'),
-      $markup: {
-        description
-      }
+      description: makeCollaborativeDoc(customerId, 'description')
     }
+
+    await updateMarkup(candidateData.description, { description })
 
     const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
     await client.createMixin(

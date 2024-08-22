@@ -25,7 +25,7 @@
     TxOperations,
     WithLookup
   } from '@hcengineering/core'
-  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -59,17 +59,8 @@
   fillDefaults(hierarchy, object, contact.class.Organization)
 
   async function createOrganization (): Promise<void> {
-    await client.createDoc(
-      contact.class.Organization,
-      contact.space.Contacts,
-      {
-        ...object,
-        $markup: {
-          description
-        }
-      },
-      id
-    )
+    await updateMarkup(object.description, { description })
+    await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
     await descriptionBox.createAttachments(id)
 
     for (const channel of channels) {

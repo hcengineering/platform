@@ -215,7 +215,7 @@ async function createSections (
   const h = txops.getHierarchy()
 
   const { space, collaboratorURL, token, workspaceId } = config
-  const collaborator = getCollaboratorClient(txops.getHierarchy(), workspaceId, token, collaboratorURL)
+  const collaborator = getCollaboratorClient(workspaceId, token, collaboratorURL)
 
   console.log('Creating document sections')
 
@@ -274,7 +274,7 @@ async function createSections (
           ? (existingSection as CollaborativeDocumentSection).collaboratorSectionId
           : section.id
 
-      await collaborator.updateContent(collabId, collabSectionId, section.content)
+      await collaborator.updateContent(collabId, { [collabSectionId]: section.content })
     }
 
     // deleting the default section if it was the only one and there were other sections added from the extracted doc

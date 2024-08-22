@@ -375,8 +375,7 @@ export abstract class IssueSyncManagerBase {
             const versionId = `${Date.now()}`
             issueData.description = await this.collaborator.updateContent(
               doc.description,
-              'description',
-              update.description,
+              { description: update.description },
               {
                 versionId,
                 versionName: versionId,
@@ -931,8 +930,7 @@ export abstract class IssueSyncManagerBase {
         issueData.description = update.description
         update.description = await this.collaborator.updateContent(
           existingIssue.description,
-          'description',
-          update.description,
+          { description: update.description },
           {
             versionId,
             versionName: versionId,

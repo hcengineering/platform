@@ -47,13 +47,12 @@ export async function createVacancy (
       company,
       number: (incResult as any).object.sequence,
       members: [],
-      type: typeId,
-      $markup: {
-        fullDescription: type.description
-      }
+      type: typeId
     },
     id
   )
+
+  // TODO type.description
 
   return id
 }

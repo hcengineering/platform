@@ -2,7 +2,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
-  CreateAttachedData,
+  AttachedData,
   Doc,
   DocumentUpdate,
   Ref,
@@ -584,7 +584,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           'query collaborative pull request description',
           {},
           async () => {
-            return await this.collaborator.getContent((existing as any).description, 'description')
+            const content = await this.collaborator.getContent((existing as any).description)
+            return content.description
           },
           { url: pullRequestExternal.url }
         )
@@ -1165,7 +1166,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const { description, ...data } = pullRequestData
     const project = (incResult as any).object as Project
     const number = project.sequence
-    const value: CreateAttachedData<GithubPullRequest> = {
+    const value: AttachedData<GithubPullRequest> = {
       ...data,
       description: makeCollaborativeDoc(prId, 'description'),
       kind: taskType,
@@ -1187,9 +1188,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       childInfo: [],
       commits: 0,
       reviewComments: 0,
-      reviews: 0,
-      $markup: { description }
+      reviews: 0
     }
+
+    await this.collaborator.updateContent(value.description, { description })
 
     await client.addCollection(
       github.class.GithubPullRequest,
