@@ -24,7 +24,8 @@ import {
   type ObjectChatPanel,
   type ThreadMessage,
   type ChatInfo,
-  type ChannelInfo
+  type ChannelInfo,
+  type TypingInfo
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
 import contact, { type ChannelProvider as SocialChannelProvider, type Person } from '@hcengineering/contact'
@@ -35,7 +36,8 @@ import {
   DOMAIN_MODEL,
   type Ref,
   type Timestamp,
-  IndexKind
+  IndexKind,
+  DOMAIN_TRANSIENT
 } from '@hcengineering/core'
 import {
   type Builder,
@@ -56,7 +58,7 @@ import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import notification, { TDocNotifyContext } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import type { IntlString } from '@hcengineering/platform'
+import { type IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 import { type DocNotifyContext } from '@hcengineering/notification'
 
@@ -155,6 +157,14 @@ export class TChatInfo extends TDoc implements ChatInfo {
   timestamp!: Timestamp
 }
 
+@Model(chunter.class.TypingInfo, core.class.Doc, DOMAIN_TRANSIENT)
+export class TTypingInfo extends TDoc implements TypingInfo {
+  objectId!: Ref<Doc>
+  objectClass!: Ref<Class<Doc>>
+  person!: Ref<Person>
+  lastTyping!: Timestamp
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TChunterSpace,
@@ -165,7 +175,8 @@ export function createModel (builder: Builder): void {
     TChatMessageViewlet,
     TObjectChatPanel,
     TChatInfo,
-    TChannelInfo
+    TChannelInfo,
+    TTypingInfo
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

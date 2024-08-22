@@ -25,7 +25,7 @@
     canGroupMessages,
     messageInFocus
   } from '@hcengineering/activity-resources'
-  import { Class, Doc, generateId, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Doc, generateId, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -49,9 +49,7 @@
   import chunter from '../plugin'
 
   export let provider: ChannelDataProvider
-  export let object: Doc | undefined
-  export let objectClass: Ref<Class<Doc>>
-  export let objectId: Ref<Doc>
+  export let object: Doc
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let scrollElement: HTMLDivElement | undefined | null = undefined
   export let startFromBottom = false
@@ -115,9 +113,9 @@
   $: messages = $messagesStore
   $: isLoading = $isLoadingStore
 
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: objectClass })
+  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: doc._class })
 
-  $: notifyContext = $contextByDocStore.get(objectId)
+  $: notifyContext = $contextByDocStore.get(doc._id)
 
   void client
     .getModel()
@@ -129,7 +127,7 @@
       }
     })
 
-  $: displayMessages = filterChatMessages(messages, filters, filterResources, objectClass, selectedFilters)
+  $: displayMessages = filterChatMessages(messages, filters, filterResources, doc._class, selectedFilters)
 
   const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
     if (notifyContext !== undefined) {
@@ -674,7 +672,7 @@
     }
 
     const op = client.apply(generateId(), 'chunter.scrollDown')
-    await inboxClient.readDoc(op, objectId)
+    await inboxClient.readDoc(op, doc._id)
     await op.commit()
   }
 
@@ -693,7 +691,7 @@
     if (unViewed.length === 0) {
       forceRead = true
       const op = client.apply(generateId(), 'chunter.forceReadContext')
-      await inboxClient.readDoc(op, objectId)
+      await inboxClient.readDoc(op, object._id)
       await op.commit()
     }
   }
@@ -790,7 +788,7 @@
       <ActivityExtensionComponent
         kind="input"
         {extensions}
-        props={{ object, boundary: scrollElement, collection, autofocus: true }}
+        props={{ object, boundary: scrollElement, collection, autofocus: true, withTypingInfo: true }}
       />
     </div>
   {/if}
@@ -805,6 +803,7 @@
   .ref-input {
     flex-shrink: 0;
     margin: 1.25rem 1rem 1rem;
+    margin-bottom: 0;
     max-height: 18.75rem;
   }
 
