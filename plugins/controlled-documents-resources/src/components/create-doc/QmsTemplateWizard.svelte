@@ -18,7 +18,6 @@
     ChangeControl,
     ControlledDocument,
     DEFAULT_PERIODIC_REVIEW_INTERVAL,
-    DEFAULT_SECTION_TITLE,
     DocumentState,
     DocumentTemplate,
     TEMPLATE_PREFIX,
@@ -117,7 +116,6 @@
     author: currentUser.person as Ref<Employee>,
     owner: currentUser.person as Ref<Employee>,
     state: DocumentState.Draft,
-    sections: 0,
     snapshots: 0,
     changeControl: ccRecordId,
     content: makeCollaborativeDoc(generateId()),
@@ -166,8 +164,7 @@
       docObject.docPrefix,
       spec,
       category,
-      currentUser.person as Ref<Employee>,
-      { title: DEFAULT_SECTION_TITLE }
+      currentUser.person as Ref<Employee>
     )
 
     if (!success) {

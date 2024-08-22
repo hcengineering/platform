@@ -28,7 +28,6 @@ import {
 import {
   type Document,
   type DocumentTemplate,
-  type CollaborativeDocumentSection,
   type ControlledDocument,
   type DocumentCategory,
   type DocumentSpace,
@@ -40,7 +39,7 @@ import {
 } from './types'
 
 import documents from './plugin'
-import { TEMPLATE_PREFIX, calcRank, createDocSections } from './utils'
+import { TEMPLATE_PREFIX } from './utils'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -78,17 +77,9 @@ export async function createControlledDocFromTemplate (
     return { seqNumber: -1, success: false }
   }
 
-  const template = await client.findOne(
-    documents.mixin.DocumentTemplate,
-    {
-      _id: templateId
-    },
-    {
-      lookup: {
-        _id: { sections: documents.class.DocumentSection }
-      }
-    }
-  )
+  const template = await client.findOne(documents.mixin.DocumentTemplate, {
+    _id: templateId
+  })
 
   if (template === undefined) {
     return { seqNumber: -1, success: false }
@@ -192,8 +183,6 @@ async function createControlledDoc (
     documentId
   )
 
-  await createDocSections(ops, documentId, templateId, space, documents.class.ControlledDocument)
-
   const success = await ops.commit()
 
   return { seqNumber, success: success.result }
@@ -210,8 +199,7 @@ export async function createDocumentTemplate (
   prefix: string,
   spec: Omit<AttachedData<ControlledDocument>, 'prefix'>,
   category: Ref<DocumentCategory>,
-  author?: Ref<Employee>,
-  defaultSection?: { title: string }
+  author?: Ref<Employee>
 ): Promise<{ seqNumber: number, success: boolean }> {
   const projectId = project ?? documents.ids.NoProject
 
@@ -298,36 +286,6 @@ export async function createDocumentTemplate (
     sequence: 0,
     docPrefix: prefix
   })
-
-  if (defaultSection != null) {
-    // adding the default first section
-    const sectionId = generateId()
-    const collaboratorSectionId = generateId()
-
-    await ops.addCollection(
-      documents.class.CollaborativeDocumentSection,
-      space,
-      templateId,
-      documents.mixin.DocumentTemplate,
-      'sections',
-      {
-        title: defaultSection.title,
-        rank: calcRank(),
-        key: sectionId,
-        collaboratorSectionId,
-        attachments: 0
-      },
-      sectionId as Ref<CollaborativeDocumentSection>
-    )
-
-    await ops.updateMixin(
-      sectionId,
-      documents.class.CollaborativeDocumentSection,
-      space,
-      documents.mixin.DocumentTemplateSection,
-      { description: '', guidance: '' }
-    )
-  }
 
   const success = await ops.commit()
 

@@ -72,7 +72,7 @@ export function getFileUrl (file: string, filename?: string): string {
 
   const template = getFilesUrl()
   return template
-    .replaceAll(':filename', encodeURIComponent(filename ?? ''))
+    .replaceAll(':filename', encodeURIComponent(filename ?? file))
     .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
     .replaceAll(':blobId', encodeURIComponent(file))
 }

@@ -22,6 +22,7 @@
 
   export let items: Heading[] = []
   export let selected: Heading | undefined = undefined
+  export let enumerated: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -42,7 +43,7 @@
 
     showPopup(
       TableofContentsPopup,
-      { items, selected },
+      { items, selected, enumerated },
       getPopupPositionElement(ev.target as HTMLElement, { v: 'top', h: 'right' }),
       (res) => {
         hovered = false

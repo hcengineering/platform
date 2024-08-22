@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import { AbstractType as YAbstractType, Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
+import {
+  AbstractType as YAbstractType,
+  Doc as YDoc,
+  applyUpdate,
+  encodeStateAsUpdate,
+  XmlElement as YXmlElement
+} from 'yjs'
+
+export { XmlElement as YXmlElement, XmlText as YXmlText, AbstractType as YAbstractType } from 'yjs'
 
 /** @public */
 export function yDocFromBuffer (buffer: Buffer, ydoc: YDoc): YDoc {
@@ -42,4 +50,31 @@ export function yDocCopyXmlField (ydoc: YDoc, source: string, target: string): v
     dstField.delete(0, dstField.length)
     dstField.insert(0, srcField.toArray().map((item) => (item instanceof YAbstractType ? item.clone() : item)) as any)
   })
+}
+
+/**
+ * @public
+ * Replaces standard clone method that only copies string attributes
+ * https://github.com/yjs/yjs/blob/main/src/types/YXmlElement.js#L97
+ * @param src YXmlElement
+ * @returns YXmlElement
+ */
+export function clone (src: YXmlElement): YXmlElement {
+  const el = new YXmlElement(src.nodeName)
+  const attrs = src.getAttributes()
+
+  Object.entries(attrs).forEach(([key, value]) => {
+    el.setAttribute(key, value as any)
+  })
+
+  el.insert(
+    0,
+    src
+      .toArray()
+      .map((item) =>
+        item instanceof YAbstractType ? (item instanceof YXmlElement ? clone(item) : item.clone()) : item
+      ) as any
+  )
+
+  return el
 }

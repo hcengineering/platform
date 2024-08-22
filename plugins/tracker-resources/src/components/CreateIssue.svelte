@@ -202,8 +202,8 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
-      void getMarkup(originalIssue.description, 'description').then((res) => {
-        object.description = res
+      void getMarkup(originalIssue.description).then((res) => {
+        object.description = res.description
       })
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
@@ -357,10 +357,14 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
-    resetDefaultAssigneeId()
-    currentProject = res[0]
-  })
+  $: if (_space !== undefined) {
+    spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
+      resetDefaultAssigneeId()
+      currentProject = res[0]
+    })
+  } else {
+    currentProject = undefined
+  }
 
   const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
 
@@ -764,7 +768,7 @@
       label={tracker.string.Project}
       bind:space={_space}
       on:object={(evt) => {
-        currentProject = evt.detail
+        currentProject = evt.detail ?? undefined
       }}
       kind={'regular'}
       size={'small'}

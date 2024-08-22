@@ -22,12 +22,13 @@
 
   export let items: Heading[] = []
   export let selected: Heading | undefined = undefined
+  export let enumerated: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-space" />
-  <TableOfContentsContent {items} {selected} on:close />
+  <TableOfContentsContent {items} {selected} {enumerated} on:close />
   <div class="menu-space" />
 </div>

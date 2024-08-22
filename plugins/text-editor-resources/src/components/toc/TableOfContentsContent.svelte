@@ -22,6 +22,7 @@
 
   export let items: Heading[] = []
   export let selected: Heading | undefined = undefined
+  export let enumerated: boolean = false
 
   $: minLevel = items.reduce((p, v) => Math.min(p, v.level), Infinity)
 
@@ -43,18 +44,20 @@
   </div>
 </div>
 <div class="scroll">
-  <div class="box">
+  <div class="box" class:enumerated>
     {#each items as item}
       {@const level = getIndentLevel(item.level)}
       <button
-        class="menu-item no-focus flex-row-center item"
+        class="menu-item no-focus flex-row-center item enum{level + 1}"
         on:click={() => dispatch('close', item)}
         use:tooltip={{ label: getEmbeddedLabel(item.title) }}
       >
-        <div class="label overflow-label flex-grow" class:selected={item.id === selected?.id}>
-          <span style={`padding-left: ${level * 1.5}rem;`}>
-            {item.title}
-          </span>
+        <div
+          class="label overflow-label flex-grow"
+          class:selected={item.id === selected?.id}
+          style={`padding-left: ${level * 1.5}rem;`}
+        >
+          {item.title}
         </div>
       </button>
     {/each}
@@ -77,6 +80,34 @@
   .item {
     @media print {
       line-height: 2rem;
+    }
+  }
+
+  .enumerated {
+    .enum1 {
+      counter-increment: enum1;
+      counter-reset: enum2;
+
+      .label::before {
+        content: counter(enum1) '. ';
+      }
+    }
+
+    .enum2 {
+      counter-increment: enum2;
+      counter-reset: enum3;
+
+      .label::before {
+        content: counter(enum1) '.' counter(enum2) '. ';
+      }
+    }
+
+    .enum3 {
+      counter-increment: enum3;
+
+      .label::before {
+        content: counter(enum1) '.' counter(enum2) '.' counter(enum3) '. ';
+      }
     }
   }
 </style>

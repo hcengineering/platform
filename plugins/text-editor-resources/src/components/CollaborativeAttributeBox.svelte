@@ -106,6 +106,9 @@
   field={key.key}
   canEmbedFiles={false}
   withSideMenu={false}
+  kitOptions={{
+    note: false
+  }}
   on:focus
   on:blur
   on:update

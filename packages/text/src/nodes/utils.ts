@@ -20,7 +20,7 @@ import { Attribute } from '@tiptap/core'
  */
 export function getDataAttribute (
   name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
+  options?: Partial<Omit<Attribute, 'parseHTML' | 'renderHTML'>>
 ): Partial<Attribute> {
   const dataName = `data-${name}`
 

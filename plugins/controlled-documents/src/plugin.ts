@@ -14,9 +14,7 @@ import type { AnyComponent, ResolvedLocation, Location } from '@hcengineering/ui
 import { Action } from '@hcengineering/view'
 
 import type {
-  AttachmentsDocumentSection,
   ChangeControl,
-  CollaborativeDocumentSection,
   ControlledDocument,
   ControlledDocumentState,
   Document,
@@ -27,16 +25,11 @@ import type {
   DocumentMeta,
   DocumentRequest,
   DocumentReviewRequest,
-  DocumentSection,
-  DocumentSectionCreator,
-  DocumentSectionEditor,
-  DocumentSectionPresenter,
   DocumentSpace,
   DocumentSpaceType,
   DocumentSpaceTypeDescriptor,
   DocumentState,
   DocumentTemplate,
-  DocumentTemplateSection,
   DocumentTraining,
   HierarchyDocument,
   ExternalSpace,
@@ -74,10 +67,7 @@ export const documentsPlugin = plugin(documentsId, {
     DocumentCategory: '' as Ref<Class<DocumentCategory>>,
     ControlledDocument: '' as Ref<Class<ControlledDocument>>,
     ChangeControl: '' as Ref<Class<ChangeControl>>,
-    DocumentSection: '' as Ref<Class<DocumentSection>>,
     DocumentComment: '' as Ref<Class<DocumentComment>>,
-    CollaborativeDocumentSection: '' as Ref<Class<CollaborativeDocumentSection>>,
-    AttachmentsDocumentSection: '' as Ref<Class<AttachmentsDocumentSection>>,
 
     Sequence: '' as Ref<Class<Sequence>>,
 
@@ -91,10 +81,6 @@ export const documentsPlugin = plugin(documentsId, {
   mixin: {
     DocumentTemplate: '' as Ref<Mixin<DocumentTemplate>>,
     DocumentTraining: '' as Ref<Mixin<DocumentTraining>>,
-    DocumentSectionEditor: '' as Ref<Mixin<DocumentSectionEditor>>,
-    DocumentSectionPresenter: '' as Ref<Mixin<DocumentSectionPresenter>>,
-    DocumentSectionCreator: '' as Ref<Mixin<DocumentSectionCreator>>,
-    DocumentTemplateSection: '' as Ref<Mixin<DocumentTemplateSection>>,
     DocumentSpaceTypeData: '' as Ref<Mixin<DocumentSpace>>
     // DocTemplateActions: '' as Ref<Mixin<DocTemplateActions>>
   },
@@ -123,7 +109,6 @@ export const documentsPlugin = plugin(documentsId, {
   },
   action: {
     ChangeDocumentOwner: '' as Ref<Action<Doc, any>>,
-    DeleteDocumentTemplateSection: '' as Ref<Action>,
     CreateChildDocument: '' as Ref<Action<Document, any>>,
     CreateChildTemplate: '' as Ref<Action<Document, any>>,
     CreateDocument: '' as Ref<Action<DocumentSpace, any>>,
@@ -151,9 +136,6 @@ export const documentsPlugin = plugin(documentsId, {
     StateObsolete: '' as Asset,
     ArrowUp: '' as Asset,
     ArrowDown: '' as Asset,
-    Duplicate: '' as Asset,
-    EditDescription: '' as Asset,
-    EditGuidance: '' as Asset,
     Configure: '' as Asset
   },
   space: {
@@ -180,7 +162,6 @@ export const documentsPlugin = plugin(documentsId, {
     Owner: '' as IntlString,
     Status: '' as IntlString,
     Labels: '' as IntlString,
-    Sections: '' as IntlString,
     Description: '' as IntlString,
     Reason: '' as IntlString,
     CollaborativeDocument: '' as IntlString,
@@ -194,11 +175,7 @@ export const documentsPlugin = plugin(documentsId, {
     EffectiveDate: '' as IntlString,
     PlannedEffectiveDate: '' as IntlString,
     ChangeControl: '' as IntlString,
-    Section: '' as IntlString,
     Rank: '' as IntlString,
-    CollaborativeSection: '' as IntlString,
-    CollaboratorSectionId: '' as IntlString,
-    AttachmentsSection: '' as IntlString,
     DocumentRequest: '' as IntlString,
     DocumentReviewRequest: '' as IntlString,
     DocumentApprovalRequest: '' as IntlString,
@@ -206,7 +183,6 @@ export const documentsPlugin = plugin(documentsId, {
     Categories: '' as IntlString,
     Guidance: '' as IntlString,
     Required: '' as IntlString,
-    SectionTemplate: '' as IntlString,
     Major: '' as IntlString,
     Minor: '' as IntlString,
     Patch: '' as IntlString,
@@ -221,6 +197,7 @@ export const documentsPlugin = plugin(documentsId, {
     InProgress: '' as IntlString,
     Resolve: '' as IntlString,
     Unresolve: '' as IntlString,
+    Pending: '' as IntlString,
     Resolved: '' as IntlString,
     ShowResolved: '' as IntlString,
     Ordering: '' as IntlString,
@@ -235,7 +212,6 @@ export const documentsPlugin = plugin(documentsId, {
     DeleteCategoryHint: '' as IntlString,
     DeleteCategoryWarning: '' as IntlString,
     Key: '' as IntlString,
-    SectionKey: '' as IntlString,
     CommentsSequence: '' as IntlString,
     Index: '' as IntlString,
     GeneralDocumentation: '' as IntlString,

@@ -120,7 +120,6 @@
     author: currentUser.person as Ref<Employee>,
     owner: currentUser.person as Ref<Employee>,
     state: DocumentState.Draft,
-    sections: 0,
     snapshots: 0,
     changeControl: ccRecordId,
     content: makeCollaborativeDoc(generateId()),
