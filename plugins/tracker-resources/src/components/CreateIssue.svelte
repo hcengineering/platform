@@ -27,6 +27,7 @@
     SortingOrder,
     fillDefaults,
     generateId,
+    makeCollaborativeDoc,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
@@ -41,7 +42,9 @@
     MultipleDraftController,
     SpaceSelector,
     createQuery,
-    getClient
+    getClient,
+    getMarkup,
+    updateMarkup
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
@@ -190,7 +193,6 @@
     if (originalIssue !== undefined && !ignoreOriginal) {
       const res: IssueDraft = {
         ...base,
-        description: originalIssue.description,
         status: originalIssue.status,
         priority: originalIssue.priority,
         component: originalIssue.component,
@@ -200,6 +202,9 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
+      void getMarkup(originalIssue.description).then((res) => {
+        object.description = res.description
+      })
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
       })
@@ -471,7 +476,7 @@
 
       const value: DocData<Issue> = {
         title: getTitle(object.title),
-        description: object.description,
+        description: makeCollaborativeDoc(_id, 'description'),
         assignee: object.assignee,
         component: object.component,
         milestone: object.milestone,
@@ -503,6 +508,8 @@
         kind,
         identifier
       }
+
+      await updateMarkup(value.description, { description: object.description })
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
 

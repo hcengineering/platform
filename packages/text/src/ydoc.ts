@@ -64,7 +64,7 @@ const defaultSchema = getSchema(defaultExtensions)
  * @public
  */
 export function yDocToNode (ydoc: YDoc, field?: string, schema?: Schema, extensions?: Extensions): Node {
-  schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
+  schema ??= getSchema(extensions ?? defaultExtensions)
 
   try {
     const body = yDocToProsemirrorJSON(ydoc, field)

@@ -320,7 +320,7 @@ export class GithubWorker implements IntegrationManager {
 
     this.repositoryManager = new RepositorySyncMapper(this.ctx.newChild('repository', {}), this._client, this.app)
 
-    this.collaborator = createCollaboratorClient(this._client.getHierarchy(), this.workspace)
+    this.collaborator = createCollaboratorClient(this.workspace)
 
     this.personMapper = new UsersSyncManager(this.ctx.newChild('users', {}), this._client, this.liveQuery)
 

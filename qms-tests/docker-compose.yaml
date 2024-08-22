@@ -80,7 +80,6 @@ services:
       - REKONI_URL=http://rekoni:4005
       - TELEGRAM_URL=http://localhost:8086
       - COLLABORATOR_URL=ws://localhost:3079
-      - COLLABORATOR_API_URL=http://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=http://localhost:8083/branding-test.json
   transactor:

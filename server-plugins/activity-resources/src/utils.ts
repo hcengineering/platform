@@ -303,7 +303,6 @@ export async function getTxAttributesUpdates (
 
     if (
       hierarchy.isDerived(attrClass, core.class.TypeMarkup) ||
-      hierarchy.isDerived(attrClass, core.class.TypeCollaborativeMarkup) ||
       hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc) ||
       mixin === notification.mixin.Collaborators
     ) {

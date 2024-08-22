@@ -71,10 +71,10 @@
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
   export let field: string
 
-  export let objectClass: Ref<Class<Doc>> | undefined
-  export let objectId: Ref<Doc> | undefined
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
   export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined
+  export let objectAttr: string | undefined = undefined
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined

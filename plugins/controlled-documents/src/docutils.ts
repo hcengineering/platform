@@ -18,11 +18,12 @@ import {
   type AttachedData,
   type Class,
   type CollaborativeDoc,
+  type Doc,
   type Ref,
   type TxOperations,
   Mixin,
   generateId,
-  getCollaborativeDoc
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import {
   type Document,
@@ -33,6 +34,7 @@ import {
   type DocumentMeta,
   type Project,
   DocumentState,
+  HierarchyDocument,
   ProjectDocument
 } from './types'
 
@@ -261,7 +263,7 @@ export async function createDocumentTemplate (
     }
   )
 
-  await ops.addCollection(
+  await ops.addCollection<DocumentMeta, HierarchyDocument>(
     _class,
     space,
     metaId,
@@ -301,5 +303,7 @@ export function getCollaborativeDocForDocument (
     prefix = prefix.substring(0, prefix.length - 1)
   }
 
-  return getCollaborativeDoc(`${prefix}-${seqNumber}-${major}.${minor}${next ? '.next' : ''}-` + generateId())
+  return makeCollaborativeDoc(
+    (`${prefix}-${seqNumber}-${major}.${minor}${next ? '.next' : ''}-` + generateId()) as Ref<Doc>
+  )
 }

@@ -54,7 +54,7 @@ const envMap: { [key in keyof Config]: string } = {
   MongoURL: 'MONGO_URL',
   ConfigurationDB: 'MONGO_DB',
 
-  CollaboratorURL: 'COLLABORATOR_API_URL',
+  CollaboratorURL: 'COLLABORATOR_URL',
 
   ProductID: 'PRODUCT_ID',
 

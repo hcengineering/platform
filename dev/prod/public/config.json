@@ -1,7 +1,6 @@
 {
   "ACCOUNTS_URL":"/account",
   "COLLABORATOR_URL": "ws://localhost:3078",
-  "COLLABORATOR_API_URL": "http://localhost:3078",
   "UPLOAD_URL":"/files",
   "TELEGRAM_URL": "http://localhost:8086",
   "GMAIL_URL": "http://localhost:8088",

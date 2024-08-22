@@ -13,34 +13,36 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
+import {
+  type CollaboratorClient,
+  getClient as getCollaborator,
+  type DocumentSnapshotParams
+} from '@hcengineering/collaborator-client'
 import { type CollaborativeDoc, type Markup, getCurrentAccount, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
 
-import { getClient } from '.'
 import presentation from './plugin'
 
 /** @public */
 export function getCollaboratorClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
-  const hierarchy = getClient().getHierarchy()
   const token = getMetadata(presentation.metadata.Token) ?? ''
-  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorApiUrl) ?? ''
+  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
-  return getCollaborator(hierarchy, workspaceId, token, collaboratorURL)
+  return getCollaborator(workspaceId, token, collaboratorURL)
 }
 
 /** @public */
-export async function getMarkup (collaborativeDoc: CollaborativeDoc, field: string): Promise<Markup> {
+export async function getMarkup (collaborativeDoc: CollaborativeDoc): Promise<Record<string, Markup>> {
   const client = getCollaboratorClient()
-  return await client.getContent(collaborativeDoc, field)
+  return await client.getContent(collaborativeDoc)
 }
 
 /** @public */
-export async function updateMarkup (collaborativeDoc: CollaborativeDoc, field: string, value: Markup): Promise<void> {
+export async function updateMarkup (collaborativeDoc: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
   const client = getCollaboratorClient()
-  await client.updateContent(collaborativeDoc, field, value)
+  await client.updateContent(collaborativeDoc, content)
 }
 
 /** @public */
@@ -60,12 +62,10 @@ export async function copyDocument (source: CollaborativeDoc, target: Collaborat
 }
 
 /** @public */
-export async function takeSnapshot (
-  collaborativeDoc: CollaborativeDoc,
-  snapshotName: string
-): Promise<CollaborativeDoc> {
+export async function takeSnapshot (collaborativeDoc: CollaborativeDoc, versionName: string): Promise<CollaborativeDoc> {
   const client = getCollaboratorClient()
   const createdBy = getCurrentAccount()._id
 
-  return await client.snapshot(collaborativeDoc, { createdBy, snapshotName })
+  const snapshot: DocumentSnapshotParams = { createdBy, versionId: `${Date.now()}`, versionName }
+  return await client.snapshot(collaborativeDoc, snapshot)
 }

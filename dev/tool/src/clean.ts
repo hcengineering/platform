@@ -1214,10 +1214,6 @@ async function updateId (
             const markup = (contentDoc as any)[attrName] as Markup
             const newMarkup = markup.replaceAll(doc._id, newId)
             await update(h, db, contentDoc, { [attrName]: newMarkup })
-          } else if (attr.type._class === core.class.TypeCollaborativeMarkup) {
-            const markup = (contentDoc as any)[attrName]
-            const newMarkup = markup.replaceAll(doc._id, newId)
-            await update(h, db, contentDoc, { [attrName]: newMarkup })
           } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
             const collaborativeDoc = (contentDoc as any)[attr.name] as CollaborativeDoc
             await updateYDoc(ctx, collaborativeDoc, storage, workspaceId, contentDoc, newId, doc)

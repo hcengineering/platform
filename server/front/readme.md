@@ -14,7 +14,6 @@ Front service is suited to deliver application bundles and resource assets, it a
 * TELEGRAM_URL: Specifies the URL of the Telegram service.
 * REKONI_URL: Specifies the URL of the Rekoni service.
 * COLLABORATOR_URL: Specifies the URL of the collaborator service.
-* COLLABORATOR_API_URL: Specifies the URL of the collaborator API.
 * MODEL_VERSION: Specifies the required model version.
 * SERVER_SECRET: Specifies the server secret.
 * PREVIEW_CONFIG: Specifies the preview configuration.

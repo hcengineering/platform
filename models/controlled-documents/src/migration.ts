@@ -8,7 +8,7 @@ import {
   TxOperations,
   generateId,
   DOMAIN_TX,
-  getCollaborativeDoc,
+  makeCollaborativeDoc,
   MeasureMetricsContext,
   type Class,
   type Doc,
@@ -143,7 +143,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         minor: 1,
         state: DocumentState.Effective,
         commentSequence: 0,
-        content: getCollaborativeDoc(generateId())
+        content: makeCollaborativeDoc(generateId())
       },
       ccCategory
     )

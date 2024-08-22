@@ -24,7 +24,7 @@ export async function getContent (
   payload: GetContentRequest,
   params: RpcMethodParams
 ): Promise<GetContentResponse> {
-  const { documentId, field } = payload
+  const { documentId } = payload
   const { hocuspocus, transformer } = params
 
   const connection = await ctx.with('connect', {}, async () => {
@@ -32,15 +32,17 @@ export async function getContent (
   })
 
   try {
-    const html = await ctx.with('transform', {}, async () => {
-      let content = ''
+    const content = await ctx.with('transform', {}, async () => {
+      const object: Record<string, string> = {}
       await connection.transact((document) => {
-        content = transformer.fromYdoc(document, field)
+        document.share.forEach((_, field) => {
+          object[field] = transformer.fromYdoc(document, field)
+        })
       })
-      return content
+      return object
     })
 
-    return { html }
+    return { content }
   } finally {
     await connection.disconnect()
   }

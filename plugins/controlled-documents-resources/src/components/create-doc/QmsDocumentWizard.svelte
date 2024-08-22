@@ -18,11 +18,11 @@
   import {
     generateId,
     getCurrentAccount,
+    makeCollaborativeDoc,
     type AttachedData,
     type Class,
     type Data,
-    type Ref,
-    getCollaborativeDoc
+    type Ref
   } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
@@ -122,7 +122,7 @@
     state: DocumentState.Draft,
     snapshots: 0,
     changeControl: ccRecordId,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
 
     requests: 0,
     reviewers: [],
