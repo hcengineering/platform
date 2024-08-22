@@ -21,7 +21,7 @@ import { setMetadata } from '@hcengineering/platform'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import tracker from '@hcengineering/tracker'
-import { Installation } from '@octokit/webhooks-types'
+import { Installation, type InstallationCreatedEvent, type InstallationUnsuspendEvent } from '@octokit/webhooks-types'
 import { Collection } from 'mongodb'
 import { App, Octokit } from 'octokit'
 
@@ -44,6 +44,8 @@ export interface InstallationRecord {
   installationName: string
   login: string
   loginNodeId: string
+
+  repositories?: InstallationCreatedEvent['repositories'] | InstallationUnsuspendEvent['repositories']
   type: 'Bot' | 'User' | 'Organization'
   octokit: Octokit
 }
@@ -263,8 +265,8 @@ export class PlatformWorker {
   private async removeInstallationFromWorkspace (client: Client, installationId: number): Promise<void> {
     const wsIntegerations = await client.findAll(github.class.GithubIntegration, { installationId })
 
+    const ops = new TxOperations(client, core.account.System)
     for (const intValue of wsIntegerations) {
-      const ops = new TxOperations(client, core.account.System)
       await ops.remove<GithubIntegration>(intValue)
     }
   }
@@ -544,6 +546,24 @@ export class PlatformWorker {
         type: tinst.account?.type ?? 'User',
         installationName: `${tinst.account?.html_url ?? ''}`
       }
+      this.updateInstallationRecord(installationId, val)
+    }
+  }
+
+  private updateInstallationRecord (installationId: number, val: InstallationRecord): void {
+    const current = this.installations.get(installationId)
+    if (current !== undefined) {
+      if (val.octokit !== undefined) {
+        current.octokit = val.octokit
+      }
+      current.login = val.login
+      current.loginNodeId = val.loginNodeId
+      current.type = val.type
+      current.installationName = val.installationName
+      if (val.repositories !== undefined) {
+        current.repositories = val.repositories
+      }
+    } else {
       this.installations.set(installationId, val)
     }
   }
@@ -558,7 +578,7 @@ export class PlatformWorker {
         type: tinst.account?.type ?? 'User',
         installationName: `${tinst.account?.html_url ?? ''}`
       }
-      this.installations.set(install.installation.id, val)
+      this.updateInstallationRecord(install.installation.id, val)
       ctx.info('Found installation', {
         installationId: install.installation.id,
         url: install.installation.account?.html_url ?? ''
@@ -566,16 +586,22 @@ export class PlatformWorker {
     }
   }
 
-  async handleInstallationEvent (install: Installation, enabled: boolean): Promise<void> {
+  async handleInstallationEvent (
+    install: Installation,
+    repositories: InstallationCreatedEvent['repositories'] | InstallationUnsuspendEvent['repositories'],
+    enabled: boolean
+  ): Promise<void> {
     this.ctx.info('handle integration add', { installId: install.id, name: install.html_url })
     const okit = await this.app.getInstallationOctokit(install.id)
     const iName = `${install.account.html_url ?? ''}`
-    this.installations.set(install.id, {
+
+    this.updateInstallationRecord(install.id, {
       octokit: okit,
       login: install.account.login,
       type: install.account?.type ?? 'User',
       loginNodeId: install.account.node_id,
-      installationName: iName
+      installationName: iName,
+      repositories
     })
 
     const worker = this.getWorker(install.id)
@@ -612,6 +638,9 @@ export class PlatformWorker {
       if (integeration !== undefined) {
         integeration.enabled = false
         integeration.synchronized = new Set()
+
+        await this.removeInstallationFromWorkspace(worker._client, installId)
+
         await worker._client.remove(integeration.integration)
       }
       worker.integrations.delete(installId)
@@ -902,7 +931,7 @@ export class PlatformWorker {
         case 'created':
         case 'unsuspend': {
           catchEventError(
-            this.handleInstallationEvent(payload.installation, true),
+            this.handleInstallationEvent(payload.installation, payload.repositories, true),
             payload.action,
             name,
             id,
@@ -912,7 +941,7 @@ export class PlatformWorker {
         }
         case 'suspend': {
           catchEventError(
-            this.handleInstallationEvent(payload.installation, false),
+            this.handleInstallationEvent(payload.installation, payload.repositories, false),
             payload.action,
             name,
             id,
