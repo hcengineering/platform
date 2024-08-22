@@ -43,7 +43,7 @@ export interface StorageAdapter {
   make: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
   delete: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
 
-  listBuckets: (ctx: MeasureContext, productId: string) => Promise<BucketInfo[]>
+  listBuckets: (ctx: MeasureContext) => Promise<BucketInfo[]>
   remove: (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]) => Promise<void>
   listStream: (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string) => Promise<BlobStorageIterator>
   stat: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<Blob | undefined>
@@ -104,7 +104,7 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     }
   }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     return []
   }
 

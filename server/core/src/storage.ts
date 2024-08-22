@@ -17,7 +17,7 @@ export * from '@hcengineering/storage'
  * @public
  */
 export function getBucketId (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId, '.')
+  return toWorkspaceString(workspaceId)
 }
 
 const chunkSize = 2 * 1024 * 1024

@@ -57,7 +57,7 @@ export class AIBotController {
     const activeRecords = await this.workspacesInfoCollection.find({ active: true }).toArray()
 
     for (const record of activeRecords) {
-      const id: WorkspaceId = { name: record.workspace, productId: record.productId }
+      const id: WorkspaceId = { name: record.workspace }
 
       const ws = toWorkspaceString(id)
 
@@ -85,10 +85,7 @@ export class AIBotController {
       this.closeWorkspaceTimeouts.delete(workspace)
     }
 
-    await this.workspacesInfoCollection.updateOne(
-      { workspace: workspaceId.name, productId: workspaceId.productId },
-      { $set: { active: false } }
-    )
+    await this.workspacesInfoCollection.updateOne({ workspace: workspaceId.name }, { $set: { active: false } })
 
     const client = this.workspaces.get(workspace)
 
@@ -183,9 +180,7 @@ export class AIBotController {
 
   async transfer (event: AIBotTransferEvent): Promise<void> {
     const workspaceId = getWorkspaceId(event.toWorkspace)
-    const info = await this.workspacesInfoCollection
-      .find({ workspace: workspaceId.name, productId: workspaceId.productId })
-      .toArray()
+    const info = await this.workspacesInfoCollection.find({ workspace: workspaceId.name }).toArray()
 
     await this.initWorkspaceClient(workspaceId, info[0])
 
@@ -211,7 +206,7 @@ export class AIBotController {
 
   async updateAvatarInfo (workspace: WorkspaceId, path: string, lastModified: number): Promise<void> {
     await this.workspacesInfoCollection.updateOne(
-      { workspace: workspace.name, productId: workspace.productId },
+      { workspace: workspace.name },
       { $set: { avatarPath: path, avatarLastModified: lastModified } }
     )
   }

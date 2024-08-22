@@ -30,7 +30,7 @@ describe('s3 operations', () => {
     jest.setTimeout(50000)
     const minioService = new S3Service({ ...(config.storages[0] as S3Config), rootBucket: 'haiodo-test-bucket' })
 
-    let existingTestBuckets = await minioService.listBuckets(toolCtx, '')
+    let existingTestBuckets = await minioService.listBuckets(toolCtx)
     // Delete old buckets
     for (const b of existingTestBuckets) {
       await b.delete()
@@ -41,8 +41,8 @@ describe('s3 operations', () => {
 
     expect(genWorkspaceId1).not.toEqual(genWorkspaceId2)
 
-    const ws1 = { name: genWorkspaceId1, productId: '' }
-    const ws2 = { name: genWorkspaceId2, productId: '' }
+    const ws1 = { name: genWorkspaceId1 }
+    const ws2 = { name: genWorkspaceId2 }
     await minioService.make(toolCtx, ws1)
     await minioService.make(toolCtx, ws2)
 
@@ -66,13 +66,13 @@ describe('s3 operations', () => {
 
     expect('obj1').toEqual(data.toString())
 
-    existingTestBuckets = await minioService.listBuckets(toolCtx, '')
+    existingTestBuckets = await minioService.listBuckets(toolCtx)
     expect(existingTestBuckets.length).toEqual(2)
     // Delete old buckets
     for (const b of existingTestBuckets) {
       await b.delete()
     }
-    existingTestBuckets = await minioService.listBuckets(toolCtx, '')
+    existingTestBuckets = await minioService.listBuckets(toolCtx)
     expect(existingTestBuckets.length).toEqual(0)
   })
 })

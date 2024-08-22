@@ -1488,7 +1488,7 @@ export class GithubWorker implements IntegrationManager {
     ctx.info('Connecting to', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
     let client: Client | undefined
     try {
-      client = await createPlatformClient(workspace.name, workspace.productId, 30000, (event: ClientConnectEvent) => {
+      client = await createPlatformClient(workspace.name, 30000, (event: ClientConnectEvent) => {
         reconnect(workspace.name, event)
       })
 

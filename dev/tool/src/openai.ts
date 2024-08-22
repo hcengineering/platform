@@ -5,10 +5,9 @@ import { connect } from '@hcengineering/server-tool'
 export async function openAIConfig (
   transactorUrl: string,
   workspace: string,
-  productId: string,
   opt: { endpoint: string, token: string, enabled: boolean, tokenLimit: number, embeddings: boolean }
 ): Promise<void> {
-  const connection = await connect(transactorUrl, getWorkspaceId(workspace, productId), '#configurator@hc.engineering')
+  const connection = await connect(transactorUrl, getWorkspaceId(workspace), '#configurator@hc.engineering')
   try {
     const ops = new TxOperations(connection, core.account.System)
 

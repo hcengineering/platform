@@ -13,7 +13,6 @@ export function registerToken (
   router: Router<any, any>,
   accountsUrl: string,
   db: Db,
-  productId: string,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {
@@ -22,7 +21,7 @@ export function registerToken (
     new CustomStrategy(function (req: any, done: any) {
       const token = req.body.token ?? req.query.token
 
-      getAccountInfoByToken(measureCtx, db, productId, null, token)
+      getAccountInfoByToken(measureCtx, db, null, token)
         .then((user: any) => done(null, user))
         .catch((err: any) => done(err))
     })

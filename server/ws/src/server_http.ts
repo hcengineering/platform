@@ -46,7 +46,6 @@ export function startHttpServer (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string,
   enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
@@ -54,7 +53,6 @@ export function startHttpServer (
   if (LOGGING_ENABLED) {
     ctx.info('starting server on', {
       port,
-      productId,
       enableCompression,
       accountsUrl,
       parallel: os.availableParallelism()
@@ -271,7 +269,7 @@ export function startHttpServer (
       connectionSocket: cs,
       payload: token,
       token: rawToken,
-      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, productId, sessionId, accountsUrl),
+      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, sessionId, accountsUrl),
       url: ''
     }
 
@@ -361,13 +359,6 @@ export function startHttpServer (
     try {
       const payload = decodeToken(token ?? '')
       const sessionId = url.searchParams.get('sessionId')
-
-      if (payload.workspace.productId !== productId) {
-        if (LOGGING_ENABLED) {
-          ctx.error('invalid product', { required: payload.workspace.productId, productId })
-        }
-        throw new Error('Invalid workspace product')
-      }
 
       wss.handleUpgrade(request, socket, head, (ws) => {
         void handleConnection(ws, request, payload, token, sessionId ?? undefined)

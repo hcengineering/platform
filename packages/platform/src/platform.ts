@@ -153,7 +153,6 @@ export default plugin(platformId, {
     AccountAlreadyConfirmed: '' as StatusCode<{ account: string }>,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,
-    ProductIdMismatch: '' as StatusCode<{ productId: string }>,
     InvalidOtp: '' as StatusCode
   },
   metadata: {

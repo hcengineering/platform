@@ -654,7 +654,6 @@ export interface DomainIndexConfiguration extends Doc {
 
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
-  productId: string
   disabled?: boolean
   version?: Data<Version>
   branding?: string
