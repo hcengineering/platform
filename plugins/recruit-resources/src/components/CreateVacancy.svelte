@@ -206,6 +206,8 @@
       kind: taskType._id,
       identifier
     }
+
+    await updateMarkup(data.description, { description: template.description })
     await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', data, resId)
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -217,7 +219,6 @@
         })
       }
     }
-    await updateMarkup(data.description, { description: template.description })
     return resId
   }
 
@@ -247,6 +248,8 @@
       type: typeId
     }
 
+    await updateMarkup(data.fullDescription, { fullDescription })
+
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
 
     Analytics.handleEvent(RecruitEvents.VacancyCreated, {
@@ -271,7 +274,6 @@
       }
     }
 
-    await updateMarkup(data.fullDescription, { fullDescription })
     await descriptionBox.createAttachments()
 
     // Add vacancy mixin with roles assignment

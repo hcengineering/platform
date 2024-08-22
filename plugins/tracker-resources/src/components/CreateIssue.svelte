@@ -509,6 +509,8 @@
         identifier
       }
 
+      await updateMarkup(value.description, { description: object.description })
+
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
 
       await operations.addCollection(
@@ -543,7 +545,6 @@
 
       const result = await operations.commit()
       await descriptionBox?.createAttachments(_id)
-      await updateMarkup(value.description, { description: object.description })
 
       const parents: IssueParentInfo[] =
         parentIssue != null

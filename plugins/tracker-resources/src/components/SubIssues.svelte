@@ -92,6 +92,7 @@
         kind: subIssue.kind,
         identifier: `${project.identifier}-${number}`
       }
+      await updateMarkup(cvalue.description, { description: subIssue.description })
       await client.addCollection(
         tracker.class.Issue,
         project._id,
@@ -110,7 +111,6 @@
           })
         }
       }
-      await updateMarkup(cvalue.description, { description: subIssue.description })
       saveAttachments(childId)
     }
   }
