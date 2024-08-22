@@ -114,7 +114,6 @@ services:
       - TELEGRAM_URL=http://localhost:8086
       - REKONI_URL=http://localhost:4004
       - COLLABORATOR_URL=ws://localhost:3078
-      - COLLABORATOR_API_URL=http://localhost:3078
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - GITHUB_URL=http://localhost:3500
       - PRINT_URL=http://localhost:4005

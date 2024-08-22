@@ -27,6 +27,10 @@
         {
           "name": "flagOpenInDesktopApp",
           "value": "true"
+        },
+        {
+          "name": "#platform.notification.timeout",
+          "value": "0"
         }
       ]
     }

@@ -13,15 +13,8 @@
 // limitations under the License.
 //
 
-import {
-  getCollaborativeDoc,
-  getCollaborativeDocId,
-  type AttachedData,
-  type Client,
-  type Ref,
-  type TxOperations
-} from '@hcengineering/core'
-import { documentId, type Document, type Teamspace } from '@hcengineering/document'
+import { type AttachedData, type Client, type Ref, type TxOperations, makeCollaborativeDoc } from '@hcengineering/core'
+import { type Document, type Teamspace, documentId } from '@hcengineering/document'
 import { getMetadata, translate } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
@@ -39,11 +32,10 @@ export async function createEmptyDocument (
   data: Partial<Pick<AttachedData<Document>, 'name' | 'icon' | 'color'>> = {}
 ): Promise<void> {
   const name = await translate(document.string.Untitled, {})
-  const collaborativeDocId = getCollaborativeDocId(id, 'content')
 
   const object: AttachedData<Document> = {
     name,
-    content: getCollaborativeDoc(collaborativeDocId),
+    content: makeCollaborativeDoc(id, 'content'),
     attachments: 0,
     children: 0,
     embeddings: 0,

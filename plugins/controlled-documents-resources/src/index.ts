@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import contact from '@hcengineering/contact'
 import {
   type Class,
   type Client,
@@ -24,18 +23,14 @@ import {
   type Doc
 } from '@hcengineering/core'
 import {
-  type CollaborativeDocumentSection,
   type Document,
-  type DocumentSection,
   type DocumentSpace,
   DocumentState,
   type DocumentMeta
 } from '@hcengineering/controlled-documents'
 import { type Resources } from '@hcengineering/platform'
-import { type ObjectSearchResult, getClient, MessageBox, getCollaboratorClient } from '@hcengineering/presentation'
-import { EmptyMarkup } from '@hcengineering/text'
+import { type ObjectSearchResult, getClient, MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
-import { deleteObjects } from '@hcengineering/view-resources'
 
 import CreateDocument from './components/CreateDocument.svelte'
 import QmsDocumentWizard from './components/create-doc/QmsDocumentWizard.svelte'
@@ -64,22 +59,12 @@ import DocumentIcon from './components/icons/DocumentIcon.svelte'
 
 import DocumentTemplates from './components/DocumentTemplates.svelte'
 
-import EditTemplateSections from './components/template/EditTemplateSections.svelte'
-
 import Categories from './components/Categories.svelte'
 import EditDocumentCategory from './components/EditDocumentCategory.svelte'
 
 import DocumentTitle from './components/document/DocumentTitle.svelte'
 import EditDocContent from './components/document/EditDocContent.svelte'
-import CollaborativeSectionEditor from './components/document/editors/CollaborativeSectionEditor.svelte'
-import AttachmentsSectionEditor from './components/document/editors/AttachmentsSectionEditor.svelte'
-
-import CollaborativeSectionPresenter from './components/document/presenters/CollaborativeSectionPresenter.svelte'
-import AttachmentsSectionPresenter from './components/document/presenters/AttachmentsSectionPresenter.svelte'
 import DocumentVersionPresenter from './components/document/presenters/DocumentVersionPresenter.svelte'
-
-import DocumentSectionDeletePopup from './components/DocumentSectionDeletePopup.svelte'
-
 import DocumentReviewRequest from './components/requests/DocumentReviewRequest.svelte'
 import DocumentReviewRequestPresenter from './components/requests/DocumentReviewRequestPresenter.svelte'
 import DocumentApprovalRequest from './components/requests/DocumentApprovalRequest.svelte'
@@ -94,17 +79,12 @@ import ProjectPresenter from './components/project/ProjectPresenter.svelte'
 import ProjectRefPresenter from './components/project/ProjectRefPresenter.svelte'
 
 import documents from './plugin'
-import { documentSectionDescriptionEditingRequested } from './stores/editors/document'
 import './styles/_colors.scss'
 import { resolveLocation } from './navigation'
 import {
-  addSectionBetween,
-  createAttachmentsSection,
-  createCollaborativeSection,
   getVisibleFilters,
   sortDocumentStates,
   getAllDocumentStates,
-  openGuidanceEditor,
   canChangeDocumentOwner,
   canDeleteDocumentCategory,
   canCreateChildTemplate,
@@ -149,88 +129,6 @@ async function queryDocumentMeta (
       limit: 200
     })
   ).map(toObjectSearchResult)
-}
-
-async function addSection (
-  section: CollaborativeDocumentSection,
-  addAfter: boolean = true,
-  copyFrom?: DocumentSection
-): Promise<void> {
-  const client = getClient()
-
-  const doc = await client.findOne(section.attachedToClass, { _id: section.attachedTo })
-  if (doc === undefined) {
-    return
-  }
-
-  const sections = await client.findAll(
-    documents.class.DocumentSection,
-    { attachedTo: section.attachedTo },
-    { sort: { rank: !addAfter ? SortingOrder.Ascending : SortingOrder.Descending } }
-  )
-  if (sections === undefined) {
-    return
-  }
-
-  let prevSection: DocumentSection | undefined
-  for (const s of sections) {
-    if (s._id === section._id) {
-      break
-    }
-
-    prevSection = s
-  }
-
-  const [first, second] = !addAfter ? [prevSection, section] : [section, prevSection]
-  const sectionClass = client.getHierarchy().getClass(section._class)
-  await addSectionBetween(client, doc as Document, sectionClass, first, second, copyFrom)
-}
-
-async function addCollaborativeSectionAbove (section: CollaborativeDocumentSection): Promise<void> {
-  await addSection(section, false)
-}
-
-async function addCollaborativeSectionBelow (section: CollaborativeDocumentSection): Promise<void> {
-  await addSection(section)
-}
-
-async function deleteCollaborativeSection (section: CollaborativeDocumentSection): Promise<void> {
-  showPopup(
-    contact.component.DeleteConfirmationPopup,
-    {
-      object: section,
-      deleteAction: async () => {
-        const client = getClient()
-
-        const document = await client.findOne(documents.class.Document, { _id: section.attachedTo as Ref<Document> })
-        await deleteObjects(client, [section], false)
-
-        if (document !== undefined) {
-          await getCollaboratorClient().updateContent(document.content, section.collaboratorSectionId, EmptyMarkup)
-        }
-      }
-    },
-    undefined
-  )
-}
-
-async function duplicateSection (section: CollaborativeDocumentSection): Promise<void> {
-  await addSection(section, true, section)
-}
-
-async function editSectionDescription (section: CollaborativeDocumentSection): Promise<void> {
-  documentSectionDescriptionEditingRequested(section._id)
-}
-
-async function editSectionGuidance (section: CollaborativeDocumentSection): Promise<void> {
-  const client = getClient()
-  const sections = await client.findAll(
-    documents.class.DocumentSection,
-    { attachedTo: section.attachedTo },
-    { sort: { rank: SortingOrder.Ascending } }
-  )
-  const sectionIndex = sections.findIndex((s) => s._id === section._id)
-  openGuidanceEditor(client, section, sectionIndex + 1, 'editing')
 }
 
 async function deleteDocuments (obj: Document | Document[]): Promise<void> {
@@ -322,16 +220,10 @@ export default async (): Promise<Resources> => ({
     NewDocumentHeader,
     MyDocuments,
     DocumentTemplates,
-    EditTemplateSections,
     CategoryPresenter,
     Categories,
     EditDocumentCategory,
     EditDocContent,
-    CollaborativeSectionEditor,
-    AttachmentsSectionEditor,
-    DocumentSectionDeletePopup,
-    CollaborativeSectionPresenter,
-    AttachmentsSectionPresenter,
     DocumentReviewRequest,
     DocumentReviewRequestPresenter,
     DocumentApprovalRequest,
@@ -365,8 +257,6 @@ export default async (): Promise<Resources> => ({
     CanCreateChildTemplate: canCreateChildTemplate,
     CanCreateChildDocument: canCreateChildDocument,
     CanDeleteDocumentCategory: canDeleteDocumentCategory,
-    CollaborativeSectionCreator: createCollaborativeSection,
-    AttachmentsSectionCreator: createAttachmentsSection,
     GetVisibleFilters: getVisibleFilters,
     DocumentStateSort: sortDocumentStates,
     GetAllDocumentStates: getAllDocumentStates,
@@ -378,12 +268,6 @@ export default async (): Promise<Resources> => ({
     IsCommentVisible: isCommentVisible
   },
   actionImpl: {
-    AddCollaborativeSectionAbove: addCollaborativeSectionAbove,
-    AddCollaborativeSectionBelow: addCollaborativeSectionBelow,
-    DeleteCollaborativeSection: deleteCollaborativeSection,
-    Duplicate: duplicateSection,
-    EditDescription: editSectionDescription,
-    EditGuidance: editSectionGuidance,
     CreateChildDocument: createChildDocument,
     CreateChildTemplate: createChildTemplate,
     CreateDocument: createDocument,

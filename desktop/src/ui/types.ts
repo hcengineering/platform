@@ -6,7 +6,6 @@ import { ScreenSource } from '@hcengineering/love'
 export interface Config {
   ACCOUNTS_URL: string
   COLLABORATOR_URL: string
-  COLLABORATOR_API_URL: string
   FRONT_URL: string
   FILES_URL: string
   UPLOAD_URL: string

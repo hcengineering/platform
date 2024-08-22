@@ -183,4 +183,7 @@
       d="M18.2927 19.7071C17.9022 19.3166 17.9022 18.6834 18.2927 18.2929C18.6833 17.9024 19.3164 17.9024 19.707 18.2929L26 24.586V20H28V28H20V26H24.586L18.2927 19.7071Z"
     />
   </symbol>
+  <symbol id="note" viewBox="0 0 256 256">
+    <rect width="256" height="256" fill="none"></rect><line x1="96" x2="160" y1="96" y2="96" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></line><line x1="96" x2="160" y1="128" y2="128" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></line><line x1="96" x2="128" y1="160" y2="160" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></line><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" d="M156.68629,216H48a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8V156.68629a8,8,0,0,1-2.34315,5.65686l-51.3137,51.3137A8,8,0,0,1,156.68629,216Z"></path><polyline fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" points="215.277 159.992 160 159.992 160 215.272"></polyline>
+  </symbol>
 </svg>

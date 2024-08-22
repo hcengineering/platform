@@ -42,7 +42,7 @@
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
-  import { getEditorKit } from '../../src/kits/editor-kit'
+  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
   import { DirectStorageProvider } from '../provider/storage'
   import { TiptapCollabProvider } from '../provider/tiptap'
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
@@ -71,10 +71,10 @@
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
   export let field: string
 
-  export let objectClass: Ref<Class<Doc>> | undefined
-  export let objectId: Ref<Doc> | undefined
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
   export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined
+  export let objectAttr: string | undefined = undefined
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -99,6 +99,7 @@
   export let canEmbedImages = true
   export let withSideMenu = true
   export let withInlineCommands = true
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   const dispatch = createEventDispatcher()
 
@@ -419,7 +420,8 @@
               appendTo: () => boundary ?? element,
               isHidden: () => !showToolbar
             }
-          }
+          },
+          ...kitOptions
         }),
         ...optionalExtensions,
         Placeholder.configure({ placeholder: placeHolderStr }),

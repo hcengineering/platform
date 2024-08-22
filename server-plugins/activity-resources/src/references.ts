@@ -227,7 +227,8 @@ export async function getPersonNotificationTxes (
       doc.space,
       originTx.modifiedOn,
       notifyResult,
-      notification.class.MentionInboxNotification
+      notification.class.MentionInboxNotification,
+      originTx
     )
     res.push(...txes)
   } else {
@@ -374,7 +375,7 @@ async function getMessageNotifyResult (
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
-  return type === core.class.TypeMarkup || type === core.class.TypeCollaborativeMarkup
+  return type === core.class.TypeMarkup
 }
 
 function isCollaborativeType (type: Ref<Class<Type<any>>>): boolean {

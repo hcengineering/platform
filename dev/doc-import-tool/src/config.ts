@@ -8,7 +8,7 @@ import { HtmlConversionBackend } from './convert/convert'
 export interface Config {
   doc: string
   token: string
-  collaboratorApiURL: string
+  collaboratorURL: string
   uploadURL: string
   workspaceId: WorkspaceId
   owner: Ref<Employee>

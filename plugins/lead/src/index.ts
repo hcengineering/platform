@@ -15,7 +15,7 @@
 //
 
 import type { Contact } from '@hcengineering/contact'
-import type { Attribute, Class, Doc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
+import type { Attribute, Class, CollaborativeDoc, Doc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -36,7 +36,7 @@ export interface Funnel extends Project {
 export interface Customer extends Contact {
   leads?: number
 
-  description: string
+  description: CollaborativeDoc
 }
 
 /**

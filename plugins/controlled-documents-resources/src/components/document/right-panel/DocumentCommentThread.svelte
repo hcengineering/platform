@@ -6,22 +6,14 @@
 <script lang="ts">
   import documents, { DocumentComment } from '@hcengineering/controlled-documents'
   import { ThreadView } from '@hcengineering/chunter-resources'
-  import { Button, IconCheckCircle } from '@hcengineering/ui'
+  import { Button, IconCheckCircle, Label } from '@hcengineering/ui'
   import {
     $canAddDocumentCommentsFeedback as canAddDocumentCommentsFeedback,
-    $controlledDocumentSectionIds as controlledDocumentSectionIds,
-    $controlledDocumentSections as controlledDocumentSections,
     resolveCommentFx
   } from '../../../stores/editors/document'
 
   export let value: DocumentComment | undefined
   export let highlighted = false
-
-  $: section =
-    value !== undefined
-      ? $controlledDocumentSections.find((item) => value !== undefined && item.key === value.sectionKey)
-      : null
-  $: sectionIndex = section != null ? $controlledDocumentSectionIds.indexOf(section._id) + 1 : null
 
   const handleResolveComment = async (): Promise<void> => {
     if (value === undefined) {
@@ -45,12 +37,7 @@
           <span>#{value.index}</span>
           <span>•</span>
         {/if}
-        {#if sectionIndex !== null}
-          <span>{sectionIndex}.</span>
-        {/if}
-        {#if section}
-          <span>{section.title}</span>
-        {/if}
+        <Label label={resolved ? documents.string.Resolved : documents.string.Pending} />
       </div>
       {#if $canAddDocumentCommentsFeedback}
         <div class="tools">

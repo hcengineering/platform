@@ -54,6 +54,7 @@ setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
 setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
 setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
 setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
+setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 

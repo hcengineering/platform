@@ -124,7 +124,6 @@ export interface Config {
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
-  COLLABORATOR_API_URL: string
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
@@ -288,7 +287,6 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
-  setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
