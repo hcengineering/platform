@@ -7,7 +7,6 @@ export interface ServerEnv {
   filesUrl: string | undefined
   sesUrl: string | undefined
   accountsUrl: string
-  collaboratorUrl: string
   serverPort: number
   enableCompression: boolean
   elasticIndexName: string
@@ -65,12 +64,6 @@ export function serverConfigFromEnv (): ServerEnv {
     process.exit(1)
   }
 
-  const collaboratorUrl = process.env.COLLABORATOR_URL
-  if (collaboratorUrl === undefined) {
-    console.error('please provide collaborator url')
-    process.exit(1)
-  }
-
   const pushPublicKey = process.env.PUSH_PUBLIC_KEY
   const pushPrivateKey = process.env.PUSH_PRIVATE_KEY
   const pushSubject = process.env.PUSH_SUBJECT
@@ -86,7 +79,6 @@ export function serverConfigFromEnv (): ServerEnv {
     filesUrl,
     sesUrl,
     accountsUrl,
-    collaboratorUrl,
     serverPort,
     enableCompression,
     pushPublicKey,

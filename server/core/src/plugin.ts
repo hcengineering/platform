@@ -43,8 +43,7 @@ const serverCore = plugin(serverCoreId, {
     FrontUrl: '' as Metadata<string>,
     FilesUrl: '' as Metadata<string>,
     ElasticIndexName: '' as Metadata<string>,
-    ElasticIndexVersion: '' as Metadata<string>,
-    CollaboratorUrl: '' as Metadata<string>
+    ElasticIndexVersion: '' as Metadata<string>
   }
 })
 

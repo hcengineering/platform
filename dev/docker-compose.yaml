@@ -146,7 +146,6 @@ services:
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://account:3000
-      - COLLABORATOR_URL=http://collaborator:3078
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
       - BRANDING_PATH=/var/cfg/branding.json      
