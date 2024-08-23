@@ -26,7 +26,8 @@ import {
   type ChatInfo,
   type ChannelInfo,
   type InlineButton,
-  type TypingInfo
+  type TypingInfo,
+  type InlineButtonAction
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
 import contact, { type ChannelProvider as SocialChannelProvider, type Person } from '@hcengineering/contact'
@@ -59,7 +60,7 @@ import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-c
 import notification, { TDocNotifyContext } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { type IntlString } from '@hcengineering/platform'
+import { type IntlString, type Resource } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 import { type DocNotifyContext } from '@hcengineering/notification'
 
@@ -164,9 +165,9 @@ export class TChatInfo extends TDoc implements ChatInfo {
 @Model(chunter.class.InlineButton, core.class.Doc, DOMAIN_CHUNTER)
 export class TInlineButton extends TAttachedDoc implements InlineButton {
   name!: string
-  url!: string
   titleIntl?: IntlString
   title?: string
+  action!: Resource<InlineButtonAction>
 }
 
 @Model(chunter.class.TypingInfo, core.class.Doc, DOMAIN_TRANSIENT)

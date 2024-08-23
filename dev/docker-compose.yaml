@@ -110,7 +110,7 @@ services:
       - GITHUB_URL=http://localhost:3500
       - PRINT_URL=http://localhost:4005
       - SIGN_URL=http://localhost:4006
-      - ANALYTICS_COLLECTOR_URL=http://localhost:4077
+      - ANALYTICS_COLLECTOR_URL=http://localhost:4007
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://localhost:8087/branding.json
@@ -200,7 +200,7 @@ services:
     image: hardcoreeng/analytics-collector
     restart: unless-stopped
     ports:
-      - 4077:4007
+      - 4007:4007
     environment:
       - SECRET=secret
       - PORT=4007

@@ -235,7 +235,7 @@ export class SupportWsClient extends WorkspaceClient {
         {
           name: MessageActions.Accept,
           title: 'Accept',
-          url: 'http://localhost:4077/action'
+          action: analyticsCollector.function.AnalyticsCollectorInlineAction
         }
       )
 

@@ -16,7 +16,7 @@
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { DocNotifyContext, NotificationType } from '@hcengineering/notification'
-import type { Asset, Plugin } from '@hcengineering/platform'
+import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
@@ -92,11 +92,13 @@ export interface ChannelInfo extends DocNotifyContext {
   hidden: boolean
 }
 
+export type InlineButtonAction = (button: InlineButton, message: Ref<ChatMessage>, channel: Ref<Doc>) => Promise<void>
+
 export interface InlineButton extends AttachedDoc {
   name: string
-  url: string
   titleIntl?: IntlString
   title?: string
+  action: Resource<InlineButtonAction>
 }
 
 /**

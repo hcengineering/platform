@@ -274,6 +274,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(notificationId, async () => await import('@hcengineering/notification-resources'))
   addLocation(tagsId, async () => await import('@hcengineering/tags-resources'))
   addLocation(calendarId, async () => await import('@hcengineering/calendar-resources'))
+  addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
 
   addLocation(trackerId, async () => await import('@hcengineering/tracker-resources'))
   addLocation(boardId, async () => await import('@hcengineering/board-resources'))
