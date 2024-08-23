@@ -35,7 +35,7 @@ import serverAIBot, { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/
 import contact, { PersonAccount } from '@hcengineering/contact'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
-import analytics from '@hcengineering/analytics-collector'
+import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 
 async function processWorkspace (control: TriggerControl): Promise<void> {
   const adapter = control.serviceAdaptersManager.getAdapter(serverAiBotId) as AIBotServiceAdapter | undefined
@@ -228,6 +228,7 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
     toWorkspace: supportWorkspaceId,
     toEmail: account.email,
     fromWorkspace: toWorkspaceString(control.workspace),
+    fromWorkspaceName: control.workspace.workspaceName,
     fromWorkspaceUrl: control.workspace.workspaceUrl,
     messageId: message._id,
     parentMessageId: await getThreadParent(control, message)
@@ -248,19 +249,17 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
     return
   }
 
-  const channel = await getMessageDoc(message, control)
+  if (!control.hierarchy.isDerived(message.attachedToClass, analyticsCollector.class.OnboardingChannel)) {
+    return
+  }
+
+  const channel = (await getMessageDoc(message, control)) as OnboardingChannel
 
   if (channel === undefined) {
     return
   }
 
-  if (!control.hierarchy.hasMixin(channel, analytics.mixin.AnalyticsChannel)) {
-    return
-  }
-
-  const mixin = control.hierarchy.as(channel, analytics.mixin.AnalyticsChannel)
-  const { workspace, email } = mixin
-
+  const { workspaceId, email } = channel
   let data: Data<AIBotResponseEvent> | undefined
 
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
@@ -278,9 +277,10 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
     message: message.message,
     collection: data.collection,
     toEmail: email,
-    toWorkspace: workspace,
+    toWorkspace: workspaceId,
     fromWorkspace: toWorkspaceString(control.workspace),
     fromWorkspaceUrl: control.workspace.workspaceUrl,
+    fromWorkspaceName: control.workspace.workspaceName,
     messageId: message._id,
     parentMessageId: await getThreadParent(control, message)
   })
@@ -317,7 +317,7 @@ export async function OnMessageSend (
     await onBotDirectMessageSend(control, message)
   }
 
-  if (docClass === chunter.class.Channel) {
+  if (docClass === analyticsCollector.class.OnboardingChannel) {
     await onSupportWorkspaceMessage(control, message)
   }
 

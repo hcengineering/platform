@@ -1,7 +1,6 @@
 import { Client } from '@hcengineering/core'
-import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { createClient } from '@hcengineering/server-client'
 
-export async function connectPlatform (token: string): Promise<Client> {
-  const endpoint = await getTransactorEndpoint(token)
+export async function connectPlatform (token: string, endpoint: string): Promise<Client> {
   return await createClient(endpoint, token)
 }

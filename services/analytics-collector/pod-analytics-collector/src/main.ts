@@ -25,6 +25,7 @@ import config from './config'
 import { createServer, listen } from './server'
 import { Collector } from './collector'
 import { registerLoaders } from './loaders'
+import { closeDB, getDB } from './storage'
 
 const ctx = new MeasureMetricsContext(
   'analytics-collector-service',
@@ -47,19 +48,20 @@ export const main = async (): Promise<void> => {
 
   ctx.info('Analytics service started', {
     accountsUrl: config.AccountsUrl,
-    dbUrl: config.DbURL,
     supportWorkspace: config.SupportWorkspace
   })
 
   registerLoaders()
 
-  const collector = new Collector(ctx)
+  const db = await getDB()
+  const collector = new Collector(ctx, db)
 
   const app = createServer(collector)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
     void collector.close()
+    void closeDB()
     server.close(() => process.exit())
   }
 

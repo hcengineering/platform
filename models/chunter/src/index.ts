@@ -25,7 +25,9 @@ import {
   type ThreadMessage,
   type ChatInfo,
   type ChannelInfo,
-  type TypingInfo
+  type InlineButton,
+  type TypingInfo,
+  type InlineButtonAction
 } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
 import contact, { type ChannelProvider as SocialChannelProvider, type Person } from '@hcengineering/contact'
@@ -54,11 +56,11 @@ import {
   Hidden
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import notification, { TDocNotifyContext } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { type IntlString } from '@hcengineering/platform'
+import { type IntlString, type Resource } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 import { type DocNotifyContext } from '@hcengineering/notification'
 
@@ -103,6 +105,9 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
 
   @Prop(TypeRef(contact.class.ChannelProvider), core.string.Object)
     provider?: Ref<SocialChannelProvider>
+
+  @Prop(PropCollection(chunter.class.InlineButton), core.string.Object)
+    inlineButtons?: number
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
@@ -157,6 +162,14 @@ export class TChatInfo extends TDoc implements ChatInfo {
   timestamp!: Timestamp
 }
 
+@Model(chunter.class.InlineButton, core.class.Doc, DOMAIN_CHUNTER)
+export class TInlineButton extends TAttachedDoc implements InlineButton {
+  name!: string
+  titleIntl?: IntlString
+  title?: string
+  action!: Resource<InlineButtonAction>
+}
+
 @Model(chunter.class.TypingInfo, core.class.Doc, DOMAIN_TRANSIENT)
 export class TTypingInfo extends TDoc implements TypingInfo {
   objectId!: Ref<Doc>
@@ -176,6 +189,7 @@ export function createModel (builder: Builder): void {
     TObjectChatPanel,
     TChatInfo,
     TChannelInfo,
+    TInlineButton,
     TTypingInfo
   )
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]

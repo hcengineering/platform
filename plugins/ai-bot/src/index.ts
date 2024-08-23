@@ -39,6 +39,7 @@ export interface AIBotTransferEvent extends AIBotEvent {
   toEmail: string
   toWorkspace: string
   fromWorkspace: string
+  fromWorkspaceName: string
   fromWorkspaceUrl: string
   messageId: Ref<ChatMessage>
   parentMessageId?: Ref<ChatMessage>

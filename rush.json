@@ -2073,6 +2073,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/analytics-collector-resources",
+      "projectFolder": "plugins/analytics-collector-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-analytics-collector",
       "projectFolder": "models/analytics-collector",
       "shouldPublish": false

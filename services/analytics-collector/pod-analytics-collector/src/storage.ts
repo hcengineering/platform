@@ -18,7 +18,7 @@ import { MongoClient } from 'mongodb'
 
 import config from './config'
 
-const clientRef: MongoClientReference = getMongoClient(config.MongoURL)
+const clientRef: MongoClientReference = getMongoClient(config.MongoUrl)
 let client: MongoClient | undefined
 
 export const getDB = (() => {
@@ -27,7 +27,7 @@ export const getDB = (() => {
       client = await clientRef.getClient()
     }
 
-    return client.db(config.ConfigurationDB)
+    return client.db(config.MongoDb)
   }
 })()
 
