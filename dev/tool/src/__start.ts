@@ -84,4 +84,4 @@ function prepareTools (): {
 
 console.log(`tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`)
 
-devTool(prepareTools, process.env.PRODUCT_ID ?? '')
+devTool(prepareTools)

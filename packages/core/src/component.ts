@@ -162,8 +162,7 @@ export default plugin(coreId, {
   },
   status: {
     ObjectNotFound: '' as StatusCode<{ _id: Ref<Doc> }>,
-    ItemNotFound: '' as StatusCode<{ _id: Ref<Doc>, _localId: string }>,
-    InvalidProduct: '' as StatusCode<{ productId: string }>
+    ItemNotFound: '' as StatusCode<{ _id: Ref<Doc>, _localId: string }>
   },
   version: {
     Model: '' as Ref<Version>

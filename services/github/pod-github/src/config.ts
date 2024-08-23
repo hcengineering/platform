@@ -26,8 +26,6 @@ interface Config {
 
   CollaboratorURL: string
 
-  ProductID: string
-
   BotName: string
 
   SentryDSN: string
@@ -56,8 +54,6 @@ const envMap: { [key in keyof Config]: string } = {
 
   CollaboratorURL: 'COLLABORATOR_URL',
 
-  ProductID: 'PRODUCT_ID',
-
   SentryDSN: 'SENTRY_DSN',
   BrandingPath: 'BRANDING_PATH'
 }
@@ -78,7 +74,6 @@ const required: Array<keyof Config> = [
 
   'CollaboratorURL',
 
-  'ProductID',
   'BotName'
 ]
 
@@ -105,8 +100,6 @@ const config: Config = (() => {
     ConfigurationDB: process.env[envMap.ConfigurationDB] ?? '%github',
 
     CollaboratorURL: process.env[envMap.CollaboratorURL],
-
-    ProductID: process.env[envMap.ProductID] ?? '',
 
     SentryDSN: process.env[envMap.SentryDSN],
     BrandingPath: process.env[envMap.BrandingPath] ?? ''

@@ -98,8 +98,6 @@
 
 {#if dataProvider}
   <ChannelScrollView
-    objectId={object._id}
-    objectClass={object._class}
     {object}
     skipLabels={!isDocChannel}
     selectedFilters={filters}

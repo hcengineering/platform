@@ -221,7 +221,7 @@ export class PlatformWorker {
         } else {
           let client: Client | undefined
           try {
-            client = await createPlatformClient(oldWorkspace, config.ProductID, 30000)
+            client = await createPlatformClient(oldWorkspace, 30000)
             await this.removeInstallationFromWorkspace(oldWorker, installationId)
             await client.close()
           } catch (err: any) {
@@ -290,7 +290,7 @@ export class PlatformWorker {
       } else {
         let client: Client | undefined
         try {
-          client = await createPlatformClient(workspace, config.ProductID, 30000)
+          client = await createPlatformClient(workspace, 30000)
           await GithubWorker.checkIntegrations(client, this.installations)
           await client.close()
         } catch (err: any) {
@@ -388,7 +388,7 @@ export class PlatformWorker {
         platformClient = this.clients.get(payload.workspace)?.client
         if (platformClient === undefined) {
           shouldClose = true
-          platformClient = await createPlatformClient(payload.workspace, config.ProductID, 30000)
+          platformClient = await createPlatformClient(payload.workspace, 30000)
         }
         const client = new TxOperations(platformClient, payload.accountId)
 
@@ -657,8 +657,7 @@ export class PlatformWorker {
         const token = generateToken(
           config.SystemEmail,
           {
-            name: workspace,
-            productId: config.ProductID
+            name: workspace
           },
           { mode: 'github' }
         )
@@ -697,7 +696,6 @@ export class PlatformWorker {
             this.installations,
             {
               name: workspace,
-              productId: config.ProductID,
               workspaceUrl: workspaceInfo.workspace,
               workspaceName: workspace
             },

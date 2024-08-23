@@ -49,7 +49,6 @@ export function startUWebsocketServer (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string,
   enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
@@ -81,10 +80,6 @@ export function startUWebsocketServer (
 
       try {
         const payload = decodeToken(token ?? '')
-
-        if (payload.workspace.productId !== productId) {
-          throw new Error('Invalid workspace product')
-        }
 
         /* You MUST copy data out of req here, as req is only valid within this immediate callback */
         const url = req.getUrl()
@@ -132,7 +127,6 @@ export function startUWebsocketServer (
         ws.getUserData().payload,
         ws.getUserData().token,
         pipelineFactory,
-        productId,
         undefined,
         accountsUrl
       )

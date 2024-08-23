@@ -54,7 +54,7 @@ export class DatalakeService implements StorageAdapter {
     // workspace/buckets not supported, assume that always exist
   }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     return []
   }
 

@@ -192,11 +192,11 @@ const checkRecordAvailable = async (storageConfig: StorageConfig | undefined): P
 }
 
 function getBucket (storageConfig: any, workspaceId: WorkspaceId): string {
-  return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + toWorkspaceString(workspaceId, '.')
+  return storageConfig.rootBucket ?? (storageConfig.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
 }
 
 function getBucketFolder (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId, '.')
+  return toWorkspaceString(workspaceId)
 }
 
 function getDocumentKey (storageConfig: any, workspace: WorkspaceId, name: string): string {

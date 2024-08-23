@@ -432,8 +432,7 @@ export async function upgradeModel (
         const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
         const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
         await fetch(
-          serverEndpoint +
-            `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId, '@')}`,
+          serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
           {
             method: 'PUT'
           }

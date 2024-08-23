@@ -118,15 +118,7 @@
 
 <div class="hulyComponent-content hulyComponent-content__container noShrink">
   {#if message && dataProvider !== undefined}
-    <ChannelScrollView
-      bind:selectedMessageId
-      embedded
-      skipLabels
-      object={message}
-      objectId={message._id}
-      objectClass={message._class}
-      provider={dataProvider}
-    >
+    <ChannelScrollView bind:selectedMessageId embedded skipLabels object={message} provider={dataProvider}>
       <svelte:fragment slot="header">
         <div class="mt-3">
           <ThreadParentMessage {message} />

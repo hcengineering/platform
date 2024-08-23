@@ -50,7 +50,6 @@ export const githubDerivedSyncVersion = 'v1'
 export interface Workspace {
   _id: string
   workspace: string
-  productId: string
 }
 
 /**
