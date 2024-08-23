@@ -132,17 +132,17 @@ export class StorageExtension implements Extension {
     try {
       const transformer = this.configuration.transformerFactory(workspaceId)
 
-      const oldMarkup = this.markups.get(documentName) ?? {}
-      const newMarkup = transformer.fromYdoc(document)
+      const prevMarkup = this.markups.get(documentName) ?? {}
+      const currMarkup = transformer.fromYdoc(document)
 
       await ctx.with('save-document', {}, async (ctx) => {
         await adapter.saveDocument(ctx, documentName as DocumentId, document, context, {
-          old: oldMarkup,
-          new: newMarkup
+          prev: prevMarkup,
+          curr: currMarkup
         })
       })
 
-      this.markups.set(documentName, newMarkup)
+      this.markups.set(documentName, currMarkup)
     } catch (err) {
       ctx.error('failed to save document', { documentName, error: err })
       throw new Error('Failed to save document')

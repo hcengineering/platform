@@ -87,8 +87,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     document: YDoc,
     context: Context,
     markup: {
-      old: Record<string, string>
-      new: Record<string, string>
+      prev: Record<string, string>
+      curr: Record<string, string>
     }
   ): Promise<void> {
     const { clientFactory } = context
@@ -191,8 +191,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     platformDocumentId: PlatformDocumentId,
     snapshot: YDocVersion | undefined,
     markup: {
-      old: Record<string, string>
-      new: Record<string, string>
+      prev: Record<string, string>
+      curr: Record<string, string>
     }
   ): Promise<void> {
     const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
@@ -234,8 +234,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
         attributeUpdates: {
           attrKey: objectAttr,
           attrClass: core.class.TypeMarkup,
-          prevValue: markup.old[objectAttr],
-          set: [markup.new[objectAttr]],
+          prevValue: markup.prev[objectAttr],
+          set: [markup.curr[objectAttr]],
           added: [],
           removed: [],
           isMixin: hierarchy.isMixin(objectClass)
