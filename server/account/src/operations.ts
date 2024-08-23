@@ -1050,6 +1050,28 @@ export async function setWorkspaceDisabled (db: Db, workspaceId: Workspace['_id'
   await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $set: { disabled } })
 }
 
+/**
+ * @public
+ */
+export async function setWorkspaceDisabledByWs (
+  db: Db,
+  workspace: Workspace['workspace'],
+  disabled: boolean,
+  uniqueOnly: boolean = true
+): Promise<boolean> {
+  if (uniqueOnly) {
+    const collectionsCount = await db.collection<Workspace>(WORKSPACE_COLLECTION).countDocuments({ workspace })
+
+    if (collectionsCount > 1) {
+      return false
+    }
+  }
+
+  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ workspace }, { $set: { disabled } })
+
+  return true
+}
+
 export async function cleanInProgressWorkspaces (db: Db): Promise<void> {
   const toDelete = await db.collection<Workspace>(WORKSPACE_COLLECTION).find({ creating: true }).toArray()
 

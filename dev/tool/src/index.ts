@@ -32,6 +32,7 @@ import accountPlugin, {
   replacePassword,
   setAccountAdmin,
   setRole,
+  setWorkspaceDisabledByWs,
   UpgradeWorker,
   upgradeWorkspace,
   type Workspace
@@ -1018,6 +1019,26 @@ export function devTool (
         })
       })
     })
+
+  program.command('disable-old-qms-workspaces').action(async (cmd) => {
+    const { mongodbUri } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      const admin = client.db('admin')
+      const result = await admin.command({ listDatabases: 1, nameOnly: true })
+      const targetDbs = result.databases.map((rdb: any) => rdb.name).filter((n: string) => n.endsWith('@ezqms'))
+      console.log('Disabling', targetDbs.length, 'workspaces')
+
+      for (const dbName of targetDbs) {
+        const ws = dbName.slice(0, dbName.length - '@ezqms'.length)
+        console.log('disabling workspace', ws)
+        const res = await setWorkspaceDisabledByWs(db, ws, true)
+
+        if (!res) {
+          console.log('failed to disable workspace', ws)
+        }
+      }
+    })
+  })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     const { mongodbUri } = prepareTools()
