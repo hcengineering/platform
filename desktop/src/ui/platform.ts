@@ -203,7 +203,6 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
-  setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
 
@@ -275,6 +274,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(notificationId, async () => await import('@hcengineering/notification-resources'))
   addLocation(tagsId, async () => await import('@hcengineering/tags-resources'))
   addLocation(calendarId, async () => await import('@hcengineering/calendar-resources'))
+  addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
 
   addLocation(trackerId, async () => await import('@hcengineering/tracker-resources'))
   addLocation(boardId, async () => await import('@hcengineering/board-resources'))

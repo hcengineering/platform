@@ -119,6 +119,8 @@
     "CreatedChannelOn": "Creó este canal el {date}",
     "ChannelMessages": "Mensajes del canal",
     "JoinChannel": "Unirse",
-    "YouJoinedChannel": "Te has unido al canal"
+    "YouJoinedChannel": "Te has unido al canal",
+    "AndMore": "y {count} más",
+    "IsTyping": "está escribiendo..."
   }
 }

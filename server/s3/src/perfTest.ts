@@ -15,7 +15,7 @@ const toolCtx = new MeasureMetricsContext('test', {})
 const storageService = new S3Service({ ...(config.storages[0] as S3Config), rootBucket: 'haiodo-test-bucket' })
 
 async function doTest (): Promise<void> {
-  const existingTestBuckets = await storageService.listBuckets(toolCtx, '')
+  const existingTestBuckets = await storageService.listBuckets(toolCtx)
   // Delete old buckets
   for (const b of existingTestBuckets) {
     await b.delete()
@@ -23,7 +23,7 @@ async function doTest (): Promise<void> {
 
   const genWorkspaceId1 = generateId()
 
-  const ws1 = { name: genWorkspaceId1, productId: '' }
+  const ws1 = { name: genWorkspaceId1 }
   await storageService.make(toolCtx, ws1)
   /// /////// Uploads
   let st1 = Date.now()

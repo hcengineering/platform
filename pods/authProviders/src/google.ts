@@ -13,7 +13,6 @@ export function registerGoogle (
   router: Router<any, any>,
   accountsUrl: string,
   db: Db,
-  productId: string,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {
@@ -76,18 +75,9 @@ export function registerGoogle (
           const state = safeParseAuthState(ctx.query?.state)
           const branding = getBranding(brandings, state?.branding)
           if (state.inviteId != null && state.inviteId !== '') {
-            loginInfo = await joinWithProvider(
-              measureCtx,
-              db,
-              productId,
-              null,
-              email,
-              first,
-              last,
-              state.inviteId as any
-            )
+            loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any)
           } else {
-            loginInfo = await loginWithProvider(measureCtx, db, productId, null, email, first, last)
+            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last)
           }
 
           const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')

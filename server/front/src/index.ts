@@ -248,7 +248,6 @@ export function start (
     gmailUrl: string
     calendarUrl: string
     collaboratorUrl: string
-    collaboratorApiUrl: string
     brandingUrl?: string
     previewConfig: string
     pushPublicKey?: string
@@ -299,7 +298,6 @@ export function start (
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
-      COLLABORATOR_API_URL: config.collaboratorApiUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
@@ -376,7 +374,7 @@ export function start (
       'handle-file',
       {},
       async (ctx) => {
-        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
+        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string } }
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 

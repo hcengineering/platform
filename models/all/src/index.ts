@@ -76,7 +76,6 @@ import view, { viewId, createModel as viewModel } from '@hcengineering/model-vie
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
 
-import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
@@ -251,6 +250,17 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [notificationModel, notificationId],
     [preferenceModel, preferenceId],
     [
+      analyticsCollectorModel,
+      analyticsCollectorId,
+      {
+        label: inventory.string.ConfigLabel,
+        description: inventory.string.ConfigDescription,
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
+    [
       hrModel,
       hrId,
       {
@@ -349,7 +359,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [printModel, printId],
-    [analyticsCollectorModel, analyticsCollectorId],
     [driveModel, driveId],
     [
       documentsModel,
@@ -416,7 +425,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverViewModel, serverViewId],
     [serverActivityModel, serverActivityId],
     [serverTranslate, translateId],
-    [serverOpenAI, openAIId],
     [serverDocumentModel, serverDocumentId],
     [serverGithubModel, serverGithubId],
     [serverLoveModel, serverLoveId],

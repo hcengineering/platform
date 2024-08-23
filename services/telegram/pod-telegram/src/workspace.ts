@@ -160,7 +160,7 @@ export class WorkspaceWorker {
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
+    const token = generateToken(config.SystemEmail, { name: workspace })
     const client = await createPlatformClient(token)
 
     const worker = new WorkspaceWorker(
@@ -644,7 +644,7 @@ export class WorkspaceWorker {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: msg._id })
     const res: Buffer[] = []
     for (const attachment of attachments) {
-      const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace, productId: '' }, attachment.file)
+      const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace }, attachment.file)
       const buffer = Buffer.concat(chunks)
       if (buffer.length > 0) {
         res.push(
@@ -669,14 +669,7 @@ export class WorkspaceWorker {
       try {
         const id = uuid()
         file.size = file.size ?? file.file.length
-        await this.storageAdapter.put(
-          this.ctx,
-          { name: this.workspace, productId: '' },
-          id,
-          file.file,
-          file.type,
-          file.size
-        )
+        await this.storageAdapter.put(this.ctx, { name: this.workspace }, id, file.file, file.type, file.size)
         const tx = factory.createTxCollectionCUD<TelegramMessage, Attachment>(
           msg._class,
           msg._id,

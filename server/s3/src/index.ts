@@ -82,11 +82,11 @@ export class S3Service implements StorageAdapter {
    * @public
    */
   getBucketId (workspaceId: WorkspaceId): string {
-    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId, '.')
+    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
   }
 
   getBucketFolder (workspaceId: WorkspaceId): string {
-    return toWorkspaceString(workspaceId, '.')
+    return toWorkspaceString(workspaceId)
   }
 
   async close (): Promise<void> {}
@@ -121,7 +121,7 @@ export class S3Service implements StorageAdapter {
     }
   }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     try {
       if (this.opt.rootBucket !== undefined) {
         const info = new Map<string, BucketInfo>()
@@ -140,9 +140,9 @@ export class S3Service implements StorageAdapter {
               info.set(wsName, {
                 name: wsName,
                 delete: async () => {
-                  await this.delete(ctx, { name: wsName, productId })
+                  await this.delete(ctx, { name: wsName })
                 },
-                list: async () => await this.listStream(ctx, { name: wsName, productId })
+                list: async () => await this.listStream(ctx, { name: wsName })
               })
             }
           }
@@ -155,8 +155,7 @@ export class S3Service implements StorageAdapter {
         return Array.from(info.values())
       } else {
         const productPostfix = this.getBucketFolder({
-          name: '',
-          productId
+          name: ''
         })
         const buckets = await this.client.listBuckets()
         return (buckets.Buckets ?? [])
@@ -167,9 +166,9 @@ export class S3Service implements StorageAdapter {
             return {
               name,
               delete: async () => {
-                await this.delete(ctx, { name, productId })
+                await this.delete(ctx, { name })
               },
-              list: async () => await this.listStream(ctx, { name, productId })
+              list: async () => await this.listStream(ctx, { name })
             }
           })
       }

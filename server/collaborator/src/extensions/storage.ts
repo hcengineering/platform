@@ -18,6 +18,7 @@ import { MeasureContext } from '@hcengineering/core'
 import {
   Document,
   Extension,
+  afterLoadDocumentPayload,
   afterUnloadDocumentPayload,
   onChangePayload,
   onConnectPayload,
@@ -28,15 +29,18 @@ import {
 import { Doc as YDoc } from 'yjs'
 import { Context, withContext } from '../context'
 import { CollabStorageAdapter } from '../storage/adapter'
+import { TransformerFactory } from '../types'
 
 export interface StorageConfiguration {
   ctx: MeasureContext
   adapter: CollabStorageAdapter
+  transformerFactory: TransformerFactory
 }
 
 export class StorageExtension implements Extension {
   private readonly configuration: StorageConfiguration
   private readonly collaborators = new Map<string, Set<string>>()
+  private readonly markups = new Map<string, Record<string, string>>()
 
   constructor (configuration: StorageConfiguration) {
     this.configuration = configuration
@@ -52,7 +56,15 @@ export class StorageExtension implements Extension {
     const { connectionId } = context
 
     this.configuration.ctx.info('load document', { documentName, connectionId })
-    return await this.loadDocument(documentName as DocumentId, context)
+    return await this.loadDocument(documentName, context)
+  }
+
+  async afterLoadDocument ({ context, documentName, document }: withContext<afterLoadDocumentPayload>): Promise<any> {
+    const { workspaceId } = context
+
+    // remember the markup for the document
+    const transformer = this.configuration.transformerFactory(workspaceId)
+    this.markups.set(documentName, transformer.fromYdoc(document))
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
@@ -68,7 +80,7 @@ export class StorageExtension implements Extension {
     }
 
     this.collaborators.delete(documentName)
-    await this.storeDocument(documentName as DocumentId, document, context)
+    await this.storeDocument(documentName, document, context)
   }
 
   async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
@@ -91,36 +103,48 @@ export class StorageExtension implements Extension {
     }
 
     this.collaborators.delete(documentName)
-    await this.storeDocument(documentName as DocumentId, document, context)
+    await this.storeDocument(documentName, document, context)
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
     this.configuration.ctx.info('unload document', { documentName })
     this.collaborators.delete(documentName)
+    this.markups.delete(documentName)
   }
 
-  async loadDocument (documentId: DocumentId, context: Context): Promise<YDoc | undefined> {
+  private async loadDocument (documentName: string, context: Context): Promise<YDoc | undefined> {
     const { ctx, adapter } = this.configuration
 
     try {
       return await ctx.with('load-document', {}, async (ctx) => {
-        return await adapter.loadDocument(ctx, documentId, context)
+        return await adapter.loadDocument(ctx, documentName as DocumentId, context)
       })
     } catch (err) {
-      ctx.error('failed to load document', { documentId, error: err })
+      ctx.error('failed to load document', { documentName, error: err })
       throw new Error('Failed to load document')
     }
   }
 
-  async storeDocument (documentId: DocumentId, document: Document, context: Context): Promise<void> {
+  private async storeDocument (documentName: string, document: Document, context: Context): Promise<void> {
     const { ctx, adapter } = this.configuration
+    const { workspaceId } = context
 
     try {
+      const transformer = this.configuration.transformerFactory(workspaceId)
+
+      const prevMarkup = this.markups.get(documentName) ?? {}
+      const currMarkup = transformer.fromYdoc(document)
+
       await ctx.with('save-document', {}, async (ctx) => {
-        await adapter.saveDocument(ctx, documentId, document, context)
+        await adapter.saveDocument(ctx, documentName as DocumentId, document, context, {
+          prev: prevMarkup,
+          curr: currMarkup
+        })
       })
+
+      this.markups.set(documentName, currMarkup)
     } catch (err) {
-      ctx.error('failed to save document', { documentId, error: err })
+      ctx.error('failed to save document', { documentName, error: err })
       throw new Error('Failed to save document')
     }
   }

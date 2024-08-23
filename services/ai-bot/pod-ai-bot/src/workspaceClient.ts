@@ -32,9 +32,8 @@ import core, {
 import aiBot, { AIBotEvent, aiBotAccountEmail, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
 import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import contact, { AvatarType, combineName, getFirstName, getLastName, PersonAccount } from '@hcengineering/contact'
-import { generateToken } from '@hcengineering/server-token'
 import notification from '@hcengineering/notification'
-import { getOrCreateAnalyticsChannel } from '@hcengineering/server-analytics-collector-resources'
+import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
 import { deepEqual } from 'fast-equals'
 import { BlobClient } from '@hcengineering/server-client'
 import fs from 'fs'
@@ -49,14 +48,12 @@ const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
 
 export class WorkspaceClient {
   client: Client | undefined
-  opClient: TxOperations | undefined
+  opClient: Promise<TxOperations> | TxOperations
 
   blobClient: BlobClient
 
   loginTimeout: NodeJS.Timeout | undefined
   loginDelayMs = 2 * 1000
-
-  initializePromise: Promise<void> | undefined = undefined
 
   channelByKey = new Map<string, Ref<Channel>>()
   aiAccount: PersonAccount | undefined
@@ -73,8 +70,9 @@ export class WorkspaceClient {
     readonly info: WorkspaceInfoRecord | undefined
   ) {
     this.blobClient = new BlobClient(transactorUrl, token, this.workspace)
-    this.initializePromise = this.initClient().then(() => {
-      this.initializePromise = undefined
+    this.opClient = this.initClient()
+    void this.opClient.then((opClient) => {
+      this.opClient = opClient
     })
   }
 
@@ -126,24 +124,22 @@ export class WorkspaceClient {
         if (this.loginDelayMs < MAX_LOGIN_DELAY_MS) {
           this.loginDelayMs += 1000
         }
-        void this.tryLogin()
-
         this.ctx.info(`login delay ${this.loginDelayMs} millisecond`)
+        void this.tryLogin()
       }, this.loginDelayMs)
     }
   }
 
   private async checkPersonData (client: TxOperations): Promise<void> {
-    const account = await client.findOne(contact.class.PersonAccount, { email: aiBotAccountEmail })
-    if (account === undefined) {
+    this.aiAccount = await client.getModel().findOne(contact.class.PersonAccount, { email: aiBotAccountEmail })
+    if (this.aiAccount === undefined) {
       this.ctx.error('Cannot find AI PersonAccount', { email: aiBotAccountEmail })
       return
     }
-    this.aiAccount = account
-    const person = await client.findOne(contact.class.Person, { _id: account.person })
+    const person = await client.findOne(contact.class.Person, { _id: this.aiAccount.person })
 
     if (person === undefined) {
-      this.ctx.error('Cannot find AI Person ', { _id: account.person })
+      this.ctx.error('Cannot find AI Person ', { _id: this.aiAccount.person })
       return
     }
 
@@ -170,25 +166,22 @@ export class WorkspaceClient {
     await client.diffUpdate(person, { avatar: config.AvatarName as Ref<Blob>, avatarType: AvatarType.IMAGE })
   }
 
-  private async initClient (): Promise<void> {
+  private async initClient (): Promise<TxOperations> {
     await this.tryLogin()
 
-    const token = generateToken(aiBotAccountEmail, this.workspace)
-    this.client = await connectPlatform(token)
+    this.client = await connectPlatform(this.token, this.transactorUrl)
+    const opClient = new TxOperations(this.client, aiBot.account.AIBot)
 
-    if (this.client === undefined) {
-      this.ctx.error('Cannot connect to platform', this.workspace)
-      return
-    }
-    this.opClient = new TxOperations(this.client, aiBot.account.AIBot)
-    await this.uploadAvatarFile(this.opClient)
-    const events = await this.opClient.findAll(aiBot.class.AIBotTransferEvent, {})
+    await this.uploadAvatarFile(opClient)
+    const events = await opClient.findAll(aiBot.class.AIBotTransferEvent, {})
     void this.processEvents(events)
 
     this.client.notify = (...txes: Tx[]) => {
-      void this.txHandler(txes)
+      void this.txHandler(opClient, txes)
     }
     this.ctx.info('Initialized workspace', this.workspace)
+
+    return opClient
   }
 
   async getThreadParent (
@@ -263,12 +256,10 @@ export class WorkspaceClient {
   }
 
   async processResponseEvent (event: AIBotResponseEvent): Promise<void> {
-    if (this.opClient === undefined) {
-      return
-    }
+    const client = await this.opClient
 
     if (event.messageClass === chunter.class.ChatMessage) {
-      await this.opClient.addCollection<Doc, ChatMessage>(
+      await client.addCollection<Doc, ChatMessage>(
         chunter.class.ChatMessage,
         event.objectSpace,
         event.objectId,
@@ -277,12 +268,12 @@ export class WorkspaceClient {
         { message: 'You said: ' + event.message }
       )
     } else if (event.messageClass === chunter.class.ThreadMessage) {
-      const parent = await this.opClient.findOne<ChatMessage>(chunter.class.ChatMessage, {
+      const parent = await client.findOne<ChatMessage>(chunter.class.ChatMessage, {
         _id: event.objectId as Ref<ChatMessage>
       })
 
       if (parent !== undefined) {
-        await this.opClient.addCollection<Doc, ThreadMessage>(
+        await client.addCollection<Doc, ThreadMessage>(
           chunter.class.ThreadMessage,
           event.objectSpace,
           event.objectId,
@@ -293,30 +284,24 @@ export class WorkspaceClient {
       }
     }
 
-    await this.opClient.remove(event)
+    await client.remove(event)
   }
 
   async processTransferEvent (event: AIBotTransferEvent): Promise<void> {
-    if (this.opClient === undefined) {
-      return
-    }
+    const client = await this.opClient
 
     await this.controller.transfer(event)
-    await this.opClient.remove(event)
+    await client.remove(event)
   }
 
   async getAccount (email: string): Promise<PersonAccount | undefined> {
-    if (this.opClient === undefined) {
-      return
-    }
+    const client = await this.opClient
 
-    return await this.opClient.findOne(contact.class.PersonAccount, { email })
+    return await client.findOne(contact.class.PersonAccount, { email })
   }
 
   async getDirect (email: string): Promise<Ref<DirectMessage> | undefined> {
-    if (this.opClient === undefined) {
-      return
-    }
+    const client = await this.opClient
 
     const personAccount = await this.getAccount(email)
 
@@ -324,9 +309,9 @@ export class WorkspaceClient {
       return
     }
 
-    const allAccounts = await this.opClient.findAll(contact.class.PersonAccount, { person: personAccount.person })
+    const allAccounts = await client.findAll(contact.class.PersonAccount, { person: personAccount.person })
     const accIds: Ref<Account>[] = [aiBot.account.AIBot, ...allAccounts.map(({ _id }) => _id)].sort()
-    const existingDms = await this.opClient.findAll(chunter.class.DirectMessage, {})
+    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
 
     for (const dm of existingDms) {
       if (deepEqual(dm.members.sort(), accIds)) {
@@ -334,7 +319,7 @@ export class WorkspaceClient {
       }
     }
 
-    const dmId = await this.opClient.createDoc<DirectMessage>(chunter.class.DirectMessage, core.space.Space, {
+    const dmId = await client.createDoc<DirectMessage>(chunter.class.DirectMessage, core.space.Space, {
       name: '',
       description: '',
       private: true,
@@ -343,9 +328,9 @@ export class WorkspaceClient {
     })
 
     if (this.aiAccount === undefined) return dmId
-    const space = await this.opClient.findOne(contact.class.PersonSpace, { person: this.aiAccount.person })
+    const space = await client.findOne(contact.class.PersonSpace, { person: this.aiAccount.person })
     if (space === undefined) return dmId
-    await this.opClient.createDoc(notification.class.DocNotifyContext, space._id, {
+    await client.createDoc(notification.class.DocNotifyContext, space._id, {
       user: aiBot.account.AIBot,
       objectId: dmId,
       objectClass: chunter.class.DirectMessage,
@@ -357,18 +342,18 @@ export class WorkspaceClient {
   }
 
   async transferToSupport (event: AIBotTransferEvent, channelRef?: Ref<Channel>): Promise<void> {
-    if (this.opClient === undefined) return
+    const client = await this.opClient
     const key = `${event.toEmail}-${event.fromWorkspace}`
     const channel =
       channelRef ??
       this.channelByKey.get(key) ??
-      (await getOrCreateAnalyticsChannel(
-        this.ctx,
-        this.opClient,
-        event.toEmail,
-        event.fromWorkspace,
-        event.fromWorkspaceUrl
-      ))
+      (
+        await getOrCreateOnboardingChannel(this.ctx, client, event.toEmail, {
+          workspaceId: event.fromWorkspace,
+          workspaceName: event.fromWorkspaceName,
+          workspaceUrl: event.fromWorkspaceUrl
+        })
+      )[0]
 
     if (channel === undefined) {
       return
@@ -376,14 +361,10 @@ export class WorkspaceClient {
 
     this.channelByKey.set(key, channel)
 
-    await this.createTransferMessage(this.opClient, event, channel, chunter.class.Channel, channel, event.message)
+    await this.createTransferMessage(client, event, channel, chunter.class.Channel, channel, event.message)
   }
 
   async transferToUserDirect (event: AIBotTransferEvent): Promise<void> {
-    if (this.opClient === undefined) {
-      return
-    }
-
     const direct = this.directByEmail.get(event.toEmail) ?? (await this.getDirect(event.toEmail))
 
     if (direct === undefined) {
@@ -391,8 +372,9 @@ export class WorkspaceClient {
     }
 
     this.directByEmail.set(event.toEmail, direct)
+    const client = await this.opClient
 
-    await this.createTransferMessage(this.opClient, event, direct, chunter.class.DirectMessage, direct, event.message)
+    await this.createTransferMessage(client, event, direct, chunter.class.DirectMessage, direct, event.message)
   }
 
   getChannelRef (email: string, workspace: string): Ref<Channel> | undefined {
@@ -402,17 +384,13 @@ export class WorkspaceClient {
   }
 
   async transfer (event: AIBotTransferEvent): Promise<void> {
-    if (this.initializePromise instanceof Promise) {
-      await this.initializePromise
-    }
-
     if (event.toWorkspace === config.SupportWorkspace) {
       const channel = this.getChannelRef(event.toEmail, event.fromWorkspace)
 
       if (channel !== undefined) {
         await this.transferToSupport(event, channel)
       } else {
-        // If we dont have AnalyticsChannel we should call it sync to prevent multiple channel for the same user and workspace
+        // If we dont have OnboardingChannel we should call it sync to prevent multiple channel for the same user and workspace
         await this.rate.add(async () => {
           await this.transferToSupport(event)
         })
@@ -449,18 +427,24 @@ export class WorkspaceClient {
 
   async close (): Promise<void> {
     clearTimeout(this.loginTimeout)
-    await this.client?.close()
-    await this.opClient?.close()
+
+    if (this.client !== undefined) {
+      await this.client.close()
+    }
+
+    if (this.opClient instanceof Promise) {
+      void this.opClient.then((opClient) => {
+        void opClient.close()
+      })
+    } else {
+      await this.opClient.close()
+    }
 
     this.ctx.info('Closed workspace client: ', this.workspace)
   }
 
-  private async txHandler (txes: Tx[]): Promise<void> {
-    if (this.opClient === undefined) {
-      return
-    }
-
-    const hierarchy = this.opClient.getHierarchy()
+  private async txHandler (client: TxOperations, txes: Tx[]): Promise<void> {
+    const hierarchy = client.getHierarchy()
 
     const resultTxes = txes
       .map((a) => TxProcessor.extractTx(a) as TxCreateDoc<AIBotEvent>)

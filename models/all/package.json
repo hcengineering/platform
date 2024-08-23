@@ -85,7 +85,6 @@
     "@hcengineering/model-support": "^0.6.0",
     "@hcengineering/model-server-request": "^0.6.0",
     "@hcengineering/model-server-view": "^0.6.0",
-    "@hcengineering/model-server-openai": "^0.6.0",
     "@hcengineering/model-server-translate": "^0.6.0",
     "@hcengineering/model-server-activity": "^0.6.0",
     "@hcengineering/model-drive": "^0.6.0",

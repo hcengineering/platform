@@ -15,7 +15,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
-import type { MongoClientReference } from '@hcengineering/mongo'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
@@ -44,16 +43,10 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
-export async function start (
-  ctx: MeasureContext,
-  config: Config,
-  storageAdapter: StorageAdapter,
-  mongoClient: MongoClientReference
-): Promise<Shutdown> {
+export async function start (ctx: MeasureContext, config: Config, storageAdapter: StorageAdapter): Promise<Shutdown> {
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })
-  const mongo = await mongoClient.getClient()
 
   const app = express()
   app.use(cors())
@@ -116,7 +109,8 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter(storageAdapter, mongo, transformerFactory)
+        adapter: new PlatformStorageAdapter(storageAdapter),
+        transformerFactory
       })
     ]
   })

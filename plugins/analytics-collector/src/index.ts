@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Mixin, Ref } from '@hcengineering/core'
+import type { Class, Ref } from '@hcengineering/core'
+import { Channel, InlineButtonAction } from '@hcengineering/chunter'
 
-import { AnalyticsChannel } from './types'
+import { OnboardingChannel } from './types'
 
 export const analyticsCollectorId = 'analytics' as Plugin
 
@@ -28,18 +29,31 @@ const analyticsCollector = plugin(analyticsCollectorId, {
   metadata: {
     EndpointURL: '' as Metadata<string>
   },
-  mixin: {
-    AnalyticsChannel: '' as Ref<Mixin<AnalyticsChannel>>
+  class: {
+    OnboardingChannel: '' as Ref<Class<OnboardingChannel>>
+  },
+  space: {
+    GeneralOnboardingChannel: '' as Ref<Channel>
+  },
+  function: {
+    AnalyticsCollectorInlineAction: '' as Resource<InlineButtonAction>
   },
   string: {
-    AnalyticsChannelDescription: '' as IntlString,
+    OnboardingChannelDescription: '' as IntlString,
     Error: '' as IntlString,
     InProject: '' as IntlString,
     Open: '' as IntlString,
     OpenSpecial: '' as IntlString,
     Set: '' as IntlString,
     To: '' as IntlString,
-    Workbench: '' as IntlString
+    Workbench: '' as IntlString,
+    OnboardingChannel: '' as IntlString,
+    OnboardingChannels: '' as IntlString,
+    WorkspaceId: '' as IntlString,
+    WorkspaceName: '' as IntlString,
+    WorkspaceUrl: '' as IntlString,
+    Email: '' as IntlString,
+    UserName: '' as IntlString
   }
 })
 

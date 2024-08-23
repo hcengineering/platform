@@ -18,6 +18,7 @@
   import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
   import core, {
     Account,
+    AttachedData,
     Data,
     Ref,
     Role,
@@ -25,10 +26,18 @@
     SortingOrder,
     fillDefaults,
     generateId,
-    getCurrentAccount
+    getCurrentAccount,
+    makeCollaborativeDoc
   } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Card, InlineAttributeBar, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    Card,
+    InlineAttributeBar,
+    MessageBox,
+    createQuery,
+    getClient,
+    updateMarkup
+  } from '@hcengineering/presentation'
   import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
   import task, { ProjectType, makeRank } from '@hcengineering/task'
@@ -88,7 +97,7 @@
     attachments: 0,
     comments: 0,
     company: '' as Ref<Organization>,
-    fullDescription: '',
+    fullDescription: makeCollaborativeDoc(objectId, 'fullDescription'),
     location: '',
     type: typeId as Ref<ProjectType>
   }
@@ -103,7 +112,7 @@
   $: typeId &&
     templateQ.query(task.class.ProjectType, { _id: typeId }, (result) => {
       const { _class, _id, description, targetClass, ...templateData } = result[0]
-      vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
+      vacancyData = { ...(templateData as unknown as Data<VacancyClass>) }
       if (appliedTemplateId !== typeId) {
         fullDescription = description ?? ''
         appliedTemplateId = typeId
@@ -172,10 +181,11 @@
     }
     const number = (incResult as any).object.sequence
 
+    const resId: Ref<Issue> = generateId()
     const identifier = `${project?.identifier}-${number}`
-    const resId = await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', {
+    const data: AttachedData<Issue> = {
       title: template.title + ` (${name})`,
-      description: template.description,
+      description: makeCollaborativeDoc(resId, 'description'),
       assignee: template.assignee,
       component: template.component,
       milestone: template.milestone,
@@ -195,7 +205,10 @@
       childInfo: [],
       kind: taskType._id,
       identifier
-    })
+    }
+
+    await updateMarkup(data.description, { description: template.description })
+    await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', data, resId)
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
       for (const label of tagElements) {
@@ -224,7 +237,7 @@
       ...vacancyData,
       name,
       description: template?.shortDescription ?? '',
-      fullDescription,
+      fullDescription: makeCollaborativeDoc(objectId, 'fullDescription'),
       private: false,
       archived: false,
       number: (incResult as any).object.sequence,
@@ -234,6 +247,8 @@
       owners: [getCurrentAccount()._id],
       type: typeId
     }
+
+    await updateMarkup(data.fullDescription, { fullDescription })
 
     const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
 

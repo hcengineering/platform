@@ -186,10 +186,10 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
   }
 
   @withContext('aggregator-listBuckets', {})
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     const result: BucketInfo[] = []
     for (const a of this.adapters.values()) {
-      result.push(...(await a.listBuckets(ctx, productId)))
+      result.push(...(await a.listBuckets(ctx)))
     }
     return result
   }

@@ -38,19 +38,14 @@ class AIBotAdapter implements AIBotServiceAdapter {
       return
     }
     const existsRecord = await this.workspacesInfoCollection.findOne({
-      workspace: workspace.name,
-      productId: workspace.productId
+      workspace: workspace.name
     })
 
     if (existsRecord != null && !existsRecord.active) {
-      await this.workspacesInfoCollection.updateOne(
-        { workspace: workspace.name, productId: workspace.productId },
-        { $set: { active: true } }
-      )
+      await this.workspacesInfoCollection.updateOne({ workspace: workspace.name }, { $set: { active: true } })
     } else if (existsRecord == null) {
       const record: WorkspaceInfoRecord = {
         workspace: workspace.name,
-        productId: workspace.productId,
         active: true
       }
 

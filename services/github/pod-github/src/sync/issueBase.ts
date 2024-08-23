@@ -14,16 +14,16 @@ import core, {
   Account,
   AttachedDoc,
   Class,
+  CollaborativeDoc,
   Doc,
   DocumentUpdate,
+  Markup,
   MeasureContext,
   Ref,
   Space,
   Status,
   TxOperations,
-  generateId,
-  getCollaborativeDoc,
-  getCollaborativeDocId
+  generateId
 } from '@hcengineering/core'
 import { IntlString } from '@hcengineering/platform'
 import { LiveQuery } from '@hcengineering/query'
@@ -75,8 +75,15 @@ import {
 /**
  * @public
  */
+export type WithMarkup<T> = {
+  [P in keyof T]: T[P] extends CollaborativeDoc ? Markup : T[P]
+}
+
+/**
+ * @public
+ */
 export type GithubIssueData = Omit<
-Issue,
+WithMarkup<Issue>,
 | 'commits'
 | 'attachments'
 | 'commits'
@@ -102,6 +109,11 @@ Issue,
 | keyof AttachedDoc
 > &
 Record<string, any>
+
+/**
+ * @public
+ */
+export type IssueUpdate = DocumentUpdate<WithMarkup<Issue>>
 
 /**
  * @public
@@ -325,7 +337,7 @@ export abstract class IssueSyncManagerBase {
   async handleUpdate (
     external: IssueExternalData,
     derivedClient: TxOperations,
-    update: DocumentUpdate<Issue>,
+    update: IssueUpdate,
     account: Ref<Account>,
     prj: GithubProject,
     needSync: boolean,
@@ -334,7 +346,7 @@ export abstract class IssueSyncManagerBase {
       state: DocSyncInfo,
       existing: Issue,
       external: IssueExternalData,
-      update: DocumentUpdate<Issue>
+      update: IssueUpdate
     ) => Promise<boolean>,
     extraSyncUpdate?: DocumentUpdate<DocSyncInfo>
   ): Promise<void> {
@@ -354,13 +366,22 @@ export abstract class IssueSyncManagerBase {
       const lastModified = new Date().getTime()
 
       if (doc !== undefined && ((await verifyUpdate?.(syncData, doc, external, update)) ?? true)) {
+        const issueData: DocumentUpdate<Issue> = { ...update, description: doc.description }
         if (
           update.description !== undefined &&
           !areEqualMarkups(update.description, syncData.current?.description ?? '')
         ) {
           try {
-            const collaborativeDoc = getCollaborativeDoc(getCollaborativeDocId(doc._id, 'description'))
-            await this.collaborator.updateContent(collaborativeDoc, 'description', update.description)
+            const versionId = `${Date.now()}`
+            issueData.description = await this.collaborator.updateContent(
+              doc.description,
+              { description: update.description },
+              {
+                versionId,
+                versionName: versionId,
+                createdBy: account
+              }
+            )
           } catch (err: any) {
             Analytics.handleError(err)
             this.ctx.error(err)
@@ -405,7 +426,12 @@ export abstract class IssueSyncManagerBase {
           },
           lastModified
         )
-        await this.client.diffUpdate(this.client.getHierarchy().as(doc, prj.mixinClass), update, lastModified, account)
+        await this.client.diffUpdate(
+          this.client.getHierarchy().as(doc, prj.mixinClass),
+          issueData,
+          lastModified,
+          account
+        )
         this.provider.sync()
       }
     }
@@ -649,7 +675,7 @@ export abstract class IssueSyncManagerBase {
 
   abstract performIssueFieldsUpdate (
     info: DocSyncInfo,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     platformUpdate: DocumentUpdate<Issue>,
     issueData: GithubIssueData,
     container: ContainerFocus,
@@ -662,7 +688,7 @@ export abstract class IssueSyncManagerBase {
 
   async handleDiffUpdate (
     target: IssueSyncTarget,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     info: DocSyncInfo,
     issueData: GithubIssueData,
     container: ContainerFocus,
@@ -894,21 +920,30 @@ export abstract class IssueSyncManagerBase {
       }
     }
 
-    if (Object.keys(update).length > 0) {
-      // Update collaborative description
+    // Update collaborative description
+    if (update.description !== undefined) {
       this.ctx.info(`<= perform ${issueExternal.url} update to collaborator`, {
         workspace: this.provider.getWorkspaceId().name
       })
-      if (update.description !== undefined) {
-        try {
-          issueData.description = update.description
-          const collaborativeDoc = getCollaborativeDoc(getCollaborativeDocId(existingIssue._id, 'description'))
-          await this.collaborator.updateContent(collaborativeDoc, 'description', update.description)
-        } catch (err: any) {
-          Analytics.handleError(err)
-          this.ctx.error('error during description update', err)
-        }
+      try {
+        const versionId = `${Date.now()}`
+        issueData.description = update.description
+        update.description = await this.collaborator.updateContent(
+          existingIssue.description,
+          { description: update.description },
+          {
+            versionId,
+            versionName: versionId,
+            createdBy: account
+          }
+        )
+      } catch (err: any) {
+        Analytics.handleError(err)
+        this.ctx.error('error during description update', err)
       }
+    }
+
+    if (Object.keys(update).length > 0) {
       // We have some fields to update of existing from external
       this.ctx.info(`<= perform ${issueExternal.url} update to platform`, {
         ...update,
@@ -930,7 +965,7 @@ export abstract class IssueSyncManagerBase {
   private async notifyConnected (
     container: ContainerFocus,
     info: DocSyncInfo,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     issueExternal: IssueExternalData
   ): Promise<void> {
     const repo = container.repository.find((it) => it._id === info.repository) as GithubIntegrationRepository
@@ -948,9 +983,9 @@ export abstract class IssueSyncManagerBase {
 
   async collectIssueUpdate (
     info: DocSyncInfo,
-    doc: Issue,
+    doc: WithMarkup<Issue>,
     platformUpdate: DocumentUpdate<Issue>,
-    issueData: Pick<Issue, 'title' | 'description' | 'assignee' | 'status'>,
+    issueData: Pick<WithMarkup<Issue>, 'title' | 'description' | 'assignee' | 'status'>,
     container: ContainerFocus,
     issueExternal: IssueExternalData,
     _class: Ref<Class<Issue>>

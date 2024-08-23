@@ -119,6 +119,8 @@
     "CreatedChannelOn": "Создал этот канал {date}",
     "ChannelMessages": "Сообщения каналов",
     "JoinChannel": "Приссоединение к каналу",
-    "YouJoinedChannel": "Вы присоединились к каналу"
+    "YouJoinedChannel": "Вы присоединились к каналу",
+    "AndMore": "и еще {count}",
+    "IsTyping": "{count, plural, =1 {печатает} other {печатают}}..."
   }
 }

@@ -36,7 +36,7 @@ export const start = async (): Promise<void> => {
 
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
-  const db = await getDB(config.MongoURL, config.ConfigurationDB)
+  const db = await getDB()
   for (let i = 0; i < 5; i++) {
     ctx.info('Creating bot account', { attempt: i })
     try {

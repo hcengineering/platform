@@ -29,7 +29,10 @@ export interface AnalyticEvent {
   timestamp: number
 }
 
-export interface AnalyticsChannel extends Channel {
-  workspace: string
+export interface OnboardingChannel extends Channel {
+  workspaceId: string
+  workspaceName: string
+  workspaceUrl: string
   email: string
+  userName: string
 }

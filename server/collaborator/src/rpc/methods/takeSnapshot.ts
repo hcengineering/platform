@@ -13,19 +13,13 @@
 // limitations under the License.
 //
 
-import {
-  YDocVersion,
-  collaborativeHistoryDocId,
-  createYdocSnapshot,
-  yDocFromStorage,
-  yDocToStorage
-} from '@hcengineering/collaboration'
+import { YDocVersion, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
 import {
   parseDocumentId,
   type TakeSnapshotRequest,
   type TakeSnapshotResponse
 } from '@hcengineering/collaborator-client'
-import { CollaborativeDocVersionHead, MeasureContext, collaborativeDocParse, generateId } from '@hcengineering/core'
+import { CollaborativeDocVersionHead, MeasureContext, collaborativeDocParse } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
@@ -36,19 +30,19 @@ export async function takeSnapshot (
   payload: TakeSnapshotRequest,
   params: RpcMethodParams
 ): Promise<TakeSnapshotResponse> {
-  const { documentId, snapshotName, createdBy } = payload
+  const { documentId, snapshot } = payload
   const { hocuspocus, storageAdapter } = params
   const { workspaceId } = context
 
   const version: YDocVersion = {
-    versionId: generateId(),
-    name: snapshotName,
-    createdBy,
+    versionId: snapshot.versionId,
+    name: snapshot.versionName ?? snapshot.versionId,
+    createdBy: snapshot.createdBy,
     createdOn: Date.now()
   }
 
   const { collaborativeDoc } = parseDocumentId(documentId)
-  const { documentId: contentDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
+  const { versionId } = collaborativeDocParse(collaborativeDoc)
   if (versionId !== CollaborativeDocVersionHead) {
     throw new Error('invalid document version')
   }
@@ -58,21 +52,10 @@ export async function takeSnapshot (
   })
 
   try {
-    // load history document directly from storage
-    const historyDocumentId = collaborativeHistoryDocId(contentDocumentId)
-    const yHistory =
-      (await ctx.with('yDocFromStorage', {}, async () => {
-        return await yDocFromStorage(ctx, storageAdapter, workspaceId, historyDocumentId)
-      })) ?? new YDoc()
+    const ydoc = connection.document ?? new YDoc()
 
-    await ctx.with('createYdocSnapshot', {}, async () => {
-      await connection.transact((yContent) => {
-        createYdocSnapshot(yContent, yHistory, version)
-      })
-    })
-
-    await ctx.with('yDocToStorage', {}, async () => {
-      await yDocToStorage(ctx, storageAdapter, workspaceId, historyDocumentId, yHistory)
+    await ctx.with('snapshot', {}, async () => {
+      await takeCollaborativeDocSnapshot(storageAdapter, workspaceId, collaborativeDoc, ydoc, version, ctx)
     })
 
     return { ...version }

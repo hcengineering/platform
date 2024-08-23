@@ -1,4 +1,3 @@
-import { openAIId, openAIPluginImpl } from '@hcengineering/openai'
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
@@ -51,7 +50,6 @@ export function registerServerPlugins (): void {
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
   addLocation(serverLoveId, () => import('@hcengineering/server-love-resources'))
   addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
-  addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
   addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
   addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
   addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))

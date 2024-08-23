@@ -17,7 +17,6 @@ interface Config {
   AccountsURL: string
   ConfigurationDB: string
   MongoURL: string
-  ProductID: string
   ServerSecret: string
   ServiceID: string
   SupportWorkspace: string
@@ -33,7 +32,6 @@ const envMap: { [key in keyof Config]: string } = {
   AccountsURL: 'ACCOUNTS_URL',
   ConfigurationDB: 'CONFIGURATION_DB',
   MongoURL: 'MONGO_URL',
-  ProductID: 'PRODUCT_ID',
   ServerSecret: 'SERVER_SECRET',
   ServiceID: 'SERVICE_ID',
   SupportWorkspace: 'SUPPORT_WORKSPACE',
@@ -50,7 +48,6 @@ const config: Config = (() => {
     AccountsURL: process.env[envMap.AccountsURL],
     ConfigurationDB: process.env[envMap.ConfigurationDB] ?? '%ai-bot',
     MongoURL: process.env[envMap.MongoURL],
-    ProductID: process.env[envMap.ProductID] ?? '',
     ServerSecret: process.env[envMap.ServerSecret],
     ServiceID: process.env[envMap.ServiceID] ?? 'ai-bot-service',
     SupportWorkspace: process.env[envMap.SupportWorkspace],

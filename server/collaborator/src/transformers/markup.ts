@@ -27,7 +27,20 @@ export class MarkupTransformer implements Transformer {
 
   fromYdoc (document: Doc, fieldName?: string | string[] | undefined): any {
     const json = this.transformer.fromYdoc(document, fieldName)
-    return jsonToMarkup(json)
+    if (typeof fieldName === 'string') {
+      return jsonToMarkup(json)
+    }
+
+    if (fieldName === undefined || fieldName.length === 0) {
+      fieldName = Array.from(document.share.keys())
+    }
+
+    const data: Record<string, string> = {}
+    fieldName?.forEach((field) => {
+      data[field] = jsonToMarkup(json[field])
+    })
+
+    return data
   }
 
   toYdoc (document: any, fieldName: string): Doc {

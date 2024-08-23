@@ -250,7 +250,11 @@
 </div>
 {#if isNewestFirst && showCommenInput}
   <div class="ref-input newest-first">
-    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
+    <ActivityExtensionComponent
+      kind="input"
+      {extensions}
+      props={{ object, boundary, focusIndex, withTypingInfo: true }}
+    />
   </div>
 {/if}
 <div
@@ -288,7 +292,11 @@
 </div>
 {#if showCommenInput && !isNewestFirst}
   <div class="ref-input oldest-first">
-    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary, focusIndex }} />
+    <ActivityExtensionComponent
+      kind="input"
+      {extensions}
+      props={{ object, boundary, focusIndex, withTypingInfo: true }}
+    />
   </div>
 {/if}
 
