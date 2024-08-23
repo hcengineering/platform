@@ -124,7 +124,7 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
 
   @Prop(TypeRef(core.class.TxCUD), core.string.Object)
   // @Index(IndexKind.Indexed)
-    txId!: Ref<TxCUD<Doc>>
+    txId?: Ref<TxCUD<Doc>>
 
   @Prop(TypeString(), core.string.Object)
   // @Index(IndexKind.Indexed)
