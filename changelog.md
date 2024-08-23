@@ -2,6 +2,19 @@
 
 Changelog.
 
+## [0.6.284] - 2024-08-23
+
+* 🐛 BUG FIXES: · Do not resolve srcset for urls ([#6367](https://github.com/hcengineering/platform/issues/6367)) · Add limit and retries to move files tool ([#6368](https://github.com/hcengineering/platform/issues/6368)) 
+* UBERF-7927: · Get rid of product id ([#6375](https://github.com/hcengineering/platform/issues/6375)) 
+
+## [0.6.283] - 2024-08-21
+
+* EZQMS-1166: · Revamp doc library sections model ([#6358](https://github.com/hcengineering/platform/issues/6358)) 
+
+## [0.6.281a] - 2024-08-21
+
+* 🐛 BUG FIXES: · Do not resolve storage provider in getUrl ([#6361](https://github.com/hcengineering/platform/issues/6361)) 
+
 ## [0.6.281] - 2024-08-20
 
 * 🐛 BUG FIXES: · Does not send email confirmation when signup with otp ([#6292](https://github.com/hcengineering/platform/issues/6292)) · Build print and sign services for arm64 ([#6321](https://github.com/hcengineering/platform/issues/6321)) 
