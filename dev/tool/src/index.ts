@@ -991,7 +991,8 @@ export function devTool (
     .command('move-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
-    .action(async (cmd: { workspace: string, blobLimit: string }) => {
+    .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
+    .action(async (cmd: { workspace: string, blobLimit: string, concurrency: string }) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
@@ -1010,7 +1011,10 @@ export function devTool (
               }
 
               const wsId = getWorkspaceId(workspace.workspace)
-              await moveFiles(toolCtx, wsId, exAdapter, parseInt(cmd.blobLimit))
+              await moveFiles(toolCtx, wsId, exAdapter, {
+                blobSizeLimitMb: parseInt(cmd.blobLimit),
+                concurrency: parseInt(cmd.concurrency)
+              })
             }
           } catch (err: any) {
             console.error(err)

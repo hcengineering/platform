@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Blob, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import { type Blob, type MeasureContext, type WorkspaceId, RateLimiter } from '@hcengineering/core'
 import { type StorageAdapterEx } from '@hcengineering/server-core'
 import { PassThrough } from 'stream'
 
@@ -21,7 +21,10 @@ export async function moveFiles (
   ctx: MeasureContext,
   workspaceId: WorkspaceId,
   exAdapter: StorageAdapterEx,
-  blobSizeLimitMb: number
+  params: {
+    blobSizeLimitMb: number
+    concurrency: number
+  }
 ): Promise<void> {
   if (exAdapter.adapters === undefined) return
 
@@ -35,7 +38,11 @@ export async function moveFiles (
 
   for (const [name, adapter] of exAdapter.adapters.entries()) {
     if (name === target) continue
-    console.log('moving from', name)
+    console.log('moving from', name, 'limit', params.blobSizeLimitMb, 'concurrency', params.concurrency)
+
+    let time = Date.now()
+
+    const rateLimiter = new RateLimiter(params.concurrency)
 
     const iterator = await adapter.listStream(ctx, workspaceId)
     while (true) {
@@ -46,29 +53,37 @@ export async function moveFiles (
       if (blob === undefined) continue
       if (blob.provider === target) continue
 
-      if (blob.size > blobSizeLimitMb * 1024 * 1024) {
+      if (blob.size > params.blobSizeLimitMb * 1024 * 1024) {
         console.log('skipping large blob', name, data._id, Math.round(blob.size / 1024 / 1024))
         continue
       }
 
-      try {
-        await retryOnFailure(
-          ctx,
-          5,
-          async () => {
-            await moveFile(ctx, exAdapter, workspaceId, blob)
-          },
-          50
-        )
-      } catch (err) {
-        console.error('failed to process blob', name, data._id, err)
-      }
+      await rateLimiter.add(async () => {
+        try {
+          await retryOnFailure(
+            ctx,
+            5,
+            async () => {
+              await moveFile(ctx, exAdapter, workspaceId, blob)
+            },
+            50
+          )
+        } catch (err) {
+          console.error('failed to process blob', name, data._id, err)
+        }
+      })
 
       count += 1
       if (count % 100 === 0) {
-        console.log('...moved: ', count)
+        await rateLimiter.waitProcessing()
+        const duration = Date.now() - time
+        time = Date.now()
+        console.log('...moved: ', count, Math.round(duration / 1000))
       }
     }
+
+    await rateLimiter.waitProcessing()
+
     await iterator.close()
   }
 
