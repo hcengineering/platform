@@ -1313,11 +1313,11 @@ export function devTool (
   program.command('move-to-pg').action(async () => {
     const { mongodbUri, dbUrl } = prepareTools()
     await withDatabase(mongodbUri, async (db) => {
-      const workspaces = await listWorkspacesRaw(db, productId)
+      const workspaces = await listWorkspacesRaw(db)
       await moveFromMongoToPG(
         mongodbUri,
         dbUrl,
-        workspaces.map((it) => getWorkspaceId(it.workspace, productId))
+        workspaces.map((it) => getWorkspaceId(it.workspace))
       )
     })
   })
@@ -1330,17 +1330,17 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         const email = generateId()
         const ws = generateId()
-        const wsid = getWorkspaceId(ws, productId)
+        const wsid = getWorkspaceId(ws)
         const start = new Date()
-        await createWorkspace(toolCtx, version, txes, migrateOperations, db, productId, null, email, ws, ws)
-        await createAcc(toolCtx, db, productId, null, email, '1234', '', '', true)
-        await assignWorkspace(toolCtx, db, productId, null, email, ws, AccountRole.User)
+        await createWorkspace(toolCtx, version, txes, migrateOperations, db, null, email, ws, ws)
+        await createAcc(toolCtx, db, null, email, '1234', '', '', true)
+        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
         console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
         const token = generateToken(systemAccountEmail, wsid)
         const endpoint = await getTransactorEndpoint(token, 'external')
         await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
         await testFindAll(endpoint, ws, email)
-        await dropWorkspace(toolCtx, db, productId, null, ws)
+        await dropWorkspace(toolCtx, db, null, ws)
       })
     })
 

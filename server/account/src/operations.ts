@@ -1417,7 +1417,6 @@ export async function upgradeWorkspace (
 
   const wsUrl: WorkspaceIdWithUrl = {
     name: ws.workspace,
-    productId: ws.productId,
     workspaceName: ws.workspaceName ?? '',
     workspaceUrl: ws.workspaceUrl ?? ''
   }

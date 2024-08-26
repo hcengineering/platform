@@ -130,7 +130,7 @@ describe('postgres operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, getWorkspaceId(dbId, ''), model)
+    const txStorage = await createPostgresTxAdapter(mctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -174,7 +174,7 @@ describe('postgres operations', () => {
       },
       serviceAdapters: {},
       defaultContentAdapter: 'default',
-      workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
+      workspace: { ...getWorkspaceId(dbId), workspaceName: '', workspaceUrl: '' },
       storageFactory: createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})

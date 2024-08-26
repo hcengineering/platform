@@ -512,7 +512,7 @@ export async function stressBenchmark (transactor: string, mode: StressBenchmark
 }
 
 export async function testFindAll (endpoint: string, workspace: string, email: string): Promise<void> {
-  const connection = await connect(endpoint, getWorkspaceId(workspace, ''), email)
+  const connection = await connect(endpoint, getWorkspaceId(workspace), email)
   try {
     const client = new TxOperations(connection, core.account.System)
     const start = Date.now()
@@ -538,7 +538,7 @@ export async function generateWorkspaceData (
   parallel: boolean,
   user: string
 ): Promise<void> {
-  const connection = await connect(endpoint, getWorkspaceId(workspace, ''))
+  const connection = await connect(endpoint, getWorkspaceId(workspace))
   const client = new TxOperations(connection, core.account.System)
   try {
     const acc = await client.findOne(contact.class.PersonAccount, { email: user })
