@@ -14,6 +14,7 @@ export class ChannelPage extends CommonPage {
   readonly textMessage = (messageText: string): Locator =>
     this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
 
+  readonly typingMessage = (text: string): Locator => this.page.locator(`span:has-text("${text}")`)
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.getByRole('table')
@@ -160,6 +161,14 @@ export class ChannelPage extends CommonPage {
 
   async checkIfMessageIsCopied (message: string): Promise<void> {
     expect(this.getClipboardCopyMessage()).toContain(message)
+  }
+
+  async checkIfTypingMessageHasText (message: string, expectHidden = false): Promise<void> {
+    if (expectHidden) {
+      await expect(this.typingMessage(message)).toBeHidden()
+    } else {
+      await expect(this.typingMessage(message)).toBeVisible()
+    }
   }
 
   async clickChooseChannel (channel: string): Promise<void> {

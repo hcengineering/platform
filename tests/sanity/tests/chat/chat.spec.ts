@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, Page, test } from '@playwright/test'
 import { ApiEndpoint } from '../API/Api'
 import { ChannelPage } from '../model/channel-page'
 import { ChunterPage } from '../model/chunter-page'
@@ -429,5 +429,102 @@ test.describe('channel tests', () => {
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
     await page2.close()
+  })
+
+  test.describe('Check "Someone is typing..." label', () => {
+    let alice: SignUpData
+    let bob: SignUpData
+
+    let alicePage: Page
+    let aliceSidebarPage: LeftSideMenuPage
+    let aliceChannelPage: ChannelPage
+    let aliceFullName: string
+    let aliceIsTypingMessage: string
+
+    let bobPage: Page
+    let bobSidebarPage: LeftSideMenuPage
+    let bobChannelPage: ChannelPage
+    let bobFullName: string
+    let bobIsTypingMessage: string
+
+    test.beforeEach(async ({ page, browser }) => {
+      alice = generateUser()
+      await api.createAccount(alice.email, alice.password, alice.firstName, alice.lastName)
+      aliceFullName = `${alice.lastName} ${alice.firstName}`
+      aliceIsTypingMessage = `${alice.lastName} ${alice.firstName} is typing...`
+      alicePage = await browser.newPage()
+
+      const aliceLinkText = await getInviteLink(page)
+      await alicePage.goto(aliceLinkText ?? '')
+      const aliceJoinPage = new SignInJoinPage(alicePage)
+      await aliceJoinPage.join(alice)
+      aliceSidebarPage = new LeftSideMenuPage(alicePage)
+      aliceChannelPage = new ChannelPage(alicePage)
+
+      await aliceSidebarPage.clickChunter()
+      await aliceChannelPage.clickChannel('general')
+
+      bob = generateUser()
+      await api.createAccount(bob.email, bob.password, bob.firstName, bob.lastName)
+      bobFullName = `${bob.lastName} ${bob.firstName}`
+      bobIsTypingMessage = `${bob.lastName} ${bob.firstName} is typing...`
+      bobPage = await browser.newPage()
+
+      const bobLinkText = await getInviteLink(page)
+      await bobPage.goto(bobLinkText ?? '')
+      const bobJoinPage = new SignInJoinPage(bobPage)
+      await bobJoinPage.join(bob)
+
+      bobSidebarPage = new LeftSideMenuPage(bobPage)
+      bobChannelPage = new ChannelPage(bobPage)
+      await bobSidebarPage.clickChunter()
+      await bobChannelPage.clickChannel('general')
+
+      await leftSideMenuPage.clickChunter()
+      await channelPage.clickChannel('general')
+    })
+
+    test('Check that users can see the label when one person is typing', async () => {
+      await aliceChannelPage.inputMessage().fill('Hello everyone!')
+      await channelPage.checkIfTypingMessageHasText(aliceIsTypingMessage)
+      await bobChannelPage.checkIfTypingMessageHasText(aliceIsTypingMessage)
+
+      await channelPage.inputMessage().clear()
+    })
+
+    test('Check that users can see the label when multiple people are typing', async () => {
+      await aliceChannelPage.inputMessage().fill(`Hello from ${alice.firstName}`)
+      await bobChannelPage.inputMessage().fill(`Hello from ${bob.firstName}`)
+
+      await aliceChannelPage.checkIfTypingMessageHasText(bobIsTypingMessage)
+      await bobChannelPage.checkIfTypingMessageHasText(aliceIsTypingMessage)
+
+      await Promise.any([
+        channelPage.checkIfTypingMessageHasText(`${aliceFullName}, ${bobFullName} are typing...`),
+        channelPage.checkIfTypingMessageHasText(`${bobFullName}, ${aliceFullName} are typing...`)
+      ]).catch(() => {
+        throw new Error('Message about typing of several users is not correct')
+      })
+    })
+
+    test('Check that users no longer see the label when the author is inactive', async () => {
+      const expectHidden = true
+
+      await aliceChannelPage.inputMessage().fill('Hello everyone!')
+      await channelPage.checkIfTypingMessageHasText(aliceIsTypingMessage)
+      await bobChannelPage.checkIfTypingMessageHasText(aliceIsTypingMessage)
+
+      await alicePage.waitForTimeout(5000)
+
+      await channelPage.checkIfTypingMessageHasText(aliceIsTypingMessage, expectHidden)
+      await bobChannelPage.checkIfTypingMessageHasText(aliceIsTypingMessage, expectHidden)
+
+      await aliceChannelPage.inputMessage().clear()
+    })
+
+    test.afterEach(async () => {
+      await alicePage.close()
+      await bobPage.close()
+    })
   })
 })
