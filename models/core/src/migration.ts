@@ -205,7 +205,7 @@ async function processMigrateContentFor (
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
     for (const doc of docs) {
-      await rateLimiter.add(async () => {
+      await rateLimiter.exec(async () => {
         const update: MigrateUpdate<Doc> = {}
 
         for (const attribute of attributes) {

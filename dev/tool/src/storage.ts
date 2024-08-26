@@ -58,7 +58,7 @@ export async function moveFiles (
         continue
       }
 
-      await rateLimiter.add(async () => {
+      await rateLimiter.exec(async () => {
         try {
           await retryOnFailure(
             ctx,
