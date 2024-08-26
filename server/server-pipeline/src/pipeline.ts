@@ -32,6 +32,8 @@ import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
   createPipeline,
+  type Middleware,
+  type ServerStorage,
   type DbAdapterFactory,
   type DbConfiguration,
   type MiddlewareCreator,
@@ -81,6 +83,7 @@ export function createServerPipeline (
     indexParallel: number // 2
     disableTriggers?: boolean
     usePassedCtx?: boolean
+    adapterSecurity?: boolean
 
     externalStorage: StorageAdapter
   },
@@ -90,7 +93,8 @@ export function createServerPipeline (
     LookupMiddleware.create,
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
-    SpaceSecurityMiddleware.create,
+    (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) =>
+      SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, storage, next),
     SpacePermissionsMiddleware.create,
     ConfigurationMiddleware.create,
     QueryJoinMiddleware.create

@@ -152,7 +152,8 @@ export class TServerStorage implements ServerStorage {
     for (const d of this.hierarchy.domains()) {
       // We need to init domain info
       const info = this.getDomainInfo(d)
-      const adapter = this.adapters.get(d) ?? this.adapters.get(this.defaultAdapter)
+      const name = this._domains[d] ?? this.defaultAdapter
+      const adapter = this.adapters.get(name)
       if (adapter !== undefined) {
         const h = adapter.helper?.()
         if (h !== undefined) {
@@ -515,7 +516,8 @@ export class TServerStorage implements ServerStorage {
     ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: ServerFindOptions<T>
+    options?: ServerFindOptions<T>,
+    sessionContext?: SessionOperationContext
   ): Promise<FindResult<T>> {
     const p = options?.prefix ?? 'client'
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
@@ -529,7 +531,7 @@ export class TServerStorage implements ServerStorage {
       p + '-find-all',
       { _class: clazz },
       (ctx) => {
-        return this.getAdapter(domain, false).findAll(ctx, clazz, query, options)
+        return this.getAdapter(domain, false).findAll(ctx, clazz, query, options, sessionContext)
       },
       { clazz, query, options }
     )

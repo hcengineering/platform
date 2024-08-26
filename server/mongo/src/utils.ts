@@ -81,7 +81,9 @@ class MongoClientReferenceImpl {
       }
       this.onclose()
       void (async () => {
-        await (await this.client).close()
+        const cl = await this.client
+        await cl.close()
+        console.log('Closed mongo connection')
       })()
     }
   }

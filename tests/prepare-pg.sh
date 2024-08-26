@@ -23,10 +23,6 @@ fi
 # Create user record in accounts
 ./tool-pg.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool-pg.sh create-account user2 -f Kainin -l Dirak -p 1234
-./tool-pg.sh assign-workspace user1 sanity-ws
-./tool-pg.sh assign-workspace user2 sanity-ws
-./tool-pg.sh set-user-role user1 sanity-ws OWNER
-./tool-pg.sh set-user-role user2 sanity-ws OWNER
 # Make user the workspace maintainer
 ./tool-pg.sh confirm-email user1
 ./tool-pg.sh confirm-email user2

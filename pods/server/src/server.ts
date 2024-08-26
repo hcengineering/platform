@@ -60,7 +60,7 @@ export function start (
   const pipelineFactory = createServerPipeline(
     metrics,
     dbUrls,
-    { ...opt, externalStorage },
+    { ...opt, externalStorage, adapterSecurity: rawDbUrl !== undefined },
     {
       serviceAdapters: {
         [serverAiBotId]: {

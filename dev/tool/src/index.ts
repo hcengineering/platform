@@ -58,6 +58,7 @@ import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
 import core, {
   AccountRole,
+  generateId,
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
@@ -77,7 +78,14 @@ import { openAIConfigDefaults } from '@hcengineering/openai'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
-import { benchmark, benchmarkWorker, stressBenchmark, type StressBenchmarkMode } from './benchmark'
+import {
+  benchmark,
+  benchmarkWorker,
+  generateWorkspaceData,
+  stressBenchmark,
+  testFindAll,
+  type StressBenchmarkMode
+} from './benchmark'
 import {
   cleanArchivedSpaces,
   cleanRemovedTransactions,
@@ -1363,6 +1371,28 @@ export function devTool (
       )
     })
   })
+
+  program
+    .command('perfomance')
+    .option('-p, --parallel', '', false)
+    .action(async (cmd: { parallel: boolean }) => {
+      const { mongodbUri, txes, version, migrateOperations } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const email = generateId()
+        const ws = generateId()
+        const wsid = getWorkspaceId(ws, productId)
+        const start = new Date()
+        await createWorkspace(toolCtx, version, txes, migrateOperations, db, productId, null, email, ws, ws)
+        await createAcc(toolCtx, db, productId, null, email, '1234', '', '', true)
+        await assignWorkspace(toolCtx, db, productId, null, email, ws, AccountRole.User)
+        console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
+        const token = generateToken(systemAccountEmail, wsid)
+        const endpoint = await getTransactorEndpoint(token, 'external')
+        await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
+        await testFindAll(endpoint, ws, email)
+        await dropWorkspace(toolCtx, db, productId, null, ws)
+      })
+    })
 
   extendProgram?.(program)
 

@@ -15,6 +15,8 @@ services:
     container_name: postgres
     environment:
       - POSTGRES_PASSWORD=example
+    volumes:
+      - db:/data/db
     ports:
       - 5432:5432
     restart: unless-stopped
@@ -144,7 +146,7 @@ services:
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
       - ELASTIC_URL=http://elastic:9200
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=postgresql://postgres:example@postgres:5432;mongodb://mongodb:27017
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt

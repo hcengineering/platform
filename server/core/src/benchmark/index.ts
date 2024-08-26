@@ -15,6 +15,7 @@
 
 import core, {
   generateId,
+  type SessionOperationContext,
   toFindResult,
   TxProcessor,
   type BenchmarkDoc,
@@ -53,7 +54,8 @@ class BenchmarkDbAdapter extends DummyDbAdapter {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> | undefined
+    options?: FindOptions<T> | undefined,
+    sessionContext?: SessionOperationContext
   ): Promise<FindResult<T>> {
     if (_class !== core.class.BenchmarkDoc) {
       return toFindResult([])

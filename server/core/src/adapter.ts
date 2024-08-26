@@ -29,7 +29,8 @@ import {
   type Ref,
   type Tx,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceId,
+  type SessionOperationContext
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
 import type { ServerFindOptions } from './types'
@@ -109,7 +110,8 @@ export interface DbAdapter extends LowLevelStorage {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: ServerFindOptions<T>
+    options?: ServerFindOptions<T>,
+    sessionContext?: SessionOperationContext
   ) => Promise<FindResult<T>>
 
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>

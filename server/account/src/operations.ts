@@ -1484,7 +1484,8 @@ export async function upgradeWorkspace (
       indexParallel: 0,
       indexProcessing: 0,
       rekoniUrl: '',
-      usePassedCtx: true
+      usePassedCtx: true,
+      disableTriggers: true
     },
     {
       fulltextAdapter: {

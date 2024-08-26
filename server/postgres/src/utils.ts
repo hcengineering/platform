@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
-import {
+import core, {
+  type Account,
+  AccountRole,
   type Class,
   type Doc,
   type Domain,
@@ -21,10 +23,11 @@ import {
   generateId,
   type Projection,
   type Ref,
+  type SessionOperationContext,
   type WorkspaceId
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import { type DomainHelperOperations } from '@hcengineering/server-core'
+import { type SessionContext, type DomainHelperOperations } from '@hcengineering/server-core'
 import { Pool, type PoolClient } from 'pg'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
@@ -38,47 +41,51 @@ process.on('exit', () => {
 
 const clientRefs = new Map<string, ClientRef>()
 
-export async function retryTxn (client: PoolClient, operation: (client: PoolClient) => Promise<any>): Promise<any> {
+export async function retryTxn (pool: Pool, operation: (client: PoolClient) => Promise<any>): Promise<any> {
   const backoffInterval = 100 // millis
   const maxTries = 5
   let tries = 0
+  const client = await pool.connect()
 
-  while (true) {
-    await client.query('BEGIN;')
-    tries++
+  try {
+    while (true) {
+      await client.query('BEGIN;')
+      tries++
 
-    try {
-      const result = await operation(client)
-      await client.query('COMMIT;')
-      return result
-    } catch (err: any) {
-      await client.query('ROLLBACK;')
+      try {
+        const result = await operation(client)
+        await client.query('COMMIT;')
+        return result
+      } catch (err: any) {
+        await client.query('ROLLBACK;')
 
-      if (err.code !== '40001' || tries === maxTries) {
-        throw err
-      } else {
-        console.log('Transaction failed. Retrying.')
-        console.log(err.message)
-        await new Promise((resolve) => setTimeout(resolve, tries * backoffInterval))
+        if (err.code !== '40001' || tries === maxTries) {
+          throw err
+        } else {
+          console.log('Transaction failed. Retrying.')
+          console.log(err.message)
+          await new Promise((resolve) => setTimeout(resolve, tries * backoffInterval))
+        }
       }
     }
+  } finally {
+    client.release()
   }
 }
 
-export async function createTable (client: PoolClient, domains: string[]): Promise<void> {
+export async function createTable (client: Pool, domains: string[]): Promise<void> {
   if (domains.length === 0) {
     return
   }
   const mapped = domains.map((p) => translateDomain(p))
   const inArr = mapped.map((it) => `'${it}'`).join(', ')
   const exists = await client.query(`
-    SELECT tablename
-    FROM pg_tables
-    WHERE schemaname = 'public'
-    AND tablename IN (${inArr})
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_name IN (${inArr})
   `)
 
-  const toCreate = mapped.filter((it) => !exists.rows.map((it) => it.tablename).includes(it))
+  const toCreate = mapped.filter((it) => !exists.rows.map((it) => it.table_name).includes(it))
   await retryTxn(client, async (client) => {
     for (const domain of toCreate) {
       await client.query(
@@ -123,23 +130,23 @@ export async function shutdown (): Promise<void> {
 }
 
 export interface PostgresClientReference {
-  getClient: () => Promise<PoolClient>
+  getClient: () => Promise<Pool>
   close: () => void
 }
 
 class PostgresClientReferenceImpl {
   count: number
-  client: PoolClient | Promise<PoolClient>
+  client: Pool | Promise<Pool>
 
   constructor (
-    client: PoolClient | Promise<PoolClient>,
+    client: Pool | Promise<Pool>,
     readonly onclose: () => void
   ) {
     this.count = 0
     this.client = client
   }
 
-  async getClient (): Promise<PoolClient> {
+  async getClient (): Promise<Pool> {
     if (this.client instanceof Promise) {
       this.client = await this.client
     }
@@ -154,7 +161,9 @@ class PostgresClientReferenceImpl {
       }
       void (async () => {
         this.onclose()
-        ;(await this.client).release()
+        const cl = await this.client
+        await cl.end()
+        console.log('Closed postgres connection')
       })()
     }
   }
@@ -170,7 +179,7 @@ export class ClientRef implements PostgresClientReference {
   }
 
   closed = false
-  async getClient (): Promise<PoolClient> {
+  async getClient (): Promise<Pool> {
     if (!this.closed) {
       return await this.client.getClient()
     } else {
@@ -203,7 +212,7 @@ export function getDBClient (connectionString: string, database?: string): Postg
       database
     })
 
-    existing = new PostgresClientReferenceImpl(pool.connect(), () => {
+    existing = new PostgresClientReferenceImpl(pool, () => {
       connections.delete(key)
     })
     connections.set(key, existing)
@@ -233,9 +242,17 @@ export function escapeBackticks (str: string): string {
   return str.replaceAll("'", "''")
 }
 
+export function isSessionContext (ctx: SessionOperationContext): ctx is SessionContext {
+  return (ctx as SessionContext).userEmail !== undefined
+}
+
+export function isOwner (account: Account): boolean {
+  return account.role === AccountRole.Owner || account._id === core.account.System
+}
+
 export class DBCollectionHelper implements DomainHelperOperations {
   constructor (
-    protected readonly client: PoolClient,
+    protected readonly client: Pool,
     protected readonly workspaceId: WorkspaceId
   ) {}
 
@@ -244,10 +261,9 @@ export class DBCollectionHelper implements DomainHelperOperations {
 
   async exists (domain: Domain): Promise<boolean> {
     const exists = await this.client.query(`
-      SELECT tablename
-      FROM pg_tables
-      WHERE schemaname = 'public'
-      AND tablename = ${translateDomain(domain)}
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_name = '${translateDomain(domain)}'
     `)
     return exists.rows.length > 0
   }

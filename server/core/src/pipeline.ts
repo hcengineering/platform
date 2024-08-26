@@ -124,7 +124,7 @@ class PipelineImpl implements Pipeline {
   ): Promise<FindResult<T>> {
     return this.head !== undefined
       ? await this.head.findAll(ctx, _class, query, options)
-      : await this.storage.findAll(ctx.ctx, _class, query, options)
+      : await this.storage.findAll(ctx.ctx, _class, query, options, ctx)
   }
 
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {

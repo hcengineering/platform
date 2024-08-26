@@ -76,16 +76,21 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     core.space.Tx
   ]
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
+  private constructor (
+    private readonly skipFindCheck: boolean,
+    storage: ServerStorage,
+    next?: Middleware
+  ) {
     super(storage, next)
   }
 
   static async create (
+    skipFindCheck: boolean,
     ctx: MeasureContext,
     storage: ServerStorage,
     next?: Middleware
   ): Promise<SpaceSecurityMiddleware> {
-    const res = new SpaceSecurityMiddleware(storage, next)
+    const res = new SpaceSecurityMiddleware(skipFindCheck, storage, next)
     res.spaceMeasureCtx = ctx.newChild('space chain', {})
     res.spaceSecurityInit = res.init(res.spaceMeasureCtx)
     return res
@@ -494,7 +499,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (!isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
+    if (!this.skipFindCheck && !isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(account, query[field], domain, isSpace)
