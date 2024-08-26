@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { Document } from '@hcengineering/document'
-  import { Card, getClient, takeSnapshot } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import { EditBox } from '@hcengineering/ui'
   import document from '../plugin'
 
@@ -27,19 +27,19 @@
   let name = ''
 
   async function create (): Promise<void> {
-    const snapshot = await takeSnapshot(doc.content, name)
-
-    await client.addCollection(
-      document.class.DocumentSnapshot,
-      doc.space,
-      doc._id,
-      document.class.Document,
-      'snapshots',
-      {
-        name,
-        content: snapshot
-      }
-    )
+    // TODO implement me
+    // const snapshot = await takeSnapshot(doc.content, name)
+    // await client.addCollection(
+    //   document.class.DocumentSnapshot,
+    //   doc.space,
+    //   doc._id,
+    //   document.class.Document,
+    //   'snapshots',
+    //   {
+    //     name,
+    //     content: snapshot
+    //   }
+    // )
   }
 </script>
 

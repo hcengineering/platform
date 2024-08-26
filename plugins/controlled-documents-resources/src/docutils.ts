@@ -25,7 +25,7 @@ import {
   type MixinData
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
-import { copyDocument, takeSnapshot } from '@hcengineering/presentation'
+import { copyDocument } from '@hcengineering/presentation'
 import { themeStore } from '@hcengineering/ui'
 import documents, {
   type ControlledDocument,
@@ -158,10 +158,17 @@ export async function createNewDraftForControlledDoc (
 }
 
 export async function createDocumentSnapshotAndEdit (client: TxOperations, document: ControlledDocument): Promise<void> {
+  const collaborativeDoc = getCollaborativeDocForDocument(
+    `DOC-${document.prefix}`,
+    document.seqNumber,
+    document.major,
+    document.minor,
+    true
+  )
+
   const language = get(themeStore).language
   const namePrefix = await translate(documents.string.DraftRevision, {}, language)
   const name = `${namePrefix} ${(document.snapshots ?? 0) + 1}`
-  const snapshot = await takeSnapshot(document.content, name)
   const newSnapshotId = generateId<ControlledDocumentSnapshot>()
 
   const op = client.apply(document._id)
@@ -176,7 +183,7 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
       name,
       state: document.state,
       controlledState: document.controlledState,
-      content: snapshot
+      content: collaborativeDoc
     },
     newSnapshotId
   )

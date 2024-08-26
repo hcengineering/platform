@@ -17,18 +17,15 @@ import { type Ref, type CollaborativeDoc, type Doc, type Class } from '@hcengine
 import {
   type DocumentId,
   type PlatformDocumentId,
-  formatMinioDocumentId,
+  formatDocumentId,
   formatPlatformDocumentId as origFormatPlatformDocumentId
 } from '@hcengineering/collaborator-client'
-import { getCurrentLocation } from '@hcengineering/ui'
-
-function getWorkspace (): string {
-  return getCurrentLocation().path[1] ?? ''
-}
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 
 export function formatCollaborativeDocumentId (collaborativeDoc: CollaborativeDoc): DocumentId {
-  const workspace = getWorkspace()
-  return formatMinioDocumentId(workspace, collaborativeDoc)
+  const workspace = getMetadata(presentation.metadata.Workspace) ?? ''
+  return formatDocumentId(workspace, collaborativeDoc)
 }
 
 export function formatPlatformDocumentId (

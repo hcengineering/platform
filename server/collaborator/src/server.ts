@@ -17,7 +17,6 @@ import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
-import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -33,7 +32,6 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
-import { TransformerFactory } from './types'
 
 /**
  * @public
@@ -53,20 +51,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   app.use(bp.json())
 
   const extensionsCtx = ctx.newChild('extensions', {})
-
-  const transformerFactory: TransformerFactory = (workspaceId) => {
-    const extensions = [
-      ServerKit.configure({
-        image: {
-          getBlobRef: async (fileId, name, size) => {
-            const src = await storageAdapter.getUrl(ctx, workspaceId, fileId)
-            return { src, srcset: '' }
-          }
-        }
-      })
-    ]
-    return new MarkupTransformer(extensions)
-  }
+  const transformer = new MarkupTransformer()
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -110,7 +95,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
         adapter: new PlatformStorageAdapter(storageAdapter),
-        transformerFactory
+        transformer
       })
     ]
   })
@@ -159,29 +144,39 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
     }
 
     const request = req.body as RpcRequest
+
+    const documentId = request.documentId
+    if (documentId === undefined || documentId === '') {
+      const response: RpcErrorResponse = {
+        error: 'Missing documentId'
+      }
+      res.status(400).send(response)
+      return
+    }
+
     const method = methods[request.method]
     if (method === undefined) {
       const response: RpcErrorResponse = {
         error: 'Unknown method'
       }
       res.status(400).send(response)
-    } else {
-      const token = decodeToken(authHeader.split(' ')[1])
-      const context = getContext(token)
-
-      rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
-      await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
-        try {
-          const transformer = transformerFactory(token.workspace)
-          const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-            return await method(ctx, context, request.payload, { hocuspocus, storageAdapter, transformer })
-          })
-          res.status(200).send(response)
-        } catch (err: any) {
-          res.status(500).send({ error: err.message })
-        }
-      })
+      return
     }
+
+    const token = decodeToken(authHeader.split(' ')[1])
+    const context = getContext(token)
+
+    rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
+    await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
+      try {
+        const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
+          return await method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+        })
+        res.status(200).send(response)
+      } catch (err: any) {
+        res.status(500).send({ error: err.message })
+      }
+    })
   })
 
   const wss = new WebSocketServer({
