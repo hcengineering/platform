@@ -128,7 +128,7 @@ describe('mongo operations', () => {
       new MeasureMetricsContext('', {}),
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId, ''),
+      getWorkspaceId(dbId),
       model
     )
 
@@ -174,7 +174,7 @@ describe('mongo operations', () => {
       },
       serviceAdapters: {},
       defaultContentAdapter: 'default',
-      workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
+      workspace: { ...getWorkspaceId(dbId), workspaceName: '', workspaceUrl: '' },
       storageFactory: createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})

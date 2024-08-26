@@ -364,6 +364,7 @@ export async function configurePlatform() {
   addLocation(diffviewId, () => import(/* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources'))
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
   addLocation(desktopPreferencesId, () => import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources'))
+  addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))

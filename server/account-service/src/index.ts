@@ -46,7 +46,6 @@ export function serveAccount (
   version: Data<Version>,
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][],
-  productId: string,
   brandings: BrandingMap,
   onClose?: () => void
 ): void {
@@ -125,10 +124,10 @@ export function serveAccount (
 
   void client.getClient().then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
-    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL, brandings)
+    registerProviders(measureCtx, app, router, db, serverSecret, frontURL, brandings)
 
     // We need to clean workspace with creating === true, since server is restarted.
-    void cleanInProgressWorkspaces(db, productId)
+    void cleanInProgressWorkspaces(db)
 
     setInterval(
       () => {
@@ -140,7 +139,7 @@ export function serveAccount (
     const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
     if (performUpgrade) {
       await measureCtx.with('upgrade-all-models', {}, async (ctx) => {
-        worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
+        worker = new UpgradeWorker(db, p, version, txes, migrateOperations)
         await worker.upgradeAll(ctx, {
           errorHandler: async (ws, err) => {
             Analytics.handleError(err)
@@ -254,7 +253,7 @@ export function serveAccount (
     const result = await measureCtx.with(
       request.method,
       {},
-      async (ctx) => await method(ctx, db, productId, branding, request, token)
+      async (ctx) => await method(ctx, db, branding, request, token)
     )
 
     worker?.updateResponseStatistics(result)

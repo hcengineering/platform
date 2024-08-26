@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import activity, { DocUpdateMessage } from '@hcengineering/activity'
 import {
   YDocVersion,
   loadCollaborativeDoc,
@@ -26,6 +27,7 @@ import {
   parsePlatformDocumentId
 } from '@hcengineering/collaborator-client'
 import core, {
+  AttachedData,
   CollaborativeDoc,
   MeasureContext,
   TxOperations,
@@ -33,6 +35,7 @@ import core, {
 } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { Doc as YDoc } from 'yjs'
+
 import { Context } from '../context'
 
 import { CollabStorageAdapter } from './adapter'
@@ -78,7 +81,16 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     return undefined
   }
 
-  async saveDocument (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context): Promise<void> {
+  async saveDocument (
+    ctx: MeasureContext,
+    documentId: DocumentId,
+    document: YDoc,
+    context: Context,
+    markup: {
+      prev: Record<string, string>
+      curr: Record<string, string>
+    }
+  ): Promise<void> {
     const { clientFactory } = context
 
     const client = await ctx.with('connect', {}, async () => {
@@ -108,7 +120,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       if (platformDocumentId !== undefined) {
         ctx.info('save document content to platform', { documentId, platformDocumentId })
         await ctx.with('save-to-platform', {}, async (ctx) => {
-          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, snapshot)
+          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, snapshot, markup)
         })
       }
     } finally {
@@ -177,7 +189,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     client: Omit<TxOperations, 'close'>,
     documentName: string,
     platformDocumentId: PlatformDocumentId,
-    snapshot: YDocVersion | undefined
+    snapshot: YDocVersion | undefined,
+    markup: {
+      prev: Record<string, string>
+      curr: Record<string, string>
+    }
   ): Promise<void> {
     const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
 
@@ -197,19 +213,43 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     }
 
     const hierarchy = client.getHierarchy()
-    if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
-      const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
-      const newCollaborativeDoc =
-        snapshot !== undefined
-          ? collaborativeDocWithLastVersion(collaborativeDoc, snapshot.versionId)
-          : collaborativeDoc
-
-      await ctx.with('update', {}, async () => {
-        await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
-      })
-    } else {
-      ctx.error('unsupported attribute type', { documentName, objectClass, objectAttr })
+    if (!hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
+      ctx.warn('unsupported attribute type', { documentName, objectClass, objectAttr })
+      return
     }
+
+    const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
+    const newCollaborativeDoc =
+      snapshot !== undefined ? collaborativeDocWithLastVersion(collaborativeDoc, snapshot.versionId) : collaborativeDoc
+
+    await ctx.with('update', {}, async () => {
+      await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
+    })
+
+    await ctx.with('activity', {}, async () => {
+      const data: AttachedData<DocUpdateMessage> = {
+        objectId,
+        objectClass,
+        action: 'update',
+        attributeUpdates: {
+          attrKey: objectAttr,
+          attrClass: core.class.TypeMarkup,
+          prevValue: markup.prev[objectAttr],
+          set: [markup.curr[objectAttr]],
+          added: [],
+          removed: [],
+          isMixin: hierarchy.isMixin(objectClass)
+        }
+      }
+      await client.addCollection(
+        activity.class.DocUpdateMessage,
+        current.space,
+        current._id,
+        current._class,
+        'docUpdateMessages',
+        data
+      )
+    })
   }
 }
 

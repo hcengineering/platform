@@ -76,7 +76,7 @@ export class WorkspaceClient {
       this.mongo,
       this.client,
       this,
-      { name: this.workspace, productId: '' },
+      { name: this.workspace },
       this.storageAdapter
     )
     this.clients.set(user.userId, newClient)
@@ -125,7 +125,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
+    const token = generateToken(config.SystemEmail, { name: workspace })
     console.log('token', token, workspace)
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {

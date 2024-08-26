@@ -119,6 +119,8 @@
     "CreatedChannelOn": "Created this channel on {date}",
     "ChannelMessages": "Channel messages",
     "JoinChannel": "Join channel",
-    "YouJoinedChannel": "You have been joined to channel"
+    "YouJoinedChannel": "You have been joined to channel",
+    "AndMore": "and {count} more",
+    "IsTyping": "{count, plural, =1 {is} other {are}} typing..."
   }
 }

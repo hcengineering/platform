@@ -37,7 +37,6 @@ export function start (
     storageConfig: StorageConfiguration
     rekoniUrl: string
     port: number
-    productId: string
     brandingMap: BrandingMap
     serverFactory: ServerFactory
 
@@ -82,7 +81,6 @@ export function start (
     pipelineFactory,
     sessionFactory,
     port: opt.port,
-    productId: opt.productId,
     brandingMap: opt.brandingMap,
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,

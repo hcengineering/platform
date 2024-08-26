@@ -4,9 +4,14 @@
 //
 
 import core, { Doc, DocData, DocumentUpdate, MeasureContext, TxOperations, generateId } from '@hcengineering/core'
-import { Endpoints } from '@octokit/types'
-import { Repository, RepositoryEvent } from '@octokit/webhooks-types'
 import github, { DocSyncInfo, GithubIntegrationRepository, GithubProject } from '@hcengineering/github'
+import { Endpoints } from '@octokit/types'
+import {
+  Repository,
+  RepositoryEvent,
+  type InstallationCreatedEvent,
+  type InstallationUnsuspendEvent
+} from '@octokit/webhooks-types'
 import { App } from 'octokit'
 import { DocSyncManager, ExternalSyncField, IntegrationContainer, IntegrationManager } from '../types'
 import { collectUpdate } from './utils'
@@ -34,8 +39,67 @@ export class RepositorySyncMapper implements DocSyncManager {
     return {}
   }
 
-  async reloadRepositories (integration: IntegrationContainer): Promise<void> {
+  async reloadRepositories (
+    integration: IntegrationContainer,
+    repositories?: InstallationCreatedEvent['repositories'] | InstallationUnsuspendEvent['repositories']
+  ): Promise<void> {
     integration.synchronized.delete(syncReposKey)
+
+    if (repositories !== undefined) {
+      // We have a list of repositories, so we could create them if they are missing.
+      // Need to find all repositories, not only active, so passed repositories are not work.
+      const allRepositories = (
+        await this.provider.liveQuery.queryFind(github.class.GithubIntegrationRepository, {})
+      ).filter((it) => it.attachedTo === integration.integration._id)
+
+      const allRepos: GithubIntegrationRepository[] = [...allRepositories]
+      for (const repository of repositories) {
+        const integrationRepo: GithubIntegrationRepository | undefined = allRepos.find(
+          (it) => it.repositoryId === repository.id
+        )
+
+        if (integrationRepo === undefined) {
+          // No integration repository found, we need to push one.
+          await this.client.addCollection(
+            github.class.GithubIntegrationRepository,
+            integration.integration.space,
+            integration.integration._id,
+            integration.integration._class,
+            'repositories',
+            {
+              nodeId: repository.node_id,
+              name: repository.name,
+              url: integration.installationName + '/' + repository.name,
+              repositoryId: repository.id,
+              enabled: true,
+              deleted: false,
+              archived: false,
+              fork: false,
+              forks: 0,
+              hasDiscussions: false,
+              hasDownloads: false,
+              hasIssues: false,
+              hasPages: false,
+              hasProjects: false,
+              hasWiki: false,
+              openIssues: 0,
+              private: repository.private,
+              size: 0,
+              stargazers: 0,
+              watchers: 0,
+              visibility: repository.private ? 'private' : 'public'
+            },
+            undefined, // id
+            Date.now(),
+            integration.integration.createdBy
+          )
+          this.ctx.info('Creating repository info document...', {
+            url: repository.full_name,
+            workspace: this.provider.getWorkspaceId().name
+          })
+        }
+      }
+    }
   }
 
   async handleEvent<T>(integration: IntegrationContainer, derivedClient: TxOperations, evt: T): Promise<void> {
@@ -191,6 +255,7 @@ export class RepositorySyncMapper implements DocSyncManager {
       installationId: integration.installationId,
       workspace: this.provider.getWorkspaceId().name
     })
+
     const iterable = this.app.eachRepository.iterator({ installationId: integration.installationId })
 
     // Need to find all repositories, not only active, so passed repositories are not work.

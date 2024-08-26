@@ -43,7 +43,7 @@
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
   import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
-  import { DirectStorageProvider } from '../provider/storage'
+  import { IndexeddbProvider } from '../provider/indexeddb'
   import { TiptapCollabProvider } from '../provider/tiptap'
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import textEditor, {
@@ -121,7 +121,7 @@
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
   const contextProvider = getContext<TiptapCollabProvider>(CollaborationIds.Provider)
 
-  const localProvider = contextProvider === undefined ? new DirectStorageProvider(collaborativeDoc, ydoc) : undefined
+  const localProvider = new IndexeddbProvider(collaborativeDoc, ydoc)
 
   const remoteProvider: TiptapCollabProvider =
     contextProvider ??
@@ -142,7 +142,7 @@
   $: loading = !localSynced && !remoteSynced
   $: editable = !readonly && remoteSynced
 
-  void localProvider?.loaded.then(() => (localSynced = true))
+  void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
 
   let editor: Editor
@@ -480,7 +480,7 @@
     if (contextProvider === undefined) {
       remoteProvider.destroy()
     }
-    localProvider?.destroy()
+    void localProvider.destroy()
   })
 </script>
 

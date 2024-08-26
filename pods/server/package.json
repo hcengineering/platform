@@ -65,7 +65,6 @@
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
-    "@hcengineering/openai": "^0.6.0",
     "@hcengineering/translate": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",

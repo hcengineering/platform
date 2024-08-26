@@ -374,7 +374,7 @@ export function start (
       'handle-file',
       {},
       async (ctx) => {
-        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
+        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string } }
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 

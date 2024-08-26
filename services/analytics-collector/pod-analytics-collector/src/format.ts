@@ -398,3 +398,22 @@ function parseHash (hash: string): string {
   }
   return decodeURIComponent(hash)
 }
+
+export function getOnboardingMessage (email: string, workspace: string, name: string): Markup {
+  const nodes: MarkupNode[] = [
+    toText('New user for onboarding: '),
+    toText('name', 'bold'),
+    toText(' - '),
+    toText(name),
+    toText(', '),
+    toText('email', 'bold'),
+    toText(' - '),
+    toText(email),
+    toText(', '),
+    toText('workspace', 'bold'),
+    toText(' - '),
+    toText(workspace)
+  ]
+
+  return toMarkup(nodes)
+}

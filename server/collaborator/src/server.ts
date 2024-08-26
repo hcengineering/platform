@@ -109,7 +109,8 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter(storageAdapter)
+        adapter: new PlatformStorageAdapter(storageAdapter),
+        transformerFactory
       })
     ]
   })

@@ -93,7 +93,7 @@ export interface DocUpdateMessage extends ActivityMessage {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
 
-  txId: Ref<TxCUD<Doc>>
+  txId?: Ref<TxCUD<Doc>>
 
   action: DocUpdateAction
   updateCollection?: string

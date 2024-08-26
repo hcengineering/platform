@@ -776,7 +776,7 @@ export async function getNotificationTxes (
           control,
           message.attachedTo,
           message.attachedToClass,
-          message.space,
+          object.space,
           receiver,
           params.shouldUpdateTimestamp ? originTx.modifiedOn : undefined,
           tx

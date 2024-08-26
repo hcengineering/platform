@@ -16,14 +16,18 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, Ref, type CommitResult } from '@hcengineering/core'
-  import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import chunter, { ChatMessage, ChunterEvents, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
+  import { Class, Doc, generateId, Ref, type CommitResult, getCurrentAccount } from '@hcengineering/core'
+  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
+  import { ThrottledCaller } from '@hcengineering/ui'
+  import { getSpace } from '@hcengineering/activity-resources'
+  import { PersonAccount } from '@hcengineering/contact'
 
   import { getChannelSpace } from '../../utils'
+  import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
@@ -33,6 +37,7 @@
   export let loading = false
   export let collection: string = 'comments'
   export let autofocus = false
+  export let withTypingInfo = false
 
   type MessageDraft = Pick<ChatMessage, '_id' | 'message' | 'attachments'>
 
@@ -60,18 +65,24 @@
   let inputContent = currentMessage.message
 
   $: if (currentDraft != null) {
-    createdMessageQuery.query(
-      _class,
-      { _id, space: getChannelSpace(object._class, object._id, object.space) },
-      (result: ChatMessage[]) => {
-        if (result.length > 0 && _id !== chatMessage?._id) {
-          // Ouch we have got comment with same id created already.
-          clear()
-        }
+    createdMessageQuery.query(_class, { _id, space: getSpace(object) }, (result: ChatMessage[]) => {
+      if (result.length > 0 && _id !== chatMessage?._id) {
+        // Ouch we have got comment with same id created already.
+        clear()
       }
-    )
+    })
   } else {
     createdMessageQuery.unsubscribe()
+  }
+
+  const typingInfoQuery = createQuery()
+  let typingInfo: TypingInfo[] = []
+  $: if (withTypingInfo) {
+    typingInfoQuery.query(chunter.class.TypingInfo, { objectId: object._id, space: getSpace(object) }, (res) => {
+      typingInfo = res
+    })
+  } else {
+    typingInfoQuery.unsubscribe()
   }
 
   function clear (): void {
@@ -95,7 +106,40 @@
     }
   }
 
+  const me = getCurrentAccount() as PersonAccount
+  const throttle = new ThrottledCaller(500)
+
+  async function deleteTypingInfo (): Promise<void> {
+    if (!withTypingInfo) return
+    const myTypingInfo = typingInfo.find((info) => info.person === me.person)
+    if (myTypingInfo === undefined) return
+    await client.remove(myTypingInfo)
+  }
+
+  async function updateTypingInfo (): Promise<void> {
+    if (!withTypingInfo) return
+    const myTypingInfo = typingInfo.find((info) => info.person === me.person)
+
+    if (myTypingInfo === undefined) {
+      await client.createDoc(chunter.class.TypingInfo, getSpace(object), {
+        objectId: object._id,
+        objectClass: object._class,
+        person: me.person,
+        lastTyping: Date.now()
+      })
+    } else {
+      throttle.call(() => {
+        void client.update(myTypingInfo, {
+          lastTyping: Date.now()
+        })
+      })
+    }
+  }
+
   function onUpdate (event: CustomEvent): void {
+    if (!isEmptyMarkup(event.detail.message)) {
+      void updateTypingInfo()
+    }
     if (!shouldSaveDraft) {
       return
     }
@@ -141,6 +185,7 @@
       await handleEdit(event)
     } else {
       void handleCreate(event, _id)
+      void deleteTypingInfo()
     }
 
     // Remove draft from Local Storage
@@ -173,7 +218,7 @@
     } else {
       await operations.addCollection<Doc, ChatMessage>(
         _class,
-        isSpace(object) ? object._id : object.space,
+        getSpace(object),
         object._id,
         object._class,
         collection,
@@ -213,3 +258,7 @@
   on:blur
   bind:loading
 />
+
+{#if withTypingInfo}
+  <ChannelTypingInfo {typingInfo} />
+{/if}

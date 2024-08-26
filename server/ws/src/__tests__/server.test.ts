@@ -99,7 +99,6 @@ describe('server', () => {
     }),
     sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
     port: 3335,
-    productId: '',
     brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
@@ -107,7 +106,7 @@ describe('server', () => {
   })
 
   function connect (): WebSocket {
-    const token: string = generateToken('', getWorkspaceId('latest', ''))
+    const token: string = generateToken('', getWorkspaceId('latest'))
     return new WebSocket(`ws://localhost:3335/${token}`)
   }
 
@@ -213,7 +212,6 @@ describe('server', () => {
       }),
       sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
       port: 3336,
-      productId: '',
       brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
@@ -269,7 +267,7 @@ describe('server', () => {
 
     try {
       //
-      const token: string = generateToken('my@email.com', getWorkspaceId('latest', ''))
+      const token: string = generateToken('my@email.com', getWorkspaceId('latest'))
       let clearTo: any
       const timeoutPromise = new Promise<void>((resolve) => {
         clearTo = setTimeout(resolve, 4000)

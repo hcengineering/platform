@@ -1553,11 +1553,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/openai",
-      "projectFolder": "server-plugins/openai",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/translate",
       "projectFolder": "server/translate",
       "shouldPublish": false
@@ -1565,11 +1560,6 @@
     {
       "packageName": "@hcengineering/model-server-translate",
       "projectFolder": "models/server-translate",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-server-openai",
-      "projectFolder": "models/server-openai",
       "shouldPublish": false
     },
     {
@@ -2085,6 +2075,11 @@
     {
       "packageName": "@hcengineering/analytics-collector-assets",
       "projectFolder": "plugins/analytics-collector-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/analytics-collector-resources",
+      "projectFolder": "plugins/analytics-collector-resources",
       "shouldPublish": false
     },
     {

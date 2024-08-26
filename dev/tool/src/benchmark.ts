@@ -488,7 +488,7 @@ export async function stressBenchmark (transactor: string, mode: StressBenchmark
       try {
         counter++
         console.log('Attempt', counter)
-        const token = generateToken(generateId(), { name: generateId(), productId: '' })
+        const token = generateToken(generateId(), { name: generateId() })
         await rate.add(async () => {
           try {
             const ws = new WebSocket(concatLink(transactor, token))

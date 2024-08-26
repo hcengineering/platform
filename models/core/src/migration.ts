@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { saveCollaborativeDoc, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
+import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
@@ -21,6 +21,7 @@ import core, {
   DOMAIN_STATUS,
   DOMAIN_TX,
   MeasureMetricsContext,
+  RateLimiter,
   collaborativeDocParse,
   coreId,
   generateId,
@@ -188,7 +189,10 @@ async function processMigrateContentFor (
   storageAdapter: StorageAdapter,
   iterator: MigrationIterator<Doc>
 ): Promise<void> {
+  const rateLimiter = new RateLimiter(10)
+
   let processed = 0
+
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -201,44 +205,35 @@ async function processMigrateContentFor (
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
     for (const doc of docs) {
-      const update: MigrateUpdate<Doc> = {}
+      await rateLimiter.exec(async () => {
+        const update: MigrateUpdate<Doc> = {}
 
-      for (const attribute of attributes) {
-        const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
+        for (const attribute of attributes) {
+          const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
 
-        const value = (doc as any)[attribute.name] as string
-        if (value != null && value.startsWith('{')) {
-          const { documentId } = collaborativeDocParse(collaborativeDoc)
-          const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
-          // only for documents not in storage
-          if (blob === undefined) {
-            const ydoc = markupToYDoc(value, attribute.name)
-            await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
-            await takeCollaborativeDocSnapshot(
-              storageAdapter,
-              client.workspaceId,
-              collaborativeDoc,
-              ydoc,
-              {
-                versionId: revisionId,
-                name: 'Migration to storage',
-                createdBy: core.account.System,
-                createdOn: Date.now()
-              },
-              ctx
-            )
+          const value = (doc as any)[attribute.name] as string
+          if (value != null && value.startsWith('{')) {
+            const { documentId } = collaborativeDocParse(collaborativeDoc)
+            const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
+            // only for documents not in storage
+            if (blob === undefined) {
+              const ydoc = markupToYDoc(value, attribute.name)
+              await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
+            }
+
+            update[attribute.name] = collaborativeDoc
+          } else if (value == null) {
+            update[attribute.name] = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
           }
-
-          update[attribute.name] = collaborativeDoc
-        } else if (value == null) {
-          update[attribute.name] = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
         }
-      }
 
-      if (Object.keys(update).length > 0) {
-        operations.push({ filter: { _id: doc._id }, update })
-      }
+        if (Object.keys(update).length > 0) {
+          operations.push({ filter: { _id: doc._id }, update })
+        }
+      })
     }
+
+    await rateLimiter.waitProcessing()
 
     if (operations.length > 0) {
       await client.bulk(domain, operations)
