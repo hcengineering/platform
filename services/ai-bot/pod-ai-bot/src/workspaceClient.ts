@@ -27,7 +27,8 @@ import core, {
   TxProcessor,
   WorkspaceId,
   Blob,
-  RateLimiter
+  RateLimiter,
+  generateId
 } from '@hcengineering/core'
 import aiBot, { AIBotEvent, aiBotAccountEmail, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
 import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
@@ -173,7 +174,7 @@ export class WorkspaceClient {
     const opClient = new TxOperations(this.client, aiBot.account.AIBot)
 
     await this.uploadAvatarFile(opClient)
-    const events = await opClient.findAll(aiBot.class.AIBotTransferEvent, {})
+    const events = await opClient.findAll(aiBot.class.AIBotEvent, {})
     void this.processEvents(events)
 
     this.client.notify = (...txes: Tx[]) => {
@@ -257,11 +258,16 @@ export class WorkspaceClient {
 
   async processResponseEvent (event: AIBotResponseEvent): Promise<void> {
     const client = await this.opClient
+    const op = client.apply(generateId(), 'AIBotResponseEvent')
+    const hierarchy = client.getHierarchy()
+    const space = hierarchy.isDerived(event.objectClass, core.class.Space)
+      ? (event.objectId as Ref<Space>)
+      : event.objectSpace
 
     if (event.messageClass === chunter.class.ChatMessage) {
-      await client.addCollection<Doc, ChatMessage>(
+      await op.addCollection<Doc, ChatMessage>(
         chunter.class.ChatMessage,
-        event.objectSpace,
+        space,
         event.objectId,
         event.objectClass,
         event.collection,
@@ -273,9 +279,9 @@ export class WorkspaceClient {
       })
 
       if (parent !== undefined) {
-        await client.addCollection<Doc, ThreadMessage>(
+        await op.addCollection<Doc, ThreadMessage>(
           chunter.class.ThreadMessage,
-          event.objectSpace,
+          space,
           event.objectId,
           event.objectClass,
           event.collection,
@@ -284,7 +290,8 @@ export class WorkspaceClient {
       }
     }
 
-    await client.remove(event)
+    await op.remove(event)
+    await op.commit()
   }
 
   async processTransferEvent (event: AIBotTransferEvent): Promise<void> {
@@ -443,16 +450,23 @@ export class WorkspaceClient {
     this.ctx.info('Closed workspace client: ', this.workspace)
   }
 
-  private async txHandler (client: TxOperations, txes: Tx[]): Promise<void> {
-    const hierarchy = client.getHierarchy()
+  private async handleCreateTx (tx: TxCreateDoc<Doc>): Promise<void> {
+    if (tx.objectClass === aiBot.class.AIBotResponseEvent) {
+      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AIBotResponseEvent>)
+      await this.processResponseEvent(doc)
+    } else if (tx.objectClass === aiBot.class.AIBotTransferEvent) {
+      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AIBotTransferEvent>)
+      await this.processTransferEvent(doc)
+    }
+  }
 
-    const resultTxes = txes
-      .map((a) => TxProcessor.extractTx(a) as TxCreateDoc<AIBotEvent>)
-      .filter(
-        (tx) => tx._class === core.class.TxCreateDoc && hierarchy.isDerived(tx.objectClass, aiBot.class.AIBotEvent)
-      )
-      .map((tx) => TxProcessor.createDoc2Doc(tx))
+  private async txHandler (_: TxOperations, txes: Tx[]): Promise<void> {
+    for (const ttx of txes) {
+      const tx = TxProcessor.extractTx(ttx)
 
-    await this.processEvents(resultTxes)
+      if (tx._class === core.class.TxCreateDoc) {
+        await this.handleCreateTx(tx as TxCreateDoc<Doc>)
+      }
+    }
   }
 }
