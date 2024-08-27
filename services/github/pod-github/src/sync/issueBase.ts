@@ -1057,14 +1057,15 @@ export abstract class IssueSyncManagerBase {
           }
           break
         case task.statusCategory.Won:
-          if (issueExternal.state !== 'CLOSED') {
+          if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'COMPLETED') {
             issueUpdate.state = 'CLOSED'
+            issueUpdate.stateReason = 'COMPLETED'
           }
           break
         case task.statusCategory.Lost:
-          if (issueExternal.state !== 'CLOSED') {
+          if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'NOT_PLANNED') {
             issueUpdate.state = 'CLOSED'
-            // issueUpdate.stateReason = 'not_planed'// Not supported change to github
+            issueUpdate.stateReason = 'not_planed' // Not supported change to github
           }
           break
       }
