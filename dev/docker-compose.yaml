@@ -2,6 +2,15 @@ services:
   mongodb:
     image: 'mongo:7-jammy'
     container_name: mongodb
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: echo "try { db.currentOp().ok } catch (err) { }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
     environment:
       - PUID=1000
       - PGID=1000
@@ -62,11 +71,11 @@ services:
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
-      - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
+      - MONGO_URL=${MONGO_URL}
+      - TRANSACTOR_URL=ws://host.docker.internal:3333;ws://localhost:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://localhost:8087
+      - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
@@ -86,8 +95,8 @@ services:
     environment:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
-      - ACCOUNTS_URL=http://account:3000
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"collaborator","maxPoolSize":2}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
@@ -106,11 +115,11 @@ services:
       - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://localhost:3000
       - UPLOAD_URL=/files
-      - ELASTIC_URL=http://elastic:9200
+      - ELASTIC_URL=http://host.docker.internal:9200
       - GMAIL_URL=http://localhost:8088
       - CALENDAR_URL=http://localhost:8095
       - TELEGRAM_URL=http://localhost:8086
@@ -145,17 +154,17 @@ services:
       - SERVER_PORT=3333
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
-      - ELASTIC_URL=http://elastic:9200
-      - MONGO_URL=postgresql://postgres:example@postgres:5432;mongodb://mongodb:27017
+      - ELASTIC_URL=http://host.docker.internal:9200
+      - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - REKONI_URL=http://rekoni:4004
+      - REKONI_URL=http://host.docker.internal:4004
       - FRONT_URL=http://localhost:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
-      - ACCOUNTS_URL=http://account:3000
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
       - BRANDING_PATH=/var/cfg/branding.json      
@@ -176,7 +185,7 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     deploy:
@@ -193,11 +202,11 @@ services:
       - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
     environment:
       - SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
-      - ACCOUNTS_URL=http://account:3000
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
       - SERVICE_ID=sign-service      
@@ -214,10 +223,10 @@ services:
     environment:
       - SECRET=secret
       - PORT=4007
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
       - SERVICE_ID=analytics-collector-service
-      - ACCOUNTS_URL=http://account:3000
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - SUPPORT_WORKSPACE=support
     deploy:
       resources:
@@ -228,8 +237,8 @@ services:
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017
-      - ACCOUNTS_URL=http://account:3000
+      - MONGO_URL=${MONGO_URL}
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - SUPPORT_WORKSPACE=support
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
@@ -246,11 +255,11 @@ services:
 #    environment:
 #      - PORT=4020
 #      - BOT_TOKEN=token
-#      - MONGO_URL=mongodb://mongodb:27017
+#      - MONGO_URL=${MONGO_URL}
 #      - MONGO_DB=telegram-bot
 #      - SECRET=secret
 #      - DOMAIN=domain
-#      - ACCOUNTS_URL=http://account:3000
+#      - ACCOUNTS_URL=http://host.docker.internal:3000
 #      - SERVICE_ID=telegram-bot-service
 #    deploy:
 #      resources:
