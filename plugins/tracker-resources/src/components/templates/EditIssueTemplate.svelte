@@ -69,7 +69,9 @@
       { _id },
       async (result) => {
         ;[template] = result
-        title = template.title
+        if (template != null) {
+          title = template.title
+        }
         currentProject = template.$lookup?.space
       },
       { lookup: { space: tracker.class.Project, labels: tags.class.TagElement } }

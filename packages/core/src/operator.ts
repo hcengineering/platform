@@ -33,7 +33,9 @@ function $push (document: Doc, keyval: Record<string, PropertyType>): void {
       const arr = doc[key] as Array<any>
       const desc = val as Position<PropertyType>
       if ('$each' in desc) {
-        arr.splice(desc.$position ?? 0, 0, ...desc.$each)
+        if (arr != null) {
+          arr.splice(desc.$position ?? 0, 0, ...desc.$each)
+        }
       } else {
         arr.push(val)
       }
