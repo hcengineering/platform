@@ -165,16 +165,20 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
     const domain = hierarchy.findDomain(_class)
     if (domain === undefined) continue
 
-    const attributes = hierarchy.getAllAttributes(_class)
-    const filtered = Array.from(attributes.values()).filter((attribute) => {
+    const allAttributes = hierarchy.getAllAttributes(_class)
+    const attributes = Array.from(allAttributes.values()).filter((attribute) => {
       return hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)
     })
-    if (filtered.length === 0) continue
 
-    const iterator = await client.traverse(domain, { _class })
+    if (attributes.length === 0) continue
+    if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
+
+    const query = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
+
+    const iterator = await client.traverse(domain, query)
     try {
       console.log('processing', _class)
-      await processMigrateContentFor(ctx, domain, filtered, client, storageAdapter, iterator)
+      await processMigrateContentFor(ctx, domain, attributes, client, storageAdapter, iterator)
     } finally {
       await iterator.close()
     }
@@ -189,6 +193,8 @@ async function processMigrateContentFor (
   storageAdapter: StorageAdapter,
   iterator: MigrationIterator<Doc>
 ): Promise<void> {
+  const hierarchy = client.hierarchy
+
   const rateLimiter = new RateLimiter(10)
 
   let processed = 0
@@ -211,7 +217,14 @@ async function processMigrateContentFor (
         for (const attribute of attributes) {
           const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
 
-          const value = (doc as any)[attribute.name] as string
+          const value = hierarchy.isMixin(attribute.attributeOf)
+            ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+            : ((doc as any)[attribute.name] as string)
+
+          const attributeName = hierarchy.isMixin(attribute.attributeOf)
+            ? `${attribute.attributeOf}.${attribute.name}`
+            : attribute.name
+
           if (value != null && value.startsWith('{')) {
             const { documentId } = collaborativeDocParse(collaborativeDoc)
             const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
@@ -221,9 +234,9 @@ async function processMigrateContentFor (
               await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
             }
 
-            update[attribute.name] = collaborativeDoc
-          } else if (value == null) {
-            update[attribute.name] = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
+            update[attributeName] = collaborativeDoc
+          } else if (value == null || value === '') {
+            update[attributeName] = collaborativeDoc
           }
         }
 

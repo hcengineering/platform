@@ -992,7 +992,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     okit: Octokit,
     account: Ref<Account>
   ): Promise<boolean> {
-    let { state, body, ...issueUpdate } = await this.collectIssueUpdate(
+    let { state, stateReason, body, ...issueUpdate } = await this.collectIssueUpdate(
       info,
       existing,
       platformUpdate,

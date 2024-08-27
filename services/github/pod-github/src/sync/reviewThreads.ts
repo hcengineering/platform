@@ -204,7 +204,9 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       case 'resolved':
       case 'unresolved': {
         const isResolved = event.action === 'resolved'
-        const reviewData = await this.client.findOne(github.class.DocSyncInfo, { url: event.thread.node_id })
+        const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+          url: event.thread.node_id.toLocaleLowerCase()
+        })
 
         if (reviewData !== undefined) {
           const reviewObj: GithubReviewThread | undefined = await this.client.findOne<GithubReviewThread>(
@@ -225,12 +227,12 @@ export class ReviewThreadSyncManager implements DocSyncManager {
               },
               lastModified
             )
-            await this.client.update(
+            await this.client.diffUpdate(
               reviewObj,
               {
-                isResolved
+                isResolved,
+                resolvedBy: account
               },
-              false,
               lastModified,
               account
             )

@@ -3,24 +3,17 @@
 //
 -->
 <script lang="ts">
-  import { Ref, WithLookup, groupByArray } from '@hcengineering/core'
-  import {
-    GithubPullRequestReviewState,
-    GithubReview,
-    GithubReviewComment,
-    GithubReviewThread
-  } from '@hcengineering/github'
+  import { Ref, WithLookup } from '@hcengineering/core'
+  import { GithubPullRequestReviewState, GithubReview } from '@hcengineering/github'
 
   import { ActivityMessageHeader, ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
-  import { MessageViewer, createQuery } from '@hcengineering/presentation'
-  import { Component, PaletteColorIndexes, getPlatformColor, themeStore } from '@hcengineering/ui'
-  import diffview from '@hcengineering/diffview'
-  import github from '../../plugin'
-  import ReviewCommentPresenter from './ReviewCommentPresenter.svelte'
+  import { MessageViewer } from '@hcengineering/presentation'
   import { isEmptyMarkup } from '@hcengineering/text'
+  import { PaletteColorIndexes, getPlatformColor, themeStore } from '@hcengineering/ui'
+  import github from '../../plugin'
 
   export let value: WithLookup<GithubReview>
   export let showNotify: boolean = false
