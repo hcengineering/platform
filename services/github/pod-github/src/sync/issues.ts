@@ -21,9 +21,6 @@ import core, {
   generateId,
   makeCollaborativeDoc
 } from '@hcengineering/core'
-import task, { TaskType, calcRank } from '@hcengineering/task'
-import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
-import { Issue as GithubIssue, IssuesEvent, ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubIntegrationRepository,
@@ -32,6 +29,9 @@ import github, {
   IntegrationRepositoryData,
   GithubIssue as TGithubIssue
 } from '@hcengineering/github'
+import task, { TaskType, calcRank } from '@hcengineering/task'
+import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
+import { Issue as GithubIssue, IssuesEvent, ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
 import config from '../config'
 import {
@@ -667,7 +667,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     okit: Octokit,
     account: Ref<Account>
   ): Promise<boolean> {
-    const { state, body, ...issueUpdate } = await this.collectIssueUpdate(
+    const { state, stateReason, body, ...issueUpdate } = await this.collectIssueUpdate(
       info,
       existing,
       platformUpdate,
@@ -683,6 +683,41 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     const hasFieldStateChanges = Object.keys(issueUpdate).length > 0 || state !== undefined
     // We should allow modification from user.
 
+    const closeIssue = async (): Promise<void> => {
+      await okit?.graphql(
+        `
+      mutation closeIssue($issue: ID!) {
+        closeIssue(input: {
+          issueId: $issue,
+          stateReason: ${stateReason === 'not_planed' ? 'NOT_PLANNED' : 'COMPLETED'}
+        }) {
+          issue {
+            id
+            updatedAt
+          }
+        }
+      }`,
+        { issue: issueExternal.id }
+      )
+    }
+
+    const reopenIssue = async (): Promise<void> => {
+      await okit?.graphql(
+        `
+      mutation reopenIssue($issue: ID!) {
+        reopenIssue(input: {
+          issueId: $issue
+        }) {
+          issue {
+            id
+            updatedAt
+          }
+        }
+      }`,
+        { issue: issueExternal.id }
+      )
+    }
+
     if (hasFieldStateChanges || body !== undefined) {
       if (body !== undefined && !isLocked) {
         await this.ctx.withLog(
@@ -696,12 +731,15 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               workspace: this.provider.getWorkspaceId().name
             })
             if (isGHWriteAllowed()) {
+              if (state === 'OPEN') {
+                // We need to call re-open issue
+                await reopenIssue()
+              }
               await okit?.graphql(
                 `
               mutation updateIssue($issue: ID!, $body: String! ) {
                 updateIssue(input: {
                   id: $issue,
-                  ${state !== undefined ? `state: ${state as string}` : ''}
                   ${gqlp(issueUpdate)},
                   body: $body
                 }) {
@@ -713,6 +751,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               }`,
                 { issue: issueExternal.id, body }
               )
+              if (state === 'CLOSED') {
+                await closeIssue()
+              }
             }
           },
           { url: issueExternal.url, id: existing._id }
@@ -725,12 +766,17 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           async () => {
             this.ctx.info('update fields', { ...issueUpdate, workspace: this.provider.getWorkspaceId().name })
             if (isGHWriteAllowed()) {
-              await okit?.graphql(
-                `
+              const hasOtherChanges = Object.keys(issueUpdate).length > 0
+              if (state === 'OPEN') {
+                // We need to call re-open issue
+                await reopenIssue()
+              }
+              if (hasOtherChanges) {
+                await okit?.graphql(
+                  `
                 mutation updateIssue($issue: ID!) {
                   updateIssue(input: {
                     id: $issue,
-                    ${state !== undefined ? `state: ${state as string}` : ''}
                     ${gqlp(issueUpdate)}
                   }) {
                     issue {
@@ -739,8 +785,12 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                     }
                   }
                 }`,
-                { issue: issueExternal.id }
-              )
+                  { issue: issueExternal.id }
+                )
+              }
+              if (state === 'CLOSED') {
+                await closeIssue()
+              }
             }
           },
           { url: issueExternal.url }
