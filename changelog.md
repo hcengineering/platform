@@ -2,6 +2,17 @@
 
 Changelog.
 
+## [0.6.285] - 2024-08-27
+
+* 🚀 FEATURES: · Markup migration tool ([#6398](https://github.com/hcengineering/platform/issues/6398)) 
+* UBERF-7944: · Support for not_planed close for issues ([#6396](https://github.com/hcengineering/platform/issues/6396)) 
+* UBERF-7946: · Remove bulk in mongo adapter ([#6395](https://github.com/hcengineering/platform/issues/6395)) 
+
+## [0.6.284a] - 2024-08-26
+
+* 🐛 BUG FIXES: · Parallel blob processing in tools an migration ([#6391](https://github.com/hcengineering/platform/issues/6391)) 
+* UBERF-7924: · Fix workspace variable in logs + reuse installation account ([#6376](https://github.com/hcengineering/platform/issues/6376)) 
+
 ## [0.6.284] - 2024-08-23
 
 * 🐛 BUG FIXES: · Do not resolve srcset for urls ([#6367](https://github.com/hcengineering/platform/issues/6367)) · Add limit and retries to move files tool ([#6368](https://github.com/hcengineering/platform/issues/6368)) 
