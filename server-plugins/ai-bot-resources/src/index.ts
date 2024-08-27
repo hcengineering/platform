@@ -31,11 +31,11 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import aiBot, { aiBotAccountEmail, AIBotResponseEvent } from '@hcengineering/ai-bot'
-import serverAIBot, { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/server-ai-bot'
+import { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/server-ai-bot'
 import contact, { PersonAccount } from '@hcengineering/contact'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
-import { getMetadata } from '@hcengineering/platform'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
+import { getSupportWorkspaceId } from './utils'
 
 async function processWorkspace (control: TriggerControl): Promise<void> {
   const adapter = control.serviceAdaptersManager.getAdapter(serverAiBotId) as AIBotServiceAdapter | undefined
@@ -129,24 +129,19 @@ async function getThreadParent (control: TriggerControl, message: ChatMessage): 
   return message.attachedTo as Ref<ChatMessage>
 }
 
-function getSupportWorkspaceId (): string | undefined {
-  const supportWorkspaceId = getMetadata(serverAIBot.metadata.SupportWorkspaceId)
-
-  if (supportWorkspaceId === '') {
-    return undefined
-  }
-
-  return supportWorkspaceId
-}
-
 async function createTransferEvent (
   control: TriggerControl,
   message: ChatMessage,
   account: PersonAccount,
-  data: Data<AIBotResponseEvent>,
-  supportWorkspaceId: string
+  data: Data<AIBotResponseEvent>
 ): Promise<void> {
   if (account.role !== AccountRole.Owner) {
+    return
+  }
+
+  const supportWorkspaceId = getSupportWorkspaceId()
+
+  if (supportWorkspaceId === undefined) {
     return
   }
 
@@ -167,12 +162,6 @@ async function createTransferEvent (
 }
 
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
-  const supportWorkspaceId = getSupportWorkspaceId()
-
-  if (supportWorkspaceId === undefined) {
-    return
-  }
-
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
     _id: (message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
   })[0]
@@ -202,7 +191,7 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
   }
 
   await createResponseEvent(message, control, data)
-  await createTransferEvent(control, message, account, data, supportWorkspaceId)
+  await createTransferEvent(control, message, account, data)
 
   await processWorkspace(control)
 }
