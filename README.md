@@ -140,12 +140,13 @@ Development mode allows for live reloading and a smoother development process.
 
 ```bash
 cd dev/prod
+rush validate
 rushx dev-server
 ```
 
 Then go to http://localhost:8080
 
-Use the following login credentials:
+Click on "Login with password" link on the bottom of the right panel and use the following login credentials:
 
 ```plain
 Email: user1
