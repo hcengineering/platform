@@ -17,6 +17,7 @@ import login, { loginId } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
+  loadServerConfig,
   purgeClient,
   refreshClient,
   setClient,
@@ -221,7 +222,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
                 const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
                 if (currentFrontVersion !== undefined) {
-                  const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+                  const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
                   if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
                     location.reload()
                   }

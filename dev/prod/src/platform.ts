@@ -107,7 +107,7 @@ import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
+import presentation, { loadServerConfig, parsePreviewConfig, presentationId } from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
 import { setDefaultLanguage } from '@hcengineering/theme'
@@ -239,13 +239,12 @@ export async function configurePlatform() {
   })
   configureI18n()
 
-  const config: Config = await (await fetch(
+  const config: Config = await loadServerConfig(
     devConfigHuly
       ? '/config-huly.json' : (
         devConfigBold ? '/config-bold.json' : ( 
           devConfig ? '/config-dev.json' : '/config.json'))
   )
-  ).json()
   const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 

@@ -693,3 +693,28 @@ export function setDownloadProgress (percent: number): void {
 
   upgradeDownloadProgress.set(Math.round(percent))
 }
+
+export async function loadServerConfig (url: string): Promise<any> {
+  let retries = 5
+  let res: Response | undefined
+
+  do {
+    try {
+      res = await fetch(url)
+      break
+    } catch (e: any) {
+      retries--
+      if (retries === 0) {
+        throw new Error(`Failed to load server config: ${e}`)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
+    }
+  } while (retries > 0)
+
+  if (res === undefined) {
+    // In theory should never get here
+    throw new Error('Failed to load server config')
+  }
+
+  return await res.json()
+}
