@@ -11,10 +11,15 @@ import core, {
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, refreshClient, setClient, setPresentationCookie } from '@hcengineering/presentation'
+import presentation, {
+  closeClient,
+  loadServerConfig,
+  refreshClient,
+  setClient,
+  setPresentationCookie
+} from '@hcengineering/presentation'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
-
 export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
 
@@ -113,7 +118,7 @@ export async function connect (title: string): Promise<Client | undefined> {
             const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
             const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
             if (currentFrontVersion !== undefined) {
-              const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+              const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
               if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
                 location.reload()
               }
