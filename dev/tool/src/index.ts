@@ -90,7 +90,7 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { fixJsonMarkup } from './markup'
+import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles } from './storage'
@@ -1287,6 +1287,34 @@ export function devTool (
         const wsid = getWorkspaceId(workspace)
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
         await fixJsonMarkup(toolCtx, mongodbUri, adapter, wsid, endpoint)
+      })
+    })
+
+  program
+    .command('migrate-markup')
+    .description('migrates collaborative markup to storage')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
+    .action(async (cmd: { workspace: string, concurrency: string }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        await withStorage(mongodbUri, async (adapter) => {
+          const workspaces = await listWorkspacesPure(db)
+          for (const workspace of workspaces) {
+            if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+              continue
+            }
+
+            const wsId = getWorkspaceId(workspace.workspace)
+            const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsId), 'external')
+
+            console.log('processing workspace', workspace.workspace)
+
+            await migrateMarkup(toolCtx, adapter, wsId, client, endpoint, parseInt(cmd.concurrency))
+
+            console.log('...done', workspace.workspace)
+          }
+        })
       })
     })
 
