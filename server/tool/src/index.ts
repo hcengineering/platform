@@ -469,7 +469,7 @@ async function prepareMigrationClient (
   return { migrateClient, migrateState }
 }
 
-async function fetchModelFromMongo (
+export async function fetchModelFromMongo (
   ctx: MeasureContext,
   mongodbUri: string,
   workspaceId: WorkspaceId,

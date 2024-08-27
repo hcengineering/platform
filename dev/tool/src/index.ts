@@ -1300,19 +1300,19 @@ export function devTool (
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
+          let index = 0
           for (const workspace of workspaces) {
             if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
               continue
             }
 
             const wsId = getWorkspaceId(workspace.workspace)
-            const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsId), 'external')
+            console.log('processing workspace', workspace.workspace, index, workspaces.length)
 
-            console.log('processing workspace', workspace.workspace)
-
-            await migrateMarkup(toolCtx, adapter, wsId, client, endpoint, parseInt(cmd.concurrency))
+            await migrateMarkup(toolCtx, adapter, wsId, client, mongodbUri, parseInt(cmd.concurrency))
 
             console.log('...done', workspace.workspace)
+            index++
           }
         })
       })
