@@ -270,7 +270,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           sqlChunks.push(this.buildJoinString(joins))
         }
         sqlChunks.push(`WHERE ${this.buildQuery(_class, domain, query, joins, options)}`)
-  
+
         let total = options?.total === true ? 0 : -1
         if (options?.total === true) {
           const totalReq = `SELECT COUNT(${domain}._id) as count FROM ${domain}`
@@ -285,7 +285,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (options?.limit !== undefined) {
           sqlChunks.push(`LIMIT ${options.limit}`)
         }
-  
+
         const finalSql: string = [select, ...sqlChunks].join(' ')
         const result = await this.client.query(finalSql)
         if (options?.lookup === undefined) {
@@ -1151,7 +1151,10 @@ class PostgresAdapter extends PostgresAdapterBase {
     }
   }
 
-  protected async txCollectionCUD (ctx: MeasureContext, tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult | undefined> {
+  protected async txCollectionCUD (
+    ctx: MeasureContext,
+    tx: TxCollectionCUD<Doc, AttachedDoc>
+  ): Promise<TxResult | undefined> {
     // We need update only create transactions to contain attached, attachedToClass.
     if (tx.tx._class === core.class.TxCreateDoc) {
       const createTx = tx.tx as TxCreateDoc<AttachedDoc>
@@ -1221,39 +1224,47 @@ class PostgresAdapter extends PostgresAdapterBase {
     return await ctx.with('tx-update-doc', { _class: tx.objectClass }, async () => {
       if (isOperator(tx.operations)) {
         let doc: Doc | undefined
-        return await ctx.with('update with operations', { operations: JSON.stringify(Object.keys(tx.operations))}, async () => {
-          await this.retryTxn(async (client) => {
-            doc = await this.findDoc(ctx, client, tx.objectClass, tx.objectId, true)
-            if (doc === undefined) return {}
-            ;(tx.operations as any)['%hash%'] = null
-            TxProcessor.applyUpdate(doc, tx.operations)
-            const converted = convertDoc(doc, this.workspaceId.name)
-            const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
-            const { space, attachedTo, ...data } = tx.operations as any
-            const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-            updates.push(`space = '${space}'`)
-            updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
-            if (Object.keys(data).length > 0) {
-              updates.push('data = $5')
-              params.push(converted.data)
+        return await ctx.with(
+          'update with operations',
+          { operations: JSON.stringify(Object.keys(tx.operations)) },
+          async () => {
+            await this.retryTxn(async (client) => {
+              doc = await this.findDoc(ctx, client, tx.objectClass, tx.objectId, true)
+              if (doc === undefined) return {}
+              ;(tx.operations as any)['%hash%'] = null
+              TxProcessor.applyUpdate(doc, tx.operations)
+              const converted = convertDoc(doc, this.workspaceId.name)
+              const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
+              const { space, attachedTo, ...data } = tx.operations as any
+              const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
+              updates.push(`space = '${space}'`)
+              updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
+              if (Object.keys(data).length > 0) {
+                updates.push('data = $5')
+                params.push(converted.data)
+              }
+              await client.query(
+                `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET ${updates.join(', ')} WHERE _id = $3 AND "workspaceId" = $4`,
+                params
+              )
+            })
+            if (tx.retrieve === true && doc !== undefined) {
+              return { object: doc }
             }
-            await client.query(
-              `UPDATE ${translateDomain(this.hierarchy.getDomain(tx.objectClass))} SET ${updates.join(', ')} WHERE _id = $3 AND "workspaceId" = $4`,
-              params
-            )
-          })
-          if (tx.retrieve === true && doc !== undefined) {
-            return { object: doc }
+            return {}
           }
-          return {}
-        })
+        )
       } else {
         return await this.updateDoc(ctx, tx, tx.retrieve ?? false)
       }
     })
   }
 
-  private async updateDoc<T extends Doc>(ctx: MeasureContext, tx: TxUpdateDoc<T>, retrieve: boolean): Promise<TxResult> {
+  private async updateDoc<T extends Doc>(
+    ctx: MeasureContext,
+    tx: TxUpdateDoc<T>,
+    retrieve: boolean
+  ): Promise<TxResult> {
     return await ctx.with('update jsonb_set', {}, async () => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const { space, attachedTo, ...ops } = tx.operations as any
@@ -1270,7 +1281,7 @@ class PostgresAdapter extends PostgresAdapterBase {
         }
         updates.push(`data = ${from}`)
       }
-  
+
       try {
         await this.retryTxn(async (client) => {
           await client.query(
@@ -1290,13 +1301,13 @@ class PostgresAdapter extends PostgresAdapterBase {
   }
 
   private async findDoc (
-    ctx: MeasureContext, 
+    ctx: MeasureContext,
     client: PoolClient,
     _class: Ref<Class<Doc>>,
     _id: Ref<Doc>,
     forUpdate: boolean = false
   ): Promise<Doc | undefined> {
-    return await ctx.with('find-doc', { _class, _id }, async () => {
+    return await ctx.with('find-doc', { _class }, async () => {
       let query = `SELECT * FROM ${translateDomain(this.hierarchy.getDomain(_class))} WHERE _id = $1 AND "workspaceId" = $2`
       if (forUpdate) {
         query += ' FOR UPDATE'
@@ -1332,7 +1343,7 @@ class PostgresTxAdapter extends PostgresAdapterBase implements TxAdapter {
       return []
     }
     try {
-      await this.upload(ctx, DOMAIN_TX, tx)
+      await this.insert(DOMAIN_TX, tx)
     } catch (err) {
       console.error(err)
     }
