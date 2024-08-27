@@ -235,8 +235,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const updates: string[] = []
         const { space, attachedTo, ...ops } = operations as any
         const params: any[] = [doc._id, this.workspaceId.name]
-        updates.push(`space = '${space}'`)
-        updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
+        if (space !== undefined) {
+          updates.push(`space = '${space}'`)
+        }
+        if (attachedTo !== undefined) {
+          updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
+        }
         if (Object.keys(ops).length > 0) {
           updates.push('data = $3')
           params.push(converted.data)
@@ -1084,8 +1088,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
           const updates: string[] = []
           const { space, attachedTo, ...data } = ops as any
           const params: any[] = [doc._id, this.workspaceId.name]
-          updates.push(`space = '${space}'`)
-          updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
+          if (space !== undefined) {
+            updates.push(`space = '${space}'`)
+          }
+          if (attachedTo !== undefined) {
+            updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
+          }
           if (Object.keys(data).length > 0) {
             updates.push('data = $3')
             params.push(converted.data)
@@ -1237,8 +1245,12 @@ class PostgresAdapter extends PostgresAdapterBase {
               const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
               const { space, attachedTo, ...data } = tx.operations as any
               const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
-              updates.push(`space = '${space}'`)
-              updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
+              if (space !== undefined) {
+                updates.push(`space = '${space}'`)
+              }
+              if (attachedTo !== undefined) {
+                updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
+              }
               if (Object.keys(data).length > 0) {
                 updates.push('data = $5')
                 params.push(converted.data)
@@ -1272,7 +1284,7 @@ class PostgresAdapter extends PostgresAdapterBase {
         updates.push(`space = ${space}`)
       }
       if (attachedTo !== undefined) {
-        updates.push(`"attachedTo" = ${attachedTo !== undefined ? "'" + attachedTo + "'" : 'NULL'}`)
+        updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
       }
       if (Object.keys(ops).length > 0) {
         let from = 'data'
