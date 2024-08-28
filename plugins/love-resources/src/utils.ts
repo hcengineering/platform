@@ -624,8 +624,6 @@ export async function tryConnect (
 
   if (room._id === currentInfo?.room) return
   if (room.access === RoomAccess.DND) return
-  const thisRoomRequest = currentRequests.find((p) => p.room === room._id)
-  if (thisRoomRequest !== undefined) return
   for (const req of currentRequests) {
     await client.remove(req)
   }
