@@ -2,6 +2,15 @@
 
 Changelog.
 
+## [0.6.286] - 2024-08-28
+
+* 🐛 BUG FIXES: · Wrap lines in codeblock ([#6406](https://github.com/hcengineering/platform/issues/6406)) 
+* UBERF-7959: · Fix async issues ([#6409](https://github.com/hcengineering/platform/issues/6409)) 
+
+## [0.6.285a] - 2024-08-27
+
+* 🐛 BUG FIXES: · Migrate collaborative markup in activity ([#6400](https://github.com/hcengineering/platform/issues/6400)) · Ignore ydoc migration errors ([#6402](https://github.com/hcengineering/platform/issues/6402)) 
+
 ## [0.6.285] - 2024-08-27
 
 * 🚀 FEATURES: · Markup migration tool ([#6398](https://github.com/hcengineering/platform/issues/6398)) 
