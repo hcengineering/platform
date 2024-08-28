@@ -25,6 +25,8 @@ import {
   isReactionMessage,
   messageInFocus
 } from '@hcengineering/activity-resources'
+import { Analytics } from '@hcengineering/analytics'
+import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
   SortingOrder,
   getCurrentAccount,
@@ -39,17 +41,18 @@ import notification, {
   NotificationStatus,
   notificationId,
   type ActivityInboxNotification,
+  type BaseNotificationType,
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification,
   type MentionInboxNotification,
-  type BaseNotificationType,
   type NotificationProvider,
   type NotificationProviderSetting,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
-import { MessageBox, getClient, createQuery } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
+import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
@@ -60,12 +63,9 @@ import {
   type Location,
   type ResolvedLocation
 } from '@hcengineering/ui'
-import { get, writable } from 'svelte/store'
-import chunter, { type ThreadMessage } from '@hcengineering/chunter'
-import { getMetadata } from '@hcengineering/platform'
 import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId } from '@hcengineering/view-resources'
-import { Analytics } from '@hcengineering/analytics'
+import { get, writable } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
@@ -311,14 +311,12 @@ export async function archiveAll (): Promise<void> {
     MessageBox,
     {
       label: notification.string.ArchiveAllConfirmationTitle,
-      message: notification.string.ArchiveAllConfirmationMessage
-    },
-    'top',
-    (result?: boolean) => {
-      if (result === true) {
-        void client.archiveAllNotifications()
+      message: notification.string.ArchiveAllConfirmationMessage,
+      action: async () => {
+        await client.archiveAllNotifications()
       }
-    }
+    },
+    'top'
   )
 }
 

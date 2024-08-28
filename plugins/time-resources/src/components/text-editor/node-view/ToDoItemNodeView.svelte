@@ -128,14 +128,12 @@
       MessageBox,
       {
         label: timeRes.string.ReassignToDo,
-        message: timeRes.string.ReassignToDoConfirm
-      },
-      'top',
-      async (result?: boolean) => {
-        if (result === true) {
+        message: timeRes.string.ReassignToDoConfirm,
+        action: async () => {
           await assignTodo(user)
         }
-      }
+      },
+      'top'
     )
   }
 
@@ -144,14 +142,12 @@
       MessageBox,
       {
         label: timeRes.string.UnassignToDo,
-        message: timeRes.string.UnassignToDoConfirm
-      },
-      'top',
-      async (result?: boolean) => {
-        if (result === true) {
+        message: timeRes.string.UnassignToDoConfirm,
+        action: async () => {
           await unassignTodo()
         }
-      }
+      },
+      'top'
     )
   }
 

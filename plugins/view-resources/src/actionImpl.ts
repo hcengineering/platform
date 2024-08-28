@@ -454,19 +454,13 @@ function UpdateDocument (doc: Doc | Doc[], evt: Event, props: Record<string, any
     }
   }
   if (props?.ask === true) {
-    showPopup(
-      MessageBox,
-      {
-        label: props.label ?? view.string.LabelYes,
-        message: props.message ?? view.string.LabelYes
-      },
-      undefined,
-      (result: boolean) => {
-        if (result) {
-          void update()
-        }
+    showPopup(MessageBox, {
+      label: props.label ?? view.string.LabelYes,
+      message: props.message ?? view.string.LabelYes,
+      action: async () => {
+        await update()
       }
-    )
+    })
   } else {
     void update()
   }

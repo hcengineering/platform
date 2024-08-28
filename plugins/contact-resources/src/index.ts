@@ -272,25 +272,16 @@ async function kickEmployee (doc: Person): Promise<void> {
   if (accounts.length === 0) {
     await client.update(employee, { active: false })
   } else {
-    showPopup(
-      MessageBox,
-      {
-        label: contact.string.KickEmployee,
-        message: contact.string.KickEmployeeDescr
-      },
-      undefined,
-      (res?: boolean) => {
-        if (res === true) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          const p = getResource(login.function.LeaveWorkspace)
-          for (const i of accounts) {
-            void p.then(async (f) => {
-              await f(i.email)
-            })
-          }
+    showPopup(MessageBox, {
+      label: contact.string.KickEmployee,
+      message: contact.string.KickEmployeeDescr,
+      action: async () => {
+        const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
+        for (const i of accounts) {
+          await leaveWorkspace(i.email)
         }
       }
-    )
+    })
   }
 }
 async function openChannelURL (doc: Channel): Promise<void> {

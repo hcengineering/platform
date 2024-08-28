@@ -86,15 +86,13 @@
       MessageBox,
       {
         label: settings.string.DeleteAttribute,
-        message: exist ? settings.string.DeleteAttributeExistConfirm : settings.string.DeleteAttributeConfirm
-      },
-      'top',
-      async (result) => {
-        if (result != null) {
+        message: exist ? settings.string.DeleteAttributeExistConfirm : settings.string.DeleteAttributeConfirm,
+        action: async () => {
           await client.remove(attribute)
           update()
         }
-      }
+      },
+      'top'
     )
   }
 
