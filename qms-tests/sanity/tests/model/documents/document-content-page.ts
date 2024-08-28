@@ -81,6 +81,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly saveButton: Locator
   readonly addMember: Locator
   readonly addMemberDropdown: Locator
+  readonly changeSpaceButton: Locator
 
   constructor (page: Page) {
     super(page)
@@ -172,6 +173,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.saveButton = page.getByRole('button', { name: 'Save' })
     this.addMember = page.getByText('Add member')
     this.addMemberDropdown = page.locator('.selectPopup')
+    this.changeSpaceButton = page.locator('[id="space\\.selector"]')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -255,7 +257,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
-  async checkIfCategoryIsCreated (categoryTitle: string, categoryCode: string): Promise<void> {
+  async expectCategoryCreated (categoryTitle: string, categoryCode: string): Promise<void> {
     await expect(this.page.getByText(categoryTitle)).toBeVisible()
     await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
   }
@@ -308,6 +310,11 @@ export class DocumentContentPage extends DocumentCommonPage {
     await expect(section.locator(`xpath=${parentLocator}`).locator('div.content-container div.tiptap')).toHaveText(
       content.content
     )
+  }
+
+  async changeSpaceInCreateDocumentForm (space: string): Promise<void> {
+    await this.changeSpaceButton.click()
+    await this.page.getByRole('button', { name: space, exact: true }).nth(1).click()
   }
 
   async executeMoreActions (action: string): Promise<void> {

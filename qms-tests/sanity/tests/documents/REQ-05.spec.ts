@@ -37,7 +37,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.selectControlDocumentSubcategory('Categories')
       await documentContentPage.clickOnAddCategoryButton()
       await documentContentPage.fillCategoryForm(title, description, code)
-      await documentContentPage.checkIfCategoryIsCreated(title, code)
+      await documentContentPage.expectCategoryCreated(title, code)
     })
 
     await attachScreenshot('TESTS-298_category_created.png', page)
