@@ -294,6 +294,7 @@ export class WorkspaceClient {
       return
     }
 
+    this.clearTypingTimeout(objectId)
     const typingInfo = this.typingMap.get(objectId)
 
     if (typingInfo === undefined) {
@@ -316,8 +317,6 @@ export class WorkspaceClient {
       await client.update(typingInfo, { lastTyping: Date.now() })
     }
 
-    this.clearTypingTimeout(objectId)
-
     const timeout = setTimeout(() => {
       void this.startTyping(client, space, objectId, objectClass)
     }, UPDATE_TYPING_TIMEOUT_MS)
@@ -336,7 +335,7 @@ export class WorkspaceClient {
 
   // TODO: In feature we also should use embeddings
   toOpenAiHistory (history: HistoryRecord[], promptTokens: number): any[] {
-    const trimmed: any[] = []
+    const result: OpenAI.ChatCompletionMessageParam[] = []
     let totalTokens = promptTokens
 
     for (let i = history.length - 1; i >= 0; i--) {
@@ -345,11 +344,11 @@ export class WorkspaceClient {
 
       if (totalTokens + tokens > config.MaxContentTokens) break
 
-      trimmed.unshift({ content: record.message, role: record.role as 'user' | 'assistant' })
+      result.unshift({ content: record.message, role: record.role as 'user' | 'assistant' })
       totalTokens += tokens
     }
 
-    return trimmed
+    return result
   }
 
   async getHistory (objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
@@ -447,9 +446,9 @@ export class WorkspaceClient {
     void this.pushHistory(promptText, prompt.role, promptTokens, user, objectId, objectClass)
 
     const start = Date.now()
-    const chatCompletion = await createChatCompletion(this.controller.aiClient, prompt, user, [])
+    const chatCompletion = await createChatCompletion(this.controller.aiClient, prompt, user, history)
     const end = Date.now()
-    console.info('Chat completion time: ', end - start)
+    this.ctx.info('Chat completion time: ', { time: end - start })
     const response = chatCompletion?.choices[0].message.content
 
     if (response == null) {
