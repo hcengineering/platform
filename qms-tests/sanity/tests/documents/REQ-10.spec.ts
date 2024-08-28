@@ -17,7 +17,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
 
-  test('TESTS-341. As a workspace admin, I can create roles and setup permissions', async ({ page }) => {
+  test('TESTS-341. As a workspace owner, I can create roles and setup permissions', async ({ page }) => {
     await allure.description(
       'Requirement\nUser is the owner of the workspace and can create roles and setup permissions'
     )
