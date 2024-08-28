@@ -5,7 +5,7 @@ import contact, {
   type PersonAccount,
   getName as getContactName
 } from '@hcengineering/contact'
-import { type Doc, type IdMap, type Ref, toIdMap } from '@hcengineering/core'
+import { type Client, type Doc, type IdMap, type Ref, toIdMap } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
 import gmail from './plugin'
@@ -128,4 +128,10 @@ export function getName (
     const emailVal = email?.[0] ?? value
     return emp != null ? `${getContactName(h, emp)} (${emailVal})` : emailVal
   }
+}
+
+export async function MessageTitleProvider (client: Client, ref: Ref<Message>, doc?: Message): Promise<string> {
+  const object = doc ?? (await client.findOne(gmail.class.Message, { _id: ref }))
+
+  return object?.subject ?? ''
 }

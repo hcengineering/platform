@@ -32,12 +32,11 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc } from '@hcengineering/model-core'
-import notification from '@hcengineering/model-notification'
 import view, { createAction } from '@hcengineering/model-view'
 import setting from '@hcengineering/setting'
-import love from '@hcengineering/model-love'
 
 import gmail from './plugin'
+import { defineNotifications } from './notification'
 
 export { gmailId } from '@hcengineering/gmail'
 export { gmailOperation } from './migration'
@@ -215,32 +214,6 @@ export function createModel (builder: Builder): void {
     gmail.action.WriteEmail
   )
 
-  builder.createDoc(
-    notification.class.NotificationGroup,
-    core.space.Model,
-    {
-      label: gmail.string.Email,
-      icon: contact.icon.Email
-    },
-    gmail.ids.EmailNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: gmail.string.NewMessage,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: gmail.class.Message,
-      group: gmail.ids.EmailNotificationGroup,
-      allowedForAuthor: true,
-      defaultEnabled: false
-    },
-    gmail.ids.EmailNotification
-  )
-
   builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false
   })
@@ -259,35 +232,9 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  builder.createDoc(
-    notification.class.NotificationProvider,
-    core.space.Model,
-    {
-      icon: contact.icon.Email,
-      label: gmail.string.Email,
-      description: gmail.string.EmailNotificationsDescription,
-      defaultEnabled: true,
-      canDisable: true,
-      depends: notification.providers.InboxNotificationProvider,
-      order: 300
-    },
-    gmail.providers.EmailNotificationProvider
-  )
-
-  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
-    provider: notification.providers.InboxNotificationProvider,
-    ignoredTypes: [],
-    enabledTypes: [gmail.ids.EmailNotification]
+  builder.mixin(gmail.class.Message, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: gmail.function.MessageTitleProvider
   })
 
-  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
-    provider: gmail.providers.EmailNotificationProvider,
-    ignoredTypes: [
-      gmail.ids.EmailNotification,
-      notification.ids.CollaboratoAddNotification,
-      love.ids.InviteNotification,
-      love.ids.KnockNotification
-    ],
-    enabledTypes: []
-  })
+  defineNotifications(builder)
 }
