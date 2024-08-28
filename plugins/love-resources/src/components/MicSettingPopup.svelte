@@ -12,10 +12,12 @@
 
   void Room.getLocalDevices().then(async (devices) => {
     devices.forEach((device) => {
-      if (device.kind === 'audiooutput') {
-        speakers.push({ label: device.label, id: device.deviceId })
-      } else if (device.kind === 'audioinput') {
-        mics.push({ label: device.label, id: device.deviceId })
+      if (device.deviceId !== 'default') {
+        if (device.kind === 'audiooutput') {
+          speakers.push({ label: device.label, id: device.deviceId })
+        } else if (device.kind === 'audioinput') {
+          mics.push({ label: device.label, id: device.deviceId })
+        }
       }
     })
     if (speakers.length === 0) {
