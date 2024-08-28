@@ -24,11 +24,11 @@ export async function yDocFromStorage (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
-  minioDocumentId: string,
+  documentId: string,
   ydoc?: YDoc
 ): Promise<YDoc | undefined> {
   // stat the object to ensure it exists, because read will throw an error in this case
-  const blob = await storageAdapter.stat(ctx, workspace, minioDocumentId)
+  const blob = await storageAdapter.stat(ctx, workspace, documentId)
   if (blob === undefined) {
     return undefined
   }
@@ -37,7 +37,7 @@ export async function yDocFromStorage (
   // it is either already gc-ed, or gc not needed and it is disabled
   ydoc ??= new YDoc({ gc: false })
 
-  const buffer = await storageAdapter.read(ctx, workspace, minioDocumentId)
+  const buffer = await storageAdapter.read(ctx, workspace, documentId)
   return yDocFromBuffer(Buffer.concat(buffer), ydoc)
 }
 
@@ -46,9 +46,9 @@ export async function yDocToStorage (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
-  minioDocumentId: string,
+  documentId: string,
   ydoc: YDoc
 ): Promise<void> {
   const buffer = yDocToBuffer(ydoc)
-  await storageAdapter.put(ctx, workspace, minioDocumentId, buffer, 'application/ydoc', buffer.length)
+  await storageAdapter.put(ctx, workspace, documentId, buffer, 'application/ydoc', buffer.length)
 }

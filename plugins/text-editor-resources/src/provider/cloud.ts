@@ -31,7 +31,7 @@ export class CloudCollabProvider extends WebsocketProvider implements Provider {
   constructor (params: DatalakeCollabProviderParameters) {
     const { document, url, name } = params
 
-    super(url, name, document)
+    super(url, encodeURIComponent(name), document)
 
     this.loaded = new Promise((resolve) => {
       this.on('synced', resolve)
