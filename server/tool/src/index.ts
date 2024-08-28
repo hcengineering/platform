@@ -431,12 +431,17 @@ export async function upgradeModel (
         ctx.info('send force close', { workspace: workspaceId.name, transactorUrl })
         const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
         const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
-        await fetch(
-          serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
-          {
-            method: 'PUT'
-          }
-        )
+        try {
+          await fetch(
+            serverEndpoint +
+              `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
+            {
+              method: 'PUT'
+            }
+          )
+        } catch (err: any) {
+          // Ignore error if transactor is not yet ready
+        }
       }
     } finally {
       await connection?.sendForceClose()
