@@ -13,14 +13,13 @@
 // limitations under the License.
 //
 
-import { type Metadata, type Plugin, plugin } from '@hcengineering/platform'
+import type { Plugin } from '@hcengineering/platform'
+import { plugin } from '@hcengineering/platform'
 
-export const analyticsCollectorId = 'analyticsCollector' as Plugin
+export const openaiId = 'openai' as Plugin
 
-export const analyticsCollector = plugin(analyticsCollectorId, {
-  metadata: {
-    EndpointURL: '' as Metadata<string>
-  }
-})
+export * from './utils'
 
-export default analyticsCollector
+const openai = plugin(openaiId, {})
+
+export default openai

@@ -25,26 +25,39 @@ import core, {
   TxCreateDoc,
   TxOperations,
   TxProcessor,
-  WorkspaceId,
   Blob,
-  RateLimiter
+  RateLimiter,
+  generateId,
+  TxRemoveDoc,
+  Data
 } from '@hcengineering/core'
 import aiBot, { AIBotEvent, aiBotAccountEmail, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
-import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
-import contact, { AvatarType, combineName, getFirstName, getLastName, PersonAccount } from '@hcengineering/contact'
-import notification from '@hcengineering/notification'
+import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
+import contact, {
+  AvatarType,
+  combineName,
+  getFirstName,
+  getLastName,
+  Person,
+  PersonAccount
+} from '@hcengineering/contact'
 import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
-import { deepEqual } from 'fast-equals'
 import { BlobClient } from '@hcengineering/server-client'
 import fs from 'fs'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
+import { countTokens } from '@hcengineering/openai'
+import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
+import { WithId } from 'mongodb'
+import OpenAI from 'openai'
 
 import config from './config'
-import { loginBot } from './account'
 import { AIBotController } from './controller'
 import { connectPlatform } from './platform'
+import { HistoryRecord } from './types'
+import { createChatCompletion, getDirect, login, requestSummary } from './utils'
 
 const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
+const UPDATE_TYPING_TIMEOUT_MS = 1000
 
 export class WorkspaceClient {
   client: Client | undefined
@@ -56,39 +69,56 @@ export class WorkspaceClient {
   loginDelayMs = 2 * 1000
 
   channelByKey = new Map<string, Ref<Channel>>()
-  aiAccount: PersonAccount | undefined
   rate = new RateLimiter(1)
 
+  aiAccount: PersonAccount | undefined
+  aiPerson: Person | undefined
+
+  typingMap: Map<Ref<Doc>, TypingInfo> = new Map<Ref<Doc>, TypingInfo>()
+  typingTimeoutsMap: Map<Ref<Doc>, NodeJS.Timeout> = new Map<Ref<Doc>, NodeJS.Timeout>()
   directByEmail = new Map<string, Ref<DirectMessage>>()
+
+  historyMap = new Map<Ref<Doc>, WithId<HistoryRecord>[]>()
+
+  summarizing = new Set<Ref<Doc>>()
 
   constructor (
     readonly transactorUrl: string,
     readonly token: string,
-    readonly workspace: WorkspaceId,
+    readonly workspace: string,
     readonly controller: AIBotController,
     readonly ctx: MeasureContext,
     readonly info: WorkspaceInfoRecord | undefined
   ) {
-    this.blobClient = new BlobClient(transactorUrl, token, this.workspace)
+    this.blobClient = new BlobClient(transactorUrl, token, { name: this.workspace })
     this.opClient = this.initClient()
     void this.opClient.then((opClient) => {
       this.opClient = opClient
     })
   }
 
-  private async login (): Promise<string | undefined> {
-    this.ctx.info('Logging in: ', this.workspace)
-    const token = (await loginBot())?.token
+  private async initClient (): Promise<TxOperations> {
+    await this.tryLogin()
 
-    if (token !== undefined) {
-      return token
-    } else {
-      return (await loginBot())?.token
+    this.client = await connectPlatform(this.token, this.transactorUrl)
+    const opClient = new TxOperations(this.client, aiBot.account.AIBot)
+
+    await this.uploadAvatarFile(opClient)
+    const typing = await opClient.findAll(chunter.class.TypingInfo, { user: aiBot.account.AIBot })
+    this.typingMap = new Map(typing.map((t) => [t.objectId, t]))
+    const events = await opClient.findAll(aiBot.class.AIBotEvent, {})
+    void this.processEvents(events)
+
+    this.client.notify = (...txes: Tx[]) => {
+      void this.txHandler(opClient, txes)
     }
+    this.ctx.info('Initialized workspace', { workspace: this.workspace })
+
+    return opClient
   }
 
   private async uploadAvatarFile (client: TxOperations): Promise<void> {
-    this.ctx.info('Upload avatar file', { workspace: this.workspace.name })
+    this.ctx.info('Upload avatar file', { workspace: this.workspace })
 
     try {
       await this.checkPersonData(client)
@@ -101,21 +131,22 @@ export class WorkspaceClient {
         this.info.avatarPath === config.AvatarPath &&
         this.info.avatarLastModified === lastModified
       ) {
-        this.ctx.info('Avatar file already uploaded', { workspace: this.workspace.name, path: config.AvatarPath })
+        this.ctx.info('Avatar file already uploaded', { workspace: this.workspace, path: config.AvatarPath })
         return
       }
       const data = fs.readFileSync(config.AvatarPath)
 
       await this.blobClient.upload(this.ctx, config.AvatarName, data.length, config.AvatarContentType, data)
       await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
-      this.ctx.info('Uploaded avatar file', { workspace: this.workspace.name, path: config.AvatarPath })
+      this.ctx.info('Uploaded avatar file', { workspace: this.workspace, path: config.AvatarPath })
     } catch (e) {
       this.ctx.error('Failed to upload avatar file', { e })
     }
   }
 
   private async tryLogin (): Promise<void> {
-    const token = await this.login()
+    this.ctx.info('Logging in: ', { workspace: this.workspace })
+    const token = await login()
 
     clearTimeout(this.loginTimeout)
 
@@ -136,52 +167,34 @@ export class WorkspaceClient {
       this.ctx.error('Cannot find AI PersonAccount', { email: aiBotAccountEmail })
       return
     }
-    const person = await client.findOne(contact.class.Person, { _id: this.aiAccount.person })
+    this.aiPerson = await client.findOne(contact.class.Person, { _id: this.aiAccount.person })
 
-    if (person === undefined) {
+    if (this.aiPerson === undefined) {
       this.ctx.error('Cannot find AI Person ', { _id: this.aiAccount.person })
       return
     }
 
-    const firstName = getFirstName(person.name)
-    const lastName = getLastName(person.name)
+    const firstName = getFirstName(this.aiPerson.name)
+    const lastName = getLastName(this.aiPerson.name)
 
     if (lastName !== config.LastName || firstName !== config.FirstName) {
-      await client.update(person, {
+      await client.update(this.aiPerson, {
         name: combineName(config.FirstName, config.LastName)
       })
     }
 
-    if (person.avatar === config.AvatarName) {
+    if (this.aiPerson.avatar === config.AvatarName) {
       return
     }
 
     const exist = await this.blobClient.checkFile(this.ctx, config.AvatarName)
 
     if (!exist) {
-      this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.workspace.name })
+      this.ctx.error('Cannot find file', { file: config.AvatarName, workspace: this.workspace })
       return
     }
 
-    await client.diffUpdate(person, { avatar: config.AvatarName as Ref<Blob>, avatarType: AvatarType.IMAGE })
-  }
-
-  private async initClient (): Promise<TxOperations> {
-    await this.tryLogin()
-
-    this.client = await connectPlatform(this.token, this.transactorUrl)
-    const opClient = new TxOperations(this.client, aiBot.account.AIBot)
-
-    await this.uploadAvatarFile(opClient)
-    const events = await opClient.findAll(aiBot.class.AIBotTransferEvent, {})
-    void this.processEvents(events)
-
-    this.client.notify = (...txes: Tx[]) => {
-      void this.txHandler(opClient, txes)
-    }
-    this.ctx.info('Initialized workspace', this.workspace)
-
-    return opClient
+    await client.diffUpdate(this.aiPerson, { avatar: config.AvatarName as Ref<Blob>, avatarType: AvatarType.IMAGE })
   }
 
   async getThreadParent (
@@ -216,8 +229,10 @@ export class WorkspaceClient {
     space: Ref<Space>,
     message: string
   ): Promise<void> {
+    const op = client.apply(generateId(), 'AIBotTransferEvent')
     if (event.messageClass === chunter.class.ChatMessage) {
-      const ref = await client.addCollection<Doc, ChatMessage>(
+      await this.startTyping(client, space, _id, _class)
+      const ref = await op.addCollection<Doc, ChatMessage>(
         chunter.class.ChatMessage,
         space,
         _id,
@@ -225,15 +240,17 @@ export class WorkspaceClient {
         event.collection,
         { message }
       )
-      await client.createMixin(ref, chunter.class.ChatMessage, space, aiBot.mixin.TransferredMessage, {
+      await op.createMixin(ref, chunter.class.ChatMessage, space, aiBot.mixin.TransferredMessage, {
         messageId: event.messageId,
         parentMessageId: event.parentMessageId
       })
+
+      await this.finishTyping(client, _id)
     } else if (event.messageClass === chunter.class.ThreadMessage && event.parentMessageId !== undefined) {
       const parent = await this.getThreadParent(client, event, _id, _class)
-
       if (parent !== undefined) {
-        const ref = await client.addCollection<Doc, ThreadMessage>(
+        await this.startTyping(client, space, parent._id, parent._class)
+        const ref = await op.addCollection<Doc, ThreadMessage>(
           chunter.class.ThreadMessage,
           parent.space,
           parent._id,
@@ -241,7 +258,7 @@ export class WorkspaceClient {
           event.collection,
           { message, objectId: parent.attachedTo, objectClass: parent.attachedToClass }
         )
-        await client.createMixin(
+        await op.createMixin(
           ref,
           chunter.class.ThreadMessage as Ref<Class<ChatMessage>>,
           space,
@@ -251,40 +268,231 @@ export class WorkspaceClient {
             parentMessageId: event.parentMessageId
           }
         )
+        await this.finishTyping(client, parent._id)
       }
     }
+
+    await op.commit()
+  }
+
+  clearTypingTimeout (objectId: Ref<Doc>): void {
+    const currentTimeout = this.typingTimeoutsMap.get(objectId)
+
+    if (currentTimeout !== undefined) {
+      clearTimeout(currentTimeout)
+      this.typingTimeoutsMap.delete(objectId)
+    }
+  }
+
+  async startTyping (
+    client: TxOperations,
+    space: Ref<Space>,
+    objectId: Ref<Doc>,
+    objectClass: Ref<Class<Doc>>
+  ): Promise<void> {
+    if (this.aiPerson === undefined) {
+      return
+    }
+
+    this.clearTypingTimeout(objectId)
+    const typingInfo = this.typingMap.get(objectId)
+
+    if (typingInfo === undefined) {
+      const data: Data<TypingInfo> = {
+        objectId,
+        objectClass,
+        person: this.aiPerson._id,
+        lastTyping: Date.now()
+      }
+      const _id = await client.createDoc(chunter.class.TypingInfo, space, data)
+      this.typingMap.set(objectId, {
+        ...data,
+        _id,
+        _class: chunter.class.TypingInfo,
+        space,
+        modifiedOn: Date.now(),
+        modifiedBy: aiBot.account.AIBot
+      })
+    } else {
+      await client.update(typingInfo, { lastTyping: Date.now() })
+    }
+
+    const timeout = setTimeout(() => {
+      void this.startTyping(client, space, objectId, objectClass)
+    }, UPDATE_TYPING_TIMEOUT_MS)
+    this.typingTimeoutsMap.set(objectId, timeout)
+  }
+
+  async finishTyping (client: TxOperations, objectId: Ref<Doc>): Promise<void> {
+    this.clearTypingTimeout(objectId)
+    const typingInfo = this.typingMap.get(objectId)
+
+    if (typingInfo !== undefined) {
+      await client.remove(typingInfo)
+      this.typingMap.delete(objectId)
+    }
+  }
+
+  // TODO: In feature we also should use embeddings
+  toOpenAiHistory (history: HistoryRecord[], promptTokens: number): any[] {
+    const result: OpenAI.ChatCompletionMessageParam[] = []
+    let totalTokens = promptTokens
+
+    for (let i = history.length - 1; i >= 0; i--) {
+      const record = history[i]
+      const tokens = record.tokens
+
+      if (totalTokens + tokens > config.MaxContentTokens) break
+
+      result.unshift({ content: record.message, role: record.role as 'user' | 'assistant' })
+      totalTokens += tokens
+    }
+
+    return result
+  }
+
+  async getHistory (objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
+    if (this.historyMap.has(objectId)) {
+      return this.historyMap.get(objectId) ?? []
+    }
+
+    const historyRecords = await this.controller.storage.getHistoryRecords(this.workspace, objectId)
+    this.historyMap.set(objectId, historyRecords)
+    return historyRecords
+  }
+
+  async summarizeHistory (
+    toSummarize: WithId<HistoryRecord>[],
+    user: Ref<Account>,
+    objectId: Ref<Doc>,
+    objectClass: Ref<Class<Doc>>
+  ): Promise<void> {
+    if (this.summarizing.has(objectId)) {
+      return
+    }
+
+    this.summarizing.add(objectId)
+    const { summary, tokens } = await requestSummary(this.controller.aiClient, this.controller.encoding, toSummarize)
+
+    if (summary === undefined) {
+      this.ctx.error('Failed to summarize history', { objectId, objectClass, user })
+      this.summarizing.delete(objectId)
+      return
+    }
+
+    const summaryRecord: HistoryRecord = {
+      message: summary,
+      role: 'assistant',
+      timestamp: toSummarize[0].timestamp,
+      user,
+      objectId,
+      objectClass,
+      tokens,
+      workspace: this.workspace
+    }
+
+    await this.controller.storage.addHistoryRecord(summaryRecord)
+    await this.controller.storage.removeHistoryRecords(toSummarize.map(({ _id }) => _id))
+    const newHistory = await this.controller.storage.getHistoryRecords(this.workspace, objectId)
+    this.historyMap.set(objectId, newHistory)
+    this.summarizing.delete(objectId)
+  }
+
+  async pushHistory (
+    message: string,
+    role: 'user' | 'assistant',
+    tokens: number,
+    user: Ref<Account>,
+    objectId: Ref<Doc>,
+    objectClass: Ref<Class<Doc>>
+  ): Promise<void> {
+    const currentHistory = (await this.getHistory(objectId)) ?? []
+    const newRecord: HistoryRecord = {
+      workspace: this.workspace,
+      message,
+      objectId,
+      objectClass,
+      role,
+      user,
+      tokens,
+      timestamp: Date.now()
+    }
+    const _id = await this.controller.storage.addHistoryRecord(newRecord)
+    currentHistory.push({ ...newRecord, _id })
+    this.historyMap.set(objectId, currentHistory)
   }
 
   async processResponseEvent (event: AIBotResponseEvent): Promise<void> {
     const client = await this.opClient
+    const hierarchy = client.getHierarchy()
 
-    if (event.messageClass === chunter.class.ChatMessage) {
-      await client.addCollection<Doc, ChatMessage>(
+    const op = client.apply(generateId(), 'AIBotResponseEvent')
+    const { user, objectId, objectClass, messageClass } = event
+    const space = hierarchy.isDerived(objectClass, core.class.Space) ? (objectId as Ref<Space>) : event.objectSpace
+
+    await this.startTyping(client, space, objectId, objectClass)
+
+    const promptText = markupToText(event.message)
+    const prompt: OpenAI.ChatCompletionMessageParam = { content: promptText, role: 'user' }
+
+    const promptTokens = countTokens([prompt], this.controller.encoding)
+    const rawHistory = await this.getHistory(objectId)
+    const history = this.toOpenAiHistory(rawHistory, promptTokens)
+
+    if (history.length < rawHistory.length || history.length > config.MaxHistoryRecords) {
+      void this.summarizeHistory(rawHistory, user, objectId, objectClass)
+    }
+
+    void this.pushHistory(promptText, prompt.role, promptTokens, user, objectId, objectClass)
+
+    const start = Date.now()
+    const chatCompletion = await createChatCompletion(this.controller.aiClient, prompt, user, history)
+    const end = Date.now()
+    this.ctx.info('Chat completion time: ', { time: end - start })
+    const response = chatCompletion?.choices[0].message.content
+
+    if (response == null) {
+      await this.finishTyping(client, objectId)
+      return
+    }
+    const responseTokens =
+      chatCompletion?.usage?.completion_tokens ??
+      countTokens([{ content: response, role: 'assistant' }], this.controller.encoding)
+
+    void this.pushHistory(response, 'assistant', responseTokens, user, objectId, objectClass)
+
+    const parser = new MarkdownParser([], '', '')
+    const parseResponse = jsonToMarkup(parser.parse(response))
+
+    if (messageClass === chunter.class.ChatMessage) {
+      await op.addCollection<Doc, ChatMessage>(
         chunter.class.ChatMessage,
-        event.objectSpace,
-        event.objectId,
-        event.objectClass,
+        space,
+        objectId,
+        objectClass,
         event.collection,
-        { message: 'You said: ' + event.message }
+        { message: parseResponse }
       )
-    } else if (event.messageClass === chunter.class.ThreadMessage) {
+    } else if (messageClass === chunter.class.ThreadMessage) {
       const parent = await client.findOne<ChatMessage>(chunter.class.ChatMessage, {
-        _id: event.objectId as Ref<ChatMessage>
+        _id: objectId as Ref<ChatMessage>
       })
 
       if (parent !== undefined) {
-        await client.addCollection<Doc, ThreadMessage>(
+        await op.addCollection<Doc, ThreadMessage>(
           chunter.class.ThreadMessage,
-          event.objectSpace,
-          event.objectId,
-          event.objectClass,
+          space,
+          objectId,
+          objectClass,
           event.collection,
-          { message: 'You said: ' + event.message, objectId: parent.attachedTo, objectClass: parent.attachedToClass }
+          { message: parseResponse, objectId: parent.attachedTo, objectClass: parent.attachedToClass }
         )
       }
     }
 
-    await client.remove(event)
+    await op.remove(event)
+    await this.finishTyping(op, event.objectId)
+    await op.commit()
   }
 
   async processTransferEvent (event: AIBotTransferEvent): Promise<void> {
@@ -292,53 +500,6 @@ export class WorkspaceClient {
 
     await this.controller.transfer(event)
     await client.remove(event)
-  }
-
-  async getAccount (email: string): Promise<PersonAccount | undefined> {
-    const client = await this.opClient
-
-    return await client.findOne(contact.class.PersonAccount, { email })
-  }
-
-  async getDirect (email: string): Promise<Ref<DirectMessage> | undefined> {
-    const client = await this.opClient
-
-    const personAccount = await this.getAccount(email)
-
-    if (personAccount === undefined) {
-      return
-    }
-
-    const allAccounts = await client.findAll(contact.class.PersonAccount, { person: personAccount.person })
-    const accIds: Ref<Account>[] = [aiBot.account.AIBot, ...allAccounts.map(({ _id }) => _id)].sort()
-    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
-
-    for (const dm of existingDms) {
-      if (deepEqual(dm.members.sort(), accIds)) {
-        return dm._id
-      }
-    }
-
-    const dmId = await client.createDoc<DirectMessage>(chunter.class.DirectMessage, core.space.Space, {
-      name: '',
-      description: '',
-      private: true,
-      archived: false,
-      members: accIds
-    })
-
-    if (this.aiAccount === undefined) return dmId
-    const space = await client.findOne(contact.class.PersonSpace, { person: this.aiAccount.person })
-    if (space === undefined) return dmId
-    await client.createDoc(notification.class.DocNotifyContext, space._id, {
-      user: aiBot.account.AIBot,
-      objectId: dmId,
-      objectClass: chunter.class.DirectMessage,
-      objectSpace: core.space.Space,
-      isPinned: false
-    })
-
-    return dmId
   }
 
   async transferToSupport (event: AIBotTransferEvent, channelRef?: Ref<Channel>): Promise<void> {
@@ -365,14 +526,14 @@ export class WorkspaceClient {
   }
 
   async transferToUserDirect (event: AIBotTransferEvent): Promise<void> {
-    const direct = this.directByEmail.get(event.toEmail) ?? (await this.getDirect(event.toEmail))
+    const client = await this.opClient
+    const direct = this.directByEmail.get(event.toEmail) ?? (await getDirect(client, event.toEmail, this.aiAccount))
 
     if (direct === undefined) {
       return
     }
 
     this.directByEmail.set(event.toEmail, direct)
-    const client = await this.opClient
 
     await this.createTransferMessage(client, event, direct, chunter.class.DirectMessage, direct, event.message)
   }
@@ -440,19 +601,34 @@ export class WorkspaceClient {
       await this.opClient.close()
     }
 
-    this.ctx.info('Closed workspace client: ', this.workspace)
+    this.ctx.info('Closed workspace client: ', { workspace: this.workspace })
   }
 
-  private async txHandler (client: TxOperations, txes: Tx[]): Promise<void> {
-    const hierarchy = client.getHierarchy()
+  private async handleCreateTx (tx: TxCreateDoc<Doc>): Promise<void> {
+    if (tx.objectClass === aiBot.class.AIBotResponseEvent) {
+      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AIBotResponseEvent>)
+      await this.processResponseEvent(doc)
+    } else if (tx.objectClass === aiBot.class.AIBotTransferEvent) {
+      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AIBotTransferEvent>)
+      await this.processTransferEvent(doc)
+    }
+  }
 
-    const resultTxes = txes
-      .map((a) => TxProcessor.extractTx(a) as TxCreateDoc<AIBotEvent>)
-      .filter(
-        (tx) => tx._class === core.class.TxCreateDoc && hierarchy.isDerived(tx.objectClass, aiBot.class.AIBotEvent)
-      )
-      .map((tx) => TxProcessor.createDoc2Doc(tx))
+  private async handleRemoveTx (tx: TxRemoveDoc<Doc>): Promise<void> {
+    if (tx.objectClass === chunter.class.TypingInfo && this.typingMap.has(tx.objectId)) {
+      this.typingMap.delete(tx.objectId)
+    }
+  }
 
-    await this.processEvents(resultTxes)
+  private async txHandler (_: TxOperations, txes: Tx[]): Promise<void> {
+    for (const ttx of txes) {
+      const tx = TxProcessor.extractTx(ttx)
+
+      if (tx._class === core.class.TxCreateDoc) {
+        await this.handleCreateTx(tx as TxCreateDoc<Doc>)
+      } else if (tx._class === core.class.TxRemoveDoc) {
+        await this.handleRemoveTx(tx as TxRemoveDoc<Doc>)
+      }
+    }
   }
 }

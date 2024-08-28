@@ -31,11 +31,11 @@ import core, {
 import { TriggerControl } from '@hcengineering/server-core'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import aiBot, { aiBotAccountEmail, AIBotResponseEvent } from '@hcengineering/ai-bot'
-import serverAIBot, { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/server-ai-bot'
+import { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/server-ai-bot'
 import contact, { PersonAccount } from '@hcengineering/contact'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
-import { getMetadata } from '@hcengineering/platform'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
+import { getSupportWorkspaceId } from './utils'
 
 async function processWorkspace (control: TriggerControl): Promise<void> {
   const adapter = control.serviceAdaptersManager.getAdapter(serverAiBotId) as AIBotServiceAdapter | undefined
@@ -62,14 +62,6 @@ async function isDirectAvailable (direct: DirectMessage, control: TriggerControl
   return persons.size === 2
 }
 
-async function isAvailableDoc (doc: Doc, control: TriggerControl): Promise<boolean> {
-  if (doc._class === chunter.class.DirectMessage) {
-    return await isDirectAvailable(doc as DirectMessage, control)
-  }
-
-  return true
-}
-
 async function getMessageDoc (message: ChatMessage, control: TriggerControl): Promise<Doc | undefined> {
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
     const thread = message as ThreadMessage
@@ -85,15 +77,7 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
   }
 }
 
-async function getMessageData (
-  doc: Doc,
-  message: ChatMessage,
-  control: TriggerControl
-): Promise<Data<AIBotResponseEvent> | undefined> {
-  if (!(await isAvailableDoc(doc, control))) {
-    return
-  }
-
+function getMessageData (doc: Doc, message: ChatMessage): Data<AIBotResponseEvent> {
   return {
     objectId: message.attachedTo,
     objectClass: message.attachedToClass,
@@ -105,15 +89,7 @@ async function getMessageData (
   }
 }
 
-async function getThreadMessageData (
-  doc: Doc,
-  message: ThreadMessage,
-  control: TriggerControl
-): Promise<Data<AIBotResponseEvent> | undefined> {
-  if (!(await isAvailableDoc(doc, control))) {
-    return
-  }
-
+function getThreadMessageData (message: ThreadMessage): Data<AIBotResponseEvent> {
   return {
     objectId: message.attachedTo,
     objectClass: message.attachedToClass,
@@ -125,33 +101,14 @@ async function getThreadMessageData (
   }
 }
 
-// Note: temporally commented until open ai will be added
-// async function createAIBotEvent (message: ChatMessage, control: TriggerControl): Promise<Tx[]> {
-// const doc = await getMessageDoc(message, control)
-//
-// if (doc === undefined) {
-//   return []
-// }
-//
-// let data: Data<AIBotResponseEvent> | undefined
-//
-// if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-//   data = await getThreadMessageData(doc, message as ThreadMessage, control)
-// } else {
-//   data = await getMessageData(doc, message, control)
-// }
-//
-// if (data === undefined) {
-//   return []
-// }
-//
-// const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotResponseEvent, message.space, data)
-//
-// await processWorkspace(control)
-//
-// return [eventTx]
-// return []
-// }
+async function createResponseEvent (
+  message: ChatMessage,
+  control: TriggerControl,
+  data: Data<AIBotResponseEvent>
+): Promise<void> {
+  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotResponseEvent, message.space, data)
+  await control.apply([eventTx])
+}
 
 async function getThreadParent (control: TriggerControl, message: ChatMessage): Promise<Ref<ChatMessage> | undefined> {
   if (!control.hierarchy.isDerived(message.attachedToClass, chunter.class.ChatMessage)) {
@@ -172,28 +129,44 @@ async function getThreadParent (control: TriggerControl, message: ChatMessage): 
   return message.attachedTo as Ref<ChatMessage>
 }
 
-function getSupportWorkspaceId (): string | undefined {
-  const supportWorkspaceId = getMetadata(serverAIBot.metadata.SupportWorkspaceId)
-
-  if (supportWorkspaceId === '') {
-    return undefined
+async function createTransferEvent (
+  control: TriggerControl,
+  message: ChatMessage,
+  account: PersonAccount,
+  data: Data<AIBotResponseEvent>
+): Promise<void> {
+  if (account.role !== AccountRole.Owner) {
+    return
   }
 
-  return supportWorkspaceId
-}
-
-async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
   const supportWorkspaceId = getSupportWorkspaceId()
 
   if (supportWorkspaceId === undefined) {
     return
   }
 
+  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
+    messageClass: data.messageClass,
+    message: message.message,
+    collection: data.collection,
+    toWorkspace: supportWorkspaceId,
+    toEmail: account.email,
+    fromWorkspace: toWorkspaceString(control.workspace),
+    fromWorkspaceName: control.workspace.workspaceName,
+    fromWorkspaceUrl: control.workspace.workspaceUrl,
+    messageId: message._id,
+    parentMessageId: await getThreadParent(control, message)
+  })
+
+  await control.apply([eventTx])
+}
+
+async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
     _id: (message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
   })[0]
 
-  if (account === undefined || account.role !== AccountRole.Owner) {
+  if (account === undefined) {
     return
   }
 
@@ -212,29 +185,14 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
   let data: Data<AIBotResponseEvent> | undefined
 
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = await getThreadMessageData(direct, message as ThreadMessage, control)
+    data = getThreadMessageData(message as ThreadMessage)
   } else {
-    data = await getMessageData(direct, message, control)
+    data = getMessageData(direct, message)
   }
 
-  if (data === undefined) {
-    return
-  }
+  await createResponseEvent(message, control, data)
+  await createTransferEvent(control, message, account, data)
 
-  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
-    messageClass: data.messageClass,
-    message: message.message,
-    collection: data.collection,
-    toWorkspace: supportWorkspaceId,
-    toEmail: account.email,
-    fromWorkspace: toWorkspaceString(control.workspace),
-    fromWorkspaceName: control.workspace.workspaceName,
-    fromWorkspaceUrl: control.workspace.workspaceUrl,
-    messageId: message._id,
-    parentMessageId: await getThreadParent(control, message)
-  })
-
-  await control.apply([eventTx])
   await processWorkspace(control)
 }
 
@@ -263,13 +221,9 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
   let data: Data<AIBotResponseEvent> | undefined
 
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = await getThreadMessageData(channel, message as ThreadMessage, control)
+    data = getThreadMessageData(message as ThreadMessage)
   } else {
-    data = await getMessageData(channel, message, control)
-  }
-
-  if (data === undefined) {
-    return
+    data = getMessageData(channel, message)
   }
 
   const tx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
@@ -348,7 +302,7 @@ export async function OnMention (tx: TxCreateDoc<MentionInboxNotification>, cont
   //   return []
   // }
   //
-  // await createAIBotEvent(message, control)
+  // await createResponseEvent(message, control)
 
   return []
 }
@@ -387,7 +341,7 @@ export async function OnMessageNotified (
   // }
   //
   // if (isDocMentioned(personAccount.person, message.message)) {
-  //   return await createAIBotEvent(message, control)
+  //   return await createResponseEvent(message, control)
   // }
   //
   // if (!control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
@@ -403,7 +357,7 @@ export async function OnMessageNotified (
   // }
   //
   // if (parent.createdBy === aiBot.account.AIBot) {
-  //   return await createAIBotEvent(message, control)
+  //   return await createResponseEvent(message, control)
   // }
 
   return []
