@@ -57,8 +57,14 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ReferenceTrigger,
     txMatch: {
-      'tx.objectClass': { $ne: activity.class.ActivityMessage },
-      objectClass: { $nin: [notification.class.InboxNotification, notification.class.DocNotifyContext] }
+      'tx.objectClass': { $ne: activity.class.ActivityReference },
+      objectClass: {
+        $nin: [
+          notification.class.InboxNotification,
+          notification.class.DocNotifyContext,
+          notification.class.BrowserNotification
+        ]
+      }
     },
     isAsync: true
   })
