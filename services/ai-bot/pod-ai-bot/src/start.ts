@@ -20,7 +20,7 @@ import { MeasureMetricsContext } from '@hcengineering/core'
 import serverClient from '@hcengineering/server-client'
 
 import config from './config'
-import { closeDB, getDB } from './storage'
+import { closeDB, DbStorage, getDB } from './storage'
 import { AIBotController } from './controller'
 import { createBotAccount } from './account'
 import { registerLoaders } from './loaders'
@@ -37,6 +37,7 @@ export const start = async (): Promise<void> => {
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
   const db = await getDB()
+  const storage = new DbStorage(db)
   for (let i = 0; i < 5; i++) {
     ctx.info('Creating bot account', { attempt: i })
     try {
@@ -47,7 +48,7 @@ export const start = async (): Promise<void> => {
     }
     await new Promise((resolve) => setTimeout(resolve, 3000))
   }
-  const aiController = new AIBotController(db, ctx)
+  const aiController = new AIBotController(storage, ctx)
 
   const onClose = (): void => {
     void aiController.close()

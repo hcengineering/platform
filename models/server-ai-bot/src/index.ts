@@ -45,7 +45,7 @@ export class TAIBotEvent extends TDoc implements AIBotEvent {
     message!: string
 }
 
-@Model(aiBot.class.AIBotResponseEvent, core.class.Doc)
+@Model(aiBot.class.AIBotResponseEvent, aiBot.class.AIBotEvent)
 export class TAIBotResponseEvent extends TAIBotEvent implements AIBotResponseEvent {
   @Prop(TypeRef(core.class.Doc), core.string.Object)
     objectId!: Ref<Doc>
