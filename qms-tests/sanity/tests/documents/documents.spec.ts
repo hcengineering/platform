@@ -824,7 +824,7 @@ test.describe('QMS. Documents tests', () => {
     await allure.description(
       'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
     )
-    await allure.tms('TESTS-206', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-141')
+    await allure.tms('TESTS-206', 'https://front.hc.engineering/workbench/platform/tracker/TESTS-206')
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
       template: 'HR (HR)',

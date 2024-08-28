@@ -60,7 +60,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.clickNewDocumentArrow()
       await documentContentPage.clickNewTemplate()
-      await createTemplateStep(page, title, description, category)
+      await createTemplateStep(page, title, description, category, 'Quality documents')
     })
     await test.step('4. Check document information', async () => {
       const documentContentPage = new DocumentContentPage(page)
