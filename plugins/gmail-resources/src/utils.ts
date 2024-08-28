@@ -1,13 +1,14 @@
 import contact, {
   type Channel,
-  type Employee,
   type Contact,
+  type Employee,
   type PersonAccount,
   getName as getContactName
 } from '@hcengineering/contact'
-import { type Client, type Doc, type IdMap, type Ref, toIdMap } from '@hcengineering/core'
+import { type Client, type Doc, type IdMap, type Ref } from '@hcengineering/core'
 import { type Message, type SharedMessage } from '@hcengineering/gmail'
 import { getClient } from '@hcengineering/presentation'
+import { type Integration } from '@hcengineering/setting'
 import gmail from './plugin'
 
 export function getTime (time: number): string {
@@ -72,6 +73,7 @@ export function convertMessages (
   object: Contact,
   channel: Channel,
   messages: Message[],
+  integrations: Integration[],
   accounts: IdMap<PersonAccount>,
   employees: IdMap<Employee>
 ): SharedMessage[] {
@@ -79,8 +81,8 @@ export function convertMessages (
     return {
       ...m,
       _id: m._id as string as Ref<SharedMessage>,
-      sender: getName(object, channel, m, accounts, employees, true),
-      receiver: getName(object, channel, m, accounts, employees, false)
+      sender: getName(object, channel, m, integrations, accounts, employees, true),
+      receiver: getName(object, channel, m, integrations, accounts, employees, false)
     }
   })
 }
@@ -89,15 +91,15 @@ export async function convertMessage (
   object: Contact,
   channel: Channel,
   message: Message,
+  integrations: Integration[],
+  accounts: IdMap<PersonAccount>,
   employees: IdMap<Employee>
 ): Promise<SharedMessage> {
-  const client = getClient()
-  const accounts = toIdMap(await client.findAll(contact.class.PersonAccount, {}))
   return {
     ...message,
     _id: message._id as string as Ref<SharedMessage>,
-    sender: getName(object, channel, message, accounts, employees, true),
-    receiver: getName(object, channel, message, accounts, employees, false)
+    sender: getName(object, channel, message, integrations, accounts, employees, true),
+    receiver: getName(object, channel, message, integrations, accounts, employees, false)
   }
 }
 
@@ -105,6 +107,7 @@ export function getName (
   object: Contact,
   channel: Channel,
   message: Message,
+  integrations: Integration[],
   accounts: IdMap<PersonAccount>,
   employees: IdMap<Employee>,
   sender: boolean
@@ -112,11 +115,12 @@ export function getName (
   const h = getClient().getHierarchy()
   if (message._class === gmail.class.NewMessage) {
     if (!sender) return `${getContactName(h, object)} (${channel.value})`
-    const account = accounts.get(message.modifiedBy as Ref<PersonAccount>)
+    const from = (message.from ?? message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
+    const account = accounts.get(from)
     const emp = account != null ? employees.get(account?.person as Ref<Employee>) : undefined
-    const email = account?.email
-    const from = accounts.get(message.from as Ref<PersonAccount>)?.email ?? message.from
-    return emp != null ? `${getContactName(h, emp)} (${email})` : from
+    const integration = integrations.find((p) => p.createdBy === from)
+    const email = integration?.value ?? integrations[0]?.value
+    return emp != null ? `${getContactName(h, emp)} (${email})` : email
   }
   if (message.incoming === sender) {
     return `${getContactName(h, object)} (${channel.value})`
