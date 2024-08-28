@@ -17,7 +17,7 @@ import login, { loginId } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
-  getCurrentWorkspaceUrl,
+  loadServerConfig,
   purgeClient,
   refreshClient,
   setClient,
@@ -77,6 +77,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     tokens[ws] = workspaceLoginInfo.token
     token = workspaceLoginInfo.token
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
   }
 
   setMetadata(presentation.metadata.Token, token)
@@ -106,7 +107,9 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
-  setPresentationCookie(token, getCurrentWorkspaceUrl())
+  if (workspaceLoginInfo !== undefined) {
+    setPresentationCookie(token, workspaceLoginInfo.workspaceId)
+  }
 
   setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo?.endpoint)
 
@@ -168,6 +171,9 @@ export async function connect (title: string): Promise<Client | undefined> {
             return
           }
           try {
+            if (event === ClientConnectEvent.Connected) {
+              setMetadata(presentation.metadata.SessionId, data)
+            }
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
               void ctx.with('refresh client', {}, async () => {
                 await refreshClient(tokenChanged)
@@ -216,7 +222,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
                 const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
                 if (currentFrontVersion !== undefined) {
-                  const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+                  const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
                   if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
                     location.reload()
                   }
@@ -341,9 +347,14 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
+  const currentWorkspace = getMetadata(presentation.metadata.Workspace)
+  if (currentWorkspace !== undefined) {
+    setPresentationCookie('', currentWorkspace)
+  }
+
   setMetadata(presentation.metadata.Token, null)
+  setMetadata(presentation.metadata.Workspace, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  setPresentationCookie('', getCurrentWorkspaceUrl())
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()

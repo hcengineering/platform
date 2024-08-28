@@ -57,17 +57,10 @@ import {
   TDocumentCategory,
   TControlledDocument,
   TChangeControl,
-  TDocumentSection,
-  TCollaborativeDocumentSection,
-  TAttachmentsDocumentSection,
   TSequence,
   TDocumentRequest,
   TDocumentReviewRequest,
   TDocumentApprovalRequest,
-  TDocumentSectionEditor,
-  TDocumentSectionPresenter,
-  TDocumentSectionCreator,
-  TDocumentTemplateSection,
   TTypeDocumentState,
   TTypeControlledDocumentState,
   TDocumentComment
@@ -97,20 +90,11 @@ export function createModel (builder: Builder): void {
     TDocumentCategory,
     TControlledDocument,
     TChangeControl,
-
-    TDocumentSection,
-    TCollaborativeDocumentSection,
-    TAttachmentsDocumentSection,
-
     TSequence,
 
     TDocumentRequest,
     TDocumentReviewRequest,
     TDocumentApprovalRequest,
-    TDocumentSectionEditor,
-    TDocumentSectionPresenter,
-    TDocumentSectionCreator,
-    TDocumentTemplateSection,
 
     TTypeDocumentState,
     TTypeControlledDocumentState,
@@ -164,8 +148,8 @@ export function createModel (builder: Builder): void {
                 [documents.mixin.DocumentTemplate]: { $exists: false }
               },
               config: [
-                ['effective', documents.string.Effective, {}],
                 ['inProgress', documents.string.InProgress, {}],
+                ['effective', documents.string.Effective, {}],
                 ['archived', documents.string.Archived, {}],
                 ['all', documents.string.All, {}]
               ]
@@ -411,39 +395,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.LinkProvider, {
     encode: documents.function.GetDocumentMetaLinkFragment
-  })
-
-  builder.mixin(documents.class.CollaborativeDocumentSection, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: documents.component.CollaborativeSectionPresenter
-  })
-
-  builder.mixin(documents.class.CollaborativeDocumentSection, core.class.Class, documents.mixin.DocumentSectionEditor, {
-    editor: documents.component.CollaborativeSectionEditor
-  })
-
-  builder.mixin(
-    documents.class.CollaborativeDocumentSection,
-    core.class.Class,
-    documents.mixin.DocumentSectionCreator,
-    {
-      creator: documents.function.CollaborativeSectionCreator
-    }
-  )
-
-  builder.mixin(documents.class.AttachmentsDocumentSection, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: documents.component.AttachmentsSectionPresenter
-  })
-
-  builder.mixin(documents.class.AttachmentsDocumentSection, core.class.Class, documents.mixin.DocumentSectionEditor, {
-    editor: documents.component.AttachmentsSectionEditor
-  })
-
-  builder.mixin(documents.class.AttachmentsDocumentSection, core.class.Class, documents.mixin.DocumentSectionCreator, {
-    creator: documents.function.AttachmentsSectionCreator
-  })
-
-  builder.mixin(documents.class.DocumentSection, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Open, print.action.Print, tracker.action.NewRelatedIssue]
   })
 
   builder.mixin(documents.class.Document, core.class.Class, view.mixin.ObjectPresenter, {
@@ -692,87 +643,6 @@ export function createModel (builder: Builder): void {
     }
   )
 
-  createAction(builder, {
-    action: documents.actionImpl.AddCollaborativeSectionAbove,
-    label: documents.string.AddSectionAbove,
-    icon: documents.icon.ArrowUp,
-    input: 'any',
-    category: view.category.General,
-    target: documents.class.CollaborativeDocumentSection,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'create'
-    }
-  })
-
-  createAction(builder, {
-    action: documents.actionImpl.AddCollaborativeSectionBelow,
-    label: documents.string.AddSectionBelow,
-    icon: documents.icon.ArrowDown,
-    input: 'any',
-    category: view.category.General,
-    target: documents.class.CollaborativeDocumentSection,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'create'
-    }
-  })
-
-  createAction(builder, {
-    action: documents.actionImpl.Duplicate,
-    label: documents.string.Duplicate,
-    icon: documents.icon.Duplicate,
-    input: 'any',
-    category: view.category.General,
-    target: documents.class.DocumentSection,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'edit'
-    }
-  })
-
-  createAction(builder, {
-    action: documents.actionImpl.DeleteCollaborativeSection,
-    label: view.string.Delete,
-    icon: view.icon.Delete,
-    keyBinding: ['Meta + Backspace'],
-    category: view.category.General,
-    input: 'any',
-    target: documents.class.DocumentSection,
-    context: { mode: ['context', 'browser'], group: 'edit' },
-    override: [view.action.Delete]
-  })
-
-  createAction(builder, {
-    action: documents.actionImpl.EditDescription,
-    label: documents.string.EditDescription,
-    icon: documents.icon.EditDescription,
-    input: 'any',
-    category: view.category.General,
-    target: documents.mixin.DocumentTemplateSection,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    }
-  })
-
-  createAction(builder, {
-    action: documents.actionImpl.EditGuidance,
-    label: documents.string.EditGuidance,
-    icon: documents.icon.EditGuidance,
-    input: 'any',
-    category: view.category.General,
-    target: documents.mixin.DocumentTemplateSection,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    }
-  })
-
-  builder.mixin(documents.class.CollaborativeDocumentSection, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Delete]
-  })
-
   builder.mixin(documents.class.DocumentSpace, core.class.Class, view.mixin.IgnoreActions, {
     actions: [tracker.action.EditRelatedTargets]
   })
@@ -980,7 +850,6 @@ export function defineNotifications (builder: Builder): void {
       'author',
       'content',
       'labels',
-      'sections',
       'abstract',
       'snapshots',
       'requests',

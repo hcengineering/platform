@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -31,7 +31,8 @@
     Separator,
     TabItem,
     TabList,
-    closePanel
+    closePanel,
+    getCurrentLocation
   } from '@hcengineering/ui'
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId } from '@hcengineering/view-resources'
@@ -110,8 +111,8 @@
     )
 
     archivedOtherNotificationsQuery.query(
-      notification.class.InboxNotification,
-      { _class: { $ne: notification.class.ActivityInboxNotification }, archived: true, user: me._id },
+      notification.class.CommonInboxNotification,
+      { archived: true, user: me._id },
       (res) => {
         archivedOtherNotifications = res
       },
@@ -143,11 +144,23 @@
 
   $: filteredData = filterData(filter, selectedTabId, inboxData, $contextByIdStore)
 
-  locationStore.subscribe((newLocation) => {
-    void syncLocation(newLocation)
+  const unsubscribeLoc = locationStore.subscribe((newLocation) => {
+    void syncLocation(newLocation, $contextByDocStore)
   })
 
-  async function syncLocation (newLocation: Location): Promise<void> {
+  let isContextsLoaded = false
+
+  const unsubscribeContexts = contextByDocStore.subscribe((docs) => {
+    if (selectedContext !== undefined || docs.size === 0 || isContextsLoaded) {
+      return
+    }
+
+    const loc = getCurrentLocation()
+    void syncLocation(loc, docs)
+    isContextsLoaded = true
+  })
+
+  async function syncLocation (newLocation: Location, contextByDoc: Map<Ref<Doc>, DocNotifyContext>): Promise<void> {
     const loc = await resolveLocation(newLocation)
     if (loc?.loc.path[2] !== notificationId) {
       return
@@ -161,7 +174,7 @@
 
     const [id, _class] = decodeObjectURI(loc?.loc.path[3] ?? '')
     const _id = await parseLinkId(linkProviders, id, _class)
-    const context = _id ? $contextByDocStore.get(_id) : undefined
+    const context = _id ? contextByDoc.get(_id) : undefined
 
     selectedContextId = context?._id
 
@@ -188,7 +201,7 @@
 
   async function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): Promise<void> {
     const displayClasses = new Set(
-      notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ attachedToClass }) => attachedToClass)
+      notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ objectClass }) => objectClass)
     )
 
     const classes = Array.from(displayClasses)
@@ -249,8 +262,8 @@
       return
     }
 
-    const isChunterChannel = hierarchy.isDerived(selectedContext.attachedToClass, chunter.class.ChunterSpace)
-    const panelComponent = hierarchy.classHierarchyMixin(selectedContext.attachedToClass, view.mixin.ObjectPanel)
+    const isChunterChannel = hierarchy.isDerived(selectedContext.objectClass, chunter.class.ChunterSpace)
+    const panelComponent = hierarchy.classHierarchyMixin(selectedContext.objectClass, view.mixin.ObjectPanel)
 
     selectedComponent = panelComponent?.component ?? view.component.EditDoc
 
@@ -315,10 +328,10 @@
 
       if (
         selectedTabId === activity.class.ActivityMessage &&
-        hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)
+        hierarchy.isDerived(context.objectClass, activity.class.ActivityMessage)
       ) {
         result.set(key, resNotifications)
-      } else if (context.attachedToClass === selectedTabId) {
+      } else if (context.objectClass === selectedTabId) {
         result.set(key, resNotifications)
       }
     }
@@ -357,7 +370,11 @@
     }
   ]
   $: $deviceInfo.replacedPanel = replacedPanel
-  onDestroy(() => ($deviceInfo.replacedPanel = undefined))
+  onDestroy(() => {
+    $deviceInfo.replacedPanel = undefined
+    unsubscribeLoc()
+    unsubscribeContexts()
+  })
 </script>
 
 <ActionContext
@@ -411,8 +428,8 @@
       <Component
         is={selectedComponent}
         props={{
-          _id: selectedContext.attachedTo,
-          _class: selectedContext.attachedToClass,
+          _id: selectedContext.objectId,
+          _class: selectedContext.objectClass,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext }

@@ -23,7 +23,8 @@ import {
   type Meeting,
   type Office,
   type ParticipantInfo,
-  type Room
+  type Room,
+  LoveEvents
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, { createQuery, getClient, type DocCreatePhase } from '@hcengineering/presentation'
@@ -348,11 +349,13 @@ lk.on(RoomEvent.Connected, () => {
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(true)
   isRecording.set(lk.isRecording)
+  Analytics.handleEvent(LoveEvents.ConnectedToRoom)
 })
 lk.on(RoomEvent.Disconnected, () => {
   isConnected.set(false)
   sendMessage({ type: 'connect', value: true })
   isCurrentInstanceConnected.set(false)
+  Analytics.handleEvent(LoveEvents.DisconnectedFromRoom)
 })
 
 export async function connect (name: string, room: Room, _id: string): Promise<void> {
@@ -485,14 +488,16 @@ async function moveToRoom (
   y: number,
   currentInfo: ParticipantInfo | undefined,
   currentPerson: Person,
-  room: Room
+  room: Room,
+  sessionId: string | null
 ): Promise<void> {
   const client = getClient()
   if (currentInfo !== undefined) {
     await client.diffUpdate(currentInfo, {
       x,
       y,
-      room: room._id
+      room: room._id,
+      sessionId
     })
   } else {
     await client.createDoc(love.class.ParticipantInfo, core.space.Workspace, {
@@ -500,7 +505,8 @@ async function moveToRoom (
       y,
       room: room._id,
       person: currentPerson._id,
-      name: currentPerson.name
+      name: currentPerson.name,
+      sessionId
     })
   }
   const loc = getCurrentLocation()
@@ -529,7 +535,7 @@ export async function connectRoom (
   room: Room
 ): Promise<void> {
   await disconnect()
-  await moveToRoom(x, y, currentInfo, currentPerson, room)
+  await moveToRoom(x, y, currentInfo, currentPerson, room, getMetadata(presentation.metadata.SessionId) ?? null)
   await connectLK(currentPerson, room)
 }
 

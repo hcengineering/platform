@@ -157,6 +157,7 @@ const hr = plugin(hrId, {
 })
 
 export * from './utils'
+export * from './analytics'
 
 /**
  * @public

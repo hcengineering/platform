@@ -12,6 +12,8 @@ export const loveId = 'love' as Plugin
 export type { ScreenSource } from './utils'
 export const GRID_WIDTH = 15
 
+export * from './analytics'
+
 export enum RoomAccess {
   Open,
   Knock,
@@ -51,6 +53,7 @@ export interface ParticipantInfo extends Doc {
   room: Ref<Room>
   x: number
   y: number
+  sessionId: string | null
 }
 
 export interface RoomInfo extends Doc {

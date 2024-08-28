@@ -2,15 +2,12 @@ import attachment, { Attachment } from '@hcengineering/attachment'
 import { getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
 import documents, {
   ChangeControl,
-  CollaborativeDocumentSection,
   ControlledDocument,
   DEFAULT_PERIODIC_REVIEW_INTERVAL,
-  DEFAULT_SECTION_TITLE,
   Document,
   DocumentCategory,
   DocumentState,
   DocumentTemplate,
-  calcRank,
   createChangeControl,
   createControlledDocFromTemplate,
   createDocumentTemplate
@@ -20,26 +17,28 @@ import core, {
   BackupClient,
   Client as CoreClient,
   Data,
+  MeasureContext,
   Ref,
   TxOperations,
   generateId,
-  getCollaborativeDoc,
+  makeCollaborativeDoc,
   systemAccountEmail,
   type Blob
 } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
-import serverCore from '@hcengineering/server-core'
+import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import { generateToken } from '@hcengineering/server-token'
 import { findAll, getOuterHTML } from 'domutils'
 import { parseDocument } from 'htmlparser2'
 
-import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import { generateToken } from '@hcengineering/server-token'
 import { Config } from './config'
 import { ExtractedFile } from './extract/extract'
 import { ExtractedSection } from './extract/sections'
-import { compareStrExact, uploadFile } from './helpers'
 
-export default async function importExtractedFile (config: Config, extractedFile: ExtractedFile): Promise<void> {
+export default async function importExtractedFile (
+  ctx: MeasureContext,
+  config: Config,
+  extractedFile: ExtractedFile
+): Promise<void> {
   const { workspaceId } = config
   const token = generateToken(systemAccountEmail, workspaceId)
   const transactorUrl = await getTransactorEndpoint(token, 'external')
@@ -53,7 +52,11 @@ export default async function importExtractedFile (config: Config, extractedFile
     try {
       const docId = await createDocument(txops, extractedFile, config)
       const createdDoc = await txops.findOne(documents.class.Document, { _id: docId })
-      await createSections(txops, extractedFile, config, createdDoc)
+      if (createdDoc == null) {
+        throw new Error(`Failed to obtain created document: ${docId}`)
+      }
+
+      await createSections(ctx, txops, extractedFile, config, createdDoc)
     } finally {
       await txops.close()
     }
@@ -84,7 +87,6 @@ async function createDocument (
     major: 0,
     minor: 1,
     commentSequence: 0,
-    sections: 0,
     template: templateId,
     state: DocumentState.Draft,
     requests: 0,
@@ -98,7 +100,7 @@ async function createDocument (
     abstract: '',
     effectiveDate: 0,
     reviewInterval: DEFAULT_PERIODIC_REVIEW_INTERVAL,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
     snapshots: 0,
     plannedEffectiveDate: 0
   }
@@ -166,7 +168,7 @@ async function createTemplateIfNotExist (
     approvers: [],
     coAuthors: [],
     changeControl: ccRecordId,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
     snapshots: 0,
     plannedEffectiveDate: 0
   }
@@ -182,10 +184,7 @@ async function createTemplateIfNotExist (
     prefix,
     data,
     category,
-    owner,
-    {
-      title: DEFAULT_SECTION_TITLE
-    }
+    owner
   )
   if (!success) {
     throw new Error('Failed to create document template')
@@ -199,110 +198,54 @@ async function createTemplateIfNotExist (
 }
 
 async function createSections (
+  ctx: MeasureContext,
   txops: TxOperations,
   extractedFile: ExtractedFile,
   config: Config,
-  doc?: Document
+  doc: Document
 ): Promise<void> {
   if (doc?.template == null) {
     throw new Error(`Invalid document: ${JSON.stringify(doc)}`)
   }
 
-  const h = txops.getHierarchy()
+  const { collaboratorURL, token, workspaceId } = config
+  const collaborator = getCollaboratorClient(workspaceId, token, collaboratorURL)
 
-  const { space, collaboratorApiURL, token, workspaceId } = config
-  const collaborator = getCollaboratorClient(txops.getHierarchy(), workspaceId, token, collaboratorApiURL)
-
-  console.log('Creating document sections')
+  console.log('Creating document content')
 
   const collabId = doc.content
 
   console.log(`Collab doc ID: ${collabId}`)
 
-  const docSections = await txops.findAll(documents.class.DocumentSection, { attachedTo: doc._id })
-  const shouldMergeSections = docSections.some((s) => s.title !== DEFAULT_SECTION_TITLE)
-
   try {
-    let prevSection: { rank: string } | undefined
+    let content: string = ''
     for (const section of extractedFile.sections) {
       if (section.type !== 'generic') {
         continue
       }
 
-      const existingSection = shouldMergeSections
-        ? docSections.find((s) => s.title !== DEFAULT_SECTION_TITLE && compareStrExact(s.title, section.title))
-        : undefined
+      await processImages(ctx, txops, section, config, doc)
 
-      // skipping sections that are not present in the document/template
-      if (shouldMergeSections && existingSection == null) {
-        continue
-      }
-
-      if (existingSection == null) {
-        const sectionData: AttachedData<CollaborativeDocumentSection> = {
-          title: section.title,
-          rank: calcRank(prevSection, undefined),
-          key: section.id,
-          collaboratorSectionId: section.id
-        }
-
-        console.log(`Creating section data: ${JSON.stringify(sectionData)}`)
-
-        await txops.addCollection(
-          documents.class.CollaborativeDocumentSection,
-          space,
-          doc._id,
-          doc._class,
-          'sections',
-          sectionData,
-          section.id
-        )
-
-        prevSection = sectionData
-      } else {
-        prevSection = existingSection
-      }
-
-      await processImages(txops, section, config)
-
-      const collabSectionId =
-        existingSection != null && h.isDerived(existingSection._class, documents.class.CollaborativeDocumentSection)
-          ? (existingSection as CollaborativeDocumentSection).collaboratorSectionId
-          : section.id
-
-      await collaborator.updateContent(collabId, collabSectionId, section.content)
+      content += `<h1>${section.title}</h1>${section.content}`
     }
 
-    // deleting the default section if it was the only one and there were other sections added from the extracted doc
-    // doing it after import, so that the trigger doesn't re-create a new empty section
-    if (
-      docSections.length === 1 &&
-      docSections[0].title === DEFAULT_SECTION_TITLE &&
-      extractedFile.sections.some((es) => es.type === 'generic')
-    ) {
-      const defaultSection = docSections[0]
-
-      await txops.removeCollection(
-        defaultSection._class,
-        defaultSection.space,
-        defaultSection._id,
-        doc._id,
-        doc._class,
-        'sections'
-      )
-    }
+    await collaborator.updateContent(collabId, { content })
   } finally {
     // do nothing
   }
 }
 
-export async function processImages (txops: TxOperations, section: ExtractedSection, config: Config): Promise<void> {
+export async function processImages (
+  ctx: MeasureContext,
+  txops: TxOperations,
+  section: ExtractedSection,
+  config: Config,
+  doc: Document
+): Promise<void> {
   const dom = parseDocument(section.content)
   const imageNodes = findAll((n) => n.tagName === 'img', dom.children)
 
-  const { uploadURL, token, space } = config
-  const frontUrl = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const fullUploadURL = `${frontUrl}${uploadURL}`
+  const { storageAdapter, workspaceId, uploadURL } = config
 
   const imageUploads = imageNodes.map(async (img) => {
     const src = img.attribs.src
@@ -313,22 +256,24 @@ export async function processImages (txops: TxOperations, section: ExtractedSect
       return
     }
 
-    const fileContents = extracted[2]
-    const fileSize = Buffer.from(fileContents, 'base64').length
+    const fileContentsBase64 = extracted[2]
+    const fileContents = Buffer.from(fileContentsBase64, 'base64')
+    const fileSize = fileContents.length
     const mimeType = extracted[1]
     const ext = mimeType.split('/')[1]
     const fileName = `${generateId()}.${ext}`
 
     // upload
-    const uuid = await uploadFile(fileContents, fileName, mimeType, fullUploadURL, token)
+    const uuid = generateId()
+    await storageAdapter.put(ctx, workspaceId, uuid, fileContents, mimeType, fileSize)
 
     // attachment
     const attachmentId: Ref<Attachment> = generateId()
     await txops.addCollection(
       attachment.class.Attachment,
-      space,
-      section.id,
-      documents.class.CollaborativeDocumentSection,
+      doc.space,
+      doc._id,
+      doc._class,
       'attachments',
       {
         file: uuid as Ref<Blob>,

@@ -495,17 +495,8 @@ export function createModel (builder: Builder): void {
     editor: view.component.HTMLEditor
   })
 
-  classPresenter(
-    builder,
-    core.class.TypeCollaborativeMarkup,
-    view.component.MarkupPresenter,
-    undefined,
-    undefined,
-    view.component.MarkupDiffPresenter
-  )
-
-  builder.mixin(core.class.TypeCollaborativeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
-    editor: view.component.CollaborativeHTMLEditor
+  builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
+    presenter: view.component.MarkupDiffPresenter
   })
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.InlineAttributEditor, {
@@ -513,7 +504,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
-    presenter: view.component.CollaborativeDocActivityPresenter
+    presenter: view.component.MarkupDiffPresenter
   })
 
   builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {

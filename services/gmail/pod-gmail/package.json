@@ -35,7 +35,6 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/node": "~20.11.16",
-    "@types/node-fetch": "~2.6.2",
     "@types/ws": "^8.5.11",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
@@ -51,7 +50,8 @@
     "@types/jest": "^29.5.5",
     "prettier": "^3.1.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/uuid": "^8.3.1"
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.6.14",
@@ -61,22 +61,23 @@
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/gmail": "^0.6.22",
-    "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-client": "^0.6.0",
+    "@hcengineering/server-storage": "^0.6.0",
+    "@hcengineering/server-token": "^0.6.11",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
     "fast-equals": "^5.0.1",
     "file-api": "^0.10.4",
-    "form-data": "^4.0.0",
     "googleapis": "^122.0.0",
     "google-auth-library": "^8.0.2",
     "gaxios": "^5.0.1",
     "jwt-simple": "^0.5.6",
     "mongodb": "^6.8.0",
-    "node-fetch": "^2.6.6",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "uuid": "^8.3.2"
   }
 }

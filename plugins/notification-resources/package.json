@@ -38,6 +38,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
     "@hcengineering/attachment": "^0.6.14",

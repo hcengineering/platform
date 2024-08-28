@@ -22,6 +22,8 @@ import { type Token } from '@hcengineering/server-token'
 import { ClientSession, start as startJsonRpc, type ServerFactory, type Session } from '@hcengineering/server-ws'
 
 import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+import { serverAiBotId } from '@hcengineering/server-ai-bot'
+import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
 
 registerStringLoaders()
 
@@ -35,7 +37,6 @@ export function start (
     storageConfig: StorageConfiguration
     rekoniUrl: string
     port: number
-    productId: string
     brandingMap: BrandingMap
     serverFactory: ServerFactory
 
@@ -53,7 +54,20 @@ export function start (
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig, dbUrl)
 
-  const pipelineFactory = createServerPipeline(metrics, dbUrl, { ...opt, externalStorage })
+  const pipelineFactory = createServerPipeline(
+    metrics,
+    dbUrl,
+    { ...opt, externalStorage },
+    {
+      serviceAdapters: {
+        [serverAiBotId]: {
+          factory: createAIBotAdapter,
+          db: '%ai-bot',
+          url: dbUrl
+        }
+      }
+    }
+  )
   const sessionFactory = (token: Token, pipeline: Pipeline): Session => {
     if (token.extra?.mode === 'backup') {
       return new BackupClientSession(token, pipeline)
@@ -65,7 +79,6 @@ export function start (
     pipelineFactory,
     sessionFactory,
     port: opt.port,
-    productId: opt.productId,
     brandingMap: opt.brandingMap,
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,

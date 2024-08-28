@@ -75,22 +75,28 @@ export class PlanningPage extends CalendarPage {
   readonly selectInputToDo = (): Locator =>
     this.toDosContainer().getByPlaceholder('Add Action Item, press Enter to save')
 
-  readonly selectTomorrow = (time: string): Locator =>
-    this.schedule().locator(`div.time-cell:text-is('${time}')`).locator('xpath=following::div[2]')
+  readonly selectTimeCell = (time: string, column: number = 1): Locator =>
+    this.schedule().locator(`div.time-cell:text-is('${time}')`).locator(`xpath=following::div[${column}]`)
 
   readonly eventInSchedule = (title: string): Locator =>
     this.schedule().locator('div.event-container', { hasText: title })
 
-  async dragdropTomorrow (title: string, time: string): Promise<void> {
+  readonly toDoInToDos = (hasText: string): Locator =>
+    this.toDosContainer().locator('button.hulyToDoLine-container', { hasText })
+
+  readonly checkboxToDoInToDos = (hasText: string): Locator =>
+    this.toDoInToDos(hasText).locator('div.hulyToDoLine-checkbox')
+
+  async dragToCalendar (title: string, column: number, time: string, addHalf: boolean = false): Promise<void> {
     await this.toDosContainer().getByRole('button', { name: title }).hover()
 
     await expect(async () => {
       await this.page.mouse.down()
-      const boundingBox = await this.selectTomorrow(time).boundingBox()
+      const boundingBox = await this.selectTimeCell(time, column).boundingBox()
       expect(boundingBox).toBeTruthy()
       if (boundingBox != null) {
         await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
-        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 20)
+        await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + (addHalf ? 40 : 20))
         await this.page.mouse.up()
       }
     }).toPass(retryOptions)
@@ -98,6 +104,12 @@ export class PlanningPage extends CalendarPage {
 
   async checkInSchedule (title: string): Promise<void> {
     await expect(this.eventInSchedule(title)).toBeVisible()
+  }
+
+  async markDoneInToDos (title: string): Promise<void> {
+    await this.toDoInToDos(title).hover()
+    await this.checkboxToDoInToDos(title).hover()
+    await this.checkboxToDoInToDos(title).click()
   }
 
   async clickButtonCreateAddSlot (): Promise<void> {

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import attachment, { Attachment, BlobMetadata } from '@hcengineering/attachment'
+  import attachment, { Attachment, BlobMetadata, AttachmentsEvents } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
   import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -37,11 +37,13 @@
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
   import { uploadFiles } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
-  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { getCollaborationUser, getObjectId, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
   export let object: Doc
+  export let identifier: string | undefined = undefined
   export let key: KeyedAttribute
   export let placeholder: IntlString
   export let focusIndex = -1
@@ -207,6 +209,13 @@
         attachmentDoc,
         attachmentDoc._id
       )
+
+      const id = identifier ?? (await getObjectId(object, client.getHierarchy()))
+      Analytics.handleEvent(AttachmentsEvents.FilesAttached, {
+        objectId: id,
+        objectClass: object._class,
+        type: file.type
+      })
     } catch (err: any) {
       await setPlatformStatus(unknownError(err))
     }

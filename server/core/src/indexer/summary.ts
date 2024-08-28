@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   type AnyAttribute,
   type Class,
@@ -21,12 +22,11 @@ import core, {
   type DocumentQuery,
   type DocumentUpdate,
   extractDocKey,
+  getFullTextContext,
   type Hierarchy,
-  type IndexStageState,
   isFullTextAttribute,
   type MeasureContext,
-  type Ref,
-  getFullTextContext
+  type Ref
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
@@ -37,15 +37,10 @@ import {
   type DocUpdateHandler,
   fieldStateId,
   type FullTextPipeline,
-  type FullTextPipelineStage
+  type FullTextPipelineStage,
+  summaryStageId
 } from './types'
-import { collectPropagate, collectPropagateClasses, isCustomAttr, loadIndexStageStage } from './utils'
-import { Analytics } from '@hcengineering/analytics'
-
-/**
- * @public
- */
-export const summaryStageId = 'sum-v5'
+import { collectPropagate, collectPropagateClasses, isCustomAttr } from './utils'
 
 /**
  * @public
@@ -65,35 +60,12 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
   fieldFilter: ((attr: AnyAttribute, value: string) => boolean)[] = []
 
-  stageValue: boolean | string = true
-
-  indexState?: IndexStageState
-
   // Summary should be not a bigger what 1mb of data.
   summaryLimit = 1024 * 1024
 
   constructor (private readonly dbStorage: ServerStorage) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
-    const indexable = (
-      await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext]: { $exists: true } })
-    )
-      .map((it) => pipeline.hierarchy.as(it, core.mixin.FullTextSearchContext))
-      .filter((it) => it.fullTextSummary)
-      .map((it) => it._id + (it.propagateClasses ?? []).join('|'))
-    indexable.sort()
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
-      ctx,
-      storage,
-      this.indexState,
-      this.stageId,
-      'config',
-      {
-        classes: indexable,
-        matchExtra: this.matchExtra
-      }
-    )
-  }
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
 
   async search (
     _classes: Ref<Class<Doc>>[],
@@ -107,7 +79,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
     const part = [...toIndex]
     while (part.length > 0) {
-      const toIndexPart = part.splice(0, 1000)
+      const toIndexPart = part.splice(0, 100)
 
       const kids = toIndexPart.map((it) => it._id)
       const allChildDocs = await metrics.with(
@@ -128,7 +100,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
         // No need to index this class, mark embeddings as empty ones.
         if (!needIndex) {
-          await pipeline.update(doc._id, this.stageValue, {})
+          await pipeline.update(doc._id, true, {})
           continue
         }
 
@@ -201,7 +173,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
         update.fullSummary = embeddingText
 
-        await pipeline.update(doc._id, this.stageValue, update)
+        await pipeline.update(doc._id, true, update)
       }
     }
   }
@@ -209,7 +181,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     // will be handled by field processor
     for (const doc of docs) {
-      await pipeline.update(doc._id, this.stageValue, {})
+      await pipeline.update(doc._id, true, {})
     }
   }
 }
@@ -279,7 +251,7 @@ export async function extractIndexedValues (
         continue
       }
 
-      if (keyAttr.type._class === core.class.TypeMarkup || keyAttr.type._class === core.class.TypeCollaborativeMarkup) {
+      if (keyAttr.type._class === core.class.TypeMarkup) {
         sourceContent = jsonToText(markupToJSON(sourceContent))
       }
 

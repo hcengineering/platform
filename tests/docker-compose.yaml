@@ -74,7 +74,6 @@ services:
       - REKONI_URL=http://rekoni:4007
       - TELEGRAM_URL=http://localhost:8086
       - COLLABORATOR_URL=ws://localhost:3079
-      - COLLABORATOR_API_URL=http://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=http://localhost:8083/branding-test.json
   transactor:
@@ -101,8 +100,8 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:7
       - FRONT_URL=http://localhost:8083
-      - UPLOAD_URL=http://localhost:8083/files
       - ACCOUNTS_URL=http://account:3003
+      - COLLABORATOR_URL=http://collaborator:3079
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
       - BRANDING_PATH=/var/cfg/branding.json
@@ -113,12 +112,11 @@ services:
       - minio
       - transactor
     ports:
-      - 3079:3078
+      - 3079:3079
     environment:
-      - COLLABORATOR_PORT=3078
+      - COLLABORATOR_PORT=3079
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3003
-      - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped

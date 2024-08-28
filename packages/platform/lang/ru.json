@@ -18,7 +18,6 @@
     "WorkspaceRateLimit": "Сервер перегружен, пожалуйста, подождите",
     "AccountAlreadyConfirmed": "Аккаунт уже подтвержден",
     "WorkspaceAlreadyExists": "Рабочее пространство уже существует",
-    "ProductIdMismatch": "Продукт не соответствует",
     "InvalidOtp": "Неверный код"
   }
 }

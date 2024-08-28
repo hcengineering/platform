@@ -38,7 +38,6 @@ import documents, {
   type Project,
   DocumentState,
   getCollaborativeDocForDocument,
-  createDocSections,
   createChangeControl
 } from '@hcengineering/controlled-documents'
 import documentsRes from './plugin'
@@ -95,7 +94,6 @@ export async function createNewDraftForControlledDoc (
     reviewInterval: document.reviewInterval,
     changeControl: newCCId,
     requests: 0,
-    sections: 0,
     labels: 0,
     state: DocumentState.Draft,
     plannedEffectiveDate: 0,
@@ -139,8 +137,6 @@ export async function createNewDraftForControlledDoc (
     await copyDocument(document.content, collaborativeDoc)
   }
 
-  await createDocSections(client, newDraftDocId, document._id, space, documents.class.ControlledDocument)
-
   const documentTraining = getDocumentTraining(hierarchy, document)
   if (documentTraining !== undefined) {
     const newDraftDoc = await client.findOne(document._class, { _id: newDraftDocId })
@@ -180,21 +176,12 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
       name,
       state: document.state,
       controlledState: document.controlledState,
-      content: snapshot,
-      sections: 0
+      content: snapshot
     },
     newSnapshotId
   )
 
   await op.commit()
-
-  await createDocSections(
-    client,
-    newSnapshotId,
-    document._id,
-    document.space,
-    documents.class.ControlledDocumentSnapshot
-  )
 
   await client.update(document, { controlledState: undefined })
 }

@@ -18,17 +18,17 @@ import { Editor, Extensions, getSchema } from '@tiptap/core'
 import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
-import { defaultExtensions } from '../extensions'
-import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
-import { nodeDoc, nodeParagraph, nodeText } from './dsl'
 import { deepEqual } from 'fast-equals'
+import { defaultExtensions } from '../extensions'
+import { nodeDoc, nodeParagraph, nodeText } from './dsl'
+import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
 
 /** @public */
-export function getMarkup (editor: Editor): Markup {
-  return jsonToMarkup(editor.getJSON() as MarkupNode)
+export function getMarkup (editor?: Editor): Markup {
+  return jsonToMarkup(editor?.getJSON() as MarkupNode)
 }
 
 /** @public */
@@ -226,9 +226,11 @@ export function pmNodeToHTML (node: ProseMirrorNode, extensions?: Extensions): s
 const ELLIPSIS_CHAR = '…'
 const WHITESPACE = ' '
 
+const defaultSchema = getSchema(defaultExtensions)
+
 /** @public */
 export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions | undefined = undefined): string {
-  const schema = getSchema(extensions ?? defaultExtensions)
+  const schema = extensions === undefined ? defaultSchema : getSchema(extensions)
   const parsed = markupToPmNode(markup, schema)
 
   const textParts: string[] = []

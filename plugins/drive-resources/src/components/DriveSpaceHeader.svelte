@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { type Drive } from '@hcengineering/drive'
+  import { type Drive, DriveEvents } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType } from '@hcengineering/ui'
 
   import drive from '../plugin'
   import { getFolderIdFromFragment } from '../navigation'
   import { showCreateDrivePopup, showCreateFolderPopup, uploadFilesToDrivePopup } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined

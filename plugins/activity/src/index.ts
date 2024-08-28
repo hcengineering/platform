@@ -67,6 +67,7 @@ export interface ActivityMessageControl<T extends Doc = Doc> extends Doc {
 
   // Skip field activity operations.
   skipFields?: (keyof T)[]
+  allowedFields?: (keyof T)[]
 }
 
 /**
@@ -92,7 +93,7 @@ export interface DocUpdateMessage extends ActivityMessage {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
 
-  txId: Ref<TxCUD<Doc>>
+  txId?: Ref<TxCUD<Doc>>
 
   action: DocUpdateAction
   updateCollection?: string
@@ -308,7 +309,12 @@ export default plugin(activityId, {
     Messages: '' as IntlString,
     Thread: '' as IntlString,
     ReactionNotificationTitle: '' as IntlString,
-    ReactionNotificationBody: '' as IntlString
+    ReactionNotificationBody: '' as IntlString,
+    NewObject: '' as IntlString,
+    RemovedObject: '' as IntlString,
+    ChangedObject: '' as IntlString,
+    UnsetObject: '' as IntlString,
+    UpdatedObject: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

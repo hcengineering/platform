@@ -23,6 +23,7 @@
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/types'
+  import { EditorKitOptions } from '../kits/editor-kit'
 
   export let collaborativeDoc: CollaborativeDoc
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
@@ -48,6 +49,7 @@
 
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   let element: HTMLElement
 
@@ -106,6 +108,7 @@
     extensions={[...onExtensions()]}
     {canShowPopups}
     {editorAttributes}
+    {kitOptions}
     on:editor
     on:update
     on:open-document

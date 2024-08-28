@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineering/core'
-import { UNAUTHORIZED } from '@hcengineering/platform'
+import { UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import cors from 'cors'
@@ -46,7 +46,6 @@ export function startHttpServer (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string,
   enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
@@ -54,7 +53,6 @@ export function startHttpServer (
   if (LOGGING_ENABLED) {
     ctx.info('starting server on', {
       port,
-      productId,
       enableCompression,
       accountsUrl,
       parallel: os.availableParallelism()
@@ -80,12 +78,13 @@ export function startHttpServer (
       const token = req.query.token as string
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      const json = JSON.stringify({
+      const jsonData = {
         ...getStatistics(ctx, sessions, admin),
-        users: getUsers,
+        users: getUsers(),
         admin
-      })
+      }
+      const json = JSON.stringify(jsonData)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(json)
     } catch (err: any) {
       Analytics.handleError(err)
@@ -262,8 +261,7 @@ export function startHttpServer (
       language: request.headers['accept-language'] ?? '',
       email: token.email,
       mode: token.extra?.mode,
-      model: token.extra?.model,
-      rpcHandler
+      model: token.extra?.model
     }
     const cs: ConnectionSocket = createWebsocketClientSocket(ws, data)
 
@@ -271,22 +269,34 @@ export function startHttpServer (
       connectionSocket: cs,
       payload: token,
       token: rawToken,
-      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, productId, sessionId, accountsUrl),
+      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, sessionId, accountsUrl),
       url: ''
     }
 
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+          void cs
+            .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
+            .then(() => {
+              // No connection to account service, retry from client.
+              setTimeout(() => {
+                cs.close()
+              }, 1000)
+            })
         }
         if ('upgrade' in s) {
           void cs
             .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
             .then(() => {
-              cs.close()
+              setTimeout(() => {
+                cs.close()
+              }, 5000)
             })
         }
+      })
+      void webSocketData.session.catch((err) => {
+        ctx.error('unexpected error in websocket', { err })
       })
     }
 
@@ -349,13 +359,6 @@ export function startHttpServer (
     try {
       const payload = decodeToken(token ?? '')
       const sessionId = url.searchParams.get('sessionId')
-
-      if (payload.workspace.productId !== productId) {
-        if (LOGGING_ENABLED) {
-          ctx.error('invalid product', { required: payload.workspace.productId, productId })
-        }
-        throw new Error('Invalid workspace product')
-      }
 
       wss.handleUpgrade(request, socket, head, (ws) => {
         void handleConnection(ws, request, payload, token, sessionId ?? undefined)
@@ -431,17 +434,12 @@ function createWebsocketClientSocket (
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
-      const sst = Date.now()
       const smsg = rpcHandler.serialize(msg, binary)
-      ctx.measure('serialize', Date.now() - sst)
 
       ctx.measure('send-data', smsg.length)
       const st = Date.now()
       if (ws.readyState !== ws.OPEN || cs.isClosed) {
         return
-      }
-      if (ws.bufferedAmount > 16 * 1024) {
-        ctx.measure('send-bufferAmmount', 1)
       }
       ws.send(smsg, { binary: true, compress: compression }, (err) => {
         if (err != null) {

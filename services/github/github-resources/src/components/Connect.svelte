@@ -84,7 +84,7 @@
       labelIntl: getEmbeddedLabel('Github Repositories')
     }
   ]
-  let selectedTab: string = tabs[0].id
+  let selectedTab = tabs[0].id
 
   $: loading = $ticker - (auth?.authRequestTime ?? 0) < 5000
 </script>

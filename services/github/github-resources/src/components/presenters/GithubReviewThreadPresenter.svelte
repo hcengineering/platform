@@ -68,7 +68,11 @@
     )
   }
   async function changeResolution (): Promise<void> {
-    await getClient().update(value, { isResolved: !value.isResolved, resolvedBy: null })
+    if (value.isResolved) {
+      await getClient().update(value, { isResolved: false, resolvedBy: null })
+    } else {
+      await getClient().update(value, { isResolved: true, resolvedBy: getCurrentAccount()._id })
+    }
   }
 
   const toRefPersonAccount = (account: Ref<Account>): Ref<PersonAccount> => account as Ref<PersonAccount>

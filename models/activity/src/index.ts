@@ -124,7 +124,7 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
 
   @Prop(TypeRef(core.class.TxCUD), core.string.Object)
   // @Index(IndexKind.Indexed)
-    txId!: Ref<TxCUD<Doc>>
+    txId?: Ref<TxCUD<Doc>>
 
   @Prop(TypeString(), core.string.Object)
   // @Index(IndexKind.Indexed)
@@ -362,7 +362,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_ACTIVITY,
-    indexes: [{ keys: { attachedTo: 1, createdOn: 1 } }, { keys: { attachedTo: 1, createdOn: -1 } }],
     disabled: [
       { modifiedOn: 1 },
       { createdOn: -1 },

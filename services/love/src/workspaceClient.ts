@@ -35,7 +35,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
+    const token = generateToken(config.SystemEmail, { name: workspace })
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client

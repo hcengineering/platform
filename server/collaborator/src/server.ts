@@ -15,6 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus } from '@hocuspocus/server'
@@ -24,8 +25,6 @@ import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
 
-import type { MongoClientReference } from '@hcengineering/mongo'
-import type { StorageAdapter } from '@hcengineering/server-core'
 import { Config } from './config'
 import { Context } from './context'
 import { AuthenticationExtension } from './extensions/authentication'
@@ -34,6 +33,7 @@ import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
+import { TransformerFactory } from './types'
 
 /**
  * @public
@@ -43,37 +43,30 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
-export async function start (
-  ctx: MeasureContext,
-  config: Config,
-  minio: StorageAdapter,
-  mongoClient: MongoClientReference
-): Promise<Shutdown> {
+export async function start (ctx: MeasureContext, config: Config, storageAdapter: StorageAdapter): Promise<Shutdown> {
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })
-  const mongo = await mongoClient.getClient()
 
   const app = express()
   app.use(cors())
   app.use(bp.json())
-  const extensions = [
-    ServerKit.configure({
-      image: {
-        getBlobRef: async (fileId, name, size) => {
-          const sz = size !== undefined ? `&size=${size}` : ''
-          return {
-            src: `${config.UploadUrl}?file=${fileId}`,
-            srcset: `${config.UploadUrl}?file=${fileId}${sz}`
-          }
-        }
-      }
-    })
-  ]
 
   const extensionsCtx = ctx.newChild('extensions', {})
 
-  const transformer = new MarkupTransformer(extensions)
+  const transformerFactory: TransformerFactory = (workspaceId) => {
+    const extensions = [
+      ServerKit.configure({
+        image: {
+          getBlobRef: async (fileId, name, size) => {
+            const src = await storageAdapter.getUrl(ctx, workspaceId, fileId)
+            return { src, srcset: '' }
+          }
+        }
+      })
+    ]
+    return new MarkupTransformer(extensions)
+  }
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',
@@ -116,7 +109,8 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter({ minio }, mongo, transformer)
+        adapter: new PlatformStorageAdapter(storageAdapter),
+        transformerFactory
       })
     ]
   })
@@ -178,8 +172,9 @@ export async function start (
       rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
       await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
+          const transformer = transformerFactory(token.workspace)
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-            return await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
+            return await method(ctx, context, request.payload, { hocuspocus, storageAdapter, transformer })
           })
           res.status(200).send(response)
         } catch (err: any) {

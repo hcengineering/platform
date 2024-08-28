@@ -17,7 +17,7 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
-  import { Document } from '@hcengineering/document'
+  import { Document, DocumentEvents } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -50,6 +50,7 @@
     showMenu
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   import { starDocument, unstarDocument, unlockContent } from '..'
   import document from '../plugin'
@@ -221,6 +222,10 @@
   let content: HTMLElement
 
   const manager = createFocusManager()
+
+  onMount(() => {
+    Analytics.handleEvent(DocumentEvents.DocumentOpened, { id: _id })
+  })
 </script>
 
 <FocusHandler {manager} />
@@ -303,6 +308,7 @@
                   size: 'large',
                   fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
                 }}
+            disabled={readonly}
             on:click={chooseIcon}
           />
         </div>

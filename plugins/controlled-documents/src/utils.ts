@@ -12,37 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import attachment from '@hcengineering/attachment'
-import {
-  ApplyOperations,
-  Class,
-  Data,
-  Doc,
-  DocumentUpdate,
-  Ref,
-  SortingOrder,
-  Space,
-  TxOperations,
-  generateId
-} from '@hcengineering/core'
+import { ApplyOperations, Data, DocumentUpdate, Ref, TxOperations } from '@hcengineering/core'
 import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
 import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 
 import documents from './plugin'
 
 import {
-  AttachmentsDocumentSection,
   ChangeControl,
-  CollaborativeDocumentSection,
   ControlledDocument,
   Document,
-  DocumentSection,
-  DocumentSnapshot,
   DocumentSpace,
   DocumentState,
-  DocumentTemplate,
-  DocumentTemplateSection,
   Project,
   ProjectDocument,
   ProjectMeta
@@ -90,107 +71,6 @@ export async function createChangeControl (
 /**
  * @public
  */
-export async function createDocSections (
-  client: TxOperations,
-  documentId: Ref<Document> | Ref<DocumentSnapshot>,
-  srcDocId: Ref<DocumentTemplate> | Ref<Document>,
-  space: Ref<DocumentSpace>,
-  attachedToClass: Ref<Class<Doc>> = documents.class.Document
-): Promise<void> {
-  const docSections = await client.findAll<DocumentSection>(documents.class.DocumentSection, {
-    attachedTo: srcDocId
-  })
-
-  const hierarchy = client.getHierarchy()
-  for (const section of docSections) {
-    const sectionId: Ref<CollaborativeDocumentSection> = generateId()
-
-    // copying templateSectionId if srcDoc is another doc or _id - if srcDoc is template
-    const templateSectionId = section.templateSectionId ?? section._id
-
-    // NOTE: ideally we should not assume section type here and allow for any types of sections
-    // to be correctly created here. Add a mixin to section class with a function and invoke it here for
-    // custom attributes/logic?
-    if (hierarchy.isDerived(section._class, documents.class.CollaborativeDocumentSection)) {
-      const collaborativeSection: CollaborativeDocumentSection = hierarchy.as(
-        section,
-        documents.class.CollaborativeDocumentSection
-      )
-      await client.addCollection<Document | DocumentSnapshot, CollaborativeDocumentSection>(
-        documents.class.CollaborativeDocumentSection,
-        space,
-        documentId,
-        attachedToClass,
-        'sections',
-        {
-          title: collaborativeSection.title,
-          rank: collaborativeSection.rank,
-          key: collaborativeSection.key,
-          collaboratorSectionId: collaborativeSection.collaboratorSectionId,
-          attachments: collaborativeSection.attachments,
-          templateSectionId
-        },
-        sectionId
-      )
-    } else if (hierarchy.isDerived(section._class, documents.class.AttachmentsDocumentSection)) {
-      const attachmentsSection: AttachmentsDocumentSection = hierarchy.as(
-        section,
-        documents.class.AttachmentsDocumentSection
-      )
-      await client.addCollection<Document | DocumentSnapshot, AttachmentsDocumentSection>(
-        documents.class.AttachmentsDocumentSection,
-        space,
-        documentId,
-        attachedToClass,
-        'sections',
-        {
-          title: attachmentsSection.title,
-          rank: attachmentsSection.rank,
-          key: attachmentsSection.key,
-          attachments: attachmentsSection.attachments,
-          templateSectionId
-        },
-        sectionId
-      )
-
-      // Copying attachments metadata, not the files. It should only be detached on remove rather than deleted.
-      const attachmentsMeta = await client.findAll(attachment.class.Attachment, {
-        attachedTo: section._id
-      })
-
-      await Promise.all(
-        attachmentsMeta.map((a) =>
-          client.addCollection(a._class, a.space, sectionId, section._class, 'attachments', {
-            name: a.name,
-            file: a.file,
-            type: a.type,
-            size: a.size,
-            lastModified: a.lastModified
-          })
-        )
-      )
-    } else {
-      await client.addCollection<Document | DocumentSnapshot, DocumentSection>(
-        documents.class.DocumentSection,
-        space,
-        documentId,
-        attachedToClass,
-        'sections',
-        {
-          title: section.title,
-          rank: section.rank,
-          key: section.key,
-          templateSectionId
-        },
-        sectionId
-      )
-    }
-  }
-}
-
-/**
- * @public
- */
 export function getDocumentId (document: Pick<Document, 'prefix' | 'seqNumber'>): string {
   return `${document.prefix}-${document.seqNumber}`
 }
@@ -213,23 +93,6 @@ export function matchDocumentId (str: string): Pick<Document, 'prefix' | 'seqNum
 /**
  * @public
  */
-export type DraftDocumentTemplateSection = DocumentTemplateSection & {
-  draftId?: string
-}
-
-/**
- * @public
- */
-export function getDraftDocumentTemplateSectionId (
-  draftId: string | undefined,
-  sectionId: string
-): Ref<DocumentSection> {
-  return `${sectionId}-${draftId ?? ''}` as Ref<DocumentSection>
-}
-
-/**
- * @public
- */
 export function isControlledDocument (client: TxOperations, doc: Document): doc is ControlledDocument {
   return client.getHierarchy().isDerived(doc._class, documents.class.ControlledDocument)
 }
@@ -238,66 +101,6 @@ export function isControlledDocument (client: TxOperations, doc: Document): doc 
  * @public
  */
 export type EditorMode = 'viewing' | 'editing' | 'comparing'
-
-/**
- * @public
- */
-export type DocumentTemplateSectionData<T extends DocumentTemplateSection = DocumentTemplateSection> = Pick<
-Data<DocumentTemplateSection>,
-'title' | 'description' | 'mandatory'
-> & {
-  id: Ref<DocumentTemplateSection>
-  class: Ref<Class<T>>
-  additional?: Omit<T, keyof DocumentTemplateSection>
-}
-
-/**
- * @public
- */
-export async function appendTemplateSection<T extends DocumentTemplateSection> (
-  client: TxOperations,
-  docId: Ref<Document>,
-  data: DocumentTemplateSectionData<T>,
-  space: Ref<Space>
-): Promise<void> {
-  const lastOne = await client.findOne<DocumentTemplateSection>(
-    documents.mixin.DocumentTemplateSection,
-    { attachedTo: docId, attachedToClass: documents.class.Document },
-    { sort: { rank: SortingOrder.Descending } }
-  )
-
-  const ops = client.apply(docId)
-  const sectionId = (data.id + '-' + generateId()) as Ref<DocumentTemplateSection>
-
-  await ops.addCollection(
-    data.class,
-    space,
-    docId,
-    documents.mixin.DocumentTemplate,
-    'sections',
-    {
-      title: data.title,
-      rank: calcRank(lastOne, undefined),
-      key: docId,
-      ...(data.additional ?? {})
-    },
-    sectionId
-  )
-
-  await ops.updateMixin<DocumentSection, DocumentTemplateSection>(
-    sectionId,
-    data.class,
-    space,
-    documents.mixin.DocumentTemplateSection,
-    {
-      description: data.description,
-      guidance: '',
-      mandatory: data.mandatory
-    }
-  )
-
-  await ops.commit()
-}
 
 /**
  * @public
@@ -361,11 +164,6 @@ export async function copyProjectDocuments (
     }
   }
 }
-
-/**
- * @public
- */
-export const DEFAULT_SECTION_TITLE = 'Untitled'
 
 /**
  * @public

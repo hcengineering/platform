@@ -91,6 +91,8 @@ class Connection implements ClientConnection {
 
   private pingResponse: number = Date.now()
 
+  private helloRecieved: boolean = false
+
   rpcHandler = new RPCHandler()
 
   constructor (
@@ -173,7 +175,7 @@ class Connection implements ClientConnection {
   }
 
   isConnected (): boolean {
-    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN
+    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN && this.helloRecieved
   }
 
   delay = 0
@@ -240,6 +242,10 @@ class Connection implements ClientConnection {
         return
       }
       if (resp.result === 'hello') {
+        // We need to clear dial timer, since we recieve hello response.
+        clearTimeout(this.dialTimer)
+        this.dialTimer = null
+        this.helloRecieved = true
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
           this.opt?.onUpgrade?.()
@@ -261,7 +267,7 @@ class Connection implements ClientConnection {
 
         void this.opt?.onConnect?.(
           (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected,
-          null
+          this.sessionId
         )
         this.schedulePing(socketId)
         return
@@ -394,12 +400,15 @@ class Connection implements ClientConnection {
     this.websocket = wsocket
     const opened = false
 
-    this.dialTimer = setTimeout(() => {
-      if (!opened && !this.closed) {
-        void this.opt?.onDialTimeout?.()
-        this.scheduleOpen(true)
-      }
-    }, dialTimeout)
+    if (this.dialTimer != null) {
+      this.dialTimer = setTimeout(() => {
+        this.dialTimer = null
+        if (!opened && !this.closed) {
+          void this.opt?.onDialTimeout?.()
+          this.scheduleOpen(true)
+        }
+      }, dialTimeout)
+    }
 
     wsocket.onmessage = (event: MessageEvent) => {
       if (this.closed) {
@@ -419,10 +428,8 @@ class Connection implements ClientConnection {
       }
     }
     wsocket.onclose = (ev) => {
-      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         wsocket.close()
-        clearTimeout(this.dialTimer)
         return
       }
       // console.log('client websocket closed', socketId, ev?.reason)
@@ -435,7 +442,7 @@ class Connection implements ClientConnection {
       }
       const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
       const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
-      clearTimeout(this.dialTimer)
+      this.helloRecieved = false
       const helloRequest: HelloRequest = {
         method: 'hello',
         params: [],
@@ -447,7 +454,6 @@ class Connection implements ClientConnection {
     }
 
     wsocket.onerror = (event: any) => {
-      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         return
       }

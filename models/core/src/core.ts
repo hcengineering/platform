@@ -38,7 +38,6 @@ import {
   type EnumOf,
   type FieldIndexConfig,
   type FullTextSearchContext,
-  type IndexStageState,
   type IndexingConfiguration,
   type Interface,
   type MigrationState,
@@ -234,10 +233,6 @@ export class TTypeFileSize extends TType {}
 @Model(core.class.TypeMarkup, core.class.Type)
 export class TTypeMarkup extends TType {}
 
-@UX(core.string.Collaborative)
-@Model(core.class.TypeCollaborativeMarkup, core.class.Type)
-export class TTypeCollaborativeMarkup extends TType {}
-
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {
@@ -329,25 +324,22 @@ export class TDocIndexState extends TDoc implements DocIndexState {
   attributes!: Record<string, any>
 
   @Prop(TypeBoolean(), getEmbeddedLabel('Removed'))
-  // @Index(IndexKind.Indexed)
   @Hidden()
     removed!: boolean
+
+  @Prop(TypeBoolean(), getEmbeddedLabel('NeedIndexing'))
+  @Hidden()
+    needIndex!: boolean
 
   // States for different stages
   @Prop(TypeRecord(), getEmbeddedLabel('Stages'))
   // @Index(IndexKind.Indexed)
   @Hidden()
-    stages!: Record<string, boolean | string>
+    stages!: Record<string, boolean>
 
   @Prop(TypeString(), getEmbeddedLabel('Generation'))
   @Hidden()
     generationId?: string
-}
-
-@Model(core.class.IndexStageState, core.class.Doc, DOMAIN_DOC_INDEX_STATE)
-export class TIndexStageState extends TDoc implements IndexStageState {
-  stageId!: string
-  attributes!: Record<string, any>
 }
 
 @MMixin(core.mixin.FullTextSearchContext, core.class.Class)

@@ -26,7 +26,7 @@ export async function prepareNewIssueWithOpenStep (page: Page, issue: NewIssue):
   })
 }
 
-export function createNewIssueData (firstName: string, lastName: string): NewIssue {
+export function createNewIssueData (firstName: string, lastName: string, replace?: object): NewIssue {
   return {
     title: faker.lorem.words(3),
     description: faker.lorem.sentence(),
@@ -39,6 +39,7 @@ export function createNewIssueData (firstName: string, lastName: string): NewIss
     estimation: '2',
     milestone: 'No Milestone',
     duedate: 'today',
-    filePath: 'cat.jpeg'
+    filePath: 'cat.jpeg',
+    ...replace
   }
 }

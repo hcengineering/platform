@@ -30,7 +30,7 @@ export async function removeDocument (
   params: RpcMethodParams
 ): Promise<RemoveDocumentResponse> {
   const { documentId } = payload
-  const { hocuspocus, minio } = params
+  const { hocuspocus, storageAdapter } = params
   const { workspaceId } = context
 
   const document = hocuspocus.documents.get(documentId)
@@ -40,11 +40,11 @@ export async function removeDocument (
   }
 
   const { collaborativeDoc } = parseDocumentId(documentId)
-  const { documentId: minioDocumentId } = collaborativeDocParse(collaborativeDoc)
-  const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
+  const { documentId: contentDocumentId } = collaborativeDocParse(collaborativeDoc)
+  const historyDocumentId = collaborativeHistoryDocId(contentDocumentId)
 
   try {
-    await minio.remove(ctx, workspaceId, [minioDocumentId, historyDocumentId])
+    await storageAdapter.remove(ctx, workspaceId, [contentDocumentId, historyDocumentId])
   } catch (err) {
     ctx.error('failed to remove document', { documentId, error: err })
   }

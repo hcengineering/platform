@@ -73,7 +73,10 @@ export const ImageNode = Node.create<ImageOptions>({
       title: {
         default: null
       },
-      align: getDataAttribute('align')
+      align: getDataAttribute('align'),
+      'data-file-type': {
+        default: null
+      }
     }
   },
 
@@ -120,7 +123,9 @@ export const ImageNode = Node.create<ImageOptions>({
       }
 
       for (const [k, v] of Object.entries(divAttributes)) {
-        container.setAttribute(k, v)
+        if (v !== null) {
+          container.setAttribute(k, v)
+        }
       }
 
       const imgAttributes = mergeAttributes(

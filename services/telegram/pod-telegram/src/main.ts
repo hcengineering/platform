@@ -3,8 +3,11 @@ import { PlatformWorker } from './platform'
 import { createServer, Handler, listen } from './server'
 import { telegram } from './telegram'
 
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import { type StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken, type Token } from '@hcengineering/server-token'
 import config from './config'
 
@@ -17,11 +20,16 @@ const extractToken = (header: IncomingHttpHeaders): Token | undefined => {
 }
 
 export const main = async (): Promise<void> => {
+  const ctx = new MeasureMetricsContext('telegram', {}, {}, newMetrics())
+
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
-  const platformWorker = await PlatformWorker.create()
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURI)
+
+  const platformWorker = await PlatformWorker.create(ctx, storageAdapter)
   const endpoints: Array<[string, Handler]> = [
     [
       '/signin',
@@ -187,10 +195,15 @@ export const main = async (): Promise<void> => {
 
   const server = listen(createServer(endpoints), config.Port, config.Host)
 
+  const asyncClose = async (): Promise<void> => {
+    await platformWorker.close()
+    await storageAdapter.close()
+  }
+
   const shutdown = (): void => {
     server.close()
 
-    void Promise.all([platformWorker.close()]).then(() => process.exit())
+    void asyncClose().then(() => process.exit())
   }
 
   process.on('SIGINT', shutdown)

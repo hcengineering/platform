@@ -23,13 +23,28 @@
 </script>
 
 {#if issueUrl}
-  <CopyToClipboardButton icon={view.icon.CopyLink} title={tracker.string.CopyIssueUrl} text={issueUrl} />
+  <CopyToClipboardButton
+    icon={view.icon.CopyLink}
+    title={tracker.string.CopyIssueUrl}
+    text={issueUrl}
+    dataId={'btnCopyIssueUrl'}
+  />
 {/if}
 
 {#if issueId}
-  <CopyToClipboardButton icon={view.icon.CopyId} title={tracker.string.CopyIssueId} text={issueId} />
+  <CopyToClipboardButton
+    icon={view.icon.CopyId}
+    title={tracker.string.CopyIssueId}
+    text={issueId}
+    dataId={'btnCopyIssueId'}
+  />
 {/if}
 
 {#if issueBranch}
-  <CopyToClipboardButton icon={tracker.icon.CopyBranch} title={tracker.string.CopyIssueBranch} text={issueBranch} />
+  <CopyToClipboardButton
+    icon={tracker.icon.CopyBranch}
+    title={tracker.string.CopyIssueBranch}
+    text={issueBranch}
+    dataId={'btnCopyIssueBranch'}
+  />
 {/if}

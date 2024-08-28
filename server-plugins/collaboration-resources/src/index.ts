@@ -16,7 +16,7 @@
 import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
 import core, { TxProcessor } from '@hcengineering/core'
 import { removeCollaborativeDoc } from '@hcengineering/collaboration'
-import type { TriggerControl } from '@hcengineering/server-core'
+import { type TriggerControl } from '@hcengineering/server-core'
 
 /**
  * @public

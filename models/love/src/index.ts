@@ -87,6 +87,8 @@ export class TParticipantInfo extends TDoc implements ParticipantInfo {
 
   x!: number
   y!: number
+
+  sessionId!: string | null
 }
 
 @Model(love.class.JoinRequest, core.class.Doc, DOMAIN_TRANSIENT)

@@ -20,6 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import { getAttribute, KeyedAttribute, updateAttribute } from '../attributes'
   import { getAttributeEditor, getClient } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let key: KeyedAttribute | string
   export let object: Doc | Record<string, any>
@@ -29,6 +30,7 @@
   export let showHeader: boolean = true
   export let readonly = false
   export let draft = false
+  export let identifier: string | undefined = undefined
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -48,7 +50,9 @@
     if (draft) {
       ;(doc as any)[attributeKey] = value
     } else {
-      void updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value)
+      void updateAttribute(client, doc, doc._class, { key: attributeKey, attr: attribute }, value, false, {
+        objectId: identifier ?? doc._id
+      })
     }
   }
 

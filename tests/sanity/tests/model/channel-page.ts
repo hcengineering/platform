@@ -27,23 +27,26 @@ export class ChannelPage extends CommonPage {
   readonly chooseChannel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
   readonly closePopupWindow = (): Locator => this.page.locator('.notifyPopup button[data-id="btnNotifyClose"]')
   readonly openAddMemberToChannel = (userName: string): Locator => this.page.getByRole('button', { name: userName })
+  readonly addMemberToChannelTableButton = (userName: string): Locator =>
+    this.page.locator('.antiTable-body__row').getByText(userName)
+
   readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByText(userName)
   readonly joinChannelButton = (): Locator => this.page.getByRole('button', { name: 'Join' })
   readonly addEmojiButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="AddReactionAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="AddReactionAction"]').last()
 
   readonly selectEmoji = (emoji: string): Locator => this.page.getByText(emoji)
   readonly saveMessageButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="SaveForLaterAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="SaveForLaterAction"]').last()
 
   readonly pinMessageButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="PinMessageAction"]').last()
 
   readonly replyButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id$="ReplyToThreadAction"]').last()
 
   readonly openMoreButton = (): Locator =>
-    this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]')
+    this.page.locator('.activityMessage-actionPopup > button[data-id="btnMoreActions"]').last()
 
   readonly messageSaveMarker = (): Locator => this.page.locator('.saveMarker')
   readonly saveMessageTab = (): Locator => this.page.getByRole('button', { name: 'Saved' })
@@ -66,7 +69,7 @@ export class ChannelPage extends CommonPage {
   readonly privateOrPublicPopupButton = (change: string): Locator =>
     this.page.locator('div.popup div.menu-item', { hasText: change })
 
-  readonly userAdded = (user: string): Locator => this.page.getByText(user)
+  readonly userAdded = (user: string): Locator => this.page.locator('.members').getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
@@ -204,7 +207,7 @@ export class ChannelPage extends CommonPage {
   }
 
   async clickOnUser (user: string): Promise<void> {
-    await this.addMemberToChannelButton(user).click()
+    await this.addMemberToChannelTableButton(user).click()
   }
 
   async addMemberToChannel (user: string): Promise<void> {

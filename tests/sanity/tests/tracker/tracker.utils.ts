@@ -13,6 +13,7 @@ export interface IssueProps {
   milestone?: string
   estimation?: string
   dueDate?: string
+  taskType?: string
 }
 
 export enum ViewletSelectors {
@@ -56,8 +57,14 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
 }
 
 export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
-  const { name, description, status, assignee, labels, priority, component, milestone } = props
+  const { name, description, status, assignee, labels, priority, component, milestone, taskType } = props
   const af = 'form '
+
+  if (taskType !== undefined) {
+    await page.click(af + 'button[data-id="btnSelectTaskType"]')
+    await page.click(`.menu-item:has-text("${taskType}")`)
+  }
+
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
   await issueTitle.fill(name)
   await issueTitle.evaluate((e) => {
@@ -204,7 +211,7 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
   }
 
   if (props.estimation !== undefined) {
-    await expect(page.locator('#estimation-editor')).toHaveText(props.estimation)
+    await expect(page.locator('#estimation-editor')).toHaveText(convertEstimation(props.estimation))
   }
 
   if (props.dueDate !== undefined) {
@@ -270,4 +277,20 @@ export async function performPanelTest (page: Page, statuses: string[], panel: s
       })
     ).toContainText(getIssueName(status), { timeout: 15000 })
   }
+}
+
+export function convertEstimation (estimation: number | string): string {
+  const hoursInWorkingDay = 8
+  const value = typeof estimation === 'string' ? parseFloat(estimation) : estimation
+
+  const days = Math.floor(value / hoursInWorkingDay)
+  const hours = Math.floor(value % hoursInWorkingDay)
+  const minutes = Math.floor((value % 1) * 60)
+  const result = [
+    ...(days === 0 ? [] : [`${days}d`]),
+    ...(hours === 0 ? [] : [`${hours}h`]),
+    ...(minutes === 0 ? [] : [`${minutes}m`])
+  ].join(' ')
+
+  return result === '' ? '0h' : result
 }

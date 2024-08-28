@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, findPerson, Person } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, ContactEvents, findPerson, Person } from '@hcengineering/contact'
   import { AttachedData, Data, generateId } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
@@ -22,6 +22,7 @@
   import contact from '../plugin'
   import EditableAvatar from './EditableAvatar.svelte'
   import PersonPresenter from './PersonPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   let avatarEditor: EditableAvatar
 
@@ -59,6 +60,7 @@
         provider: channel.provider
       })
     }
+    Analytics.handleEvent(ContactEvents.PersonCreated, { id: personId })
     dispatch('close', personId)
   }
 

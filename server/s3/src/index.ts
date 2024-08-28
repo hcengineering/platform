@@ -24,8 +24,8 @@ import core, {
   type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
-
-import {
+import { getMetadata } from '@hcengineering/platform'
+import serverCore, {
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -82,11 +82,11 @@ export class S3Service implements StorageAdapter {
    * @public
    */
   getBucketId (workspaceId: WorkspaceId): string {
-    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId, '.')
+    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
   }
 
   getBucketFolder (workspaceId: WorkspaceId): string {
-    return toWorkspaceString(workspaceId, '.')
+    return toWorkspaceString(workspaceId)
   }
 
   async close (): Promise<void> {}
@@ -121,7 +121,7 @@ export class S3Service implements StorageAdapter {
     }
   }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     try {
       if (this.opt.rootBucket !== undefined) {
         const info = new Map<string, BucketInfo>()
@@ -140,9 +140,9 @@ export class S3Service implements StorageAdapter {
               info.set(wsName, {
                 name: wsName,
                 delete: async () => {
-                  await this.delete(ctx, { name: wsName, productId })
+                  await this.delete(ctx, { name: wsName })
                 },
-                list: async () => await this.listStream(ctx, { name: wsName, productId })
+                list: async () => await this.listStream(ctx, { name: wsName })
               })
             }
           }
@@ -155,8 +155,7 @@ export class S3Service implements StorageAdapter {
         return Array.from(info.values())
       } else {
         const productPostfix = this.getBucketFolder({
-          name: '',
-          productId
+          name: ''
         })
         const buckets = await this.client.listBuckets()
         return (buckets.Buckets ?? [])
@@ -167,9 +166,9 @@ export class S3Service implements StorageAdapter {
             return {
               name,
               delete: async () => {
-                await this.delete(ctx, { name, productId })
+                await this.delete(ctx, { name })
               },
-              list: async () => await this.listStream(ctx, { name, productId })
+              list: async () => await this.listStream(ctx, { name })
             }
           })
       }
@@ -433,6 +432,12 @@ export class S3Service implements StorageAdapter {
     const range = length !== undefined ? `bytes=${offset}-${offset + length}` : `bytes=${offset}-`
     return await this.doGet(ctx, workspaceId, objectName, range)
   }
+
+  @withContext('getUrl')
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
+  }
 }
 
 export function processConfigFromEnv (storageConfig: StorageConfiguration): string | undefined {
@@ -450,7 +455,7 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
     return 'S3_SECRET_KEY'
   }
 
-  const minioConfig: S3Config = {
+  const config: S3Config = {
     kind: 's3',
     name: 's3',
     region: 'auto',
@@ -458,6 +463,6 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
     accessKey,
     secretKey
   }
-  storageConfig.storages.push(minioConfig)
+  storageConfig.storages.push(config)
   storageConfig.default = 's3'
 }

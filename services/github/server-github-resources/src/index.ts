@@ -21,10 +21,10 @@ import core, {
   type Class,
   type TxMixin
 } from '@hcengineering/core'
+import github, { DocSyncInfo, GithubProject } from '@hcengineering/github'
 import { TriggerControl } from '@hcengineering/server-core'
 import time, { ToDo } from '@hcengineering/time'
 import tracker from '@hcengineering/tracker'
-import github, { DocSyncInfo, GithubProject } from '@hcengineering/github'
 
 /**
  * @public
@@ -124,7 +124,7 @@ async function updateDocSyncInfo (
     }
   }
 
-  const [account] = await control.modelDb.findAll(contact.class.PersonAccount, {
+  const [account] = control.modelDb.findAllSync(contact.class.PersonAccount, {
     _id: tx.modifiedBy as Ref<PersonAccount>
   })
   // Do not modify state if is modified by github service.
@@ -132,7 +132,7 @@ async function updateDocSyncInfo (
     return
   }
 
-  const projects = await control.queryFind(github.mixin.GithubProject, {}, { projection: { _id: 1 } })
+  const projects = await control.queryFind(control.ctx, github.mixin.GithubProject, {}, { projection: { _id: 1 } })
   if (projects.some((it) => it._id === (space as Ref<GithubProject>))) {
     const [sdoc] = await control.findAll(github.class.DocSyncInfo, { _id: cud.objectId as Ref<DocSyncInfo> })
     // We need to check if sync doc is already exists.

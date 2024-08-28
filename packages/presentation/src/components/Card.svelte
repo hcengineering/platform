@@ -41,6 +41,7 @@
   export let numberOfBlocks: number = 0
   export let thinHeader: boolean = false
   export let accentHeader: boolean = false
+  export let headerNoPadding: boolean = false
   export let hideSubheader: boolean = false
   export let hideContent: boolean = false
   export let hideAttachments: boolean = false
@@ -65,7 +66,7 @@
         handleOkClick()
       } else if (event.key === 'Enter') {
         // ignore customized editable divs to not interrupt multiline behavior
-        if (!target.isContentEditable) {
+        if (!target.isContentEditable && target.nodeName !== 'TEXTAREA') {
           event.preventDefault()
           focusManager?.next(1)
         }
@@ -108,6 +109,7 @@
     class="antiCard-header"
     class:withSub={$$slots.subheader && !hideSubheader}
     class:thinHeader
+    class:noPadding={headerNoPadding}
     class:border-bottom-popup-divider={headerDivide}
   >
     <div class="antiCard-header__title-wrap">

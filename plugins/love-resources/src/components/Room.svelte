@@ -43,6 +43,7 @@
   } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
+  import presentation from '@hcengineering/presentation'
 
   export let withVideo: boolean
   export let room: TypeRoom
@@ -223,7 +224,11 @@
 
     await $storePromise
 
-    if (!$isConnected && !$isCurrentInstanceConnected) {
+    if (
+      !$isConnected &&
+      !$isCurrentInstanceConnected &&
+      $myInfo?.sessionId === getMetadata(presentation.metadata.SessionId)
+    ) {
       const info = $infos.filter((p) => p.room === room._id)
       await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
     }

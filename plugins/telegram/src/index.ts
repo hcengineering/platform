@@ -14,9 +14,9 @@
 //
 
 import { ChannelItem } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
-import { NotificationType } from '@hcengineering/notification'
-import type { Plugin } from '@hcengineering/platform'
+import { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
+import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
+import type { IntlString, Plugin } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 import type { Handler, IntegrationType } from '@hcengineering/setting'
 import { TemplateField } from '@hcengineering/templates'
@@ -58,6 +58,17 @@ export interface SharedTelegramMessages extends AttachedDoc {
   messages: SharedTelegramMessage[]
 }
 
+export interface TelegramNotificationRecord {
+  notificationId: Ref<InboxNotification>
+  workspace: string
+  account: Ref<Account>
+  title: string
+  quote?: string
+  body: string
+  sender: string
+  link: string
+}
+
 /**
  * @public
  */
@@ -91,6 +102,28 @@ export default plugin(telegramId, {
     IntegrationOwnerTG: '' as Ref<TemplateField>
   },
   metadata: {
-    TelegramURL: '' as Metadata<string>
+    TelegramURL: '' as Metadata<string>,
+    BotUrl: '' as Metadata<string>
+  },
+  providers: {
+    TelegramNotificationProvider: '' as Ref<NotificationProvider>
+  },
+  string: {
+    BotDescription: '' as IntlString,
+    BotShortDescription: '' as IntlString,
+    WelcomeMessage: '' as IntlString,
+    TestMessage: '' as IntlString,
+    ConnectMessage: '' as IntlString,
+    StopMessage: '' as IntlString,
+    StartBot: '' as IntlString,
+    ConnectAccount: '' as IntlString,
+    ShowCommandsDetails: '' as IntlString,
+    TurnNotificationsOff: '' as IntlString,
+    ConnectedDescriptionHtml: '' as IntlString,
+    AccountAlreadyConnectedHtml: '' as IntlString,
+    AccountConnectedHtml: '' as IntlString,
+    AccountAlreadyConnected: '' as IntlString,
+    InvalidCode: '' as IntlString,
+    SomethingWentWrong: '' as IntlString
   }
 })

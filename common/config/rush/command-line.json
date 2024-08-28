@@ -238,7 +238,7 @@
       "summary": "Build docker with platform",
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "rush docker:build -p 20 --to @hcengineering/pod-server --to @hcengineering/pod-front --to @hcengineering/prod --to @hcengineering/pod-account --to @hcengineering/pod-collaborator --to @hcengineering/tool --to @hcengineering/pod-print --to @hcengineering/pod-sign --to @hcengineering/pod-analytics-collector --to @hcengineering/rekoni-service"
+      "shellCommand": "rush docker:build -p 20 --to @hcengineering/pod-server --to @hcengineering/pod-front --to @hcengineering/prod --to @hcengineering/pod-account --to @hcengineering/pod-collaborator --to @hcengineering/tool --to @hcengineering/pod-print --to @hcengineering/pod-sign --to @hcengineering/pod-analytics-collector --to @hcengineering/rekoni-service --to @hcengineering/pod-ai-bot"
     },        
     {
       "commandKind": "global",
@@ -247,6 +247,14 @@
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:local",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev/local-mongo && docker compose -p dev up -d --force-recreate"
     },
     {
       "commandKind": "global",

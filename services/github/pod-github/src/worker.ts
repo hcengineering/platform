@@ -31,17 +31,11 @@ import core, {
   concatLink,
   generateId,
   groupByArray,
+  reduceCalls,
   toIdMap,
   type Blob,
   type MigrationState
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
-import { StorageAdapter } from '@hcengineering/server-core'
-import { getPublicLinkUrl } from '@hcengineering/server-guest-resources'
-import task, { ProjectType, TaskType } from '@hcengineering/task'
-import { MarkupNode, jsonToMarkup, isMarkdownsEquals } from '@hcengineering/text'
-import tracker from '@hcengineering/tracker'
-import { User } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubAuthentication,
@@ -53,6 +47,13 @@ import github, {
   GithubUserInfo,
   githubId
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
+import { StorageAdapter } from '@hcengineering/server-core'
+import { getPublicLinkUrl } from '@hcengineering/server-guest-resources'
+import task, { ProjectType, TaskType } from '@hcengineering/task'
+import { MarkupNode, isMarkdownsEquals, jsonToMarkup } from '@hcengineering/text'
+import tracker from '@hcengineering/tracker'
+import { User } from '@octokit/webhooks-types'
 import { App, Octokit } from 'octokit'
 import { createPlatformClient } from './client'
 import { createCollaboratorClient } from './collaborator'
@@ -163,6 +164,7 @@ export class GithubWorker implements IntegrationManager {
     }
     const frontUrl = this.getBranding()?.front ?? config.FrontURL
     const refUrl = concatLink(frontUrl, `/browse/?workspace=${this.workspace.name}`)
+    // TODO storage URL
     const imageUrl = concatLink(frontUrl ?? config.FrontURL, `/files?workspace=${this.workspace.name}&file=`)
     const guestUrl = getPublicLinkUrl(this.workspace, frontUrl)
     const json = parseMessageMarkdown(text ?? '', refUrl, imageUrl, guestUrl)
@@ -177,6 +179,7 @@ export class GithubWorker implements IntegrationManager {
     return await markupToMarkdown(
       text ?? '',
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/browse/?workspace=${this.workspace.name}`),
+      // TODO storage URL
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/files?workspace=${this.workspace.name}&file=`),
       preprocessor
     )
@@ -187,9 +190,11 @@ export class GithubWorker implements IntegrationManager {
       if (v.octokit === undefined) {
         continue
       }
-      const project = await this.liveQuery.findOne<GithubProject>(github.mixin.GithubProject, {
-        _id: space as Ref<GithubProject>
-      })
+      const project = (
+        await this.liveQuery.queryFind<GithubProject>(github.mixin.GithubProject, {
+          _id: space as Ref<GithubProject>
+        })
+      ).shift()
       if (project !== undefined) {
         const repositories = await this.liveQuery.queryFind<GithubIntegrationRepository>(
           github.class.GithubIntegrationRepository,
@@ -297,7 +302,7 @@ export class GithubWorker implements IntegrationManager {
         person,
         role: AccountRole.User
       })
-      const acc = await this._client.findOne(contact.class.PersonAccount, { _id: id })
+      const acc = await this.liveQuery.findOne(contact.class.PersonAccount, { _id: id })
       return acc
     }
   }
@@ -318,7 +323,7 @@ export class GithubWorker implements IntegrationManager {
 
     this.repositoryManager = new RepositorySyncMapper(this.ctx.newChild('repository', {}), this._client, this.app)
 
-    this.collaborator = createCollaboratorClient(this._client.getHierarchy(), this.workspace)
+    this.collaborator = createCollaboratorClient(this.workspace)
 
     this.personMapper = new UsersSyncManager(this.ctx.newChild('users', {}), this._client, this.liveQuery)
 
@@ -389,12 +394,12 @@ export class GithubWorker implements IntegrationManager {
     let person: Ref<Person> | undefined
     // try to find by account.
     if (userInfo.email != null) {
-      const personAccount = await this.client.findOne(contact.class.PersonAccount, { email: userInfo.email })
+      const personAccount = await this.liveQuery.findOne(contact.class.PersonAccount, { email: userInfo.email })
       person = personAccount?.person
     }
 
     if (person === undefined) {
-      const channel = await this.client.findOne(contact.class.Channel, {
+      const channel = await this.liveQuery.findOne(contact.class.Channel, {
         provider: contact.channelProvider.GitHub,
         value: userInfo.login
       })
@@ -473,14 +478,19 @@ export class GithubWorker implements IntegrationManager {
 
   async syncUserData (ctx: MeasureContext, users: GithubUserRecord[]): Promise<void> {
     // Let's sync information about users and send some details
+    const accounts = await this._client.findAll(contact.class.PersonAccount, {
+      email: { $in: users.map((it) => `github:${it._id}`) }
+    })
+    const userAuths = await this._client.findAll(github.class.GithubAuthentication, {})
+    const persons = await this._client.findAll(contact.class.Person, { _id: { $in: accounts.map((it) => it.person) } })
     for (const record of users) {
       if (record.error !== undefined) {
         // Skip accounts with error
         continue
       }
-      const account = await this._client.findOne(contact.class.PersonAccount, { email: `github:${record._id}` })
-      const userAuth = await this._client.findOne(github.class.GithubAuthentication, { login: record._id })
-      const person = await this._client.findOne(contact.class.Person, { _id: account?.person })
+      const account = accounts.find((it) => it.email === `github:${record._id}`)
+      const userAuth = userAuths.find((it) => it.login === record._id)
+      const person = persons.find((it) => account?.person)
       if (account === undefined || userAuth === undefined || person === undefined) {
         continue
       }
@@ -515,12 +525,11 @@ export class GithubWorker implements IntegrationManager {
     let record = await this.platform.getAccountByRef(this.workspace.name, account)
 
     // const accountRef = this.accounts.find((it) => it._id === account)
-    const accountRef = await this._client.findOne(contact.class.PersonAccount, { _id: account })
+    const accountRef = await this.liveQuery.findOne(contact.class.PersonAccount, { _id: account })
     if (record === undefined) {
       if (accountRef !== undefined) {
-        const accounts = await this._client.findAll(contact.class.PersonAccount, {})
-        const allAccounts = accounts.filter((it) => it.person === accountRef.person)
-        for (const aa of allAccounts) {
+        const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
+        for (const aa of accounts) {
           record = await this.platform.getAccountByRef(this.workspace.name, aa._id)
           if (record !== undefined) {
             break
@@ -530,7 +539,7 @@ export class GithubWorker implements IntegrationManager {
     }
     // Check and refresh token if required.
     if (record !== undefined) {
-      this.ctx.info('get octokit', { account, recordId: record._id })
+      this.ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.name })
       await this.platform.checkRefreshToken(record)
       return new Octokit({
         auth: record.token,
@@ -541,26 +550,29 @@ export class GithubWorker implements IntegrationManager {
 
     // We need to inform user, he need to authorize this account with github.
     if (accountRef !== undefined) {
-      const person = await this.client.findOne(contact.class.Person, { _id: accountRef.person })
+      const person = await this.liveQuery.findOne(contact.class.Person, { _id: accountRef.person })
       if (person !== undefined) {
-        await createNotification(this._client, person, {
-          user: account,
-          message: github.string.AuthenticatedWithGithubRequired,
-          props: {}
-        })
+        const personSpace = await this.liveQuery.findOne(contact.class.PersonSpace, { person: person._id })
+        if (personSpace !== undefined) {
+          await createNotification(this._client, person, {
+            user: account,
+            space: personSpace._id,
+            message: github.string.AuthenticatedWithGithubRequired,
+            props: {}
+          })
+        }
       }
     }
-    this.ctx.info('get octokit: return bot', { account })
+    this.ctx.info('get octokit: return bot', { account, workspace: this.workspace.name })
   }
 
   async isPlatformUser (account: Ref<PersonAccount>): Promise<boolean> {
     let record = await this.platform.getAccountByRef(this.workspace.name, account)
-    const accountRef = await this._client.findOne(contact.class.PersonAccount, { _id: account })
+    const accountRef = await this.liveQuery.findOne(contact.class.PersonAccount, { _id: account })
     if (record === undefined) {
       if (accountRef !== undefined) {
-        const accounts = await this._client.findAll(contact.class.PersonAccount, {})
-        const allAccounts = accounts.filter((it) => it.person === accountRef.person)
-        for (const aa of allAccounts) {
+        const accounts = this._client.getModel().getAccountByPersonId(accountRef.person)
+        for (const aa of accounts) {
           record = await this.platform.getAccountByRef(this.workspace.name, aa._id)
           if (record !== undefined) {
             break
@@ -582,11 +594,11 @@ export class GithubWorker implements IntegrationManager {
   integrationsRaw: GithubIntegration[] = []
 
   async getProjectType (type: Ref<ProjectType>): Promise<ProjectType | undefined> {
-    return await this._client.findOne(task.class.ProjectType, { _id: type })
+    return (await this.liveQuery.queryFind(task.class.ProjectType, { _id: type })).shift()
   }
 
   async getTaskType (type: Ref<TaskType>): Promise<TaskType | undefined> {
-    return await this._client.findOne(task.class.TaskType, { _id: type })
+    return (await this.liveQuery.queryFind(task.class.TaskType, { _id: type })).shift()
   }
 
   async getTaskTypeOf (project: Ref<ProjectType>, ofClass: Ref<Class<Doc>>): Promise<TaskType | undefined> {
@@ -620,7 +632,7 @@ export class GithubWorker implements IntegrationManager {
     return statuses.filter((it) => allowedTypes.has(it._id))
   }
 
-  async init (): Promise<boolean> {
+  async init (): Promise<void> {
     this.registerNotifyHandler()
 
     await this.queryAccounts()
@@ -681,14 +693,16 @@ export class GithubWorker implements IntegrationManager {
       })
     })
 
-    const userRecords = await this.platform.getUsers(this.workspace.name)
-
-    await this.syncUserData(this.ctx, userRecords)
-
     this.triggerRequests = 1
     this.updateRequests = 1
     this.syncPromise = this.syncAndWait()
-    return true
+
+    const userRecords = await this.platform.getUsers(this.workspace.name)
+    try {
+      await this.syncUserData(this.ctx, userRecords)
+    } catch (err: any) {
+      Analytics.handleError(err)
+    }
   }
 
   projects: GithubProject[] = []
@@ -751,7 +765,7 @@ export class GithubWorker implements IntegrationManager {
             syncLock: new Map()
           }
           this.integrations.set(it.installationId, current)
-          await this.repositoryManager.reloadRepositories(current)
+          await this.repositoryManager.reloadRepositories(current, inst.repositories)
         } catch (err: any) {
           Analytics.handleError(err)
           this.ctx.error('Error', { err })
@@ -763,7 +777,7 @@ export class GithubWorker implements IntegrationManager {
           continue
         }
         current.integration = it
-        await this.repositoryManager.reloadRepositories(current)
+        await this.repositoryManager.reloadRepositories(current, inst.repositories)
       }
     }
   }
@@ -914,7 +928,14 @@ export class GithubWorker implements IntegrationManager {
         continue
       }
 
-      this.ctx.info('External Syncing', { name: repo.name, prj: prj.name, field, version, docs: docs.length })
+      this.ctx.info('External Syncing', {
+        name: repo.name,
+        prj: prj.name,
+        field,
+        version,
+        docs: docs.length,
+        workspace: this.workspace.name
+      })
 
       const byClass = this.groupByClass(docs)
       for (const [_class, _docs] of byClass.entries()) {
@@ -1038,7 +1059,7 @@ export class GithubWorker implements IntegrationManager {
       if (this.updateRequests > 0) {
         this.updateRequests = 0 // Just in case
         await this.updateIntegrations()
-        await this.performFullSync()
+        void this.performFullSync()
       }
 
       const { projects, repositories } = await this.collectActiveProjects()
@@ -1067,7 +1088,7 @@ export class GithubWorker implements IntegrationManager {
 
       if (!hadExternalChanges && !hadSyncChanges && !hadDerivedChanges) {
         if (this.previousWait !== 0) {
-          this.ctx.info('Wait for changes:', { previousWait: this.previousWait })
+          this.ctx.info('Wait for changes:', { previousWait: this.previousWait, workspace: this.workspace.name })
           this.previousWait = 0
         }
         // Wait until some sync documents will be modified, updated.
@@ -1120,7 +1141,7 @@ export class GithubWorker implements IntegrationManager {
 
     if (docs.length > 0) {
       this.previousWait += docs.length
-      this.ctx.info('Syncing', { docs: docs.length })
+      this.ctx.info('Syncing', { docs: docs.length, workspace: this.workspace.name })
 
       await this.doSyncFor(docs)
     }
@@ -1234,7 +1255,7 @@ export class GithubWorker implements IntegrationManager {
         const existing = externalDocs.find((it) => it._id === info._id)
         const mapper = this.mappers.find((it) => it._class.includes(info.objectClass))?.mapper
         if (mapper === undefined) {
-          this.ctx.info('No mapper for class', { objectClass: info.objectClass })
+          this.ctx.info('No mapper for class', { objectClass: info.objectClass, workspace: this.workspace.name })
           await derivedClient.update<DocSyncInfo>(info, {
             needSync: githubSyncVersion
           })
@@ -1328,7 +1349,11 @@ export class GithubWorker implements IntegrationManager {
 
   private async waitChanges (): Promise<void> {
     if (this.triggerRequests > 0 || this.updateRequests > 0) {
-      this.ctx.info('Trigger check pending:', { requests: this.triggerRequests, updates: this.updateRequests })
+      this.ctx.info('Trigger check pending:', {
+        requests: this.triggerRequests,
+        updates: this.updateRequests,
+        workspace: this.workspace.name
+      })
       this.triggerRequests = 0
       return
     }
@@ -1342,7 +1367,7 @@ export class GithubWorker implements IntegrationManager {
           triggerTimeout = setTimeout(() => {
             triggerTimeout = undefined
             if (was0) {
-              this.ctx.info('Sync triggered', { request: this.triggerRequests })
+              this.ctx.info('Sync triggered', { request: this.triggerRequests, workspace: this.workspace.name })
             }
             resolve()
           }, 50) // Small timeout to aggregate few bulk changes.
@@ -1356,7 +1381,7 @@ export class GithubWorker implements IntegrationManager {
           updateTimeout = setTimeout(() => {
             updateTimeout = undefined
             if (was0) {
-              this.ctx.info('Sync update triggered', { requests: this.updateRequests })
+              this.ctx.info('Sync update triggered', { requests: this.updateRequests, workspace: this.workspace.name })
             }
             resolve()
           }, 50) // Small timeout to aggregate few bulk changes.
@@ -1373,7 +1398,11 @@ export class GithubWorker implements IntegrationManager {
     this.triggerSync()
   }
 
-  async performFullSync (): Promise<void> {
+  performFullSync = reduceCalls(async () => {
+    await this._performFullSync()
+  })
+
+  async _performFullSync (): Promise<void> {
     // Wait previous active sync
     for (const integration of this.integrations.values()) {
       await this.ctx.withLog('external sync', { installation: integration.installationName }, async () => {
@@ -1483,9 +1512,11 @@ export class GithubWorker implements IntegrationManager {
     ctx.info('Connecting to', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
     let client: Client | undefined
     try {
-      client = await createPlatformClient(workspace.name, workspace.productId, 10000, (event: ClientConnectEvent) => {
+      client = await createPlatformClient(workspace.name, 30000, (event: ClientConnectEvent) => {
         reconnect(workspace.name, event)
       })
+
+      await GithubWorker.checkIntegrations(client, installations)
 
       const worker = new GithubWorker(
         ctx,
@@ -1498,11 +1529,22 @@ export class GithubWorker implements IntegrationManager {
         branding
       )
       ctx.info('Init worker', { workspace: workspace.workspaceUrl, workspaceId: workspace.workspaceName })
-      if (await worker.init()) {
-        return worker
-      }
+      void worker.init()
+      return worker
     } catch (err: any) {
+      ctx.error('timeout during to connect', { workspace, error: err })
       await client?.close()
+    }
+  }
+
+  static async checkIntegrations (client: Client, installations: Map<number, InstallationRecord>): Promise<void> {
+    const wsIntegerations = await client.findAll(github.class.GithubIntegration, {})
+
+    for (const intValue of wsIntegerations) {
+      if (!installations.has(intValue.installationId)) {
+        const ops = new TxOperations(client, core.account.System)
+        await ops.remove<GithubIntegration>(intValue)
+      }
     }
   }
 }

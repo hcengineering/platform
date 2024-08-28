@@ -254,7 +254,8 @@ export function createModel (builder: Builder): void {
       { modifiedBy: 1 },
       { createdBy: 1 },
       { attachedToClass: 1 },
-      { createdOn: -1 }
+      { createdOn: -1 },
+      { modifiedOn: 1 }
     ]
   })
 
@@ -268,7 +269,7 @@ export function createModel (builder: Builder): void {
       defaultEnabled: true,
       canDisable: true,
       depends: notification.providers.InboxNotificationProvider,
-      order: 30
+      order: 300
     },
     gmail.providers.EmailNotificationProvider
   )

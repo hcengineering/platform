@@ -17,6 +17,8 @@ import core, {
   MeasureMetricsContext,
   RateLimiter,
   TxOperations,
+  concatLink,
+  generateId,
   metricsToString,
   newMetrics,
   systemAccountEmail,
@@ -37,6 +39,8 @@ import serverClientPlugin, { getTransactorEndpoint } from '@hcengineering/server
 import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
+
+import { WebSocket } from 'ws'
 
 interface StartMessage {
   email: string
@@ -464,5 +468,38 @@ export function benchmarkWorker (): void {
       type: 'complete',
       workId: msg.workId
     })
+  }
+}
+
+export type StressBenchmarkMode = 'wrong' | 'connect-disconnect'
+export async function stressBenchmark (transactor: string, mode: StressBenchmarkMode): Promise<void> {
+  if (mode === 'wrong') {
+    console.log('Stress with wrong workspace/email')
+    let counter = 0
+    const rate = new RateLimiter(1)
+    while (true) {
+      try {
+        counter++
+        console.log('Attempt', counter)
+        const token = generateToken(generateId(), { name: generateId() })
+        await rate.add(async () => {
+          try {
+            const ws = new WebSocket(concatLink(transactor, token))
+            await new Promise<void>((resolve) => {
+              ws.onopen = () => {
+                resolve()
+              }
+            })
+            // ws.close()
+            // await createClient(transactor, token, undefined, 50)
+            console.log('out')
+          } catch (err: any) {
+            console.error(err)
+          }
+        })
+      } catch (err: any) {
+        // Ignore
+      }
+    }
   }
 }

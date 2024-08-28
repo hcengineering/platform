@@ -11,7 +11,7 @@ import {
 } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentsPage } from '../model/documents/documents-page'
-import { Content, DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
+import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { DocumentCommentsPage } from '../model/documents/document-comments-page'
 import { prepareDocumentStep } from './common-documents-steps'
@@ -64,21 +64,17 @@ test.describe('QMS. Documents tests', () => {
       title: `Edit Document-${generateId()}`,
       description: `Edit Document description-${generateId()}`
     }
-    const newContent: Content = {
-      sectionTitle: `Overview-${generateId()}`,
-      content: `New content-${generateId()}!!!!`
-    }
+    const newContent = `New content-${generateId()}!!!!`
     await prepareDocumentStep(page, editDocument)
 
     const documentContentPage = new DocumentContentPage(page)
     await test.step('2. Update the created document content', async () => {
       await documentContentPage.checkDocumentTitle(editDocument.title)
-      await documentContentPage.updateSectionTitle('1', newContent.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContent)
+      await documentContentPage.addContent(newContent)
     })
 
     await test.step('3. Check the updated document information', async () => {
-      await documentContentPage.checkContentForTheSection(newContent)
+      await documentContentPage.checkContent(newContent)
     })
 
     await attachScreenshot('TESTS-124_edit_document.png', page)
@@ -268,11 +264,7 @@ test.describe('QMS. Documents tests', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const newContentFirst: Content = {
-      sectionTitle: `Overview-${generateId()}`,
-      content: `New content-${generateId()}!!!!`
-    }
-    const messageToTitle: string = `Message to the title-${generateId()}`
+    const newContentFirst = `New content-${generateId()}!!!!`
     const messageToContent: string = `Message to the content-${generateId()}`
 
     await prepareDocumentStep(page, commentsDocument)
@@ -284,8 +276,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument(documentDetails)
       await documentContentPage.checkCurrentRights(DocumentRights.EDITING)
 
-      await documentContentPage.updateSectionTitle('1', newContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentFirst)
+      await documentContentPage.addContent(newContentFirst)
     })
 
     await test.step('3. Send to Review', async () => {
@@ -299,13 +290,12 @@ test.describe('QMS. Documents tests', () => {
     })
 
     await test.step('4. Add comments and Complete Review', async () => {
-      await documentContentPage.addMessageToTheSectionTitle(newContentFirst.sectionTitle, messageToTitle)
-      await documentContentPage.addMessageToTheText(newContentFirst.content, messageToContent)
+      await documentContentPage.addMessageToTheText(newContentFirst, messageToContent)
 
       await documentContentPage.buttonComments.click()
 
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.checkCommentExist(newContentFirst.sectionTitle, 2)
+      await documentCommentsPage.checkCommentExist(messageToContent)
 
       await attachScreenshot('TESTS-136_add_comments.png', page)
 
@@ -317,9 +307,8 @@ test.describe('QMS. Documents tests', () => {
 
     await test.step('5. Resolve the first comment', async () => {
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.resolveComments(newContentFirst.sectionTitle, '1')
-
-      await documentCommentsPage.checkCommentExist(newContentFirst.sectionTitle, 1)
+      await documentCommentsPage.resolveComment(messageToContent)
+      await documentCommentsPage.checkCommentDoesNotExist(messageToContent)
 
       await attachScreenshot('TESTS-136_add_and_done_comments.png', page)
     })
@@ -454,38 +443,21 @@ test.describe('QMS. Documents tests', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const newContentFirst: Content = {
-      sectionTitle: `Make Review. Overview-${generateId()}`,
-      content: `Make Review. New content-${generateId()}!!!!`
-    }
-    const updateContentFirst: Content = {
-      sectionTitle: `Make Review Updated. Updated Overview-${generateId()}`,
-      content: `Make Review Updated. Updated content-${generateId()}!!!!`
-    }
-    const newContentSecond: Content = {
-      sectionTitle: `Make Review. Description-${generateId()}`,
-      content: `Make Review. New content Description-${generateId()}!!!!`
-    }
-    const messageToTitle: string = `Make Review. Message to the first title-${generateId()}`
-    const messageToSecondTitle: string = `Make Review. Message to the second title-${generateId()}`
+    const newContentFirst = `Make Review. New content-${generateId()}!!!!`
+    const updateContentFirst = `Make Review Updated. Updated content-${generateId()}!!!!`
     const messageToContent: string = `Make Review. Message to the content-${generateId()}`
 
     await prepareDocumentStep(page, makeReviewDocument)
 
     const documentContentPage = new DocumentContentPage(page)
-    await test.step('2. Add section and content', async () => {
+    await test.step('2. Add content', async () => {
       await documentContentPage.checkDocumentTitle(makeReviewDocument.title)
       await documentContentPage.checkDocumentStatus(DocumentStatus.DRAFT)
       await documentContentPage.checkDocument(documentDetails)
       await documentContentPage.checkCurrentRights(DocumentRights.EDITING)
 
-      await documentContentPage.updateSectionTitle('1', newContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentFirst)
-
-      await documentContentPage.addNewSection('1', 'below')
-      await documentContentPage.updateSectionTitle('2', newContentSecond.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentSecond)
-      await documentContentPage.checkContentForTheSection(newContentSecond)
+      await documentContentPage.addContent(newContentFirst)
+      await documentContentPage.checkContent(newContentFirst)
       await attachScreenshot('TESTS-139_add_section_and_content.png', page)
     })
 
@@ -501,15 +473,12 @@ test.describe('QMS. Documents tests', () => {
     })
 
     await test.step('4. Add comments and Complete Review', async () => {
-      await documentContentPage.addMessageToTheSectionTitle(newContentFirst.sectionTitle, messageToTitle)
-      await documentContentPage.addMessageToTheText(newContentFirst.content, messageToContent)
-      await documentContentPage.addMessageToTheSectionTitle(newContentSecond.sectionTitle, messageToSecondTitle)
+      await documentContentPage.addMessageToTheText(newContentFirst, messageToContent)
 
       await documentContentPage.buttonComments.click()
 
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.checkCommentExist(newContentFirst.sectionTitle, 2)
-      await documentCommentsPage.checkCommentExist(newContentSecond.sectionTitle, 1)
+      await documentCommentsPage.checkCommentExist(messageToContent)
 
       await documentContentPage.completeReview()
 
@@ -519,19 +488,16 @@ test.describe('QMS. Documents tests', () => {
     })
 
     await test.step('5. Update Document and fix reviews', async () => {
-      await documentContentPage.buttonEditDocument.click()
+      await documentContentPage.createNewDraft()
 
-      await documentContentPage.updateSectionTitle('1', updateContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(updateContentFirst)
-      await documentContentPage.checkContentForTheSection(updateContentFirst)
+      await documentContentPage.replaceContent(updateContentFirst)
+      await documentContentPage.checkContent(updateContentFirst)
 
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.checkCommentExist(updateContentFirst.sectionTitle, 2)
-      await documentCommentsPage.checkCommentExist(newContentSecond.sectionTitle, 1)
+      await documentCommentsPage.checkCommentExist(messageToContent)
       await documentCommentsPage.resolveAllComments()
 
-      await documentCommentsPage.checkCommentNotExist(updateContentFirst.sectionTitle)
-      await documentCommentsPage.checkCommentNotExist(newContentSecond.sectionTitle)
+      await documentCommentsPage.checkCommentDoesNotExist(messageToContent)
       await attachScreenshot('TESTS-136_fix_reviews.png', page)
     })
 
@@ -563,18 +529,8 @@ test.describe('QMS. Documents tests', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const newContentFirst: Content = {
-      sectionTitle: `Comparing versions. Overview-${generateId()}`,
-      content: `Comparing versions. New content-${generateId()}!!!!`
-    }
-    const updateContentFirst: Content = {
-      sectionTitle: '',
-      content: `Comparing versions Updated. Updated content-${generateId()}!!!!`
-    }
-    const newContentSecond: Content = {
-      sectionTitle: `Comparing versions. Description-${generateId()}`,
-      content: `Comparing versions. New content Description-${generateId()}!!!!`
-    }
+    const newContentFirst = `Comparing versions. New content-${generateId()}!!!!`
+    const updateContentFirst = `Comparing versions Updated. Updated content-${generateId()}!!!!`
 
     await prepareDocumentStep(page, makeReviewDocument)
     const documentContentPage = new DocumentContentPage(page)
@@ -584,8 +540,8 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument(documentDetails)
       await documentContentPage.checkCurrentRights(DocumentRights.EDITING)
 
-      await documentContentPage.updateSectionTitle('1', newContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentFirst)
+      await documentContentPage.addContent(newContentFirst)
+      await documentContentPage.checkContent(newContentFirst)
       await attachScreenshot('TESTS-140_add_section_and_content.png', page)
     })
 
@@ -616,24 +572,12 @@ test.describe('QMS. Documents tests', () => {
         version: 'v0.1'
       })
 
-      await documentContentPage.addContentToTheSection({
-        sectionTitle: newContentFirst.sectionTitle,
-        content: updateContentFirst.content
-      })
-      await documentContentPage.checkContentForTheSection({
-        sectionTitle: newContentFirst.sectionTitle,
-        content: updateContentFirst.content
-      })
-
-      await documentContentPage.addNewSection('1', 'below')
-      await documentContentPage.updateSectionTitle('2', newContentSecond.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentSecond)
+      await documentContentPage.replaceContent(updateContentFirst)
+      await documentContentPage.checkContent(updateContentFirst)
 
       await documentContentPage.changeCurrentRight(DocumentRights.COMPARING)
       await documentContentPage.checkComparingTextAdded('Updated')
       await documentContentPage.checkComparingTextDeleted('New')
-      await documentContentPage.checkComparingTextAdded(newContentSecond.sectionTitle)
-      await documentContentPage.checkComparingTextAdded(newContentSecond.content)
 
       await attachScreenshot('TESTS-140_fix_reviews.png', page)
     })
@@ -706,11 +650,8 @@ test.describe('QMS. Documents tests', () => {
       description: `Check comment popup elements document description-${generateId()}`
     }
     const author = 'Appleseed John'
-    const newContentFirst: Content = {
-      sectionTitle: `Overview-${generateId()}`,
-      content: `New content-${generateId()}!!!!`
-    }
-    const messageToTitle: string = `Make Review. Message to the first title-${generateId()}`
+    const newContentFirst = `New content-${generateId()}!!!!`
+    const messageToText: string = `Make Review. Message to the first title-${generateId()}`
     const replyCommentFirst = `Reply to first comment-${generateId(4)}`
 
     await prepareDocumentStep(page, checkPopupDocument)
@@ -718,38 +659,26 @@ test.describe('QMS. Documents tests', () => {
     const documentContentPage = new DocumentContentPage(page)
     await test.step('2. Add section and content', async () => {
       await documentContentPage.checkDocumentTitle(checkPopupDocument.title)
-      await documentContentPage.updateSectionTitle('1', newContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentFirst)
+
+      await documentContentPage.addContent(newContentFirst)
     })
 
     await test.step('3. Add comment and check popup', async () => {
-      await documentContentPage.addMessageToTheSectionTitle(newContentFirst.sectionTitle, messageToTitle, false)
+      await documentContentPage.addMessageToTheText(newContentFirst, messageToText, false)
 
       const documentCommentsPage = new DocumentCommentsPage(page)
       await documentCommentsPage.addReplyInPopupByCommentId(1, replyCommentFirst)
-      await documentCommentsPage.checkCommentInPopupById(
-        1,
-        newContentFirst.sectionTitle,
-        author,
-        messageToTitle,
-        replyCommentFirst
-      )
+      await documentCommentsPage.checkCommentInPopupById(1, 'Pending', author, messageToText, replyCommentFirst)
 
       await attachScreenshot('TESTS-161_add_comment_and_check_popup.png', page)
       await documentContentPage.closeNewMessagePopup()
     })
 
-    await test.step('4. Add comment and check comment in the right panel', async () => {
+    await test.step('4. Check the comment in the right panel', async () => {
       await documentContentPage.buttonComments.click()
 
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.checkCommentInPanelById(
-        1,
-        newContentFirst.sectionTitle,
-        author,
-        messageToTitle,
-        replyCommentFirst
-      )
+      await documentCommentsPage.checkCommentInPanelById(1, 'Pending', author, messageToText, replyCommentFirst)
       await attachScreenshot('TESTS-161_add_comment_and_check_comment_in_the_right_panel.png', page)
     })
   })
@@ -911,20 +840,11 @@ test.describe('QMS. Documents tests', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const newContentFirst: Content = {
-      sectionTitle: `Complete document. Overview-${generateId()}`,
-      content: `Complete document. New content-${generateId()}!!!!`
-    }
-    const updateContentFirst: Content = {
-      sectionTitle: `Complete document Updated. Updated Overview-${generateId()}`,
-      content: `Complete document Updated. Updated content-${generateId()}!!!!`
-    }
-    const newContentSecond: Content = {
-      sectionTitle: `Complete document. Description-${generateId()}`,
-      content: `Complete document. New content Description-${generateId()}!!!!`
-    }
-    const messageToTitle: string = `Complete document. Message to the first title-${generateId()}`
+    const newContentFirst = `Complete document. New content-${generateId()}!!!!`
+    const updateContentFirst = `Complete document Updated. Updated content-${generateId()}!!!!`
+    const newContentSecond = `Complete document. New content Description-${generateId()}!!!!`
     const messageToContent: string = `Complete document. Message to the content-${generateId()}`
+    const messageToContentSecond: string = `Complete document. Message to the content-second-${generateId()}`
 
     await prepareDocumentStep(page, completeDocument)
 
@@ -935,12 +855,8 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument(documentDetails)
       await documentContentPage.checkCurrentRights(DocumentRights.EDITING)
 
-      await documentContentPage.updateSectionTitle('1', newContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentFirst)
-
-      await documentContentPage.addNewSection('1', 'below')
-      await documentContentPage.updateSectionTitle('2', newContentSecond.sectionTitle)
-      await documentContentPage.addContentToTheSection(newContentSecond)
+      await documentContentPage.addContent(newContentFirst)
+      await documentContentPage.addContent(newContentSecond, true, true)
       await attachScreenshot('TESTS-206_add_section_and_content.png', page)
     })
 
@@ -955,35 +871,31 @@ test.describe('QMS. Documents tests', () => {
       await attachScreenshot('TESTS-206_send_for_review.png', page)
     })
 
-    await test.step('4. As author add comments to the first section', async () => {
-      await documentContentPage.addMessageToTheSectionTitle(newContentFirst.sectionTitle, messageToTitle)
-      await documentContentPage.addMessageToTheText(newContentFirst.content, messageToContent)
+    await test.step('4. As author add a comment', async () => {
+      await documentContentPage.addMessageToTheText(newContentFirst, messageToContent)
 
       await documentContentPage.buttonComments.click()
 
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.checkCommentExist(newContentFirst.sectionTitle, 2)
-      await documentCommentsPage.checkCommentCanBeResolved(newContentFirst.sectionTitle, 1)
-      await documentCommentsPage.checkCommentCanBeResolved(newContentFirst.sectionTitle, 2)
+      await documentCommentsPage.checkCommentExist(messageToContent)
+      await documentCommentsPage.checkCommentCanBeResolved(messageToContent)
       await attachScreenshot('TESTS-206_author_add_comments.png', page)
     })
 
-    await test.step('5. As reviewer add comments to the second section and Complete Review', async () => {
+    await test.step('5. As a reviewer add a comment and Complete Review', async () => {
       await (await userSecondPage.goto(`${PlatformURI}/${DocumentURI}`))?.finished()
 
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       await documentsPageSecond.openDocument(completeDocument.title)
 
       const documentContentPageSecond = new DocumentContentPage(userSecondPage)
-      await documentContentPageSecond.addMessageToTheSectionTitle(newContentSecond.sectionTitle, messageToTitle)
-      await documentContentPageSecond.addMessageToTheText(newContentSecond.content, messageToContent)
+      await documentContentPageSecond.addMessageToTheText(newContentSecond, messageToContentSecond)
 
       await documentContentPageSecond.buttonComments.click()
 
       const documentCommentsPageSecond = new DocumentCommentsPage(userSecondPage)
-      await documentCommentsPageSecond.checkCommentExist(newContentSecond.sectionTitle, 2)
-      await documentCommentsPageSecond.checkCommentCanBeResolved(newContentSecond.sectionTitle, 3)
-      await documentCommentsPageSecond.checkCommentCanBeResolved(newContentSecond.sectionTitle, 4)
+      await documentCommentsPageSecond.checkCommentExist(messageToContentSecond)
+      await documentCommentsPageSecond.checkCommentCanBeResolved(messageToContentSecond)
 
       await documentContentPageSecond.completeReview()
 
@@ -993,17 +905,17 @@ test.describe('QMS. Documents tests', () => {
     })
 
     await test.step('6. Update Document and fix reviews', async () => {
-      await documentContentPage.buttonEditDocument.click()
+      await documentContentPage.createNewDraft()
 
-      await documentContentPage.updateSectionTitle('1', updateContentFirst.sectionTitle)
-      await documentContentPage.addContentToTheSection(updateContentFirst)
-      await documentContentPage.checkContentForTheSection(updateContentFirst)
+      await documentContentPage.replaceContent(updateContentFirst)
 
       const documentCommentsPage = new DocumentCommentsPage(page)
-      await documentCommentsPage.checkCommentExist(updateContentFirst.sectionTitle, 2)
+      await documentCommentsPage.checkCommentExist(messageToContent)
+      await documentCommentsPage.checkCommentExist(messageToContentSecond)
       await documentCommentsPage.resolveAllComments()
 
-      await documentCommentsPage.checkCommentNotExist(updateContentFirst.sectionTitle)
+      await documentCommentsPage.checkCommentDoesNotExist(messageToContent)
+      await documentCommentsPage.checkCommentDoesNotExist(messageToContentSecond)
       await attachScreenshot('TESTS-206_fix_reviews.png', page)
 
       await documentContentPage.buttonDocumentInformation.click()
@@ -1138,13 +1050,15 @@ test.describe('QMS. Documents tests', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const overviewContent: Content = {
-      sectionTitle: 'Overview',
+
+    const overview = {
+      heading: 'Overview',
       content:
         'In this section, we explore [Medical Topic], shedding light on its key aspects, causes, symptoms, and available treatments. Gain insights into the latest advancements in [Medical Field] and discover valuable information for a better understanding of managing and addressing [Medical Condition].'
     }
-    const mainContent: Content = {
-      sectionTitle: 'Main',
+
+    const main = {
+      heading: 'Main',
       content:
         '[Medical Topic] is a prevalent [medical condition/issue] affecting a significant number of individuals worldwide. This condition is characterized by [brief description of symptoms or key features]. It can arise due to [common causes or triggers], leading to [impact on health or daily life].'
     }
@@ -1162,8 +1076,12 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocumentTitle(existDocument.title)
       await documentContentPage.checkDocument(documentDetails)
       await documentContentPage.checkDocumentStatus(DocumentStatus.IN_REVIEW)
-      await documentContentPage.checkContentForTheSection(overviewContent)
-      await documentContentPage.checkContentForTheSection(mainContent)
+
+      await expect(documentContentPage.contentLocator.locator('h1:first-child')).toHaveText(overview.heading)
+      await expect(documentContentPage.contentLocator.locator('h1:first-child + p')).toHaveText(overview.content)
+
+      await expect(documentContentPage.contentLocator.locator('h1:not(:first-child)')).toHaveText(main.heading)
+      await expect(documentContentPage.contentLocator.locator('h1:not(:first-child) + p')).toHaveText(main.content)
     })
   })
 })

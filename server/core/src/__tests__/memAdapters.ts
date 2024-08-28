@@ -35,14 +35,14 @@ export class MemStorageAdapter implements StorageAdapter {
 
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     const workspaces = new Set(Array.from(this.files.values()).map((it) => it.workspace))
     return Array.from(workspaces).map((it) => ({
       name: it,
       delete: async () => {
-        await this.delete(ctx, { name: it, productId: '' })
+        await this.delete(ctx, { name: it })
       },
-      list: () => this.listStream(ctx, { name: it, productId: '' })
+      list: () => this.listStream(ctx, { name: it })
     }))
   }
 
@@ -146,6 +146,10 @@ export class MemStorageAdapter implements StorageAdapter {
   ): Promise<Readable> {
     // Partial are not supported by
     throw new Error('NoSuchKey')
+  }
+
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    return '/files/' + objectName
   }
 }
 

@@ -25,6 +25,7 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { htmlToMarkup } from '@hcengineering/text'
+import contact from '@hcengineering/contact'
 
 import activity from './plugin'
 import { activityId, DOMAIN_ACTIVITY } from './index'
@@ -45,9 +46,7 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
     DOMAIN_ACTIVITY,
     {
       _class: activity.class.DocUpdateMessage,
-      'attributeUpdates.attrClass': {
-        $in: [core.class.TypeMarkup, core.class.TypeCollaborativeMarkup]
-      }
+      'attributeUpdates.attrClass': core.class.TypeMarkup
     },
     {
       projection: {
@@ -176,6 +175,17 @@ export async function migrateMessagesSpace (
   }
 }
 
+async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_ACTIVITY,
+    {
+      _class: activity.class.DocUpdateMessage,
+      'attributeUpdates.attrClass': 'core:class:TypeCollaborativeMarkup'
+    },
+    { 'attributeUpdates.attrClass': core.class.TypeMarkup }
+  )
+}
+
 export const activityOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, activityId, [
@@ -197,6 +207,20 @@ export const activityOperation: MigrateOperation = {
             ({ attachedToClass }) => attachedToClass
           )
         }
+      },
+      {
+        state: 'migrate-employee-space-v1',
+        func: async () => {
+          await client.update<ActivityMessage>(
+            DOMAIN_ACTIVITY,
+            { space: 'contact:space:Employee' as Ref<Space> },
+            { space: contact.space.Contacts }
+          )
+        }
+      },
+      {
+        state: 'migrate-activity-markup',
+        func: migrateActivityMarkup
       }
     ])
   },

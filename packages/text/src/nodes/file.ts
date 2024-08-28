@@ -71,18 +71,6 @@ export const FileNode = Node.create<FileOptions>({
     return [
       {
         tag: `div[data-type="${this.name}"]`
-      },
-      {
-        tag: 'div[data-file-name]'
-      },
-      {
-        tag: 'div[data-file-size]'
-      },
-      {
-        tag: 'div[data-file-type]'
-      },
-      {
-        tag: 'div[data-file-href]'
       }
     ]
   },

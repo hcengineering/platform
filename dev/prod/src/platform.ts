@@ -107,7 +107,7 @@ import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
+import presentation, { loadServerConfig, parsePreviewConfig, presentationId } from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
 import { setDefaultLanguage } from '@hcengineering/theme'
@@ -120,10 +120,10 @@ import { Analytics } from '@hcengineering/analytics'
 export interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
+  FILES_URL: string
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
-  COLLABORATOR_API_URL: string
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
@@ -135,13 +135,14 @@ export interface Config {
   GITHUB_URL: string
   SENTRY_DSN?: string
   LOVE_ENDPOINT?: string
-  LIVEKIT_WS?: string,
-  SIGN_URL?: string,
-  PRINT_URL?: string,
-  POSTHOG_API_KEY?: string,
+  LIVEKIT_WS?: string
+  SIGN_URL?: string
+  PRINT_URL?: string
+  POSTHOG_API_KEY?: string
   POSTHOG_HOST?: string
   ANALYTICS_COLLECTOR_URL?:string
   BRANDING_URL?: string
+  TELEGRAM_BOT_URL?: string
 
   // Could be defined for dev environment
   FRONT_URL?: string
@@ -238,13 +239,12 @@ export async function configurePlatform() {
   })
   configureI18n()
 
-  const config: Config = await (await fetch(
+  const config: Config = await loadServerConfig(
     devConfigHuly
       ? '/config-huly.json' : (
         devConfigBold ? '/config-bold.json' : ( 
           devConfig ? '/config-dev.json' : '/config.json'))
   )
-  ).json()
   const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
@@ -283,9 +283,9 @@ export async function configurePlatform() {
   // tryOpenInDesktopApp(config.APP_PROTOCOL ?? 'huly://')
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
+  setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
-  setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
@@ -301,6 +301,7 @@ export async function configurePlatform() {
     setMetadata(presentation.metadata.FrontVersion, config.VERSION)
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL)
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
@@ -362,6 +363,7 @@ export async function configurePlatform() {
   addLocation(diffviewId, () => import(/* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources'))
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
   addLocation(desktopPreferencesId, () => import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources'))
+  addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))

@@ -332,7 +332,7 @@ export async function upgradeModel (
           (it) =>
             it.modifiedBy !== core.account.System ||
             (it as TxCUD<Doc>).objectClass === contact.class.Person ||
-            (it as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
+            (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
         )
       )
     ]
@@ -348,7 +348,7 @@ export async function upgradeModel (
     )
 
     const upgradeIndexes = async (): Promise<void> => {
-      ctx.info('Migrate to sparse indexes')
+      ctx.info('Migrate indexes')
       // Create update indexes
       await createUpdateIndexes(
         ctx,
@@ -385,7 +385,7 @@ export async function upgradeModel (
 
       await tryMigrate(migrateClient, coreId, [
         {
-          state: 'indexes-v2',
+          state: 'indexes-v4',
           func: upgradeIndexes
         }
       ])
@@ -432,8 +432,7 @@ export async function upgradeModel (
         const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
         const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
         await fetch(
-          serverEndpoint +
-            `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId, '@')}`,
+          serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
           {
             method: 'PUT'
           }
@@ -470,7 +469,7 @@ async function prepareMigrationClient (
   return { migrateClient, migrateState }
 }
 
-async function fetchModelFromMongo (
+export async function fetchModelFromMongo (
   ctx: MeasureContext,
   mongodbUri: string,
   workspaceId: WorkspaceId,

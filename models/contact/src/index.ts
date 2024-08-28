@@ -29,7 +29,8 @@ import {
   type Organization,
   type Person,
   type PersonAccount,
-  type Status
+  type Status,
+  type PersonSpace
 } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -38,8 +39,8 @@ import {
   IndexKind,
   type Blob,
   type Class,
+  type CollaborativeDoc,
   type Domain,
-  type Markup,
   type Ref,
   type Timestamp
 } from '@hcengineering/core'
@@ -53,7 +54,7 @@ import {
   ReadOnly,
   TypeBlob,
   TypeBoolean,
-  TypeCollaborativeMarkup,
+  TypeCollaborativeDoc,
   TypeDate,
   TypeRecord,
   TypeRef,
@@ -64,7 +65,7 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAccount, TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
@@ -172,9 +173,9 @@ export class TMember extends TAttachedDoc implements Member {
 @Model(contact.class.Organization, contact.class.Contact)
 @UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name', undefined, contact.string.Organizations)
 export class TOrganization extends TContact implements Organization {
-  @Prop(TypeCollaborativeMarkup(), core.string.Description)
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description?: Markup
+    description!: CollaborativeDoc
 
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number
@@ -219,6 +220,13 @@ export class TContactsTab extends TDoc implements ContactsTab {
   index!: number
 }
 
+@Model(contact.class.PersonSpace, core.class.Space)
+export class TPersonSpace extends TSpace implements PersonSpace {
+  @Prop(TypeRef(contact.class.Person), contact.string.Person)
+  @Index(IndexKind.Indexed)
+    person!: Ref<Person>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TAvatarProvider,
@@ -231,7 +239,8 @@ export function createModel (builder: Builder): void {
     TChannel,
     TStatus,
     TMember,
-    TContactsTab
+    TContactsTab,
+    TPersonSpace
   )
 
   builder.mixin(contact.class.Contact, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -245,16 +254,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Organization, core.class.Class, activity.mixin.ActivityDoc, {})
-
-  builder.createDoc(activity.class.ActivityMessageControl, core.space.Model, {
-    objectClass: contact.class.Contact,
-    skip: [
-      {
-        _class: core.class.TxCollectionCUD,
-        collection: 'comments'
-      }
-    ]
-  })
 
   builder.mixin(contact.class.Channel, core.class.Class, activity.mixin.ActivityDoc, {})
 
@@ -1172,6 +1171,14 @@ export function createModel (builder: Builder): void {
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_CONTACT,
+    indexes: [
+      {
+        keys: {
+          _class: 1,
+          [contact.mixin.Employee + '.active']: 1
+        }
+      }
+    ],
     disabled: [{ attachedToClass: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }, { attachedTo: 1 }]
   })
 

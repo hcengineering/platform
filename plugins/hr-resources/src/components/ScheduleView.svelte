@@ -216,11 +216,13 @@
             tasks: new Map()
           }
           const tsk = r.$lookup?.attachedTo as Issue
-          newMap.set(r.employee, {
-            value: or.value + r.value,
-            reports: [...or.reports, r],
-            tasks: or.tasks.set(tsk._id, tsk)
-          })
+          if (tsk !== undefined) {
+            newMap.set(r.employee, {
+              value: or.value + r.value,
+              reports: [...or.reports, r],
+              tasks: or.tasks.set(tsk._id, tsk)
+            })
+          }
         }
       }
       timeReports = newMap

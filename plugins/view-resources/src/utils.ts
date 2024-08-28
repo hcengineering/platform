@@ -22,6 +22,7 @@ import core, {
   Hierarchy,
   SortingOrder,
   TxProcessor,
+  generateId,
   getCurrentAccount,
   getObjectValue,
   type Account,
@@ -582,7 +583,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[], skipC
   } else {
     realObjects = objects
   }
-  const ops = client.apply('delete')
+  const ops = client.apply('delete' + generateId())
   for (const object of realObjects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
@@ -1496,6 +1497,14 @@ export const permissionsStore = writable<PermissionsStore>({
   whitelist: new Set()
 })
 
+const spaceSpaceQuery = createQuery(true)
+
+export const spaceSpace = writable<TypedSpace | undefined>(undefined)
+
+spaceSpaceQuery.query(core.class.TypedSpace, { _id: core.space.Space }, (res) => {
+  spaceSpace.set(res[0])
+})
+
 const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
 type TargetClassesProjection = Record<Ref<Class<Space>>, number>
@@ -1623,4 +1632,15 @@ export async function parseLinkId<T extends Doc> (
   const _id = await decodeFn(id)
 
   return (_id ?? id) as Ref<T>
+}
+
+export async function getObjectId (object: Doc, hierarchy: Hierarchy): Promise<string> {
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    return await encodeFn(object)
+  }
+
+  return object._id
 }

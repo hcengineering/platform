@@ -1,13 +1,29 @@
+//
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 import { generateToken, Token } from '@hcengineering/server-token'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
-import { AccountRole, getWorkspaceId, Timestamp, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { AccountRole, getWorkspaceId, MeasureContext, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import { Person } from '@hcengineering/contact'
+import { Db, Collection } from 'mongodb'
 
 import { WorkspaceClient } from './workspaceClient'
 import config from './config'
 import { getWorkspaceInfo } from './account'
+import { SupportWsClient } from './supportWsClient'
+import { Action, OnboardingMessage } from './types'
 
-const clearEventsTimeout = 10 * 60 * 1000 // 10 hour
-const eventsTimeToLive = 60 * 60 * 1000 // 1 hour
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
 export class Collector {
@@ -15,56 +31,40 @@ export class Collector {
   private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
   private readonly createdWorkspaces: Set<string> = new Set<string>()
 
-  supportClient: WorkspaceClient | undefined = undefined
-  eventsByEmail = new Map<string, AnalyticEvent[]>()
+  private readonly onboardingMessagesCollection: Collection<OnboardingMessage>
 
-  periodicTimer: NodeJS.Timeout
+  supportClient: SupportWsClient | undefined = undefined
 
-  constructor () {
-    this.periodicTimer = setInterval(() => {
-      void this.clearEvents()
-    }, clearEventsTimeout)
+  persons = new Map<string, Person>()
+
+  constructor (
+    private readonly ctx: MeasureContext,
+    private readonly db: Db
+  ) {
+    this.onboardingMessagesCollection = this.db.collection<OnboardingMessage>('messages')
+    this.supportClient = this.getSupportWorkspaceClient()
   }
 
-  async clearEvents (): Promise<void> {
-    const now = Date.now()
-
-    for (const [key, events] of this.eventsByEmail.entries()) {
-      const firstValidIndex = events.findIndex((event) => now - event.timestamp < eventsTimeToLive)
-
-      if (firstValidIndex === -1) {
-        this.eventsByEmail.delete(key)
-      } else {
-        this.eventsByEmail.set(key, events.slice(firstValidIndex))
-      }
-    }
-  }
-
-  async closeWorkspaceClient (workspaceId: WorkspaceId): Promise<void> {
+  getWorkspaceClient (workspaceId: WorkspaceId): WorkspaceClient {
     const workspace = toWorkspaceString(workspaceId)
-    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId)
-      this.closeWorkspaceTimeouts.delete(workspace)
-    }
-
-    const client = this.workspaces.get(workspace)
-
-    if (client !== undefined) {
-      await client.close()
-      this.workspaces.delete(workspace)
-    }
-  }
-
-  async getWorkspaceClient (workspaceId: WorkspaceId): Promise<WorkspaceClient> {
-    const workspace = toWorkspaceString(workspaceId)
-    const wsClient = this.workspaces.get(workspace) ?? new WorkspaceClient(workspaceId)
+    let wsClient: WorkspaceClient
 
     if (!this.workspaces.has(workspace)) {
-      this.workspaces.set(workspace, wsClient)
+      this.ctx.info('Creating workspace client', { workspace, allClients: Array.from(this.workspaces.keys()) })
+      const client = new WorkspaceClient(this.ctx, workspaceId)
+      this.workspaces.set(workspace, client)
+      wsClient = client
+    } else {
+      wsClient = this.workspaces.get(workspace) as WorkspaceClient
     }
 
+    this.setWorkspaceCloseTimeout(workspace)
+
+    return wsClient
+  }
+
+  setWorkspaceCloseTimeout (workspace: string): void {
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -72,12 +72,47 @@ export class Collector {
     }
 
     const newTimeoutId = setTimeout(() => {
-      void this.closeWorkspaceClient(workspaceId)
+      void this.closeWorkspaceClient(workspace)
     }, closeWorkspaceTimeout)
 
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
+  }
 
-    return wsClient
+  getSupportWorkspaceClient (): SupportWsClient {
+    let client: SupportWsClient
+
+    if (this.supportClient !== undefined) {
+      client = this.supportClient
+    } else {
+      client = new SupportWsClient(this.ctx, getWorkspaceId(config.SupportWorkspace))
+      this.supportClient = client
+    }
+
+    this.setWorkspaceCloseTimeout(config.SupportWorkspace)
+
+    return client
+  }
+
+  async closeWorkspaceClient (workspace: string): Promise<void> {
+    this.ctx.info('Closing workspace client', { workspace })
+    const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
+
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId)
+      this.closeWorkspaceTimeouts.delete(workspace)
+    }
+
+    if (workspace === config.SupportWorkspace) {
+      await this.supportClient?.close()
+      this.supportClient = undefined
+    } else {
+      const client = this.workspaces.get(workspace)
+
+      if (client !== undefined) {
+        await client.close()
+        this.workspaces.delete(workspace)
+      }
+    }
   }
 
   collect (events: AnalyticEvent[], token: Token): void {
@@ -85,18 +120,7 @@ export class Collector {
       return
     }
 
-    const existingEvents = this.eventsByEmail.get(token.email) ?? []
-
-    this.eventsByEmail.set(token.email, existingEvents.concat(events))
-    void this.pushEvents(events, token)
-  }
-
-  getSupportWorkspaceClient (): WorkspaceClient {
-    if (this.supportClient === undefined) {
-      this.supportClient = new WorkspaceClient(getWorkspaceId(config.SupportWorkspace))
-    }
-
-    return this.supportClient
+    void this.pushEventsToSupport(events, token)
   }
 
   async isWorkspaceCreated (token: Token): Promise<boolean> {
@@ -106,14 +130,13 @@ export class Collector {
       return true
     }
 
-    console.info('isWorkspaceCreated', token.email, token.workspace.name)
     const info = await getWorkspaceInfo(generateToken(token.email, token.workspace, token.extra))
-
-    console.log('workspace info', info?.workspace, info?.email, info?.endpoint)
+    this.ctx.info('workspace info', info)
 
     if (info === undefined) {
       return false
     }
+
     if (info?.creating === true) {
       return false
     }
@@ -122,18 +145,19 @@ export class Collector {
     return true
   }
 
-  async pushEvents (events: AnalyticEvent[], token: Token): Promise<void> {
-    const isCreated = await this.isWorkspaceCreated(token)
+  async getPerson (email: string, workspace: WorkspaceId): Promise<Person | undefined> {
+    const wsString = toWorkspaceString(workspace)
+    const key = `${email}-${wsString}`
 
-    if (!isCreated) {
-      return
+    if (this.persons.has(key)) {
+      return this.persons.get(key)
     }
 
-    const fromWsClient = await this.getWorkspaceClient(token.workspace)
-    const account = await fromWsClient.getAccount(token.email)
+    const fromWsClient = this.getWorkspaceClient(workspace)
+    const account = await fromWsClient.getAccount(email)
 
     if (account === undefined) {
-      console.error('Cannnot found account', { email: token.email, workspace: toWorkspaceString(token.workspace) })
+      this.ctx.error('Cannnot found account', { email, workspace: wsString })
       return
     }
 
@@ -142,32 +166,55 @@ export class Collector {
     }
 
     const person = await fromWsClient.getPerson(account)
-    const client = this.getSupportWorkspaceClient()
 
-    await client.pushEvents(events, token.email, token.workspace, person)
+    if (person !== undefined) {
+      this.persons.set(key, person)
+    }
+
+    return person
   }
 
-  getEvents (start?: Timestamp, end?: Timestamp): AnalyticEvent[] {
-    const events = Array.from(this.eventsByEmail.values())
-      .flat()
-      .sort((e1, e2) => e1.timestamp - e2.timestamp)
+  async pushEventsToSupport (events: AnalyticEvent[], token: Token): Promise<void> {
+    const isCreated = await this.isWorkspaceCreated(token)
 
-    if (start === undefined && end === undefined) {
-      return events
+    if (!isCreated) {
+      return
     }
 
-    if (start === undefined && end !== undefined) {
-      return events.filter((e) => e.timestamp <= end)
+    const person = await this.getPerson(token.email, token.workspace)
+
+    if (person === undefined) {
+      return
     }
 
-    if (end === undefined && start !== undefined) {
-      return events.filter((e) => e.timestamp >= start)
+    const client = this.getSupportWorkspaceClient()
+
+    await client.pushEvents(events, token.email, token.workspace, person, this.onboardingMessagesCollection)
+  }
+
+  async processAction (action: Action, token: Token): Promise<void> {
+    const ws = toWorkspaceString(token.workspace)
+
+    if (ws !== config.SupportWorkspace) {
+      return
     }
 
-    return events.filter((e) => e.timestamp >= (start ?? 0) && e.timestamp <= (end ?? 0))
+    const client = this.getSupportWorkspaceClient()
+
+    await client.processAction(action, token.email, this.onboardingMessagesCollection)
   }
 
   async close (): Promise<void> {
-    clearInterval(this.periodicTimer)
+    for (const [, client] of this.workspaces) {
+      await client.close()
+    }
+
+    this.workspaces.clear()
+    this.closeWorkspaceTimeouts.clear()
+
+    if (this.supportClient !== undefined) {
+      await this.supportClient.close()
+      this.supportClient = undefined
+    }
   }
 }

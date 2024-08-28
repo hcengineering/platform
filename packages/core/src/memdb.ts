@@ -15,7 +15,7 @@
 
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Lookup, MeasureContext, ReverseLookups, getObjectValue } from '.'
-import type { AttachedDoc, Class, Doc, Ref } from './classes'
+import type { Account, AttachedDoc, Class, Doc, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { checkMixinKey, matchQuery, resultSort } from './query'
@@ -30,6 +30,8 @@ import { toFindResult } from './utils'
 export abstract class MemDb extends TxProcessor implements Storage {
   private readonly objectsByClass = new Map<Ref<Class<Doc>>, Map<Ref<Doc>, Doc>>()
   private readonly objectById = new Map<Ref<Doc>, Doc>()
+
+  private readonly accountByPersonId = new Map<Ref<Doc>, Account[]>()
 
   constructor (protected readonly hierarchy: Hierarchy) {
     super()
@@ -73,6 +75,10 @@ export abstract class MemDb extends TxProcessor implements Storage {
       throw new PlatformError(new Status(Severity.ERROR, core.status.ObjectNotFound, { _id }))
     }
     return doc as T
+  }
+
+  getAccountByPersonId (ref: Ref<Doc>): Account[] {
+    return this.accountByPersonId.get(ref) ?? []
   }
 
   findObject<T extends Doc>(_id: Ref<T>): T | undefined {
@@ -183,6 +189,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
 
   /**
    * Only in model find without lookups and sorting.
+   * Do not clone results, so be aware modifications are not allowed.
    */
   findAllSync<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>, options?: FindOptions<T>): FindResult<T> {
     let result: WithLookup<Doc>[]
@@ -204,9 +211,13 @@ export abstract class MemDb extends TxProcessor implements Storage {
     }
     const total = result.length
     result = result.slice(0, options?.limit)
-    const tresult = this.hierarchy.clone(result) as WithLookup<T>[]
-    const res = tresult.map((it) => this.hierarchy.updateLookupMixin(_class, it, options))
-    return toFindResult(res, total)
+
+    return toFindResult(
+      result.map((it) => {
+        return baseClass !== _class ? this.hierarchy.as(it, _class) : it
+      }) as WithLookup<T>[],
+      total
+    )
   }
 
   addDoc (doc: Doc): void {
@@ -214,6 +225,12 @@ export abstract class MemDb extends TxProcessor implements Storage {
       const arr = this.getObjectsByClass(_class)
       arr.set(doc._id, doc)
     })
+    if (this.hierarchy.isDerived(doc._class, core.class.Account)) {
+      const account = doc as Account
+      if (account.person !== undefined) {
+        this.accountByPersonId.set(account.person, [...(this.accountByPersonId.get(account.person) ?? []), account])
+      }
+    }
     this.objectById.set(doc._id, doc)
   }
 
@@ -226,6 +243,37 @@ export abstract class MemDb extends TxProcessor implements Storage {
     this.hierarchy.getAncestors(doc._class).forEach((_class) => {
       this.cleanObjectByClass(_class, _id)
     })
+    if (this.hierarchy.isDerived(doc._class, core.class.Account)) {
+      const account = doc as Account
+      if (account.person !== undefined) {
+        const acc = this.accountByPersonId.get(account.person) ?? []
+        this.accountByPersonId.set(
+          account.person,
+          acc.filter((it) => it._id !== _id)
+        )
+      }
+    }
+  }
+
+  updateDoc (_id: Ref<Doc>, doc: Doc, update: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): void {
+    if (
+      this.hierarchy.isDerived(doc._class, core.class.Account) &&
+      update._class === core.class.TxUpdateDoc &&
+      (update as TxUpdateDoc<Account>).operations.person !== undefined
+    ) {
+      const account = doc as Account
+      if (account.person !== undefined) {
+        const acc = this.accountByPersonId.get(account.person) ?? []
+        this.accountByPersonId.set(
+          account.person,
+          acc.filter((it) => it._id !== _id)
+        )
+      }
+      const newPerson = (update as TxUpdateDoc<Account>).operations.person
+      if (newPerson !== undefined) {
+        this.accountByPersonId.set(newPerson, [...(this.accountByPersonId.get(newPerson) ?? []), account])
+      }
+    }
   }
 }
 
@@ -297,6 +345,7 @@ export class ModelDb extends MemDb {
           const cud = tx as TxUpdateDoc<Doc>
           const doc = this.findObject(cud.objectId)
           if (doc !== undefined) {
+            this.updateDoc(cud.objectId, doc, cud)
             TxProcessor.updateDoc2Doc(doc, cud)
           } else {
             ctx.error('no document found, failed to apply model transaction, skipping', {
@@ -320,9 +369,10 @@ export class ModelDb extends MemDb {
           break
         case core.class.TxMixin: {
           const mix = tx as TxMixin<Doc, Doc>
-          const obj = this.findObject(mix.objectId)
-          if (obj !== undefined) {
-            TxProcessor.updateMixin4Doc(obj, mix)
+          const doc = this.findObject(mix.objectId)
+          if (doc !== undefined) {
+            this.updateDoc(mix.objectId, doc, mix)
+            TxProcessor.updateMixin4Doc(doc, mix)
           } else {
             ctx.error('no document found, failed to apply model transaction, skipping', {
               _id: tx._id,
@@ -337,20 +387,27 @@ export class ModelDb extends MemDb {
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    const doc = this.getObject(tx.objectId) as any
-    TxProcessor.updateDoc2Doc(doc, tx)
-    return tx.retrieve === true ? { object: doc } : {}
+    try {
+      const doc = this.getObject(tx.objectId) as any
+      this.updateDoc(tx.objectId, doc, tx)
+      TxProcessor.updateDoc2Doc(doc, tx)
+      return tx.retrieve === true ? { object: doc } : {}
+    } catch (err: any) {}
+    return {}
   }
 
   protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
-    this.delDoc(tx.objectId)
+    try {
+      this.delDoc(tx.objectId)
+    } catch (err: any) {}
     return {}
   }
 
   // TODO: process ancessor mixins
   protected async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
-    const obj = this.getObject(tx.objectId) as any
-    TxProcessor.updateMixin4Doc(obj, tx)
+    const doc = this.getObject(tx.objectId) as any
+    this.updateDoc(tx.objectId, doc, tx)
+    TxProcessor.updateMixin4Doc(doc, tx)
     return {}
   }
 }

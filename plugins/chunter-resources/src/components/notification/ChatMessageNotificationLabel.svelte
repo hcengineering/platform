@@ -35,7 +35,7 @@
   let title: string | undefined = undefined
   let channel: Doc | undefined = undefined
 
-  $: isThread = hierarchy.isDerived(context.attachedToClass, chunter.class.ThreadMessage)
+  $: isThread = hierarchy.isDerived(context.objectClass, chunter.class.ThreadMessage)
 
   $: loadChannel(object, isThread)
   $: channel &&
@@ -46,7 +46,7 @@
   function loadChannel (object: ChatMessage, isThread: boolean): void {
     const _class = isThread ? (object as ThreadMessage).objectClass : object.attachedToClass
     const _id = isThread ? (object as ThreadMessage).objectId : object.attachedTo
-    console.log({ _class, _id, isThread, object })
+
     void client.findOne(_class, { _id, ...(isThread ? { space: object.space } : {}) }).then((res) => {
       channel = res
     })

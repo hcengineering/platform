@@ -49,7 +49,7 @@ export function goToLogin (page: LoginPages, clearQuery: boolean = false): void 
   if (clearQuery) {
     loc.query = undefined
   }
-  navigate(loc)
+  navigate(loc, clearQuery)
 }
 
 export function getHref (path: Pages): string {
@@ -69,16 +69,16 @@ export async function ensureConfirmed (account: LoginInfo): Promise<void> {
   }
 }
 
-export async function afterConfirm (): Promise<void> {
+export async function afterConfirm (clearQuery = false): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('onboard')
+    goTo('onboard', clearQuery)
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
-      navigateToWorkspace(joinedWS[0].workspace, result)
+      navigateToWorkspace(joinedWS[0].workspace, result, undefined, clearQuery)
     }
   } else {
-    goToLogin('selectWorkspace')
+    goToLogin('selectWorkspace', clearQuery)
   }
 }

@@ -59,13 +59,13 @@ export async function configurePlatform() {
   const config = await (await fetch('/config.json')).json()
   console.log('loading configuration', config)
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
-  setMetadata(login.metadata.UploadUrl, config.UPLOAD_URL)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.RequiredVersion, config.MODEL_VERSION)
   }
   setMetadata(telegram.metadata.TelegramURL, process.env.TELEGRAM_URL ?? 'http://localhost:8086')
+  setMetadata(telegram.metadata.BotUrl, process.TELEGRAM_BOT_URL ?? 'http://localhost:4020')
   setMetadata(gmail.metadata.GmailURL, process.env.GMAIL_URL ?? 'http://localhost:8087')
 
   setMetadata(uiPlugin.metadata.DefaultApplication, workbench.component.WorkbenchApp)

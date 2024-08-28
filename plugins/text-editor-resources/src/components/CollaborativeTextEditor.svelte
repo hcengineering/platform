@@ -42,8 +42,8 @@
   import { Completion } from '../Completion'
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
-  import { getEditorKit } from '../../src/kits/editor-kit'
-  import { DirectStorageProvider } from '../provider/storage'
+  import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
+  import { IndexeddbProvider } from '../provider/indexeddb'
   import { TiptapCollabProvider } from '../provider/tiptap'
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import textEditor, {
@@ -71,10 +71,10 @@
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
   export let field: string
 
-  export let objectClass: Ref<Class<Doc>> | undefined
-  export let objectId: Ref<Doc> | undefined
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
   export let objectSpace: Ref<Space> | undefined = undefined
-  export let objectAttr: string | undefined
+  export let objectAttr: string | undefined = undefined
 
   export let user: CollaborationUser
   export let userComponent: AnySvelteComponent | undefined = undefined
@@ -99,6 +99,7 @@
   export let canEmbedImages = true
   export let withSideMenu = true
   export let withInlineCommands = true
+  export let kitOptions: Partial<EditorKitOptions> = {}
 
   const dispatch = createEventDispatcher()
 
@@ -120,7 +121,7 @@
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
   const contextProvider = getContext<TiptapCollabProvider>(CollaborationIds.Provider)
 
-  const localProvider = contextProvider === undefined ? new DirectStorageProvider(collaborativeDoc, ydoc) : undefined
+  const localProvider = new IndexeddbProvider(collaborativeDoc, ydoc)
 
   const remoteProvider: TiptapCollabProvider =
     contextProvider ??
@@ -141,7 +142,7 @@
   $: loading = !localSynced && !remoteSynced
   $: editable = !readonly && remoteSynced
 
-  void localProvider?.loaded.then(() => (localSynced = true))
+  void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
 
   let editor: Editor
@@ -419,7 +420,8 @@
               appendTo: () => boundary ?? element,
               isHidden: () => !showToolbar
             }
-          }
+          },
+          ...kitOptions
         }),
         ...optionalExtensions,
         Placeholder.configure({ placeholder: placeHolderStr }),
@@ -478,7 +480,7 @@
     if (contextProvider === undefined) {
       remoteProvider.destroy()
     }
-    localProvider?.destroy()
+    void localProvider.destroy()
   })
 </script>
 

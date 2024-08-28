@@ -15,6 +15,7 @@
 
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
+import { DOMAIN_BENCHMARK } from './benchmark'
 import {
   Account,
   AccountRole,
@@ -46,7 +47,6 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
-import { DOMAIN_BENCHMARK } from './benchmark'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -111,6 +111,9 @@ export function escapeLikeForRegexp (value: string): string {
  */
 export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMap?: Record<string, Doc>): FindResult<T> {
   const length = total ?? docs.length
+  if (Object.keys(lookupMap ?? {}).length === 0) {
+    lookupMap = undefined
+  }
   return Object.assign(docs, { total: length, lookupMap })
 }
 
@@ -119,7 +122,6 @@ export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMa
  */
 export interface WorkspaceId {
   name: string
-  productId: string
 }
 
 /**
@@ -133,20 +135,20 @@ export interface WorkspaceIdWithUrl extends WorkspaceId {
 /**
  * @public
  *
- * Combine workspace with productId, if not equal ''
+ * Previously was combining workspace with productId, if not equal ''
+ * Now just returning workspace as is. Keeping it to simplify further refactoring of ws id.
  */
-export function getWorkspaceId (workspace: string, productId: string = ''): WorkspaceId {
+export function getWorkspaceId (workspace: string): WorkspaceId {
   return {
-    name: workspace,
-    productId
+    name: workspace
   }
 }
 
 /**
  * @public
  */
-export function toWorkspaceString (id: WorkspaceId, sep = '@'): string {
-  return id.name + (id.productId === '' ? '' : sep + id.productId)
+export function toWorkspaceString (id: WorkspaceId): string {
+  return id.name
 }
 
 const attributesPrefix = 'attributes.'
@@ -604,9 +606,10 @@ export const isEnum =
 export async function checkPermission (
   client: TxOperations,
   _id: Ref<Permission>,
-  _space: Ref<TypedSpace>
+  _space: Ref<TypedSpace>,
+  space?: TypedSpace
 ): Promise<boolean> {
-  const space = await client.findOne(core.class.TypedSpace, { _id: _space })
+  space = space ?? (await client.findOne(core.class.TypedSpace, { _id: _space }))
   const type = await client
     .getModel()
     .findOne(core.class.SpaceType, { _id: space?.type }, { lookup: { _id: { roles: core.class.Role } } })

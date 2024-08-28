@@ -20,7 +20,7 @@ import { Attribute } from '@tiptap/core'
  */
 export function getDataAttribute (
   name: string,
-  options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
+  options?: Partial<Omit<Attribute, 'parseHTML' | 'renderHTML'>>
 ): Partial<Attribute> {
   const dataName = `data-${name}`
 
@@ -28,9 +28,8 @@ export function getDataAttribute (
     default: null,
     parseHTML: (element) => element.getAttribute(dataName),
     renderHTML: (attributes) => {
-      // eslint-disable-next-line
-      if (!attributes[name]) {
-        return {}
+      if (attributes[name] == null) {
+        return null
       }
 
       return {

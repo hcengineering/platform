@@ -190,6 +190,7 @@ export type EditStyle =
   | 'default-large'
   | 'ghost-large'
   | 'modern-ghost-large'
+export type HeaderAdaptive = 'default' | 'freezeActions' | 'autoExtra' | 'doubleRow' | 'disabled'
 
 export interface ButtonItem {
   id: string

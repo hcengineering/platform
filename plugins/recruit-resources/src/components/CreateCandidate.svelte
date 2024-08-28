@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import attachment from '@hcengineering/attachment'
+  import attachment, { AttachmentsEvents } from '@hcengineering/attachment'
   import contact, {
     AvatarType,
     Channel,
@@ -40,18 +40,18 @@
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
-    FilePreviewPopup,
     Card,
     createQuery,
+    deleteFile,
     DraftController,
+    FilePreviewPopup,
     getClient,
     InlineAttributeBar,
     KeyedAttribute,
     MessageBox,
-    MultipleDraftController,
-    deleteFile
+    MultipleDraftController
   } from '@hcengineering/presentation'
-  import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
+  import { Candidate, CandidateDraft, RecruitEvents } from '@hcengineering/recruit'
   import { recognizeDocument } from '@hcengineering/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -65,12 +65,13 @@
     IconAttachment,
     IconInfo,
     Label,
+    MiniToggle,
     showPopup,
-    Spinner,
-    MiniToggle
+    Spinner
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
+  import { getCandidateIdentifier } from '../utils'
   import YesNo from './YesNo.svelte'
 
   export let shouldSaveDraft: boolean = true
@@ -231,6 +232,8 @@
       recruit.mixin.Candidate,
       candidateData
     )
+    const candidateIdentifier = getCandidateIdentifier(_id)
+    Analytics.handleEvent(RecruitEvents.TalentCreated, { _id: candidateIdentifier })
 
     if (object.resumeUuid !== undefined) {
       const resume = resumeDraft() as resumeFile
@@ -248,6 +251,7 @@
           lastModified: resume.lastModified
         }
       )
+      Analytics.handleEvent(AttachmentsEvents.FilesAttached, { object: candidateIdentifier, count: 1 })
     }
     for (const channel of object.channels) {
       await applyOps.addCollection(
@@ -278,6 +282,7 @@
           description: '',
           category: findTagCategory(skill.title, categories)
         })
+        Analytics.handleEvent(RecruitEvents.SkillCreated, { skill: skill.tag })
       }
       await applyOps.addCollection(skill._class, skill.space, _id, recruit.mixin.Candidate, 'skills', {
         title: skill.title,
@@ -518,9 +523,8 @@
     ]
   }
 
-  $: object.firstName &&
-    object.lastName &&
-    findContacts(
+  $: if (object.firstName != null && object.lastName != null) {
+    void findContacts(
       client,
       contact.class.Person,
       combineName(object.firstName.trim(), object.lastName.trim()),
@@ -529,6 +533,7 @@
       matches = p.contacts
       matchedChannels = p.channels
     })
+  }
 
   const manager = createFocusManager()
 
@@ -537,13 +542,13 @@
     fillDefaults(hierarchy, object, recruit.mixin.Candidate)
   }
 
-  export async function onOutsideClick () {
+  export async function onOutsideClick (): Promise<void> {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
   }
 
-  async function showConfirmationDialog () {
+  async function showConfirmationDialog (): Promise<void> {
     draftController.save(object, empty)
     const isFormEmpty = draft === undefined
 
@@ -554,15 +559,17 @@
         MessageBox,
         {
           label: recruit.string.CreateTalentDialogClose,
-          message: recruit.string.CreateTalentDialogCloseNote
+          message: recruit.string.CreateTalentDialogCloseNote,
+          action: async () => {
+            await deleteResume()
+            resetObject()
+            draftController.remove()
+          }
         },
         'top',
         (result?: boolean) => {
           if (result === true) {
             dispatch('close')
-            deleteResume()
-            resetObject()
-            draftController.remove()
           }
         }
       )

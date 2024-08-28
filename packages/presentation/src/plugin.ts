@@ -130,13 +130,15 @@ export default plugin(presentationId, {
     FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
+    FilesURL: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
-    CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
+    Workspace: '' as Metadata<string>,
     FrontUrl: '' as Asset,
     PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
-    ClientHook: '' as Metadata<ClientHook>
+    ClientHook: '' as Metadata<ClientHook>,
+    SessionId: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

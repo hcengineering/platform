@@ -168,7 +168,7 @@ test.describe('Tracker tests', () => {
       status: 'Todo',
       priority: 'Urgent',
       assignee: 'Appleseed John',
-      estimation: '1h',
+      estimation: '1',
       dueDate: '24'
     })
   })

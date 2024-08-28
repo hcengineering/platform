@@ -125,14 +125,26 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
   const key = `${uri}${process.env.MONGO_OPTIONS ?? '{}'}_${JSON.stringify(options ?? {})}`
   let existing = connections.get(key)
 
+  const allOptions: MongoClientOptions = {
+    ...options,
+    ...extraOptions
+  }
+
+  // Make poll size stable
+  if (allOptions.maxPoolSize !== undefined) {
+    allOptions.minPoolSize = allOptions.maxPoolSize
+  }
+  allOptions.monitorCommands = false
+  allOptions.noDelay = true
+
   // If not created or closed
   if (existing === undefined) {
     existing = new MongoClientReferenceImpl(
       MongoClient.connect(uri, {
         appName: 'transactor',
-        ...options,
-        ...extraOptions,
-        enableUtf8Validation: false
+        enableUtf8Validation: false,
+
+        ...allOptions
       }),
       () => {
         connections.delete(key)
@@ -230,7 +242,10 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 
   async estimatedCount (domain: Domain): Promise<number> {
-    const c = this.collection(domain)
-    return await c.estimatedDocumentCount()
+    if (this.exists(domain)) {
+      const c = this.collection(domain)
+      return await c.estimatedDocumentCount()
+    }
+    return 0
   }
 }

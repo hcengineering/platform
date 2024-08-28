@@ -14,8 +14,11 @@
 // limitations under the License.
 //
 
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
+import { type StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import { type IncomingHttpHeaders } from 'http'
 import { decode64 } from './base64'
@@ -34,11 +37,17 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 }
 
 export const main = async (): Promise<void> => {
+  const ctx = new MeasureMetricsContext('gmail', {}, {}, newMetrics())
+
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverToken.metadata.Secret, config.Secret)
+
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURI)
+
   const db = await getDB()
-  const gmailController = GmailController.getGmailController(db)
+  const gmailController = GmailController.create(ctx, db, storageAdapter)
   await gmailController.startAll()
   const endpoints: Endpoint[] = [
     {
@@ -114,14 +123,15 @@ export const main = async (): Promise<void> => {
 
   const server = listen(createServer(endpoints), config.Port)
 
+  const asyncClose = async (): Promise<void> => {
+    await gmailController.close()
+    await storageAdapter.close()
+    await closeDB()
+  }
+
   const shutdown = (): void => {
     server.close(() => {
-      void gmailController
-        .close()
-        .then(async () => {
-          await closeDB()
-        })
-        .then(() => process.exit())
+      void asyncClose().then(() => process.exit())
     })
   }
 

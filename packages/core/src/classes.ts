@@ -440,6 +440,8 @@ export interface Permission extends Doc {
 export interface Account extends Doc {
   email: string
   role: AccountRole
+
+  person?: Ref<Doc>
 }
 
 /**
@@ -510,7 +512,9 @@ export interface DocIndexState extends Doc {
   generationId?: string
 
   // States for stages
-  stages: Record<string, boolean | string>
+  stages: Record<string, boolean>
+
+  needIndex: boolean
 
   removed: boolean
 
@@ -520,14 +524,6 @@ export interface DocIndexState extends Doc {
   // Full Summary
   fullSummary?: string | null
   shortSummary?: string | null
-}
-
-/**
- * @public
- */
-export interface IndexStageState extends Doc {
-  stageId: string
-  attributes: Record<string, any>
 }
 
 /**
@@ -658,7 +654,6 @@ export interface DomainIndexConfiguration extends Doc {
 
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
-  productId: string
   disabled?: boolean
   version?: Data<Version>
   branding?: string

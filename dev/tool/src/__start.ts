@@ -44,6 +44,7 @@ import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTimeId } from '@hcengineering/server-time'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
+import { serverAiBotId } from '@hcengineering/server-ai-bot'
 
 addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
 addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
@@ -68,6 +69,7 @@ addLocation(serverDocumentId, () => import('@hcengineering/server-document-resou
 addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
 addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))
+addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'))
 
 function prepareTools (): {
   mongodbUri: string
@@ -82,4 +84,4 @@ function prepareTools (): {
 
 console.log(`tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`)
 
-devTool(prepareTools, process.env.PRODUCT_ID ?? '')
+devTool(prepareTools)

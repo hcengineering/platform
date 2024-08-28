@@ -14,6 +14,7 @@ import core, {
   Client,
   Doc,
   Hierarchy,
+  MeasureContext,
   Ref,
   Tx,
   TxCollectionCUD,
@@ -24,19 +25,20 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import settingP from '@hcengineering/setting'
 import telegramP, { NewTelegramMessage } from '@hcengineering/telegram'
 import type { Collection } from 'mongodb'
-import fetch from 'node-fetch'
 import { Api } from 'telegram'
+import { v4 as uuid } from 'uuid'
 import config from './config'
 import { platformToTelegram, telegramToPlatform } from './markup'
 import { MsgQueue } from './queue'
 import type { TelegramConnectionInterface } from './telegram'
 import { telegram } from './telegram'
 import { Event, LastMsgRecord, TelegramMessage, TgUser, UserRecord, WorkspaceChannel } from './types'
-import { createPlatformClient, getFiles, normalizeValue, uploadFile } from './utils'
+import { createPlatformClient, getFiles, normalizeValue } from './utils'
 
 export class WorkspaceWorker {
   private readonly clients = new Map<
@@ -52,8 +54,9 @@ export class WorkspaceWorker {
   private readonly hierarchy: Hierarchy
 
   private constructor (
+    private readonly ctx: MeasureContext,
     private readonly client: Client,
-    private readonly token: string,
+    private readonly storageAdapter: StorageAdapter,
     private readonly workspace: string,
     private readonly userStorage: Collection<UserRecord>,
     private readonly lastMsgStorage: Collection<LastMsgRecord>,
@@ -150,15 +153,25 @@ export class WorkspaceWorker {
   }
 
   static async create (
+    ctx: MeasureContext,
+    storageAdapter: StorageAdapter,
     workspace: string,
     userStorage: Collection<UserRecord>,
     lastMsgStorage: Collection<LastMsgRecord>,
     channelsStorage: Collection<WorkspaceChannel>
   ): Promise<WorkspaceWorker> {
-    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
+    const token = generateToken(config.SystemEmail, { name: workspace })
     const client = await createPlatformClient(token)
 
-    const worker = new WorkspaceWorker(client, token, workspace, userStorage, lastMsgStorage, channelsStorage)
+    const worker = new WorkspaceWorker(
+      ctx,
+      client,
+      storageAdapter,
+      workspace,
+      userStorage,
+      lastMsgStorage,
+      channelsStorage
+    )
     await worker.init()
     return worker
   }
@@ -631,7 +644,8 @@ export class WorkspaceWorker {
     const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: msg._id })
     const res: Buffer[] = []
     for (const attachment of attachments) {
-      const buffer = await this.getAttachmentData(attachment.file)
+      const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace }, attachment.file)
+      const buffer = Buffer.concat(chunks)
       if (buffer.length > 0) {
         res.push(
           Object.assign(buffer, {
@@ -653,8 +667,9 @@ export class WorkspaceWorker {
     const files = await getFiles(event.msg)
     for (const file of files) {
       try {
+        const id = uuid()
         file.size = file.size ?? file.file.length
-        const uuid = await uploadFile(file, this.token, { space: msg.space, attachedTo: msg._id })
+        await this.storageAdapter.put(this.ctx, { name: this.workspace }, id, file.file, file.type, file.size)
         const tx = factory.createTxCollectionCUD<TelegramMessage, Attachment>(
           msg._class,
           msg._id,
@@ -662,7 +677,7 @@ export class WorkspaceWorker {
           'attachments',
           factory.createTxCreateDoc<Attachment>(attachment.class.Attachment, msg.space, {
             name: file.name,
-            file: uuid as Ref<Blob>,
+            file: id as Ref<Blob>,
             type: file.type,
             size: file.size,
             lastModified: file.lastModified,
@@ -679,17 +694,6 @@ export class WorkspaceWorker {
         continue
       }
     }
-  }
-
-  private async getAttachmentData (fileId: string): Promise<Buffer> {
-    const uploadUrl = config.UploadUrl
-    if (uploadUrl === undefined) {
-      throw Error('UploadURL is not defined')
-    }
-    const url = `${uploadUrl}?file=${fileId}&token=${this.token}`
-    const res = await fetch(url)
-    const buffer = await res.buffer()
-    return buffer
   }
 
   // #endregion

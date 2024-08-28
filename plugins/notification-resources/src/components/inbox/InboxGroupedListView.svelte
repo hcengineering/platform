@@ -104,6 +104,7 @@
     count={displayData.length}
     highlightIndex={displayData.findIndex(([context]) => context === selectedContext)}
     noScroll
+    minHeight="5.625rem"
     kind="full-size"
     colorsSchema="lumia"
     lazy={true}

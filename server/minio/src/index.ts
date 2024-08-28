@@ -23,8 +23,8 @@ import core, {
   type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
-
-import {
+import { getMetadata } from '@hcengineering/platform'
+import serverCore, {
   removeAllObjects,
   type BlobStorageIterator,
   type BucketInfo,
@@ -73,11 +73,11 @@ export class MinioService implements StorageAdapter {
    * @public
    */
   getBucketId (workspaceId: WorkspaceId): string {
-    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId, '.')
+    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId)
   }
 
   getBucketFolder (workspaceId: WorkspaceId): string {
-    return toWorkspaceString(workspaceId, '.')
+    return toWorkspaceString(workspaceId)
   }
 
   async close (): Promise<void> {}
@@ -97,7 +97,7 @@ export class MinioService implements StorageAdapter {
     }
   }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     if (this.opt.rootBucket !== undefined) {
       const info = new Map<string, BucketInfo>()
       const stream = this.client.listObjects(this.opt.rootBucket, '', false)
@@ -117,9 +117,9 @@ export class MinioService implements StorageAdapter {
             info.set(wsName, {
               name: wsName,
               delete: async () => {
-                await this.delete(ctx, { name: wsName, productId })
+                await this.delete(ctx, { name: wsName })
               },
-              list: async () => await this.listStream(ctx, { name: wsName, productId })
+              list: async () => await this.listStream(ctx, { name: wsName })
             })
           }
         })
@@ -128,8 +128,7 @@ export class MinioService implements StorageAdapter {
       return Array.from(info.values())
     } else {
       const productPostfix = this.getBucketFolder({
-        name: '',
-        productId
+        name: ''
       })
       const buckets = await this.client.listBuckets()
       return buckets
@@ -140,9 +139,9 @@ export class MinioService implements StorageAdapter {
           return {
             name,
             delete: async () => {
-              await this.delete(ctx, { name, productId })
+              await this.delete(ctx, { name })
             },
-            list: async () => await this.listStream(ctx, { name, productId })
+            list: async () => await this.listStream(ctx, { name })
           }
         })
     }
@@ -362,6 +361,12 @@ export class MinioService implements StorageAdapter {
       offset,
       length
     )
+  }
+
+  @withContext('getUrl')
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
+    const filesUrl = getMetadata(serverCore.metadata.FilesUrl) ?? ''
+    return filesUrl.replaceAll(':workspace', workspaceId.name).replaceAll(':blobId', objectName)
   }
 }
 

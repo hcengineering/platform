@@ -13,45 +13,85 @@
 // limitations under the License.
 //
 import chunter, { Channel } from '@hcengineering/chunter'
-import core, { AccountRole, Ref, TxOperations } from '@hcengineering/core'
-import analyticsCollector, { getAnalyticsChannelName } from '@hcengineering/analytics-collector'
+import core, { MeasureContext, Ref, TxOperations } from '@hcengineering/core'
 import contact, { Person } from '@hcengineering/contact'
+import analyticsCollector, { getOnboardingChannelName, OnboardingChannel } from '@hcengineering/analytics-collector'
 import { translate } from '@hcengineering/platform'
 
-export async function getOrCreateAnalyticsChannel (
+interface WorkspaceInfo {
+  workspaceId: string
+  workspaceName: string
+  workspaceUrl: string
+}
+
+export async function getOrCreateOnboardingChannel (
+  ctx: MeasureContext,
   client: TxOperations,
   email: string,
-  workspace: string,
+  workspace: WorkspaceInfo,
   person?: Person
-): Promise<Ref<Channel> | undefined> {
-  const channel = await client.findOne(chunter.class.Channel, {
-    [`${analyticsCollector.mixin.AnalyticsChannel}.workspace`]: workspace,
-    [`${analyticsCollector.mixin.AnalyticsChannel}.email`]: email
-  })
-
-  if (channel !== undefined) {
-    return channel._id
-  }
-
-  const accounts = await client.findAll(contact.class.PersonAccount, { role: { $ne: AccountRole.Guest } })
-
-  const _id = await client.createDoc(chunter.class.Channel, core.space.Space, {
-    name: getAnalyticsChannelName(workspace, email),
-    topic: await translate(analyticsCollector.string.AnalyticsChannelDescription, {
-      user: person?.name ?? email,
-      workspace
-    }),
-    description: '',
-    private: false,
-    members: accounts.map(({ _id }) => _id),
-    autoJoin: true,
-    archived: false
-  })
-
-  await client.createMixin(_id, chunter.class.Channel, core.space.Space, analyticsCollector.mixin.AnalyticsChannel, {
-    workspace,
+): Promise<[Ref<OnboardingChannel> | undefined, boolean]> {
+  const channel = await client.findOne(analyticsCollector.class.OnboardingChannel, {
+    workspaceId: workspace.workspaceId,
     email
   })
 
-  return _id
+  if (channel !== undefined) {
+    return [channel._id, false]
+  }
+
+  ctx.info('Creating user onboarding channel', { email, workspace })
+
+  const _id = await client.createDoc(analyticsCollector.class.OnboardingChannel, core.space.Space, {
+    name: getOnboardingChannelName(workspace.workspaceUrl, email),
+    topic: await translate(analyticsCollector.string.OnboardingChannelDescription, {
+      user: person?.name ?? email,
+      workspace: workspace.workspaceName
+    }),
+    description: '',
+    private: false,
+    members: [],
+    autoJoin: true,
+    archived: false,
+    email,
+    workspaceId: workspace.workspaceId,
+    workspaceUrl: workspace.workspaceUrl,
+    workspaceName: workspace.workspaceName,
+    userName: person?.name ?? email
+  })
+
+  return [_id, true]
+}
+
+export async function createGeneralOnboardingChannel (
+  ctx: MeasureContext,
+  client: TxOperations
+): Promise<Channel | undefined> {
+  const channel = await client.findOne(chunter.class.Channel, {
+    _id: analyticsCollector.space.GeneralOnboardingChannel
+  })
+
+  if (channel !== undefined) {
+    return channel
+  }
+
+  ctx.info('Creating general onboarding channel')
+
+  const accounts = await client.findAll(contact.class.PersonAccount, {})
+  await client.createDoc(
+    chunter.class.Channel,
+    core.space.Space,
+    {
+      name: 'General Onboarding',
+      topic: '',
+      description: '',
+      private: false,
+      members: accounts.map(({ _id }) => _id),
+      autoJoin: true,
+      archived: false
+    },
+    analyticsCollector.space.GeneralOnboardingChannel
+  )
+
+  return await client.findOne(chunter.class.Channel, { _id: analyticsCollector.space.GeneralOnboardingChannel })
 }

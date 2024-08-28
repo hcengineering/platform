@@ -89,7 +89,7 @@ export interface Response<R> {
 }
 
 export class RPCHandler {
-  packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: true })
+  packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: false })
   protoSerialize (object: object, binary: boolean): any {
     if (!binary) {
       return JSON.stringify(object, replacer)

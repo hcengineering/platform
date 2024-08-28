@@ -18,7 +18,6 @@
     ChangeControl,
     ControlledDocument,
     DEFAULT_PERIODIC_REVIEW_INTERVAL,
-    DEFAULT_SECTION_TITLE,
     DocumentState,
     DocumentTemplate,
     TEMPLATE_PREFIX,
@@ -33,8 +32,8 @@
     type Ref,
     type Mixin,
     generateId,
-    getCollaborativeDoc,
-    getCurrentAccount
+    getCurrentAccount,
+    makeCollaborativeDoc
   } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
@@ -117,10 +116,9 @@
     author: currentUser.person as Ref<Employee>,
     owner: currentUser.person as Ref<Employee>,
     state: DocumentState.Draft,
-    sections: 0,
     snapshots: 0,
     changeControl: ccRecordId,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
 
     requests: 0,
     reviewers: [],
@@ -166,8 +164,7 @@
       docObject.docPrefix,
       spec,
       category,
-      currentUser.person as Ref<Employee>,
-      { title: DEFAULT_SECTION_TITLE }
+      currentUser.person as Ref<Employee>
     )
 
     if (!success) {

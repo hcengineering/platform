@@ -6,8 +6,8 @@ import { ScreenSource } from '@hcengineering/love'
 export interface Config {
   ACCOUNTS_URL: string
   COLLABORATOR_URL: string
-  COLLABORATOR_API_URL: string
   FRONT_URL: string
+  FILES_URL: string
   UPLOAD_URL: string
   MODEL_VERSION?: string
   VERSION?: string
@@ -30,6 +30,7 @@ export interface Config {
   PREVIEW_CONFIG: string
   DESKTOP_UPDATES_URL?: string
   DESKTOP_UPDATES_CHANNEL?: string
+  TELEGRAM_BOT_URL?: string
 }
 
 export interface Branding {

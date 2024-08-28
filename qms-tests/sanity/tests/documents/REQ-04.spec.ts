@@ -10,7 +10,7 @@ import {
 } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentsPage } from '../model/documents/documents-page'
-import { Content, DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
+import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { prepareDocumentStep } from './common-documents-steps'
 
@@ -49,15 +49,12 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const newContent: Content = {
-      sectionTitle: `Overview-${generateId()}`,
-      content: faker.lorem.paragraphs(10)
-    }
+    const newContent = faker.lorem.paragraphs(10)
 
     await prepareDocumentStep(page, completeDocument)
     const documentContentPage = new DocumentContentPage(page)
-    await documentContentPage.updateSectionTitle('1', newContent.sectionTitle)
-    await documentContentPage.addContentToTheSection(newContent)
+
+    await documentContentPage.addContent(newContent)
 
     await test.step('2. Send for Approval', async () => {
       await documentContentPage.buttonSendForApproval.click()
@@ -92,7 +89,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
 
     await test.step('4. Check the content of the draft matches the approved version', async () => {
       const actualText = await page.locator('.tiptap').innerText()
-      const expectedText = newContent.content.trim().replace(/\s+/g, ' ')
+      const expectedText = newContent.trim().replace(/\s+/g, ' ')
       const cleanedActualText = actualText.trim().replace(/\s+/g, ' ')
 
       expect(cleanedActualText).toContain(expectedText)
@@ -121,15 +118,11 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       owner: 'Appleseed John',
       author: 'Appleseed John'
     }
-    const newContent: Content = {
-      sectionTitle: `Overview-${generateId()}`,
-      content: faker.lorem.paragraphs(10)
-    }
+    const newContent = faker.lorem.paragraphs(10)
 
     await prepareDocumentStep(page, completeDocument)
     const documentContentPage = new DocumentContentPage(page)
-    await documentContentPage.updateSectionTitle('1', newContent.sectionTitle)
-    await documentContentPage.addContentToTheSection(newContent)
+    await documentContentPage.addContent(newContent)
 
     await test.step('2. Send for Approval', async () => {
       await documentContentPage.buttonSendForApproval.click()

@@ -21,6 +21,7 @@ import contact, {
   Organization,
   Person,
   PersonAccount,
+  PersonSpace,
   contactId,
   formatContactName,
   formatName,
@@ -36,6 +37,7 @@ import core, {
   Ref,
   SpaceType,
   Tx,
+  TxCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
@@ -83,20 +85,61 @@ export async function OnSpaceTypeMembers (tx: Tx, control: TriggerControl): Prom
 export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const mixinTx = tx as TxMixin<Person, Employee>
   if (mixinTx.attributes.active !== true) return []
-  const acc = await control.modelDb.findOne(contact.class.PersonAccount, { person: mixinTx.objectId })
-  if (acc === undefined) return []
+  const acc = control.modelDb.getAccountByPersonId(mixinTx.objectId)
+  if (acc.length === 0) return []
   const spaces = await control.findAll(core.class.Space, { autoJoin: true })
   const result: Tx[] = []
+
+  const txes = await createPersonSpace(
+    acc.map((it) => it._id),
+    mixinTx.objectId,
+    control
+  )
+  result.push(...txes)
+
   for (const space of spaces) {
-    if (space.members.includes(acc._id)) continue
-    const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-      $push: {
-        members: acc._id
-      }
-    })
-    result.push(pushTx)
+    const toAdd = acc.filter((it) => !space.members.includes(it._id))
+    if (toAdd.length === 0) continue
+    for (const a of toAdd) {
+      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+        $push: {
+          members: a._id
+        }
+      })
+      result.push(pushTx)
+    }
   }
   return result
+}
+
+async function createPersonSpace (
+  account: Ref<Account>[],
+  person: Ref<Person>,
+  control: TriggerControl
+): Promise<TxCUD<PersonSpace>[]> {
+  const personSpace = (await control.findAll(contact.class.PersonSpace, { person }, { limit: 1 })).shift()
+  if (personSpace !== undefined) {
+    const toAdd = account.filter((it) => !personSpace.members.includes(it))
+    if (toAdd.length === 0) return []
+    return toAdd.map((it) =>
+      control.txFactory.createTxUpdateDoc(personSpace._class, personSpace.space, personSpace._id, {
+        $push: {
+          members: it
+        }
+      })
+    )
+  }
+
+  return [
+    control.txFactory.createTxCreateDoc(contact.class.PersonSpace, core.space.Space, {
+      name: 'Personal space',
+      description: '',
+      private: true,
+      archived: false,
+      person,
+      members: account
+    })
+  ]
 }
 
 export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -106,7 +149,12 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
   )[0]
   if (person === undefined) return []
   const spaces = await control.findAll(core.class.Space, { autoJoin: true })
+
   const result: Tx[] = []
+  const txes = await createPersonSpace([acc._id], person._id, control)
+
+  result.push(...txes)
+
   for (const space of spaces) {
     if (space.members.includes(acc._id)) continue
     const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {

@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -81,12 +81,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  const collaboratorApiUrl = process.env.COLLABORATOR_API_URL
-  if (collaboratorApiUrl === undefined) {
-    console.error('please provide collaborator api url')
-    process.exit(1)
-  }
-
   const modelVersion = process.env.MODEL_VERSION
   if (modelVersion === undefined) {
     console.error('please provide model version requirement')
@@ -106,10 +100,14 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   }
 
   let previewConfig = process.env.PREVIEW_CONFIG
-
   if (previewConfig === undefined) {
     // Use universal preview config
     previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
+  }
+
+  let filesUrl = process.env.FILES_URL
+  if (filesUrl === undefined) {
+    filesUrl = `${uploadUrl}/:workspace/:filename?file=:blobId&workspace=:workspace`
   }
 
   const pushPublicKey = process.env.PUSH_PUBLIC_KEY
@@ -123,6 +121,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     storageAdapter,
     accountsUrl,
     uploadUrl,
+    filesUrl,
     modelVersion,
     version,
     gmailUrl,
@@ -130,7 +129,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     rekoniUrl,
     calendarUrl,
     collaboratorUrl,
-    collaboratorApiUrl,
     brandingUrl,
     previewConfig,
     pushPublicKey

@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, Loading, showPopup, Spinner } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
     DocNotifyContext,
     InboxNotification
   } from '@hcengineering/notification'
-  import { createQuery, getClient, isSpace, isSpaceClass } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import core, { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import chunter from '@hcengineering/chunter'
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
@@ -50,17 +50,19 @@
   const query = createQuery()
 
   let object: Doc | undefined = undefined
+  let isLoading = true
 
   $: query.query(
-    value.attachedToClass,
-    { _id: value.attachedTo, space: isSpaceClass(value.attachedToClass) ? core.space.Space : value.space },
+    value.objectClass,
+    { _id: value.objectId, space: value.objectSpace },
     (res) => {
       object = res[0]
+      isLoading = false
     },
     { limit: 1 }
   )
 
-  $: if (object?._id !== value.attachedTo) {
+  $: if (object !== undefined && object?._id !== value.objectId) {
     object = undefined
   }
 
@@ -82,10 +84,7 @@
       title = res
     })
 
-  $: presenterMixin = hierarchy.classHierarchyMixin(
-    value.attachedToClass,
-    notification.mixin.NotificationContextPresenter
-  )
+  $: presenterMixin = hierarchy.classHierarchyMixin(value.objectClass, notification.mixin.NotificationContextPresenter)
 
   let groupedNotifications: Array<InboxNotification[]> = []
 
@@ -202,7 +201,11 @@
     dispatch('click', { context: value })
   }}
 >
-  {#if object}
+  {#if isLoading}
+    <div class="loading">
+      <Loading />
+    </div>
+  {:else if object}
     <div class="header">
       <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
 
@@ -213,13 +216,13 @@
           {#if idTitle}
             {idTitle}
           {:else}
-            <Label label={hierarchy.getClass(value.attachedToClass).label} />
+            <Label label={hierarchy.getClass(value.objectClass).label} />
           {/if}
           <span class="title overflow-label clear-mins" {title}>
             {#if title}
               {title}
             {:else}
-              <Label label={hierarchy.getClass(value.attachedToClass).label} />
+              <Label label={hierarchy.getClass(value.objectClass).label} />
             {/if}
           </span>
         {/if}
@@ -269,6 +272,35 @@
           </div>
         {/each}
       </div>
+    </div>
+  {:else}
+    <div class="header">
+      <NotifyContextIcon {value} notifyCount={unreadCount} {object} />
+
+      <div class="labels">
+        <Label label={hierarchy.getClass(value.objectClass).label} />
+      </div>
+
+      <div class="actions clear-mins">
+        <div class="flex-center">
+          {#if archivingPromise !== undefined}
+            <Spinner size="small" />
+          {:else}
+            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+          {/if}
+        </div>
+        <ButtonIcon
+          icon={IconMoreV}
+          size="small"
+          kind="tertiary"
+          inheritColor
+          pressed={isActionMenuOpened}
+          on:click={showMenu}
+        />
+      </div>
+    </div>
+    <div class="content mt-2">
+      <Label label={notification.string.NoAccessToObject} />
     </div>
   {/if}
 </div>
@@ -368,5 +400,11 @@
   .content {
     display: flex;
     width: 100%;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    flex: 1;
   }
 </style>

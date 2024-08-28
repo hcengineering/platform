@@ -135,6 +135,8 @@ export interface SpaceView extends Class<Obj> {
  */
 export const workbenchId = 'workbench' as Plugin
 
+export * from './analytics'
+
 export default plugin(workbenchId, {
   class: {
     Application: '' as Ref<Class<Application>>,

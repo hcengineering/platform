@@ -29,6 +29,7 @@ import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSo
 import { Readable } from 'stream'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
+import { unknownStatus } from '@hcengineering/platform'
 
 const rpcHandler = new RPCHandler()
 
@@ -48,7 +49,6 @@ export function startUWebsocketServer (
   ctx: MeasureContext,
   pipelineFactory: PipelineFactory,
   port: number,
-  productId: string,
   enableCompression: boolean,
   accountsUrl: string,
   externalStorage: StorageAdapter
@@ -80,10 +80,6 @@ export function startUWebsocketServer (
 
       try {
         const payload = decodeToken(token ?? '')
-
-        if (payload.workspace.productId !== productId) {
-          throw new Error('Invalid workspace product')
-        }
 
         /* You MUST copy data out of req here, as req is only valid within this immediate callback */
         const url = req.getUrl()
@@ -120,8 +116,7 @@ export function startUWebsocketServer (
         language: '',
         email: data.payload.email,
         mode: data.payload.extra?.mode,
-        model: data.payload.extra?.model,
-        rpcHandler
+        model: data.payload.extra?.model
       }
       const cs = createWebSocketClientSocket(wrData, ws, data)
       data.connectionSocket = cs
@@ -132,7 +127,6 @@ export function startUWebsocketServer (
         ws.getUserData().payload,
         ws.getUserData().token,
         pipelineFactory,
-        productId,
         undefined,
         accountsUrl
       )
@@ -140,13 +134,22 @@ export function startUWebsocketServer (
       if (data.session instanceof Promise) {
         void data.session.then((s) => {
           if ('error' in s) {
-            ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+            void cs
+              .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
+              .then(() => {
+                // No connection to account service, retry from client.
+                setTimeout(() => {
+                  cs.close()
+                }, 1000)
+              })
           }
           if ('upgrade' in s) {
             void cs
               .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
               .then(() => {
-                cs.close()
+                setTimeout(() => {
+                  cs.close()
+                }, 5000)
               })
           }
         })

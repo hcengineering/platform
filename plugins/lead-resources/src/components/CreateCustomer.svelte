@@ -16,9 +16,20 @@
   import { AvatarType, Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
-  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
-  import type { Customer } from '@hcengineering/lead'
-  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import {
+    AttachedData,
+    Class,
+    Data,
+    Doc,
+    MixinData,
+    Ref,
+    WithLookup,
+    generateId,
+    makeCollaborativeDoc
+  } from '@hcengineering/core'
+  import { Customer, LeadEvents } from '@hcengineering/lead'
+  import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
+  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor-resources'
   import {
     Button,
     createFocusManager,
@@ -31,10 +42,12 @@
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
   import lead from '../plugin'
 
   let firstName = ''
   let lastName = ''
+  let description = EmptyMarkup
 
   export function canClose (): boolean {
     return firstName === '' && lastName === ''
@@ -57,9 +70,9 @@
     return targetClass === contact.class.Person ? combineName(firstName.trim(), lastName.trim()) : objectName
   }
 
-  async function createCustomer () {
+  async function createCustomer (): Promise<void> {
     const candidate: Data<Contact> = {
-      name: formatName(targetClass._id, firstName, lastName, object.name),
+      name,
       city: object.city,
       avatarType: AvatarType.COLOR
     }
@@ -70,8 +83,10 @@
       candidate.avatarProps = info.avatarProps
     }
     const candidateData: MixinData<Contact, Customer> = {
-      description: object.description
+      description: makeCollaborativeDoc(customerId, 'description')
     }
+
+    await updateMarkup(candidateData.description, { description })
 
     const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
     await client.createMixin(
@@ -95,6 +110,7 @@
         }
       )
     }
+    Analytics.handleEvent(LeadEvents.CustomerCreated, { id })
   }
 
   const targets = [
@@ -129,19 +145,18 @@
       }
     )
   }
-  $: canSave = formatName(targetClass._id, firstName, lastName, object.name).length > 0
+  $: name = formatName(targetClass._id, firstName, lastName, object.name)
+  $: canSave = name.trim().length > 0
 
   const manager = createFocusManager()
 
   let matches: WithLookup<Contact>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
   $: if (targetClass !== undefined) {
-    findContacts(client, targetClass._id, formatName(targetClass._id, firstName, lastName, object.name), channels).then(
-      (p) => {
-        matches = p.contacts
-        matchedChannels = p.channels
-      }
-    )
+    void findContacts(client, targetClass._id, name, channels).then((p) => {
+      matches = p.contacts
+      matchedChannels = p.channels
+    })
   }
 </script>
 
@@ -183,12 +198,16 @@
             focusIndex={3}
           />
         </div>
-        <EditBox
-          placeholder={lead.string.IssueDescriptionPlaceholder}
-          bind:value={object.description}
-          kind={'small-style'}
-          focusIndex={4}
-        />
+        <div class="mt-1">
+          <StyledTextBox
+            bind:content={description}
+            placeholder={lead.string.IssueDescriptionPlaceholder}
+            kind={'normal'}
+            alwaysEdit={true}
+            showButtons={false}
+            focusIndex={4}
+          />
+        </div>
       </div>
       <div class="ml-4 flex">
         <EditableAvatar

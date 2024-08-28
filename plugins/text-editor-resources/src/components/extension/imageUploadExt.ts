@@ -61,7 +61,7 @@ export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
       for (const uri of uris) {
         if (uri !== '') {
           const url = new URL(uri)
-
+          // TODO datalake support
           const _file = (url.searchParams.get('file') ?? '').split('/').join('')
 
           if (_file.trim().length === 0) {
@@ -153,7 +153,10 @@ async function handleImageUpload (
     const size = await getImageSize(file)
     const node = view.state.schema.nodes.image.create({
       'file-id': attached.file,
+      'data-file-type': file.type,
       src: url,
+      alt: file.name,
+      title: file.name,
       width: Math.round(size.width / size.pixelRatio)
     })
 

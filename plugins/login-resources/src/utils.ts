@@ -41,6 +41,7 @@ import { workbenchId } from '@hcengineering/workbench'
 
 import login from './plugin'
 import { type Pages } from './index'
+import { LoginEvents } from './analytics'
 
 /**
  * Perform a login operation to required workspace with user credentials.
@@ -68,14 +69,16 @@ export async function doLogin (email: string, password: string): Promise<[Status
     const result = await response.json()
     console.log('login result', result)
     if (result.error == null) {
-      Analytics.handleEvent('login')
+      Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
       await handleStatusError('Login error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     console.error('login error', err)
+    Analytics.handleEvent(LoginEvents.LoginPassword, { email, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -108,14 +111,16 @@ export async function signUp (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('signup')
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
       await handleStatusError('Sign up error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     Analytics.handleError(err)
+    Analytics.handleEvent(LoginEvents.SignUpEmail, { email, ok: false })
     return [unknownError(err), undefined]
   }
 }
@@ -188,13 +193,15 @@ export async function createWorkspace (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('create workspace')
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
       Analytics.setWorkspace(workspaceName)
     } else {
+      Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
       await handleStatusError('Create workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
+    Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -318,13 +325,15 @@ export async function selectWorkspace (
     })
     const result = await response.json()
     if (result.error == null) {
-      Analytics.handleEvent('Select workspace')
+      Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: true })
       Analytics.setWorkspace(workspace)
     } else {
+      Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: false })
       await handleStatusError('Select workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
+    Analytics.handleEvent(LoginEvents.SelectWorkspace, { name: workspace, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -421,18 +430,24 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   setMetadataLocalStorage(login.metadata.LoginEmail, loginInfo.email)
 }
 
-export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLoginInfo, navigateUrl?: string): void {
+export function navigateToWorkspace (
+  workspace: string,
+  loginInfo?: WorkspaceLoginInfo,
+  navigateUrl?: string,
+  replace = false
+): void {
   if (loginInfo == null) {
     return
   }
   setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadata(presentation.metadata.Workspace, loginInfo.workspace)
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
     try {
       const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
       if (loc.path[1] === workspace) {
-        navigate(loc)
+        navigate(loc, replace)
         return
       }
     } catch (err: any) {
@@ -441,9 +456,9 @@ export function navigateToWorkspace (workspace: string, loginInfo?: WorkspaceLog
   }
   const last = localStorage.getItem(`${locationStorageKeyId}_${workspace}`)
   if (last !== null) {
-    navigate(JSON.parse(last))
+    navigate(JSON.parse(last), replace)
   } else {
-    navigate({ path: [workbenchId, workspace] })
+    navigate({ path: [workbenchId, workspace] }, replace)
   }
 }
 
@@ -862,7 +877,7 @@ export function goTo (path: Pages, clearQuery: boolean = false): void {
   if (clearQuery) {
     loc.query = undefined
   }
-  navigate(loc)
+  navigate(loc, clearQuery)
 }
 
 export function getHref (path: Pages): string {
@@ -872,40 +887,58 @@ export function getHref (path: Pages): string {
   return host + url
 }
 
-export async function afterConfirm (): Promise<void> {
+export async function afterConfirm (clearQuery = false): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
-    goTo('createWorkspace')
+    goTo('createWorkspace', clearQuery)
   } else if (joinedWS.length === 1) {
     const result = (await selectWorkspace(joinedWS[0].workspace, null))[1]
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
+      setMetadata(presentation.metadata.Workspace, result.workspace)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setLoginInfo(result)
 
-      navigateToWorkspace(joinedWS[0].workspace, result)
+      navigateToWorkspace(joinedWS[0].workspace, result, undefined, clearQuery)
     }
   } else {
-    goTo('selectWorkspace')
+    goTo('selectWorkspace', clearQuery)
   }
 }
 
-export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | undefined> {
+export async function getLoginInfoFromQuery (): Promise<LoginInfo | undefined> {
+  const token = getCurrentLocation().query?.token
+
+  if (token === undefined) {
+    return undefined
+  }
+
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
     throw new Error('accounts url not specified')
   }
 
+  const request = {
+    method: 'getAccountInfoByToken',
+    params: [] as any[]
+  }
+
   try {
-    const response = await fetch(concatLink(accountsUrl, '/auth'), {
-      method: 'GET',
-      credentials: 'include'
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
     })
     const result = await response.json()
-    return result
+    if (result.error != null) {
+      throw new PlatformError(result.error)
+    }
+    return result.result
   } catch (err: any) {
-    console.error('login error', err)
     Analytics.handleError(err)
   }
 }
@@ -992,14 +1025,16 @@ export async function loginWithOtp (email: string, otp: string): Promise<[Status
     const result = await response.json()
 
     if (result.error == null) {
-      Analytics.handleEvent('loginWithOtp')
+      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: true })
       Analytics.setUser(email)
     } else {
+      Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
       await handleStatusError('Login with otp error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
     console.error('Login with otp error', err)
+    Analytics.handleEvent(LoginEvents.LoginOtp, { email, ok: false })
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }

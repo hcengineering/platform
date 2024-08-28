@@ -1,23 +1,32 @@
 //
 
-import { DOMAIN_TX, TxOperations, type Class, type Doc, type Domain, type Ref, type Space } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type Domain,
+  DOMAIN_TX,
+  generateId,
+  type Ref,
+  type Space,
+  TxOperations
+} from '@hcengineering/core'
 import {
   createDefaultSpace,
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
   type MigrationDocumentQuery,
   type MigrationUpgradeClient,
-  type ModelLogger
+  type ModelLogger,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
+import { AvatarType, type Contact, type Person, type PersonSpace } from '@hcengineering/contact'
 
-import { AvatarType, type Contact } from '@hcengineering/contact'
-import contact, { DOMAIN_CONTACT, contactId } from './index'
+import contact, { contactId, DOMAIN_CONTACT } from './index'
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
   const employees = await client.findAll(contact.mixin.Employee, {})
@@ -28,8 +37,8 @@ async function createEmployeeEmail (client: TxOperations): Promise<void> {
   ).filter((it) => it.provider === contact.channelProvider.Email)
   const channelsMap = new Map(channels.map((p) => [p.attachedTo, p]))
   for (const employee of employees) {
-    const acc = await client.findOne(contact.class.PersonAccount, { person: employee._id })
-    if (acc === undefined) continue
+    const acc = client.getModel().getAccountByPersonId(employee._id)
+    if (acc.length === 0) continue
     const current = channelsMap.get(employee._id)
     if (current === undefined) {
       await client.addCollection(
@@ -40,13 +49,13 @@ async function createEmployeeEmail (client: TxOperations): Promise<void> {
         'channels',
         {
           provider: contact.channelProvider.Email,
-          value: acc.email.trim()
+          value: acc[0].email.trim()
         },
         undefined,
         employee.modifiedOn
       )
-    } else if (current.value !== acc.email.trim()) {
-      await client.update(current, { value: acc.email.trim() }, false, current.modifiedOn)
+    } else if (current.value !== acc[0].email.trim()) {
+      await client.update(current, { value: acc[0].email.trim() }, false, current.modifiedOn)
     }
   }
 }
@@ -100,23 +109,55 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
   )
 }
 
+async function createPersonSpaces (client: MigrationClient): Promise<void> {
+  const spaces = await client.find<PersonSpace>(DOMAIN_SPACE, { _class: contact.class.PersonSpace })
+
+  if (spaces.length > 0) {
+    return
+  }
+
+  const accounts = await client.model.findAll(contact.class.PersonAccount, {})
+  const employees = await client.find(DOMAIN_CONTACT, { [contact.mixin.Employee]: { $exists: true } })
+
+  const newSpaces = new Map<Ref<Person>, PersonSpace>()
+  const now = Date.now()
+
+  for (const account of accounts) {
+    const employee = employees.find(({ _id }) => _id === account.person)
+    if (employee === undefined) continue
+
+    const space = newSpaces.get(account.person)
+
+    if (space !== undefined) {
+      space.members.push(account._id)
+    } else {
+      newSpaces.set(account.person, {
+        _id: generateId(),
+        _class: contact.class.PersonSpace,
+        space: core.space.Space,
+        name: 'Personal space',
+        description: '',
+        private: true,
+        archived: false,
+        members: [account._id],
+        person: account.person,
+        modifiedBy: core.account.System,
+        createdBy: core.account.System,
+        modifiedOn: now,
+        createdOn: now
+      })
+    }
+  }
+
+  await client.create(DOMAIN_SPACE, Array.from(newSpaces.values()))
+}
+
 export const contactOperation: MigrateOperation = {
   async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, contactId, [
       {
         state: 'employees',
         func: async (client) => {
-          await client.update(
-            DOMAIN_TX,
-            {
-              objectClass: 'contact:class:EmployeeAccount'
-            },
-            {
-              $rename: { 'attributes.employee': 'attributes.person' },
-              $set: { objectClass: contact.class.PersonAccount }
-            }
-          )
-
           await client.update(
             DOMAIN_TX,
             {
@@ -251,6 +292,10 @@ export const contactOperation: MigrateOperation = {
             { $rename: { avatarKind: 'avatarType' } }
           )
         }
+      },
+      {
+        state: 'create-person-spaces-v1',
+        func: createPersonSpaces
       }
     ])
   },

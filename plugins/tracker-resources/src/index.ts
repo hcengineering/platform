@@ -14,27 +14,27 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import core, {
+  AccountRole,
+  type AttachedDoc,
   type Attribute,
+  type Class,
   ClassifierKind,
+  type Client,
+  type Doc,
+  type DocManager,
+  type DocumentQuery,
   DOMAIN_CONFIGURATION,
   DOMAIN_MODEL,
   getCurrentAccount,
-  type Space,
-  toIdMap,
-  type AttachedDoc,
-  type Class,
-  type Client,
-  type Doc,
-  type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  type TxOperations,
-  type DocManager,
-  AccountRole
+  type Space,
+  toIdMap,
+  type TxOperations
 } from '@hcengineering/core'
-import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { type Status, translate, type Resources } from '@hcengineering/platform'
+import { type Resources, type Status, translate } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
 import { closePanel, getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
@@ -55,11 +55,13 @@ import Inbox from './components/inbox/Inbox.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
+import IssueExtra from './components/issues/IssueExtra.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
 import IssueSearchIcon from './components/issues/IssueSearchIcon.svelte'
+import IssueStatusPresenter from './components/issues/IssueStatusPresenter.svelte'
 import IssuesView from './components/issues/IssuesView.svelte'
 import KanbanView from './components/issues/KanbanView.svelte'
 import ModificationDatePresenter from './components/issues/ModificationDatePresenter.svelte'
@@ -87,8 +89,6 @@ import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
-import IssueExtra from './components/issues/IssueExtra.svelte'
-import IssueStatusPresenter from './components/issues/IssueStatusPresenter.svelte'
 import {
   getIssueIdByIdentifier,
   getIssueTitle,
@@ -123,7 +123,7 @@ import ComponentSelector from './components/components/ComponentSelector.svelte'
 import IssueTemplatePresenter from './components/templates/IssueTemplatePresenter.svelte'
 import IssueTemplates from './components/templates/IssueTemplates.svelte'
 
-import { deleteObject, deleteObjects, AggregationManager } from '@hcengineering/view-resources'
+import { AggregationManager, deleteObject, deleteObjects } from '@hcengineering/view-resources'
 import MoveAndDeleteMilestonePopup from './components/milestones/MoveAndDeleteMilestonePopup.svelte'
 import EditIssueTemplate from './components/templates/EditIssueTemplate.svelte'
 import TemplateEstimationEditor from './components/templates/EstimationEditor.svelte'
@@ -162,14 +162,14 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 
 import { get } from 'svelte/store'
 
+import contact, { AvatarType } from '@hcengineering/contact'
+import { personAccountByIdStore, personAccountPersonByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+import notification, { type Collaborators } from '@hcengineering/notification'
 import { settingId } from '@hcengineering/setting'
+import task, { type TaskType } from '@hcengineering/task'
 import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
-import { personAccountByIdStore, personAccountPersonByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-import contact, { AvatarType } from '@hcengineering/contact'
-import task, { type TaskType } from '@hcengineering/task'
-import notification, { type Collaborators } from '@hcengineering/notification'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
 export { default as SubIssueList } from './components/issues/edit/SubIssueList.svelte'
@@ -250,28 +250,24 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
   } else {
     subissues = issue.subIssues
   }
-  showPopup(
-    MessageBox,
-    {
-      label: tracker.string.DeleteIssue,
-      labelProps: { issueCount },
-      message: tracker.string.DeleteIssueConfirm,
-      params: {
-        issueCount,
-        subIssueCount: subissues
-      }
+  showPopup(MessageBox, {
+    label: tracker.string.DeleteIssue,
+    labelProps: { issueCount },
+    message: tracker.string.DeleteIssueConfirm,
+    params: {
+      issueCount,
+      subIssueCount: subissues
     },
-    undefined,
-    async (result?: boolean) => {
-      if (result === true) {
-        const objs = Array.isArray(issue) ? issue : [issue]
-        await deleteObjects(getClient(), objs as unknown as Doc[]).catch((err) => {
-          console.error(err)
-        })
-        closePanel()
+    action: async () => {
+      const objs = Array.isArray(issue) ? issue : [issue]
+      try {
+        await deleteObjects(getClient(), objs as unknown as Doc[])
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
+      closePanel()
     }
-  )
+  })
 }
 
 async function deleteProject (project: Project | undefined): Promise<void> {
@@ -280,98 +276,80 @@ async function deleteProject (project: Project | undefined): Promise<void> {
 
     if (project.archived) {
       // Clean project and all issues
-      showPopup(
-        MessageBox,
-        {
-          label: tracker.string.DeleteProject,
-          labelProps: { name: project.name },
-          message: tracker.string.ArchiveProjectConfirm
-        },
-        undefined,
-        async (result?: boolean) => {
-          if (result === true) {
-            // void client.update(project, { archived: true })
-            const client = getClient()
-            const classes = await client.findAll(core.class.Class, {})
-            const h = client.getHierarchy()
-            for (const c of classes) {
-              if (c.kind !== ClassifierKind.CLASS) {
-                continue
-              }
-              const d = h.findDomain(c._id)
-              if (d !== undefined && d !== DOMAIN_MODEL && d !== DOMAIN_CONFIGURATION) {
-                try {
-                  while (true) {
-                    const docs = await client.findAll(c._id, { space: project._id }, { limit: 50 })
-                    if (docs.length === 0) {
-                      break
-                    }
-                    const ops = client.apply('delete')
-                    for (const object of docs) {
-                      if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
-                        const adoc = object as AttachedDoc
-                        await ops
-                          .removeCollection(
-                            object._class,
-                            object.space,
-                            adoc._id,
-                            adoc.attachedTo,
-                            adoc.attachedToClass,
-                            adoc.collection
-                          )
-                          .catch((err) => {
-                            console.error(err)
-                          })
-                      } else {
-                        await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
+      showPopup(MessageBox, {
+        label: tracker.string.DeleteProject,
+        labelProps: { name: project.name },
+        message: tracker.string.ArchiveProjectConfirm,
+        action: async () => {
+          // void client.update(project, { archived: true })
+          const client = getClient()
+          const classes = await client.findAll(core.class.Class, {})
+          const h = client.getHierarchy()
+          for (const c of classes) {
+            if (c.kind !== ClassifierKind.CLASS) {
+              continue
+            }
+            const d = h.findDomain(c._id)
+            if (d !== undefined && d !== DOMAIN_MODEL && d !== DOMAIN_CONFIGURATION) {
+              try {
+                while (true) {
+                  const docs = await client.findAll(c._id, { space: project._id }, { limit: 50 })
+                  if (docs.length === 0) {
+                    break
+                  }
+                  const ops = client.apply('delete' + project._id)
+                  for (const object of docs) {
+                    if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
+                      const adoc = object as AttachedDoc
+                      await ops
+                        .removeCollection(
+                          object._class,
+                          object.space,
+                          adoc._id,
+                          adoc.attachedTo,
+                          adoc.attachedToClass,
+                          adoc.collection
+                        )
+                        .catch((err) => {
                           console.error(err)
                         })
-                      }
+                    } else {
+                      await ops.removeDoc(object._class, object.space, object._id).catch((err) => {
+                        console.error(err)
+                      })
                     }
-                    await ops.commit()
                   }
-                } catch (err: any) {
-                  console.error(err)
-                  Analytics.handleError(err)
+                  await ops.commit()
                 }
+              } catch (err: any) {
+                console.error(err)
+                Analytics.handleError(err)
               }
             }
-            await client.remove(project)
           }
+          await client.remove(project)
         }
-      )
+      })
     } else {
       const anyIssue = await client.findOne(tracker.class.Issue, { space: project._id })
       if (anyIssue !== undefined) {
-        showPopup(
-          MessageBox,
-          {
-            label: tracker.string.ArchiveProjectName,
-            labelProps: { name: project.name },
-            message: tracker.string.ProjectHasIssues
-          },
-          undefined,
-          (result?: boolean) => {
-            if (result === true) {
-              void client.update(project, { archived: true })
-            }
+        showPopup(MessageBox, {
+          label: tracker.string.ArchiveProjectName,
+          labelProps: { name: project.name },
+          message: tracker.string.ProjectHasIssues,
+          action: async () => {
+            await client.update(project, { archived: true })
           }
-        )
+        })
       } else {
-        showPopup(
-          MessageBox,
-          {
-            label: tracker.string.ArchiveProjectName,
-            labelProps: { name: project.name },
-            message: tracker.string.ArchiveProjectConfirm
-          },
-          undefined,
-          (result?: boolean) => {
-            if (result === true) {
-              void client.update(project, { archived: true })
-            }
+        showPopup(MessageBox, {
+          label: tracker.string.ArchiveProjectName,
+          labelProps: { name: project.name },
+          message: tracker.string.ArchiveProjectConfirm,
+          action: async () => {
+            await client.update(project, { archived: true })
           }
-        )
+        })
       }
     }
   }
@@ -384,29 +362,23 @@ async function moveAndDeleteMilestones (
 ): Promise<void> {
   const noMilestoneLabel = await translate(tracker.string.NoMilestone, {}, get(themeStore).language)
 
-  showPopup(
-    MessageBox,
-    {
-      label: tracker.string.MoveAndDeleteMilestone,
-      message: tracker.string.MoveAndDeleteMilestoneConfirm,
-      labelProps: {
-        newMilestone: newMilestone?.label ?? noMilestoneLabel,
-        deleteMilestone: oldMilestones.map((p) => p.label)
-      }
+  showPopup(MessageBox, {
+    label: tracker.string.MoveAndDeleteMilestone,
+    message: tracker.string.MoveAndDeleteMilestoneConfirm,
+    labelProps: {
+      newMilestone: newMilestone?.label ?? noMilestoneLabel,
+      deleteMilestone: oldMilestones.map((p) => p.label)
     },
-    undefined,
-    (result?: boolean) => {
-      if (result === true) {
-        for (const oldMilestone of oldMilestones) {
-          void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((success) => {
-            if (success) {
-              void deleteObject(client, oldMilestone)
-            }
-          })
-        }
+    action: async () => {
+      for (const oldMilestone of oldMilestones) {
+        void moveIssuesToAnotherMilestone(client, oldMilestone, newMilestone).then((success) => {
+          if (success) {
+            void deleteObject(client, oldMilestone)
+          }
+        })
       }
     }
-  )
+  })
 }
 
 async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<void> {

@@ -13,18 +13,28 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, findContacts, Organization } from '@hcengineering/contact'
-  import core, { AttachedData, fillDefaults, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
-  import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { Channel, ContactEvents, Organization, findContacts } from '@hcengineering/contact'
+  import core, {
+    AttachedData,
+    fillDefaults,
+    generateId,
+    makeCollaborativeDoc,
+    Ref,
+    TxOperations,
+    WithLookup
+  } from '@hcengineering/core'
+  import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { Attachment } from '@hcengineering/attachment'
 
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import Company from './icons/Company.svelte'
   import OrganizationPresenter from './OrganizationPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let onCreate: ((orgId: Ref<Organization>, client: TxOperations) => Promise<void>) | undefined = undefined
 
@@ -36,7 +46,7 @@
 
   const object: Organization = {
     name: '',
-    description: '',
+    description: makeCollaborativeDoc(id, 'description'),
     attachments: 0
   } as unknown as Organization
 
@@ -44,9 +54,12 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  let description = EmptyMarkup
+
   fillDefaults(hierarchy, object, contact.class.Organization)
 
   async function createOrganization (): Promise<void> {
+    await updateMarkup(object.description, { description })
     await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
     await descriptionBox.createAttachments(id)
 
@@ -66,7 +79,7 @@
     if (onCreate !== undefined) {
       await onCreate?.(id, client)
     }
-
+    Analytics.handleEvent(ContactEvents.CompanyCreated, { id })
     dispatch('close', id)
   }
 
@@ -118,7 +131,7 @@
     space={contact.space.Contacts}
     alwaysEdit
     showButtons={false}
-    bind:content={object.description}
+    bind:content={description}
     placeholder={core.string.Description}
     kind="indented"
     isScrollable={false}

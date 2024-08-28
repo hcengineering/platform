@@ -8,8 +8,9 @@
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
 
   async function fetchCollabStats (tick: number): Promise<void> {
-    const collaborator = getMetadata(presentation.metadata.CollaboratorApiUrl)
-    await fetch(collaborator + `/api/v1/statistics?token=${token}`, {})
+    const collaboratorUrl = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
+    const collaboratorApiUrl = collaboratorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+    await fetch(collaboratorApiUrl + `/api/v1/statistics?token=${token}`, {})
       .then(async (json) => {
         dataCollab = await json.json()
       })

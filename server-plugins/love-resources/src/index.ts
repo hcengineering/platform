@@ -37,7 +37,11 @@ import love, {
 import notification from '@hcengineering/notification'
 import { translate } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
-import { createPushNotification, isAllowed } from '@hcengineering/server-notification-resources'
+import {
+  createPushNotification,
+  getNotificationProviderControl,
+  isAllowed
+} from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
 
 export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -84,7 +88,8 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
     name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
     room: room?._id ?? love.ids.Reception,
     x: 0,
-    y: 0
+    y: 0,
+    sessionId: null
   })
   const ptx = control.txFactory.createTxApplyIf(
     core.space.Workspace,
@@ -93,7 +98,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
     [
       {
         _class: love.class.ParticipantInfo,
-        query: { person }
+        query: { person: personId }
       }
     ],
     [tx],
@@ -149,7 +154,7 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
 }
 
 async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const roomInfo = roomInfos.find((ri) => ri.room === info.room)
   if (roomInfo !== undefined) {
     roomInfo.persons.push(info.person)
@@ -173,7 +178,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
 
 async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
@@ -196,7 +201,7 @@ async function rejectJoinRequests (info: ParticipantInfo, control: TriggerContro
 
 async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const roomInfos = await control.queryFind(love.class.RoomInfo, {})
+  const roomInfos = await control.queryFind(control.ctx, love.class.RoomInfo, {})
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
     oldRoomInfo.persons = oldRoomInfo.persons.filter((p) => p !== info.person)
@@ -266,16 +271,19 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
           _id: notification.providers.PushNotificationProvider
         })
         if (provider === undefined) return []
+
+        const notificationControl = await getNotificationProviderControl(control.ctx, control)
         for (const user of roomInfo.persons) {
-          const userAcc = await control.modelDb.findOne(contact.class.PersonAccount, { person: user })
-          if (userAcc === undefined) continue
-          if (await isAllowed(control, userAcc._id, type, provider)) {
+          const userAcc = control.modelDb.getAccountByPersonId(user) as PersonAccount[]
+          if (userAcc.length === 0) continue
+          if (userAcc.some((it) => isAllowed(control, it._id, type, provider, notificationControl))) {
             const path = [workbenchId, control.workspace.workspaceUrl, loveId]
             const title = await translate(love.string.KnockingLabel, {})
             const body = await translate(love.string.IsKnocking, {
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
-            await createPushNotification(control, userAcc._id, title, body, request._id, from, path)
+            // TODO: Select proper account target
+            await createPushNotification(control, userAcc[0]._id, title, body, request._id, from, path)
           }
         }
         return res
@@ -292,8 +300,8 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
     if (invite.status === RequestStatus.Pending) {
       const target = (await control.findAll(contact.class.Person, { _id: invite.target }))[0]
       if (target === undefined) return []
-      const userAcc = await control.modelDb.findOne(contact.class.PersonAccount, { person: target._id })
-      if (userAcc === undefined) return []
+      const userAcc = control.modelDb.getAccountByPersonId(target._id) as PersonAccount[]
+      if (userAcc.length === 0) return []
       const from = (await control.findAll(contact.class.Person, { _id: invite.from }))[0]
       const type = await control.modelDb.findOne(notification.class.NotificationType, {
         _id: love.ids.InviteNotification
@@ -303,7 +311,8 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
         _id: notification.providers.PushNotificationProvider
       })
       if (provider === undefined) return []
-      if (await isAllowed(control, userAcc._id, type, provider)) {
+      const notificationControl = await getNotificationProviderControl(control.ctx, control)
+      if (userAcc.some((it) => isAllowed(control, it._id, type, provider, notificationControl))) {
         const path = [workbenchId, control.workspace.workspaceUrl, loveId]
         const title = await translate(love.string.InivitingLabel, {})
         const body =
@@ -312,7 +321,8 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
             : await translate(love.string.InivitingLabel, {})
-        await createPushNotification(control, userAcc._id, title, body, invite._id, from, path)
+        // TODO: Select a proper user
+        await createPushNotification(control, userAcc[0]._id, title, body, invite._id, from, path)
       }
     }
   }

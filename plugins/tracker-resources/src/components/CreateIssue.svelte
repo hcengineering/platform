@@ -27,6 +27,7 @@
     SortingOrder,
     fillDefaults,
     generateId,
+    makeCollaborativeDoc,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
@@ -41,7 +42,9 @@
     MultipleDraftController,
     SpaceSelector,
     createQuery,
-    getClient
+    getClient,
+    getMarkup,
+    updateMarkup
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
@@ -57,7 +60,8 @@
     IssueTemplate,
     Milestone,
     Project,
-    ProjectTargetPreference
+    ProjectTargetPreference,
+    TrackerEvents
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -189,7 +193,6 @@
     if (originalIssue !== undefined && !ignoreOriginal) {
       const res: IssueDraft = {
         ...base,
-        description: originalIssue.description,
         status: originalIssue.status,
         priority: originalIssue.priority,
         component: originalIssue.component,
@@ -199,6 +202,9 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
+      void getMarkup(originalIssue.description).then((res) => {
+        object.description = res.description
+      })
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
       })
@@ -351,10 +357,14 @@
     attr: client.getHierarchy().getAttribute(tracker.class.Issue, 'labels')
   }
 
-  $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
-    resetDefaultAssigneeId()
-    currentProject = res[0]
-  })
+  $: if (_space !== undefined) {
+    spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
+      resetDefaultAssigneeId()
+      currentProject = res[0]
+    })
+  } else {
+    currentProject = undefined
+  }
 
   const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
 
@@ -466,7 +476,7 @@
 
       const value: DocData<Issue> = {
         title: getTitle(object.title),
-        description: object.description,
+        description: makeCollaborativeDoc(_id, 'description'),
         assignee: object.assignee,
         component: object.component,
         milestone: object.milestone,
@@ -498,6 +508,8 @@
         kind,
         identifier
       }
+
+      await updateMarkup(value.description, { description: object.description })
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
 
@@ -563,12 +575,18 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
+      Analytics.handleEvent(TrackerEvents.IssueCreated, {
+        ok: true,
+        id: value.identifier,
+        project: currentProject.identifier
+      })
       console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {
       resetObject()
       draftController.remove()
       descriptionBox?.removeDraft(false)
       console.error(err)
+      Analytics.handleEvent(TrackerEvents.IssueCreated, { ok: false, project: currentProject.identifier })
       Analytics.handleError(err)
     }
   }
@@ -741,6 +759,7 @@
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
   hideSubheader={parentIssue == null}
+  headerNoPadding
   noFade={true}
   on:changeContent
 >
@@ -750,7 +769,7 @@
       label={tracker.string.Project}
       bind:space={_space}
       on:object={(evt) => {
-        currentProject = evt.detail
+        currentProject = evt.detail ?? undefined
       }}
       kind={'regular'}
       size={'small'}
@@ -778,11 +797,16 @@
     <DocCreateExtComponent manager={docCreateManager} kind={'header'} space={currentProject} props={extraProps} />
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
-    <div class="flex-row-center gap-2">
-      <div>
+    <div class="flex-row-center gap-2 pt-1 pb-1 pr-1">
+      <span class="overflow-label">
         <Label {label} />
-      </div>
-      <TaskKindSelector projectType={currentProject?.type} bind:value={kind} baseClass={tracker.class.Issue} />
+      </span>
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        bind:value={kind}
+        baseClass={tracker.class.Issue}
+        size={'small'}
+      />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />

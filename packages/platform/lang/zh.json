@@ -18,7 +18,6 @@
     "WorkspaceRateLimit": "服务器繁忙，请稍后再试",
     "AccountAlreadyConfirmed": "账户已确认",
     "WorkspaceAlreadyExists": "工作区已存在",
-    "ProductIdMismatch": "产品不匹配",
     "InvalidOtp": "无效的代码"
   }
 }

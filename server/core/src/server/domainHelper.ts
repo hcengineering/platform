@@ -44,6 +44,10 @@ export class DomainIndexHelperImpl implements DomainHelper {
         const attrs = hierarchy.getAllAttributes(c._id)
         const domainAttrs = this.domains.get(domain) ?? new Set<FieldIndexConfig<Doc>>()
         for (const a of attrs.values()) {
+          if (a.isCustom === true) {
+            // Skip custom attribute indexes
+            continue
+          }
           if (a.index !== undefined && a.index !== IndexKind.FullText) {
             domainAttrs.add({
               keys: {
@@ -89,6 +93,9 @@ export class DomainIndexHelperImpl implements DomainHelper {
     const added = new Set<string>()
 
     try {
+      if (!operations.exists(domain)) {
+        return
+      }
       const has50Documents = documents > 50
       const allIndexes = (await operations.listIndexes(domain)).filter((it) => it.name !== '_id_')
       ctx.info('check indexes', { domain, has50Documents, documents })
@@ -174,6 +181,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
         }
       }
     } catch (err: any) {
+      ctx.error('error during domain collections/indexes check', { domain, error: err })
       Analytics.handleError(err)
     }
 

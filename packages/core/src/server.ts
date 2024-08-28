@@ -48,6 +48,9 @@ export interface SessionOperationContext {
     op: (ctx: SessionOperationContext) => T | Promise<T>,
     fullParams?: FullParamsType
   ) => Promise<T>
+
+  contextCache: Map<string, any>
+  removedMap: Map<Ref<Doc>, Doc>
 }
 
 /**

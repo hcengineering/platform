@@ -13,37 +13,40 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
+  type AnyAttribute,
   type ArrOf,
+  type Branding,
   type Class,
   type Doc,
   type DocIndexState,
   type DocumentQuery,
   type DocumentUpdate,
   extractDocKey,
+  getFullTextContext,
   type Hierarchy,
   isFullTextAttribute,
   type MeasureContext,
+  RateLimiter,
   type Ref,
-  type WorkspaceId,
-  getFullTextContext,
-  type Branding
+  toIdMap,
+  type WorkspaceId
 } from '@hcengineering/core'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
 import { updateDocWithPresenter } from '../mapper'
 import { type FullTextAdapter, type IndexedDoc, type ServerStorage } from '../types'
-import { summaryStageId } from './summary'
 import {
   contentStageId,
   type DocUpdateHandler,
   fieldStateId,
   type FullTextPipeline,
   type FullTextPipelineStage,
-  fullTextPushStageId
+  fullTextPushStageId,
+  summaryStageId
 } from './types'
 import { collectPropagate, collectPropagateClasses, docKey, isCustomAttr } from './utils'
-import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -61,8 +64,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
   dimmVectors: Record<string, number[]> = {}
 
   field_enabled = '_use'
-
-  stageValue: boolean | string = true
 
   constructor (
     private readonly dbStorage: ServerStorage,
@@ -103,10 +104,16 @@ export class FullTextPushStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
+  allAttrs = new WeakMap<Class<Doc>, Map<string, AnyAttribute>>()
+
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, ctx: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
     const part = [...toIndex]
+
+    const parentsMap = new Map<Ref<DocIndexState>, DocIndexState>()
+
+    const pushQueue = new RateLimiter(5)
     while (part.length > 0) {
       const toIndexPart = part.splice(0, 50)
 
@@ -126,14 +133,31 @@ export class FullTextPushStage implements FullTextPipelineStage {
           })
       )
 
+      // spaces
+      const spaceDocs = toIdMap(
+        await ctx.with(
+          'find-spaces',
+          {},
+          async (ctx) =>
+            await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+              _id: {
+                $in: toIndexPart.map(
+                  (doc) =>
+                    (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
+                )
+              }
+            })
+        )
+      )
+
       for (const doc of toIndexPart) {
         if (pipeline.cancelling) {
           return
         }
         const elasticDoc = createElasticDoc(doc)
         try {
-          await ctx.with('updateDoc2Elastic', {}, async () => {
-            updateDoc2Elastic(doc.attributes, elasticDoc, undefined, undefined, pipeline.hierarchy)
+          ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
+            updateDoc2Elastic(this.allAttrs, ctx, doc.attributes, elasticDoc, undefined, undefined, pipeline.hierarchy)
           })
 
           // Include all child attributes
@@ -142,8 +166,17 @@ export class FullTextPushStage implements FullTextPipelineStage {
             for (const c of childDocs) {
               const fctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
               if (fctx.parentPropagate ?? true) {
-                await ctx.with('updateDoc2Elastic', {}, async () => {
-                  updateDoc2Elastic(c.attributes, elasticDoc, c._id, undefined, pipeline.hierarchy, true)
+                ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
+                  updateDoc2Elastic(
+                    this.allAttrs,
+                    ctx,
+                    c.attributes,
+                    elasticDoc,
+                    c._id,
+                    undefined,
+                    pipeline.hierarchy,
+                    true
+                  )
                 })
               }
             }
@@ -153,18 +186,34 @@ export class FullTextPushStage implements FullTextPipelineStage {
             const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
             if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
               // We need to include all parent content into this one.
-              ;[parentDoc] = await ctx.with(
-                'find-parent',
-                {},
-                async (ctx) =>
-                  await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-                    _id: doc.attachedTo as Ref<DocIndexState>
-                  })
-              )
+              parentDoc =
+                parentsMap.get(doc.attachedTo as Ref<DocIndexState>) ??
+                (await ctx.with('find-parent', {}, async (ctx) =>
+                  (
+                    await this.dbStorage.findAll(
+                      ctx,
+                      core.class.DocIndexState,
+                      {
+                        _id: doc.attachedTo as Ref<DocIndexState>
+                      },
+                      { limit: 1 }
+                    )
+                  ).shift()
+                ))
               if (parentDoc !== undefined) {
+                parentsMap.set(parentDoc._id, parentDoc)
                 const ppdoc = parentDoc
-                await ctx.with('updateDoc2Elastic', {}, async () => {
-                  updateDoc2Elastic(ppdoc.attributes, elasticDoc, ppdoc._id, undefined, pipeline.hierarchy, true)
+                ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
+                  updateDoc2Elastic(
+                    this.allAttrs,
+                    ctx,
+                    ppdoc.attributes,
+                    elasticDoc,
+                    ppdoc._id,
+                    undefined,
+                    pipeline.hierarchy,
+                    true
+                  )
                 })
 
                 const collectClasses = collectPropagateClasses(pipeline, parentDoc.objectClass)
@@ -175,21 +224,25 @@ export class FullTextPushStage implements FullTextPipelineStage {
                     { attachedTo: parentDoc._id, objectClass: { $in: collectClasses } }
                   )
                   for (const c of collections) {
-                    await ctx.with('updateDoc2Elastic', {}, async () => {
-                      updateDoc2Elastic(c.attributes, elasticDoc, c._id, undefined, pipeline.hierarchy, true)
+                    ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
+                      updateDoc2Elastic(
+                        this.allAttrs,
+                        ctx,
+                        c.attributes,
+                        elasticDoc,
+                        c._id,
+                        undefined,
+                        pipeline.hierarchy,
+                        true
+                      )
                     })
                   }
                 }
               }
             }
           }
-          const [spaceDoc] = await ctx.with(
-            'find-space',
-            {},
-            async (ctx) =>
-              await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-                _id: (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
-              })
+          const spaceDoc = spaceDocs.get(
+            (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
           )
 
           await updateDocWithPresenter(pipeline.hierarchy, doc, elasticDoc, { parentDoc, spaceDoc }, this.branding)
@@ -210,15 +263,37 @@ export class FullTextPushStage implements FullTextPipelineStage {
         }
       }
       // Perform bulk update to elastic
-      try {
-        await this.fulltextAdapter.updateMany(bulk)
-        for (const doc of toIndex) {
-          await pipeline.update(doc._id, true, {})
+
+      void pushQueue.add(async () => {
+        try {
+          try {
+            await ctx.with('push-elastic', {}, async () => {
+              await this.fulltextAdapter.updateMany(bulk)
+            })
+          } catch (err: any) {
+            Analytics.handleError(err)
+            // Try to push one by one
+            await ctx.with('push-elastic-by-one', {}, async () => {
+              for (const d of bulk) {
+                try {
+                  await this.fulltextAdapter.update(d.id, d)
+                } catch (err2: any) {
+                  Analytics.handleError(err2)
+                }
+              }
+            })
+          }
+          if (!pipeline.cancelling) {
+            for (const doc of toIndexPart) {
+              await pipeline.update(doc._id, true, {})
+            }
+          }
+        } catch (err: any) {
+          Analytics.handleError(err)
         }
-      } catch (err: any) {
-        Analytics.handleError(err)
-      }
+      })
     }
+    await pushQueue.waitProcessing()
   }
 
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
@@ -246,6 +321,8 @@ export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   return doc
 }
 function updateDoc2Elastic (
+  allAttrs: WeakMap<Class<Doc>, Map<string, AnyAttribute>>,
+  ctx: MeasureContext,
   attributes: Record<string, any>,
   doc: IndexedDoc,
   docIdOverride?: Ref<DocIndexState>,
@@ -264,30 +341,49 @@ function updateDoc2Elastic (
 
     let vv: any = v
     if (vv != null && extra.includes('base64')) {
-      vv = Buffer.from(v, 'base64').toString()
+      ctx.withSync('buffer-from', {}, () => {
+        vv = Buffer.from(v, 'base64').toString()
+      })
     }
     try {
-      const attribute = hierarchy?.getAttribute(_class ?? doc._class[0], attr)
-      if (attribute !== undefined && vv != null) {
-        if (
-          isFullTextAttribute(attribute) ||
-          (isChildOrParentDoc === true &&
-            !(
-              attribute.type._class === core.class.RefTo ||
-              (attribute.type._class === core.class.ArrOf &&
-                (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
-            ))
-        ) {
-          let vvv = vv
-          if (
-            attribute.type._class === core.class.TypeMarkup ||
-            attribute.type._class === core.class.TypeCollaborativeMarkup
-          ) {
-            vvv = jsonToText(markupToJSON(vv))
+      if (vv != null) {
+        const cachedClass = _class ?? doc._class[0]
+        if (hierarchy?.hasClass(cachedClass) ?? false) {
+          const cl = hierarchy?.getClass(cachedClass) as Class<Doc>
+          let attrs = cl !== undefined ? allAttrs.get(cl) : undefined
+
+          if (attrs === undefined && cachedClass != null) {
+            attrs = new Map()
+            if (attrs !== undefined) {
+              allAttrs.set(cl, attrs)
+            }
           }
-          if (!(doc.fulltextSummary ?? '').includes(vvv)) {
-            doc.fulltextSummary = (doc.fulltextSummary ?? '') + vvv + '\n'
-            continue
+          const attribute = attrs?.get(attr) ?? hierarchy?.findAttribute(cachedClass, attr)
+          if (attribute !== undefined && attrs !== undefined) {
+            attrs.set(attr, attribute)
+            allAttrs.set(cl, attrs)
+          }
+          if (attribute !== undefined) {
+            if (
+              isFullTextAttribute(attribute) ||
+              (isChildOrParentDoc === true &&
+                !(
+                  attribute.type._class === core.class.RefTo ||
+                  (attribute.type._class === core.class.ArrOf &&
+                    (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
+                ))
+            ) {
+              let vvv = vv
+              if (attribute.type._class === core.class.TypeMarkup) {
+                ctx.withSync('markup-to-json-text', {}, () => {
+                  vvv = jsonToText(markupToJSON(vv))
+                })
+              }
+              if (!(doc.fulltextSummary ?? '').includes(vvv)) {
+                doc.fulltextSummary = (doc.fulltextSummary ?? '') + vvv + '\n'
+                continue
+              }
+            }
           }
         }
       }
@@ -321,8 +417,8 @@ function updateDoc2Elastic (
 
   const spaceKey = docKey('space', { _class: core.class.Doc })
   if (doc[spaceKey] !== undefined) {
-    const existsingSpace = Array.isArray(doc.space) ? doc.space : [doc.space]
+    const existingSpaces = Array.isArray(doc.space) ? doc.space : [doc.space]
     const newSpaces = Array.isArray(doc[spaceKey]) ? doc[spaceKey] : [doc[spaceKey]]
-    doc.space = [...existsingSpace, ...newSpaces].filter((it, idx, arr) => arr.indexOf(it) === idx)
+    doc.space = [...existingSpaces, ...newSpaces].filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 }

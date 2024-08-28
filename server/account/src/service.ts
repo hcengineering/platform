@@ -18,7 +18,14 @@ import { MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { FileModelLogger } from '@hcengineering/server-tool'
 import { Db, MongoClient } from 'mongodb'
 import path from 'path'
-import { Workspace, WorkspaceInfo, listWorkspacesRaw, updateWorkspace, upgradeWorkspace } from './operations'
+import {
+  Workspace,
+  WorkspaceInfo,
+  listWorkspacesRaw,
+  updateWorkspace,
+  upgradeWorkspace,
+  clearWorkspaceProductId
+} from './operations'
 import { Analytics } from '@hcengineering/analytics'
 
 export type UpgradeErrorHandler = (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
@@ -39,8 +46,7 @@ export class UpgradeWorker {
     readonly client: MongoClient,
     readonly version: Data<Version>,
     readonly txes: Tx[],
-    readonly migrationOperation: [string, MigrateOperation][],
-    readonly productId: string
+    readonly migrationOperation: [string, MigrateOperation][]
   ) {}
 
   canceled = false
@@ -94,7 +100,6 @@ export class UpgradeWorker {
         this.version,
         this.txes,
         this.migrationOperation,
-        this.productId,
         this.db,
         ws.workspaceUrl ?? ws.workspace,
         logger,
@@ -128,15 +133,11 @@ export class UpgradeWorker {
   }
 
   async upgradeAll (ctx: MeasureContext, opt: UpgradeOptions): Promise<void> {
-    const workspaces = await ctx.with(
-      'retrieve-workspaces',
-      {},
-      async (ctx) => await listWorkspacesRaw(this.db, this.productId)
-    )
+    const workspaces = await ctx.with('retrieve-workspaces', {}, async (ctx) => await listWorkspacesRaw(this.db))
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
 
-    // We need to update workspaces with missing workspaceUrl
     for (const ws of workspaces) {
+      // We need to update workspaces with missing workspaceUrl
       if (ws.workspaceUrl == null) {
         const upd: Partial<Workspace> = {
           workspaceUrl: ws.workspace
@@ -144,7 +145,11 @@ export class UpgradeWorker {
         if (ws.workspaceName == null) {
           upd.workspaceName = ws.workspace
         }
-        await updateWorkspace(this.db, this.productId, ws, upd)
+        await updateWorkspace(this.db, ws, upd)
+      }
+      // We need to drop productId from workspace
+      if ((ws as any).productId !== undefined) {
+        await clearWorkspaceProductId(this.db, ws)
       }
     }
 

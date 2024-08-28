@@ -56,8 +56,6 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
 
   textLimit = 100 * 1024
 
-  stageValue: boolean | string = true
-
   constructor (
     readonly storageAdapter: StorageAdapter | undefined,
     readonly workspace: WorkspaceId,
@@ -96,12 +94,12 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
       return
     }
 
-    try {
-      for (const [, val] of Object.entries(attributes)) {
-        if (val.type._class === core.class.TypeBlob) {
-          // We need retrieve value of attached document content.
-          const ref = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as Ref<Doc>
-          if (ref !== undefined && ref !== '') {
+    for (const [, val] of Object.entries(attributes)) {
+      if (val.type._class === core.class.TypeBlob) {
+        // We need retrieve value of attached document content.
+        const ref = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as Ref<Doc>
+        if (ref !== undefined && ref !== '') {
+          try {
             const docInfo: Blob | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, ref)
             if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
               // We have blob, we need to decode it to string.
@@ -151,20 +149,25 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
                 }
               }
             }
+          } catch (err: any) {
+            if (((err?.message ?? '') as string).includes('NoSuchKeyError')) {
+              // Ignore error
+            } else {
+              const wasError = (doc as any).error !== undefined
+
+              if (wasError) {
+                continue
+              }
+              Analytics.handleError(err)
+              await pipeline.update(doc._id, false, {
+                [docKey('error')]: JSON.stringify({ message: err.message, err })
+              })
+              // Print error only first time, and update it in doc index
+              this.metrics.error('failed to get content for', { error: err })
+            }
           }
         }
       }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      const wasError = (doc as any).error !== undefined
-
-      await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) })
-      if (wasError) {
-        return
-      }
-      // Print error only first time, and update it in doc index
-      console.error(err)
-      return
     }
 
     await pipeline.update(doc._id, true, update)

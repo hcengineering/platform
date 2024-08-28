@@ -3,8 +3,9 @@
   import { IntlString } from '@hcengineering/platform'
   import { DocPopup, getClient } from '@hcengineering/presentation'
   import { Task, TaskType } from '@hcengineering/task'
-  import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
+  import { getObjectId, ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
   import { taskTypeStore } from '..'
 
   export let value: Task | Task[]
@@ -30,9 +31,22 @@
       await ops.update(it, { status: newStatus })
     }
     await ops.commit()
+
     progress = false
 
     dispatch('close', newStatus)
+    const ids = await getAnalyticsIds(docs)
+    Analytics.handleEvent('task.SetStatus', { status: newStatus, objects: ids })
+  }
+
+  async function getAnalyticsIds (docs: Task[]): Promise<string[]> {
+    const result: string[] = []
+
+    for (const doc of docs) {
+      const id = await getObjectId(doc, client.getHierarchy())
+      result.push(id)
+    }
+    return result
   }
 
   $: current = Array.isArray(value)

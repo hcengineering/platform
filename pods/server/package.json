@@ -8,14 +8,14 @@
   "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
   "scripts": {
-    "start": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production ELASTIC_INDEX_NAME=local_storage_index MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret node --inspect --enable-source-maps bundle/bundle.js",
+    "start": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production ELASTIC_INDEX_NAME=local_storage_index MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false node --inspect --enable-source-maps bundle/bundle.js",
     "start-u": "rush bundle --to @hcengineering/pod-server && cp ./node_modules/@hcengineering/uws/lib/*.node ./bundle/ && cross-env NODE_ENV=production SERVER_PROVIDER=uweb ELASTIC_INDEX_NAME=local_storage_index MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret node --inspect bundle/bundle.js",
     "start-flame": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production ELASTIC_INDEX_NAME=local_storage_index MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 ELASTIC_URL=http://localhost:9200 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret clinic flame --dest ./out -- node --nolazy -r ts-node/register --enable-source-maps src/__start.ts",
     "build": "compile",
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --minify --bundle --keep-names --platform=node --external:*.node --external:bufferutil --external:utf-8-validate --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
+    "bundle": "mkdir -p bundle && esbuild src/__start.ts --sourcemap=inline --bundle --keep-names --platform=node --external:*.node --external:bufferutil --external:snappy --external:utf-8-validate --external:msgpackr-extract --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/transactor",
     "docker:tbuild": "docker build -t hardcoreeng/transactor . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
     "docker:abuild": "docker build -t hardcoreeng/transactor . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
@@ -65,12 +65,15 @@
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
-    "@hcengineering/openai": "^0.6.0",
     "@hcengineering/translate": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/notification": "^0.6.23",
-    "@hcengineering/server-notification": "^0.6.1"
+    "@hcengineering/server-notification": "^0.6.1",
+    "@hcengineering/server-telegram": "^0.6.0",
+    "@hcengineering/pod-telegram-bot": "^0.6.0",
+    "@hcengineering/server-ai-bot": "^0.6.0",
+    "@hcengineering/server-ai-bot-resources": "^0.6.0"
   }
 }

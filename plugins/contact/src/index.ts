@@ -18,6 +18,7 @@ import {
   Account,
   AttachedDoc,
   Class,
+  CollaborativeDoc,
   Doc,
   Ref,
   Space,
@@ -136,7 +137,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description?: string
+  description: CollaborativeDoc
 }
 
 /**
@@ -179,6 +180,10 @@ export interface ContactsTab extends Doc {
  */
 export const contactId = 'contact' as Plugin
 
+export interface PersonSpace extends Space {
+  person: Ref<Person>
+}
+
 /**
  * @public
  */
@@ -193,7 +198,8 @@ export const contactPlugin = plugin(contactId, {
     Organization: '' as Ref<Class<Organization>>,
     PersonAccount: '' as Ref<Class<PersonAccount>>,
     Status: '' as Ref<Class<Status>>,
-    ContactsTab: '' as Ref<Class<ContactsTab>>
+    ContactsTab: '' as Ref<Class<ContactsTab>>,
+    PersonSpace: '' as Ref<Class<PersonSpace>>
   },
   mixin: {
     Employee: '' as Ref<Class<Employee>>
@@ -330,3 +336,4 @@ export const contactPlugin = plugin(contactId, {
 export default contactPlugin
 export * from './types'
 export * from './utils'
+export * from './analytics'

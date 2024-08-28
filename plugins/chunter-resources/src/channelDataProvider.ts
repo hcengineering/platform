@@ -29,10 +29,8 @@ import { derived, get, type Readable, writable } from 'svelte/store'
 import activity, { type ActivityMessage, type ActivityReference } from '@hcengineering/activity'
 import attachment from '@hcengineering/attachment'
 import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
-import { type ChatMessage } from '@hcengineering/chunter'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-
-import chunter from './plugin'
+import chunter from '@hcengineering/chunter'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -241,13 +239,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     if (loadAll) {
       this.isTailLoading.set(true)
-      this.loadTail(undefined, combineActivityMessages)
+      this.loadTail()
     } else if (isLoadingLatest) {
       const startIndex = Math.max(0, count - this.limit)
       this.isTailLoading.set(true)
       const tailStart = metadata[startIndex]?.createdOn
       this.loadTail(tailStart)
-      this.backwardNextPromise = this.loadNext('backward', metadata[startIndex]?.createdOn, this.limit)
+      this.backwardNextPromise = this.loadNext('backward', metadata[startIndex]?.createdOn, this.limit, false)
     } else {
       const newStart = Math.max(startPosition - this.limit / 2, 0)
       await this.loadMore('forward', metadata[newStart]?.createdOn, this.limit)
@@ -260,11 +258,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(true)
   }
 
-  private loadTail (
-    start?: Timestamp,
-    afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>,
-    query?: DocumentQuery<ActivityMessage>
-  ): void {
+  private loadTail (start?: Timestamp, query?: DocumentQuery<ActivityMessage>): void {
     if (this.chatId === undefined) {
       this.isTailLoading.set(false)
       return
@@ -283,12 +277,8 @@ export class ChannelDataProvider implements IChannelDataProvider {
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
       async (res) => {
-        if (afterLoad !== undefined) {
-          const result = await afterLoad(res.reverse())
-          this.tailStore.set(result)
-        } else {
-          this.tailStore.set(res.reverse())
-        }
+        const result = await combineActivityMessages(res.reverse())
+        this.tailStore.set(result)
 
         this.isTailLoaded.set(true)
         this.isTailLoading.set(false)
@@ -296,7 +286,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         sort: { createdOn: SortingOrder.Descending },
         lookup: {
-          _id: { attachments: attachment.class.Attachment }
+          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
         }
       }
     )
@@ -320,23 +310,29 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return index !== -1 ? metadata.length - index : -1
   }
 
-  async loadChunk (isBackward: boolean, loadAfter: Timestamp, limit?: number): Promise<Chunk | undefined> {
+  async loadChunk (isBackward: boolean, loadAfter: Timestamp, limit?: number, equal = true): Promise<Chunk | undefined> {
     const client = getClient()
     const skipIds = this.getChunkSkipIds(loadAfter)
 
     const messages = await client.findAll(
-      chunter.class.ChatMessage,
+      this.msgClass,
       {
         attachedTo: this.chatId,
         space: this.space,
         _id: { $nin: skipIds },
-        createdOn: isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
+        createdOn: equal
+          ? isBackward
+            ? { $lte: loadAfter }
+            : { $gte: loadAfter }
+          : isBackward
+            ? { $lt: loadAfter }
+            : { $gt: loadAfter }
       },
       {
         limit: limit ?? this.limit,
         sort: { createdOn: isBackward ? SortingOrder.Descending : SortingOrder.Ascending },
         lookup: {
-          _id: { attachments: attachment.class.Attachment }
+          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
         }
       }
     )
@@ -351,11 +347,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
     return {
       from: from.createdOn ?? from.modifiedOn,
       to: to.createdOn ?? to.modifiedOn,
-      data: isBackward ? messages.reverse() : messages
+      data: isBackward ? await combineActivityMessages(messages.reverse()) : await combineActivityMessages(messages)
     }
   }
 
-  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ChatMessage>> {
+  getChunkSkipIds (after: Timestamp, loadTail = false): Array<Ref<ActivityMessage>> {
     const chunks = get(this.chunksStore)
     const metadata = get(this.metadataStore)
     const tail = get(this.tailStore)
@@ -367,10 +363,10 @@ export class ChannelDataProvider implements IChannelDataProvider {
       .flat()
       .concat(loadTail ? [] : tailData)
       .filter(({ createdOn }) => createdOn === after)
-      .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+      .map(({ _id }) => _id)
   }
 
-  async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
+  async loadNext (mode: LoadMode, loadAfter?: Timestamp, limit?: number, equal = true): Promise<void> {
     if (this.chatId === undefined || loadAfter === undefined) {
       return
     }
@@ -395,7 +391,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       return
     }
 
-    const chunk = await this.loadChunk(isBackward, loadAfter, limit)
+    const chunk = await this.loadChunk(isBackward, loadAfter, limit, equal)
 
     if (chunk !== undefined && isBackward) {
       this.backwardNextStore.set(chunk)
@@ -467,7 +463,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
       if (tailAfter !== undefined) {
         const skipIds = chunks[chunks.length - 1]?.data.map(({ _id }) => _id) ?? []
-        this.loadTail(tailAfter, undefined, { _id: { $nin: skipIds } })
+        this.loadTail(tailAfter, { _id: { $nin: skipIds } })
         this.isLoadingMoreStore.set(false)
         return
       }

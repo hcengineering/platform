@@ -24,7 +24,7 @@
     SpaceType,
     WithLookup
   } from '@hcengineering/core'
-  import lead, { Funnel } from '@hcengineering/lead'
+  import lead, { Funnel, LeadEvents } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
   import ui, { Component, EditBox, Label, Toggle, ToggleWithLabel } from '@hcengineering/ui'
@@ -32,6 +32,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import leadRes from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -106,6 +107,7 @@
 
     // Create space type's mixin with roles assignments
     await client.createMixin(funnelId, leadRes.class.Funnel, core.space.Space, spaceType.targetClass, rolesAssignment)
+    Analytics.handleEvent(LeadEvents.FunnelCreated, { id: funnelId })
   }
 
   async function save (): Promise<void> {

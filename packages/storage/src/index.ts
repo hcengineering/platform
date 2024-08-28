@@ -43,7 +43,7 @@ export interface StorageAdapter {
   make: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
   delete: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
 
-  listBuckets: (ctx: MeasureContext, productId: string) => Promise<BucketInfo[]>
+  listBuckets: (ctx: MeasureContext) => Promise<BucketInfo[]>
   remove: (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]) => Promise<void>
   listStream: (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string) => Promise<BlobStorageIterator>
   stat: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<Blob | undefined>
@@ -64,6 +64,8 @@ export interface StorageAdapter {
     offset: number,
     length?: number
   ) => Promise<Readable>
+
+  getUrl: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<string>
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
@@ -102,7 +104,7 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     }
   }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+  async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     return []
   }
 
@@ -159,6 +161,10 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     contentType: string,
     size?: number | undefined
   ): Promise<UploadedObjectInfo> {
+    throw new Error('not implemented')
+  }
+
+  async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
     throw new Error('not implemented')
   }
 }

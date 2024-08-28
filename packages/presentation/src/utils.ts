@@ -18,7 +18,6 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
   TxProcessor,
-  concatLink,
   getCurrentAccount,
   reduceCalls,
   type AnyAttribute,
@@ -34,7 +33,6 @@ import core, {
   type Hierarchy,
   type Mixin,
   type Obj,
-  type Blob as PlatformBlob,
   type Ref,
   type RefTo,
   type SearchOptions,
@@ -457,22 +455,6 @@ export function getCurrentWorkspaceUrl (): string {
   return wsId
 }
 
-/**
- * @public
- */
-export function getFileUrl (file: Ref<PlatformBlob>, filename?: string, useToken?: boolean): string {
-  if (file.includes('://')) {
-    return file
-  }
-  const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
-  let uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? ''
-  if (!uploadUrl.includes('://')) {
-    uploadUrl = concatLink(frontUrl ?? '', uploadUrl)
-  }
-  const token = getMetadata(plugin.metadata.Token) ?? ''
-  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}${useToken === true ? `&token=${token}` : ''}`
-}
-
 export function sizeToWidth (size: string): number | undefined {
   let width: number | undefined
   switch (size) {
@@ -549,9 +531,6 @@ export function getAttributePresenterClass (
     category = 'object'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
-    category = 'inplace'
-  }
-  if (hierarchy.isDerived(attrClass, core.class.TypeCollaborativeMarkup)) {
     category = 'inplace'
   }
   if (hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc)) {
@@ -713,4 +692,29 @@ export function setDownloadProgress (percent: number): void {
   }
 
   upgradeDownloadProgress.set(Math.round(percent))
+}
+
+export async function loadServerConfig (url: string): Promise<any> {
+  let retries = 5
+  let res: Response | undefined
+
+  do {
+    try {
+      res = await fetch(url)
+      break
+    } catch (e: any) {
+      retries--
+      if (retries === 0) {
+        throw new Error(`Failed to load server config: ${e}`)
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (5 - retries)))
+    }
+  } while (retries > 0)
+
+  if (res === undefined) {
+    // In theory should never get here
+    throw new Error('Failed to load server config')
+  }
+
+  return await res.json()
 }

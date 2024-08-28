@@ -187,7 +187,7 @@ export function genMinModel (): TxCUD<Doc>[] {
   txes.push(
     createClass(core.class.Blob, {
       label: 'Blob' as IntlString,
-      extends: core.class.Blob,
+      extends: core.class.Doc,
       kind: ClassifierKind.CLASS
     })
   )

@@ -94,7 +94,6 @@ export type DbAdapterHandler = (
   domain: Domain,
   event: 'add' | 'update' | 'delete' | 'read',
   count: number,
-  time: number,
   helper: DomainHelperOperations
 ) => void
 /**
@@ -112,6 +111,7 @@ export interface DbAdapter {
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
+
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
   find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator

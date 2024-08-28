@@ -98,14 +98,12 @@
       MessageBox,
       {
         label: settingRes.string.DeleteRole,
-        message: settingRes.string.DeleteRoleConfirmation
-      },
-      'top',
-      (result?: boolean) => {
-        if (result === true) {
-          void performDeleteRole()
+        message: settingRes.string.DeleteRoleConfirmation,
+        action: async () => {
+          await performDeleteRole()
         }
-      }
+      },
+      'top'
     )
   }
 

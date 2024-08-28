@@ -25,6 +25,8 @@ import {
   isReactionMessage,
   messageInFocus
 } from '@hcengineering/activity-resources'
+import { Analytics } from '@hcengineering/analytics'
+import chunter, { type ThreadMessage } from '@hcengineering/chunter'
 import core, {
   SortingOrder,
   getCurrentAccount,
@@ -39,17 +41,18 @@ import notification, {
   NotificationStatus,
   notificationId,
   type ActivityInboxNotification,
+  type BaseNotificationType,
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification,
   type MentionInboxNotification,
-  type BaseNotificationType,
   type NotificationProvider,
   type NotificationProviderSetting,
   type NotificationTypeSetting
 } from '@hcengineering/notification'
-import { MessageBox, getClient, createQuery } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
+import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
 import {
   getCurrentLocation,
   getLocation,
@@ -60,12 +63,10 @@ import {
   type Location,
   type ResolvedLocation
 } from '@hcengineering/ui'
-import { get, writable } from 'svelte/store'
-
-import chunter, { type ThreadMessage } from '@hcengineering/chunter'
-import { getMetadata } from '@hcengineering/platform'
 import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
 import { getObjectLinkId } from '@hcengineering/view-resources'
+import { get, writable } from 'svelte/store'
+
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
 
@@ -83,7 +84,8 @@ export function loadNotificationSettings (): void {
       providersSettings.set(res)
     }
   )
-  typeSettingsQuery.query(notification.class.NotificationTypeSetting, {}, (res) => {
+
+  typeSettingsQuery.query(notification.class.NotificationTypeSetting, { space: core.space.Workspace }, (res) => {
     typesSettings.set(res)
   })
 }
@@ -91,11 +93,11 @@ export function loadNotificationSettings (): void {
 loadNotificationSettings()
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  return docNotifyContext.isPinned !== true
+  return !docNotifyContext.isPinned
 }
 
 export async function hasDocNotifyContextUnpinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
-  return docNotifyContext.isPinned === true
+  return docNotifyContext.isPinned
 }
 
 /**
@@ -186,7 +188,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
   try {
     const notifications = await ops.findAll(
       notification.class.InboxNotification,
-      { docNotifyContext: doc._id, archived: { $ne: true } },
+      { docNotifyContext: doc._id, archived: false },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
@@ -273,9 +275,9 @@ async function updateMeInCollaborators (
 /**
  * @public
  */
-export async function unsubscribe (object: DocNotifyContext): Promise<void> {
+export async function unsubscribe (context: DocNotifyContext): Promise<void> {
   const client = getClient()
-  await updateMeInCollaborators(client, object.attachedToClass, object.attachedTo, OpWithMe.Remove)
+  await updateMeInCollaborators(client, context.objectClass, context.objectId, OpWithMe.Remove)
 }
 
 /**
@@ -309,14 +311,12 @@ export async function archiveAll (): Promise<void> {
     MessageBox,
     {
       label: notification.string.ArchiveAllConfirmationTitle,
-      message: notification.string.ArchiveAllConfirmationMessage
-    },
-    'top',
-    (result?: boolean) => {
-      if (result === true) {
-        void client.archiveAllNotifications()
+      message: notification.string.ArchiveAllConfirmationMessage,
+      action: async () => {
+        await client.archiveAllNotifications()
       }
-    }
+    },
+    'top'
   )
 }
 
@@ -561,6 +561,7 @@ async function navigateToInboxDoc (
 
   loc.query = { ...loc.query, message: message ?? null }
   messageInFocus.set(message)
+  Analytics.handleEvent('inbox.ReadDoc', { objectId: id, objectClass: _class, thread, message })
   navigate(loc)
 }
 
@@ -586,50 +587,39 @@ export async function selectInboxContext (
 ): Promise<void> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const { objectId, objectClass } = context
 
   if (isMentionNotification(notification) && isActivityMessageClass(notification.mentionedInClass)) {
     const selectedMsg = notification.mentionedIn as Ref<ActivityMessage>
 
     void navigateToInboxDoc(
       linkProviders,
-      context.attachedTo,
-      context.attachedToClass,
-      isActivityMessageClass(context.attachedToClass) ? (context.attachedTo as Ref<ActivityMessage>) : undefined,
+      objectId,
+      objectClass,
+      isActivityMessageClass(objectClass) ? (objectId as Ref<ActivityMessage>) : undefined,
       selectedMsg
     )
 
     return
   }
-  if (hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)) {
+  if (hierarchy.isDerived(objectClass, activity.class.ActivityMessage)) {
     const message = (notification as WithLookup<ActivityInboxNotification>)?.$lookup?.attachedTo
 
-    if (context.attachedToClass === chunter.class.ThreadMessage) {
+    if (objectClass === chunter.class.ThreadMessage) {
       const thread = await client.findOne(
         chunter.class.ThreadMessage,
         {
-          _id: context.attachedTo as Ref<ThreadMessage>
+          _id: objectId as Ref<ThreadMessage>
         },
         { projection: { _id: 1, attachedTo: 1 } }
       )
 
-      void navigateToInboxDoc(
-        linkProviders,
-        context.attachedTo,
-        context.attachedToClass,
-        thread?.attachedTo,
-        thread?._id
-      )
+      void navigateToInboxDoc(linkProviders, objectId, objectClass, thread?.attachedTo, thread?._id)
       return
     }
 
     if (isReactionMessage(message)) {
-      void navigateToInboxDoc(
-        linkProviders,
-        context.attachedTo,
-        context.attachedToClass,
-        undefined,
-        context.attachedTo as Ref<ActivityMessage>
-      )
+      void navigateToInboxDoc(linkProviders, objectId, objectClass, undefined, objectId as Ref<ActivityMessage>)
       return
     }
 
@@ -637,18 +627,18 @@ export async function selectInboxContext (
 
     void navigateToInboxDoc(
       linkProviders,
-      context.attachedTo,
-      context.attachedToClass,
-      selectedMsg !== undefined ? (context.attachedTo as Ref<ActivityMessage>) : undefined,
-      selectedMsg ?? (context.attachedTo as Ref<ActivityMessage>)
+      objectId,
+      objectClass,
+      selectedMsg !== undefined ? (objectId as Ref<ActivityMessage>) : undefined,
+      selectedMsg ?? (objectId as Ref<ActivityMessage>)
     )
     return
   }
 
   void navigateToInboxDoc(
     linkProviders,
-    context.attachedTo,
-    context.attachedToClass,
+    objectId,
+    objectClass,
     undefined,
     (notification as ActivityInboxNotification)?.attachedTo
   )

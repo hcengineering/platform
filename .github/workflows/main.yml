@@ -38,6 +38,7 @@ env:
     rush.json
     .prettierrc
     tools
+  PublishTempFolder: publish_artifacts
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -242,6 +243,7 @@ jobs:
           docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/transactor.log
           docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/account.log
           docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
+          docker logs $(docker ps | grep collaborator | cut -f 1 -d ' ') > logs/collaborator.log
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -437,6 +439,7 @@ jobs:
           docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/uweb-transactor.log
           docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/uweb-account.log
           docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/uweb-front.log
+          docker logs $(docker ps | grep collaborator | cut -f 1 -d ' ') > logs/uweb-collaborator.log
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -576,21 +579,23 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
       - name: Build distribution's
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: |
-          cd desktop-package
-          node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
-      - name: Build distribution's
-        env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_APP_PASS: ${{ secrets.APPLE_ID_APP_PASS }}
           TEAM_ID: ${{ secrets.TEAM_ID }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: |
           cd desktop-package
+          node ../common/scripts/install-run-rushx.js dist --linux --windows --x64
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
+          ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
+      - name: Publish distribution assets
+        uses: ryand56/r2-upload-action@latest
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: desktop-distro
+          source-dir: desktop-package/${{ env.PublishTempFolder}}
+          destination-dir: ./
       - name: Publish distribution version
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}

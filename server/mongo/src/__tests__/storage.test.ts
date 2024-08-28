@@ -22,20 +22,20 @@ import core, {
   type Domain,
   DOMAIN_MODEL,
   DOMAIN_TX,
+  type FullParamsType,
   generateId,
   getWorkspaceId,
   Hierarchy,
   type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
+  type ParamsType,
   type Ref,
+  type SessionOperationContext,
   SortingOrder,
   type Space,
   TxOperations,
-  type WorkspaceId,
-  type SessionOperationContext,
-  type ParamsType,
-  type FullParamsType
+  type WorkspaceId
 } from '@hcengineering/core'
 import {
   type ContentTextAdapter,
@@ -128,7 +128,7 @@ describe('mongo operations', () => {
       new MeasureMetricsContext('', {}),
       hierarchy,
       mongodbUri,
-      getWorkspaceId(dbId, ''),
+      getWorkspaceId(dbId),
       model
     )
 
@@ -174,7 +174,7 @@ describe('mongo operations', () => {
       },
       serviceAdapters: {},
       defaultContentAdapter: 'default',
-      workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
+      workspace: { ...getWorkspaceId(dbId), workspaceName: '', workspaceUrl: '' },
       storageFactory: createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})
@@ -189,14 +189,17 @@ describe('mongo operations', () => {
         txes: [],
         targets: {}
       },
-      with: async <T>(
+      with: <T>(
         name: string,
         params: ParamsType,
         op: (ctx: SessionOperationContext) => T | Promise<T>,
         fullParams?: FullParamsType
       ): Promise<T> => {
-        return await op(soCtx)
-      }
+        const result = op(soCtx)
+        return result instanceof Promise ? result : Promise.resolve(result)
+      },
+      contextCache: new Map(),
+      removedMap: new Map()
     }
     client = await createClient(async (handler) => {
       const st: ClientConnection = {

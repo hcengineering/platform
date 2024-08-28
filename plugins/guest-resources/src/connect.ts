@@ -11,11 +11,15 @@ import core, {
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, refreshClient, setClient, setPresentationCookie } from '@hcengineering/presentation'
-import { getCurrentWorkspaceUrl } from '@hcengineering/presentation/src/utils'
+import presentation, {
+  closeClient,
+  loadServerConfig,
+  refreshClient,
+  setClient,
+  setPresentationCookie
+} from '@hcengineering/presentation'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
-
 export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
 
@@ -35,8 +39,6 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   setMetadata(presentation.metadata.Token, token)
 
-  setPresentationCookie(token, getCurrentWorkspaceUrl())
-
   const selectWorkspace = await getResource(login.function.SelectWorkspace)
   const workspaceLoginInfo = (await selectWorkspace(ws, token))[1]
   if (workspaceLoginInfo == null) {
@@ -46,7 +48,10 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
+  setPresentationCookie(token, workspaceLoginInfo.workspaceId)
+
   setMetadata(presentation.metadata.Token, token)
+  setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   if (_token !== token && _client !== undefined) {
@@ -72,9 +77,12 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
     },
     // We need to refresh all active live queries and clear old queries.
-    onConnect: (event: ClientConnectEvent) => {
+    onConnect: (event: ClientConnectEvent, data: any) => {
       console.log('WorkbenchClient: onConnect', event)
       try {
+        if (event === ClientConnectEvent.Connected) {
+          setMetadata(presentation.metadata.SessionId, data)
+        }
         if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
           void refreshClient(true)
         }
@@ -110,7 +118,7 @@ export async function connect (title: string): Promise<Client | undefined> {
             const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
             const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
             if (currentFrontVersion !== undefined) {
-              const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+              const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
               if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
                 location.reload()
               }
@@ -175,9 +183,13 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
+  const currentWorkspace = getMetadata(presentation.metadata.Workspace)
+  if (currentWorkspace !== undefined) {
+    setPresentationCookie('', currentWorkspace)
+  }
+
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  setPresentationCookie('', getCurrentWorkspaceUrl())
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()
 }

@@ -9,7 +9,6 @@ interface Config {
   MongoURI: string
   MongoDB: string
 
-  UploadUrl: string
   AccountsURL: string
   ServiceID: string
   Secret: string
@@ -27,7 +26,6 @@ const envMap: { [key in keyof Config]: string } = {
   MongoURI: 'MONGO_URI',
   MongoDB: 'MONGO_DB',
 
-  UploadUrl: 'UPLOAD_URL',
   AccountsURL: 'ACCOUNTS_URL',
   ServiceID: 'SERVICE_ID',
   Secret: 'SECRET',
@@ -52,14 +50,7 @@ const defaults: Partial<Config> = {
   Secret: undefined
 }
 
-const required: Array<keyof Config> = [
-  'TelegramApiID',
-  'TelegramApiHash',
-  'UploadUrl',
-  'MongoURI',
-  'AccountsURL',
-  'Secret'
-]
+const required: Array<keyof Config> = ['TelegramApiID', 'TelegramApiHash', 'MongoURI', 'AccountsURL', 'Secret']
 
 const mergeConfigs = <T>(defaults: Partial<T>, params: Partial<T>): T => {
   const result = { ...defaults }
@@ -81,7 +72,6 @@ const config = (() => {
     TelegramApiID: parseNumber(process.env[envMap.TelegramApiID]),
     TelegramApiHash: process.env[envMap.TelegramApiHash],
     TelegramAuthTTL: ttl === undefined ? ttl : ttl * 1000,
-    UploadUrl: process.env[envMap.UploadUrl],
     MongoDB: process.env[envMap.MongoDB],
     MongoURI: process.env[envMap.MongoURI],
     AccountsURL: process.env[envMap.AccountsURL],

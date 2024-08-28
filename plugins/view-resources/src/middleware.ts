@@ -132,6 +132,9 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     const skipAccountAggregation = [
       notification.class.BrowserNotification,
       notification.class.InboxNotification,
+      notification.class.MentionInboxNotification,
+      notification.class.CommonInboxNotification,
+      notification.class.ActivityInboxNotification,
       notification.class.DocNotifyContext
     ]
 
@@ -305,6 +308,7 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
       }
       if (TxProcessor.isExtendsCUD(etx._class)) {
         const cud = etx as TxCUD<Doc>
+        if (cud.objectClass === core.class.BenchmarkDoc) continue
         const _class = this.client.getHierarchy().getClass(cud.objectClass)
         if (_class.label !== undefined) {
           const label = await translate(_class.label, {}, 'en')

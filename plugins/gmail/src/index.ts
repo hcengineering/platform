@@ -51,6 +51,8 @@ export interface NewMessage extends BaseMessage {
   from?: Ref<Account>
 }
 
+export * from './analytics'
+
 /**
  * @public
  */

@@ -1,19 +1,23 @@
+import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
   type AnyAttribute,
   type Class,
   type Client as CoreClient,
   type Doc,
   type Domain,
+  type Hierarchy,
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  getCollaborativeDocId
+  RateLimiter,
+  collaborativeDocParse,
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
-import { connect } from '@hcengineering/server-tool'
-import { jsonToText } from '@hcengineering/text'
-import { type Db } from 'mongodb'
+import { connect, fetchModelFromMongo } from '@hcengineering/server-tool'
+import { jsonToText, markupToYDoc } from '@hcengineering/text'
+import { type Db, type FindCursor, type MongoClient } from 'mongodb'
 
 export async function fixJsonMarkup (
   ctx: MeasureContext,
@@ -39,10 +43,7 @@ export async function fixJsonMarkup (
 
       const attributes = hierarchy.getAllAttributes(_class)
       const filtered = Array.from(attributes.values()).filter((attribute) => {
-        return (
-          hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup) ||
-          hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)
-        )
+        return hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup)
       })
       if (filtered.length === 0) continue
 
@@ -88,7 +89,7 @@ async function processFixJsonMarkupFor (
           }
           if (res !== value) {
             update[attribute.name] = res
-            remove.push(getCollaborativeDocId(doc._id, attribute.name))
+            remove.push(makeCollaborativeDoc(doc._id, attribute.name))
           }
         }
       } catch {}
@@ -112,4 +113,102 @@ async function processFixJsonMarkupFor (
   }
 
   console.log('...processed', docs.length)
+}
+
+export async function migrateMarkup (
+  ctx: MeasureContext,
+  storageAdapter: StorageAdapter,
+  workspaceId: WorkspaceId,
+  client: MongoClient,
+  mongodbUri: string,
+  concurrency: number
+): Promise<void> {
+  const { hierarchy } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+
+  const workspaceDb = client.db(workspaceId.name)
+
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
+
+    const allAttributes = hierarchy.getAllAttributes(_class)
+    const attributes = Array.from(allAttributes.values()).filter((attribute) => {
+      return hierarchy.isDerived(attribute.type._class, 'core:class:TypeCollaborativeMarkup' as Ref<Class<Doc>>)
+    })
+
+    if (attributes.length === 0) continue
+    if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
+
+    const collection = workspaceDb.collection(domain)
+
+    const filter = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
+
+    const count = await collection.countDocuments(filter)
+    const iterator = collection.find<Doc>(filter)
+
+    try {
+      console.log('processing', _class, '->', count)
+      await processMigrateMarkupFor(ctx, hierarchy, storageAdapter, workspaceId, attributes, iterator, concurrency)
+    } finally {
+      await iterator.close()
+    }
+  }
+}
+
+async function processMigrateMarkupFor (
+  ctx: MeasureContext,
+  hierarchy: Hierarchy,
+  storageAdapter: StorageAdapter,
+  workspaceId: WorkspaceId,
+  attributes: AnyAttribute[],
+  iterator: FindCursor<Doc>,
+  concurrency: number
+): Promise<void> {
+  const rateLimiter = new RateLimiter(concurrency)
+
+  let processed = 0
+
+  while (true) {
+    const doc = await iterator.next()
+    if (doc === null) break
+
+    const timestamp = Date.now()
+    const revisionId = `${timestamp}`
+
+    await rateLimiter.exec(async () => {
+      for (const attribute of attributes) {
+        const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
+        const { documentId } = collaborativeDocParse(collaborativeDoc)
+
+        const value = hierarchy.isMixin(attribute.attributeOf)
+          ? ((doc as any)[attribute.attributeOf]?.[attribute.name] as string)
+          : ((doc as any)[attribute.name] as string)
+
+        if (value != null && value.startsWith('{')) {
+          const blob = await storageAdapter.stat(ctx, workspaceId, documentId)
+          // only for documents not in storage
+          if (blob === undefined) {
+            try {
+              const ydoc = markupToYDoc(value, attribute.name)
+              await saveCollaborativeDoc(storageAdapter, workspaceId, collaborativeDoc, ydoc, ctx)
+            } catch (err) {
+              console.error('failed to process document', doc._class, doc._id, err)
+            }
+          }
+        }
+      }
+    })
+
+    processed += 1
+
+    if (processed % 100 === 0) {
+      await rateLimiter.waitProcessing()
+      console.log('...processing', processed)
+    }
+  }
+
+  await rateLimiter.waitProcessing()
+
+  console.log('processed', processed)
 }

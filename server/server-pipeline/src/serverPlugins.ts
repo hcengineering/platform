@@ -1,4 +1,3 @@
-import { openAIId, openAIPluginImpl } from '@hcengineering/openai'
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
@@ -27,6 +26,7 @@ import { serverTimeId } from '@hcengineering/server-time'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverTrainingId } from '@hcengineering/server-training'
 import { serverViewId } from '@hcengineering/server-view'
+import { serverAiBotId } from '@hcengineering/server-ai-bot'
 
 export function registerServerPlugins (): void {
   addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
@@ -50,11 +50,11 @@ export function registerServerPlugins (): void {
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
   addLocation(serverLoveId, () => import('@hcengineering/server-love-resources'))
   addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
-  addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
   addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
   addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
   addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))
   addLocation(serverDocumentsId, () => import('@hcengineering/server-controlled-documents-resources'))
   addLocation(serverTrainingId, () => import('@hcengineering/server-training-resources'))
   addLocation(serverGithubId, () => import('@hcengineering/server-github-resources'))
+  addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'))
 }

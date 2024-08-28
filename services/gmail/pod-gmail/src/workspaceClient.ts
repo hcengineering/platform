@@ -25,9 +25,11 @@ import core, {
   type TxCreateDoc,
   TxProcessor,
   type TxRemoveDoc,
-  type TxUpdateDoc
+  type TxUpdateDoc,
+  MeasureContext
 } from '@hcengineering/core'
 import gmailP, { type NewMessage } from '@hcengineering/gmail'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { type Db } from 'mongodb'
 import { getClient } from './client'
@@ -45,13 +47,21 @@ export class WorkspaceClient {
   private readonly clients: Map<Ref<Account>, GmailClient> = new Map<Ref<Account>, GmailClient>()
 
   private constructor (
+    private readonly ctx: MeasureContext,
     private readonly credentials: ProjectCredentials,
     private readonly mongo: Db,
+    private readonly storageAdapter: StorageAdapter,
     private readonly workspace: string
   ) {}
 
-  static async create (credentials: ProjectCredentials, mongo: Db, workspace: string): Promise<WorkspaceClient> {
-    const instance = new WorkspaceClient(credentials, mongo, workspace)
+  static async create (
+    ctx: MeasureContext,
+    credentials: ProjectCredentials,
+    mongo: Db,
+    storageAdapter: StorageAdapter,
+    workspace: string
+  ): Promise<WorkspaceClient> {
+    const instance = new WorkspaceClient(ctx, credentials, mongo, storageAdapter, workspace)
     await instance.initClient(workspace)
     return instance
   }
@@ -59,7 +69,16 @@ export class WorkspaceClient {
   async createGmailClient (user: User): Promise<GmailClient> {
     const current = this.getGmailClient(user.userId)
     if (current !== undefined) return current
-    const newClient = await GmailClient.create(this.credentials, user, this.mongo, this.client, this)
+    const newClient = await GmailClient.create(
+      this.ctx,
+      this.credentials,
+      user,
+      this.mongo,
+      this.client,
+      this,
+      { name: this.workspace },
+      this.storageAdapter
+    )
     this.clients.set(user.userId, newClient)
     return newClient
   }
@@ -106,7 +125,7 @@ export class WorkspaceClient {
   }
 
   private async initClient (workspace: string): Promise<Client> {
-    const token = generateToken(config.SystemEmail, { name: workspace, productId: '' })
+    const token = generateToken(config.SystemEmail, { name: workspace })
     console.log('token', token, workspace)
     const client = await getClient(token)
     client.notify = (...tx: Tx[]) => {

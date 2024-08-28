@@ -755,7 +755,8 @@ A list of closed updated issues`
                         align: null,
                         height: null,
                         title: null,
-                        'file-id': null
+                        'file-id': null,
+                        'data-file-type': null
                       }
                     }
                   ]

@@ -62,7 +62,7 @@
   const dispatch = createEventDispatcher()
 
   export function isEditable (): boolean {
-    return editor.isEditable
+    return editor?.isEditable
   }
   export function setEditable (editable: boolean): void {
     if (editor !== undefined) {
@@ -77,25 +77,27 @@
     return getMarkup(editor)
   }
   export function setContent (newContent: Markup): void {
-    if (content !== newContent) {
+    if (editor !== undefined && content !== newContent) {
       content = newContent
       editor.commands.setContent(markupToJSON(content))
     }
   }
   export function clear (): void {
-    content = EmptyMarkup
+    if (editor !== undefined) {
+      content = EmptyMarkup
 
-    editor.commands.clearContent(true)
+      editor.commands.clearContent(true)
+    }
   }
 
   export function insertText (text: string): void {
-    editor.commands.insertContent(text)
+    editor?.commands.insertContent(text)
   }
   export function insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
-    editor.commands.insertTable(options)
+    editor?.commands.insertTable(options)
   }
   export function insertCodeBlock (pos?: number): void {
-    editor.commands.insertContent(
+    editor?.commands.insertContent(
       {
         type: 'codeBlock',
         content: [{ type: 'text', text: ' ' }]
@@ -106,11 +108,11 @@
     )
 
     if (pos !== undefined) {
-      editor.commands.focus(pos, { scrollIntoView: false })
+      editor?.commands.focus(pos, { scrollIntoView: false })
     }
   }
   export function insertSeparatorLine (): void {
-    editor.commands.setHorizontalRule()
+    editor?.commands.setHorizontalRule()
   }
   export function insertContent (
     value: Content,
@@ -119,11 +121,11 @@
       updateSelection?: boolean
     }
   ): void {
-    editor.commands.insertContent(value, options)
+    editor?.commands.insertContent(value, options)
   }
 
   export function insertMarkup (markup: Markup): void {
-    editor.commands.insertContent(markupToJSON(markup))
+    editor?.commands.insertContent(markupToJSON(markup))
   }
 
   let needFocus = false

@@ -5,7 +5,7 @@
 // Add this to the VERY top of the first file loaded in your app
 import { Analytics } from '@hcengineering/analytics'
 import contactPlugin from '@hcengineering/contact'
-import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
+import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { getMetricsContext, serverConfigFromEnv } from '@hcengineering/server'
@@ -15,6 +15,8 @@ import serverNotification from '@hcengineering/server-notification'
 import serverToken from '@hcengineering/server-token'
 import { serverFactories } from '@hcengineering/server-ws/src/factories'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import serverTelegram from '@hcengineering/server-telegram'
+import serverAiBot from '@hcengineering/server-ai-bot'
 import { join } from 'path'
 import { start } from '.'
 const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
@@ -37,19 +39,24 @@ getMetricsContext(
     )
 )
 
+setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
+
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.FrontUrl, config.frontUrl)
-setMetadata(serverCore.metadata.UploadURL, config.uploadUrl)
+setMetadata(serverCore.metadata.FilesUrl, config.filesUrl)
 setMetadata(serverToken.metadata.Secret, config.serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
 setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
 setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
 setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
 setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
+setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
+setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
+setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 
 const shutdown = start(config.url, {
   fullTextUrl: config.elasticUrl,
@@ -59,7 +66,6 @@ const shutdown = start(config.url, {
   serverFactory,
   indexParallel: 2,
   indexProcessing: 500,
-  productId: '',
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
   enableCompression: config.enableCompression

@@ -90,6 +90,10 @@ class TSessionManager implements SessionManager {
 
   modelVersion = process.env.MODEL_VERSION ?? ''
 
+  oldClientErrors: number = 0
+  clientErrors: number = 0
+  lastClients: string[] = []
+
   constructor (
     readonly ctx: MeasureContext,
     readonly sessionFactory: (token: Token, pipeline: Pipeline) => Session,
@@ -211,6 +215,15 @@ class TSessionManager implements SessionManager {
       } else {
         workspace.softShutdown = 3
       }
+
+      if (this.clientErrors !== this.oldClientErrors) {
+        this.ctx.warn('connection errors during interval', {
+          diff: this.clientErrors - this.oldClientErrors,
+          errors: this.clientErrors,
+          lastClients: this.lastClients
+        })
+        this.oldClientErrors = this.clientErrors
+      }
     }
     this.ticks++
   }
@@ -219,7 +232,6 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline)
   }
 
-  @withContext('get-workspace-info')
   async getWorkspaceInfo (
     ctx: MeasureContext,
     accounts: string,
@@ -241,7 +253,6 @@ class TSessionManager implements SessionManager {
       ).json()
 
       if (userInfo.error !== undefined) {
-        ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
         throw new Error(JSON.stringify(userInfo.error))
       }
       return { ...userInfo.result, upgrade: userInfo.upgrade }
@@ -260,7 +271,6 @@ class TSessionManager implements SessionManager {
     token: Token,
     rawToken: string,
     pipelineFactory: PipelineFactory,
-    productId: string,
     sessionId: string | undefined,
     accountsUrl: string
   ): Promise<
@@ -268,14 +278,19 @@ class TSessionManager implements SessionManager {
     | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
     | { error: any }
     > {
-    const wsString = toWorkspaceString(token.workspace, '@')
+    const wsString = toWorkspaceString(token.workspace)
 
     let workspaceInfo: WorkspaceLoginInfo | undefined
-    workspaceInfo =
-      accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+    try {
+      workspaceInfo =
+        accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+    } catch (err: any) {
+      this.updateConnectErrorInfo(token)
+      return { error: err }
+    }
 
     if (workspaceInfo === undefined) {
-      // No connection to account service, retry from client.
+      this.updateConnectErrorInfo(token)
       return { upgrade: true }
     }
 
@@ -284,6 +299,7 @@ class TSessionManager implements SessionManager {
       return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
     }
     if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
+      this.updateConnectErrorInfo(token)
       // No access to workspace for token.
       return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
     } else if (workspaceInfo === undefined) {
@@ -299,7 +315,9 @@ class TSessionManager implements SessionManager {
     ) {
       ctx.warn('model version mismatch', {
         version: this.modelVersion,
-        workspaceVersion: versionToString(workspaceInfo.version)
+        workspaceVersion: versionToString(workspaceInfo.version),
+        workspace: workspaceInfo.workspaceId,
+        workspaceUrl: workspaceInfo.workspaceUrl
       })
       // Version mismatch, return upgrading.
       return { upgrade: true, upgradeInfo: workspaceInfo.upgrade }
@@ -397,6 +415,11 @@ class TSessionManager implements SessionManager {
     return { session, context: workspace.context, workspaceId: wsString }
   }
 
+  private updateConnectErrorInfo (token: Token): void {
+    this.clientErrors++
+    this.lastClients = [token.email, ...this.lastClients.slice(0, 9)]
+  }
+
   private wsFromToken (token: Token): WorkspaceLoginInfo {
     return {
       workspaceId: token.workspace.name,
@@ -405,7 +428,6 @@ class TSessionManager implements SessionManager {
       createdBy: '',
       createdOn: Date.now(),
       lastVisit: Date.now(),
-      productId: '',
       createProgress: 100,
       creating: false,
       disabled: false,
@@ -959,7 +981,6 @@ export function start (
     port: number
     pipelineFactory: PipelineFactory
     sessionFactory: (token: Token, pipeline: Pipeline) => Session
-    productId: string
     brandingMap: BrandingMap
     serverFactory: ServerFactory
     enableCompression?: boolean
@@ -984,7 +1005,6 @@ export function start (
     ctx,
     opt.pipelineFactory,
     opt.port,
-    opt.productId,
     opt.enableCompression ?? false,
     opt.accountsUrl,
     opt.externalStorage

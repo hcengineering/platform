@@ -19,13 +19,8 @@ import core, {
   TxOperations,
   cutObjectArray,
   generateId,
-  getCollaborativeDoc,
-  getCollaborativeDocId
+  makeCollaborativeDoc
 } from '@hcengineering/core'
-import task, { TaskType, calcRank } from '@hcengineering/task'
-import { isEmptyMarkup } from '@hcengineering/text'
-import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
-import { Issue as GithubIssue, IssuesEvent, ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubIntegrationRepository,
@@ -34,6 +29,9 @@ import github, {
   IntegrationRepositoryData,
   GithubIssue as TGithubIssue
 } from '@hcengineering/github'
+import task, { TaskType, calcRank } from '@hcengineering/task'
+import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
+import { Issue as GithubIssue, IssuesEvent, ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
 import config from '../config'
 import {
@@ -47,7 +45,7 @@ import {
 } from '../types'
 import { IssueExternalData, issueDetails } from './githubTypes'
 import { appendGuestLink } from './guest'
-import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget } from './issueBase'
+import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget, IssueUpdate, WithMarkup } from './issueBase'
 import { syncConfig } from './syncConfig'
 import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
 
@@ -214,7 +212,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         break
       }
       case 'edited': {
-        const update: DocumentUpdate<Issue> = {}
+        const update: IssueUpdate = {}
         const du: DocumentUpdate<DocSyncInfo> = {}
         if (event.changes.body !== undefined) {
           update.description = await this.provider.getMarkup(integration, event.issue.body, this.stripGuestLink)
@@ -373,6 +371,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         return { needSync: githubSyncVersion }
       }
 
+      const description = await this.ctx.withLog('query collaborative description', {}, async () => {
+        const content = await this.collaborator.getContent((existing as Issue).description)
+        return content.description ?? ''
+      })
+
       this.ctx.info('create github issue', {
         title: (existing as Issue).title,
         number: (existing as Issue).number,
@@ -382,7 +385,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         'create github issue',
         {},
         async () => {
-          this.createPromise = this.createGithubIssue(container, existing as Issue, repository)
+          this.createPromise = this.createGithubIssue(container, { ...(existing as Issue), description }, repository)
           return await this.createPromise
         },
         { id: (existing as Issue).identifier, workspace: this.provider.getWorkspaceId().name }
@@ -612,13 +615,12 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
     } else {
       try {
-        const collaborativeDoc = getCollaborativeDoc(getCollaborativeDocId(existing._id, 'description'))
         const description = await this.ctx.withLog(
           'query collaborative description',
           {},
           async () => {
-            const content = await this.collaborator.getContent(collaborativeDoc, 'description')
-            return isEmptyMarkup(content) ? (existing as Issue).description : content
+            const content = await this.collaborator.getContent((existing as Issue).description)
+            return content.description ?? ''
           },
           { url: issueExternal.url }
         )
@@ -657,15 +659,15 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
   async performIssueFieldsUpdate (
     info: DocSyncInfo,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     platformUpdate: DocumentUpdate<Issue>,
-    issueData: Pick<Issue, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
+    issueData: Pick<WithMarkup<Issue>, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
     container: ContainerFocus,
     issueExternal: IssueExternalData,
     okit: Octokit,
     account: Ref<Account>
   ): Promise<boolean> {
-    const { state, body, ...issueUpdate } = await this.collectIssueUpdate(
+    const { state, stateReason, body, ...issueUpdate } = await this.collectIssueUpdate(
       info,
       existing,
       platformUpdate,
@@ -681,6 +683,41 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     const hasFieldStateChanges = Object.keys(issueUpdate).length > 0 || state !== undefined
     // We should allow modification from user.
 
+    const closeIssue = async (): Promise<void> => {
+      await okit?.graphql(
+        `
+      mutation closeIssue($issue: ID!) {
+        closeIssue(input: {
+          issueId: $issue,
+          stateReason: ${stateReason === 'not_planed' ? 'NOT_PLANNED' : 'COMPLETED'}
+        }) {
+          issue {
+            id
+            updatedAt
+          }
+        }
+      }`,
+        { issue: issueExternal.id }
+      )
+    }
+
+    const reopenIssue = async (): Promise<void> => {
+      await okit?.graphql(
+        `
+      mutation reopenIssue($issue: ID!) {
+        reopenIssue(input: {
+          issueId: $issue
+        }) {
+          issue {
+            id
+            updatedAt
+          }
+        }
+      }`,
+        { issue: issueExternal.id }
+      )
+    }
+
     if (hasFieldStateChanges || body !== undefined) {
       if (body !== undefined && !isLocked) {
         await this.ctx.withLog(
@@ -694,12 +731,15 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               workspace: this.provider.getWorkspaceId().name
             })
             if (isGHWriteAllowed()) {
+              if (state === 'OPEN') {
+                // We need to call re-open issue
+                await reopenIssue()
+              }
               await okit?.graphql(
                 `
               mutation updateIssue($issue: ID!, $body: String! ) {
                 updateIssue(input: {
                   id: $issue,
-                  ${state !== undefined ? `state: ${state as string}` : ''}
                   ${gqlp(issueUpdate)},
                   body: $body
                 }) {
@@ -711,6 +751,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               }`,
                 { issue: issueExternal.id, body }
               )
+              if (state === 'CLOSED') {
+                await closeIssue()
+              }
             }
           },
           { url: issueExternal.url, id: existing._id }
@@ -723,12 +766,17 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           async () => {
             this.ctx.info('update fields', { ...issueUpdate, workspace: this.provider.getWorkspaceId().name })
             if (isGHWriteAllowed()) {
-              await okit?.graphql(
-                `
+              const hasOtherChanges = Object.keys(issueUpdate).length > 0
+              if (state === 'OPEN') {
+                // We need to call re-open issue
+                await reopenIssue()
+              }
+              if (hasOtherChanges) {
+                await okit?.graphql(
+                  `
                 mutation updateIssue($issue: ID!) {
                   updateIssue(input: {
                     id: $issue,
-                    ${state !== undefined ? `state: ${state as string}` : ''}
                     ${gqlp(issueUpdate)}
                   }) {
                     issue {
@@ -737,8 +785,12 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                     }
                   }
                 }`,
-                { issue: issueExternal.id }
-              )
+                  { issue: issueExternal.id }
+                )
+              }
+              if (state === 'CLOSED') {
+                await closeIssue()
+              }
             }
           },
           { url: issueExternal.url }
@@ -751,7 +803,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
   async createGithubIssue (
     container: ContainerFocus,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     repository: GithubIntegrationRepository
   ): Promise<IssueExternalData | undefined> {
     const existingIssue = existing
@@ -847,8 +899,13 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     const number = (incResult as any).object.sequence
 
+    const issueId = info._id as unknown as Ref<Issue>
+
+    const { description, ...update } = issueData
+
     const value: AttachedData<Issue> = {
-      ...issueData,
+      ...update,
+      description: makeCollaborativeDoc(issueId, 'description'),
       kind: taskType,
       component: null,
       milestone: null,
@@ -867,7 +924,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       childInfo: [],
       identifier: `${prj.identifier}-${number}`
     }
-    const issueId = info._id as unknown as Ref<Issue>
+
+    await this.collaborator.updateContent(value.description, { description })
 
     await this.client.addCollection(
       tracker.class.Issue,

@@ -22,7 +22,7 @@ import chunter, {
   ChunterSpace,
   ThreadMessage
 } from '@hcengineering/chunter'
-import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import { Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   AttachedDoc,
@@ -45,7 +45,7 @@ import core, {
   TxUpdateDoc,
   UserStatus
 } from '@hcengineering/core'
-import notification, { Collaborators, DocNotifyContext, NotificationContent } from '@hcengineering/notification'
+import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
@@ -53,10 +53,10 @@ import {
   getDocCollaborators,
   getMixinTx
 } from '@hcengineering/server-notification-resources'
-import { markupToText, stripTags } from '@hcengineering/text'
+import { markupToHTML, markupToText, stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 
-import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
+import { getPersonAccountById, NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { encodeObjectURI } from '@hcengineering/view'
 
 const updateChatInfoDelay = 12 * 60 * 60 * 1000 // 12 hours
@@ -84,11 +84,15 @@ export async function channelTextPresenter (doc: Doc): Promise<string> {
     return await translate(chunter.string.Direct, {})
   }
 
-  return `${channel.name}`
+  return `#${channel.name}`
 }
 
 export async function ChatMessageTextPresenter (doc: ChatMessage): Promise<string> {
   return markupToText(doc.message)
+}
+
+export async function ChatMessageHtmlPresenter (doc: ChatMessage): Promise<string> {
+  return markupToHTML(doc.message)
 }
 
 /**
@@ -117,12 +121,7 @@ export async function CommentRemove (
 }
 
 async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
   const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<ThreadMessage>
-
-  if (tx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)) {
-    return []
-  }
 
   const threadMessage = TxProcessor.createDoc2Doc(tx)
   const message = (await control.findAll(activity.class.ActivityMessage, { _id: threadMessage.attachedTo }))[0]
@@ -161,13 +160,6 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
 async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
-
-  if (
-    actualTx._class !== core.class.TxCreateDoc ||
-    !hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
-  ) {
-    return []
-  }
 
   const message = TxProcessor.createDoc2Doc(actualTx)
   const mixin = hierarchy.classHierarchyMixin(message.attachedToClass, notification.mixin.ClassCollaborators)
@@ -240,12 +232,7 @@ function joinChannel (control: TriggerControl, channel: Channel, user: Ref<Accou
 }
 
 async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
   const removeTx = TxProcessor.extractTx(tx) as TxRemoveDoc<ThreadMessage>
-
-  if (!hierarchy.isDerived(removeTx.objectClass, chunter.class.ThreadMessage)) {
-    return []
-  }
 
   const message = control.removedMap.get(removeTx.objectId) as ThreadMessage
 
@@ -282,22 +269,40 @@ async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise
  */
 export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  res.push(
-    ...(await control.ctx.with('OnThreadMessageCreated', {}, async (ctx) => await OnThreadMessageCreated(tx, control)))
-  )
-  res.push(
-    ...(await control.ctx.with('OnThreadMessageDeleted', {}, async (ctx) => await OnThreadMessageDeleted(tx, control)))
-  )
-  res.push(
-    ...(await control.ctx.with(
-      'OnCollaboratorsChanged',
-      {},
-      async (ctx) => await OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control)
-    ))
-  )
-  res.push(
-    ...(await control.ctx.with('OnChatMessageCreated', {}, async (ctx) => await OnChatMessageCreated(tx, control)))
-  )
+  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
+
+  if (
+    actualTx._class === core.class.TxCreateDoc &&
+    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
+  ) {
+    res.push(
+      ...(await control.ctx.with(
+        'OnThreadMessageCreated',
+        {},
+        async (ctx) => await OnThreadMessageCreated(tx, control)
+      ))
+    )
+  }
+  if (
+    actualTx._class === core.class.TxRemoveDoc &&
+    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ThreadMessage)
+  ) {
+    res.push(
+      ...(await control.ctx.with(
+        'OnThreadMessageDeleted',
+        {},
+        async (ctx) => await OnThreadMessageDeleted(tx, control)
+      ))
+    )
+  }
+  if (
+    actualTx._class === core.class.TxCreateDoc &&
+    control.hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
+  ) {
+    res.push(
+      ...(await control.ctx.with('OnChatMessageCreated', {}, async (ctx) => await OnChatMessageCreated(tx, control)))
+    )
+  }
   return res
 }
 
@@ -380,91 +385,6 @@ function combineAttributes (attributes: any[], key: string, operator: string, ar
   ).filter((v) => v != null)
 }
 
-async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: TriggerControl): Promise<Tx[]> {
-  const changedAttributes = Object.entries(tx.operations)
-    .flatMap(([id, val]) => (['$push', '$pull'].includes(id) ? Object.keys(val) : id))
-    .filter((id) => !id.startsWith('$'))
-
-  if (!changedAttributes.includes('members')) {
-    return []
-  }
-
-  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
-  const removed = combineAttributes([tx.operations], 'members', '$pull', '$in')
-
-  const res: Tx[] = []
-  const allContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
-
-  if (removed.length > 0) {
-    res.push(
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-        $pull: {
-          collaborators: { $in: removed }
-        }
-      })
-    )
-  }
-
-  if (added.length > 0) {
-    res.push(
-      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
-        $push: {
-          collaborators: { $each: added, $position: 0 }
-        }
-      })
-    )
-  }
-
-  for (const addedMember of added) {
-    const context = allContexts.find(({ user }) => user === addedMember)
-
-    if (context === undefined) {
-      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-        attachedTo: tx.objectId,
-        attachedToClass: tx.objectClass,
-        user: addedMember,
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      await control.apply([createTx])
-    } else {
-      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastViewedTimestamp: tx.modifiedOn
-      })
-
-      res.push(updateTx)
-    }
-  }
-
-  const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
-
-  for (const context of contextsToRemove) {
-    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-  }
-
-  return res
-}
-
-async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control: TriggerControl): Promise<Tx[]> {
-  if (tx._class !== core.class.TxMixin || tx.mixin !== notification.mixin.Collaborators) return []
-
-  if (!control.hierarchy.isDerived(tx.objectClass, chunter.class.Channel)) return []
-
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0] as Channel | undefined
-
-  if (doc === undefined) return []
-  if (doc.private) return []
-
-  const added = combineAttributes([tx.attributes], 'collaborators', '$push', '$each')
-  const res: Tx[] = []
-
-  for (const addedMember of added) {
-    res.push(...joinChannel(control, doc, addedMember))
-  }
-
-  return res
-}
-
 async function hideOldDirects (
   directs: DocNotifyContext[],
   control: TriggerControl,
@@ -543,7 +463,7 @@ async function hideOldChannels (
 }
 
 export async function updateChatInfo (control: TriggerControl, status: UserStatus, date: Timestamp): Promise<void> {
-  const account = await control.modelDb.findOne(contact.class.PersonAccount, { _id: status.user as Ref<PersonAccount> })
+  const account = getPersonAccountById(status.user as Ref<PersonAccount>, control)
   if (account === undefined) return
 
   const update = (await control.findAll(chunter.class.ChatInfo, { user: account.person })).shift()
@@ -553,7 +473,7 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
 
   const contexts = await control.findAll(notification.class.DocNotifyContext, {
     user: account._id,
-    isPinned: { $ne: true }
+    isPinned: false
   })
 
   if (contexts.length === 0) return
@@ -561,14 +481,14 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
   const { hierarchy } = control
   const res: Tx[] = []
 
-  const directContexts = contexts.filter(({ attachedToClass }) =>
-    hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage)
+  const directContexts = contexts.filter(({ objectClass }) =>
+    hierarchy.isDerived(objectClass, chunter.class.DirectMessage)
   )
   const activityContexts = contexts.filter(
-    ({ attachedToClass }) =>
-      !hierarchy.isDerived(attachedToClass, chunter.class.DirectMessage) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel) &&
-      !hierarchy.isDerived(attachedToClass, chunter.class.Channel)
+    ({ objectClass }) =>
+      !hierarchy.isDerived(objectClass, chunter.class.DirectMessage) &&
+      !hierarchy.isDerived(objectClass, chunter.class.Channel) &&
+      !hierarchy.isDerived(objectClass, activity.class.ActivityMessage)
   )
 
   const directTxes = await hideOldDirects(directContexts, control, date)
@@ -647,12 +567,21 @@ async function OnContextUpdate (tx: TxUpdateDoc<DocNotifyContext>, control: Trig
   return []
 }
 
+function JoinChannelTypeMatch (originTx: Tx, _: Doc, user: Ref<Account>[]): boolean {
+  if (user.some((it) => originTx.modifiedBy === it)) return false
+  if (originTx._class !== core.class.TxUpdateDoc) return false
+
+  const tx = originTx as TxUpdateDoc<Channel>
+  const added = combineAttributes([tx.operations], 'members', '$push', '$each')
+
+  return user.some((it) => added.includes(it))
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
     ChunterTrigger,
     OnChatMessageRemoved,
-    OnChannelMembersChanged,
     ChatNotificationsHandler,
     OnUserStatus,
     OnContextUpdate
@@ -662,6 +591,8 @@ export default async () => ({
     ChannelHTMLPresenter: channelHTMLPresenter,
     ChannelTextPresenter: channelTextPresenter,
     ChunterNotificationContentProvider: getChunterNotificationContent,
-    ChatMessageTextPresenter
+    ChatMessageTextPresenter,
+    ChatMessageHtmlPresenter,
+    JoinChannelTypeMatch
   }
 })

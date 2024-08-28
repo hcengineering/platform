@@ -43,7 +43,7 @@
     createQuery,
     getClient
   } from '@hcengineering/presentation'
-  import { recruitId, type Applicant, type Candidate, type Vacancy } from '@hcengineering/recruit'
+  import { recruitId, type Applicant, type Candidate, type Vacancy, RecruitEvents } from '@hcengineering/recruit'
   import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
   import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
@@ -67,6 +67,8 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
+  import { Analytics } from '@hcengineering/analytics'
+  import { getCandidateIdentifier, getSequenceId } from '../utils'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
@@ -175,6 +177,12 @@
       })
     }
     await ops.commit()
+
+    Analytics.handleEvent(RecruitEvents.ApplicationCreated, {
+      id: `APP-${number}`,
+      talent: getCandidateIdentifier(candidateInstance._id),
+      vacancy: vacancy ? getSequenceId(vacancy) : ''
+    })
   }
 
   async function invokeValidate (

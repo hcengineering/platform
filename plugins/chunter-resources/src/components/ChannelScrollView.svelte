@@ -23,9 +23,10 @@
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
     canGroupMessages,
-    messageInFocus
+    messageInFocus,
+    sortActivityMessages
   } from '@hcengineering/activity-resources'
-  import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Doc, generateId, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -49,9 +50,7 @@
   import chunter from '../plugin'
 
   export let provider: ChannelDataProvider
-  export let object: Doc | undefined
-  export let objectClass: Ref<Class<Doc>>
-  export let objectId: Ref<Doc>
+  export let object: Doc
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let scrollElement: HTMLDivElement | undefined | null = undefined
   export let startFromBottom = false
@@ -115,9 +114,9 @@
   $: messages = $messagesStore
   $: isLoading = $isLoadingStore
 
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: objectClass })
+  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: doc._class })
 
-  $: notifyContext = $contextByDocStore.get(objectId)
+  $: notifyContext = $contextByDocStore.get(doc._id)
 
   void client
     .getModel()
@@ -129,7 +128,7 @@
       }
     })
 
-  $: displayMessages = filterChatMessages(messages, filters, filterResources, objectClass, selectedFilters)
+  $: displayMessages = filterChatMessages(messages, filters, filterResources, doc._class, selectedFilters)
 
   const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
     if (notifyContext !== undefined) {
@@ -360,7 +359,7 @@
     clearTimeout(messagesToReadAccumulatorTimer)
     messagesToReadAccumulatorTimer = setTimeout(() => {
       const messagesToRead = [...messagesToReadAccumulator]
-      void readChannelMessages(messagesToRead, notifyContext)
+      void readChannelMessages(sortActivityMessages(messagesToRead), notifyContext)
     }, 500)
   }
 
@@ -657,15 +656,13 @@
     }
   }
 
-  function handleScrollDown (): void {
+  async function handleScrollDown (): Promise<void> {
     selectedMessageId = undefined
     messageInFocus.set(undefined)
 
     const metadata = $metadataStore
     const lastMetadata = metadata[metadata.length - 1]
     const lastMessage = displayMessages[displayMessages.length - 1]
-
-    void inboxClient.readDoc(client, objectId)
 
     if (lastMetadata._id !== lastMessage._id) {
       separatorIndex = -1
@@ -674,12 +671,17 @@
     } else {
       scrollToBottom()
     }
+
+    const op = client.apply(generateId(), 'chunter.scrollDown')
+    await inboxClient.readDoc(op, doc._id)
+    await op.commit()
   }
 
-  $: forceReadContext(isScrollAtBottom, notifyContext)
+  let forceRead = false
+  $: void forceReadContext(isScrollAtBottom, notifyContext)
 
-  function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): void {
-    if (context === undefined || !isScrollAtBottom) return
+  async function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): Promise<void> {
+    if (context === undefined || !isScrollAtBottom || forceRead || !separatorElement) return
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastViewedTimestamp >= lastUpdateTimestamp) return
@@ -688,7 +690,10 @@
     const unViewed = notifications.filter(({ isViewed }) => !isViewed)
 
     if (unViewed.length === 0) {
-      void inboxClient.readDoc(client, objectId)
+      forceRead = true
+      const op = client.apply(generateId(), 'chunter.forceReadContext')
+      await inboxClient.readDoc(op, object._id)
+      await op.commit()
     }
   }
 
@@ -784,7 +789,7 @@
       <ActivityExtensionComponent
         kind="input"
         {extensions}
-        props={{ object, boundary: scrollElement, collection, autofocus: true }}
+        props={{ object, boundary: scrollElement, collection, autofocus: true, withTypingInfo: true }}
       />
     </div>
   {/if}
@@ -799,6 +804,7 @@
   .ref-input {
     flex-shrink: 0;
     margin: 1.25rem 1rem 1rem;
+    margin-bottom: 0;
     max-height: 18.75rem;
   }
 

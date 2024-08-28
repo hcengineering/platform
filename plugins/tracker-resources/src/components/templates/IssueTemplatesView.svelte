@@ -46,6 +46,7 @@
   bind:viewlet
   bind:search
   showLabelSelector={$$slots.label_selector}
+  adaptive={'default'}
 >
   <svelte:fragment slot="header-tools">
     <ViewletSettingButton bind:viewOptions bind:viewlet />
