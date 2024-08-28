@@ -18,7 +18,7 @@
   import presentation from '@hcengineering/presentation'
   import { getEmbeddedLabel, getMetadata, IntlString } from '@hcengineering/platform'
   import { concatLink, getCurrentAccount } from '@hcengineering/core'
-  import { onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import telegram from '../plugin'
   import TelegramColor from './icons/TelegramColor.svelte'
@@ -31,6 +31,7 @@
   let isLoading = false
 
   const url = getMetadata(telegram.metadata.BotUrl) ?? ''
+  const dispatch = createEventDispatcher()
 
   onMount(() => {
     void loadBotInfo()
@@ -117,7 +118,9 @@
   label={getEmbeddedLabel('Connect Telegram Bot')}
   type="type-popup"
   okLabel={presentation.string.Ok}
-  okAction={() => {}}
+  okAction={() => {
+    dispatch('close')
+  }}
   showCancelButton={false}
   canSave
   on:close
