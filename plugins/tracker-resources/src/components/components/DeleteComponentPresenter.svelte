@@ -30,24 +30,26 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function showConfirmationDialog () {
+  async function showConfirmationDialog (): Promise<void> {
     showPopup(
       MessageBox,
       {
         label: tracker.string.RemoveComponentDialogClose,
-        message: tracker.string.RemoveComponentDialogCloseNote
+        message: tracker.string.RemoveComponentDialogCloseNote,
+        action: async () => {
+          await removeComponent()
+        }
       },
       'top',
-      (result?: boolean) => {
+      (result) => {
         if (result === true) {
           dispatch('close')
-          removeComponent()
         }
       }
     )
   }
 
-  async function removeComponent () {
+  async function removeComponent (): Promise<void> {
     await client.remove(value)
   }
 </script>

@@ -65,7 +65,7 @@
       throw new Error(`create application: state not found space:${_space}`)
     }
 
-    const op = client.apply('application.states')
+    const op = client.apply(_space + 'application.states')
 
     for (const a of selected) {
       await moveToSpace(op, a, _space, { status: selectedState._id })
