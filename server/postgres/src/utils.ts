@@ -90,8 +90,8 @@ export async function createTable (client: Pool, domains: string[]): Promise<voi
     for (const domain of toCreate) {
       await client.query(
         `CREATE TABLE ${domain} (
-          _id VARCHAR(255),
           "workspaceId" VARCHAR(255) NOT NULL,
+          _id VARCHAR(255) NOT NULL,
           _class VARCHAR(255) NOT NULL,
           "createdBy" VARCHAR(255),
           "modifiedBy" VARCHAR(255) NOT NULL,
@@ -100,7 +100,7 @@ export async function createTable (client: Pool, domains: string[]): Promise<voi
           space VARCHAR(255) NOT NULL,
           "attachedTo" VARCHAR(255),
           data JSONB NOT NULL,
-          PRIMARY KEY(_id, "workspaceId")
+          PRIMARY KEY("workspaceId", _id)
         )`
       )
       await client.query(`

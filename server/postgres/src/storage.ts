@@ -230,6 +230,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const docs = res.rows.map(parseDoc)
       for (const doc of docs) {
         if (doc === undefined) continue
+        const prevAttachedTo = (doc as any).attachedTo
         TxProcessor.applyUpdate(doc, operations)
         const converted = convertDoc(doc, this.workspaceId.name)
         const updates: string[] = []
@@ -238,7 +239,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (space !== undefined) {
           updates.push(`space = '${space}'`)
         }
-        if (attachedTo !== undefined) {
+        if ((doc as any).attachedTo !== prevAttachedTo) {
           updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
         }
         if (Object.keys(ops).length > 0) {
