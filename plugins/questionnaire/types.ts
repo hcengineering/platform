@@ -16,6 +16,7 @@
 
 /** @public */
 export class Form {
+  id: string
   title: string
   questions: Array<Question<AnswerType<any>>>
 
@@ -24,6 +25,7 @@ export class Form {
     this.questions = questions;
   }
 }
+
 /** @public */
 export class Question<T extends AnswerType<any>> {
   id!: string
@@ -43,6 +45,8 @@ export class Question<T extends AnswerType<any>> {
 
 /** @public */
 export class Answer<T> {
+  id: string
+  completedFormId: string
   questionId!: string
   value: T
 
@@ -50,6 +54,12 @@ export class Answer<T> {
     this.value = value;
   }
 }
+
+export class CompletedForm {
+  id: string
+  formId: string
+}
+
 
 /** @public */
 export class AnswerType<T> {
