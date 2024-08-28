@@ -16,9 +16,15 @@
   import { DisplayDocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Icon, IconAdd, IconDelete } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import { buildRemovedDoc, checkIsObjectRemoved, DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
+  import { AnyComponent, Component, Icon, IconAdd, IconDelete } from '@hcengineering/ui'
+  import view, { ObjectPanel } from '@hcengineering/view'
+  import {
+    buildRemovedDoc,
+    checkIsObjectRemoved,
+    DocNavLink,
+    getDocLinkTitle,
+    isAttachedDoc
+  } from '@hcengineering/view-resources'
 
   export let objectClass: DisplayDocUpdateMessage['objectClass']
   export let objectId: DisplayDocUpdateMessage['objectId']
@@ -59,6 +65,18 @@
   }
 
   $: void loadObject(objectId, objectClass)
+
+  function getPanelComponent (object: Doc, objectPanel?: ObjectPanel): AnyComponent {
+    if (objectPanel !== undefined) {
+      return objectPanel.component
+    }
+
+    if (isAttachedDoc(object)) {
+      return view.component.AttachedDocPanel
+    }
+
+    return view.component.EditDoc
+  }
 </script>
 
 {#if object}
@@ -84,7 +102,7 @@
           {object}
           colorInherit
           disabled={action === 'remove'}
-          component={objectPanel?.component ?? view.component.EditDoc}
+          component={getPanelComponent(object, objectPanel)}
           shrink={0}
         >
           <span class="overflow-label select-text">{value}</span>

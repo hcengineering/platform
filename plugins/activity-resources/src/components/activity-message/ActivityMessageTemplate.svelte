@@ -177,7 +177,7 @@
           <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
         </span>
       {:else}
-        <div class="min-w-6 mt-1 relative flex-no-shrink">
+        <div class="avatar mt-1 relative flex-no-shrink">
           {#if $$slots.icon}
             <slot name="icon" />
           {:else if person}
@@ -342,6 +342,11 @@
     &.stale {
       opacity: 0.5;
     }
+  }
+
+  .avatar {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .header {

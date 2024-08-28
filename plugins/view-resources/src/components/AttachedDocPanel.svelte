@@ -40,7 +40,7 @@
 {#if doc && panelComponent}
   <Component
     is={panelComponent}
-    props={{ embedded, _id: doc.attachedTo, _class: doc.attachedToClass, ...props }}
+    props={{ embedded, _id: doc.attachedTo, _class: doc.attachedToClass, selectedDoc: _id, ...props }}
     on:close
   />
 {/if}
