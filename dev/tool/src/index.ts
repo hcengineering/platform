@@ -62,13 +62,15 @@ import core, {
   MeasureMetricsContext,
   metricsToString,
   systemAccountEmail,
+  TxOperations,
   versionToString,
   type Data,
   type Doc,
   type Ref,
   type Tx,
   type Version,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
@@ -94,6 +96,7 @@ import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles } from './storage'
+import { importFromNotion } from './notion'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -198,6 +201,49 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
         await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
+      })
+    })
+
+  // import-notion --workspace workspace --file 9bb6ec65-96fe-41a3-a228-39e8c9b1d37f_Export-9387893a-bcca-4fa2-9175-6d959455290e.zip
+  program
+    .command('import-notion <file>')
+    .description('import archive with documents exported from Notion as Markdown')
+    .requiredOption('-w, --workspace <workspace>', 'orkspace where the new documents should be imported to')
+    // .requiredOption('-f, --file <first.zip>', 'Notion archive with the documents to be imported')
+    .action(async (file: string, cmd) => {
+      if (cmd.workspace === '') {
+        return
+      }
+
+      const { mongodbUri } = prepareTools()
+
+      await withDatabase(mongodbUri, async (db) => {
+        const workspaces = await listWorkspacesPure(db)
+        const ws = workspaces.find(ws => ws.workspace === cmd.workspace)
+        if (ws === undefined) {
+          return
+        }
+
+        const wsUrl: WorkspaceIdWithUrl = {
+          name: ws.workspace,
+          workspaceName: ws.workspaceName ?? '',
+          workspaceUrl: ws.workspaceUrl ?? ''
+        }
+
+        await withStorage(mongodbUri, async (storageAdapter) => {
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const client = await createClient(endpoint, token)
+          // todo: get client as following
+          // const client = (await connect(transactorUrl, workspaceId, undefined, {
+          //   mode: 'backup'
+          // })) as unknown as CoreClient
+          const txOp = new TxOperations(client, core.account.System)
+
+          await importFromNotion(file, wsUrl, storageAdapter, toolCtx, txOp)
+
+          await client.close()
+        })
       })
     })
 

@@ -141,7 +141,7 @@ export function updateYDocContent (
  *
  * @public
  */
-export function YDocFromContent (content: MarkupNode, field: string, schema?: Schema, extensions?: Extensions): YDoc {
+export function YDocFromContent (content: MarkupNode, field?: string, schema?: Schema, extensions?: Extensions): YDoc {
   schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   const res = new YDoc({ gc: false })
