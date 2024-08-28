@@ -1887,7 +1887,7 @@ async function replaceCurrentAccount (
         contact.class.Channel,
         contact.space.Contacts,
         employee._id,
-        contact.mixin.Employee,
+        contact.class.Person,
         'channels',
         {
           provider: contact.channelProvider.Email,
@@ -1926,10 +1926,11 @@ async function createPersonAccount (
       const currentAccount = await ops.findOne(contact.class.PersonAccount, {})
       if (currentAccount !== undefined) {
         await replaceCurrentAccount(ops, account, currentAccount, name)
+        await ops.commit()
         return
       }
     }
-    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.User]
+    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.Guest]
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
       let person: Ref<Person> | undefined
