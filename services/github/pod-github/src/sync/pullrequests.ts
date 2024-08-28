@@ -1302,7 +1302,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       )
     }
 
-    const tx = derivedClient.apply('pullrequests_github')
+    const tx = derivedClient.apply('pullrequests_github' + prj._id)
     for (const d of syncDocs) {
       await tx.update(d, { derivedVersion: githubDerivedSyncVersion })
     }

@@ -402,7 +402,7 @@ export abstract class IssueSyncManagerBase {
             return true
           })
 
-          const updateTodos = this.client.apply('todos')
+          const updateTodos = this.client.apply('todos' + account)
           for (const [k, v] of Object.entries(todos)) {
             await updateTodos.updateDoc(time.class.ToDo, time.space.ToDos, k as Ref<ToDo>, {
               doneOn: v ? Date.now() : null

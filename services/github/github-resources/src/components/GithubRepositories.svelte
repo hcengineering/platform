@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AttachedDoc, Ref, WithLookup } from '@hcengineering/core'
+  import { GithubIntegration, GithubIntegrationRepository, GithubProject } from '@hcengineering/github'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { NavLink, getClient, isAdminUser } from '@hcengineering/presentation'
   import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
@@ -19,7 +20,6 @@
     showPopup
   } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
-  import { GithubIntegration, GithubIntegrationRepository, GithubProject } from '@hcengineering/github'
   import github from '../plugin'
   import ConnectProject from './ConnectProject.svelte'
   import { githubLanguageColors } from './languageColors'
@@ -85,21 +85,15 @@
       },
       { total: true, limit: 1 }
     )
-    showPopup(
-      MessageBox,
-      {
-        label: github.string.UnlinkRepository,
-        message: github.string.UnlinkMessage,
-        params: { repositoryName: repository.name, prjName: prj.name, total: issuesQuery.total },
-        richMessage: true
-      },
-      undefined,
-      async (res) => {
-        if (res === true) {
-          void disconnect(prj, repository)
-        }
+    showPopup(MessageBox, {
+      label: github.string.UnlinkRepository,
+      message: github.string.UnlinkMessage,
+      params: { repositoryName: repository.name, prjName: prj.name, total: issuesQuery.total },
+      richMessage: true,
+      action: async () => {
+        await disconnect(prj, repository)
       }
-    )
+    })
   }
 
   $: repos = asRepos(integration.$lookup?.repositories ?? [])
@@ -165,24 +159,18 @@
       kind={'dangerous'}
       label={github.string.RemoveInstallation}
       on:click={() => {
-        showPopup(
-          MessageBox,
-          {
-            label: github.string.UnlinkInstallationTitle,
-            message: github.string.UnlinkInstallation,
-            params: {},
-            richMessage: true
-          },
-          undefined,
-          async (res) => {
-            if (res !== null) {
-              await sendGHServiceRequest('installation-remove', {
-                installationId: integration.installationId,
-                token: getMetadata(presentation.metadata.Token) ?? ''
-              })
-            }
+        showPopup(MessageBox, {
+          label: github.string.UnlinkInstallationTitle,
+          message: github.string.UnlinkInstallation,
+          params: {},
+          richMessage: true,
+          action: async () => {
+            await sendGHServiceRequest('installation-remove', {
+              installationId: integration.installationId,
+              token: getMetadata(presentation.metadata.Token) ?? ''
+            })
           }
-        )
+        })
       }}
     />
   </svelte:fragment>

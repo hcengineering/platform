@@ -12,31 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, { type DocNotifyContext } from '@hcengineering/notification'
+import attachment, { type SavedAttachments } from '@hcengineering/attachment'
+import { type DirectMessage } from '@hcengineering/chunter'
+import contact, { type PersonAccount } from '@hcengineering/contact'
 import core, {
+  type Account,
+  AccountRole,
   generateId,
+  getCurrentAccount,
+  hasAccountRole,
+  type IdMap,
   type Ref,
   SortingOrder,
-  type WithLookup,
-  hasAccountRole,
-  getCurrentAccount,
-  AccountRole,
-  type IdMap,
-  type Account,
-  type UserStatus
+  type UserStatus,
+  type WithLookup
 } from '@hcengineering/core'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
+import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
-import { get, writable } from 'svelte/store'
+import { type Action, showPopup } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
-import attachment, { type SavedAttachments } from '@hcengineering/attachment'
-import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type Action, showPopup } from '@hcengineering/ui'
-import contact, { type PersonAccount } from '@hcengineering/contact'
-import { type DirectMessage } from '@hcengineering/chunter'
+import { get, writable } from 'svelte/store'
 
-import { type ChatNavGroupModel, type ChatNavItemModel, type SortFnOptions } from './types'
 import chunter from '../../plugin'
+import { type ChatNavGroupModel, type ChatNavItemModel, type SortFnOptions } from './types'
 
 const navigatorStateStorageKey = 'chunter.navigatorState'
 
@@ -356,14 +356,12 @@ function archiveActivityChannels (contexts: DocNotifyContext[]): void {
     MessageBox,
     {
       label: chunter.string.ArchiveActivityConfirmationTitle,
-      message: chunter.string.ArchiveActivityConfirmationMessage
-    },
-    'top',
-    (result?: boolean) => {
-      if (result === true) {
-        void removeActivityChannels(contexts)
+      message: chunter.string.ArchiveActivityConfirmationMessage,
+      action: async () => {
+        await removeActivityChannels(contexts)
       }
-    }
+    },
+    'top'
   )
 }
 
