@@ -1918,7 +1918,7 @@ async function createPersonAccount (
   const connection =
     client ?? (await connect(getEndpoint(ctx, workspaceInfo, EndpointKind.Internal), getWorkspaceId(workspace)))
   try {
-    const ops = new TxOperations(connection, core.account.System).apply('create-person' + generateId())
+    const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
     // Check if PersonAccount is not exists
@@ -1926,7 +1926,6 @@ async function createPersonAccount (
       const currentAccount = await ops.findOne(contact.class.PersonAccount, {})
       if (currentAccount !== undefined) {
         await replaceCurrentAccount(ops, account, currentAccount, name)
-        await ops.commit()
         return
       }
     }
@@ -1969,7 +1968,6 @@ async function createPersonAccount (
         }
       }
     }
-    await ops.commit()
   } finally {
     if (client === undefined) {
       await connection.close()
