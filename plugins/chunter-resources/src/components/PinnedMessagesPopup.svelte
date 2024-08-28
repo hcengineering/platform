@@ -16,7 +16,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
   import { ActivityMessagePresenter, sortActivityMessages } from '@hcengineering/activity-resources'
-  import { ActionIcon, IconClose } from '@hcengineering/ui'
+  import { ActionIcon, IconClose, Loading } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ThreadMessage } from '@hcengineering/chunter'
   import { Class, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
@@ -38,11 +38,18 @@
   let pinnedThreads: ThreadMessage[] = []
   let pinnedRefs: ActivityReference[] = []
 
+  let isPinnedLoaded = false
+  let isThreadsPinnedLoaded = false
+  let isPinnedRefsLoaded = false
+
+  $: isLoaded = isPinnedLoaded && isThreadsPinnedLoaded && isPinnedRefsLoaded
+
   $: pinnedQuery.query(
     activity.class.ActivityMessage,
     { attachedTo, isPinned: true, space },
     (res: ActivityMessage[]) => {
       pinnedMessages = res
+      isPinnedLoaded = true
     }
   )
 
@@ -51,6 +58,7 @@
     { objectId: attachedTo, isPinned: true, space },
     (res: ThreadMessage[]) => {
       pinnedThreads = res
+      isThreadsPinnedLoaded = true
     }
   )
 
@@ -60,11 +68,14 @@
       { attachedTo, isPinned: true, space: { $ne: space } },
       (res) => {
         pinnedRefs = res
+        isPinnedRefsLoaded = true
       }
     )
+  } else {
+    isPinnedRefsLoaded = true
   }
 
-  $: if (pinnedMessages.length === 0 && pinnedThreads.length === 0) {
+  $: if (isLoaded && pinnedMessages.length === 0 && pinnedThreads.length === 0 && pinnedRefs.length === 0) {
     dispatch('close', undefined)
   }
 
@@ -79,6 +90,9 @@
 </script>
 
 <div class="antiPopup vScroll popup">
+  {#if displayMessages.length === 0}
+    <Loading size="small" />
+  {/if}
   {#each displayMessages as message}
     <div class="message relative">
       <ActivityMessagePresenter
