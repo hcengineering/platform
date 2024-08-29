@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import core, { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
   import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     DraftController,
@@ -63,8 +63,8 @@
   const client = getClient()
   const query = createQuery()
 
-  const draftKey = `${objectId}_attachments`
-  const draftController = new DraftController<Record<Ref<Attachment>, Attachment>>(draftKey)
+  $: draftKey = `${objectId}_attachments`
+  $: draftController = new DraftController<Record<Ref<Attachment>, Attachment>>(draftKey)
 
   let draftAttachments: Record<Ref<Attachment>, Attachment> | undefined = undefined
   let originalAttachments: Set<Ref<Attachment>> = new Set<Ref<Attachment>>()
@@ -143,8 +143,8 @@
     try {
       const uuid = await uploadFile(file)
       const metadata = await getFileMetadata(file, uuid)
-
       const _id: Ref<Attachment> = generateId()
+
       attachments.set(_id, {
         _id,
         _class: attachment.class.Attachment,
@@ -163,8 +163,9 @@
       })
       newAttachments.add(_id)
       attachments = attachments
-      dispatch('update', { message: content, attachments: attachments.size })
+      saved = false
       saveDraft()
+      dispatch('update', { message: content, attachments: attachments.size })
     } catch (err: any) {
       void setPlatformStatus(unknownError(err))
     }
@@ -173,6 +174,7 @@
   async function saveAttachment (doc: Attachment): Promise<void> {
     if (!existingAttachments.includes(doc._id)) {
       await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+      newAttachments.delete(doc._id)
     }
   }
 
@@ -207,12 +209,9 @@
   async function removeAttachment (attachment: Attachment): Promise<void> {
     removedAttachments.add(attachment)
     attachments.delete(attachment._id)
-    if (shouldSaveDraft) {
-      await createAttachments()
-    }
     attachments = attachments
-    dispatch('update', { message: content, attachments: attachments.size })
     saveDraft()
+    dispatch('update', { message: content, attachments: attachments.size })
   }
 
   async function deleteAttachment (attachment: Attachment): Promise<void> {
@@ -239,9 +238,6 @@
         }
       })
     }
-    if (!saved && shouldSaveDraft) {
-      void createAttachments()
-    }
   })
 
   export function removeDraft (removeFiles: boolean): void {
@@ -256,7 +252,10 @@
     }
   }
 
-  export function createAttachments (): Promise<void> {
+  export async function createAttachments (): Promise<void> {
+    if (saved) {
+      return
+    }
     saved = true
     const promises: Promise<any>[] = []
     newAttachments.forEach((p) => {
@@ -268,7 +267,10 @@
     removedAttachments.forEach((p) => {
       promises.push(deleteAttachment(p))
     })
-    return Promise.all(promises).then()
+    await Promise.all(promises)
+    newAttachments.clear()
+    removedAttachments.clear()
+    saveDraft()
   }
 
   async function onMessage (event: CustomEvent): Promise<void> {
