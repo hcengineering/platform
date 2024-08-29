@@ -12,32 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
-
 import { type Doc as YDoc } from 'yjs'
-import { IndexeddbPersistence } from 'y-indexeddb'
-import { type Awareness } from 'y-protocols/awareness'
+import { WebsocketProvider } from 'y-websocket'
 
 import { type Provider } from './types'
 
-export class IndexeddbProvider extends IndexeddbPersistence implements Provider {
+export interface DatalakeCollabProviderParameters {
+  url: string
+  name: string
+  token: string
+
+  document: YDoc
+}
+
+export class CloudCollabProvider extends WebsocketProvider implements Provider {
   readonly loaded: Promise<void>
-  readonly awareness: Awareness | null = null
 
-  constructor (documentId: string, doc: YDoc) {
-    const workspaceId: string = getMetadata(presentation.metadata.Workspace) ?? ''
+  constructor (params: DatalakeCollabProviderParameters) {
+    const { document, url, name } = params
 
-    const name = `${workspaceId}/${documentId}`
-
-    super(name, doc)
+    super(url, encodeURIComponent(name), document)
 
     this.loaded = new Promise((resolve) => {
       this.on('synced', resolve)
     })
   }
 
-  async destroy (): Promise<void> {
-    await super.destroy()
+  destroy (): void {
+    this.disconnect()
   }
 }

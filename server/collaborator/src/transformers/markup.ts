@@ -13,22 +13,14 @@
 // limitations under the License.
 //
 
-import { jsonToMarkup, markupToJSON } from '@hcengineering/text'
-import { TiptapTransformer, Transformer } from '@hocuspocus/transformer'
-import { Extensions } from '@tiptap/core'
+import { markupToYDocNoSchema, yDocToMarkup } from '@hcengineering/text'
+import { Transformer } from '@hocuspocus/transformer'
 import { Doc } from 'yjs'
 
 export class MarkupTransformer implements Transformer {
-  transformer: Transformer
-
-  constructor (private readonly extensions: Extensions) {
-    this.transformer = TiptapTransformer.extensions(extensions)
-  }
-
   fromYdoc (document: Doc, fieldName?: string | string[] | undefined): any {
-    const json = this.transformer.fromYdoc(document, fieldName)
     if (typeof fieldName === 'string') {
-      return jsonToMarkup(json)
+      return yDocToMarkup(document, fieldName)
     }
 
     if (fieldName === undefined || fieldName.length === 0) {
@@ -37,7 +29,7 @@ export class MarkupTransformer implements Transformer {
 
     const data: Record<string, string> = {}
     fieldName?.forEach((field) => {
-      data[field] = jsonToMarkup(json[field])
+      data[field] = yDocToMarkup(document, field)
     })
 
     return data
@@ -45,8 +37,7 @@ export class MarkupTransformer implements Transformer {
 
   toYdoc (document: any, fieldName: string): Doc {
     if (typeof document === 'string' && document !== '') {
-      const json = markupToJSON(document)
-      return this.transformer.toYdoc(json, fieldName)
+      return markupToYDocNoSchema(document, fieldName)
     }
 
     return new Doc()

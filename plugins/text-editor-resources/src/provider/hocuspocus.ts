@@ -14,23 +14,23 @@
 //
 import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
-import { Doc as Ydoc } from 'yjs'
+import { type Provider } from './types'
 
-export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
+export type HocuspocusCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>> &
 Omit<HocuspocusProviderConfiguration, 'parameters'> & {
-  parameters: TiptapCollabProviderURLParameters
+  parameters: HocuspocusCollabProviderURLParameters
 }
 
-export interface TiptapCollabProviderURLParameters {
+export interface HocuspocusCollabProviderURLParameters {
   initialContentId?: DocumentId
   platformDocumentId?: PlatformDocumentId
 }
 
-export class TiptapCollabProvider extends HocuspocusProvider {
-  loaded: Promise<void>
+export class HocuspocusCollabProvider extends HocuspocusProvider implements Provider {
+  readonly loaded: Promise<void>
 
-  constructor (configuration: TiptapCollabProviderConfiguration) {
+  constructor (configuration: HocuspocusCollabProviderConfiguration) {
     const parameters: Record<string, any> = {}
 
     const initialContentId = configuration.parameters?.initialContentId
@@ -57,28 +57,5 @@ export class TiptapCollabProvider extends HocuspocusProvider {
   destroy (): void {
     super.destroy()
     this.configuration.websocketProvider.disconnect()
-  }
-}
-
-export const createTiptapCollaborationData = (params: {
-  documentId: string
-  initialContentId?: DocumentId
-  platformDocumentId?: PlatformDocumentId
-  collaboratorURL: string
-  token: string
-}): { provider: TiptapCollabProvider, ydoc: Ydoc } => {
-  const ydoc: Ydoc = new Ydoc()
-  return {
-    ydoc,
-    provider: new TiptapCollabProvider({
-      url: params.collaboratorURL,
-      name: params.documentId,
-      document: ydoc,
-      token: params.token,
-      parameters: {
-        initialContentId: params.initialContentId,
-        platformDocumentId: params.platformDocumentId
-      }
-    })
   }
 }

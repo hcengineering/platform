@@ -206,7 +206,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
 
-  setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
+  setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')
 
   setMetadata(github.metadata.GithubApplication, config.GITHUB_APP ?? '')
   setMetadata(github.metadata.GithubClientID, config.GITHUB_CLIENTID ?? '')

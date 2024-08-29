@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,19 +13,11 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Domain, Ref } from '@hcengineering/core'
+import { type Awareness } from 'y-protocols/awareness'
 
-/** @public */
-export interface DocumentId {
-  workspaceUrl: string
-  documentId: string
-  versionId: string
-}
+export interface Provider {
+  loaded: Promise<void>
+  awareness: Awareness | null
 
-/** @public */
-export interface PlatformDocumentId {
-  objectDomain: Domain
-  objectClass: Ref<Class<Doc>>
-  objectId: Ref<Doc>
-  objectAttr: string
+  destroy: () => void | Promise<void>
 }

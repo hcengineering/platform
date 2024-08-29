@@ -14,12 +14,7 @@
 //
 
 import activity, { DocUpdateMessage } from '@hcengineering/activity'
-import {
-  YDocVersion,
-  loadCollaborativeDoc,
-  saveCollaborativeDoc,
-  takeCollaborativeDocSnapshot
-} from '@hcengineering/collaboration'
+import { loadCollaborativeDoc, saveCollaborativeDoc } from '@hcengineering/collaboration'
 import {
   DocumentId,
   PlatformDocumentId,
@@ -98,14 +93,6 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     })
 
     try {
-      let snapshot: YDocVersion | undefined
-      try {
-        ctx.info('take document snapshot', { documentId })
-        snapshot = await this.takeSnapshot(ctx, client, documentId, document, context)
-      } catch (err) {
-        ctx.error('failed to take document snapshot', { documentId, error: err })
-      }
-
       try {
         ctx.info('save document content', { documentId })
         await this.saveDocumentToStorage(ctx, documentId, document, context)
@@ -120,7 +107,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       if (platformDocumentId !== undefined) {
         ctx.info('save document content to platform', { documentId, platformDocumentId })
         await ctx.with('save-to-platform', {}, async (ctx) => {
-          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, snapshot, markup)
+          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, markup)
         })
       }
     } finally {
@@ -157,39 +144,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     })
   }
 
-  async takeSnapshot (
-    ctx: MeasureContext,
-    client: Omit<TxOperations, 'close'>,
-    documentId: DocumentId,
-    document: YDoc,
-    context: Context
-  ): Promise<YDocVersion | undefined> {
-    const { collaborativeDoc } = parseDocumentId(documentId)
-
-    const { workspaceId } = context
-
-    const timestamp = Date.now()
-
-    const yDocVersion: YDocVersion = {
-      versionId: `${timestamp}`,
-      name: 'Automatic snapshot',
-      createdBy: client.user,
-      createdOn: timestamp
-    }
-
-    await ctx.with('take-snapshot', {}, async (ctx) => {
-      await takeCollaborativeDocSnapshot(this.storage, workspaceId, collaborativeDoc, document, yDocVersion, ctx)
-    })
-
-    return yDocVersion
-  }
-
   async saveDocumentToPlatform (
     ctx: MeasureContext,
     client: Omit<TxOperations, 'close'>,
     documentName: string,
     platformDocumentId: PlatformDocumentId,
-    snapshot: YDocVersion | undefined,
     markup: {
       prev: Record<string, string>
       curr: Record<string, string>
@@ -219,8 +178,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     }
 
     const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
-    const newCollaborativeDoc =
-      snapshot !== undefined ? collaborativeDocWithLastVersion(collaborativeDoc, snapshot.versionId) : collaborativeDoc
+    const newCollaborativeDoc = collaborativeDocWithLastVersion(collaborativeDoc, `${Date.now()}`)
 
     await ctx.with('update', {}, async () => {
       await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })

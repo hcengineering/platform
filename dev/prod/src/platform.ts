@@ -124,6 +124,7 @@ export interface Config {
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
+  COLLABORATOR?: string
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
@@ -290,7 +291,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
 
-  setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://localhost:3078')
+  setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

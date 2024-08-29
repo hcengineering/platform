@@ -25,7 +25,7 @@ import {
   type MixinData
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
-import { copyDocument, takeSnapshot } from '@hcengineering/presentation'
+import { copyDocument } from '@hcengineering/presentation'
 import { themeStore } from '@hcengineering/ui'
 import documents, {
   type ControlledDocument,
@@ -55,6 +55,18 @@ export async function createNewDraftForControlledDoc (
 
   newDraftDocId = newDraftDocId ?? generateId()
 
+  const collaborativeDoc = getCollaborativeDocForDocument(
+    `DOC-${document.prefix}`,
+    document.seqNumber,
+    document.major,
+    document.minor,
+    true
+  )
+
+  if (document.content !== undefined) {
+    await copyDocument(document.content, collaborativeDoc)
+  }
+
   // Create new change control for new version
   const newCCId = generateId<ChangeControl>()
   const newCCSpec: Data<ChangeControl> = {
@@ -65,14 +77,6 @@ export async function createNewDraftForControlledDoc (
   }
 
   await createChangeControl(client, newCCId, newCCSpec, document.space)
-
-  const collaborativeDoc = getCollaborativeDocForDocument(
-    `DOC-${document.prefix}`,
-    document.seqNumber,
-    document.major,
-    document.minor,
-    true
-  )
 
   // TODO: copy labels?
   const docSpec: AttachedData<ControlledDocument> = {
@@ -133,10 +137,6 @@ export async function createNewDraftForControlledDoc (
     })
   }
 
-  if (document.content !== undefined) {
-    await copyDocument(document.content, collaborativeDoc)
-  }
-
   const documentTraining = getDocumentTraining(hierarchy, document)
   if (documentTraining !== undefined) {
     const newDraftDoc = await client.findOne(document._class, { _id: newDraftDocId })
@@ -158,10 +158,19 @@ export async function createNewDraftForControlledDoc (
 }
 
 export async function createDocumentSnapshotAndEdit (client: TxOperations, document: ControlledDocument): Promise<void> {
+  const collaborativeDoc = getCollaborativeDocForDocument(
+    `DOC-${document.prefix}`,
+    document.seqNumber,
+    document.major,
+    document.minor,
+    true
+  )
+
+  await copyDocument(document.content, collaborativeDoc)
+
   const language = get(themeStore).language
   const namePrefix = await translate(documents.string.DraftRevision, {}, language)
   const name = `${namePrefix} ${(document.snapshots ?? 0) + 1}`
-  const snapshot = await takeSnapshot(document.content, name)
   const newSnapshotId = generateId<ControlledDocumentSnapshot>()
 
   const op = client.apply(document._id)
@@ -176,7 +185,7 @@ export async function createDocumentSnapshotAndEdit (client: TxOperations, docum
       name,
       state: document.state,
       controlledState: document.controlledState,
-      content: snapshot
+      content: collaborativeDoc
     },
     newSnapshotId
   )
