@@ -15,13 +15,14 @@
 -->
 <script lang="ts">
   import { Channel, Contact } from '@hcengineering/contact'
-  import { personAccountByIdStore, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import plugin, { Button, Icon, IconShare, Label, Scroller } from '@hcengineering/ui'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
+  import { Integration } from '@hcengineering/setting'
   import gmail from '../plugin'
   import { convertMessages } from '../utils'
   import Messages from './Messages.svelte'
@@ -31,6 +32,7 @@
   export let channel: Channel
   export let newMessage: boolean
   export let enabled: boolean
+  export let allIntegrations: Integration[]
 
   let plainMessages: Message[] = []
   let newMessages: Message[] = []
@@ -81,7 +83,14 @@
       object._class,
       'gmailSharedMessages',
       {
-        messages: convertMessages(object, channel, selectedMessages, $personAccountByIdStore, $employeeByIdStore)
+        messages: convertMessages(
+          object,
+          channel,
+          selectedMessages,
+          allIntegrations,
+          $personAccountByIdStore,
+          $employeeByIdStore
+        )
       }
     )
     await inboxClient.readDoc(getClient(), channel._id)
@@ -129,7 +138,14 @@
   <div class="antiVSpacer x2" />
   <Scroller padding={'.5rem 1rem'}>
     <Messages
-      messages={convertMessages(object, channel, messages, $personAccountByIdStore, $employeeByIdStore)}
+      messages={convertMessages(
+        object,
+        channel,
+        messages,
+        allIntegrations,
+        $personAccountByIdStore,
+        $employeeByIdStore
+      )}
       {selectable}
       bind:selected
       on:select

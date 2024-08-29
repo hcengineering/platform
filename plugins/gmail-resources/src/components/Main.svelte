@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { employeeByIdStore } from '@hcengineering/contact-resources'
+  import { employeeByIdStore, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { Button, Icon, Label, Dialog, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, Dialog, eventToHTMLElement, Icon, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import gmail from '../plugin'
   import { convertMessage } from '../utils'
@@ -48,6 +48,7 @@
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
+  let allIntegrations: Integration[] = []
   let integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
@@ -95,15 +96,18 @@
 
   $: templateProvider && selectedIntegration && templateProvider.set(setting.class.Integration, selectedIntegration)
 
-  settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
+  settingsQuery.query(setting.class.Integration, { type: gmail.integrationType.Gmail }, (res) => {
+    allIntegrations = res.filter((p) => !p.disabled && p.value !== '')
+    integrations = allIntegrations.filter((p) => p.createdBy === me || p.shared?.includes(me))
     selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 
   $: gmailMessage &&
     channel &&
     object &&
-    convertMessage(object, channel, gmailMessage, $employeeByIdStore).then((p) => (currentMessage = p))
+    convertMessage(object, channel, gmailMessage, allIntegrations, $personAccountByIdStore, $employeeByIdStore).then(
+      (p) => (currentMessage = p)
+    )
 </script>
 
 {#if channel && object}
@@ -148,7 +152,14 @@
     {:else if currentMessage}
       <FullMessage {currentMessage} bind:newMessage on:close={back} />
     {:else}
-      <Chats {object} {channel} bind:newMessage enabled={integrations.length > 0} on:select={selectHandler} />
+      <Chats
+        {object}
+        {channel}
+        bind:newMessage
+        {allIntegrations}
+        enabled={integrations.length > 0}
+        on:select={selectHandler}
+      />
     {/if}
   </Dialog>
 {/if}
