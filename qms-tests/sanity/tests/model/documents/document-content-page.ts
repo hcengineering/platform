@@ -328,6 +328,10 @@ export class DocumentContentPage extends DocumentCommonPage {
     await expect(this.page.getByText(code, { exact: true })).toBeVisible()
   }
 
+  async checkIfCategoryExists (category: string): Promise<void> {
+    await expect(this.page.getByText(category)).toBeVisible()
+  }
+
   async fillDocumentSpaceForm (spaceName: string): Promise<void> {
     await this.inputSpaceName.fill(spaceName)
     await this.roleSelector.nth(2).click()
