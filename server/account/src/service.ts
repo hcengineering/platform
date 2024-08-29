@@ -120,6 +120,8 @@ export class UpgradeWorker {
         ctx.error('error', { err })
       }
 
+      Analytics.handleError(err)
+
       ctx.info('---failed---------', {
         pending: this.toProcess,
         time: Date.now() - t,
