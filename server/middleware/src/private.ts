@@ -49,20 +49,30 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     return new PrivateMiddleware(storage, next)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    let target: string[] | undefined
+  isTargetDomain (tx: Tx): boolean {
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const txCUD = tx as TxCUD<Doc>
       const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
-      if (this.targetDomains.includes(domain)) {
-        const account = (await getUser(this.storage, ctx))._id
-        if (account !== tx.modifiedBy && account !== core.account.System) {
-          throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-        }
-        const modifiedByAccount = await this.storage.modelDb.findAll(core.class.Account, { _id: tx.modifiedBy })
-        target = [ctx.userEmail, systemAccountEmail]
-        if (modifiedByAccount.length > 0 && !target.includes(modifiedByAccount[0].email)) {
-          target.push(modifiedByAccount[0].email)
+      return this.targetDomains.includes(domain)
+    }
+    return false
+  }
+
+  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
+    let target: string[] | undefined
+    if (this.isTargetDomain(tx)) {
+      const account = (await getUser(this.storage, ctx))._id
+      if (account !== tx.modifiedBy && account !== core.account.System) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
+      const modifiedByAccount = await this.storage.modelDb.findAll(core.class.Account, { _id: tx.modifiedBy })
+      target = [ctx.userEmail, systemAccountEmail]
+      if (modifiedByAccount.length > 0 && !target.includes(modifiedByAccount[0].email)) {
+        target.push(modifiedByAccount[0].email)
+      }
+      ctx.derived.targets.checkDomain = (tx) => {
+        if (this.isTargetDomain(tx)) {
+          return target
         }
       }
     }
