@@ -364,6 +364,8 @@ table.proseTable {
 
 pre.proseCodeBlock {
   white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: normal;
 }
 
 // Fixes for MessageViewer
