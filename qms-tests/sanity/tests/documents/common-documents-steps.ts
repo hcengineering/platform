@@ -22,12 +22,13 @@ export async function createTemplateStep (
   page: Page,
   title: string,
   description: string,
-  category: string
+  category: string,
+  spaceName: string
 ): Promise<void> {
   await test.step('2. Create a new template', async () => {
     const documentsPage = new DocumentsPage(page)
 
-    await documentsPage.createTemplate(title, description, category)
+    await documentsPage.createTemplate(title, description, category, spaceName)
   })
 }
 
