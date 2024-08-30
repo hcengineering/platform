@@ -17,7 +17,7 @@ import type { Class, Doc, Domain, Ref } from '@hcengineering/core'
 
 /** @public */
 export interface DocumentId {
-  workspaceUrl: string
+  workspaceId: string
   documentId: string
   versionId: string
 }

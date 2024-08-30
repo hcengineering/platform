@@ -36,7 +36,7 @@ import { DocumentId, PlatformDocumentId } from './types'
  *
  * @public
  */
-export function formatDocumentId (workspaceUrl: string, collaborativeDoc: CollaborativeDoc): DocumentId {
+export function formatDocumentId (workspaceId: string, collaborativeDoc: CollaborativeDoc): DocumentId {
   const path = collaborativeDocUnchain(collaborativeDoc)
     .map((p) => {
       const { documentId, versionId } = collaborativeDocParse(p)
@@ -44,15 +44,15 @@ export function formatDocumentId (workspaceUrl: string, collaborativeDoc: Collab
     })
     .join('/')
 
-  return `${workspaceUrl}://${path}` as DocumentId
+  return `${workspaceId}://${path}` as DocumentId
 }
 
 /** @public */
 export function parseDocumentId (documentId: DocumentId): {
-  workspaceUrl: string
+  workspaceId: string
   collaborativeDoc: CollaborativeDoc
 } {
-  const [workspaceUrl, path] = documentId.split('://')
+  const [workspaceId, path] = documentId.split('://')
   const segments = path.split('/')
 
   const collaborativeDocs = segments.map((p) => {
@@ -61,7 +61,7 @@ export function parseDocumentId (documentId: DocumentId): {
   })
 
   return {
-    workspaceUrl,
+    workspaceId,
     collaborativeDoc: collaborativeDocChain(...collaborativeDocs)
   }
 }
