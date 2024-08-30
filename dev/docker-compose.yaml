@@ -51,6 +51,8 @@ services:
     restart: unless-stopped
   account:
     image: hardcoreeng/account
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -76,6 +78,8 @@ services:
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -92,6 +96,8 @@ services:
     restart: unless-stopped
   front:
     image: hardcoreeng/front
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -126,6 +132,8 @@ services:
     restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - elastic
@@ -184,6 +192,8 @@ services:
           memory: 300M
   sign:
     image: hardcoreeng/sign
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -207,6 +217,8 @@ services:
           memory: 300M
   analytics:
     image: hardcoreeng/analytics-collector
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4007:4007
@@ -224,6 +236,8 @@ services:
           memory: 300M
   aiBot:
     image: hardcoreeng/ai-bot
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
@@ -241,6 +255,8 @@ services:
           memory: 300M
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot
+#   extra_hosts:
+#     - "host.docker.internal:host-gateway"
 #    restart: unless-stopped
 #    environment:
 #      - PORT=4020
