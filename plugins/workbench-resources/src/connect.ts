@@ -78,6 +78,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     token = workspaceLoginInfo.token
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
+    setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
   }
 
   setMetadata(presentation.metadata.Token, token)
@@ -354,6 +355,7 @@ function clearMetadata (ws: string): void {
 
   setMetadata(presentation.metadata.Token, null)
   setMetadata(presentation.metadata.Workspace, null)
+  setMetadata(presentation.metadata.WorkspaceId, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)

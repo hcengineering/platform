@@ -52,6 +52,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, token)
   setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   if (_token !== token && _client !== undefined) {
