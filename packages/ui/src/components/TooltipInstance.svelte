@@ -328,6 +328,18 @@
       />
     {/if}
   </div>
+  <svg class="svg-mask">
+    <clipPath id="nub-bg">
+      <path
+        d="M7.3.6 4.2 4.3C2.9 5.4 1.5 6 0 6v1h18V6c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2z"
+      />
+    </clipPath>
+    <clipPath id="nub-border">
+      <path
+        d="M4.8 5.1 8 1.3s.1 0 .1-.1c.5-.3 1.4-.3 1.9.1L13.1 5l.1.1 1.2.9H18c-1.5 0-2.9-.6-4.2-1.7L10.7.6C9.9-.1 8.5-.2 7.5.4c0 .1-.1.1-.2.2L4.2 4.3C2.9 5.4 1.5 6 0 6h3.6l1.2-.9z"
+      />
+    </clipPath>
+  </svg>
   <div
     bind:this={nubHTML}
     style:z-index={($modals.findIndex((t) => t.type === 'tooltip') ?? 1) + 10000}
