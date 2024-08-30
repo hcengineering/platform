@@ -27,11 +27,11 @@ describe('utils', () => {
 
   describe('parseDocumentId', () => {
     expect(parseDocumentId('ws1://doc1:HEAD' as DocumentId)).toEqual({
-      workspaceUrl: 'ws1',
+      workspaceId: 'ws1',
       collaborativeDoc: 'doc1:HEAD:HEAD' as CollaborativeDoc
     })
     expect(parseDocumentId('ws1://doc1:HEAD/doc2:v2' as DocumentId)).toEqual({
-      workspaceUrl: 'ws1',
+      workspaceId: 'ws1',
       collaborativeDoc: 'doc1:HEAD:HEAD#doc2:v2:v2' as CollaborativeDoc
     })
   })
