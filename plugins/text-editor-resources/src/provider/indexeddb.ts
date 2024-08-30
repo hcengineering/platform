@@ -26,7 +26,7 @@ export class IndexeddbProvider extends IndexeddbPersistence implements Provider 
   readonly awareness: Awareness | null = null
 
   constructor (documentId: string, doc: YDoc) {
-    const workspaceId: string = getMetadata(presentation.metadata.Workspace) ?? ''
+    const workspaceId: string = getMetadata(presentation.metadata.WorkspaceId) ?? ''
 
     const name = `${workspaceId}/${documentId}`
 
