@@ -348,7 +348,7 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
-  const currentWorkspace = getMetadata(presentation.metadata.Workspace)
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceId)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }
