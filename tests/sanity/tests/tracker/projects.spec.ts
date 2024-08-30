@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Tracker Projects tests', () => {
+test.describe.only('Tracker Projects tests', () => {
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let newProjectPage: NewProjectPage
   let editProjectPage: EditProjectPage
@@ -84,5 +84,52 @@ test.describe('Tracker Projects tests', () => {
     await trackerNavigationMenuPage.makeActionWithProject(archiveProjectData.title, 'Archive')
     await trackerNavigationMenuPage.pressYesForPopup(page)
     await trackerNavigationMenuPage.checkProjectNotExist(archiveProjectData.title)
+  })
+
+  test('Star and Unstar Project', async ({ page }) => {
+    const projectToStarData: NewProject = {
+      title: 'PROJECT_STAR',
+      identifier: 'STAR',
+      description: 'Starred Project description',
+      private: true,
+      defaultAssigneeForIssues: 'Dirak Kainin',
+      defaultIssueStatus: 'In Progress'
+    }
+
+    try {
+      await trackerNavigationMenuPage.checkProjectNotExist(projectToStarData.title)
+    } catch {
+      await trackerNavigationMenuPage.pressCreateProjectButton()
+      await newProjectPage.createNewProject(projectToStarData)
+    }
+
+    await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
+
+    await trackerNavigationMenuPage.makeActionWithProject(projectToStarData.title, 'Star')
+    await trackerNavigationMenuPage.checkProjectStarred(projectToStarData.title)
+    await trackerNavigationMenuPage.checkProjectWillBeRemovedFromYours(projectToStarData.title)
+
+    await trackerNavigationMenuPage.makeActionWithStarredProject(projectToStarData.title, 'Unstar')
+    await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
+    await trackerNavigationMenuPage.checkProjectWillBeRemovedFromStarred(projectToStarData.title)
+  })
+
+  test.skip('Leave Project', async ({ page }) => {
+    const projectToStarData: NewProject = {
+      title: 'PROJECT_STAR',
+      identifier: 'STAR',
+      description: 'Starred Project description',
+      private: true,
+      defaultAssigneeForIssues: 'Dirak Kainin',
+      defaultIssueStatus: 'In Progress'
+    }
+
+    await trackerNavigationMenuPage.checkProjectNotExist(projectToStarData.title)
+    await trackerNavigationMenuPage.pressCreateProjectButton()
+    await newProjectPage.createNewProject(projectToStarData)
+    await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
+    await trackerNavigationMenuPage.makeActionWithProject(projectToStarData.title, 'Star')
+    await trackerNavigationMenuPage.pressYesForPopup(page)
+    await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
   })
 })
