@@ -353,6 +353,29 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
+  async changeDocumentSpaceMembers (spaceName: string): Promise<void> {
+    await this.page.getByRole('button', { name: spaceName }).hover()
+    await this.page.getByRole('button', { name: spaceName }).getByRole('button').click()
+    await this.editDocumentSpace.click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).first().click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).nth(3).click()
+    await this.page.getByRole('button', { name: 'AJ Appleseed John' }).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.getByRole('button', { name: 'AJ DK 2 members' }).click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).nth(1).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.saveButton.click()
+  }
+
+  async checkIfTheSpaceIsVisible (spaceName: string, visible: boolean): Promise<void> {
+    if (visible) {
+      await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
+    } else {
+      await expect(this.page.getByRole('button', { name: spaceName })).not.toBeVisible()
+    }
+  }
+
   async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
     await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
   }
