@@ -21,7 +21,7 @@ import presentation from './plugin'
 
 /** @public */
 export function getCollaboratorClient (): CollaboratorClient {
-  const workspaceId = getWorkspaceId(getMetadata(presentation.metadata.Workspace) ?? '')
+  const workspaceId = getWorkspaceId(getMetadata(presentation.metadata.WorkspaceId) ?? '')
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 

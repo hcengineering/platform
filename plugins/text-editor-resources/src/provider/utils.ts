@@ -31,7 +31,7 @@ import { IndexeddbProvider } from './indexeddb'
 import { type Provider } from './types'
 
 export function formatCollaborativeDocumentId (collaborativeDoc: CollaborativeDoc): DocumentId {
-  const workspace = getMetadata(presentation.metadata.Workspace) ?? ''
+  const workspace = getMetadata(presentation.metadata.WorkspaceId) ?? ''
   return formatDocumentId(workspace, collaborativeDoc)
 }
 

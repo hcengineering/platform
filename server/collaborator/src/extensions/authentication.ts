@@ -46,7 +46,7 @@ export class AuthenticationExtension implements Extension {
       const workspaceInfo = await getWorkspaceInfo(data.token)
 
       // verify workspace url in the document matches the token
-      if (workspaceInfo.workspace !== workspaceId) {
+      if (workspaceInfo.workspaceId !== workspaceId) {
         throw new Error('documentName must include workspace id')
       }
 
