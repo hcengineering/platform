@@ -18,4 +18,16 @@ export class AllProjectsPage extends CommonTrackerPage {
     const joinButton = projectRow.locator('button:has-text("Join")')
     await joinButton.click()
   }
+
+  async unarchiveProject (title: string): Promise<void> {
+    const projectRow = this.page.locator('.antiTable-body__row', { has: this.page.locator(`td:has-text("${title}")`) })
+    await projectRow.click({ button: 'right' })
+    await this.page.locator('.popup button:has-text("Unarchive")').click()
+    await this.page.locator('.popup button:has-text("Ok")').click()
+  }
+
+  async checkProjecInTableIsNotArchived (title: string): Promise<void> {
+    await this.page.waitForTimeout(3000)
+    await expect(this.projectTitleColumns().filter({ hasText: title })).not.toContainText('(archived)')
+  }
 }
