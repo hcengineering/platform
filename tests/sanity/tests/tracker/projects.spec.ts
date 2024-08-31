@@ -10,7 +10,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe.only('Tracker Projects tests', () => {
+test.describe('Tracker Projects tests', () => {
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let newProjectPage: NewProjectPage
   let editProjectPage: EditProjectPage
