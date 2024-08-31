@@ -444,7 +444,8 @@ export function createModel (builder: Builder): void {
       _class: hr.class.Department,
       query: {},
       searchField: 'name',
-      placeholder: hr.string.Department
+      placeholder: hr.string.Department,
+      castRequest: hr.mixin.Staff
     },
     label: hr.string.Department,
     icon: hr.icon.Department,
