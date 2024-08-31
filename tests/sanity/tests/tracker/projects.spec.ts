@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateProjectPrefix, PlatformSetting, PlatformURI } from '../utils'
+import { generateRandomPrefix, PlatformSetting, PlatformURI } from '../utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { NewProjectPage } from '../model/tracker/new-project-page'
 import { NewProject } from '../model/tracker/types'
@@ -25,7 +25,7 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Create project', async () => {
-    const prefix = generateProjectPrefix()
+    const prefix = generateRandomPrefix()
     const newProjectData: NewProject = {
       title: `${prefix}-NewProject`,
       identifier: prefix,
@@ -44,7 +44,7 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Edit project', async () => {
-    const prefix = generateProjectPrefix()
+    const prefix = generateRandomPrefix()
 
     const editProjectData: NewProject = {
       title: `${prefix}-EditProject`,
@@ -75,7 +75,7 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Archive Project', async ({ page }) => {
-    const prefix = generateProjectPrefix()
+    const prefix = generateRandomPrefix()
 
     const archiveProjectData: NewProject = {
       title: `${prefix}-ArchiveProject`,
@@ -96,7 +96,7 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Star and Unstar Project', async ({ page }) => {
-    const prefix = generateProjectPrefix()
+    const prefix = generateRandomPrefix()
 
     const projectToStarData: NewProject = {
       title: `${prefix}-ProjectToStar`,
@@ -122,7 +122,7 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Leave and Join Project', async ({ page }) => {
-    const prefix = generateProjectPrefix()
+    const prefix = generateRandomPrefix()
 
     const projectToLeaveData: NewProject = {
       title: `${prefix}-ProjectToLeave`,
