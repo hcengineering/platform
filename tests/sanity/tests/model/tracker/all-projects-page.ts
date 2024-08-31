@@ -1,4 +1,3 @@
-
 import { expect, type Locator } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 
