@@ -229,10 +229,10 @@ export async function createAccountAndWorkspace (page: Page, request: APIRequest
 }
 
 /**
-* Return random capitalized string like "AFJKD"
-*
-* @returns string
-*/
+ * Return random capitalized string like "AFJKD"
+ *
+ * @returns string
+ */
 export function generateRandomPrefix (size: number = 5): string {
   return Array.from({ length: size }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('')
 }

@@ -59,11 +59,15 @@ export class TrackerNavigationMenuPage extends CommonPage {
   }
 
   async checkProjectWillBeRemovedFromYours (projectName: string): Promise<void> {
-    await this.page.waitForSelector(`${this.yoursProjectsMenuSelector} span:has-text("${projectName}")`, { state: 'detached' })
+    await this.page.waitForSelector(`${this.yoursProjectsMenuSelector} span:has-text("${projectName}")`, {
+      state: 'detached'
+    })
   }
 
   async checkProjectWillBeRemovedFromStarred (projectName: string): Promise<void> {
-    await this.page.waitForSelector(`${this.starredProjectsMenuSelector} span:has-text("${projectName}")`, { state: 'detached' })
+    await this.page.waitForSelector(`${this.starredProjectsMenuSelector} span:has-text("${projectName}")`, {
+      state: 'detached'
+    })
   }
 
   async checkProjectNotExist (projectName: string): Promise<void> {
