@@ -229,8 +229,9 @@ export async function createAccountAndWorkspace (page: Page, request: APIRequest
 }
 
 /**
-* @returns string of random capitalized chars to save names
-* @example 'AFRXL'
+* Return random capitalized string like "AFJKD"
+*
+* @returns string
 */
 export function generateRandomPrefix (size: number = 5): string {
   return Array.from({ length: size }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('')
