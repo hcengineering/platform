@@ -1,9 +1,10 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
+import { generateProjectPrefix, PlatformSetting, PlatformURI } from '../utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { NewProjectPage } from '../model/tracker/new-project-page'
 import { NewProject } from '../model/tracker/types'
 import { EditProjectPage } from '../model/tracker/edit-project-page'
+import { AllProjectsPage } from '../model/tracker/all-projects-page'
 
 test.use({
   storageState: PlatformSetting
@@ -13,19 +14,22 @@ test.describe.only('Tracker Projects tests', () => {
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let newProjectPage: NewProjectPage
   let editProjectPage: EditProjectPage
+  let allProjectsPage: AllProjectsPage
 
   test.beforeEach(async ({ page }) => {
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     newProjectPage = new NewProjectPage(page)
     editProjectPage = new EditProjectPage(page)
+    allProjectsPage = new AllProjectsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   test('Create project', async () => {
+    const prefix = generateProjectPrefix()
     const newProjectData: NewProject = {
-      title: 'TestProject',
-      identifier: 'QWERT',
-      description: 'Test Project description',
+      title: `${prefix}-NewProject`,
+      identifier: prefix,
+      description: 'New Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
       defaultIssueStatus: 'In Progress'
@@ -35,21 +39,24 @@ test.describe.only('Tracker Projects tests', () => {
     await trackerNavigationMenuPage.pressCreateProjectButton()
     await newProjectPage.createNewProject(newProjectData)
     await trackerNavigationMenuPage.checkProjectExist(newProjectData.title)
+
     await trackerNavigationMenuPage.openProject(newProjectData.title)
   })
 
   test('Edit project', async () => {
+    const prefix = generateProjectPrefix()
+
     const editProjectData: NewProject = {
-      title: 'EditProject',
-      identifier: 'EDIT',
+      title: `${prefix}-EditProject`,
+      identifier: prefix,
       description: 'Edit Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
       defaultIssueStatus: 'In Progress'
     }
     const updateProjectData: NewProject = {
-      title: 'UpdateProject',
-      identifier: 'EDIT',
+      title: `${prefix}-UpdateProject`,
+      identifier: prefix,
       description: 'Updated Project description',
       private: true,
       defaultAssigneeForIssues: 'Chen Rosamund',
@@ -68,9 +75,11 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Archive Project', async ({ page }) => {
+    const prefix = generateProjectPrefix()
+
     const archiveProjectData: NewProject = {
-      title: 'PROJECT_ARCHIVE',
-      identifier: 'ARCH',
+      title: `${prefix}-ArchiveProject`,
+      identifier: prefix,
       description: 'Archive Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
@@ -87,22 +96,20 @@ test.describe.only('Tracker Projects tests', () => {
   })
 
   test('Star and Unstar Project', async ({ page }) => {
+    const prefix = generateProjectPrefix()
+
     const projectToStarData: NewProject = {
-      title: 'PROJECT_STAR',
-      identifier: 'STAR',
+      title: `${prefix}-ProjectToStar`,
+      identifier: prefix,
       description: 'Starred Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
       defaultIssueStatus: 'In Progress'
     }
 
-    try {
-      await trackerNavigationMenuPage.checkProjectNotExist(projectToStarData.title)
-    } catch {
-      await trackerNavigationMenuPage.pressCreateProjectButton()
-      await newProjectPage.createNewProject(projectToStarData)
-    }
-
+    await trackerNavigationMenuPage.checkProjectNotExist(projectToStarData.title)
+    await trackerNavigationMenuPage.pressCreateProjectButton()
+    await newProjectPage.createNewProject(projectToStarData)
     await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
 
     await trackerNavigationMenuPage.makeActionWithProject(projectToStarData.title, 'Star')
@@ -114,22 +121,30 @@ test.describe.only('Tracker Projects tests', () => {
     await trackerNavigationMenuPage.checkProjectWillBeRemovedFromStarred(projectToStarData.title)
   })
 
-  test.skip('Leave Project', async ({ page }) => {
-    const projectToStarData: NewProject = {
-      title: 'PROJECT_STAR',
-      identifier: 'STAR',
-      description: 'Starred Project description',
+  test('Leave and Join Project', async ({ page }) => {
+    const prefix = generateProjectPrefix()
+
+    const projectToLeaveData: NewProject = {
+      title: `${prefix}-ProjectToLeave`,
+      identifier: prefix,
+      description: 'Project to leave description',
       private: true,
-      defaultAssigneeForIssues: 'Dirak Kainin',
+      defaultAssigneeForIssues: 'Appleseed John',
       defaultIssueStatus: 'In Progress'
     }
 
-    await trackerNavigationMenuPage.checkProjectNotExist(projectToStarData.title)
+    await trackerNavigationMenuPage.checkProjectNotExist(projectToLeaveData.title)
     await trackerNavigationMenuPage.pressCreateProjectButton()
-    await newProjectPage.createNewProject(projectToStarData)
-    await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
-    await trackerNavigationMenuPage.makeActionWithProject(projectToStarData.title, 'Star')
-    await trackerNavigationMenuPage.pressYesForPopup(page)
-    await trackerNavigationMenuPage.checkProjectExist(projectToStarData.title)
+    await newProjectPage.createNewProject(projectToLeaveData)
+    await trackerNavigationMenuPage.checkProjectExist(projectToLeaveData.title)
+
+    await trackerNavigationMenuPage.makeActionWithProject(projectToLeaveData.title, 'Leave')
+    await trackerNavigationMenuPage.checkProjectWillBeRemovedFromYours(projectToLeaveData.title)
+
+    await trackerNavigationMenuPage.openAllProjects()
+    await allProjectsPage.checkProjectExistInTable(projectToLeaveData.title)
+    await allProjectsPage.joinProject(projectToLeaveData.title)
+    await trackerNavigationMenuPage.checkProjectExist(projectToLeaveData.title)
   })
+
 })

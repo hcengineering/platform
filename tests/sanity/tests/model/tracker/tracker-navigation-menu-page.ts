@@ -123,4 +123,8 @@ export class TrackerNavigationMenuPage extends CommonPage {
     await expect(this.milestone()).toBeVisible()
     await expect(this.templates()).toBeVisible()
   }
+
+  async openAllProjects (): Promise<void> {
+    await this.allProjects().click()
+  }
 }
