@@ -2,14 +2,14 @@ import { expect, type Locator } from '@playwright/test'
 import { CommonTrackerPage } from './common-tracker-page'
 
 export class AllProjectsPage extends CommonTrackerPage {
-  projectTitleColumns = (): Locator => this.page.locator('.antiTable-body__row .antiTable-cells__firstCell')
+  projectTitleCells = (): Locator => this.page.locator('.antiTable-body__row .antiTable-cells__firstCell')
 
   async checkProjectExistInTable (projectName: string): Promise<void> {
-    await expect(this.projectTitleColumns().filter({ hasText: projectName })).toBeVisible()
+    await expect(this.projectTitleCells().filter({ hasText: projectName })).toBeVisible()
   }
 
   async checkProjectNotExistInTable (projectName: string): Promise<void> {
-    await expect(this.projectTitleColumns().filter({ hasText: projectName })).toBeHidden()
+    await expect(this.projectTitleCells().filter({ hasText: projectName })).toBeHidden()
   }
 
   async joinProject (title: string): Promise<void> {
@@ -26,7 +26,6 @@ export class AllProjectsPage extends CommonTrackerPage {
   }
 
   async checkProjecInTableIsNotArchived (title: string): Promise<void> {
-    await this.page.waitForTimeout(3000)
-    await expect(this.projectTitleColumns().filter({ hasText: title })).not.toContainText('(archived)')
+    await this.projectTitleCells().filter({ hasText: title }).filter({ hasNotText: '(archived)' }).waitFor()
   }
 }
