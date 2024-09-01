@@ -20,6 +20,8 @@ import serverClient from '@hcengineering/server-client'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import { Analytics } from '@hcengineering/analytics'
 import { join } from 'path'
+import type { StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
 import config from './config'
 import { createServer, listen } from './server'
@@ -47,7 +49,10 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
-  const worker = await PlatformWorker.create()
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
+
+  const worker = await PlatformWorker.create(ctx, storageAdapter)
   const bot = await setUpBot(worker)
   const app = createServer(bot, worker, ctx)
 

@@ -17,10 +17,13 @@ import { Collection } from 'mongodb'
 import otpGenerator from 'otp-generator'
 import { BotCommand } from 'telegraf/typings/core/types/typegram'
 import { translate } from '@hcengineering/platform'
-import telegram, { TelegramNotificationRecord } from '@hcengineering/telegram'
+import telegram, { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { Parser } from 'htmlparser2'
+import { MediaGroup } from 'telegraf/typings/telegram-types'
+import { InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo } from 'telegraf/src/core/types/typegram'
+import { Input } from 'telegraf'
 
-import { OtpRecord } from './types'
+import { OtpRecord, PlatformFileInfo } from './types'
 import config from './config'
 
 export async function getNewOtp (otpCollection: Collection<OtpRecord>): Promise<string> {
@@ -73,17 +76,27 @@ const maxQuoteLength = 500
 const maxBodyLength = 2000
 const maxSenderLength = 100
 
-export function toTelegramHtml (record: TelegramNotificationRecord): string {
+export function toTelegramHtml (record: TelegramNotificationRequest): {
+  full: string
+  short: string
+} {
   const title =
     record.title !== '' ? `<a href='${record.link}'>${platformToTelegram(record.title, maxTitleLength)}</a>` + '\n' : ''
   const quote =
     record.quote !== undefined && record.quote !== ''
       ? `<blockquote>${platformToTelegram(record.quote, maxQuoteLength)}</blockquote>` + '\n'
       : ''
-  const body = platformToTelegram(record.body, maxBodyLength)
+  const rawBody = platformToTelegram(record.body, maxBodyLength)
+  const body = rawBody === '' ? '' : rawBody + '\n'
   const sender = `<i>— ${record.sender.slice(0, maxSenderLength)}</i>`
 
-  return title + quote + body + '\n' + sender
+  const full = title + quote + body + sender
+  const short = title + sender
+
+  return {
+    full,
+    short
+  }
 }
 
 const supportedTags = ['strong', 'em', 's', 'blockquote', 'code', 'a']
@@ -177,4 +190,64 @@ export function platformToTelegram (message: string, limit: number): string {
   parser.end()
 
   return newMessage.trim()
+}
+
+export function toTgMediaFile (
+  file: PlatformFileInfo,
+  caption: string
+): InputMediaPhoto | InputMediaVideo | InputMediaAudio | InputMediaDocument {
+  const { type, filename, buffer } = file
+
+  if (type.startsWith('image/')) {
+    return {
+      type: 'photo',
+      caption,
+      parse_mode: 'HTML',
+      media: Input.fromBuffer(buffer, filename)
+    }
+  } else if (type.startsWith('video/')) {
+    return {
+      type: 'video',
+      caption,
+      parse_mode: 'HTML',
+      media: Input.fromBuffer(buffer, filename)
+    }
+  } else if (type.startsWith('audio/')) {
+    return {
+      type: 'audio',
+      caption,
+      parse_mode: 'HTML',
+      media: Input.fromBuffer(buffer, filename)
+    }
+  } else {
+    return {
+      type: 'document',
+      caption,
+      parse_mode: 'HTML',
+      media: Input.fromBuffer(buffer, filename)
+    }
+  }
+}
+
+export function toMediaGroups (files: PlatformFileInfo[], fullMessage: string, shortMessage: string): MediaGroup[] {
+  const photos: (InputMediaPhoto | InputMediaVideo)[] = []
+  const audios: InputMediaAudio[] = []
+  const documents: InputMediaDocument[] = []
+
+  for (const file of files) {
+    const media = toTgMediaFile(file, shortMessage)
+    if (media.type === 'photo' || media.type === 'video') {
+      photos.push(media)
+    } else if (media.type === 'audio') {
+      audios.push(media)
+    } else {
+      documents.push(media)
+    }
+  }
+
+  const result = [photos, audios, documents].filter((it) => it.length > 0)
+
+  result[0][0].caption = fullMessage
+
+  return result
 }

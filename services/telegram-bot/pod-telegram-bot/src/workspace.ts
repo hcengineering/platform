@@ -13,29 +13,37 @@
 // limitations under the License.
 //
 
-import { Client, getWorkspaceId, systemAccountEmail, TxFactory, WorkspaceId } from '@hcengineering/core'
+import { Client, getWorkspaceId, MeasureContext, Ref, systemAccountEmail, TxFactory } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import notification, { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import chunter, { ThreadMessage } from '@hcengineering/chunter'
 import contact, { PersonAccount } from '@hcengineering/contact'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import activity, { ActivityMessage } from '@hcengineering/activity'
+import attachment from '@hcengineering/attachment'
+import { StorageAdapter } from '@hcengineering/server-core'
 
-import { NotificationRecord } from './types'
+import { NotificationRecord, PlatformFileInfo } from './types'
 
 export class WorkspaceClient {
   private constructor (
+    private readonly ctx: MeasureContext,
+    private readonly storageAdapter: StorageAdapter,
     private readonly client: Client,
     private readonly token: string,
-    private readonly workspace: WorkspaceId
+    private readonly workspace: string
   ) {}
 
-  static async create (workspace: string): Promise<WorkspaceClient> {
+  static async create (
+    workspace: string,
+    ctx: MeasureContext,
+    storageAdapter: StorageAdapter
+  ): Promise<WorkspaceClient> {
     const workspaceId = getWorkspaceId(workspace)
     const token = generateToken(systemAccountEmail, workspaceId)
     const client = await connectPlatform(token)
 
-    return new WorkspaceClient(client, token, workspaceId)
+    return new WorkspaceClient(ctx, storageAdapter, client, token, workspace)
   }
 
   async replyToMessage (message: ActivityMessage, account: PersonAccount, text: string): Promise<void> {
@@ -138,6 +146,23 @@ export class WorkspaceClient {
 
   async close (): Promise<void> {
     await this.client.close()
+  }
+
+  async getFiles (_id: Ref<ActivityMessage>): Promise<PlatformFileInfo[]> {
+    const attachments = await this.client.findAll(attachment.class.Attachment, { attachedTo: _id })
+    const res: PlatformFileInfo[] = []
+    for (const attachment of attachments) {
+      const chunks = await this.storageAdapter.read(this.ctx, { name: this.workspace }, attachment.file)
+      const buffer = Buffer.concat(chunks)
+      if (buffer.length > 0) {
+        res.push({
+          buffer,
+          type: attachment.type,
+          filename: attachment.name
+        })
+      }
+    }
+    return res
   }
 }
 

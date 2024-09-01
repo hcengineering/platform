@@ -42,3 +42,9 @@ export interface OtpRecord {
   expires: Timestamp
   createdOn: Timestamp
 }
+
+export interface PlatformFileInfo {
+  filename: string
+  type: string
+  buffer: Buffer
+}

@@ -19,14 +19,14 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import { IncomingHttpHeaders, type Server } from 'http'
 import { MeasureContext } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
-import telegram, { TelegramNotificationRecord } from '@hcengineering/telegram'
+import telegram, { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { translate } from '@hcengineering/platform'
 
 import { ApiError } from './error'
 import { PlatformWorker } from './worker'
 import { Limiter } from './limiter'
 import config from './config'
-import { toTelegramHtml } from './utils'
+import { toTelegramHtml, toMediaGroups } from './utils'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {
@@ -182,7 +182,7 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
         throw new ApiError(400)
       }
 
-      const notificationRecords = req.body as TelegramNotificationRecord[]
+      const notificationRequests = req.body as TelegramNotificationRequest[]
       const userRecord = await worker.getUserRecordByEmail(token.email)
 
       if (userRecord === undefined) {
@@ -193,21 +193,37 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
       ctx.info('Received notification', {
         email: token.email,
         username: userRecord.telegramUsername,
-        ids: notificationRecords.map((it) => it.notificationId)
+        ids: notificationRequests.map((it) => it.notificationId)
       })
 
-      for (const notificationRecord of notificationRecords) {
+      for (const request of notificationRequests) {
         void limiter.add(userRecord.telegramId, async () => {
-          const formattedMessage = toTelegramHtml(notificationRecord)
-          const message = await bot.telegram.sendMessage(userRecord.telegramId, formattedMessage, {
-            parse_mode: 'HTML'
-          })
-          await worker.addNotificationRecord({
-            notificationId: notificationRecord.notificationId,
-            email: userRecord.email,
-            workspace: notificationRecord.workspace,
-            telegramId: message.message_id
-          })
+          const { full: fullMessage, short: shortMessage } = toTelegramHtml(request)
+          const files = await worker.getFiles(request)
+          const messageIds: number[] = []
+
+          if (files.length === 0) {
+            const message = await bot.telegram.sendMessage(userRecord.telegramId, fullMessage, {
+              parse_mode: 'HTML'
+            })
+
+            messageIds.push(message.message_id)
+          } else {
+            const groups = toMediaGroups(files, fullMessage, shortMessage)
+            for (const group of groups) {
+              const mediaGroup = await bot.telegram.sendMediaGroup(userRecord.telegramId, group)
+              messageIds.push(...mediaGroup.map((it) => it.message_id))
+            }
+          }
+
+          for (const messageId of messageIds) {
+            await worker.addNotificationRecord({
+              notificationId: request.notificationId,
+              email: userRecord.email,
+              workspace: request.workspace,
+              telegramId: messageId
+            })
+          }
         })
       }
 

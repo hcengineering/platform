@@ -435,7 +435,10 @@
         "MONGO_DB": "telegram-bot",
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "SERVICE_ID": "telegram-bot-service"
+        "SERVICE_ID": "telegram-bot-service",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
