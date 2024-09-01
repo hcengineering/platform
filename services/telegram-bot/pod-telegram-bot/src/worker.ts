@@ -19,7 +19,7 @@ import { InboxNotification } from '@hcengineering/notification'
 import { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { StorageAdapter } from '@hcengineering/server-core'
 
-import { NotificationRecord, OtpRecord, PlatformFileInfo, ReplyRecord, UserRecord } from './types'
+import { NotificationRecord, OtpRecord, PlatformFileInfo, ReplyRecord, TelegramFileInfo, UserRecord } from './types'
 import { getDB } from './storage'
 import { WorkspaceClient } from './workspace'
 import { getNewOtp } from './utils'
@@ -167,9 +167,9 @@ export class PlatformWorker {
     return wsClient
   }
 
-  async reply (notification: NotificationRecord, text: string): Promise<boolean> {
+  async reply (notification: NotificationRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
     const client = await this.getWorkspaceClient(notification.workspace)
-    return await client.reply(notification, text)
+    return await client.reply(notification, text, files)
   }
 
   async authorizeUser (code: string, email: string): Promise<UserRecord | undefined> {

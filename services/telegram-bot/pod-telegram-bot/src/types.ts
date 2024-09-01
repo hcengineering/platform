@@ -48,3 +48,12 @@ export interface PlatformFileInfo {
   type: string
   buffer: Buffer
 }
+
+export interface TelegramFileInfo {
+  type: string
+  url: string
+  width: number
+  height: number
+  name?: string
+  size?: number
+}
