@@ -198,7 +198,11 @@ export async function isShouldNotifyTx (
   const types = getMatchedTypes(control, tx, originTx, isOwn, isSpace, docUpdateMessage?.attributeUpdates?.attrKey)
   const modifiedAccount = getPersonAccountById(tx.modifiedBy, control)
   const result = new Map<Ref<NotificationProvider>, BaseNotificationType[]>()
-  const providers = control.modelDb.findAllSync(notification.class.NotificationProvider, {})
+  let providers: NotificationProvider[] = control.modelDb.findAllSync(notification.class.NotificationProvider, {})
+
+  if (process.env.NOTIFY_INBOX_ONLY === 'true') {
+    providers = providers.filter((it) => it._id === notification.providers.InboxNotificationProvider)
+  }
 
   for (const type of types) {
     if (

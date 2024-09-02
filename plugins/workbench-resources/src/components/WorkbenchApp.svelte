@@ -57,7 +57,7 @@
     {#key $location.path[1]}
       {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform')}
         <Loading>
-          {#if ($workspaceCreating ?? -1) > 0}
+          {#if ($workspaceCreating ?? -1) >= 0}
             <div class="ml-1">
               <Label label={workbenchRes.string.WorkspaceCreating} />
               {$workspaceCreating} %

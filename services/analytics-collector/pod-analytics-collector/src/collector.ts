@@ -137,7 +137,7 @@ export class Collector {
       return false
     }
 
-    if (info?.creating === true) {
+    if (['pending-creation', 'creating'].includes(info?.mode)) {
       return false
     }
 
