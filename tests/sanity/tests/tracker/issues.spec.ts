@@ -221,9 +221,11 @@ test.describe('Tracker issue tests', () => {
 
   test('Delete an issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
-      title: 'Issue for deletion',
+      title: `Issue for deletion-${generateId()}`,
       description: 'Description Issue for deletion'
     }
+    await prepareNewIssueWithOpenStep(page, deleteIssue)
+    await issuesPage.navigateToIssues()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.openIssueByName(deleteIssue.title)
