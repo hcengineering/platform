@@ -441,6 +441,7 @@ export function createModel (builder: Builder): void {
     actionPopup: view.component.ValueSelector,
     actionProps: {
       attribute: 'department',
+      castRequest: hr.mixin.Staff,
       _class: hr.class.Department,
       query: {},
       searchField: 'name',
