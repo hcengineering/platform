@@ -990,11 +990,18 @@ export function devTool (
   program
     .command('move-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, blobLimit: string, concurrency: string }) => {
+    .action(async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string }) => {
+      const params = {
+        blobSizeLimitMb: parseInt(cmd.blobLimit),
+        concurrency: parseInt(cmd.concurrency),
+        move: cmd.move === 'true'
+      }
+
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
           try {
             const exAdapter = adapter as StorageAdapterEx
@@ -1004,17 +1011,20 @@ export function devTool (
 
             console.log('moving files to storage provider', exAdapter.defaultAdapter)
 
+            let index = 1
             const workspaces = await listWorkspacesPure(db)
+            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
             for (const workspace of workspaces) {
               if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                 continue
               }
 
-              const wsId = getWorkspaceId(workspace.workspace)
-              await moveFiles(toolCtx, wsId, exAdapter, {
-                blobSizeLimitMb: parseInt(cmd.blobLimit),
-                concurrency: parseInt(cmd.concurrency)
-              })
+              console.log('start', workspace, index, '/', workspaces.length)
+              await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
+              console.log('done', workspace)
+
+              index += 1
             }
           } catch (err: any) {
             console.error(err)
