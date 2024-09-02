@@ -150,7 +150,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.page.locator('[id="tracker\\:string\\:TimeSpendReportAdd"] >> text=Add time report')
 
   estimationSpan = (): Locator => this.page.locator('.estimation-container >> span').first()
-  okButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
+  okButton = (): Locator => this.page.getByRole('button', { name: 'Ok', exact: true })
   newIssueButton = (): Locator => this.page.locator('#new-issue')
   issueNameInput = (): Locator => this.page.locator('#issue-name >> input')
   issueDescriptionInput = (): Locator => this.page.locator('#issue-description >> [contenteditable]')
@@ -159,7 +159,7 @@ export class IssuesPage extends CommonTrackerPage {
   priorityEditor = (): Locator => this.page.locator('#priority-editor')
   urgentButton = (): Locator => this.page.locator('button:has-text("Urgent")')
   assigneeEditor = (): Locator => this.page.locator('#assignee-editor')
-  appleseedJohnButton = (): Locator => this.page.locator('button:has-text("Appleseed John")')
+  appleseedJohnButton = (): Locator => this.page.locator('button.menu-item:has-text("Appleseed John")')
   estimationEditor = (): Locator => this.page.locator('#estimation-editor')
   dueDateButton = (): Locator => this.page.locator('button:has-text("Due date")')
   specificDay = (day: string): Locator => this.page.locator(`.date-popup-container div.day >> text=${day}`).first()

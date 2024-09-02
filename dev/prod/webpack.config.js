@@ -54,7 +54,7 @@ module.exports = [
             options: {
               target: 'es2021',
               keepNames: true,
-              minify: !prod,
+              minify: prod,
               sourcemap: !prod
             }
           }
@@ -148,7 +148,7 @@ module.exports = [
         options: {
           target: 'es2021',
           keepNames: true,
-          minify: !prod,
+          minify: prod,
           sourcemap: true
         },
         exclude: /node_modules/,

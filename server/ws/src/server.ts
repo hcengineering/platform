@@ -255,7 +255,7 @@ class TSessionManager implements SessionManager {
       if (userInfo.error !== undefined) {
         throw new Error(JSON.stringify(userInfo.error))
       }
-      return { ...userInfo.result, upgrade: userInfo.upgrade }
+      return userInfo.result
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
         return undefined
@@ -294,7 +294,7 @@ class TSessionManager implements SessionManager {
       return { upgrade: true }
     }
 
-    if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+    if (['pending-creation', 'creating'].includes(workspaceInfo?.mode) && token.email !== systemAccountEmail) {
       // No access to workspace for token.
       return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
     }
@@ -428,8 +428,8 @@ class TSessionManager implements SessionManager {
       createdBy: '',
       createdOn: Date.now(),
       lastVisit: Date.now(),
-      createProgress: 100,
-      creating: false,
+      mode: 'active',
+      progress: 100,
       disabled: false,
       endpoint: ''
     }

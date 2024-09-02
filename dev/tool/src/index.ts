@@ -19,7 +19,6 @@ import accountPlugin, {
   assignWorkspace,
   confirmEmail,
   createAcc,
-  createWorkspace,
   dropAccount,
   dropWorkspace,
   dropWorkspaceFull,
@@ -32,10 +31,11 @@ import accountPlugin, {
   replacePassword,
   setAccountAdmin,
   setRole,
-  UpgradeWorker,
-  upgradeWorkspace,
+  updateWorkspace,
+  createWorkspace as createWorkspaceRecord,
   type Workspace
 } from '@hcengineering/account'
+import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
@@ -48,7 +48,8 @@ import {
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
+import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+import path from 'path'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
@@ -327,19 +328,28 @@ export function devTool (
     .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string, branding?: string }) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await createWorkspace(
-          toolCtx,
-          version,
-          txes,
-          migrateOperations,
-          db,
-          cmd.init !== undefined || cmd.branding !== undefined
-            ? { initWorkspace: cmd.init, key: cmd.branding ?? 'huly' }
-            : null,
-          cmd.email,
-          cmd.workspaceName,
-          workspace
-        )
+        const measureCtx = new MeasureMetricsContext('create-workspace', {})
+        const brandingObj =
+          cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+        const wsInfo = await createWorkspaceRecord(measureCtx, db, brandingObj, cmd.email, cmd.workspaceName, workspace)
+
+        // update the record so it's not taken by one of the workers for the next 60 seconds
+        await updateWorkspace(db, wsInfo, {
+          mode: 'creating',
+          progress: 0,
+          lastProcessingTime: Date.now() + 1000 * 60
+        })
+
+        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations)
+
+        await updateWorkspace(db, wsInfo, {
+          mode: 'active',
+          progress: 100,
+          disabled: false,
+          version
+        })
+
+        console.log('create-workspace done')
       })
     })
 
@@ -387,30 +397,36 @@ export function devTool (
           throw new Error(`workspace ${workspace} not found`)
         }
 
-        const measureCtx = new MeasureMetricsContext('upgrade', {})
+        const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
 
         await upgradeWorkspace(
           measureCtx,
           version,
           txes,
           migrateOperations,
-          db,
-          info.workspaceUrl ?? info.workspace,
+          info,
           consoleModelLogger,
+          async () => {},
           cmd.force,
-          cmd.indexes
+          cmd.indexes,
+          true
         )
-        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60), {})
-        console.log('upgrade done')
+
+        await updateWorkspace(db, info, {
+          mode: 'active',
+          progress: 100,
+          version
+        })
+
+        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
+        console.log('upgrade-workspace done')
       })
     })
 
   program
     .command('upgrade')
     .description('upgrade')
-    .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
-    .option('-r|--retry <retry>', 'Number of apply retries', '0')
     .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
     .option(
       '-c|--console',
@@ -418,29 +434,45 @@ export function devTool (
       false
     )
     .option('-f|--force [force]', 'Force update', false)
-    .action(
-      async (cmd: {
-        parallel: string
-        logs: string
-        retry: string
-        force: boolean
-        console: boolean
-        ignore: string
-      }) => {
-        const { mongodbUri, version, txes, migrateOperations } = prepareTools()
-        await withDatabase(mongodbUri, async (db, client) => {
-          const worker = new UpgradeWorker(db, client, version, txes, migrateOperations)
-          await worker.upgradeAll(toolCtx, {
-            errorHandler: async (ws, err) => {},
-            force: cmd.force,
-            console: cmd.console,
-            logs: cmd.logs,
-            parallel: parseInt(cmd.parallel ?? '1'),
-            ignore: cmd.ignore
-          })
-        })
-      }
-    )
+    .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string }) => {
+      const { mongodbUri, version, txes, migrateOperations } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
+        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+        const measureCtx = new MeasureMetricsContext('upgrade', {})
+
+        for (const ws of workspaces) {
+          try {
+            const logger = cmd.console
+              ? consoleModelLogger
+              : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
+
+            await upgradeWorkspace(
+              measureCtx,
+              version,
+              txes,
+              migrateOperations,
+              ws,
+              logger,
+              async () => {},
+              cmd.force,
+              false,
+              true
+            )
+
+            await updateWorkspace(db, ws, {
+              mode: 'active',
+              progress: 100,
+              version
+            })
+          } catch (err: any) {
+            console.error(err)
+          }
+        }
+
+        console.log('upgrade done')
+      })
+    })
 
   program
     .command('list-unused-workspaces')
@@ -990,11 +1022,18 @@ export function devTool (
   program
     .command('move-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, blobLimit: string, concurrency: string }) => {
+    .action(async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string }) => {
+      const params = {
+        blobSizeLimitMb: parseInt(cmd.blobLimit),
+        concurrency: parseInt(cmd.concurrency),
+        move: cmd.move === 'true'
+      }
+
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
           try {
             const exAdapter = adapter as StorageAdapterEx
@@ -1004,17 +1043,20 @@ export function devTool (
 
             console.log('moving files to storage provider', exAdapter.defaultAdapter)
 
+            let index = 1
             const workspaces = await listWorkspacesPure(db)
+            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
             for (const workspace of workspaces) {
               if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                 continue
               }
 
-              const wsId = getWorkspaceId(workspace.workspace)
-              await moveFiles(toolCtx, wsId, exAdapter, {
-                blobSizeLimitMb: parseInt(cmd.blobLimit),
-                concurrency: parseInt(cmd.concurrency)
-              })
+              console.log('start', workspace, index, '/', workspaces.length)
+              await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
+              console.log('done', workspace)
+
+              index += 1
             }
           } catch (err: any) {
             console.error(err)

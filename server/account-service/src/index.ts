@@ -5,10 +5,8 @@
 import account, {
   ACCOUNT_DB,
   EndpointKind,
-  UpgradeWorker,
   accountId,
   cleanExpiredOtp,
-  cleanInProgressWorkspaces,
   getAllTransactors,
   getMethods
 } from '@hcengineering/account'
@@ -16,15 +14,7 @@ import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import {
-  metricsAggregate,
-  type BrandingMap,
-  type Data,
-  type MeasureContext,
-  type Tx,
-  type Version
-} from '@hcengineering/core'
-import { type MigrateOperation } from '@hcengineering/model'
+import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import { getMongoClient, type MongoClientReference } from '@hcengineering/mongo'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
@@ -41,16 +31,9 @@ import os from 'os'
 /**
  * @public
  */
-export function serveAccount (
-  measureCtx: MeasureContext,
-  version: Data<Version>,
-  txes: Tx[],
-  migrateOperations: [string, MigrateOperation][],
-  brandings: BrandingMap,
-  onClose?: () => void
-): void {
+export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
   console.log('Starting account service with brandings: ', brandings)
-  const methods = getMethods(version, txes, migrateOperations)
+  const methods = getMethods()
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
   if (dbUri === undefined) {
@@ -109,8 +92,6 @@ export function serveAccount (
   const client: MongoClientReference = getMongoClient(dbUri)
   let _client: MongoClient | Promise<MongoClient> = client.getClient()
 
-  let worker: UpgradeWorker | undefined
-
   const app = new Koa()
   const router = new Router()
 
@@ -125,31 +106,12 @@ export function serveAccount (
     const db = p.db(ACCOUNT_DB)
     registerProviders(measureCtx, app, router, db, serverSecret, frontURL, brandings)
 
-    // We need to clean workspace with creating === true, since server is restarted.
-    void cleanInProgressWorkspaces(db)
-
     setInterval(
       () => {
         void cleanExpiredOtp(db)
       },
       3 * 60 * 1000
     )
-
-    const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
-    if (performUpgrade) {
-      await measureCtx.with('upgrade-all-models', {}, async (ctx) => {
-        worker = new UpgradeWorker(db, p, version, txes, migrateOperations)
-        await worker.upgradeAll(ctx, {
-          errorHandler: async (ws, err) => {
-            Analytics.handleError(err)
-          },
-          force: false,
-          console: false,
-          logs: 'upgrade-logs',
-          parallel: parseInt(process.env.PARALLEL ?? '1')
-        })
-      })
-    }
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
@@ -255,7 +217,6 @@ export function serveAccount (
       async (ctx) => await method(ctx, db, branding, request, token)
     )
 
-    worker?.updateResponseStatistics(result)
     ctx.body = result
   })
 

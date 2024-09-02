@@ -20,6 +20,7 @@ import { PassThrough } from 'stream'
 export interface MoveFilesParams {
   blobSizeLimitMb: number
   concurrency: number
+  move: boolean
 }
 
 export async function moveFiles (
@@ -30,36 +31,33 @@ export async function moveFiles (
 ): Promise<void> {
   if (exAdapter.adapters === undefined) return
 
-  console.log('start', workspaceId.name)
+  const target = exAdapter.adapters.get(exAdapter.defaultAdapter)
+  if (target === undefined) return
 
   // We assume that the adapter moves all new files to the default adapter
-  const target = exAdapter.defaultAdapter
-  await exAdapter.adapters.get(target)?.make(ctx, workspaceId)
+  await target.make(ctx, workspaceId)
 
   for (const [name, adapter] of exAdapter.adapters.entries()) {
-    if (name === target) continue
+    if (name === exAdapter.defaultAdapter) continue
 
     console.log('moving from', name, 'limit', params.blobSizeLimitMb, 'concurrency', params.concurrency)
 
     // we attempt retry the whole process in case of failure
     // files that were already moved will be skipped
     await retryOnFailure(ctx, 5, async () => {
-      await processAdapter(ctx, exAdapter, adapter, workspaceId, params)
+      await processAdapter(ctx, exAdapter, adapter, target, workspaceId, params)
     })
   }
-
-  console.log('...done', workspaceId.name)
 }
 
 async function processAdapter (
   ctx: MeasureContext,
   exAdapter: StorageAdapterEx,
-  adapter: StorageAdapter,
+  source: StorageAdapter,
+  target: StorageAdapter,
   workspaceId: WorkspaceId,
   params: MoveFilesParams
 ): Promise<void> {
-  const target = exAdapter.defaultAdapter
-
   let time = Date.now()
   let processedCnt = 0
   let processedBytes = 0
@@ -70,21 +68,20 @@ async function processAdapter (
 
   const rateLimiter = new RateLimiter(params.concurrency)
 
-  const iterator = await adapter.listStream(ctx, workspaceId)
+  const iterator = await source.listStream(ctx, workspaceId)
   try {
     while (true) {
       const data = await iterator.next()
       if (data === undefined) break
 
-      const blob =
-        (await exAdapter.stat(ctx, workspaceId, data._id)) ?? (await adapter.stat(ctx, workspaceId, data._id))
+      const blob = (await exAdapter.stat(ctx, workspaceId, data._id)) ?? (await source.stat(ctx, workspaceId, data._id))
 
       if (blob === undefined) {
         console.error('blob not found', data._id)
         continue
       }
 
-      if (blob.provider !== target) {
+      if (blob.provider !== exAdapter.defaultAdapter) {
         if (blob.size <= params.blobSizeLimitMb * 1024 * 1024) {
           await rateLimiter.exec(async () => {
             try {
@@ -92,7 +89,7 @@ async function processAdapter (
                 ctx,
                 5,
                 async () => {
-                  await processFile(ctx, exAdapter, adapter, workspaceId, blob)
+                  await processFile(ctx, source, params.move ? exAdapter : target, workspaceId, blob)
                 },
                 50
               )
@@ -143,18 +140,18 @@ async function processAdapter (
 
 async function processFile (
   ctx: MeasureContext,
-  exAdapter: StorageAdapterEx,
-  adapter: StorageAdapter,
+  source: Pick<StorageAdapter, 'get'>,
+  target: Pick<StorageAdapter, 'put'>,
   workspaceId: WorkspaceId,
   blob: Blob
 ): Promise<void> {
-  const readable = await adapter.get(ctx, workspaceId, blob._id)
+  const readable = await source.get(ctx, workspaceId, blob._id)
   try {
     readable.on('end', () => {
       readable.destroy()
     })
     const stream = readable.pipe(new PassThrough())
-    await exAdapter.put(ctx, workspaceId, blob._id, stream, blob.contentType, blob.size)
+    await target.put(ctx, workspaceId, blob._id, stream, blob.contentType, blob.size)
   } finally {
     readable.destroy()
   }

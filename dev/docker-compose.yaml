@@ -51,6 +51,8 @@ services:
     restart: unless-stopped
   account:
     image: hardcoreeng/account
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -74,8 +76,36 @@ services:
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding      
     restart: unless-stopped
+  workspace:
+    image: hardcoreeng/workspace
+    # deploy:
+    #   mode: replicated
+    #   replicas: 3
+    links:
+      - mongodb
+      - minio
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
+    environment:
+      # - WS_OPERATION=create
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
+      - SES_URL=
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://localhost:8087
+      - RESERVED_DB_NAMES=telegram,gmail,github
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://account:3000
+      - BRANDING_PATH=/var/cfg/branding.json
+      - NOTIFY_INBOX_ONLY=true
+      # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
+      # - INIT_WORKSPACE=onboarding
+    restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -92,6 +122,8 @@ services:
     restart: unless-stopped
   front:
     image: hardcoreeng/front
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -126,6 +158,8 @@ services:
     restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - elastic
@@ -184,6 +218,8 @@ services:
           memory: 300M
   sign:
     image: hardcoreeng/sign
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -207,6 +243,8 @@ services:
           memory: 300M
   analytics:
     image: hardcoreeng/analytics-collector
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4007:4007
@@ -224,6 +262,8 @@ services:
           memory: 300M
   aiBot:
     image: hardcoreeng/ai-bot
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
@@ -241,6 +281,8 @@ services:
           memory: 300M
 #  telegram-bot:
 #    image: hardcoreeng/telegram-bot
+#   extra_hosts:
+#     - "host.docker.internal:host-gateway"
 #    restart: unless-stopped
 #    environment:
 #      - PORT=4020
