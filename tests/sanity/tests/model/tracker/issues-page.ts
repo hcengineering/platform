@@ -368,7 +368,7 @@ export class IssuesPage extends CommonTrackerPage {
 
     for (let i = 0; i < tabs.length; i++) {
       await tabs[i].click()
-      // await this.page.waitForTimeout(3000)
+      await this.page.waitForTimeout(3000)
       if (presence === checks[i]) {
         await expect(this.issueListPanel()).toContainText(issueName)
       } else {
