@@ -13,12 +13,11 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Domain, Ref, WorkspaceId } from '@hcengineering/core'
-import { Transformer } from '@hocuspocus/transformer'
+import type { Class, Doc, Domain, Ref } from '@hcengineering/core'
 
 /** @public */
 export interface DocumentId {
-  workspaceUrl: string
+  workspaceId: string
   documentId: string
   versionId: string
 }
@@ -30,6 +29,3 @@ export interface PlatformDocumentId {
   objectId: Ref<Doc>
   objectAttr: string
 }
-
-/** @public */
-export type TransformerFactory = (workspaceId: WorkspaceId) => Transformer

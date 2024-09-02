@@ -55,20 +55,14 @@
   const manager = createFocusManager()
 
   async function leave (): Promise<void> {
-    showPopup(
-      MessageBox,
-      {
-        label: setting.string.Leave,
-        message: setting.string.LeaveDescr
-      },
-      undefined,
-      async (res?: boolean) => {
-        if (res === true) {
-          const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-          await leaveWorkspace(getCurrentAccount().email)
-        }
+    showPopup(MessageBox, {
+      label: setting.string.Leave,
+      message: setting.string.LeaveDescr,
+      action: async () => {
+        const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
+        await leaveWorkspace(getCurrentAccount().email)
       }
-    )
+    })
   }
 
   async function nameChange (): Promise<void> {

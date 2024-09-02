@@ -175,6 +175,17 @@ export async function migrateMessagesSpace (
   }
 }
 
+async function migrateActivityMarkup (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_ACTIVITY,
+    {
+      _class: activity.class.DocUpdateMessage,
+      'attributeUpdates.attrClass': 'core:class:TypeCollaborativeMarkup'
+    },
+    { 'attributeUpdates.attrClass': core.class.TypeMarkup }
+  )
+}
+
 export const activityOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, activityId, [
@@ -206,6 +217,10 @@ export const activityOperation: MigrateOperation = {
             { space: contact.space.Contacts }
           )
         }
+      },
+      {
+        state: 'migrate-activity-markup',
+        func: migrateActivityMarkup
       }
     ])
   },

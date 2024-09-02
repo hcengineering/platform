@@ -57,37 +57,35 @@ describe('collaborative-doc', () => {
 
   describe('collaborativeDocParse', () => {
     it('parses collaborative doc id', async () => {
-      expect(collaborativeDocParse('minioDocumentId' as CollaborativeDoc)).toEqual({
-        documentId: 'minioDocumentId',
+      expect(collaborativeDocParse('documentId' as CollaborativeDoc)).toEqual({
+        documentId: 'documentId',
         versionId: 'HEAD',
         lastVersionId: 'HEAD',
         source: []
       })
     })
     it('parses collaborative doc id with versionId', async () => {
-      expect(collaborativeDocParse('minioDocumentId:main' as CollaborativeDoc)).toEqual({
-        documentId: 'minioDocumentId',
+      expect(collaborativeDocParse('documentId:main' as CollaborativeDoc)).toEqual({
+        documentId: 'documentId',
         versionId: 'main',
         lastVersionId: 'main',
         source: []
       })
     })
     it('parses collaborative doc id with versionId and lastVersionId', async () => {
-      expect(collaborativeDocParse('minioDocumentId:HEAD:0' as CollaborativeDoc)).toEqual({
-        documentId: 'minioDocumentId',
+      expect(collaborativeDocParse('documentId:HEAD:0' as CollaborativeDoc)).toEqual({
+        documentId: 'documentId',
         versionId: 'HEAD',
         lastVersionId: '0',
         source: []
       })
     })
     it('parses collaborative doc id with versionId, lastVersionId, and source', async () => {
-      expect(
-        collaborativeDocParse('minioDocumentId:HEAD:0#minioDocumentId1:main#minioDocumentId2:HEAD' as CollaborativeDoc)
-      ).toEqual({
-        documentId: 'minioDocumentId',
+      expect(collaborativeDocParse('documentId:HEAD:0#documentId1:main#documentId2:HEAD' as CollaborativeDoc)).toEqual({
+        documentId: 'documentId',
         versionId: 'HEAD',
         lastVersionId: '0',
-        source: ['minioDocumentId1:main' as CollaborativeDoc, 'minioDocumentId2:HEAD' as CollaborativeDoc]
+        source: ['documentId1:main' as CollaborativeDoc, 'documentId2:HEAD' as CollaborativeDoc]
       })
     })
   })
@@ -96,21 +94,21 @@ describe('collaborative-doc', () => {
     it('formats collaborative doc id', async () => {
       expect(
         collaborativeDocFormat({
-          documentId: 'minioDocumentId',
+          documentId: 'documentId',
           versionId: 'HEAD',
           lastVersionId: '0'
         })
-      ).toEqual('minioDocumentId:HEAD:0')
+      ).toEqual('documentId:HEAD:0')
     })
     it('formats collaborative doc id with sources', async () => {
       expect(
         collaborativeDocFormat({
-          documentId: 'minioDocumentId',
+          documentId: 'documentId',
           versionId: 'HEAD',
           lastVersionId: '0',
-          source: ['minioDocumentId1:main' as CollaborativeDoc, 'minioDocumentId2:HEAD' as CollaborativeDoc]
+          source: ['documentId1:main' as CollaborativeDoc, 'documentId2:HEAD' as CollaborativeDoc]
         })
-      ).toEqual('minioDocumentId:HEAD:0#minioDocumentId1:main#minioDocumentId2:HEAD')
+      ).toEqual('documentId:HEAD:0#documentId1:main#documentId2:HEAD')
     })
     it('formats collaborative doc id with invalid characters', async () => {
       expect(

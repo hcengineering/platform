@@ -436,6 +436,18 @@ export async function setCam (value: boolean): Promise<void> {
 export async function setMic (value: boolean): Promise<void> {
   if ($isCurrentInstanceConnected) {
     try {
+      const speaker = localStorage.getItem(selectedSpeakerId)
+      if (speaker !== null) {
+        const devices = await LKRoom.getLocalDevices('audiooutput')
+        const available = devices.find((p) => p.deviceId === speaker)
+        if (available !== undefined) {
+          await lk.switchActiveDevice('audiooutput', speaker)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+    }
+    try {
       const opt: AudioCaptureOptions = {}
       const selectedDevice = localStorage.getItem(selectedMicId)
       if (selectedDevice !== null) {
@@ -624,8 +636,6 @@ export async function tryConnect (
 
   if (room._id === currentInfo?.room) return
   if (room.access === RoomAccess.DND) return
-  const thisRoomRequest = currentRequests.find((p) => p.room === room._id)
-  if (thisRoomRequest !== undefined) return
   for (const req of currentRequests) {
     await client.remove(req)
   }

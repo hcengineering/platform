@@ -372,16 +372,7 @@ export abstract class IssueSyncManagerBase {
           !areEqualMarkups(update.description, syncData.current?.description ?? '')
         ) {
           try {
-            const versionId = `${Date.now()}`
-            issueData.description = await this.collaborator.updateContent(
-              doc.description,
-              { description: update.description },
-              {
-                versionId,
-                versionName: versionId,
-                createdBy: account
-              }
-            )
+            await this.collaborator.updateContent(doc.description, { description: update.description })
           } catch (err: any) {
             Analytics.handleError(err)
             this.ctx.error(err)
@@ -402,7 +393,7 @@ export abstract class IssueSyncManagerBase {
             return true
           })
 
-          const updateTodos = this.client.apply('todos')
+          const updateTodos = this.client.apply('todos' + account)
           for (const [k, v] of Object.entries(todos)) {
             await updateTodos.updateDoc(time.class.ToDo, time.space.ToDos, k as Ref<ToDo>, {
               doneOn: v ? Date.now() : null
@@ -926,17 +917,8 @@ export abstract class IssueSyncManagerBase {
         workspace: this.provider.getWorkspaceId().name
       })
       try {
-        const versionId = `${Date.now()}`
         issueData.description = update.description
-        update.description = await this.collaborator.updateContent(
-          existingIssue.description,
-          { description: update.description },
-          {
-            versionId,
-            versionName: versionId,
-            createdBy: account
-          }
-        )
+        await this.collaborator.updateContent(existingIssue.description, { description: update.description })
       } catch (err: any) {
         Analytics.handleError(err)
         this.ctx.error('error during description update', err)

@@ -49,7 +49,7 @@ import {
 import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
-
+import { getServerPipeline } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
 import { type Db, type MongoClient } from 'mongodb'
@@ -64,6 +64,7 @@ import core, {
   metricsToString,
   systemAccountEmail,
   versionToString,
+  type WorkspaceIdWithUrl,
   type Data,
   type Doc,
   type Ref,
@@ -1000,11 +1001,18 @@ export function devTool (
   program
     .command('move-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, blobLimit: string, concurrency: string }) => {
+    .action(async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string }) => {
+      const params = {
+        blobSizeLimitMb: parseInt(cmd.blobLimit),
+        concurrency: parseInt(cmd.concurrency),
+        move: cmd.move === 'true'
+      }
+
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
           try {
             const exAdapter = adapter as StorageAdapterEx
@@ -1014,17 +1022,20 @@ export function devTool (
 
             console.log('moving files to storage provider', exAdapter.defaultAdapter)
 
+            let index = 1
             const workspaces = await listWorkspacesPure(db)
+            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
             for (const workspace of workspaces) {
               if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                 continue
               }
 
-              const wsId = getWorkspaceId(workspace.workspace)
-              await moveFiles(toolCtx, wsId, exAdapter, {
-                blobSizeLimitMb: parseInt(cmd.blobLimit),
-                concurrency: parseInt(cmd.concurrency)
-              })
+              console.log('start', workspace, index, '/', workspaces.length)
+              await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
+              console.log('done', workspace)
+
+              index += 1
             }
           } catch (err: any) {
             console.error(err)
@@ -1306,23 +1317,30 @@ export function devTool (
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
     .action(async (cmd: { workspace: string, concurrency: string }) => {
-      const { mongodbUri } = prepareTools()
+      const { mongodbUri, dbUrl } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
+          let index = 0
           for (const workspace of workspaces) {
             if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
               continue
             }
 
             const wsId = getWorkspaceId(workspace.workspace)
-            const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsId), 'external')
+            console.log('processing workspace', workspace.workspace, index, workspaces.length)
+            const wsUrl: WorkspaceIdWithUrl = {
+              name: workspace.workspace,
+              workspaceName: workspace.workspaceName ?? '',
+              workspaceUrl: workspace.workspaceUrl ?? ''
+            }
 
-            console.log('processing workspace', workspace.workspace)
+            const { pipeline } = await getServerPipeline(toolCtx, mongodbUri, dbUrl, wsUrl)
 
-            await migrateMarkup(toolCtx, adapter, wsId, client, endpoint, parseInt(cmd.concurrency))
+            await migrateMarkup(toolCtx, adapter, wsId, client, pipeline, parseInt(cmd.concurrency))
 
             console.log('...done', workspace.workspace)
+            index++
           }
         })
       })

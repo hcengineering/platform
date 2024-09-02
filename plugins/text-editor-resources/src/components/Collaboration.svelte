@@ -16,14 +16,12 @@
 -->
 <script lang="ts">
   import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
-  import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
-  import { getMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
   import { onDestroy, setContext } from 'svelte'
-  import textEditor, { CollaborationIds } from '@hcengineering/text-editor'
+  import { CollaborationIds } from '@hcengineering/text-editor'
 
-  import { TiptapCollabProvider, createTiptapCollaborationData } from '../provider/tiptap'
-  import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
+  import { createTiptapCollaborationData } from '../provider/utils'
+  import { Provider } from '../provider/types'
+  import { formatDocumentId } from '@hcengineering/collaborator-client'
 
   export let collaborativeDoc: CollaborativeDoc
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
@@ -32,50 +30,34 @@
   export let objectId: Ref<Doc> | undefined = undefined
   export let objectAttr: string | undefined = undefined
 
-  const token = getMetadata(presentation.metadata.Token) ?? ''
-  const collaboratorURL = getMetadata(textEditor.metadata.CollaboratorUrl) ?? ''
+  let provider: Provider | undefined
 
-  let initialContentId: DocumentId | undefined
-  let platformDocumentId: PlatformDocumentId | undefined
+  // while editing, collaborative doc may change, hence we need to
+  // build stable key to ensure we don't do unnecessary updates
+  $: documentId = formatDocumentId('', collaborativeDoc)
 
-  $: documentId = formatCollaborativeDocumentId(collaborativeDoc)
-  $: if (initialCollaborativeDoc !== undefined) {
-    initialContentId = formatCollaborativeDocumentId(initialCollaborativeDoc)
-  }
-  $: if (objectClass !== undefined && objectId !== undefined && objectAttr !== undefined) {
-    platformDocumentId = formatPlatformDocumentId(objectClass, objectId, objectAttr)
-  }
-
-  let _documentId: DocumentId | undefined
-
-  let provider: TiptapCollabProvider | undefined
+  let _documentId: string | undefined
 
   $: if (_documentId !== documentId) {
     _documentId = documentId
+
     if (provider !== undefined) {
-      provider.disconnect()
+      void provider.destroy()
     }
     const data = createTiptapCollaborationData({
-      documentId,
-      initialContentId,
-      platformDocumentId,
-      collaboratorURL,
-      token
+      document: collaborativeDoc,
+      initialDocument: initialCollaborativeDoc,
+      objectClass,
+      objectId,
+      objectAttr
     })
     provider = data.provider
     setContext(CollaborationIds.Doc, data.ydoc)
     setContext(CollaborationIds.Provider, provider)
-
-    provider.on('status', (event: any) => {
-      console.log('Collaboration:', documentId, event.status) // logs "connected" or "disconnected"
-    })
-    provider.on('synced', (event: any) => {
-      console.log('Collaboration:', event) // logs "connected" or "disconnected"
-    })
   }
 
   onDestroy(() => {
-    provider?.destroy()
+    void provider?.destroy()
   })
 </script>
 

@@ -20,7 +20,9 @@
   export let value: Ref<Class<Doc>>
 
   const client = getClient()
-  const _class = client.getModel().getObject(value)
+  const _class = value !== undefined ? client.getModel().getObject(value) : undefined
 </script>
 
-<Label label={_class.label} />
+{#if _class}
+  <Label label={_class.label} />
+{/if}

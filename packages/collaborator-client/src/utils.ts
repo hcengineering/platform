@@ -25,11 +25,6 @@ import {
 } from '@hcengineering/core'
 import { DocumentId, PlatformDocumentId } from './types'
 
-/** @public */
-export function formatMinioDocumentId (workspaceUrl: string, collaborativeDoc: CollaborativeDoc): DocumentId {
-  return formatDocumentId('minio', workspaceUrl, collaborativeDoc)
-}
-
 /**
  * Formats collaborative document as Hocuspocus document name.
  *
@@ -37,15 +32,11 @@ export function formatMinioDocumentId (workspaceUrl: string, collaborativeDoc: C
  * when document is updated. Hence, we remove lastVersionId component from CollaborativeDoc.
  *
  * Example:
- * minio://workspace1/doc1:HEAD/doc2:v1
+ * workspace1://doc1:HEAD/doc2:v1
  *
  * @public
  */
-export function formatDocumentId (
-  storage: string,
-  workspaceUrl: string,
-  collaborativeDoc: CollaborativeDoc
-): DocumentId {
+export function formatDocumentId (workspaceId: string, collaborativeDoc: CollaborativeDoc): DocumentId {
   const path = collaborativeDocUnchain(collaborativeDoc)
     .map((p) => {
       const { documentId, versionId } = collaborativeDocParse(p)
@@ -53,26 +44,24 @@ export function formatDocumentId (
     })
     .join('/')
 
-  return `${storage}://${workspaceUrl}/${path}` as DocumentId
+  return `${workspaceId}://${path}` as DocumentId
 }
 
 /** @public */
 export function parseDocumentId (documentId: DocumentId): {
-  storage: string
-  workspaceUrl: string
+  workspaceId: string
   collaborativeDoc: CollaborativeDoc
 } {
-  const [storage, path] = documentId.split('://')
-  const [workspaceUrl, ...rest] = path.split('/')
+  const [workspaceId, path] = documentId.split('://')
+  const segments = path.split('/')
 
-  const collaborativeDocs = rest.map((p) => {
+  const collaborativeDocs = segments.map((p) => {
     const [documentId, versionId] = p.split(':')
     return collaborativeDocFormat({ documentId, versionId, lastVersionId: versionId })
   })
 
   return {
-    storage,
-    workspaceUrl,
+    workspaceId,
     collaborativeDoc: collaborativeDocChain(...collaborativeDocs)
   }
 }

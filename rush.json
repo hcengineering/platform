@@ -2126,6 +2126,11 @@
       "packageName": "@hcengineering/pod-telegram-bot",
       "projectFolder": "services/telegram-bot/pod-telegram-bot",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/openai",
+      "projectFolder": "plugins/openai",
+      "shouldPublish": false
     }
   ]
 }

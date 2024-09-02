@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Collaboration } from '@hcengineering/text-editor-resources'
   import {
@@ -218,15 +218,19 @@
       const project = await getLatestProjectId($controlledDocument.space)
 
       if (project !== undefined) {
-        const id = await createNewDraftForControlledDoc(
-          client,
-          $controlledDocument,
-          $controlledDocument.space,
-          version,
-          project
-        )
-        const loc = getProjectDocumentLink(id, project)
-        navigate(loc)
+        try {
+          const id = await createNewDraftForControlledDoc(
+            client,
+            $controlledDocument,
+            $controlledDocument.space,
+            version,
+            project
+          )
+          const loc = getProjectDocumentLink(id, project)
+          navigate(loc)
+        } catch (err) {
+          await setPlatformStatus(unknownError(err))
+        }
       } else {
         console.warn('No document project found for space', $controlledDocument.space)
       }
@@ -237,7 +241,11 @@
 
   async function onEditDocument (): Promise<void> {
     if ($controlledDocument != null && $canCreateNewSnapshot && $isProjectEditable) {
-      await createDocumentSnapshotAndEdit(client, $controlledDocument)
+      try {
+        await createDocumentSnapshotAndEdit(client, $controlledDocument)
+      } catch (err) {
+        await setPlatformStatus(unknownError(err))
+      }
     } else {
       console.warn('Unexpected document state', $documentState)
     }

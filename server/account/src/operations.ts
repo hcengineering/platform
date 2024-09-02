@@ -63,6 +63,7 @@ import {
 import {
   createIndexStages,
   createServerPipeline,
+  getServerPipeline,
   getTxAdapterFactory,
   registerServerPlugins,
   registerStringLoaders
@@ -1413,7 +1414,6 @@ export async function upgradeWorkspace (
   })
 
   const { mongodbUri, dbUrl, txes } = prepareTools(rawTxes)
-  const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
 
   const wsUrl: WorkspaceIdWithUrl = {
     name: ws.workspace,
@@ -1421,42 +1421,7 @@ export async function upgradeWorkspace (
     workspaceUrl: ws.workspaceUrl ?? ''
   }
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
-
-  const pipelineFactory: PipelineFactory = createServerPipeline(
-    ctx,
-    dbUrls,
-    {
-      externalStorage: storageAdapter,
-      fullTextUrl: 'http://localhost:9200',
-      indexParallel: 0,
-      indexProcessing: 0,
-      rekoniUrl: '',
-      usePassedCtx: true,
-      disableTriggers: true
-    },
-    {
-      fulltextAdapter: {
-        factory: async () => new DummyFullTextAdapter(),
-        url: '',
-        stages: (adapter, storage, storageAdapter, contentAdapter) =>
-          createIndexStages(
-            ctx.newChild('stages', {}),
-            wsUrl,
-            null,
-            adapter,
-            storage,
-            storageAdapter,
-            contentAdapter,
-            0,
-            0
-          )
-      }
-    }
-  )
-
-  const pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+  const { pipeline, storageAdapter } = await getServerPipeline(ctx, mongodbUri, dbUrl, wsUrl)
 
   try {
     await upgradeModel(
@@ -1957,7 +1922,7 @@ async function replaceCurrentAccount (
         contact.class.Channel,
         contact.space.Contacts,
         employee._id,
-        contact.mixin.Employee,
+        contact.class.Person,
         'channels',
         {
           provider: contact.channelProvider.Email,
@@ -1988,7 +1953,7 @@ async function createPersonAccount (
   const connection =
     client ?? (await connect(getEndpoint(ctx, workspaceInfo, EndpointKind.Internal), getWorkspaceId(workspace)))
   try {
-    const ops = new TxOperations(connection, core.account.System).apply('create-person' + generateId())
+    const ops = new TxOperations(connection, core.account.System)
 
     const name = combineName(account.first, account.last)
     // Check if PersonAccount is not exists
@@ -1999,7 +1964,7 @@ async function createPersonAccount (
         return
       }
     }
-    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.User]
+    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.Guest]
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
       let person: Ref<Person> | undefined
@@ -2038,7 +2003,6 @@ async function createPersonAccount (
         }
       }
     }
-    await ops.commit()
   } finally {
     if (client === undefined) {
       await connection.close()

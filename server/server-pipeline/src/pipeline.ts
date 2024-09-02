@@ -23,10 +23,12 @@ import {
 import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import {
+  buildStorageFromConfig,
   createNullAdapter,
   createRekoniAdapter,
   createStorageDataAdapter,
-  createYDocAdapter
+  createYDocAdapter,
+  storageConfigFromEnv
 } from '@hcengineering/server'
 import {
   createBenchmarkAdapter,
@@ -38,7 +40,11 @@ import {
   type DbConfiguration,
   type MiddlewareCreator,
   type PipelineFactory,
-  type StorageAdapter
+  type StorageAdapter,
+  type Pipeline,
+  type StorageConfiguration,
+  DummyFullTextAdapter,
+  type AggregatorStorageAdapter
 } from '@hcengineering/server-core'
 import { createIndexStages } from './indexing'
 
@@ -103,6 +109,56 @@ export function createServerPipeline (
     const conf = getConfig(metrics, dbUrls, workspace, branding, ctx, opt, extensions)
     return createPipeline(ctx, conf, middlewares, upgrade, broadcast, branding, opt.disableTriggers)
   }
+}
+
+export async function getServerPipeline (
+  ctx: MeasureContext,
+  mongodbUri: string,
+  dbUrl: string | undefined,
+  wsUrl: WorkspaceIdWithUrl
+): Promise<{
+    pipeline: Pipeline
+    storageAdapter: AggregatorStorageAdapter
+  }> {
+  const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
+
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+
+  const pipelineFactory: PipelineFactory = createServerPipeline(
+    ctx,
+    dbUrls,
+    {
+      externalStorage: storageAdapter,
+      fullTextUrl: 'http://localhost:9200',
+      indexParallel: 0,
+      indexProcessing: 0,
+      rekoniUrl: '',
+      usePassedCtx: true,
+      disableTriggers: true
+    },
+    {
+      fulltextAdapter: {
+        factory: async () => new DummyFullTextAdapter(),
+        url: '',
+        stages: (adapter, storage, storageAdapter, contentAdapter) =>
+          createIndexStages(
+            ctx.newChild('stages', {}),
+            wsUrl,
+            null,
+            adapter,
+            storage,
+            storageAdapter,
+            contentAdapter,
+            0,
+            0
+          )
+      }
+    }
+  )
+
+  const pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
+  return { pipeline, storageAdapter }
 }
 
 function getConfig (

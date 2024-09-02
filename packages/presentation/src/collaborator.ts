@@ -13,20 +13,15 @@
 // limitations under the License.
 //
 
-import {
-  type CollaboratorClient,
-  getClient as getCollaborator,
-  type DocumentSnapshotParams
-} from '@hcengineering/collaborator-client'
-import { type CollaborativeDoc, type Markup, getCurrentAccount, getWorkspaceId } from '@hcengineering/core'
+import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
+import { type CollaborativeDoc, type Markup, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
-import { getCurrentLocation } from '@hcengineering/ui'
 
 import presentation from './plugin'
 
 /** @public */
 export function getCollaboratorClient (): CollaboratorClient {
-  const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
+  const workspaceId = getWorkspaceId(getMetadata(presentation.metadata.WorkspaceId) ?? '')
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
@@ -46,26 +41,7 @@ export async function updateMarkup (collaborativeDoc: CollaborativeDoc, content:
 }
 
 /** @public */
-export async function copyDocumentContent (
-  collaborativeDoc: CollaborativeDoc,
-  sourceField: string,
-  targetField: string
-): Promise<void> {
-  const client = getCollaboratorClient()
-  await client.copyContent(collaborativeDoc, sourceField, targetField)
-}
-
-/** @public */
 export async function copyDocument (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
   const client = getCollaboratorClient()
-  await client.branch(source, target)
-}
-
-/** @public */
-export async function takeSnapshot (collaborativeDoc: CollaborativeDoc, versionName: string): Promise<CollaborativeDoc> {
-  const client = getCollaboratorClient()
-  const createdBy = getCurrentAccount()._id
-
-  const snapshot: DocumentSnapshotParams = { createdBy, versionId: `${Date.now()}`, versionName }
-  return await client.snapshot(collaborativeDoc, snapshot)
+  await client.copyContent(source, target)
 }

@@ -42,7 +42,7 @@
   let loading2: boolean = false
   $: {
     loading1 = true
-    getClient()
+    void getClient()
       .findAll(tags.class.TagCategory, { targetClass })
       .then((result) => {
         categories = result
@@ -52,14 +52,15 @@
 
   $: {
     loading2 = true
-    getClient()
+    void getClient()
       .findAll(
         tags.class.TagElement,
         { category: { $in: Array.from(categories.map((it) => it._id)) } },
         { sort: { title: 1 } }
       )
       .then((res) => {
-        elements = res.toSorted((a, b) => prepareTitle(a.title).localeCompare(prepareTitle(b.title)))
+        res.sort((a, b) => prepareTitle(a.title).localeCompare(prepareTitle(b.title)))
+        elements = res
         loading2 = false
       })
   }
@@ -157,7 +158,7 @@
 
   let titles: string[] = []
   const titlesStates = new Map<string, boolean>()
-  $: getClient()
+  $: void getClient()
     .findAll(
       tags.class.TagReference,
       {
@@ -427,7 +428,7 @@
     doProcessing = true
     if (elements.length > 0 && expertRefs.length > 0) {
       setTimeout(() => {
-        updateTagsList(
+        void updateTagsList(
           elements,
           expertRefs.filter((it) => titlesStates.get(prepareTitle(it.title.toLowerCase())) ?? true)
         ).then(() => {

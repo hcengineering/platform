@@ -15,13 +15,13 @@
 
 import { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/account'
 import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
-import { AccountRole, WorkspaceId } from '@hcengineering/core'
+import { AccountRole } from '@hcengineering/core'
 
 import config from './config'
 
-export async function assignBotToWorkspace (workspaceId: WorkspaceId): Promise<Workspace> {
+export async function assignBotToWorkspace (workspace: string): Promise<Workspace> {
   const accountsUrl = config.AccountsURL
-  const workspace = await (
+  const res = await (
     await fetch(accountsUrl, {
       method: 'POST',
       headers: {
@@ -29,20 +29,12 @@ export async function assignBotToWorkspace (workspaceId: WorkspaceId): Promise<W
       },
       body: JSON.stringify({
         method: 'assignWorkspace',
-        params: [
-          aiBotAccountEmail,
-          workspaceId.name,
-          AccountRole.User,
-          undefined,
-          false,
-          undefined,
-          aiBot.account.AIBot
-        ]
+        params: [aiBotAccountEmail, workspace, AccountRole.User, undefined, false, undefined, aiBot.account.AIBot]
       })
     })
   ).json()
 
-  return workspace.result as Workspace
+  return res.result as Workspace
 }
 
 export async function createBotAccount (): Promise<Workspace> {

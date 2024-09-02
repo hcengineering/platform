@@ -17,6 +17,7 @@ import login, { loginId } from '@hcengineering/login'
 import { broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
+  loadServerConfig,
   purgeClient,
   refreshClient,
   setClient,
@@ -77,6 +78,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     token = workspaceLoginInfo.token
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
+    setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
   }
 
   setMetadata(presentation.metadata.Token, token)
@@ -221,7 +223,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
                 const currentFrontVersion = getMetadata(presentation.metadata.FrontVersion)
                 if (currentFrontVersion !== undefined) {
-                  const frontConfig = await (await fetch(concatLink(frontUrl, '/config.json'))).json()
+                  const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
                   if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
                     location.reload()
                   }
@@ -346,13 +348,14 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
-  const currentWorkspace = getMetadata(presentation.metadata.Workspace)
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceId)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }
 
   setMetadata(presentation.metadata.Token, null)
   setMetadata(presentation.metadata.Workspace, null)
+  setMetadata(presentation.metadata.WorkspaceId, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)

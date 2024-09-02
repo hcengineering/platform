@@ -68,7 +68,7 @@ export const main = async (): Promise<void> => {
           const url = gmail.getAutUrl(redirectURL)
           res.send(url)
         } catch (err) {
-          console.log('signin error', JSON.stringify(err))
+          console.log('signin error', (err as any).message)
           res.status(500).send()
         }
       }

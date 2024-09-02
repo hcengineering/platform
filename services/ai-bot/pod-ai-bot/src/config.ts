@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import OpenAI from 'openai'
+
 interface Config {
   AccountsURL: string
   ConfigurationDB: string
@@ -26,6 +28,10 @@ interface Config {
   AvatarName: string
   AvatarContentType: string
   Password: string
+  OpenAIKey: string
+  OpenAIModel: OpenAI.ChatModel
+  MaxContentTokens: number
+  MaxHistoryRecords: number
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -40,8 +46,14 @@ const envMap: { [key in keyof Config]: string } = {
   AvatarPath: 'AVATAR_PATH',
   AvatarName: 'AVATAR_NAME',
   AvatarContentType: 'AVATAR_CONTENT_TYPE',
-  Password: 'PASSWORD'
+  Password: 'PASSWORD',
+  OpenAIKey: 'OPENAI_API_KEY',
+  OpenAIModel: 'OPENAI_MODEL',
+  MaxContentTokens: 'MAX_CONTENT_TOKENS',
+  MaxHistoryRecords: 'MAX_HISTORY_RECORDS'
 }
+
+const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -56,7 +68,11 @@ const config: Config = (() => {
     AvatarPath: process.env[envMap.AvatarPath] ?? './assets/avatar.png',
     AvatarName: process.env[envMap.AvatarName] ?? 'huly_ai_bot_avatar',
     AvatarContentType: process.env[envMap.AvatarContentType] ?? '.png',
-    Password: process.env[envMap.Password] ?? 'password'
+    Password: process.env[envMap.Password] ?? 'password',
+    OpenAIKey: process.env[envMap.OpenAIKey],
+    OpenAIModel: (process.env[envMap.OpenAIModel] ?? 'gpt-4o-mini') as OpenAI.ChatModel,
+    MaxContentTokens: parseNumber(process.env[envMap.MaxContentTokens]) ?? 128 * 100,
+    MaxHistoryRecords: parseNumber(process.env[envMap.MaxHistoryRecords]) ?? 500
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>)

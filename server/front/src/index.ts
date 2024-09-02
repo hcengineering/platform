@@ -247,6 +247,7 @@ export function start (
     telegramUrl: string
     gmailUrl: string
     calendarUrl: string
+    collaborator?: string
     collaboratorUrl: string
     brandingUrl?: string
     previewConfig: string
@@ -297,6 +298,7 @@ export function start (
       TELEGRAM_URL: config.telegramUrl,
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
+      COLLABORATOR: config.collaborator,
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,

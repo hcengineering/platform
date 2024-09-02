@@ -254,7 +254,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       params: null
     }
     ctx.derived.txes.push(tx)
-    ctx.derived.targets.security = (it) => {
+    ctx.derived.targets['security' + tx._id] = (it) => {
       // TODO: I'm not sure it is called
       if (it._id === tx._id) {
         return targets
@@ -388,7 +388,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.processTx(ctx, tx)
     const res = await this.provideTx(ctx, tx)
     for (const txd of ctx.derived.txes) {
-      await this.processTx(ctx, txd)
+      if (txd._id !== tx._id) {
+        await this.processTx(ctx, txd)
+      }
     }
     return res
   }

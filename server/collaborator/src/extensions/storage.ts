@@ -26,15 +26,15 @@ import {
   onLoadDocumentPayload,
   onStoreDocumentPayload
 } from '@hocuspocus/server'
+import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 import { Context, withContext } from '../context'
 import { CollabStorageAdapter } from '../storage/adapter'
-import { TransformerFactory } from '../types'
 
 export interface StorageConfiguration {
   ctx: MeasureContext
   adapter: CollabStorageAdapter
-  transformerFactory: TransformerFactory
+  transformer: Transformer
 }
 
 export class StorageExtension implements Extension {
@@ -60,11 +60,8 @@ export class StorageExtension implements Extension {
   }
 
   async afterLoadDocument ({ context, documentName, document }: withContext<afterLoadDocumentPayload>): Promise<any> {
-    const { workspaceId } = context
-
     // remember the markup for the document
-    const transformer = this.configuration.transformerFactory(workspaceId)
-    this.markups.set(documentName, transformer.fromYdoc(document))
+    this.markups.set(documentName, this.configuration.transformer.fromYdoc(document))
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
@@ -127,13 +124,10 @@ export class StorageExtension implements Extension {
 
   private async storeDocument (documentName: string, document: Document, context: Context): Promise<void> {
     const { ctx, adapter } = this.configuration
-    const { workspaceId } = context
 
     try {
-      const transformer = this.configuration.transformerFactory(workspaceId)
-
       const prevMarkup = this.markups.get(documentName) ?? {}
-      const currMarkup = transformer.fromYdoc(document)
+      const currMarkup = this.configuration.transformer.fromYdoc(document)
 
       await ctx.with('save-document', {}, async (ctx) => {
         await adapter.saveDocument(ctx, documentName as DocumentId, document, context, {

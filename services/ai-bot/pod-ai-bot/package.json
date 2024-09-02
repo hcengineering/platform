@@ -64,6 +64,7 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/openai": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-ai-bot": "^0.6.0",
     "@hcengineering/server-analytics-collector-resources": "^0.6.0",
@@ -72,6 +73,7 @@
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-ws": "^0.6.11",
     "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/text": "^0.6.5",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
@@ -79,6 +81,8 @@
     "form-data": "^4.0.0",
     "mongodb": "^6.8.0",
     "node-fetch": "^2.6.6",
+    "openai": "^4.56.0",
+    "tiktoken": "^1.0.16",
     "ws": "^8.18.0"
   }
 }

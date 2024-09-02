@@ -135,7 +135,7 @@
 
   async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
     const person = contacts[selection]
-    selected = allowDeselect && person._id === selected ? undefined : person._id
+    selected = allowDeselect && person?._id === selected ? undefined : person?._id
     dispatch('close', selected !== undefined ? person : undefined)
   }
 

@@ -360,8 +360,12 @@ table.proseTable {
   padding: .5rem;
   user-select: text;
   cursor: auto;
+}
 
-  pre { white-space: pre-wrap; }
+pre.proseCodeBlock {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: normal;
 }
 
 // Fixes for MessageViewer

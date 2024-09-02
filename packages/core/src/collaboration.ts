@@ -19,11 +19,11 @@ import { Doc, Ref } from './classes'
  * Identifier of the collaborative document holding collaborative content.
  *
  * Format:
- * {minioDocumentId}:{versionId}:{lastVersionId}
- * {minioDocumentId}:{versionId}
+ * {documentId}:{versionId}:{lastVersionId}
+ * {documentId}:{versionId}
  *
  * Where:
- * - minioDocumentId is an identifier of the document in Minio
+ * - documentId is an identifier of the document in storage
  * - versionId is an identifier of the document version, HEAD for latest editable version
  * - lastVersionId is an identifier of the latest available version
  *

@@ -21,10 +21,10 @@ import { RpcMethodParams } from '../rpc'
 export async function getContent (
   ctx: MeasureContext,
   context: Context,
+  documentId: string,
   payload: GetContentRequest,
   params: RpcMethodParams
 ): Promise<GetContentResponse> {
-  const { documentId } = payload
   const { hocuspocus, transformer } = params
 
   const connection = await ctx.with('connect', {}, async () => {

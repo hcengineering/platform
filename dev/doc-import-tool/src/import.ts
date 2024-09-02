@@ -15,6 +15,7 @@ import documents, {
 import core, {
   AttachedData,
   BackupClient,
+  CollaborativeDoc,
   Client as CoreClient,
   Data,
   MeasureContext,
@@ -114,7 +115,22 @@ async function createDocument (
 
   console.log('Creating controlled doc from template')
 
-  const { success } = await createControlledDocFromTemplate(txops, templateId, docId, data, space, undefined, undefined)
+  const copyContent = async (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> => {
+    // intentionally left empty
+    // even though the template has some content, it won't be used
+  }
+
+  const { success } = await createControlledDocFromTemplate(
+    txops,
+    templateId,
+    docId,
+    data,
+    space,
+    undefined,
+    undefined,
+    documents.class.ControlledDocument,
+    copyContent
+  )
   if (!success) {
     throw new Error('Failed to create controlled document from template')
   }

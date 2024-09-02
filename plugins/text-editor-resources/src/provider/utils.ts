@@ -17,18 +17,22 @@ import { type Ref, type CollaborativeDoc, type Doc, type Class } from '@hcengine
 import {
   type DocumentId,
   type PlatformDocumentId,
-  formatMinioDocumentId,
+  formatDocumentId,
   formatPlatformDocumentId as origFormatPlatformDocumentId
 } from '@hcengineering/collaborator-client'
-import { getCurrentLocation } from '@hcengineering/ui'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
+import textEditor from '@hcengineering/text-editor'
+import { Doc as Ydoc } from 'yjs'
 
-function getWorkspace (): string {
-  return getCurrentLocation().path[1] ?? ''
-}
+import { CloudCollabProvider } from './cloud'
+import { HocuspocusCollabProvider } from './hocuspocus'
+import { IndexeddbProvider } from './indexeddb'
+import { type Provider } from './types'
 
 export function formatCollaborativeDocumentId (collaborativeDoc: CollaborativeDoc): DocumentId {
-  const workspace = getWorkspace()
-  return formatMinioDocumentId(workspace, collaborativeDoc)
+  const workspace = getMetadata(presentation.metadata.WorkspaceId) ?? ''
+  return formatDocumentId(workspace, collaborativeDoc)
 }
 
 export function formatPlatformDocumentId (
@@ -37,4 +41,67 @@ export function formatPlatformDocumentId (
   objectAttr: string
 ): PlatformDocumentId {
   return origFormatPlatformDocumentId(objectClass, objectId, objectAttr)
+}
+
+export function createLocalProvider (ydoc: Ydoc, document: CollaborativeDoc): Provider {
+  const documentId = formatCollaborativeDocumentId(document)
+  return new IndexeddbProvider(documentId, ydoc)
+}
+
+export function createRemoteProvider (
+  ydoc: Ydoc,
+  params: {
+    document: CollaborativeDoc
+    initialDocument?: CollaborativeDoc
+    objectClass?: Ref<Class<Doc>>
+    objectId?: Ref<Doc>
+    objectAttr?: string
+  }
+): Provider {
+  const collaborator = getMetadata(textEditor.metadata.Collaborator)
+
+  const token = getMetadata(presentation.metadata.Token) ?? ''
+  const collaboratorUrl = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
+
+  const documentId = formatCollaborativeDocumentId(params.document)
+  const initialContentId =
+    params.initialDocument !== undefined ? formatCollaborativeDocumentId(params.initialDocument) : undefined
+
+  const { objectClass, objectId, objectAttr } = params
+  const platformDocumentId =
+    objectClass !== undefined && objectId !== undefined && objectAttr !== undefined
+      ? formatPlatformDocumentId(objectClass, objectId, objectAttr)
+      : undefined
+
+  return collaborator === 'cloud'
+    ? new CloudCollabProvider({
+      url: collaboratorUrl,
+      name: documentId,
+      document: ydoc,
+      token
+    })
+    : new HocuspocusCollabProvider({
+      url: collaboratorUrl,
+      name: documentId,
+      document: ydoc,
+      token,
+      parameters: {
+        initialContentId,
+        platformDocumentId
+      }
+    })
+}
+
+export const createTiptapCollaborationData = (params: {
+  document: CollaborativeDoc
+  initialDocument?: CollaborativeDoc
+  objectClass?: Ref<Class<Doc>>
+  objectId?: Ref<Doc>
+  objectAttr?: string
+}): { provider: Provider, ydoc: Ydoc } => {
+  const ydoc: Ydoc = new Ydoc()
+  return {
+    ydoc,
+    provider: createRemoteProvider(ydoc, params)
+  }
 }

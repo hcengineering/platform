@@ -120,8 +120,10 @@
   }
   const handleSelect = async (event: CustomEvent): Promise<void> => {
     selected = event.detail as AnyAttribute
-    const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
-    $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist, disabled } }
+    if (selected != null) {
+      const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
+      $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist, disabled } }
+    }
   }
   onDestroy(() => {
     if (selected !== undefined) clearSettingsStore()

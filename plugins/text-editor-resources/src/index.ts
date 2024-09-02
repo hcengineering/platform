@@ -73,12 +73,8 @@ export { InlineToolbarExtension, type InlineStyleToolbarOptions } from './compon
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { ImageUploadExtension, type ImageUploadOptions } from './components/extension/imageUploadExt'
 export * from './command/deleteAttachment'
-export {
-  TiptapCollabProvider,
-  type TiptapCollabProviderConfiguration,
-  createTiptapCollaborationData
-} from './provider/tiptap'
-export { formatCollaborativeDocumentId, formatPlatformDocumentId } from './provider/utils'
+export { createTiptapCollaborationData } from './provider/utils'
+export { type Provider } from './provider/types'
 
 export default async (): Promise<Resources> => ({
   function: {

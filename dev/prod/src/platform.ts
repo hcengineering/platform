@@ -107,7 +107,7 @@ import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
+import presentation, { loadServerConfig, parsePreviewConfig, presentationId } from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
 import { setDefaultLanguage } from '@hcengineering/theme'
@@ -124,6 +124,7 @@ export interface Config {
   MODEL_VERSION: string
   VERSION: string
   COLLABORATOR_URL: string
+  COLLABORATOR?: string
   REKONI_URL: string
   TELEGRAM_URL: string
   GMAIL_URL: string
@@ -239,13 +240,12 @@ export async function configurePlatform() {
   })
   configureI18n()
 
-  const config: Config = await (await fetch(
+  const config: Config = await loadServerConfig(
     devConfigHuly
       ? '/config-huly.json' : (
         devConfigBold ? '/config-bold.json' : ( 
           devConfig ? '/config-dev.json' : '/config.json'))
   )
-  ).json()
   const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
@@ -291,7 +291,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
 
-  setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://localhost:3078')
+  setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

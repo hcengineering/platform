@@ -14,8 +14,8 @@ import core, {
   makeCollaborativeDoc
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
-import { type StorageAdapter } from '@hcengineering/server-core'
-import { connect } from '@hcengineering/server-tool'
+import { type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import { connect, fetchModel } from '@hcengineering/server-tool'
 import { jsonToText, markupToYDoc } from '@hcengineering/text'
 import { type Db, type FindCursor, type MongoClient } from 'mongodb'
 
@@ -120,47 +120,39 @@ export async function migrateMarkup (
   storageAdapter: StorageAdapter,
   workspaceId: WorkspaceId,
   client: MongoClient,
-  transactorUrl: string,
+  pipeline: Pipeline,
   concurrency: number
 ): Promise<void> {
-  const connection = (await connect(transactorUrl, workspaceId, undefined, {
-    mode: 'backup'
-  })) as unknown as CoreClient
-
-  const hierarchy = connection.getHierarchy()
+  const { hierarchy } = await fetchModel(ctx, pipeline)
 
   const workspaceDb = client.db(workspaceId.name)
 
-  try {
-    const classes = hierarchy.getDescendants(core.class.Doc)
-    for (const _class of classes) {
-      const domain = hierarchy.findDomain(_class)
-      if (domain === undefined) continue
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
 
-      const allAttributes = hierarchy.getAllAttributes(_class)
-      const attributes = Array.from(allAttributes.values()).filter((attribute) => {
-        return hierarchy.isDerived(attribute.type._class, 'core:class:TypeCollaborativeMarkup' as Ref<Class<Doc>>)
-      })
+    const allAttributes = hierarchy.getAllAttributes(_class)
+    const attributes = Array.from(allAttributes.values()).filter((attribute) => {
+      return hierarchy.isDerived(attribute.type._class, 'core:class:TypeCollaborativeMarkup' as Ref<Class<Doc>>)
+    })
 
-      if (attributes.length === 0) continue
-      if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
+    if (attributes.length === 0) continue
+    if (hierarchy.isMixin(_class) && attributes.every((p) => p.attributeOf !== _class)) continue
 
-      const collection = workspaceDb.collection(domain)
+    const collection = workspaceDb.collection(domain)
 
-      const filter = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
+    const filter = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
 
-      const count = await collection.countDocuments(filter)
-      const iterator = collection.find<Doc>(filter)
+    const count = await collection.countDocuments(filter)
+    const iterator = collection.find<Doc>(filter)
 
-      try {
-        console.log('processing', _class, '->', count)
-        await processMigrateMarkupFor(ctx, hierarchy, storageAdapter, workspaceId, attributes, iterator, concurrency)
-      } finally {
-        await iterator.close()
-      }
+    try {
+      console.log('processing', _class, '->', count)
+      await processMigrateMarkupFor(ctx, hierarchy, storageAdapter, workspaceId, attributes, iterator, concurrency)
+    } finally {
+      await iterator.close()
     }
-  } finally {
-    await connection.close()
   }
 }
 
@@ -197,8 +189,12 @@ async function processMigrateMarkupFor (
           const blob = await storageAdapter.stat(ctx, workspaceId, documentId)
           // only for documents not in storage
           if (blob === undefined) {
-            const ydoc = markupToYDoc(value, attribute.name)
-            await saveCollaborativeDoc(storageAdapter, workspaceId, collaborativeDoc, ydoc, ctx)
+            try {
+              const ydoc = markupToYDoc(value, attribute.name)
+              await saveCollaborativeDoc(storageAdapter, workspaceId, collaborativeDoc, ydoc, ctx)
+            } catch (err) {
+              console.error('failed to process document', doc._class, doc._id, err)
+            }
           }
         }
       }

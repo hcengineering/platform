@@ -230,8 +230,12 @@ async function processMigrateContentFor (
             const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
             // only for documents not in storage
             if (blob === undefined) {
-              const ydoc = markupToYDoc(value, attribute.name)
-              await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
+              try {
+                const ydoc = markupToYDoc(value, attribute.name)
+                await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
+              } catch (err) {
+                console.error('failed to process document', doc._class, doc._id, err)
+              }
             }
 
             update[attributeName] = collaborativeDoc
