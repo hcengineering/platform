@@ -159,7 +159,7 @@ export class IssuesPage extends CommonTrackerPage {
   priorityEditor = (): Locator => this.page.locator('#priority-editor')
   urgentButton = (): Locator => this.page.locator('button:has-text("Urgent")')
   assigneeEditor = (): Locator => this.page.locator('#assignee-editor')
-  appleseedJohnButton = (): Locator => this.page.locator('button:has-text("Appleseed John")')
+  appleseedJohnButton = (): Locator => this.page.locator('button.menu-item:has-text("Appleseed John")')
   estimationEditor = (): Locator => this.page.locator('#estimation-editor')
   dueDateButton = (): Locator => this.page.locator('button:has-text("Due date")')
   specificDay = (day: string): Locator => this.page.locator(`.date-popup-container div.day >> text=${day}`).first()
@@ -368,7 +368,7 @@ export class IssuesPage extends CommonTrackerPage {
 
     for (let i = 0; i < tabs.length; i++) {
       await tabs[i].click()
-      await this.page.waitForTimeout(3000)
+      // await this.page.waitForTimeout(3000)
       if (presence === checks[i]) {
         await expect(this.issueListPanel()).toContainText(issueName)
       } else {
