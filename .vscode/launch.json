@@ -411,6 +411,16 @@
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
-    }
+    },
+    {
+      "type": "chrome",
+      "name": "Attach to Browser",
+      "request": "attach",
+      "urlFilter": "http://localhost:8080/*",
+      "port": 9222,
+      "sourceMapPathOverrides": {
+        "webpack://*": "${workspaceFolder}/*",
+      }
+    },
   ]
 }
