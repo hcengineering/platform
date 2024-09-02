@@ -91,4 +91,24 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await attachScreenshot('TESTS-402_space_not_existing.png', page)
     })
   })
+  test('TESTS-403. As a non space member, I cannot see nor edit any doc from that space', async ({ page }) => {
+    await allure.description(
+      'Requirement\nUser is only part as a member and cannot see or edit any document from that space'
+    )
+    await allure.tms('TESTS-403', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-403')
+    await test.step('2. check if non member edit or create a new doc in space', async () => {
+      const folderName = faker.word.words(1)
+      const documentContentPage = new DocumentContentPage(page)
+      const completeDocument: NewDocument = {
+        template: 'HR (HR)',
+        title: `Complete document-${generateId()}`,
+        description: `Complete document description-${generateId()}`
+      }
+      await documentContentPage.clickAddFolderButton()
+      await documentContentPage.fillDocumentSpaceFormManager(folderName)
+      await prepareDocumentStep(page, completeDocument, 1, undefined, folderName)
+      await documentContentPage.checkTeamMembersReviewNotExists()
+      await attachScreenshot('TESTS-403_member_cant_edit_space.png', page)
+    })
+  })
 })

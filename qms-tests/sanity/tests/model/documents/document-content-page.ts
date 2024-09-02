@@ -81,6 +81,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly addMember: Locator
   readonly addMemberDropdown: Locator
   readonly changeSpaceButton: Locator
+  readonly createNewTemplateFromSpace: Locator
 
   constructor (page: Page) {
     super(page)
@@ -172,6 +173,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.addMember = page.getByText('Add member')
     this.addMemberDropdown = page.locator('.selectPopup')
     this.changeSpaceButton = page.locator('[id="space\\.selector"]')
+    this.createNewTemplateFromSpace = page.getByRole('button', { name: 'Create new template' })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -368,6 +370,16 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.saveButton.click()
   }
 
+  async createDocumentSpaceMembersToJustMember (spaceName: string): Promise<void> {
+    await this.inputSpaceName.fill(spaceName)
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).first().click()
+    await this.page.getByRole('button', { name: 'AJ Appleseed John' }).click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).nth(1).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.createButton.click()
+  }
+
   async checkIfTheSpaceIsVisible (spaceName: string, visible: boolean): Promise<void> {
     if (visible) {
       await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
@@ -375,6 +387,21 @@ export class DocumentContentPage extends DocumentCommonPage {
       await expect(this.page.getByRole('button', { name: spaceName })).not.toBeVisible()
     }
   }
+
+  async checkIfEditSpaceButtonExists (spaceName: string, visible: boolean): Promise<void> {
+    await this.page.getByRole('button', { name: spaceName }).hover()
+    await this.page.getByRole('button', { name: spaceName }).getByRole('button').click()
+    if (visible) {
+      await expect(this.editDocumentSpace).toBeVisible()
+      await expect(this.qualityButtonMembers).toBeVisible()
+      await expect(this.createNewTemplateFromSpace).toBeVisible()      
+    } else {
+      await expect(this.createNewDocument).not.toBeVisible()
+      await expect(this.editDocumentSpace).not.toBeVisible()
+      await expect(this.createNewTemplateFromSpace).not.toBeVisible()
+    }
+  }
+    
 
   async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
     await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
@@ -425,6 +452,19 @@ export class DocumentContentPage extends DocumentCommonPage {
     // It's important to wait for the draft status to make sure the content
     // is editable for the next steps
     await this.checkDocumentStatus(DocumentStatus.DRAFT)
+  }
+
+  async checkTeamMembersReviewNotExists(): Promise<void> {
+    await this.page.waitForTimeout(500)
+    await this.page.getByText('Team').click()
+    await this.page.getByText('Add member').first().click()
+    await expect(this.page.getByRole('button', { name: 'AJ Appleseed John' })).not.toBeVisible()
+    await this.page.keyboard.press('Escape')
+    await this.page.getByText('Add member').nth(1).click()
+    await expect(this.page.getByRole('button', { name: 'AJ Appleseed John' })).not.toBeVisible()
+    await this.page.keyboard.press('Escape')
+    await this.page.getByText('Add member').nth(2).click()
+    await expect(this.page.getByRole('button', { name: 'AJ Appleseed John' })).not.toBeVisible()
   }
 
   async checkIfHistoryVersionExists (description: string): Promise<void> {
