@@ -146,7 +146,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test.only('create-issue-draft', async ({ page }) => {
+  test('create-issue-draft', async ({ page }) => {
     const issuesPage = new IssuesPage(page)
     const issueName = 'Draft issue'
     await navigate(page)
