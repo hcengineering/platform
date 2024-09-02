@@ -47,6 +47,7 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
+import { Branding, BrandingMap } from './server'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -806,4 +807,10 @@ export function isOwnerOrMaintainer (): boolean {
 
 export function hasAccountRole (acc: Account, targerRole: AccountRole): boolean {
   return roleOrder[acc.role] >= roleOrder[targerRole]
+}
+
+export function getBranding (brandings: BrandingMap, key: string | undefined): Branding | null {
+  if (key === undefined) return null
+
+  return Object.values(brandings).find((branding) => branding.key === key) ?? null
 }

@@ -125,7 +125,7 @@ export class AIBotController {
         return
       }
 
-      if (info.creating === true) {
+      if (['pending-creation', 'creating'].includes(info?.mode)) {
         this.ctx.info('Workspace is creating -> waiting...', { workspace })
         this.assignTimeout = setTimeout(() => {
           void this.assignToWorkspace(workspace)

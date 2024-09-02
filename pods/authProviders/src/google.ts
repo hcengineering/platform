@@ -1,11 +1,11 @@
 import { joinWithProvider, LoginInfo, loginWithProvider } from '@hcengineering/account'
-import { BrandingMap, concatLink, MeasureContext } from '@hcengineering/core'
+import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Db } from 'mongodb'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import qs from 'querystringify'
 import { Passport } from '.'
-import { getBranding, getHost, safeParseAuthState } from './utils'
+import { getHost, safeParseAuthState } from './utils'
 
 export function registerGoogle (
   measureCtx: MeasureContext,
