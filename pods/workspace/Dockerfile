@@ -12,5 +12,4 @@ ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
 
 COPY bundle/bundle.js ./
 
-EXPOSE 3081
 CMD [ "node", "bundle.js" ]
