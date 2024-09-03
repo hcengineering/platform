@@ -93,7 +93,7 @@ test.describe('Tracker Projects tests', () => {
     })
   })
 
-  test.only('User can archive and unarchive Project', async ({ page }) => {
+  test('User can archive and unarchive Project', async ({ page }) => {
     const projectId = generateProjectId()
 
     const archiveProjectData: NewProject = {
