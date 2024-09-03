@@ -42,6 +42,7 @@ import core, {
   TxOperations,
   Version,
   versionToString,
+  isWorkspaceCreating,
   WorkspaceId,
   type Branding,
   type WorkspaceMode
@@ -1467,6 +1468,8 @@ export async function getPendingWorkspace (
       mode: 'upgrading'
     }
   ]
+  // TODO: support returning pending deletion workspaces when we will actually want
+  // to clear them with the worker.
 
   const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
   const operationQuery = {
@@ -1640,7 +1643,7 @@ export async function getUserWorkspaces (
       .sort({ lastVisit: -1 })
       .toArray()
   )
-    .filter((it) => it.disabled !== true || it.mode !== 'active')
+    .filter((it) => it.disabled !== true || isWorkspaceCreating(it.mode))
     .map(mapToClientWorkspace)
 }
 
@@ -2626,6 +2629,76 @@ export async function changeUsername (
 /**
  * @public
  */
+export async function updateWorkspaceName (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  name: string
+): Promise<void> {
+  const decodedToken = decodeToken(ctx, token)
+  const workspaceInfo = await getWorkspaceById(db, decodedToken.workspace.name)
+  if (workspaceInfo === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: decodedToken.workspace.name })
+    )
+  }
+
+  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne(
+    { _id: workspaceInfo._id },
+    {
+      $set: {
+        workspaceName: name
+      }
+    }
+  )
+}
+
+/**
+ * @public
+ */
+export async function deleteWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string
+): Promise<void> {
+  const { workspace, email } = decodeToken(ctx, token)
+  const workspaceInfo = await getWorkspaceById(db, workspace.name)
+  if (workspaceInfo === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
+    )
+  }
+
+  const connection = await connect(
+    getEndpoint(ctx, workspaceInfo, EndpointKind.Internal),
+    getWorkspaceId(workspaceInfo.workspace)
+  )
+  try {
+    const ops = new TxOperations(connection, core.account.System)
+    const ownerAccount = await ops.findOne(contact.class.PersonAccount, { email, role: AccountRole.Owner })
+    if (ownerAccount == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne(
+      { _id: workspaceInfo._id },
+      {
+        $set: {
+          disabled: true,
+          mode: 'pending-deletion'
+        }
+      }
+    )
+  } finally {
+    await connection.close()
+  }
+}
+
+/**
+ * @public
+ */
 export function getMethods (): Record<string, AccountMethod> {
   return {
     login: wrap(login),
@@ -2642,9 +2715,6 @@ export function getMethods (): Record<string, AccountMethod> {
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     createAccount: wrap(createAccount),
     createWorkspace: wrap(createUserWorkspace),
-    getPendingWorkspace: wrap(getPendingWorkspace),
-    updateWorkspaceInfo: wrap(updateWorkspaceInfo),
-    workerHandshake: wrap(workerHandshake),
     assignWorkspace: wrap(assignWorkspace),
     removeWorkspace: wrap(removeWorkspace),
     leaveWorkspace: wrap(leaveWorkspace),
@@ -2656,8 +2726,14 @@ export function getMethods (): Record<string, AccountMethod> {
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
     createMissingEmployee: wrap(createMissingEmployee),
-    changeUsername: wrap(changeUsername)
-    // updateAccount: wrap(updateAccount)
+    changeUsername: wrap(changeUsername),
+    updateWorkspaceName: wrap(updateWorkspaceName),
+    deleteWorkspace: wrap(deleteWorkspace),
+    // updateAccount: wrap(updateAccount),
+    // Workspace service methods
+    getPendingWorkspace: wrap(getPendingWorkspace),
+    updateWorkspaceInfo: wrap(updateWorkspaceInfo),
+    workerHandshake: wrap(workerHandshake)
   }
 }
 

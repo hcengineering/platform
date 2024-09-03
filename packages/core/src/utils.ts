@@ -39,7 +39,8 @@ import {
   Role,
   roleOrder,
   Space,
-  TypedSpace
+  TypedSpace,
+  WorkspaceMode
 } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
@@ -150,6 +151,17 @@ export function getWorkspaceId (workspace: string): WorkspaceId {
  */
 export function toWorkspaceString (id: WorkspaceId): string {
   return id.name
+}
+
+/**
+ * @public
+ */
+export function isWorkspaceCreating (mode?: WorkspaceMode): boolean {
+  if (mode === undefined) {
+    return false
+  }
+
+  return ['pending-creation', 'creating'].includes(mode)
 }
 
 const attributesPrefix = 'attributes.'

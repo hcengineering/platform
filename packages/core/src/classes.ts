@@ -652,7 +652,7 @@ export interface DomainIndexConfiguration extends Doc {
   skip?: string[]
 }
 
-export type WorkspaceMode = 'pending-creation' | 'creating' | 'upgrading' | 'deleting' | 'active'
+export type WorkspaceMode = 'pending-creation' | 'creating' | 'upgrading' | 'pending-deletion' | 'deleting' | 'active'
 
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
