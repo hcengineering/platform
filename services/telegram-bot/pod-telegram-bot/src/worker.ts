@@ -21,6 +21,8 @@ import { StorageAdapter } from '@hcengineering/server-core'
 import chunter, { ChunterSpace } from '@hcengineering/chunter'
 import { formatName, PersonAccount } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
+import { getWorkspaceInfo } from '@hcengineering/server-client'
+import { ActivityMessage } from '@hcengineering/activity'
 
 import {
   ChannelRecord,
@@ -36,8 +38,6 @@ import { getDB } from './storage'
 import { WorkspaceClient } from './workspace'
 import { getNewOtp } from './utils'
 import config from './config'
-import { getWorkspaceInfo } from './account'
-import { ActivityMessage } from '@hcengineering/activity'
 
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
@@ -336,7 +336,7 @@ export class PlatformWorker {
 
       const info: WorkspaceInfo = {
         name: result.workspaceName ?? result.workspace,
-        url: result.workspace,
+        url: result.workspaceUrl ?? result.workspace,
         id: workspaceId
       }
       this.workspaceInfoById.set(workspaceId, info)
