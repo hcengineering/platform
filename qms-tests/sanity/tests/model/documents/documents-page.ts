@@ -40,7 +40,11 @@ export class DocumentsPage extends CalendarPage {
     this.changeSpaceButton = page.locator('[id="space\\.selector"]')
   }
 
-  async createDocument (data: NewDocument, startSecondStep: boolean = false, changeSpaceInCreateDocument: string = "Quality documents"): Promise<void> {
+  async createDocument (
+    data: NewDocument,
+    startSecondStep: boolean = false,
+    changeSpaceInCreateDocument: string = 'Quality documents'
+  ): Promise<void> {
     if (data.location != null) {
       await this.buttonSpaceSelector.click()
       await this.selectListItemWithSearch(this.page, data.location.space ?? '')

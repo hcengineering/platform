@@ -394,14 +394,13 @@ export class DocumentContentPage extends DocumentCommonPage {
     if (visible) {
       await expect(this.editDocumentSpace).toBeVisible()
       await expect(this.qualityButtonMembers).toBeVisible()
-      await expect(this.createNewTemplateFromSpace).toBeVisible()      
+      await expect(this.createNewTemplateFromSpace).toBeVisible()
     } else {
       await expect(this.createNewDocument).not.toBeVisible()
       await expect(this.editDocumentSpace).not.toBeVisible()
       await expect(this.createNewTemplateFromSpace).not.toBeVisible()
     }
   }
-    
 
   async checkSpaceFormIsCreated (spaceName: string): Promise<void> {
     await expect(this.page.getByRole('button', { name: spaceName })).toBeVisible()
@@ -454,7 +453,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.checkDocumentStatus(DocumentStatus.DRAFT)
   }
 
-  async checkTeamMembersReviewNotExists(): Promise<void> {
+  async checkTeamMembersReviewNotExists (): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.page.getByText('Team').click()
     await this.page.getByText('Add member').first().click()

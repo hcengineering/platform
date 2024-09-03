@@ -114,9 +114,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
   })
 
   test('TESTS-404. As a space member only, I cannot create any doc from that space', async ({ page }) => {
-    await allure.description(
-      'Requirement\nUser is not able to create any document from that space'
-    )
+    await allure.description('Requirement\nUser is not able to create any document from that space')
     await allure.tms('TESTS-404', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-404')
     await test.step('2. cCheck if user can not create documents as a space member', async () => {
       const folderName = faker.word.words(1)
