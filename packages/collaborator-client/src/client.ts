@@ -83,16 +83,24 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async getContent (document: CollaborativeDoc): Promise<Record<string, Markup>> {
-    const res = await retry(3, async () => {
-      return (await this.rpc(document, 'getContent', {})) as GetContentResponse
-    }, 50)
+    const res = await retry(
+      3,
+      async () => {
+        return (await this.rpc(document, 'getContent', {})) as GetContentResponse
+      },
+      50
+    )
     return res.content ?? {}
   }
 
   async updateContent (document: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
-    await retry(3, async () => {
-      await this.rpc(document, 'updateContent', { content })
-    }, 50)
+    await retry(
+      3,
+      async () => {
+        await this.rpc(document, 'updateContent', { content })
+      },
+      50
+    )
   }
 
   async copyContent (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
@@ -101,11 +109,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 }
 
-async function retry<T> (
-  retries: number,
-  op: () => Promise<T>,
-  delay: number = 100
-): Promise<T> {
+async function retry<T> (retries: number, op: () => Promise<T>, delay: number = 100): Promise<T> {
   let error: any
   while (retries > 0) {
     retries--
