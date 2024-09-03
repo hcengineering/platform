@@ -42,3 +42,18 @@ export interface OtpRecord {
   expires: Timestamp
   createdOn: Timestamp
 }
+
+export interface PlatformFileInfo {
+  filename: string
+  type: string
+  buffer: Buffer
+}
+
+export interface TelegramFileInfo {
+  type: string
+  url: string
+  width: number
+  height: number
+  name?: string
+  size?: number
+}

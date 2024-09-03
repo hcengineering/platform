@@ -19,12 +19,12 @@ import telegram from '@hcengineering/telegram'
 import { htmlToMarkup } from '@hcengineering/text'
 import { message } from 'telegraf/filters'
 import { toHTML } from '@telegraf/entity'
-import { TextMessage } from '@telegraf/entity/types/types'
+import { Message, Update } from 'telegraf/typings/core/types/typegram'
 
 import config from './config'
 import { PlatformWorker } from './worker'
-import { getBotCommands, getCommandsHelp } from './utils'
-import { NotificationRecord } from './types'
+import { getBotCommands, getCommandsHelp, toTelegramFileInfo } from './utils'
+import { NotificationRecord, TelegramFileInfo } from './types'
 
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
@@ -116,9 +116,15 @@ async function findNotificationRecord (
   return await worker.getNotificationRecordById(reply.notificationId, email)
 }
 
+type ReplyMessage = Update.New &
+Update.NonChannel &
+Message.TextMessage &
+(Message.PhotoMessage | Message.VoiceMessage | Message.VideoMessage | Message.VideoNoteMessage)
+
 async function onReply (
+  ctx: Context,
   from: number,
-  message: TextMessage,
+  message: ReplyMessage,
   messageId: number,
   replyTo: number,
   worker: PlatformWorker,
@@ -142,7 +148,10 @@ async function onReply (
 
   await worker.saveReply({ replyId: messageId, telegramId: from, notificationId: notification.notificationId })
 
-  return await worker.reply(notification, htmlToMarkup(toHTML(message)))
+  const file = await toTelegramFileInfo(ctx, message)
+  const files: TelegramFileInfo[] = file !== undefined ? [file] : []
+
+  return await worker.reply(notification, htmlToMarkup(toHTML(message)), files)
 }
 
 export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
@@ -166,16 +175,17 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
 
     const replyTo = message.reply_to_message
     const isReplied = await onReply(
+      ctx,
       id,
-      message as TextMessage,
+      message as ReplyMessage,
       message.message_id,
       replyTo.message_id,
       worker,
       ctx.from.username
     )
 
-    if (isReplied) {
-      await ctx.react('👍')
+    if (!isReplied) {
+      await ctx.reply('Cannot reply to this message.')
     }
   })
 

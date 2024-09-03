@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { ActivityMessage } from '@hcengineering/activity'
 import { ChannelItem } from '@hcengineering/contact'
 import { Account, AttachedDoc, Class, Doc, Ref, Timestamp } from '@hcengineering/core'
 import { InboxNotification, NotificationProvider, NotificationType } from '@hcengineering/notification'
@@ -58,8 +59,10 @@ export interface SharedTelegramMessages extends AttachedDoc {
   messages: SharedTelegramMessage[]
 }
 
-export interface TelegramNotificationRecord {
+export interface TelegramNotificationRequest {
   notificationId: Ref<InboxNotification>
+  messageId?: Ref<ActivityMessage>
+  attachments: boolean
   workspace: string
   account: Ref<Account>
   title: string

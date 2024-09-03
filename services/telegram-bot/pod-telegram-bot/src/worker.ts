@@ -14,10 +14,12 @@
 //
 
 import type { Collection } from 'mongodb'
-import { Account, Ref, SortingOrder } from '@hcengineering/core'
+import { Account, MeasureContext, Ref, SortingOrder } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
+import { TelegramNotificationRequest } from '@hcengineering/telegram'
+import { StorageAdapter } from '@hcengineering/server-core'
 
-import { UserRecord, NotificationRecord, OtpRecord, ReplyRecord } from './types'
+import { NotificationRecord, OtpRecord, PlatformFileInfo, ReplyRecord, TelegramFileInfo, UserRecord } from './types'
 import { getDB } from './storage'
 import { WorkspaceClient } from './workspace'
 import { getNewOtp } from './utils'
@@ -31,6 +33,8 @@ export class PlatformWorker {
   private readonly intervalId: NodeJS.Timeout | undefined
 
   private constructor (
+    readonly ctx: MeasureContext,
+    readonly storageAdapter: StorageAdapter,
     private readonly usersStorage: Collection<UserRecord>,
     private readonly notificationsStorage: Collection<NotificationRecord>,
     private readonly otpStorage: Collection<OtpRecord>,
@@ -86,6 +90,14 @@ export class PlatformWorker {
     return (await this.usersStorage.findOne({ _id: insertResult.insertedId })) ?? undefined
   }
 
+  async getFiles (request: TelegramNotificationRequest): Promise<PlatformFileInfo[]> {
+    if (request.messageId === undefined || !request.attachments) {
+      return []
+    }
+    const wsClient = await this.getWorkspaceClient(request.workspace)
+    return await wsClient.getFiles(request.messageId)
+  }
+
   async updateTelegramUsername (userRecord: UserRecord, telegramUsername?: string): Promise<void> {
     await this.usersStorage.updateOne(
       { telegramId: userRecord.telegramId, email: userRecord.email },
@@ -133,7 +145,8 @@ export class PlatformWorker {
   }
 
   async getWorkspaceClient (workspace: string): Promise<WorkspaceClient> {
-    const wsClient = this.workspacesClients.get(workspace) ?? (await WorkspaceClient.create(workspace))
+    const wsClient =
+      this.workspacesClients.get(workspace) ?? (await WorkspaceClient.create(workspace, this.ctx, this.storageAdapter))
 
     if (!this.workspacesClients.has(workspace)) {
       this.workspacesClients.set(workspace, wsClient)
@@ -154,9 +167,9 @@ export class PlatformWorker {
     return wsClient
   }
 
-  async reply (notification: NotificationRecord, text: string): Promise<boolean> {
+  async reply (notification: NotificationRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
     const client = await this.getWorkspaceClient(notification.workspace)
-    return await client.reply(notification, text)
+    return await client.reply(notification, text, files)
   }
 
   async authorizeUser (code: string, email: string): Promise<UserRecord | undefined> {
@@ -205,9 +218,9 @@ export class PlatformWorker {
     return [userStorage, notificationsStorage, otpStorage, repliesStorage]
   }
 
-  static async create (): Promise<PlatformWorker> {
+  static async create (ctx: MeasureContext, storageAdapter: StorageAdapter): Promise<PlatformWorker> {
     const [userStorage, notificationsStorage, otpStorage, repliesStorage] = await PlatformWorker.createStorages()
 
-    return new PlatformWorker(userStorage, notificationsStorage, otpStorage, repliesStorage)
+    return new PlatformWorker(ctx, storageAdapter, userStorage, notificationsStorage, otpStorage, repliesStorage)
   }
 }
