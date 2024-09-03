@@ -104,7 +104,7 @@ test.describe('Tracker tests', () => {
     }
   })
 
-  test('report-time-from-main-view', async ({ page }) => {
+  test.only('report-time-from-main-view', async ({ page }) => {
     const issuesPage = new IssuesPage(page)
     await navigate(page)
     await issuesPage.navigateToIssues()

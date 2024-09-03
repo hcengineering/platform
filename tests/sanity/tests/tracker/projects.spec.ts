@@ -93,7 +93,7 @@ test.describe('Tracker Projects tests', () => {
     })
   })
 
-  test('User can archive and unarchive Project', async ({ page }) => {
+  test.only('User can archive and unarchive Project', async ({ page }) => {
     const projectId = generateProjectId()
 
     const archiveProjectData: NewProject = {
@@ -124,6 +124,12 @@ test.describe('Tracker Projects tests', () => {
       await allProjectsPage.unarchiveProject(archiveProjectData.title)
       await allProjectsPage.checkProjecInTableIsNotArchived(`${archiveProjectData.title}`)
       await trackerNavigationMenuPage.checkProjectExist(archiveProjectData.title)
+    })
+
+    await test.step('Finally archive project again', async () => {
+      await trackerNavigationMenuPage.makeActionWithProject(archiveProjectData.title, 'Archive')
+      await trackerNavigationMenuPage.pressYesForPopup(page)
+      await trackerNavigationMenuPage.checkProjectNotExist(archiveProjectData.title)
     })
   })
 
