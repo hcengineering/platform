@@ -31,7 +31,12 @@ import {
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import telegram, { TelegramMessage, TelegramNotificationRecord } from '@hcengineering/telegram'
-import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
+import notification, {
+  BaseNotificationType,
+  InboxNotification,
+  MentionInboxNotification,
+  NotificationType
+} from '@hcengineering/notification'
 import setting, { Integration } from '@hcengineering/setting'
 import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
@@ -190,7 +195,10 @@ async function getTranslatedData (
   let { title, body } = await getTranslatedNotificationContent(data, data._class, control)
   let quote: string | undefined
 
-  if (data.data !== undefined) {
+  if (hierarchy.isDerived(data._class, notification.class.MentionInboxNotification)) {
+    const text = (data as MentionInboxNotification).messageHtml
+    body = text !== undefined ? markupToHTML(text) : body
+  } else if (data.data !== undefined) {
     body = markupToHTML(data.data)
   } else if (message !== undefined) {
     const html = await activityMessageToHtml(control, message)
