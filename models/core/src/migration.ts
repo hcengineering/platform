@@ -337,7 +337,7 @@ async function migrateBlobData (exAdapter: StorageAdapterEx, client: MigrationCl
     if (!(await adapter.exists(ctx, client.workspaceId))) {
       continue
     }
-    const blobs = await adapter.listStream(ctx, client.workspaceId, '')
+    const blobs = await adapter.listStream(ctx, client.workspaceId)
     const bulk = new Map<Ref<Blob>, Blob>()
     try {
       const push = async (force: boolean): Promise<void> => {
