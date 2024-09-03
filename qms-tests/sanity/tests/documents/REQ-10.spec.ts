@@ -80,7 +80,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
     await allure.description(
       'Requirement\nUser is not a part of space members and cannot see or edit any document from that space'
     )
-    await allure.tms('TESTS-402', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-347')
+    await allure.tms('TESTS-402', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-402')
     await test.step('2. check if non member can see space', async () => {
       const folderName = faker.word.words(1)
       const documentContentPage = new DocumentContentPage(page)
@@ -91,7 +91,8 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await attachScreenshot('TESTS-402_space_not_existing.png', page)
     })
   })
-  test('TESTS-403. As a non space member, I cannot see nor edit any doc from that space', async ({ page }) => {
+
+  test('TESTS-403. As a space member only, I cannot edit any doc from that space', async ({ page }) => {
     await allure.description(
       'Requirement\nUser is only part as a member and cannot see or edit any document from that space'
     )
@@ -109,6 +110,20 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await prepareDocumentStep(page, completeDocument, 1, undefined, folderName)
       await documentContentPage.checkTeamMembersReviewNotExists()
       await attachScreenshot('TESTS-403_member_cant_edit_space.png', page)
+    })
+  })
+
+  test('TESTS-404. As a space member only, I cannot create any doc from that space', async ({ page }) => {
+    await allure.description(
+      'Requirement\nUser is not able to create any document from that space'
+    )
+    await allure.tms('TESTS-404', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-404')
+    await test.step('2. cCheck if user can not create documents as a space member', async () => {
+      const folderName = faker.word.words(1)
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.clickAddFolderButton()
+      await documentContentPage.createDocumentSpaceMembersToJustMember(folderName)
+      await documentContentPage.checkIfUserCanSelectSpace(folderName, false)
     })
   })
 })

@@ -617,6 +617,18 @@ export class DocumentContentPage extends DocumentCommonPage {
     await expect(this.page.locator('span.text-editor-highlighted-node-delete', { hasText: text }).first()).toBeVisible()
   }
 
+  async checkIfUserCanSelectSpace (space: string, spaceExists: boolean): Promise<void> {
+    await expect(this.page.getByRole('button', { name: space, exact: true })).toBeVisible()
+    await this.page.getByRole('button', { name: 'New document' }).click()
+    await this.changeSpaceButton.click()
+    if (spaceExists) {
+      await expect(this.page.getByRole('button', { name: space, exact: true }).nth(1)).toBeVisible()
+    }
+    if (!spaceExists) {
+      await expect(this.page.getByRole('button', { name: space, exact: true }).nth(1)).not.toBeVisible()
+    }
+  }
+
   async openApprovals (): Promise<void> {
     await expect(this.buttonDocumentApprovals).toBeVisible()
     await this.buttonDocumentApprovals.click({ position: { x: 1, y: 1 }, force: true })
