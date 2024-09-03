@@ -69,6 +69,10 @@ class CollaboratorClientImpl implements CollaboratorClient {
       body: JSON.stringify({ method, documentId, payload })
     })
 
+    if (!res.ok) {
+      throw new Error('HTTP error ' + res.status)
+    }
+
     const result = await res.json()
 
     if (result.error != null) {
@@ -79,16 +83,40 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async getContent (document: CollaborativeDoc): Promise<Record<string, Markup>> {
-    const res = (await this.rpc(document, 'getContent', {})) as GetContentResponse
+    const res = await retry(3, async () => {
+      return (await this.rpc(document, 'getContent', {})) as GetContentResponse
+    }, 50)
     return res.content ?? {}
   }
 
   async updateContent (document: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
-    await this.rpc(document, 'updateContent', { content })
+    await retry(3, async () => {
+      await this.rpc(document, 'updateContent', { content })
+    }, 50)
   }
 
   async copyContent (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
     const content = await this.getContent(source)
     await this.updateContent(target, content)
   }
+}
+
+async function retry<T> (
+  retries: number,
+  op: () => Promise<T>,
+  delay: number = 100
+): Promise<T> {
+  let error: any
+  while (retries > 0) {
+    retries--
+    try {
+      return await op()
+    } catch (err: any) {
+      error = err
+      if (retries !== 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+    }
+  }
+  throw error
 }
