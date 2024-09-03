@@ -1,10 +1,11 @@
 import { test } from '@playwright/test'
-import { generateRandomPrefix, PlatformSetting, PlatformURI } from '../utils'
+import { PlatformSetting, PlatformURI } from '../utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { NewProjectPage } from '../model/tracker/new-project-page'
 import { NewProject } from '../model/tracker/types'
 import { EditProjectPage } from '../model/tracker/edit-project-page'
 import { AllProjectsPage } from '../model/tracker/all-projects-page'
+import { generateProjectId } from './tracker.utils'
 
 test.use({
   storageState: PlatformSetting
@@ -25,10 +26,10 @@ test.describe('Tracker Projects tests', () => {
   })
 
   test('User can create project', async () => {
-    const prefix = generateRandomPrefix()
+    const projectId = generateProjectId()
     const newProjectData: NewProject = {
-      title: `${prefix}-NewProject`,
-      identifier: prefix,
+      title: `NewProject-${projectId}`,
+      identifier: projectId,
       description: 'New Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
@@ -56,19 +57,19 @@ test.describe('Tracker Projects tests', () => {
   })
 
   test('User can edit project', async () => {
-    const prefix = generateRandomPrefix()
+    const projectId = generateProjectId()
 
     const editProjectData: NewProject = {
-      title: `${prefix}-EditProject`,
-      identifier: prefix,
+      title: `EditProject-${projectId}`,
+      identifier: projectId,
       description: 'Edit Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
       defaultIssueStatus: 'In Progress'
     }
     const updateProjectData: NewProject = {
-      title: `${prefix}-UpdateProject`,
-      identifier: prefix,
+      title: `UpdateProject-${projectId}`,
+      identifier: projectId,
       description: 'Updated Project description',
       private: true,
       defaultAssigneeForIssues: 'Chen Rosamund',
@@ -88,15 +89,16 @@ test.describe('Tracker Projects tests', () => {
       await editProjectPage.updateProject(updateProjectData)
       await trackerNavigationMenuPage.makeActionWithProject(updateProjectData.title, 'Edit project')
       await editProjectPage.checkProject(updateProjectData)
+      await editProjectPage.buttonSaveProject().click()
     })
   })
 
   test('User can archive and unarchive Project', async ({ page }) => {
-    const prefix = generateRandomPrefix()
+    const projectId = generateProjectId()
 
     const archiveProjectData: NewProject = {
-      title: `${prefix}-ArchiveProject`,
-      identifier: prefix,
+      title: `ArchiveProject-${projectId}`,
+      identifier: projectId,
       description: 'Archive Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
@@ -125,12 +127,12 @@ test.describe('Tracker Projects tests', () => {
     })
   })
 
-  test('Star and Unstar Project', async ({ page }) => {
-    const prefix = generateRandomPrefix()
+  test('Star and Unstar Project', async () => {
+    const projectId = generateProjectId()
 
     const projectToStarData: NewProject = {
-      title: `${prefix}-ProjectToStar`,
-      identifier: prefix,
+      title: `ProjectToStar-${projectId}`,
+      identifier: projectId,
       description: 'Starred Project description',
       private: true,
       defaultAssigneeForIssues: 'Dirak Kainin',
@@ -157,12 +159,12 @@ test.describe('Tracker Projects tests', () => {
     })
   })
 
-  test('Leave and Join Project', async ({ page }) => {
-    const prefix = generateRandomPrefix()
+  test('Leave and Join Project', async () => {
+    const projectId = generateProjectId()
 
     const projectToLeaveData: NewProject = {
-      title: `${prefix}-ProjectToLeave`,
-      identifier: prefix,
+      title: `ProjectToLeave-${projectId}`,
+      identifier: projectId,
       description: 'Project to leave description',
       private: true,
       defaultAssigneeForIssues: 'Appleseed John',
@@ -187,5 +189,9 @@ test.describe('Tracker Projects tests', () => {
       await allProjectsPage.joinProject(projectToLeaveData.title)
       await trackerNavigationMenuPage.checkProjectExist(projectToLeaveData.title)
     })
+  })
+
+  test.afterEach(async () => {
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
   })
 })

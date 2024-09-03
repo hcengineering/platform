@@ -227,12 +227,3 @@ export async function createAccountAndWorkspace (page: Page, request: APIRequest
   await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
   await reLogin(page, data)
 }
-
-/**
- * Return random capitalized string like "AFJKD"
- *
- * @returns string
- */
-export function generateRandomPrefix (size: number = 5): string {
-  return Array.from({ length: size }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('')
-}

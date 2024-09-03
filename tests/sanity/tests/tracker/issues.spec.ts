@@ -221,7 +221,7 @@ test.describe('Tracker issue tests', () => {
 
   test('Delete an issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
-      title: `Issue for deletion-${generateId()}`,
+      title: `Issue-to-delete-${generateId()}`,
       description: 'Description Issue for deletion'
     }
     await prepareNewIssueWithOpenStep(page, deleteIssue)
