@@ -178,7 +178,10 @@
       lastKey = undefined
       delayedAction = undefined
       Analytics.handleEvent(a._id)
-      const actionProps = { ...a.actionProps }
+      const actionProps: Record<string, any> = {
+        ...a.actionProps,
+        ...(a.actionPopup !== undefined ? { actionPopup: a.actionPopup } : {})
+      }
       if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
       actionProps.props.space = currentSpace
       await action(selectionDocs, evt, actionProps)
