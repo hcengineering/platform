@@ -176,11 +176,11 @@ export function createDummyStorageAdapter (): StorageAdapter {
 export async function removeAllObjects (
   ctx: MeasureContext,
   storage: StorageAdapter,
-  workspaceId: WorkspaceId,
-  prefix?: string
+  workspaceId: WorkspaceId
 ): Promise<void> {
+  ctx.warn('removing all objects from workspace', { workspaceId })
   // We need to list all files and delete them
-  const iterator = await storage.listStream(ctx, workspaceId, prefix)
+  const iterator = await storage.listStream(ctx, workspaceId)
   let bulk: string[] = []
   while (true) {
     const obj = await iterator.next()
