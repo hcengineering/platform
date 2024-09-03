@@ -93,7 +93,7 @@ import { changeConfiguration } from './configuration'
 import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
-import { moveFiles } from './storage'
+import { moveFiles, syncFiles } from './storage'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1020,9 +1020,43 @@ export function devTool (
                 continue
               }
 
-              console.log('start', workspace, index, '/', workspaces.length)
+              console.log('start', workspace.workspace, index, '/', workspaces.length)
               await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
-              console.log('done', workspace)
+              console.log('done', workspace.workspace)
+
+              index += 1
+            }
+          } catch (err: any) {
+            console.error(err)
+          }
+        })
+      })
+    })
+
+  program
+    .command('sync-files')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .action(async (cmd: { workspace: string }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        await withStorage(mongodbUri, async (adapter) => {
+          try {
+            const exAdapter = adapter as StorageAdapterEx
+
+            console.log('syncing files from storage provider')
+
+            let index = 1
+            const workspaces = await listWorkspacesPure(db)
+            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+            for (const workspace of workspaces) {
+              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+                continue
+              }
+
+              console.log('start', workspace.workspace, index, '/', workspaces.length)
+              await syncFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter)
+              console.log('done', workspace.workspace)
 
               index += 1
             }
