@@ -17,7 +17,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate, type Ref } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
-import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
+import { StorageAdapter } from '@hcengineering/storage'
 import bp from 'body-parser'
 import cors from 'cors'
 import express, { Request, Response } from 'express'
@@ -544,10 +544,6 @@ export function start (
 
       // TODO: We need to allow delete only of user attached documents. (https://front.hc.engineering/workbench/platform/tracker/TSK-1081)
       await config.storageAdapter.remove(ctx, payload.workspace, [uuid])
-
-      // TODO: Add support for related documents.
-      // TODO: Move support of image resize/format change to separate place.
-      await removeAllObjects(ctx, config.storageAdapter, payload.workspace, uuid)
 
       res.status(200).send()
     } catch (error: any) {
