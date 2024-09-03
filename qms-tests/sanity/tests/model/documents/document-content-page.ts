@@ -169,7 +169,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.qualityButtonMembers = page.getByRole('button', { name: 'AJ DK AQ 3 members' }).first()
     this.userMemberCainVelasquez = page.getByRole('button', { name: 'VC Velasquez Cain' })
     this.qualityDocument = page.getByRole('button', { name: 'Quality documents' })
-    this.saveButton = page.getByRole('button', { name: 'Save' })
+    this.saveButton = page.getByRole('button', { name: 'Save', exact: true })
     this.addMember = page.getByText('Add member')
     this.addMemberDropdown = page.locator('.selectPopup')
     this.changeSpaceButton = page.locator('[id="space\\.selector"]')
