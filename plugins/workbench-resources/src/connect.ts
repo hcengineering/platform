@@ -8,6 +8,7 @@ import core, {
   metricsToString,
   setCurrentAccount,
   versionToString,
+  isWorkspaceCreating,
   type Account,
   type AccountClient,
   type Client,
@@ -83,10 +84,10 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, token)
 
-  if (['pending-creation', 'creating'].includes(workspaceLoginInfo?.mode ?? '')) {
+  if (isWorkspaceCreating(workspaceLoginInfo?.mode)) {
     const fetchWorkspace = await getResource(login.function.FetchWorkspace)
     let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
-    if (['pending-creation', 'creating'].includes(loginInfo?.mode ?? '')) {
+    if (isWorkspaceCreating(loginInfo?.mode)) {
       while (true) {
         if (ws !== getCurrentLocation().path[1]) return
         workspaceCreating.set(loginInfo?.progress ?? 0)
@@ -99,7 +100,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           return
         }
         workspaceCreating.set(loginInfo?.progress)
-        if (!['pending-creation', 'creating'].includes(loginInfo?.mode ?? '')) {
+        if (!isWorkspaceCreating(loginInfo?.mode)) {
           workspaceCreating.set(-1)
           break
         }
