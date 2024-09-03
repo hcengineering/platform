@@ -27,7 +27,7 @@ import { PlatformWorker } from '../worker'
 import { TgContext, ReplyMessage } from './types'
 import { toTelegramFileInfo } from '../utils'
 import { Command, defineCommands } from './commands'
-import { ChannelRecord, NotificationRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
+import { ChannelRecord, MessageRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
 
 function encodeChannelId (workspace: string, channelId: string): string {
   return `${workspace}_${channelId}`
@@ -41,12 +41,12 @@ function decodeChannelId (id: string): { workspace: string, channelId: string } 
 const getNextActionId = (workspace: string, page: number): string => `next_${workspace}_${page}`
 const getPrevActionId = (workspace: string, page: number): string => `prev_${workspace}_${page}`
 
-async function findNotificationRecord (
+async function findMessageRecord (
   worker: PlatformWorker,
   from: number,
   replyTo: number,
   email: string
-): Promise<NotificationRecord | undefined> {
+): Promise<MessageRecord | undefined> {
   const record = await worker.getNotificationRecord(replyTo, email)
 
   if (record !== undefined) {
@@ -59,7 +59,7 @@ async function findNotificationRecord (
     return undefined
   }
 
-  return await worker.getNotificationRecordById(reply.notificationId, email)
+  return await worker.findMessageRecord(email, reply.notificationId, reply.messageId)
 }
 
 async function onReply (
@@ -81,18 +81,23 @@ async function onReply (
     await worker.updateTelegramUsername(userRecord, username)
   }
 
-  const notification = await findNotificationRecord(worker, from, replyTo, userRecord.email)
+  const messageRecord = await findMessageRecord(worker, from, replyTo, userRecord.email)
 
-  if (notification === undefined) {
+  if (messageRecord === undefined) {
     return false
   }
 
-  await worker.saveReply({ replyId: messageId, telegramId: from, notificationId: notification.notificationId })
+  await worker.saveReply({
+    replyId: messageId,
+    telegramId: from,
+    notificationId: messageRecord.notificationId,
+    messageId: messageRecord.messageId
+  })
 
   const file = await toTelegramFileInfo(ctx, message)
   const files: TelegramFileInfo[] = file !== undefined ? [file] : []
 
-  return await worker.reply(notification, htmlToMarkup(toHTML(message)), files)
+  return await worker.reply(messageRecord, htmlToMarkup(toHTML(message)), files)
 }
 
 async function handleSelectChannel (
@@ -126,7 +131,7 @@ async function handleSelectChannel (
     })
   }
 
-  return [channel.name, await worker.sendMessage(channel, text, file)]
+  return [channel.name, await worker.sendMessage(channel, userMessage.message_id, text, file)]
 }
 
 async function createSelectChannelKeyboard (

@@ -16,6 +16,7 @@
 import { Class, Ref, Timestamp } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
 import { ChunterSpace } from '@hcengineering/chunter'
+import { ActivityMessage } from '@hcengineering/activity'
 
 export interface UserRecord {
   telegramId: number
@@ -24,8 +25,9 @@ export interface UserRecord {
   workspaces: string[]
 }
 
-export interface NotificationRecord {
-  notificationId: Ref<InboxNotification>
+export interface MessageRecord {
+  notificationId?: Ref<InboxNotification>
+  messageId?: Ref<ActivityMessage>
   workspace: string
   email: string
   telegramId: number
@@ -40,7 +42,8 @@ export interface ChannelRecord {
 }
 
 export interface ReplyRecord {
-  notificationId: Ref<InboxNotification>
+  notificationId?: Ref<InboxNotification>
+  messageId?: Ref<ActivityMessage>
   telegramId: number
   replyId: number
 }

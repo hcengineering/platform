@@ -24,7 +24,7 @@ import { generateToken } from '@hcengineering/server-token'
 
 import {
   ChannelRecord,
-  NotificationRecord,
+  MessageRecord,
   OtpRecord,
   PlatformFileInfo,
   ReplyRecord,
@@ -37,6 +37,7 @@ import { WorkspaceClient } from './workspace'
 import { getNewOtp } from './utils'
 import config from './config'
 import { getWorkspaceInfo } from './account'
+import { ActivityMessage } from '@hcengineering/activity'
 
 const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 
@@ -52,7 +53,7 @@ export class PlatformWorker {
     readonly ctx: MeasureContext,
     readonly storageAdapter: StorageAdapter,
     private readonly usersStorage: Collection<UserRecord>,
-    private readonly notificationsStorage: Collection<NotificationRecord>,
+    private readonly messagesStorage: Collection<MessageRecord>,
     private readonly otpStorage: Collection<OtpRecord>,
     private readonly repliesStorage: Collection<ReplyRecord>,
     private readonly channelsStorage: Collection<ChannelRecord>
@@ -150,8 +151,8 @@ export class PlatformWorker {
     )
   }
 
-  async addNotificationRecord (record: NotificationRecord): Promise<void> {
-    await this.notificationsStorage.insertOne(record)
+  async addNotificationRecord (record: MessageRecord): Promise<void> {
+    await this.messagesStorage.insertOne(record)
   }
 
   async removeUserByTelegramId (id: number): Promise<void> {
@@ -166,15 +167,24 @@ export class PlatformWorker {
     return (await this.repliesStorage.findOne({ telegramId: id, replyId: replyTo })) ?? undefined
   }
 
-  async getNotificationRecord (id: number, email: string): Promise<NotificationRecord | undefined> {
-    return (await this.notificationsStorage.findOne({ telegramId: id, email })) ?? undefined
+  async getNotificationRecord (id: number, email: string): Promise<MessageRecord | undefined> {
+    return (await this.messagesStorage.findOne({ telegramId: id, email })) ?? undefined
   }
 
-  async getNotificationRecordById (
-    notificationId: Ref<InboxNotification>,
-    email: string
-  ): Promise<NotificationRecord | undefined> {
-    return (await this.notificationsStorage.findOne({ notificationId, email })) ?? undefined
+  async findMessageRecord (
+    email: string,
+    notificationId?: Ref<InboxNotification>,
+    messageId?: Ref<ActivityMessage>
+  ): Promise<MessageRecord | undefined> {
+    if (notificationId !== undefined) {
+      return (await this.messagesStorage.findOne({ notificationId, email })) ?? undefined
+    }
+
+    if (messageId !== undefined) {
+      return (await this.messagesStorage.findOne({ messageId, email })) ?? undefined
+    }
+
+    return undefined
   }
 
   async getUserRecord (id: number): Promise<UserRecord | undefined> {
@@ -216,9 +226,9 @@ export class PlatformWorker {
     return wsClient
   }
 
-  async reply (notification: NotificationRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
-    const client = await this.getWorkspaceClient(notification.workspace)
-    return await client.reply(notification, text, files)
+  async reply (messageRecord: MessageRecord, text: string, files: TelegramFileInfo[]): Promise<boolean> {
+    const client = await this.getWorkspaceClient(messageRecord.workspace)
+    return await client.reply(messageRecord, text, files)
   }
 
   async getChannelName (client: WorkspaceClient, channel: ChunterSpace, email: string): Promise<string> {
@@ -255,9 +265,23 @@ export class PlatformWorker {
     return res
   }
 
-  async sendMessage (channel: ChannelRecord, text: string, file?: TelegramFileInfo): Promise<boolean> {
+  async sendMessage (
+    channel: ChannelRecord,
+    telegramId: number,
+    text: string,
+    file?: TelegramFileInfo
+  ): Promise<boolean> {
     const client = await this.getWorkspaceClient(channel.workspace)
-    return await client.sendMessage(channel, text, file)
+    const _id = await client.sendMessage(channel, text, file)
+
+    await this.messagesStorage.insertOne({
+      email: channel.email,
+      workspace: channel.workspace,
+      telegramId,
+      messageId: _id
+    })
+
+    return _id !== undefined
   }
 
   async syncChannels (email: string, workspace: string, onlyStarred: boolean): Promise<void> {
@@ -359,7 +383,7 @@ export class PlatformWorker {
   static async createStorages (): Promise<
   [
     Collection<UserRecord>,
-    Collection<NotificationRecord>,
+    Collection<MessageRecord>,
     Collection<OtpRecord>,
     Collection<ReplyRecord>,
     Collection<ChannelRecord>
@@ -367,23 +391,24 @@ export class PlatformWorker {
   > {
     const db = await getDB()
     const userStorage = db.collection<UserRecord>('users')
-    const notificationsStorage = db.collection<NotificationRecord>('notifications')
+    await db.dropCollection('notifications')
+    const messagesStorage = db.collection<MessageRecord>('messages')
     const otpStorage = db.collection<OtpRecord>('otp')
     const repliesStorage = db.collection<ReplyRecord>('replies')
     const channelsStorage = db.collection<ChannelRecord>('channels')
 
-    return [userStorage, notificationsStorage, otpStorage, repliesStorage, channelsStorage]
+    return [userStorage, messagesStorage, otpStorage, repliesStorage, channelsStorage]
   }
 
   static async create (ctx: MeasureContext, storageAdapter: StorageAdapter): Promise<PlatformWorker> {
-    const [userStorage, notificationsStorage, otpStorage, repliesStorage, channelsStorage] =
+    const [userStorage, messagesStorage, otpStorage, repliesStorage, channelsStorage] =
       await PlatformWorker.createStorages()
 
     return new PlatformWorker(
       ctx,
       storageAdapter,
       userStorage,
-      notificationsStorage,
+      messagesStorage,
       otpStorage,
       repliesStorage,
       channelsStorage
