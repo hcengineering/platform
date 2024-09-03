@@ -169,7 +169,7 @@ export function defineActions (builder: Builder): void {
       icon: view.icon.EyeCrossed,
       label: view.string.Hide,
       query: {
-        attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
+        objectClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
       }
     },
     chunter.action.RemoveChannel
@@ -181,7 +181,7 @@ export function defineActions (builder: Builder): void {
       ...actionTemplates.removeChannel,
       label: chunter.string.CloseConversation,
       query: {
-        attachedToClass: chunter.class.DirectMessage
+        objectClass: chunter.class.DirectMessage
       }
     },
     chunter.action.CloseConversation
@@ -194,7 +194,7 @@ export function defineActions (builder: Builder): void {
       action: chunter.actionImpl.LeaveChannel,
       label: chunter.string.LeaveChannel,
       query: {
-        attachedToClass: chunter.class.Channel
+        objectClass: chunter.class.Channel
       }
     },
     chunter.action.LeaveChannel
@@ -204,7 +204,7 @@ export function defineActions (builder: Builder): void {
     ...notificationActionTemplates.pinContext,
     label: chunter.string.StarChannel,
     query: {
-      attachedToClass: chunter.class.Channel
+      objectClass: chunter.class.Channel
     },
     override: [notification.action.PinDocNotifyContext]
   })
@@ -213,7 +213,7 @@ export function defineActions (builder: Builder): void {
     ...notificationActionTemplates.unpinContext,
     label: chunter.string.UnstarChannel,
     query: {
-      attachedToClass: chunter.class.Channel
+      objectClass: chunter.class.Channel
     }
   })
 
@@ -221,7 +221,7 @@ export function defineActions (builder: Builder): void {
     ...notificationActionTemplates.pinContext,
     label: chunter.string.StarConversation,
     query: {
-      attachedToClass: chunter.class.DirectMessage
+      objectClass: chunter.class.DirectMessage
     }
   })
 
@@ -229,21 +229,21 @@ export function defineActions (builder: Builder): void {
     ...notificationActionTemplates.unpinContext,
     label: chunter.string.UnstarConversation,
     query: {
-      attachedToClass: chunter.class.DirectMessage
+      objectClass: chunter.class.DirectMessage
     }
   })
 
   createAction(builder, {
     ...notificationActionTemplates.pinContext,
     query: {
-      attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
+      objectClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
     }
   })
 
   createAction(builder, {
     ...notificationActionTemplates.unpinContext,
     query: {
-      attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
+      objectClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
     }
   })
 }
