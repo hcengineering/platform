@@ -48,6 +48,11 @@
     "AccountConnectedHtml": "Вы успешно подключены как <b>{email}</b>",
     "AccountAlreadyConnected": "Аккаунт уже подключен",
     "InvalidCode": "Неверный код",
-    "SomethingWentWrong": "Что-то пошло не так. Пожалуйста, попробуйте снова."
+    "SomethingWentWrong": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
+    "Configure": "Настроить",
+    "ConnectTelegramBot": "Подключить Telegram бота",
+    "DisconnectMessage": "⚠️Вы отключены от сервиса. Пожалуйста, подключите свой аккаунт на {app} с помощью /{command}.",
+    "SyncAllChannels": "Синхронизировать все каналы",
+    "SyncStarredChannels": "Синхронизировать избранные каналы"
   }
 }
