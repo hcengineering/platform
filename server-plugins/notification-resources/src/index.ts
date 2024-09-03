@@ -220,7 +220,7 @@ export async function getContentByTemplate (
   type: Ref<BaseNotificationType>,
   control: TriggerControl,
   data: string,
-  notificationData: InboxNotification,
+  notificationData?: InboxNotification,
   message?: ActivityMessage
 ): Promise<Content | undefined> {
   if (doc === undefined) return
@@ -229,13 +229,15 @@ export async function getContentByTemplate (
 
   const textPart = await getTextPart(doc, control)
   if (textPart === undefined) return
-  const params: Record<string, string> = await getTranslatedNotificationContent(
-    notificationData,
-    notificationData._class,
-    control
-  )
+  const params: Record<string, string> =
+    notificationData !== undefined
+      ? await getTranslatedNotificationContent(notificationData, notificationData._class, control)
+      : {}
 
-  if (control.hierarchy.isDerived(notificationData._class, notification.class.MentionInboxNotification)) {
+  if (
+    notificationData !== undefined &&
+    control.hierarchy.isDerived(notificationData._class, notification.class.MentionInboxNotification)
+  ) {
     const text = (notificationData as MentionInboxNotification).messageHtml
     params.body = text !== undefined ? markupToHTML(text) : params.body
   }
