@@ -13,13 +13,15 @@
 // limitations under the License.
 //
 
-import { Ref, Timestamp } from '@hcengineering/core'
+import { Class, Ref, Timestamp } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
+import { ChunterSpace } from '@hcengineering/chunter'
 
 export interface UserRecord {
   telegramId: number
   telegramUsername?: string
   email: string
+  workspaces: string[]
 }
 
 export interface NotificationRecord {
@@ -27,6 +29,14 @@ export interface NotificationRecord {
   workspace: string
   email: string
   telegramId: number
+}
+
+export interface ChannelRecord {
+  workspace: string
+  channelId: Ref<ChunterSpace>
+  channelClass: Ref<Class<ChunterSpace>>
+  name: string
+  email: string
 }
 
 export interface ReplyRecord {
@@ -56,4 +66,10 @@ export interface TelegramFileInfo {
   height: number
   name?: string
   size?: number
+}
+
+export interface WorkspaceInfo {
+  name: string
+  url: string
+  id: string
 }

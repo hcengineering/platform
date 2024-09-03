@@ -127,6 +127,11 @@ export default plugin(telegramId, {
     AccountConnectedHtml: '' as IntlString,
     AccountAlreadyConnected: '' as IntlString,
     InvalidCode: '' as IntlString,
-    SomethingWentWrong: '' as IntlString
+    SomethingWentWrong: '' as IntlString,
+    Configure: '' as IntlString,
+    ConnectTelegramBot: '' as IntlString,
+    DisconnectMessage: '' as IntlString,
+    SyncAllChannels: '' as IntlString,
+    SyncStarredChannels: '' as IntlString
   }
 })

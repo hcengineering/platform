@@ -74,6 +74,7 @@
     "@hcengineering/telegram": "^0.6.21",
     "@hcengineering/telegram-assets": "^0.6.0",
     "@hcengineering/text": "^0.6.5",
+    "@hcengineering/account": "^0.6.0",
     "@telegraf/entity": "^0.5.0",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",

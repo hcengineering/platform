@@ -115,7 +115,7 @@
 </script>
 
 <Modal
-  label={getEmbeddedLabel('Connect Telegram Bot')}
+  label={telegram.string.ConnectTelegramBot}
   type="type-popup"
   okLabel={presentation.string.Ok}
   okAction={() => {
