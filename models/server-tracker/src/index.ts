@@ -54,7 +54,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTracker.trigger.OnIssueUpdate
+    trigger: serverTracker.trigger.OnIssueUpdate,
+    txMatch: {
+      objectClass: { $in: [tracker.class.Issue, tracker.class.TimeSpendReport] }
+    }
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

@@ -68,12 +68,12 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
     const _id = thread.objectId
     const _class = thread.objectClass
 
-    return (await control.findAll(_class, { _id }))[0]
+    return (await control.findAll(control.ctx, _class, { _id }))[0]
   } else {
     const _id = message.attachedTo
     const _class = message.attachedToClass
 
-    return (await control.findAll(_class, { _id }))[0]
+    return (await control.findAll(control.ctx, _class, { _id }))[0]
   }
 }
 
@@ -107,7 +107,7 @@ async function createResponseEvent (
   data: Data<AIBotResponseEvent>
 ): Promise<void> {
   const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotResponseEvent, message.space, data)
-  await control.apply([eventTx])
+  await control.apply(control.ctx, [eventTx])
 }
 
 async function getThreadParent (control: TriggerControl, message: ChatMessage): Promise<Ref<ChatMessage> | undefined> {
@@ -116,7 +116,7 @@ async function getThreadParent (control: TriggerControl, message: ChatMessage): 
   }
 
   const parentInfo = (
-    await control.findAll(message.attachedToClass, {
+    await control.findAll(control.ctx, message.attachedToClass, {
       _id: message.attachedTo as Ref<ChatMessage>,
       [aiBot.mixin.TransferredMessage]: { $exists: true }
     })
@@ -158,7 +158,7 @@ async function createTransferEvent (
     parentMessageId: await getThreadParent(control, message)
   })
 
-  await control.apply([eventTx])
+  await control.apply(control.ctx, [eventTx])
 }
 
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
@@ -239,7 +239,7 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
     parentMessageId: await getThreadParent(control, message)
   })
 
-  await control.apply([tx])
+  await control.apply(control.ctx, [tx])
 
   await processWorkspace(control)
 }

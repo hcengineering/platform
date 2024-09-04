@@ -115,7 +115,7 @@ async function updateDocSyncInfo (
     (tx as TxCUD<Doc>).objectClass === github.class.DocSyncInfo &&
     (tx as TxCUD<Doc>).objectId === cud.objectId
 
-  const txes = [...control.txes.apply, ...control.txes.result, ...control.operationContext.derived.txes]
+  const txes = [...control.txes, ...control.ctx.contextData.broadcast.txes]
   // Check already captured Txes
   for (const i of txes) {
     if (checkTx(i)) {
@@ -134,7 +134,9 @@ async function updateDocSyncInfo (
 
   const projects = await control.queryFind(control.ctx, github.mixin.GithubProject, {}, { projection: { _id: 1 } })
   if (projects.some((it) => it._id === (space as Ref<GithubProject>))) {
-    const [sdoc] = await control.findAll(github.class.DocSyncInfo, { _id: cud.objectId as Ref<DocSyncInfo> })
+    const [sdoc] = await control.findAll(control.ctx, github.class.DocSyncInfo, {
+      _id: cud.objectId as Ref<DocSyncInfo>
+    })
     // We need to check if sync doc is already exists.
     if (sdoc === undefined) {
       // Created by non github integration
@@ -181,7 +183,7 @@ async function updateSyncDoc (
     data.externalVersion = '#' // We need to put this one to handle new documents.)
     data.space = space
   }
-  await control.apply([
+  await control.apply(control.ctx, [
     control.txFactory.createTxUpdateDoc<DocSyncInfo>(
       github.class.DocSyncInfo,
       info.space,
@@ -190,7 +192,7 @@ async function updateSyncDoc (
     )
   ])
 
-  control.operationContext.derived.targets.github = (it) => {
+  control.ctx.contextData.broadcast.targets.github = (it) => {
     if (control.hierarchy.isDerived(it._class, core.class.TxCUD)) {
       if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
         return [systemAccountEmail]
@@ -224,7 +226,7 @@ async function createSyncDoc (
     data.attachedTo = coll.objectId
   }
 
-  await control.apply([
+  await control.apply(control.ctx, [
     control.txFactory.createTxCreateDoc<DocSyncInfo>(
       github.class.DocSyncInfo,
       space,
@@ -232,7 +234,7 @@ async function createSyncDoc (
       cud.objectId as Ref<DocSyncInfo>
     )
   ])
-  control.operationContext.derived.targets.github = (it) => {
+  control.ctx.contextData.broadcast.targets.github = (it) => {
     if (control.hierarchy.isDerived(it._class, core.class.TxCUD)) {
       if ((it as TxCUD<Doc>).objectClass === github.class.DocSyncInfo) {
         return [systemAccountEmail]

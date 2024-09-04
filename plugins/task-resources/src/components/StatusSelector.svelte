@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Class, IdMap, Ref, Status, generateId } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
+  import { Class, IdMap, Ref, Status } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { DocPopup, getClient } from '@hcengineering/presentation'
   import { Task, TaskType } from '@hcengineering/task'
   import { getObjectId, ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Analytics } from '@hcengineering/analytics'
   import { taskTypeStore } from '..'
 
   export let value: Task | Task[]
@@ -25,7 +25,7 @@
     progress = true
     const docs = Array.isArray(value) ? value : [value]
 
-    const ops = client.apply('set-status' + generateId())
+    const ops = client.apply(undefined, 'set-status')
     const changed = (d: Task) => d.status !== newStatus
     for (const it of docs.filter(changed)) {
       await ops.update(it, { status: newStatus })

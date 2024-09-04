@@ -13,34 +13,10 @@
 // limitations under the License.
 //
 
-import core, { Account, AccountRole, systemAccountEmail } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { SessionContext, type ServerStorage } from '@hcengineering/server-core'
+import core, { Account, AccountRole, type MeasureContext, type SessionData } from '@hcengineering/core'
 
-export async function getUser (storage: ServerStorage, ctx: SessionContext): Promise<Account> {
-  if (ctx.userEmail === undefined) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  const account = (await storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
-  if (account === undefined) {
-    if (ctx.userEmail === systemAccountEmail || ctx.admin === true) {
-      return {
-        _id: core.account.System,
-        _class: core.class.Account,
-        role: AccountRole.Owner,
-        email: systemAccountEmail,
-        space: core.space.Model,
-        modifiedBy: core.account.System,
-        modifiedOn: 0
-      }
-    }
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-  return account
-}
-
-export function isOwner (account: Account, ctx: SessionContext): boolean {
-  return account.role === AccountRole.Owner || account._id === core.account.System || ctx.admin === true
+export function isOwner (account: Account, ctx: MeasureContext<SessionData>): boolean {
+  return account.role === AccountRole.Owner || account._id === core.account.System || ctx.contextData.admin === true
 }
 
 export function isSystem (account: Account): boolean {

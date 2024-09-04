@@ -121,7 +121,7 @@ export async function cleanWorkspace (
 
       while (filter.length > 0) {
         const part = filter.splice(0, 100)
-        const op = ops.apply('')
+        const op = ops.apply()
         for (const c of part) {
           await op.remove(c)
         }
@@ -146,7 +146,7 @@ export async function cleanWorkspace (
 
       while (issues.length > 0) {
         const part = issues.splice(0, 5)
-        const op = ops.apply('')
+        const op = ops.apply()
         for (const c of part) {
           await op.remove(c)
         }

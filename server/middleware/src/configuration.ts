@@ -14,7 +14,6 @@
 //
 
 import core, {
-  Account,
   AccountRole,
   Class,
   Doc,
@@ -26,11 +25,11 @@ import core, {
   Ref,
   Tx,
   TxCUD,
-  TxProcessor
+  TxProcessor,
+  type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
-import { BaseMiddleware } from './base'
+import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
 const configurationAccountEmail = '#configurator@hc.engineering'
 /**
@@ -39,60 +38,58 @@ const configurationAccountEmail = '#configurator@hc.engineering'
 export class ConfigurationMiddleware extends BaseMiddleware implements Middleware {
   private readonly targetDomains = [DOMAIN_CONFIGURATION]
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (
+    readonly context: PipelineContext,
+    next?: Middleware
+  ) {
+    super(context, next)
   }
 
   static async create (
     ctx: MeasureContext,
-    storage: ServerStorage,
-    next?: Middleware
+    context: PipelineContext,
+    next: Middleware | undefined
   ): Promise<ConfigurationMiddleware> {
-    return new ConfigurationMiddleware(storage, next)
+    return new ConfigurationMiddleware(context, next)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    if (TxProcessor.isExtendsCUD(tx._class)) {
-      const txCUD = tx as TxCUD<Doc>
-      const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
-      if (this.targetDomains.includes(domain)) {
-        if (ctx.userEmail !== configurationAccountEmail) {
-          const account = await this.getUser(ctx)
-          if (account.role !== AccountRole.Owner && ctx.admin !== true) {
-            throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
+    for (const tx of txes) {
+      if (TxProcessor.isExtendsCUD(tx._class)) {
+        const txCUD = tx as TxCUD<Doc>
+        const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
+        if (this.targetDomains.includes(domain)) {
+          if (ctx.contextData.userEmail !== configurationAccountEmail) {
+            const account = ctx.contextData.account
+            if (account.role !== AccountRole.Owner && ctx.contextData.admin !== true) {
+              throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+            }
           }
         }
       }
     }
-    return await this.provideTx(ctx, tx)
+    return this.provideTx(ctx, txes)
   }
 
-  override async findAll<T extends Doc>(
-    ctx: SessionContext,
+  findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const domain = this.storage.hierarchy.getDomain(_class)
+    const domain = this.context.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
-      if (ctx.userEmail !== configurationAccountEmail) {
-        const account = await this.getUser(ctx)
-        if (account.role !== AccountRole.Owner && account._id !== core.account.System && ctx.admin !== true) {
+      if (ctx.contextData.userEmail !== configurationAccountEmail) {
+        const account = ctx.contextData.account
+        if (
+          account.role !== AccountRole.Owner &&
+          account._id !== core.account.System &&
+          ctx.contextData.admin !== true
+        ) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
       }
     }
-    return await this.provideFindAll(ctx, _class, query, options)
-  }
-
-  private async getUser (ctx: SessionContext): Promise<Account> {
-    if (ctx.userEmail === undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
-    const account = (await this.storage.modelDb.findAll(core.class.Account, { email: ctx.userEmail }))[0]
-    if (account === undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
-    return account
+    return this.provideFindAll(ctx, _class, query, options)
   }
 }

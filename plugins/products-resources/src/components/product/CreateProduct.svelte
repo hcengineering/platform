@@ -154,7 +154,7 @@
       return
     }
 
-    const ops = client.apply(productId)
+    const ops = client.apply()
 
     await ops.createDoc(
       products.class.Product,

@@ -55,7 +55,7 @@ export async function OnSpaceTypeMembers (tx: Tx, control: TriggerControl): Prom
   const result: Tx[] = []
   const newMember = ctx.operations.$push?.members as Ref<Account>
   if (newMember !== undefined) {
-    const spaces = await control.findAll(core.class.Space, { type: ctx.objectId })
+    const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
     for (const space of spaces) {
       if (space.members.includes(newMember)) continue
       const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
@@ -68,7 +68,7 @@ export async function OnSpaceTypeMembers (tx: Tx, control: TriggerControl): Prom
   }
   const oldMember = ctx.operations.$pull?.members as Ref<Account>
   if (ctx.operations.$pull?.members !== undefined) {
-    const spaces = await control.findAll(core.class.Space, { type: ctx.objectId })
+    const spaces = await control.findAll(control.ctx, core.class.Space, { type: ctx.objectId })
     for (const space of spaces) {
       if (!space.members.includes(oldMember)) continue
       const pullTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
@@ -87,7 +87,7 @@ export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promis
   if (mixinTx.attributes.active !== true) return []
   const acc = control.modelDb.getAccountByPersonId(mixinTx.objectId)
   if (acc.length === 0) return []
-  const spaces = await control.findAll(core.class.Space, { autoJoin: true })
+  const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
   const result: Tx[] = []
 
   const txes = await createPersonSpace(
@@ -117,7 +117,7 @@ async function createPersonSpace (
   person: Ref<Person>,
   control: TriggerControl
 ): Promise<TxCUD<PersonSpace>[]> {
-  const personSpace = (await control.findAll(contact.class.PersonSpace, { person }, { limit: 1 })).shift()
+  const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person }, { limit: 1 })).shift()
   if (personSpace !== undefined) {
     const toAdd = account.filter((it) => !personSpace.members.includes(it))
     if (toAdd.length === 0) return []
@@ -145,10 +145,15 @@ async function createPersonSpace (
 export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const acc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<PersonAccount>)
   const person = (
-    await control.findAll(contact.mixin.Employee, { _id: acc.person as Ref<Employee>, active: true }, { limit: 1 })
+    await control.findAll(
+      control.ctx,
+      contact.mixin.Employee,
+      { _id: acc.person as Ref<Employee>, active: true },
+      { limit: 1 }
+    )
   )[0]
   if (person === undefined) return []
-  const spaces = await control.findAll(core.class.Space, { autoJoin: true })
+  const spaces = await control.findAll(control.ctx, core.class.Space, { autoJoin: true })
 
   const result: Tx[] = []
   const txes = await createPersonSpace([acc._id], person._id, control)
@@ -183,7 +188,7 @@ export async function OnContactDelete (
 
   const result: Tx[] = []
 
-  const members = await findAll(contact.class.Member, { contact: removeContact._id })
+  const members = await findAll(ctx, contact.class.Member, { contact: removeContact._id })
   for (const member of members) {
     const removeTx = txFactory.createTxRemoveDoc(member._class, member.space, member._id)
     const tx = txFactory.createTxCollectionCUD(
@@ -208,7 +213,7 @@ export async function OnChannelUpdate (tx: Tx, control: TriggerControl): Promise
   const result: Tx[] = []
 
   if (uTx.operations.$inc?.items !== undefined) {
-    const doc = (await control.findAll(uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
+    const doc = (await control.findAll(control.ctx, uTx.objectClass, { _id: uTx.objectId }, { limit: 1 }))[0]
     if (doc !== undefined) {
       if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
         const collab = control.hierarchy.as(doc, notification.mixin.Collaborators) as Doc as Collaborators
@@ -290,7 +295,7 @@ export async function getCurrentEmployeeName (control: TriggerControl, context: 
     _id: control.txFactory.account as Ref<PersonAccount>
   })
   if (account === undefined) return ''
-  const employee = (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+  const employee = (await control.findAll(control.ctx, contact.class.Person, { _id: account.person }))[0]
   return employee !== undefined ? formatName(employee.name, control.branding?.lastNameFirst) : ''
 }
 
@@ -310,7 +315,7 @@ export async function getCurrentEmployeePosition (
     _id: control.txFactory.account as Ref<PersonAccount>
   })
   if (account === undefined) return ''
-  const employee = (await control.findAll(contact.class.Person, { _id: account.person }))[0]
+  const employee = (await control.findAll(control.ctx, contact.class.Person, { _id: account.person }))[0]
   if (employee !== undefined) {
     return control.hierarchy.as(employee, contact.mixin.Employee)?.position ?? ''
   }

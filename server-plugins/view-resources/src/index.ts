@@ -24,10 +24,10 @@ export async function OnCustomAttributeRemove (tx: Tx, control: TriggerControl):
   const hierarchy = control.hierarchy
   const ptx = tx as TxRemoveDoc<AnyAttribute>
   if (!checkTx(ptx, hierarchy)) return []
-  const txes = await control.findAll<TxCUD<AnyAttribute>>(core.class.TxCUD, { objectId: ptx.objectId })
+  const txes = await control.findAll<TxCUD<AnyAttribute>>(control.ctx, core.class.TxCUD, { objectId: ptx.objectId })
   const attribute = TxProcessor.buildDoc2Doc<AnyAttribute>(txes)
   if (attribute === undefined) return []
-  const preferences = await control.findAll(view.class.ViewletPreference, {
+  const preferences = await control.findAll(control.ctx, view.class.ViewletPreference, {
     config: attribute.name,
     space: core.space.Workspace
   })

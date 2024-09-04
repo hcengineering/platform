@@ -299,7 +299,7 @@ export async function deleteObjects (
   objects: Doc[],
   account: Ref<Account>
 ): Promise<void> {
-  const ops = client.apply('delete' + account)
+  const ops = client.apply()
   for (const object of objects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc

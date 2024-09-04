@@ -1,3 +1,4 @@
+import { Analytics } from '@hcengineering/analytics'
 import { deepEqual } from 'fast-equals'
 import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
 import type {
@@ -26,7 +27,6 @@ import type {
   WithLookup
 } from './storage'
 import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } from './tx'
-import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -313,7 +313,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.removeDoc(doc._class, doc.space, doc._id)
   }
 
-  apply (scope: string, measure?: string): ApplyOperations {
+  apply (scope?: string, measure?: string): ApplyOperations {
     return new ApplyOperations(this, scope, measure)
   }
 
@@ -443,7 +443,7 @@ export class ApplyOperations extends TxOperations {
   notMatches: DocumentClassQuery<Doc>[] = []
   constructor (
     readonly ops: TxOperations,
-    readonly scope: string,
+    readonly scope?: string,
     readonly measureName?: string
   ) {
     const txClient: Client = {
@@ -474,24 +474,41 @@ export class ApplyOperations extends TxOperations {
   }
 
   async commit (notify: boolean = true, extraNotify: Ref<Class<Doc>>[] = []): Promise<CommitResult> {
+    if (
+      this.txes.length === 1 &&
+      this.matches.length === 0 &&
+      this.notMatches.length === 0 &&
+      this.measureName == null
+    ) {
+      const st = Date.now()
+      // Individual update, no need for apply
+      await this.ops.tx(this.txes[0])
+      const time = Date.now() - st
+      this.txes = []
+      return {
+        result: true,
+        time,
+        serverTime: time
+      }
+    }
     if (this.txes.length > 0) {
       const st = Date.now()
-      const result = await ((await this.ops.tx(
-        this.ops.txFactory.createTxApplyIf(
-          core.space.Tx,
-          this.scope,
-          this.matches,
-          this.notMatches,
-          this.txes,
-          this.measureName,
-          notify,
-          extraNotify
-        )
-      )) as Promise<TxApplyResult>)
+      const aop = this.ops.txFactory.createTxApplyIf(
+        core.space.Tx,
+        this.scope,
+        this.matches,
+        this.notMatches,
+        this.txes,
+        this.measureName,
+        notify,
+        extraNotify
+      )
+      const result = (await this.ops.tx(aop)) as TxApplyResult
       const dnow = Date.now()
-      if (typeof window === 'object' && window !== null) {
+      if (typeof window === 'object' && window !== null && this.measureName != null) {
         console.log(`measure ${this.measureName}`, dnow - st, 'server time', result.serverTime)
       }
+      this.txes = []
       return {
         result: result.success,
         time: dnow - st,
@@ -499,6 +516,11 @@ export class ApplyOperations extends TxOperations {
       }
     }
     return { result: true, time: 0, serverTime: 0 }
+  }
+
+  // Apply for this will reuse, same apply context.
+  apply (scope?: string, measure?: string): ApplyOperations {
+    return this
   }
 }
 

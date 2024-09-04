@@ -61,7 +61,7 @@ export async function OnTask (tx: Tx, control: TriggerControl): Promise<Tx[]> {
       const factory = await getResource(mixin.factory)
       return await factory(tx, control)
     } else {
-      const todos = await control.findAll(time.class.ToDo, { attachedTo: actualTx.objectId })
+      const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: actualTx.objectId })
       return todos.map((p) => control.txFactory.createTxRemoveDoc(p._class, p.space, p._id))
     }
   }
@@ -74,14 +74,14 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
   if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) return []
   if (!control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return []
   const workslot = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<WorkSlot>)
-  const workslots = await control.findAll(time.class.WorkSlot, { attachedTo: workslot.attachedTo })
+  const workslots = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: workslot.attachedTo })
   if (workslots.length > 1) return []
-  const todo = (await control.findAll(time.class.ToDo, { _id: workslot.attachedTo }))[0]
+  const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }))[0]
   if (todo === undefined) return []
   if (!control.hierarchy.isDerived(todo.attachedToClass, tracker.class.Issue)) return []
-  const issue = (await control.findAll(tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
+  const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
   if (issue === undefined) return []
-  const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
+  const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
   if (project !== undefined) {
     const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
     if (type?.classic) {
@@ -108,7 +108,7 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
             issue.collection,
             innerTx
           )
-          await control.apply([outerTx])
+          await control.apply(control.ctx, [outerTx])
           return []
         }
       }
@@ -125,11 +125,11 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
   if (todo === undefined) return []
   // it was closed, do nothing
   if (todo.doneOn != null) return []
-  const todos = await control.findAll(time.class.ToDo, { attachedTo: todo.attachedTo })
+  const todos = await control.findAll(control.ctx, time.class.ToDo, { attachedTo: todo.attachedTo })
   if (todos.length > 0) return []
-  const issue = (await control.findAll(tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
+  const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: todo.attachedTo as Ref<Issue> }))[0]
   if (issue === undefined) return []
-  const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
+  const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
   if (project !== undefined) {
     const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
     if (type !== undefined && type.classic) {
@@ -154,7 +154,7 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
             issue.collection,
             innerTx
           )
-          await control.apply([outerTx])
+          await control.apply(control.ctx, [outerTx])
           return []
         }
       }
@@ -186,15 +186,22 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     return []
   }
 
-  const object = (await control.findAll(todo.attachedToClass, { _id: todo.attachedTo }))[0]
+  const object = (await control.findAll(control.ctx, todo.attachedToClass, { _id: todo.attachedTo }))[0]
   if (object === undefined) return []
 
   const person = (
-    await control.findAll(contact.mixin.Employee, { _id: todo.user as Ref<Employee>, active: true }, { limit: 1 })
+    await control.findAll(
+      control.ctx,
+      contact.mixin.Employee,
+      { _id: todo.user as Ref<Employee>, active: true },
+      { limit: 1 }
+    )
   )[0]
   if (person === undefined) return []
 
-  const personSpace = (await control.findAll(contact.class.PersonSpace, { person: todo.user }, { limit: 1 }))[0]
+  const personSpace = (
+    await control.findAll(control.ctx, contact.class.PersonSpace, { person: todo.user }, { limit: 1 })
+  )[0]
   if (personSpace === undefined) return []
 
   // TODO: Select a proper account
@@ -210,7 +217,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   })[0]
   const senderPerson =
     senderAccount !== undefined
-      ? (await control.findAll(contact.class.Person, { _id: senderAccount.person }))[0]
+      ? (await control.findAll(control.ctx, contact.class.Person, { _id: senderAccount.person }))[0]
       : undefined
 
   const senderInfo: SenderInfo = {
@@ -246,10 +253,10 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     tx
   )
 
-  await control.apply(txes)
+  await control.apply(control.ctx, txes)
 
   const ids = txes.map((it) => it._id)
-  control.operationContext.derived.targets.notifications = (it) => {
+  control.ctx.contextData.broadcast.targets.notifications = (it) => {
     if (ids.includes(it._id)) {
       return [receiverInfo.account.email]
     }
@@ -270,7 +277,7 @@ export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx
   const description = updTx.operations.description
   const visibility = updTx.operations.visibility
   if (doneOn != null) {
-    const events = await control.findAll(time.class.WorkSlot, { attachedTo: updTx.objectId })
+    const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
     const res: Tx[] = []
     const resEvents: WorkSlot[] = []
     for (const event of events) {
@@ -311,7 +318,7 @@ export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx
         resEvents.push(event)
       }
     }
-    const todo = (await control.findAll(time.class.ToDo, { _id: updTx.objectId }))[0]
+    const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: updTx.objectId }))[0]
     if (todo === undefined) return res
     const funcs = control.hierarchy.classHierarchyMixin<Class<Doc>, OnToDo>(
       todo.attachedToClass,
@@ -320,12 +327,12 @@ export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx
     if (funcs !== undefined) {
       const func = await getResource(funcs.onDone)
       const todoRes = await func(control, resEvents, todo)
-      await control.apply(todoRes)
+      await control.apply(control.ctx, todoRes)
     }
     return res
   }
   if (title !== undefined || description !== undefined || visibility !== undefined) {
-    const events = await control.findAll(time.class.WorkSlot, { attachedTo: updTx.objectId })
+    const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
     const res: Tx[] = []
     for (const event of events) {
       const upd: DocumentUpdate<WorkSlot> = {}
@@ -382,9 +389,11 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
     total += (workslot.dueDate - workslot.date) / 1000 / 60
   }
   const factory = new TxFactory(control.txFactory.account)
-  const issue = (await control.findAll<Issue>(todo.attachedToClass, { _id: todo.attachedTo as Ref<Issue> }))[0]
+  const issue = (
+    await control.findAll<Issue>(control.ctx, todo.attachedToClass, { _id: todo.attachedTo as Ref<Issue> })
+  )[0]
   if (issue !== undefined) {
-    const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
+    const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
     if (project !== undefined) {
       const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
       if (type?.classic) {
@@ -454,7 +463,7 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
 
 async function createIssueHandler (issue: Issue, control: TriggerControl): Promise<Tx[]> {
   if (issue.assignee != null) {
-    const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
+    const project = (await control.findAll(control.ctx, task.class.Project, { _id: issue.space }))[0]
     if (project === undefined) return []
     const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
     if (!type?.classic) return []
@@ -463,7 +472,7 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
       const tx = await getCreateToDoTx(issue, issue.assignee, control)
       if (tx !== undefined) {
-        await control.apply([tx])
+        await control.apply(control.ctx, [tx])
       }
     }
   }
@@ -479,6 +488,7 @@ async function getIssueToDoData (
   if (acc.length === 0) return
   const firstTodoItem = (
     await control.findAll(
+      control.ctx,
       time.class.ToDo,
       {
         user: { $in: acc.map((it) => it.person) },
@@ -523,13 +533,13 @@ async function changeIssueAssigneeHandler (
   newAssignee: Ref<Person>,
   issueId: Ref<Issue>
 ): Promise<Tx[]> {
-  const issue = (await control.findAll(tracker.class.Issue, { _id: issueId }))[0]
+  const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: issueId }))[0]
   if (issue !== undefined) {
     const status = (await control.modelDb.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
       const res: Tx[] = []
-      const todos = await control.findAll(time.class.ToDo, {
+      const todos = await control.findAll(control.ctx, time.class.ToDo, {
         attachedTo: issue._id
       })
       const now = Date.now()
@@ -555,16 +565,16 @@ async function changeIssueStatusHandler (
   const status = (await control.modelDb.findAll(core.class.Status, { _id: newStatus }))[0]
   if (status === undefined) return []
   if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
-    const issue = (await control.findAll(tracker.class.Issue, { _id: issueId }))[0]
+    const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: issueId }))[0]
     if (issue?.assignee != null) {
-      const todos = await control.findAll(time.class.ToDo, {
+      const todos = await control.findAll(control.ctx, time.class.ToDo, {
         attachedTo: issue._id,
         user: issue.assignee
       })
       if (todos.length === 0) {
         const tx = await getCreateToDoTx(issue, issue.assignee, control)
         if (tx !== undefined) {
-          await control.apply([tx])
+          await control.apply(control.ctx, [tx])
         }
       }
     }
@@ -574,9 +584,9 @@ async function changeIssueStatusHandler (
 
 async function changeIssueNumberHandler (control: TriggerControl, issueId: Ref<Issue>): Promise<Tx[]> {
   const res: Tx[] = []
-  const issue = (await control.findAll(tracker.class.Issue, { _id: issueId }))[0]
+  const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: issueId }))[0]
   if (issue !== undefined) {
-    const todos = await control.findAll(time.class.ToDo, {
+    const todos = await control.findAll(control.ctx, time.class.ToDo, {
       attachedTo: issue._id
     })
     for (const todo of todos) {
@@ -610,7 +620,7 @@ async function changeIssueNumberHandler (control: TriggerControl, issueId: Ref<I
 
 async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
-  const project = (await control.findAll(task.class.Project, { _id: tx.objectSpace as Ref<Project> }))[0]
+  const project = (await control.findAll(control.ctx, task.class.Project, { _id: tx.objectSpace as Ref<Project> }))[0]
   if (project === undefined) return []
   const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
   if (!type?.classic) return []

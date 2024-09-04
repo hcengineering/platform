@@ -24,7 +24,7 @@ import {
   type ModelDb,
   type Ref
 } from '@hcengineering/core'
-import { type DbAdapter } from '../adapter'
+import type { DbAdapter } from '../adapter'
 import type { IndexedDoc } from '../types'
 
 /**

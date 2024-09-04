@@ -269,7 +269,7 @@
 
     const contextNotifications = $notificationsByContextStore.get(selectedContext._id) ?? []
 
-    const ops = getClient().apply(selectedContext._id, 'readNotifications')
+    const ops = getClient().apply(undefined, 'readNotifications')
     try {
       await inboxClient.readNotifications(
         ops,

@@ -1,4 +1,5 @@
-import { Doc, Domain, Ref } from '@hcengineering/core'
+import { Doc, Domain, Ref, type Branding, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import { PlatformError, unknownError } from '@hcengineering/platform'
 import { BackupClientOps, Pipeline } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
 import { ClientSession, Session, type ClientSessionCtx } from '@hcengineering/server-ws'
@@ -19,10 +20,15 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   ops: BackupClientOps
   constructor (
     protected readonly token: Token,
-    _pipeline: Pipeline
+    _pipeline: Pipeline,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null
   ) {
-    super(token, _pipeline)
-    this.ops = new BackupClientOps(_pipeline)
+    super(token, _pipeline, workspaceId, branding)
+    if (_pipeline.context.lowLevelStorage === undefined) {
+      throw new PlatformError(unknownError('Low level storage is not available'))
+    }
+    this.ops = new BackupClientOps(_pipeline.context.lowLevelStorage)
   }
 
   async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {

@@ -13,153 +13,117 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import {
+  toFindResult,
   type Class,
   type Doc,
   type DocumentQuery,
   type Domain,
   type FindOptions,
   type FindResult,
+  type LoadModelResponse,
   type MeasureContext,
-  type ModelDb,
   type Ref,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type StorageIterator,
+  type SessionData,
+  type Timestamp,
   type Tx,
-  type TxResult,
-  type Branding
+  type TxResult
 } from '@hcengineering/core'
-import { type DbConfiguration } from './configuration'
-import { createServerStorage } from './server'
-import {
-  type BroadcastFunc,
-  type Middleware,
-  type MiddlewareCreator,
-  type Pipeline,
-  type ServerStorage,
-  type SessionContext
-} from './types'
+import { emptyBroadcastResult } from './base'
+import { type Middleware, type MiddlewareCreator, type Pipeline, type PipelineContext } from './types'
 
 /**
  * @public
  */
 export async function createPipeline (
   ctx: MeasureContext,
-  conf: DbConfiguration,
   constructors: MiddlewareCreator[],
-  upgrade: boolean,
-  broadcast: BroadcastFunc,
-  branding: Branding | null,
-  disableTriggers?: boolean
+  context: PipelineContext
 ): Promise<Pipeline> {
-  const broadcastHandlers: BroadcastFunc[] = [broadcast]
-  const _broadcast: BroadcastFunc = (
-    tx: Tx[],
-    targets: string | string[] | undefined,
-    exclude: string[] | undefined
-  ) => {
-    for (const handler of broadcastHandlers) handler(tx, targets, exclude)
-  }
-  const storage = await ctx.with(
-    'create-server-storage',
-    {},
-    async (ctx) =>
-      await createServerStorage(ctx, conf, {
-        upgrade,
-        broadcast: _broadcast,
-        branding,
-        disableTriggers
-      })
-  )
-  const pipelineResult = await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), storage, constructors)
-  broadcastHandlers.push((tx: Tx[], targets: string | string[] | undefined, exclude: string[] | undefined) => {
-    void pipelineResult.handleBroadcast(tx, targets, exclude)
-  })
-  return pipelineResult
+  return await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), constructors, context)
 }
 
 class PipelineImpl implements Pipeline {
   private head: Middleware | undefined
-  readonly modelDb: ModelDb
-  private constructor (readonly storage: ServerStorage) {
-    this.modelDb = storage.modelDb
-  }
+
+  private readonly middlewares: Middleware[] = []
+
+  private constructor (readonly context: PipelineContext) {}
 
   static async create (
     ctx: MeasureContext,
-    storage: ServerStorage,
-    constructors: MiddlewareCreator[]
+    constructors: MiddlewareCreator[],
+    context: PipelineContext
   ): Promise<PipelineImpl> {
-    const pipeline = new PipelineImpl(storage)
-    pipeline.head = await pipeline.buildChain(ctx, constructors)
+    const pipeline = new PipelineImpl(context)
+
+    pipeline.head = await pipeline.buildChain(ctx, constructors, pipeline.context)
+    context.head = pipeline.head
     return pipeline
   }
 
-  private async buildChain (ctx: MeasureContext, constructors: MiddlewareCreator[]): Promise<Middleware | undefined> {
+  private async buildChain (
+    ctx: MeasureContext,
+    constructors: MiddlewareCreator[],
+    context: PipelineContext
+  ): Promise<Middleware | undefined> {
     let current: Middleware | undefined
     for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
-      current = await ctx.with('build chain', {}, async (ctx) => await element(ctx, this.storage, current))
+      const newCur = await element(ctx, context, current)
+      if (newCur != null) {
+        this.middlewares.push(newCur)
+      }
+      current = newCur ?? current
     }
+    this.middlewares.reverse()
+
     return current
   }
 
   async findAll<T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return this.head !== undefined
-      ? await this.head.findAll(ctx, _class, query, options)
-      : await this.storage.findAll(ctx.ctx, _class, query, options)
+    return this.head !== undefined ? await this.head.findAll(ctx, _class, query, options) : toFindResult([])
+  }
+
+  async loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    return this.head !== undefined ? await this.head.loadModel(ctx, lastModelTx, hash) : []
   }
 
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return this.head !== undefined
-      ? await this.head.groupBy(ctx, domain, field)
-      : await this.storage.groupBy(ctx, domain, field)
+    return this.head !== undefined ? await this.head.groupBy(ctx, domain, field) : new Set()
   }
 
-  async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return this.head !== undefined
-      ? await this.head.searchFulltext(ctx, query, options)
-      : await this.storage.searchFulltext(ctx.ctx, query, options)
+  async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    return this.head !== undefined ? await this.head.searchFulltext(ctx, query, options) : { docs: [] }
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxResult> {
-    if (this.head === undefined) {
-      return await this.storage.tx(ctx, tx)
-    } else {
+  async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxResult> {
+    if (this.head !== undefined) {
       return await this.head.tx(ctx, tx)
     }
+    return {}
   }
 
-  async handleBroadcast (tx: Tx[], targets?: string | string[], exclude?: string[]): Promise<void> {
-    if (this.head !== undefined) {
-      await this.head.handleBroadcast(tx, targets, exclude)
-    }
+  handleBroadcast (ctx: MeasureContext<SessionData>): Promise<void> {
+    return this.head?.handleBroadcast(ctx) ?? emptyBroadcastResult
   }
 
   async close (): Promise<void> {
-    await this.storage.close()
-  }
-
-  find (ctx: MeasureContext, domain: Domain): StorageIterator {
-    return this.storage.find(ctx, domain)
-  }
-
-  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.storage.load(ctx, domain, docs)
-  }
-
-  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await this.storage.upload(ctx, domain, docs)
-  }
-
-  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.storage.clean(ctx, domain, docs)
+    for (const mw of this.middlewares) {
+      try {
+        await mw.close()
+      } catch (err: any) {
+        Analytics.handleError(err)
+      }
+    }
   }
 }

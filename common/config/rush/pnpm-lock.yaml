@@ -1551,8 +1551,8 @@ dependencies:
     specifier: ^8.0.3
     version: 8.0.7
   fork-ts-checker-webpack-plugin:
-    specifier: ~7.3.0
-    version: 7.3.0(typescript@5.3.3)(webpack@5.90.3)
+    specifier: ^9.0.2
+    version: 9.0.2(typescript@5.3.3)(webpack@5.90.3)
   form-data:
     specifier: ^4.0.0
     version: 4.0.0
@@ -14802,33 +14802,6 @@ packages:
       signal-exit: 4.1.0
     dev: false
 
-  /fork-ts-checker-webpack-plugin@7.3.0(typescript@5.3.3)(webpack@5.90.3):
-    resolution: {integrity: sha512-IN+XTzusCjR5VgntYFgxbxVx3WraPRnKehBFrf00cMSrtUuW9MsG9dhL6MWpY6MkjC3wVwoujfCDgZZCQwbswA==}
-    engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
-    peerDependencies:
-      typescript: '>3.6.0'
-      vue-template-compiler: '*'
-      webpack: ^5.11.0
-    peerDependenciesMeta:
-      vue-template-compiler:
-        optional: true
-    dependencies:
-      '@babel/code-frame': 7.23.5
-      chalk: 4.1.2
-      chokidar: 3.6.0
-      cosmiconfig: 7.1.0
-      deepmerge: 4.3.1
-      fs-extra: 10.1.0
-      memfs: 3.5.3
-      minimatch: 3.1.2
-      node-abort-controller: 3.1.1
-      schema-utils: 3.3.0
-      semver: 7.6.0
-      tapable: 2.2.1
-      typescript: 5.3.3
-      webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
-    dev: false
-
   /fork-ts-checker-webpack-plugin@8.0.0(typescript@5.3.3)(webpack@5.90.3):
     resolution: {integrity: sha512-mX3qW3idpueT2klaQXBzrIM/pHw+T0B/V9KHEvNrqijTq9NFnMZU6oreVxDYcf33P8a5cW+67PjodNHthGnNVg==}
     engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
@@ -14850,6 +14823,29 @@ packages:
       tapable: 2.2.1
       typescript: 5.3.3
       webpack: 5.90.3(@swc/core@1.4.2)(esbuild@0.20.1)(webpack-cli@5.1.4)
+    dev: false
+
+  /fork-ts-checker-webpack-plugin@9.0.2(typescript@5.3.3)(webpack@5.90.3):
+    resolution: {integrity: sha512-Uochze2R8peoN1XqlSi/rGUkDQpRogtLFocP9+PGu68zk1BDAKXfdeCdyVZpgTk8V8WFVQXdEz426VKjXLO1Gg==}
+    engines: {node: '>=12.13.0', yarn: '>=1.0.0'}
+    peerDependencies:
+      typescript: '>3.6.0'
+      webpack: ^5.11.0
+    dependencies:
+      '@babel/code-frame': 7.23.5
+      chalk: 4.1.2
+      chokidar: 3.6.0
+      cosmiconfig: 8.3.6(typescript@5.3.3)
+      deepmerge: 4.3.1
+      fs-extra: 10.1.0
+      memfs: 3.5.3
+      minimatch: 3.1.2
+      node-abort-controller: 3.1.1
+      schema-utils: 3.3.0
+      semver: 7.6.3
+      tapable: 2.2.1
+      typescript: 5.3.3
+      webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
     dev: false
 
   /form-data-encoder@1.7.2:
@@ -23963,6 +23959,18 @@ packages:
       yjs: 13.6.12
     dev: false
 
+  /y-leveldb@0.1.2(yjs@13.6.12):
+    resolution: {integrity: sha512-6ulEn5AXfXJYi89rXPEg2mMHAyyw8+ZfeMMdOtBbV8FJpQ1NOrcgi6DTAcXof0dap84NjHPT2+9d0rb6cFsjEg==}
+    requiresBuild: true
+    peerDependencies:
+      yjs: ^13.0.0
+    dependencies:
+      level: 6.0.1
+      lib0: 0.2.89
+      yjs: 13.6.12
+    dev: false
+    optional: true
+
   /y-prosemirror@1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12):
     resolution: {integrity: sha512-hHdnIAhfa8mIoLWtTkMDb6RBzN3lye1QVkaZwVm58sledAA1zTl+yyEtgkrY/sdH6SaQL0rsLj61zHjgr5D0HQ==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
@@ -25839,7 +25847,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-/SB+ER8kNF2XYUvZ61U+U9GSaTya1qsHJWc3FDUdz8d12APYoMYf6c2Ax1+Kqk1GUWMu9+rYRfypLOVyqirjyw==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-W8ImBT7qeJoODsDzoy5ioDFr7A1YJX5S9xa8haLtNxiOce9iZKCyesZ5qK81g5ZgNETfhWXNo1+7u0fCcoG2qw==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -25872,7 +25880,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       file-loader: 6.2.0(webpack@5.90.3)
-      fork-ts-checker-webpack-plugin: 7.3.0(typescript@5.3.3)(webpack@5.90.3)
+      fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.3.3)(webpack@5.90.3)
       html-webpack-plugin: 5.6.0(webpack@5.90.3)
       livekit-client: 2.2.0
       mini-css-extract-plugin: 2.8.0(webpack@5.90.3)
@@ -25917,7 +25925,6 @@ packages:
       - supports-color
       - uglify-js
       - utf-8-validate
-      - vue-template-compiler
     dev: false
 
   file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -27399,7 +27406,7 @@ packages:
     dev: false
 
   file:projects/middleware.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-bXNowU56V9TLVwVPGlXIIPyOoUfE5eiXJAot0up92iM7uYd6nXdZnylrmPoCPxee4CDCw/3HlGQhuDzq+YFaZw==, tarball: file:projects/middleware.tgz}
+    resolution: {integrity: sha512-pJ53XVy+R4NqWAWGrAMeHCpgQabQzcs33zhDjBJZmNnlQBQCgUfkjCrqZEh9rMSiUhDGpj2SNiWvhlnUdbz3pg==, tarball: file:projects/middleware.tgz}
     id: file:projects/middleware.tgz
     name: '@rush-temp/middleware'
     version: 0.0.0
@@ -30400,7 +30407,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-BKzsLd9ugM4rEyUkJyeMG3QjOS0RLA/ipkLIIRC+NUUQi/zMuHMEumvoSok539kpPsVgRrtJdnDBa+3tja5fSA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-cvUyK9P5nMldS6XkLY4agfy2Ch2aFf7Qv7rXU/goSeywHNOwEf/jgffVgsXFU6Z0TFqnWfiB/ey7SJ9pM/mU4Q==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -30416,7 +30423,7 @@ packages:
       esbuild: 0.20.1
       esbuild-loader: 4.0.3(webpack@5.90.3)
       file-loader: 6.2.0(webpack@5.90.3)
-      fork-ts-checker-webpack-plugin: 7.3.0(typescript@5.3.3)(webpack@5.90.3)
+      fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.3.3)(webpack@5.90.3)
       html-webpack-plugin: 5.6.0(webpack@5.90.3)
       mini-css-extract-plugin: 2.8.0(webpack@5.90.3)
       postcss: 8.4.35
@@ -30456,7 +30463,6 @@ packages:
       - ts-node
       - uglify-js
       - utf-8-validate
-      - vue-template-compiler
     dev: false
 
   file:projects/products-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
@@ -34224,7 +34230,7 @@ packages:
     dev: false
 
   file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-PNeHw/vqYgLq6arghBnAisN4GlvA0DWANKiXTvjahoXM0EhEz6SVX2bh6Fd9xrDqYKWVdfVc2X5o5Zk1dI4qEw==, tarball: file:projects/text-editor-resources.tgz}
+    resolution: {integrity: sha512-Qyx6oJpj8FfTxV0rqKs4gmH48kx9bYYDHPpdA36B5x71Mtss/cPWvq/fEgzVyNQKhH1qaqzWv9BnpKHCcpBNzQ==, tarball: file:projects/text-editor-resources.tgz}
     id: file:projects/text-editor-resources.tgz
     name: '@rush-temp/text-editor-resources'
     version: 0.0.0
@@ -34568,7 +34574,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-s4tgmvq13d9Vu2xJD59Y4BtMgYqxVoNIlyghB5y5WEqLiTHUr7FZ4nSnaTWkg96K0KOAH6LsUvPOrD4W1eW8NA==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-gjmLNkjPV0dXJNjkowQTvuR1ELM+S3aT3t/y9QJScPMxDIUPZRjkXIoM//4Qk3/RqUOFVhcRQTVoZVcTtK6rCg==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -35269,7 +35275,7 @@ packages:
     dev: false
 
   file:projects/workspace-service.tgz:
-    resolution: {integrity: sha512-WUCtvidfvVcahSFbmbtTZeGvedNNsG4RERSfnG+MWuDnDfyFAYnpBVest9gyO2/jH4cZ/AxeE1tgZKWPqCpSeg==, tarball: file:projects/workspace-service.tgz}
+    resolution: {integrity: sha512-/ACNv9VVAkel1YYEF3LyqV49qXKzbEzFpO7g5cb1P+f1bmzxQmpfYBc5sDssrHF0nB0o2+Fzqud6BdI7S+n+Uw==, tarball: file:projects/workspace-service.tgz}
     name: '@rush-temp/workspace-service'
     version: 0.0.0
     dependencies:

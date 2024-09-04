@@ -16,6 +16,7 @@
 
 export type { StorageAdapter } from '@hcengineering/storage'
 export * from './adapter'
+export * from './base'
 export * from './benchmark'
 export * from './configuration'
 export * from './fulltext'
@@ -28,3 +29,8 @@ export * from './server'
 export * from './storage'
 export * from './types'
 export * from './utils'
+
+export * from './dbAdapterManager'
+export * from './domainHelper'
+export * from './service'
+export * from './triggers'

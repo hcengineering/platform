@@ -27,6 +27,7 @@ export class APMMeasureContext implements MeasureContext {
   logger: MeasureLogger
   private readonly transaction?: Transaction | Span
   private readonly parentTx?: Transaction | Span
+  contextData = {}
   constructor (
     private readonly agent: Agent,
     name: string,
