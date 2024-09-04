@@ -8,7 +8,8 @@
       "name": "Debug notion import",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "import-notion", "/home/anna/work/notion/db9b4cb52b324bd9a535127b56bd7915.md", "-w", "ws1"],
+      // "args": ["src/__start.ts", "import-notion", "/home/anna/work/notion/my/Export-e336d21a-f3ae-4c83-ab2e-3d349fff1aee-Part-1.zip", "-w", "w-user1-ws1-66d8018b-ce1e0c3164-006bb0"],
+      "args": ["src/__start.ts", "import-notion", "/home/anna/work/notion/my/few/b943bab3-74cc-488d-8129-086387724058_Export-ebd2c1d7-435d-4b68-8fec-e9f004a03f28.zip", "-w", "w-user1-ws1-66d8018b-ce1e0c3164-006bb0"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
