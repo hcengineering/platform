@@ -155,3 +155,25 @@ export async function workerHandshake (
     })
   })
 }
+
+export async function getWorkspaceInfo (token: string): Promise<BaseWorkspaceInfo | undefined> {
+  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
+  if (accountsUrl == null) {
+    throw new PlatformError(unknownError('No account endpoint specified'))
+  }
+  const workspaceInfo = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'getWorkspaceInfo',
+        params: []
+      })
+    })
+  ).json()
+
+  return workspaceInfo.result as BaseWorkspaceInfo | undefined
+}

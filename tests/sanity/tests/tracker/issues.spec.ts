@@ -174,6 +174,8 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue({
       ...moveIssue
     })
+
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
     // TODO need to return back after bug with activity fixed
     // await issuesDetailsPage.checkActivityExist('changed project in')
     // await issuesDetailsPage.checkActivityExist('changed number in')
@@ -221,9 +223,11 @@ test.describe('Tracker issue tests', () => {
 
   test('Delete an issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
-      title: 'Issue for deletion',
+      title: `Issue-to-delete-${generateId()}`,
       description: 'Description Issue for deletion'
     }
+    await prepareNewIssueWithOpenStep(page, deleteIssue)
+    await issuesPage.navigateToIssues()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.openIssueByName(deleteIssue.title)

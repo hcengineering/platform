@@ -23,6 +23,47 @@ export interface MoveFilesParams {
   move: boolean
 }
 
+export async function syncFiles (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  exAdapter: StorageAdapterEx
+): Promise<void> {
+  if (exAdapter.adapters === undefined) return
+
+  for (const [name, adapter] of exAdapter.adapters.entries()) {
+    await adapter.make(ctx, workspaceId)
+
+    await retryOnFailure(ctx, 5, async () => {
+      let time = Date.now()
+      let count = 0
+
+      const iterator = await adapter.listStream(ctx, workspaceId)
+      try {
+        while (true) {
+          const data = await iterator.next()
+          if (data === undefined) break
+
+          const blob = await exAdapter.stat(ctx, workspaceId, data._id)
+          if (blob !== undefined) continue
+
+          await exAdapter.syncBlobFromStorage(ctx, workspaceId, data._id, name)
+
+          count += 1
+          if (count % 100 === 0) {
+            const duration = Date.now() - time
+            time = Date.now()
+
+            console.log('...processed', count, Math.round(duration / 1000) + 's')
+          }
+        }
+        console.log('processed', count)
+      } finally {
+        await iterator.close()
+      }
+    })
+  }
+}
+
 export async function moveFiles (
   ctx: MeasureContext,
   workspaceId: WorkspaceId,

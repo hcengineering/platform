@@ -52,11 +52,7 @@ export class MemStorageAdapter implements StorageAdapter {
     }
   }
 
-  async listStream (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceId,
-    prefix?: string | undefined
-  ): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
     const files = Array.from(this.files.values()).filter((it) => it.workspace === workspaceId.name)
     return {
       next: async () => {

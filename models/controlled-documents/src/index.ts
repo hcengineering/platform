@@ -684,7 +684,7 @@ export function createModel (builder: Builder): void {
       input: 'any',
       category: view.category.General,
       target: documents.class.Document,
-      visibilityTester: documents.function.IsLatestDraftDoc,
+      visibilityTester: documents.function.CanDeleteDocument,
       query: {
         state: DocumentState.Draft
       },

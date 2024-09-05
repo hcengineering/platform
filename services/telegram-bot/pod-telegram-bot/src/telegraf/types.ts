@@ -13,19 +13,15 @@
 // limitations under the License.
 //
 
-const exec = require('child_process').exec
+import { Message, Update } from 'telegraf/typings/core/types/typegram'
+import { Context, Scenes } from 'telegraf'
 
-exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
-  if (err !== null) {
-    console.log('"0.6.0"')
-  }
-  const rawVersion = stdout.trim().replace('v', '').replace('s', '').split('.')
-  if (rawVersion.length === 3) {
-    const version = {
-      major: parseInt(rawVersion[0]),
-      minor: parseInt(rawVersion[1]),
-      patch: parseInt(rawVersion[2])
-    }
-    console.log(`"${version.major}.${version.minor}.${version.patch}"`)
-  }
-})
+export type ReplyMessage = Update.New &
+Update.NonChannel &
+Message.TextMessage &
+(Message.PhotoMessage | Message.VoiceMessage | Message.VideoMessage | Message.VideoNoteMessage)
+
+export interface TgContext extends Context {
+  processingKeyboards: Set<number>
+  scene: Scenes.SceneContextScene<TgContext, Scenes.SceneSessionData>
+}

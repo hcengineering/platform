@@ -41,8 +41,8 @@ export interface Workspace {
  * @public
  */
 export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: string
-  workspaceId: string
+  workspace: string // worspaceUrl in db
+  workspaceId: string // workspace in db (actual ID)
   mode?: WorkspaceMode
   progress?: number
 }

@@ -279,7 +279,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
       showPopup(MessageBox, {
         label: tracker.string.DeleteProject,
         labelProps: { name: project.name },
-        message: tracker.string.ArchiveProjectConfirm,
+        message: tracker.string.DeleteProjectConfirm,
         action: async () => {
           // void client.update(project, { archived: true })
           const client = getClient()

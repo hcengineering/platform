@@ -232,11 +232,7 @@ export class S3Service implements StorageAdapter {
   }
 
   @withContext('listStream')
-  async listStream (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceId,
-    prefix?: string | undefined
-  ): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
     let hasMore = true
     const buffer: ListBlobResult[] = []
     let token: string | undefined
@@ -248,7 +244,7 @@ export class S3Service implements StorageAdapter {
           if (hasMore && buffer.length === 0) {
             const res = await this.client.listObjectsV2({
               Bucket: this.getBucketId(workspaceId),
-              Prefix: rootPrefix !== undefined ? rootPrefix + (prefix ?? '') : prefix ?? '',
+              Prefix: rootPrefix ?? '',
               ContinuationToken: token
             })
             if (res.IsTruncated === true) {
@@ -273,7 +269,7 @@ export class S3Service implements StorageAdapter {
             }
           }
         } catch (err: any) {
-          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name, prefix })
+          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name })
         }
         if (buffer.length > 0) {
           return buffer.shift()
