@@ -19,7 +19,7 @@ exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
   if (err !== null) {
     console.log('"0.6.0"')
   }
-  const rawVersion = stdout.trim().replace('v', '').split('.')
+  const rawVersion = stdout.trim().replace('v', '').replace('s', '').split('.')
   if (rawVersion.length === 3) {
     const version = {
       major: parseInt(rawVersion[0]),
