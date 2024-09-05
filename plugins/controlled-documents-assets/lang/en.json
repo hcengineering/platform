@@ -223,6 +223,9 @@
     "MarkDocsAsDeleted": "Marking multiple documents as deleted",
     "MarkDocAsDeletedConfirm": "Do you really want to mark the following documents as deleted: {titles}?",
 
+    "ArchiveDocs": "Archive {count, plural, =0 {document} other {documents}}",
+    "ArchiveDocsConfirm": "Do you really want to archive the following documents: {titles}?",
+
     "DocumentInHierarchy": "Document in hierarchy",
     "FirstDraftVersion": "This is the first draft version of the document. There's no history yet.",
 
@@ -274,6 +277,8 @@
     "ReviewDocumentDescription": "Grants users ability to review a document",
     "ApproveDocumentPermission": "Approve document",
     "ApproveDocumentDescription": "Grants users ability to approve a document",
+    "ArchiveDocumentPermission": "Archive document",
+    "ArchiveDocumentDescription": "Grants users ability to archive a document",
     "CoAuthorDocumentPermission": "Co-author document",
     "CoAuthorDocumentDescription": "Grants users ability to co-author a document",
     "CreateDocumentPermission": "Create document",

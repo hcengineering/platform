@@ -62,6 +62,7 @@ export default mergeIds(documentsId, documents, {
     CreateDocument: '' as ViewAction,
     CreateTemplate: '' as ViewAction,
     DeleteDocument: '' as ViewAction,
+    ArchiveDocument: '' as ViewAction,
     EditDocSpace: '' as ViewAction
   },
   viewlet: {
