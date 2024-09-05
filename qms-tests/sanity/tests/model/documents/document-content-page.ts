@@ -82,6 +82,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly addMemberDropdown: Locator
   readonly changeSpaceButton: Locator
   readonly createNewTemplateFromSpace: Locator
+  readonly okButton: Locator
 
   constructor (page: Page) {
     super(page)
@@ -174,6 +175,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.addMemberDropdown = page.locator('.selectPopup')
     this.changeSpaceButton = page.locator('[id="space\\.selector"]')
     this.createNewTemplateFromSpace = page.getByRole('button', { name: 'Create new template' })
+    this.okButton = page.getByRole('button', { name: 'Ok', exact: true })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -308,6 +310,9 @@ export class DocumentContentPage extends DocumentCommonPage {
   async executeMoreActions (action: string): Promise<void> {
     await this.buttonMoreActions.click()
     await this.selectFromDropdown(this.page, action)
+    if (action === 'Delete') {
+      await this.okButton.click()
+    }
   }
 
   async checkIfFolderExists (folderName: string): Promise<void> {
@@ -341,6 +346,15 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.page.keyboard.press('Escape')
     await this.selectRoleMemberAJ.nth(1).click()
     await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.createButton.click()
+  }
+
+  async fillQuaraManager (spaceName: string): Promise<void> {
+    await this.inputSpaceName.fill(spaceName)
+    await this.roleSelector.nth(2).click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).nth(2).click()
     await this.page.keyboard.press('Escape')
     await this.page.waitForTimeout(1000)
     await this.createButton.click()
@@ -453,7 +467,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.checkDocumentStatus(DocumentStatus.DRAFT)
   }
 
-  async checkTeamMembersReviewNotExists (): Promise<void> {
+  async checkTeamMembersReviewerCoauthorApproverNotExists (): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.page.getByText('Team').click()
     await this.page.getByText('Add member').first().click()

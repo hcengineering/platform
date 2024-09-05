@@ -108,7 +108,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await documentContentPage.clickAddFolderButton()
       await documentContentPage.fillDocumentSpaceFormManager(folderName)
       await prepareDocumentStep(page, completeDocument, 1, undefined, folderName)
-      await documentContentPage.checkTeamMembersReviewNotExists()
+      await documentContentPage.checkTeamMembersReviewerCoauthorApproverNotExists()
       await attachScreenshot('TESTS-403_member_cant_edit_space.png', page)
     })
   })
@@ -121,7 +121,35 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.clickAddFolderButton()
       await documentContentPage.createDocumentSpaceMembersToJustMember(folderName)
+      await documentContentPage.checkIfEditSpaceButtonExists(folderName, false)
+      await page.keyboard.press('Escape')
       await documentContentPage.checkIfUserCanSelectSpace(folderName, false)
+      await attachScreenshot('TESTS-404_non_space_member_can_not_create_documents.png', page)
     })
+  })
+
+  test('TESTS-405. As a Manager space member, I can delete a doc I have previously created', async ({ page }) => {
+    await allure.description('Requirement\nUser is not able to create any document from that space')
+    const completeDocument: NewDocument = {
+      template: 'HR (HR)',
+      title: `Complete document-${generateId()}`,
+      description: `Complete document description-${generateId()}`
+    }
+    await allure.tms('TESTS-405', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-405')
+    await test.step('2. cCheck if user can not create documents as a space member', async () => {
+      const folderName = faker.word.words(1)
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.clickAddFolderButton()
+      await documentContentPage.fillQuaraManager(folderName)
+      // check if user can create document in space
+      await prepareDocumentStep(page, completeDocument, 1, undefined, folderName)
+      await documentContentPage.executeMoreActions('Delete')
+    })
+
+    await test.step('3. Check that the document status is equal to deleted status', async () => {
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.checkDocumentStatus(DocumentStatus.DELETED)
+    })
+    await attachScreenshot('TESTS-405_status_is_deleted.png', page)
   })
 })
