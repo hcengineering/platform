@@ -95,7 +95,6 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocumentTitle(deleteDocument.title)
       await documentContentPage.checkDocumentStatus(DocumentStatus.DRAFT)
       await documentContentPage.executeMoreActions('Delete')
-      await documentContentPage.pressYesForPopup(page)
     })
 
     await test.step('3. Check that the document status is equal to deleted status', async () => {
