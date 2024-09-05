@@ -20,7 +20,8 @@ import {
   type RelatedDocument,
   SortingOrder,
   type WithLookup,
-  type Doc
+  type Doc,
+  getCurrentAccount
 } from '@hcengineering/core'
 import {
   type Document,
@@ -31,6 +32,7 @@ import {
 import { type Resources } from '@hcengineering/platform'
 import { type ObjectSearchResult, getClient, MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
+import { type PersonAccount } from '@hcengineering/contact'
 
 import CreateDocument from './components/CreateDocument.svelte'
 import QmsDocumentWizard from './components/create-doc/QmsDocumentWizard.svelte'
@@ -148,6 +150,22 @@ async function deleteDocuments (obj: Document | Document[]): Promise<void> {
   })
 }
 
+async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentAccount() as PersonAccount
+  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+
+  if (!isOwner) {
+    return false
+  }
+
+  return await isLatestDraftDoc(obj)
+}
+
 async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
   if (obj == null) {
     return false
@@ -261,7 +279,7 @@ export default async (): Promise<Resources> => ({
     DocumentStateSort: sortDocumentStates,
     GetAllDocumentStates: getAllDocumentStates,
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
-    IsLatestDraftDoc: isLatestDraftDoc,
+    CanDeleteDocument: canDeleteDocument,
     DocumentIdentifierProvider: documentIdentifierProvider,
     ControlledDocumentTitleProvider: getControlledDocumentTitle,
     Comment: comment,
