@@ -222,6 +222,8 @@
     "MarkDocAsDeleted": "标记文档为已删除",
     "MarkDocsAsDeleted": "标记多个文档为已删除",
     "MarkDocAsDeletedConfirm": "您真的想将以下文档标记为已删除吗：{titles}？",
+    "ArchiveDocs": "归档 {count, plural, =0 {文档} other {文档}}",
+    "ArchiveDocsConfirm": "您真的想将以下文档归档吗：{titles}？",
 
     "DocumentInHierarchy": "层级中的文档",
     "FirstDraftVersion": "这是文档的第一个草稿版本。尚无历史记录。",
@@ -274,6 +276,8 @@
     "ReviewDocumentDescription": "授予用户审查文档的权限",
     "ApproveDocumentPermission": "批准文档",
     "ApproveDocumentDescription": "授予用户批准文档的权限",
+    "ArchiveDocumentPermission": "归档文档",
+    "ArchiveDocumentDescription": "授予用户归档文档的权限",
     "CoAuthorDocumentPermission": "共同撰写文档",
     "CoAuthorDocumentDescription": "授予用户共同撰写文档的权限",
     "CreateDocumentPermission": "创建文档",

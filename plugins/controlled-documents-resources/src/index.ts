@@ -21,7 +21,8 @@ import {
   SortingOrder,
   type WithLookup,
   type Doc,
-  getCurrentAccount
+  getCurrentAccount,
+  checkPermission
 } from '@hcengineering/core'
 import {
   type Document,
@@ -150,6 +151,24 @@ async function deleteDocuments (obj: Document | Document[]): Promise<void> {
   })
 }
 
+async function archiveDocuments (obj: Document | Document[]): Promise<void> {
+  const docs = Array.isArray(obj) ? obj : [obj]
+  const docNames = docs.map((d) => `${d.title} (${d.prefix}-${d.seqNumber})`).join(', ')
+
+  showPopup(MessageBox, {
+    label: documents.string.ArchiveDocs,
+    labelProps: { count: docs.length },
+    message: documents.string.ArchiveDocsConfirm,
+    params: { titles: docNames },
+    action: async () => {
+      const client = getClient()
+      for (const doc of docs) {
+        await client.update(doc, { state: DocumentState.Archived })
+      }
+    }
+  })
+}
+
 async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
   if (obj == null) {
     return false
@@ -164,6 +183,28 @@ async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
   }
 
   return await isLatestDraftDoc(obj)
+}
+
+async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
+  if (obj == null) {
+    return false
+  }
+
+  const objs = (Array.isArray(obj) ? obj : [obj]) as Document[]
+  const currentUser = getCurrentAccount() as PersonAccount
+  const isOwner = objs.every((doc) => doc.owner === currentUser.person)
+
+  if (isOwner) {
+    return true
+  }
+
+  const spaces = new Set(objs.map((doc) => doc.space))
+
+  return await Promise.all(
+    Array.from(spaces).map(
+      async (space) => await checkPermission(getClient(), documents.permission.ArchiveDocument, space)
+    )
+  ).then((res) => res.every((r) => r))
 }
 
 async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
@@ -280,6 +321,7 @@ export default async (): Promise<Resources> => ({
     GetAllDocumentStates: getAllDocumentStates,
     GetDocumentMetaLinkFragment: getDocumentMetaLinkFragment,
     CanDeleteDocument: canDeleteDocument,
+    CanArchiveDocument: canArchiveDocument,
     DocumentIdentifierProvider: documentIdentifierProvider,
     ControlledDocumentTitleProvider: getControlledDocumentTitle,
     Comment: comment,
@@ -291,6 +333,7 @@ export default async (): Promise<Resources> => ({
     CreateDocument: createDocument,
     CreateTemplate: createTemplate,
     DeleteDocument: deleteDocuments,
+    ArchiveDocument: archiveDocuments,
     EditDocSpace: editDocSpace
   },
   resolver: {
