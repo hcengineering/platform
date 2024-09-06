@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { randomBytes } from 'crypto'
 import { Db, MongoClient } from 'mongodb'
 import accountPlugin, { getAccount, getMethods, getWorkspaceByUrl } from '../operations'
@@ -23,7 +22,7 @@ import { MeasureMetricsContext } from '@hcengineering/core'
 
 const DB_NAME = 'test_accounts'
 
-const methods = getMethods(getModelVersion(), builder().getTxes(), migrateOperations)
+const methods = getMethods()
 
 const metricsContext = new MeasureMetricsContext('account', {})
 

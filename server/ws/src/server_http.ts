@@ -277,7 +277,12 @@ export function startHttpServer (
       void webSocketData.session.then((s) => {
         if ('error' in s) {
           void cs
-            .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
+            .send(
+              ctx,
+              { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
+              false,
+              false
+            )
             .then(() => {
               // No connection to account service, retry from client.
               setTimeout(() => {

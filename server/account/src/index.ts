@@ -17,6 +17,4 @@ import { accountPlugin } from './plugin'
 
 export * from './operations'
 export * from './plugin'
-export * from './service'
-
 export default accountPlugin

@@ -86,6 +86,32 @@ services:
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding      
     restart: unless-stopped
+  workspace:
+    image: hardcoreeng/workspace
+    # deploy:
+    #   mode: replicated
+    #   replicas: 3
+    links:
+      - mongodb
+      - minio
+    volumes:
+      - ./branding.json:/var/cfg/branding.json
+    environment:
+      # - WS_OPERATION=create
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
+      - SES_URL=
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://localhost:8087
+      - RESERVED_DB_NAMES=telegram,gmail,github
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://account:3000
+      - BRANDING_PATH=/var/cfg/branding.json
+      - NOTIFY_INBOX_ONLY=true
+      # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
+      # - INIT_WORKSPACE=onboarding
+    restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
     extra_hosts:

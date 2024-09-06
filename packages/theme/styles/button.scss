@@ -319,6 +319,7 @@
     background-color: var(--dangerous-bg-color);
     border-color: var(--dangerous-bg-color);
 
+    .btn-icon { color: var(--white-color); }
     &:hover { background-color: var(--dangerous-bg-hover); }
     &:not(.no-focus):focus { box-shadow: var(--dangerous-shadow); }
   }

@@ -88,7 +88,7 @@
         _class,
         {
           _id: { $in: limit !== -1 ? ids.slice(0, limit) : ids },
-          space: isChunterSpace ? core.space.Space : undefined
+          ...(isChunterSpace ? { space: core.space.Space } : {})
         },
         (res) => {
           objectsByClass = objectsByClass.set(_class, { docs: res, total: res.total })

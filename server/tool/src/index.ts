@@ -117,7 +117,8 @@ export async function initModel (
   adapter: DbAdapter,
   storageAdapter: AggregatorStorageAdapter,
   logger: ModelLogger = consoleModelLogger,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  deleteFirst: boolean = false
 ): Promise<void> {
   const { txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -125,6 +126,23 @@ export async function initModel (
   }
 
   try {
+    if (deleteFirst) {
+      logger.log('deleting model...', workspaceId)
+      await ctx.with('mongo-delete', {}, async () => {
+        const toRemove = await adapter.rawFindAll(DOMAIN_TX, {
+          objectSpace: core.space.Model,
+          modifiedBy: core.account.System,
+          objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
+        })
+        await adapter.clean(
+          ctx,
+          DOMAIN_TX,
+          toRemove.map((p) => p._id)
+        )
+      })
+      logger.log('transactions deleted.', { workspaceId: workspaceId.name })
+    }
+
     logger.log('creating model...', workspaceId)
     await adapter.upload(ctx, DOMAIN_TX, txes)
     logger.log('model transactions inserted.', { count: txes.length })
@@ -135,7 +153,7 @@ export async function initModel (
 
     await progress(60)
 
-    logger.log('create minio bucket', { workspaceId })
+    logger.log('create storage bucket', { workspaceId })
 
     await storageAdapter.make(ctx, workspaceId)
     await progress(100)
@@ -202,11 +220,11 @@ export async function initializeWorkspace (
   progress: (value: number) => Promise<void>
 ): Promise<void> {
   const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-  const sriptUrl = getMetadata(toolPlugin.metadata.InitScriptURL)
-  if (initWS === undefined || sriptUrl === undefined) return
+  const scriptUrl = getMetadata(toolPlugin.metadata.InitScriptURL)
+  if (initWS === undefined || scriptUrl === undefined) return
   try {
     // `https://raw.githubusercontent.com/hcengineering/init/main/script.yaml`
-    const req = await fetch(sriptUrl)
+    const req = await fetch(scriptUrl)
     const text = await req.text()
     const scripts = yaml.load(text) as any as InitScript[]
     let script: InitScript | undefined
@@ -223,7 +241,7 @@ export async function initializeWorkspace (
     const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client)
     await initializer.processScript(script, logger, progress)
   } catch (err: any) {
-    ctx.error('Failed to create workspace', { error: err })
+    ctx.error('Failed to initialize workspace', { error: err })
     throw err
   }
 }

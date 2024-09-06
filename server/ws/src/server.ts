@@ -21,6 +21,7 @@ import core, {
   systemAccountEmail,
   toWorkspaceString,
   versionToString,
+  isWorkspaceCreating,
   withContext,
   type BaseWorkspaceInfo,
   type Branding,
@@ -255,7 +256,7 @@ class TSessionManager implements SessionManager {
       if (userInfo.error !== undefined) {
         throw new Error(JSON.stringify(userInfo.error))
       }
-      return { ...userInfo.result, upgrade: userInfo.upgrade }
+      return userInfo.result
     } catch (err: any) {
       if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
         return undefined
@@ -276,7 +277,7 @@ class TSessionManager implements SessionManager {
   ): Promise<
     | { session: Session, context: MeasureContext, workspaceId: string }
     | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
-    | { error: any }
+    | { error: any, terminate?: boolean }
     > {
     const wsString = toWorkspaceString(token.workspace)
 
@@ -294,7 +295,12 @@ class TSessionManager implements SessionManager {
       return { upgrade: true }
     }
 
-    if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+    if (workspaceInfo.disabled === true && token.email !== systemAccountEmail && token.extra?.admin !== 'true') {
+      // No access to disabled workspaces for regular users
+      return { error: new Error('Workspace not found or not available'), terminate: true }
+    }
+
+    if (isWorkspaceCreating(workspaceInfo?.mode) && token.email !== systemAccountEmail) {
       // No access to workspace for token.
       return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
     }
@@ -428,8 +434,8 @@ class TSessionManager implements SessionManager {
       createdBy: '',
       createdOn: Date.now(),
       lastVisit: Date.now(),
-      createProgress: 100,
-      creating: false,
+      mode: 'active',
+      progress: 100,
       disabled: false,
       endpoint: ''
     }

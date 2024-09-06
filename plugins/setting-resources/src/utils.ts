@@ -1,7 +1,9 @@
 import contact, { type Employee, type PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
 import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
+import login from '@hcengineering/login'
+import presentation, { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import { get } from 'svelte/store'
@@ -96,5 +98,43 @@ export async function getOwnerPosition (provider: TemplateDataProvider): Promise
       return client.getHierarchy().as(employee, contact.mixin.Employee)?.position ?? undefined
     }
     return undefined
+  }
+}
+
+export async function rpcAccount (method: string, ...params: any[]): Promise<any> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+  if (token === undefined) {
+    throw new Error('no token available for the session')
+  }
+
+  const request = {
+    method,
+    params
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const res = await response.json()
+
+    if (res.error != null) {
+      throw new Error(`Failed to ${method}: ${res.error}`)
+    }
+
+    return res
+  } catch (err: any) {
+    throw new Error(`Fetch error when calling ${method}: ${err.message}`)
   }
 }

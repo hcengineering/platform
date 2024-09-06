@@ -8,6 +8,7 @@ import core, {
   metricsToString,
   setCurrentAccount,
   versionToString,
+  isWorkspaceCreating,
   type Account,
   type AccountClient,
   type Client,
@@ -83,13 +84,13 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, token)
 
-  if (workspaceLoginInfo?.creating === true) {
+  if (isWorkspaceCreating(workspaceLoginInfo?.mode)) {
     const fetchWorkspace = await getResource(login.function.FetchWorkspace)
     let loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
-    if (loginInfo?.creating === true) {
+    if (isWorkspaceCreating(loginInfo?.mode)) {
       while (true) {
         if (ws !== getCurrentLocation().path[1]) return
-        workspaceCreating.set(loginInfo?.createProgress ?? 0)
+        workspaceCreating.set(loginInfo?.progress ?? 0)
         loginInfo = await ctx.with('fetch-workspace', {}, async () => (await fetchWorkspace(ws))[1])
         if (loginInfo === undefined) {
           // something went wrong, workspace not exist, redirect to login
@@ -98,8 +99,8 @@ export async function connect (title: string): Promise<Client | undefined> {
           })
           return
         }
-        workspaceCreating.set(loginInfo?.createProgress)
-        if (loginInfo?.creating === false) {
+        workspaceCreating.set(loginInfo?.progress)
+        if (!isWorkspaceCreating(loginInfo?.mode)) {
           workspaceCreating.set(-1)
           break
         }

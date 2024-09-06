@@ -79,6 +79,7 @@ export interface Response<R> {
   result?: R
   id?: ReqId
   error?: Status
+  terminate?: boolean
   chunk?: {
     index: number
     final: boolean

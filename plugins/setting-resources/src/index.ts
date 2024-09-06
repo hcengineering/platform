@@ -23,6 +23,7 @@ import CreateMixin from './components/CreateMixin.svelte'
 import EditEnum from './components/EditEnum.svelte'
 import EnumSetting from './components/EnumSetting.svelte'
 import Integrations from './components/Integrations.svelte'
+import General from './components/General.svelte'
 import Owners from './components/Owners.svelte'
 import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
@@ -56,7 +57,6 @@ import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
-import WorkspaceSetting from './components/WorkspaceSetting.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
@@ -90,7 +90,6 @@ export default async (): Promise<Resources> => ({
     Spaces,
     Profile,
     Password,
-    WorkspaceSetting,
     WorkspaceSettings,
     Integrations,
     Support,
@@ -107,6 +106,7 @@ export default async (): Promise<Resources> => ({
     ArrayEditor,
     EditEnum,
     EnumSetting,
+    General,
     Owners,
     CreateMixin,
     InviteSetting,

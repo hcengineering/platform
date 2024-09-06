@@ -877,6 +877,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/workspace-service",
+      "projectFolder": "server/workspace-service",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator",
       "projectFolder": "server/collaborator",
       "shouldPublish": false
@@ -889,6 +894,11 @@
     {
       "packageName": "@hcengineering/pod-account",
       "projectFolder": "pods/account",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-workspace",
+      "projectFolder": "pods/workspace",
       "shouldPublish": false
     },
     {

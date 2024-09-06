@@ -30,7 +30,7 @@ import {
   TxProcessor
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import telegram, { TelegramMessage, TelegramNotificationRecord } from '@hcengineering/telegram'
+import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
 import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
 import setting, { Integration } from '@hcengineering/setting'
 import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
@@ -218,6 +218,19 @@ async function getTranslatedData (
   }
 }
 
+function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy): boolean {
+  if (doc === undefined) {
+    return false
+  }
+
+  if (hierarchy.isDerived(doc._class, chunter.class.ChatMessage)) {
+    const chatMessage = doc as ChatMessage
+    return (chatMessage.attachments ?? 0) > 0
+  }
+
+  return false
+}
+
 const SendTelegramNotifications: NotificationProviderFunc = async (
   control: TriggerControl,
   types: BaseNotificationType[],
@@ -244,11 +257,13 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
 
   try {
     const { title, body, quote, link } = await getTranslatedData(data, doc, control, message)
-    const record: TelegramNotificationRecord = {
+    const record: TelegramNotificationRequest = {
       notificationId: data._id,
+      messageId: message?._id,
       account: receiver._id,
       workspace: toWorkspaceString(control.workspace),
       sender: data.intlParams?.senderName?.toString() ?? formatName(sender.person?.name ?? 'System'),
+      attachments: hasAttachments(message, control.hierarchy),
       title,
       quote,
       body,

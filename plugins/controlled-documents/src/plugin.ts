@@ -115,6 +115,7 @@ export const documentsPlugin = plugin(documentsId, {
     CreateTemplate: '' as Ref<Action<DocumentSpace, any>>,
     DeleteDocumentCategory: '' as Ref<Action<Doc, any>>,
     DeleteDocument: '' as Ref<Action>,
+    ArchiveDocument: '' as Ref<Action>,
     EditDocSpace: '' as Ref<Action>,
     Print: '' as Ref<Action<Doc, { signed: boolean }>>
   },
@@ -242,6 +243,8 @@ export const documentsPlugin = plugin(documentsId, {
     ReviewDocumentDescription: '' as IntlString,
     ApproveDocumentPermission: '' as IntlString,
     ApproveDocumentDescription: '' as IntlString,
+    ArchiveDocumentPermission: '' as IntlString,
+    ArchiveDocumentDescription: '' as IntlString,
     CoAuthorDocumentPermission: '' as IntlString,
     CoAuthorDocumentDescription: '' as IntlString,
     CreateDocumentPermission: '' as IntlString,
@@ -282,6 +285,7 @@ export const documentsPlugin = plugin(documentsId, {
   permission: {
     ReviewDocument: '' as Ref<Permission>,
     ApproveDocument: '' as Ref<Permission>,
+    ArchiveDocument: '' as Ref<Permission>,
     CoAuthorDocument: '' as Ref<Permission>,
     CreateDocument: '' as Ref<Permission>,
     UpdateDocumentOwner: '' as Ref<Permission>,

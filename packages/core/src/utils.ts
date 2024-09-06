@@ -39,7 +39,8 @@ import {
   Role,
   roleOrder,
   Space,
-  TypedSpace
+  TypedSpace,
+  WorkspaceMode
 } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
@@ -47,6 +48,7 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
+import { Branding, BrandingMap } from './server'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -149,6 +151,17 @@ export function getWorkspaceId (workspace: string): WorkspaceId {
  */
 export function toWorkspaceString (id: WorkspaceId): string {
   return id.name
+}
+
+/**
+ * @public
+ */
+export function isWorkspaceCreating (mode?: WorkspaceMode): boolean {
+  if (mode === undefined) {
+    return false
+  }
+
+  return ['pending-creation', 'creating'].includes(mode)
 }
 
 const attributesPrefix = 'attributes.'
@@ -806,4 +819,10 @@ export function isOwnerOrMaintainer (): boolean {
 
 export function hasAccountRole (acc: Account, targerRole: AccountRole): boolean {
   return roleOrder[acc.role] >= roleOrder[targerRole]
+}
+
+export function getBranding (brandings: BrandingMap, key: string | undefined): Branding | null {
+  if (key === undefined) return null
+
+  return Object.values(brandings).find((branding) => branding.key === key) ?? null
 }
