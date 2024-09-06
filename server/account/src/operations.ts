@@ -1480,21 +1480,19 @@ export async function getPendingWorkspace (
           ? pendingUpgradeQuery
           : [...pendingCreationQuery, ...pendingUpgradeQuery]
   }
-  let query: Filter<Workspace>
+  const attemptsQuery = { $or: [{ attempts: { $exists: false } }, { attempts: { $lte: 3 } }] }
 
-  if (region !== '') {
-    query = {
-      ...operationQuery,
-      region
-    }
-  } else {
-    query = {
-      $and: [operationQuery, defaultRegionQuery]
-    }
+  // We must have all the conditions in the DB query and we cannot filter anything in the code
+  // because of possible concurrency between account services. We have to update "lastProcessingTime"
+  // at the time of retrieval and not after some additional processing.
+  const query: Filter<Workspace> = {
+    $and: [
+      operationQuery,
+      attemptsQuery,
+      region !== '' ? { region } : defaultRegionQuery,
+      { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+    ]
   }
-
-  query.lastProcessingTime = { $lt: Date.now() - processingTimeoutMs }
-  query.attempts = { $lte: 3 }
 
   return (
     (await wsCollection.findOneAndUpdate(

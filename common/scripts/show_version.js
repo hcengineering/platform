@@ -15,12 +15,31 @@
 
 const fs = require('fs')
 const path = require('path')
+const exec = require('child_process').exec
 
-try {
-  const versionFilePath = path.resolve(__dirname, 'version.txt')
-  const version = fs.readFileSync(versionFilePath, 'utf8').trim()
-  
-  console.log(version)
-} catch (error) {
-  console.log('0.6.0')
-}
+exec('git describe --tags --abbrev=0', (err, stdout) => {
+  if (err !== null) {
+    console.log('"0.7.0"')
+    return
+  }
+
+  const tag = stdout.trim()
+
+  if (tag.startsWith('s')) {
+    // Staging model version
+    // Take tagged git commit date as model version
+    exec(`git for-each-ref --shell --format="%(creatordate:format:%s)" "refs/tags/${tag}"`, (err, stdout) => {
+      console.log(`"0.7.${err === null ? stdout.trim().slice(1, -1) : 0}"`)
+    })
+  } else {
+    let version
+    try {
+      const versionFilePath = path.resolve(__dirname, 'version.txt')
+      version = fs.readFileSync(versionFilePath, 'utf8').trim()
+    } catch (error) {
+      version = '"0.6.0"'
+    }
+
+    console.log(version)
+  }
+})
