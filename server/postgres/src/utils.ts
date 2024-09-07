@@ -369,12 +369,18 @@ export const docFields: string[] = [
 
 export function getUpdateValue (value: any): string {
   if (typeof value === 'string') {
-    return '"' + value + '"'
+    return '"' + escapeDoubleQuotes(value) + '"'
   }
   if (typeof value === 'object') {
     return JSON.stringify(value)
   }
   return value
+}
+
+function escapeDoubleQuotes(jsonString: string): string {
+  const unescapedQuotes = /(?<!\\)"/g
+
+  return jsonString.replace(unescapedQuotes, '\\"')
 }
 
 export interface JoinProps {

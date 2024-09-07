@@ -1028,7 +1028,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const arr = docs.concat()
     return await this.retryTxn(async (client) => {
       while (arr.length > 0) {
-        const part = arr.splice(0, 1)
+        const part = arr.splice(0, 500)
         const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
@@ -1080,14 +1080,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
         for (const [_id, ops] of operations) {
           const doc = map.get(_id)
           if (doc === undefined) continue
-          if ((ops as any)['%hash%'] === undefined) {
-            ;(ops as any)['%hash%'] = null
+          const op = { ...ops }
+          if ((op as any)['%hash%'] === undefined) {
+            ;(op as any)['%hash%'] = null
           }
-          TxProcessor.applyUpdate(doc, ops)
+          TxProcessor.applyUpdate(doc, op)
           const converted = convertDoc(doc, this.workspaceId.name)
 
           const updates: string[] = []
-          const { space, attachedTo, ...data } = ops as any
+          const { space, attachedTo, ...data } = op as any
           const params: any[] = [doc._id, this.workspaceId.name]
           if (space !== undefined) {
             updates.push(`space = '${space}'`)
@@ -1114,7 +1115,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   async insert (domain: string, docs: Doc[]): Promise<TxResult> {
     return await this.retryTxn(async (client) => {
       while (docs.length > 0) {
-        const part = docs.splice(0, 1)
+        const part = docs.splice(0, 500)
         const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
@@ -1233,6 +1234,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     return await ctx.with('tx-update-doc', { _class: tx.objectClass }, async () => {
       if (isOperator(tx.operations)) {
         let doc: Doc | undefined
+        const ops = { ['%hash%']: null, ...tx.operations }
         return await ctx.with(
           'update with operations',
           { operations: JSON.stringify(Object.keys(tx.operations)) },
@@ -1240,11 +1242,10 @@ class PostgresAdapter extends PostgresAdapterBase {
             await this.retryTxn(async (client) => {
               doc = await this.findDoc(ctx, client, tx.objectClass, tx.objectId, true)
               if (doc === undefined) return {}
-              ;(tx.operations as any)['%hash%'] = null
-              TxProcessor.applyUpdate(doc, tx.operations)
+              TxProcessor.applyUpdate(doc, ops)
               const converted = convertDoc(doc, this.workspaceId.name)
               const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
-              const { space, attachedTo, ...data } = tx.operations as any
+              const { space, attachedTo, ...data } = ops as any
               const params: any[] = [tx.modifiedBy, tx.modifiedOn, tx.objectId, this.workspaceId.name]
               if (space !== undefined) {
                 updates.push(`space = '${space}'`)
@@ -1281,8 +1282,11 @@ class PostgresAdapter extends PostgresAdapterBase {
     return await ctx.with('update jsonb_set', {}, async () => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const { space, attachedTo, ...ops } = tx.operations as any
+      if ((ops as any)['%hash%'] === undefined) {
+        ;(ops as any)['%hash%'] = null
+      }
       if (space !== undefined) {
-        updates.push(`space = ${space}`)
+        updates.push(`space = '${space}'`)
       }
       if (attachedTo !== undefined) {
         updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
