@@ -64,6 +64,7 @@
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
+    "@hcengineering/document": "^0.6.0",
     "@hcengineering/elastic": "^0.6.0",
     "@hcengineering/lead": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
