@@ -377,7 +377,7 @@ export function getUpdateValue (value: any): string {
   return value
 }
 
-function escapeDoubleQuotes(jsonString: string): string {
+function escapeDoubleQuotes (jsonString: string): string {
   const unescapedQuotes = /(?<!\\)"/g
 
   return jsonString.replace(unescapedQuotes, '\\"')

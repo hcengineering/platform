@@ -1,5 +1,6 @@
 // Copyright © 2022 Hardcore Engineering Inc.
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   type Class,
   type Data,
@@ -10,19 +11,12 @@ import core, {
 } from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import {
-  type InitialKnowledge,
-  type TagCategory,
-  type TagElement,
-  type TagReference,
-  TagsEvents
-} from '@hcengineering/tags'
+import { type TagCategory, type TagElement, type TagReference, TagsEvents } from '@hcengineering/tags'
 import { type ColorDefinition, getColorNumberByText } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { writable } from 'svelte/store'
 import tags from './plugin'
-import { Analytics } from '@hcengineering/analytics'
 
 export function getTagStyle (color: ColorDefinition, selected = false): string {
   return `
@@ -37,11 +31,10 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
   const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
     const level = filter.props?.level ?? 0
     const q: DocumentQuery<TagReference> = {
-      tag: { $in: filter.value },
-      weight:
-        level === 0
-          ? { $in: [null as unknown as InitialKnowledge, 0, 1, 2, 3, 4, 5, 6, 7, 8] }
-          : { $gte: level as TagReference['weight'] }
+      tag: { $in: filter.value }
+    }
+    if (level > 0) {
+      q.weight = { $gte: level as TagReference['weight'] }
     }
     const refresh = lq.query(tags.class.TagReference, q, (refs: FindResult<TagReference>) => {
       const result = Array.from(new Set(refs.map((p) => p.attachedTo)))

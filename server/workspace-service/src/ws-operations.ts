@@ -159,7 +159,7 @@ export async function createWorkspace (
       registerStringLoaders()
       const factory: PipelineFactory = createServerPipeline(
         ctx,
-        mongodbUri,
+        dbUrls,
         {
           externalStorage: storageAdapter,
           fullTextUrl: 'http://localhost:9200',

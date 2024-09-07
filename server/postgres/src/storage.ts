@@ -651,6 +651,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         continue
       }
       const value = query[key]
+      if (value === undefined) continue
       const isDataArray = this.checkDataArray(_class, key)
       const tkey = this.getKey(_class, baseDomain, key, joins, isDataArray)
       const translated = this.translateQueryValue(tkey, value, isDataArray)
@@ -836,7 +837,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             break
         }
       }
-      return res.length === 0 ? undefined : res.join(' AND ')
+      return res.length === 0 ? `${tkey} @> '[${JSON.stringify(value)}]'` : res.join(' AND ')
     }
     return isDataArray
       ? `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
@@ -1234,7 +1235,7 @@ class PostgresAdapter extends PostgresAdapterBase {
     return await ctx.with('tx-update-doc', { _class: tx.objectClass }, async () => {
       if (isOperator(tx.operations)) {
         let doc: Doc | undefined
-        const ops = { ['%hash%']: null, ...tx.operations }
+        const ops = { '%hash%': null, ...tx.operations }
         return await ctx.with(
           'update with operations',
           { operations: JSON.stringify(Object.keys(tx.operations)) },
@@ -1282,8 +1283,8 @@ class PostgresAdapter extends PostgresAdapterBase {
     return await ctx.with('update jsonb_set', {}, async () => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const { space, attachedTo, ...ops } = tx.operations as any
-      if ((ops as any)['%hash%'] === undefined) {
-        ;(ops as any)['%hash%'] = null
+      if ((ops)['%hash%'] === undefined) {
+        ;(ops)['%hash%'] = null
       }
       if (space !== undefined) {
         updates.push(`space = '${space}'`)
