@@ -699,6 +699,27 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: documents.actionImpl.ArchiveDocument,
+      label: view.string.Archive,
+      icon: view.icon.Archive,
+      input: 'any',
+      category: view.category.General,
+      target: documents.class.Document,
+      visibilityTester: documents.function.CanArchiveDocument,
+      query: {
+        state: DocumentState.Effective
+      },
+      context: {
+        mode: ['context', 'browser'],
+        group: 'remove'
+      }
+    },
+    documents.action.ArchiveDocument
+  )
+
+  createAction(
+    builder,
+    {
       action: documents.actionImpl.EditDocSpace,
       label: documents.string.EditDocumentSpace,
       icon: view.icon.Edit,
