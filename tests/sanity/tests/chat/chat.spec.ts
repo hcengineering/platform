@@ -472,7 +472,7 @@ test.describe('channel tests', () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
     })
     
-    await test.step('User sees and can use the Join button immediately upon leaving', async () => {
+    await test.step('Join channel from a leaved channel page', async () => {
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
       await channelPage.clickJoinChannelButton()
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
@@ -482,12 +482,12 @@ test.describe('channel tests', () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
     })
     
-    await test.step('User doesnt see channel in menu after changing channel', async () => {
+    await test.step('Open another channel and then check that leaved channel is removed from left menu', async () => {
       await channelPage.clickChooseChannel('random')
       await channelPage.checkIfChannelDefaultExist(false, data.channelName)
     })
     
-    await test.step('Rejoin channel', async () => {
+    await test.step('Join channel from a channels table', async () => {
       await channelPage.clickChannelTab()
       await channelPage.checkIfChannelTableExist(data.channelName, true)
       await channelPage.clickJoinChannelButton()
