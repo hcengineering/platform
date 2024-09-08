@@ -73,15 +73,22 @@ export class ChannelPage extends CommonPage {
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
+
   readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')
+
   readonly starredChannelContainers = (): Locator =>
     this.page.locator('#navGroup-starred').locator('.hulyNavItem-container')
 
-  readonly channelsListMenuButton = (): Locator =>
-    this.page.locator('.hulyNavPanel-container').locator('a[href$="channels"]')
+  readonly issueChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-tracker:class:Issue').locator('.hulyNavItem-container')
 
-  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
-  readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
+  readonly vacanciesChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-recruit:class:Vacancy').locator('.hulyNavItem-container')
+
+  readonly applicationsChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-recruit:class:Applicant').locator('.hulyNavItem-container')
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
