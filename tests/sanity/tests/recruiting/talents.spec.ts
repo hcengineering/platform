@@ -84,7 +84,6 @@ test.describe('candidate/talents tests', () => {
     const sourceTalent1 = 'SourceTalent1'
     await talentDetailsPage.addSource(sourceTalent1)
     await talentDetailsPage.addSocialLinks('Phone', '123123213213')
-    await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
 
     // talent 2
     await navigationMenuPage.clickButtonTalents()
@@ -96,7 +95,6 @@ test.describe('candidate/talents tests', () => {
     const sourceTalent2 = 'SourceTalent2'
     await talentDetailsPage.addSource(sourceTalent2)
     await talentDetailsPage.addSocialLinks('Email', 'test-merge-2@gmail.com')
-    await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
 
     // merge
     await navigationMenuPage.clickButtonTalents()

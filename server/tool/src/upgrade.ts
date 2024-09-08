@@ -46,7 +46,6 @@ export class MigrateClientImpl implements MigrationClient {
   async update<T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: MigrateUpdate<T>): Promise<void> {
     const t = Date.now()
     try {
-      ;(operations as any)['%hash%'] = null
       await this.adapter.rawUpdate(domain, query, operations)
     } finally {
       if (Date.now() - t > 1000) {

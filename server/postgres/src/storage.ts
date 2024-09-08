@@ -843,7 +843,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
             break
           case '$like':
-            res.push(`${tkey} ILIKE '${val}'`)
+            res.push(`${tkey} ILIKE '${escapeBackticks(val)}'`)
             break
           case '$exists':
             res.push(`${tkey} IS ${val === true ? 'NOT NULL' : 'NULL'}`)
