@@ -350,13 +350,13 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-results
+          name: playwright-results-pg
           path: ./tests/sanity/playwright-report/
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: docker-logs
+          name: docker-logs-pg
           path: ./tests/sanity/logs
   uitest-qms:
     runs-on: ubuntu-latest
