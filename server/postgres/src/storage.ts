@@ -663,11 +663,22 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   private checkDataArray<T extends Doc>(_class: Ref<Class<T>>, key: string): boolean {
-    const attr = this.hierarchy.findAttribute(_class, key)
-    if (attr !== undefined) {
-      return attr.type._class === core.class.ArrOf
+    const splitted = key.split('.')
+    const mixinOrKey = splitted[0]
+    if (this.hierarchy.isMixin(mixinOrKey as Ref<Class<Doc>>)) {
+      key = splitted.slice(1).join('.')
+      const attr = this.hierarchy.findAttribute(mixinOrKey as Ref<Class<Doc>>, key)
+      if (attr !== undefined) {
+        return attr.type._class === core.class.ArrOf
+      }
+      return false
+    } else {
+      const attr = this.hierarchy.findAttribute(_class, key)
+      if (attr !== undefined) {
+        return attr.type._class === core.class.ArrOf
+      }
+      return false
     }
-    return false
   }
 
   private fillClass<T extends Doc>(
@@ -758,10 +769,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const element = arr[i]
       if (element === '$lookup') {
         tKey += arr[++i] + '_lookup'
-      } else {
-        if (!tKey.endsWith('.') && i > 0) {
-          tKey += '.'
+      } else if (this.hierarchy.isMixin(element as Ref<Class<Doc>>)) {
+        tKey += `${element}`
+        if (i !== arr.length - 1) {
+          tKey += "'->'"
         }
+      } else {
         tKey += arr[i]
         if (i !== arr.length - 1) {
           tKey += '.'
@@ -781,7 +794,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (attr !== undefined && this.hierarchy.isMixin(attr.attributeOf)) {
           // It is mixin
           if (isDataArray) {
-            key = `${attr.attributeOf}->${key}`
+            key = `${attr.attributeOf}'->'${key}`
           } else {
             key = `${attr.attributeOf},${key}`
           }
@@ -835,9 +848,20 @@ abstract class PostgresAdapterBase implements DbAdapter {
           case '$exists':
             res.push(`${tkey} IS ${val === true ? 'NOT NULL' : 'NULL'}`)
             break
+          case '$regex':
+            res.push(`${tkey} SIMILAR TO '${val}'`)
+            break
+          case '$options':
+            break
+          case '$all':
+            res.push(`${tkey} @> ARRAY[${value}]`)
+            break
+          default:
+            res.push(`${tkey} @> '[${JSON.stringify(value)}]'`)
+            break
         }
       }
-      return res.length === 0 ? `${tkey} @> '[${JSON.stringify(value)}]'` : res.join(' AND ')
+      return res.length === 0 ? undefined : res.join(' AND ')
     }
     return isDataArray
       ? `${tkey} @> '${typeof value === 'string' ? '"' + value + '"' : value}'`
@@ -1283,8 +1307,8 @@ class PostgresAdapter extends PostgresAdapterBase {
     return await ctx.with('update jsonb_set', {}, async () => {
       const updates: string[] = ['"modifiedBy" = $1', '"modifiedOn" = $2']
       const { space, attachedTo, ...ops } = tx.operations as any
-      if ((ops)['%hash%'] === undefined) {
-        ;(ops)['%hash%'] = null
+      if (ops['%hash%'] === undefined) {
+        ops['%hash%'] = null
       }
       if (space !== undefined) {
         updates.push(`space = '${space}'`)
@@ -1292,11 +1316,14 @@ class PostgresAdapter extends PostgresAdapterBase {
       if (attachedTo !== undefined) {
         updates.push(`"attachedTo" = ${attachedTo != null ? "'" + attachedTo + "'" : 'NULL'}`)
       }
-      if (Object.keys(ops).length > 0) {
-        let from = 'data'
-        for (const key in ops) {
-          from = `jsonb_set(${from}, '{${key}}', '${getUpdateValue(ops[key])}', true)`
-        }
+      let from = 'data'
+      let dataUpdated = false
+      for (const key in ops) {
+        if (ops[key] === undefined) continue
+        from = `jsonb_set(${from}, '{${key}}', '${getUpdateValue(ops[key])}', true)`
+        dataUpdated = true
+      }
+      if (dataUpdated) {
         updates.push(`data = ${from}`)
       }
 
