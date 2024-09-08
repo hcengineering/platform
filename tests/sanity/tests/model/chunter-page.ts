@@ -1,9 +1,11 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
+import { CommonPage } from './common-page'
 
-export class ChunterPage {
+export class ChunterPage extends CommonPage {
   readonly page: Page
 
   constructor (page: Page) {
+    super(page)
     this.page = page
   }
 
@@ -15,6 +17,8 @@ export class ChunterPage {
   readonly checkboxMakePrivate = (): Locator => this.page.getByRole('button', { name: 'Private' })
   readonly buttonCreateChannel = (): Locator => this.page.getByRole('button', { name: 'Create' })
   readonly buttonOpenChannel = (): Locator => this.page.locator('div.antiNav-element__dropbox span.an-element__label')
+  readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')
+  readonly starredChannelContainers = (): Locator => this.page.locator('#navGroup-starred').locator('.hulyNavItem-container')
 
   // ACTIONS
 
@@ -37,5 +41,22 @@ export class ChunterPage {
 
   async openChannel (channelName: string): Promise<void> {
     await this.buttonOpenChannel().filter({ hasText: channelName }).click()
+  }
+  
+  async makeActionWithChannel (channelName: string, action: string): Promise<void> {
+    await this.channelContainers().filter({ hasText: channelName }).hover()
+    await this.channelContainers()
+      .filter({ hasText: channelName })
+      .locator('.hulyNavItem-actions')
+      .click()
+    await this.selectFromDropdown(this.page, action)
+  }
+  
+  async checkChannelStarred (shouldExist: boolean, channelName: string): Promise<void> {
+    if (shouldExist) {
+      await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(1)
+    } else {
+      await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(0)
+    }
   }
 }

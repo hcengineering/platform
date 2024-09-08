@@ -430,4 +430,28 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
     await page2.close()
   })
+  
+  test.only('User can star and unstar a channel', async () => {
+    await test.step('Prepare channel', async () => {
+      await leftSideMenuPage.clickChunter()
+      await chunterPage.clickChannelBrowser()
+      await chunterPage.clickNewChannelHeader()
+      await chunterPage.createPrivateChannel(data.channelName, false)
+      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    })
+    
+    await test.step('Star channel', async () => {
+      await leftSideMenuPage.clickChunter()
+      await chunterPage.makeActionWithChannel(data.channelName, 'Star channel')
+      await chunterPage.checkChannelStarred(true, data.channelName)
+      await channelPage.checkIfChannelDefaultExist(false, data.channelName)
+    })
+    
+    await test.step('Unstar channel', async () => {
+      await leftSideMenuPage.clickChunter()
+      await chunterPage.makeActionWithChannel(data.channelName, 'Unstar channel')
+      await chunterPage.checkChannelStarred(false, data.channelName)
+      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    })
+  })
 })
