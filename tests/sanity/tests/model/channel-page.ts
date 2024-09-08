@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonPage } from './common-page'
+import { LinkedChannelTypes } from './types'
 
 export class ChannelPage extends CommonPage {
   readonly page: Page
@@ -84,10 +85,10 @@ export class ChannelPage extends CommonPage {
   readonly issueChannelContainers = (): Locator =>
     this.page.locator('#navGroup-tracker:class:Issue').locator('.hulyNavItem-container')
 
-  readonly vacanciesChannelContainers = (): Locator =>
+  readonly vacancyChannelContainers = (): Locator =>
     this.page.locator('#navGroup-recruit:class:Vacancy').locator('.hulyNavItem-container')
 
-  readonly applicationsChannelContainers = (): Locator =>
+  readonly applicationChannelContainers = (): Locator =>
     this.page.locator('#navGroup-recruit:class:Applicant').locator('.hulyNavItem-container')
 
   async sendMessage (message: string): Promise<void> {
@@ -295,5 +296,21 @@ export class ChannelPage extends CommonPage {
   async searchChannel (channelName: string): Promise<void> {
     await this.inputSearchIcon().click()
     await this.inputSearchChannel().fill(channelName)
+  }
+
+  async checkLinkedChannelIsExist (channelName: string, linkedChannelType: LinkedChannelTypes): Promise<void> {
+    switch (linkedChannelType) {
+      case LinkedChannelTypes.Issue:
+        await expect(this.issueChannelContainers().filter({ hasText: channelName })).toBeVisible()
+        break
+      case LinkedChannelTypes.Vacancy:
+        await expect(this.vacancyChannelContainers().filter({ hasText: channelName })).toBeVisible()
+        break
+      case LinkedChannelTypes.Application:
+        await expect(this.applicationChannelContainers().filter({ hasText: channelName })).toBeVisible()
+        break
+      default:
+        break
+    }
   }
 }
