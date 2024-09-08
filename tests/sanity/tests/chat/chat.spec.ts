@@ -431,7 +431,7 @@ test.describe('channel tests', () => {
     await page2.close()
   })
   
-  test.only('User can star and unstar a channel', async () => {
+  test('User can star and unstar a channel', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -455,7 +455,7 @@ test.describe('channel tests', () => {
     })
   })
   
-  test.only('User can leave and join a channel', async () => {
+  test('User can leave and join a channel', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
