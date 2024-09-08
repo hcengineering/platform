@@ -282,7 +282,7 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      expect(issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy))
+      await issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy)
       await issuesDetailsPage.clickCloseIssueButton()
     }
   })
@@ -300,7 +300,7 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      expect(issuesDetailsPage.checkIfButtonComponentHasTextDefaultComponent(defaultComponent))
+      await issuesDetailsPage.checkIfButtonComponentHasTextDefaultComponent(defaultComponent)
 
       await issuesDetailsPage.clickCloseIssueButton()
     }
@@ -346,7 +346,7 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      expect(issuesDetailsPage.checkIfButtonCreatedByHaveRealName(modifierName))
+      await issuesDetailsPage.checkIfButtonCreatedByHaveRealName(modifierName)
 
       await issuesDetailsPage.clickCloseIssueButton()
     }

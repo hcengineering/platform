@@ -860,6 +860,13 @@ abstract class MongoAdapterBase implements DbAdapter {
       projection[ckey] = options.projection[key]
       count++
     }
+    if (options.sort != null) {
+      for (const k of Object.keys(options.sort) as (keyof T)[]) {
+        if (projection[k] == null) {
+          ;(projection as any)[k] = 1
+        }
+      }
+    }
     if (count === 0) {
       return undefined
     }

@@ -97,7 +97,7 @@ export class FullTextMiddleware extends BaseMiddleware implements Middleware {
     )
     const defaultAdapter = this.context.adapterManager.getDefaultAdapter()
     const findAll: SessionFindAll = (ctx, _class, query, options) => {
-      return this.provideFindAll(ctx, _class, query)
+      return this.provideFindAll(ctx, _class, query, options)
     }
 
     // TODO: Extract storage adapter to context

@@ -79,7 +79,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   updateTriggerTimer: any
   updateOps = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
 
-  lastContext: MeasureContext | undefined
   uploadOps: DocIndexState[] = []
 
   constructor (
@@ -198,7 +197,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     ctx: MeasureContext,
     updates: Map<Ref<DocIndexState>, { create?: DocIndexState, updated: boolean, removed: boolean }>
   ): Promise<void> {
-    this.lastContext = ctx
     const entries = Array.from(updates.entries())
     const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
     if (uploads.length > 0) {
@@ -410,9 +408,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (this.broadcastClasses.size > 0) {
               const toSend = Array.from(this.broadcastClasses.values())
               this.broadcastClasses.clear()
-              if (this.lastContext !== undefined) {
-                this.broadcastUpdate(this.lastContext, toSend)
-              }
+              this.broadcastUpdate(this.metrics, toSend)
             }
           }, 5000)
 

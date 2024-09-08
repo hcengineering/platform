@@ -38,7 +38,7 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
         tx.modifiedOn = Date.now()
         tx.createdOn = tx.createdOn ?? tx.modifiedOn
         if (tx._class === core.class.TxCollectionCUD) {
-          ;(tx as TxCollectionCUD<any, any>).tx.modifiedOn = Date.now()
+          ;(tx as TxCollectionCUD<any, any>).tx.modifiedOn = tx.modifiedOn
         }
       }
     }
