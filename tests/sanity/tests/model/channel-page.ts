@@ -80,6 +80,9 @@ export class ChannelPage extends CommonPage {
   readonly channelsListMenuButton = (): Locator =>
     this.page.locator('.hulyNavPanel-container').locator('a[href$="channels"]')
 
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
+
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
     await this.buttonSendMessage().click()
@@ -280,5 +283,10 @@ export class ChannelPage extends CommonPage {
     } else {
       await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(0)
     }
+  }
+
+  async searchChannel (channelName: string): Promise<void> {
+    await this.inputSearchIcon().click()
+    await this.inputSearchChannel().fill(channelName)
   }
 }

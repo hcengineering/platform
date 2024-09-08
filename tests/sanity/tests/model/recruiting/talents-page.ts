@@ -22,7 +22,6 @@ export class TalentsPage extends CommonRecruitingPage {
   textVacancyMatchingScore = (): Locator =>
     this.page.locator('form[id="recruit:string:VacancyMatching"] table > tbody > tr > td:nth-child(2)')
 
-  inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
   inputSearchTalent = (): Locator => this.page.getByPlaceholder('Search')
   andreyTalet = (): Locator => this.page.locator('text=P. Andrey')
 

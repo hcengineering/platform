@@ -496,4 +496,63 @@ test.describe('channel tests', () => {
       await channelPage.checkMessageExist('Test message', true, 'Test message')
     })
   })
+
+  test('User can filter channels in table', async () => {
+    await test.step('Prepare channel', async () => {
+      await leftSideMenuPage.clickChunter()
+      await chunterPage.clickChannelBrowser()
+      await chunterPage.clickNewChannelHeader()
+      await chunterPage.createPrivateChannel(data.channelName, false)
+      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+
+      await leftSideMenuPage.clickChunter()
+      await channelPage.clickChannelTab()
+    })
+
+    await test.step('Test filtering by name', async () => {
+      await channelPage.selectFilter('Name', data.channelName)
+      await channelPage.checkFilter('Name', 'contains', data.channelName)
+      await channelPage.checkIfChannelTableExist(data.channelName, true)
+      await channelPage.checkIfChannelTableExist('general', false)
+    })
+
+    await test.step('Clear Filters', async () => {
+      await channelPage.buttonClearFilters().click()
+      await channelPage.checkIfChannelTableExist('general', true)
+    })
+  })
+
+  test('User can search channel in table', async () => {
+    await test.step('Prepare channel', async () => {
+      await leftSideMenuPage.clickChunter()
+      await chunterPage.clickChannelBrowser()
+      await chunterPage.clickNewChannelHeader()
+      await chunterPage.createPrivateChannel(data.channelName, false)
+      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+
+      await leftSideMenuPage.clickChunter()
+      await channelPage.clickChannelTab()
+    })
+
+    await test.step('Search channel by first 3 char and find nothing', async () => {
+      await channelPage.searchChannel(data.channelName.slice(0, 3))
+      await channelPage.page.keyboard.press('Enter')
+      await channelPage.checkIfChannelTableExist(data.channelName, false)
+      await channelPage.checkIfChannelTableExist('general', false)
+    })
+
+    await test.step('Search channel by fillName and find channel', async () => {
+      await channelPage.searchChannel(data.channelName)
+      await channelPage.page.keyboard.press('Enter')
+      await channelPage.checkIfChannelTableExist(data.channelName, true)
+      await channelPage.checkIfChannelTableExist('general', false)
+    })
+
+    await test.step('Clear search and show all channels', async () => {
+      await channelPage.searchChannel('')
+      await channelPage.page.keyboard.press('Enter')
+      await channelPage.checkIfChannelTableExist(data.channelName, true)
+      await channelPage.checkIfChannelTableExist('general', true)
+    })
+  })
 })
