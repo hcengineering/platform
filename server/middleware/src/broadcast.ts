@@ -75,7 +75,7 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     const getTxes = (key: string): Tx[] => {
       let txes = toSendTarget.get(key)
       if (txes === undefined) {
-        txes = []
+        txes = [...(toSendTarget.get('') ?? [])] // We also need to add all from to all
         toSendTarget.set(key, txes)
       }
       return txes
