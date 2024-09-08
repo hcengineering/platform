@@ -227,3 +227,18 @@ export async function createAccountAndWorkspace (page: Page, request: APIRequest
   await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
   await reLogin(page, data)
 }
+
+export async function updateInputValue (inputLocator: Locator, inputValue: string): Promise<void> {
+  await inputLocator.click()
+  await inputLocator.fill(inputValue)
+}
+
+export async function verifyInputValue (inputLocator: Locator, inputValue: string): Promise<void> {
+  await expect(inputLocator).toHaveValue(inputValue)
+}
+
+export async function updateInputValueAndVerify (page: Page, inputLocator: Locator, inputValue: string ): Promise<void> {
+  await updateInputValue(inputLocator, inputValue)
+  await page.waitForTimeout(1000)
+  await verifyInputValue(inputLocator, inputValue)
+}

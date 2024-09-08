@@ -1,10 +1,21 @@
-import { expect, type Locator } from '@playwright/test'
+import { expect, type Locator, Page } from '@playwright/test'
 import { CommonPage } from './common-page'
 import { SpaceTypes, TaskTypes } from './types'
 
 export class SettingsPage extends CommonPage {
   profileButton = (): Locator => this.page.locator('#profile-button')
   settingsButton = (): Locator => this.page.locator('button:has-text("Settings")')
+  signOutButton = (): Locator => this.page.locator('button:has-text("Sign out")')
+  selectWorkspaceButton = (): Locator => this.page.locator('button:has-text("Select workspace")')
+  inviteToWorkspaceButton = (): Locator => this.page.locator('button:has-text("Invite to workspace")')
+  getInviteLinkButton = (): Locator => this.page.locator('button:has-text("Get invite link")')
+  copyButton = (): Locator => this.page.locator('button:has-text("Copy")')
+  useWorkspaceInviteSettingsToggleButton = (): Locator => this.page.locator('span:has-text("Use workspace invite settings")')
+  linkValidHoursInput = (): Locator => this.getInputByLabelText('Link valid (hours):')
+  emailMaskInput = (): Locator => this.getInputByLabelText('Email mask:')
+  noLimitToggleButton = (): Locator => this.page.locator('span:has-text("No limit")')
+  inviteLimitInput = (): Locator => this.getInputByLabelText('Invite limit:')
+  closeButton = (): Locator => this.page.locator('button:has-text("Close")')
   spaceTypesHeader = (): Locator => this.page.locator('button.hulyNavGroup-header', { hasText: 'Space types' })
   newSpaceTypeButton = (): Locator => this.page.locator('#new-space-type')
   popupSelectSpaceTypeButton = (): Locator =>
@@ -127,5 +138,12 @@ export class SettingsPage extends CommonPage {
     await this.selectIconButton().click()
     await this.emojiSectionButton().click()
     await this.emojiIconButton('❗').click()
+  }
+
+  getInputByLabelText (labelText: string): Locator {
+    const labelLocator = this.page.locator(`text=${labelText}`)
+    const parentLocator = labelLocator.locator('..')
+
+    return parentLocator.locator('input')
   }
 }

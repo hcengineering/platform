@@ -80,4 +80,8 @@ export class LoginPage {
     await expect(this.recoveryLoginText()).toBeVisible()
     await expect(this.recoverySignUpText()).toBeVisible()
   }
+
+  async verifyUrl (): Promise<void> {
+    await expect(this.page).toHaveURL(`${PlatformURI}/login`)
+  }
 }

@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonPage } from './common-page'
+import { PlatformURI } from '../utils'
 
 export class SelectWorkspacePage extends CommonPage {
   readonly page: Page
@@ -45,5 +46,9 @@ export class SelectWorkspacePage extends CommonPage {
 
   async checkIfWorkspaceExists (workspace: string): Promise<void> {
     await expect(this.workspaceList(workspace)).toBeVisible()
+  }
+
+  async verifyUrl (): Promise<void> {
+    await expect(this.page).toHaveURL(`${PlatformURI}/login/selectWorkspace`)
   }
 }

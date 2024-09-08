@@ -1,14 +1,24 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI, generateId } from './utils'
+import {
+  PlatformSetting,
+  PlatformURI,
+  generateId,
+  updateInputValueAndVerify,
+  PlatformUser,
+  DefaultWorkspace
+} from './utils'
 import { UserProfilePage } from './model/profile/user-profile-page'
 import { TemplatePage } from './model/tracker/templates-page'
 import { SettingsPage } from './model/settings-page'
 import { IssuesPage } from './model/tracker/issues-page'
 import { TaskTypes } from './model/types'
+import { LoginPage } from './model/login-page'
+import { SelectWorkspacePage } from './model/select-workspace-page'
 
 test.use({
   storageState: PlatformSetting
 })
+
 test.describe('settings tests', () => {
   let userProfilePage: UserProfilePage
   let templatePage: TemplatePage
@@ -23,12 +33,12 @@ test.describe('settings tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('update-profile', async () => {
+  test('update-profile', async ({ page }) => {
     await userProfilePage.gotoProfile(platformUri)
     await userProfilePage.openProfileMenu()
     await userProfilePage.selectProfileByName('Appleseed John')
     await userProfilePage.verifyProfilePageUrl(expectedProfileUrl)
-    await userProfilePage.updateLocation('LoPlaza')
+    await updateInputValueAndVerify(page, userProfilePage.locationInput(), 'LoPlaza')
     await userProfilePage.addOrEditPhone()
     await userProfilePage.applyChanges()
   })
@@ -108,5 +118,42 @@ test.describe('settings tests', () => {
     // await page.locator('.box > .antiEditBox input').fill('State3')
     // await page.locator('button:has-text("Save")').click()
     // await page.waitForSelector('form.antiCard', { state: 'detached' })
+  })
+
+  test('check click on "select workspace" settings button', async ({ page }) => {
+    const selectWorkspacePage: SelectWorkspacePage = new SelectWorkspacePage(page)
+    await settingsPage.navigateToWorkspace(platformUri)
+    await settingsPage.openProfileMenu()
+    await settingsPage.openSettings()
+    await settingsPage.selectWorkspaceButton().click()
+    await selectWorkspacePage.verifyUrl()
+    await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
+  })
+
+  test('check click on "Invite to workspace" settings button', async ({ page }) => {
+    await settingsPage.navigateToWorkspace(platformUri)
+    await settingsPage.openProfileMenu()
+    await settingsPage.openSettings()
+    await settingsPage.inviteToWorkspaceButton().click()
+    await settingsPage.getInviteLinkButton().click()
+    await settingsPage.copyButton().click()
+    await settingsPage.useWorkspaceInviteSettingsToggleButton().click()
+    await updateInputValueAndVerify(page, settingsPage.linkValidHoursInput(), '444')
+    await updateInputValueAndVerify(page, settingsPage.emailMaskInput(), 'test')
+    await settingsPage.noLimitToggleButton().click()
+    await updateInputValueAndVerify(page, settingsPage.inviteLimitInput(), '123')
+    await settingsPage.closeButton().click()
+  })
+
+  test('check click on "sign-out" settings button', async ({ page }) => {
+    const loginPage: LoginPage = new LoginPage(page)
+    const selectWorkspacePage: SelectWorkspacePage = new SelectWorkspacePage(page)
+    await settingsPage.navigateToWorkspace(platformUri)
+    await settingsPage.openProfileMenu()
+    await settingsPage.openSettings()
+    await settingsPage.signOutButton().click()
+    await loginPage.verifyUrl()
+    await loginPage.login(PlatformUser, '1234')
+    await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
   })
 })

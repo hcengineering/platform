@@ -91,11 +91,6 @@ export class UserProfilePage {
     await expect(this.page).toHaveURL(expectedUrl)
   }
 
-  async updateLocation (newLocation: string): Promise<void> {
-    await this.locationInput().click()
-    await this.locationInput().fill(newLocation)
-  }
-
   async clickOnNotificationsButton (): Promise<void> {
     await this.notificationsButton().click()
   }
