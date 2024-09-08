@@ -430,7 +430,7 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
     await page2.close()
   })
-  
+
   test('User can star and unstar a channel', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
@@ -439,14 +439,14 @@ test.describe('channel tests', () => {
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     })
-    
+
     await test.step('Star channel', async () => {
       await leftSideMenuPage.clickChunter()
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Star channel')
       await channelPage.checkChannelStarred(true, data.channelName)
       await channelPage.checkIfChannelDefaultExist(false, data.channelName)
     })
-    
+
     await test.step('Unstar channel', async () => {
       await leftSideMenuPage.clickChunter()
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Unstar channel')
@@ -454,7 +454,7 @@ test.describe('channel tests', () => {
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     })
   })
-  
+
   test('User can leave and join a channel', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
@@ -462,31 +462,31 @@ test.describe('channel tests', () => {
       await chunterPage.clickNewChannelHeader()
       await chunterPage.createPrivateChannel(data.channelName, false)
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-      
+
       await leftSideMenuPage.clickChunter()
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.sendMessage('Test message')
     })
-    
+
     await test.step('Leave channel #1', async () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
     })
-    
+
     await test.step('Join channel from a leaved channel page', async () => {
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
       await channelPage.clickJoinChannelButton()
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     })
-    
+
     await test.step('Leave channel #2', async () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
     })
-    
+
     await test.step('Open another channel and then check that leaved channel is removed from left menu', async () => {
       await channelPage.clickChooseChannel('random')
       await channelPage.checkIfChannelDefaultExist(false, data.channelName)
     })
-    
+
     await test.step('Join channel from a channels table', async () => {
       await channelPage.clickChannelTab()
       await channelPage.checkIfChannelTableExist(data.channelName, true)
