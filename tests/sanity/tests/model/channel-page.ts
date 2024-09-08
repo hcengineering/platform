@@ -72,6 +72,10 @@ export class ChannelPage extends CommonPage {
   readonly userAdded = (user: string): Locator => this.page.locator('.members').getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
+  
+  readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')
+  readonly starredChannelContainers = (): Locator => this.page.locator('#navGroup-starred').locator('.hulyNavItem-container')
+  readonly channelsListMenuButton = (): Locator => this.page.locator('.hulyNavPanel-container').locator('a[href$="channels"]')
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -259,5 +263,22 @@ export class ChannelPage extends CommonPage {
     await expect(this.channel(channel).nth(0)).toBeVisible()
     await expect(this.channel(channel).nth(1)).toBeVisible()
     await expect(this.channel(channel).nth(2)).toBeVisible()
+  }
+  
+  async makeActionWithChannelInMenu (channelName: string, action: string): Promise<void> {
+    await this.channelContainers().filter({ hasText: channelName }).hover()
+    await this.channelContainers()
+      .filter({ hasText: channelName })
+      .locator('.hulyNavItem-actions')
+      .click()
+    await this.selectFromDropdown(this.page, action)
+  }
+  
+  async checkChannelStarred (shouldExist: boolean, channelName: string): Promise<void> {
+    if (shouldExist) {
+      await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(1)
+    } else {
+      await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(0)
+    }
   }
 }
