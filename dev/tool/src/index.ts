@@ -48,7 +48,7 @@ import {
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect } from '@hcengineering/server-tool'
+import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
 import path from 'path'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
