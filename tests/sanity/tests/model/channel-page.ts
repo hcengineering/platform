@@ -83,13 +83,13 @@ export class ChannelPage extends CommonPage {
     this.page.locator('#navGroup-starred').locator('.hulyNavItem-container')
 
   readonly issueChannelContainers = (): Locator =>
-    this.page.locator('#navGroup-tracker:class:Issue').locator('.hulyNavItem-container')
+    this.page.locator('#navGroup-tracker\\:class\\:Issue').locator('.hulyNavItem-container')
 
   readonly vacancyChannelContainers = (): Locator =>
-    this.page.locator('#navGroup-recruit:class:Vacancy').locator('.hulyNavItem-container')
+    this.page.locator('#navGroup-recruit\\:class\\:Vacancy').locator('.hulyNavItem-container')
 
   readonly applicationChannelContainers = (): Locator =>
-    this.page.locator('#navGroup-recruit:class:Applicant').locator('.hulyNavItem-container')
+    this.page.locator('#navGroup-recruit\\:class\\:Applicant').locator('.hulyNavItem-container')
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -301,13 +301,19 @@ export class ChannelPage extends CommonPage {
   async checkLinkedChannelIsExist (channelName: string, linkedChannelType: LinkedChannelTypes): Promise<void> {
     switch (linkedChannelType) {
       case LinkedChannelTypes.Issue:
-        await expect(this.issueChannelContainers().filter({ hasText: channelName })).toBeVisible()
+        await expect(
+          this.issueChannelContainers().filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
+        ).toHaveCount(1)
         break
       case LinkedChannelTypes.Vacancy:
-        await expect(this.vacancyChannelContainers().filter({ hasText: channelName })).toBeVisible()
+        await expect(
+          this.vacancyChannelContainers().filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
+        ).toHaveCount(1)
         break
       case LinkedChannelTypes.Application:
-        await expect(this.applicationChannelContainers().filter({ hasText: channelName })).toBeVisible()
+        await expect(
+          this.applicationChannelContainers().filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
+        ).toHaveCount(1)
         break
       default:
         break
