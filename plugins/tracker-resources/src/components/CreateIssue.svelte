@@ -575,10 +575,12 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
+      const analyticsProps = await docCreateManager.getAnalyticsProps(currentProject, value)
       Analytics.handleEvent(TrackerEvents.IssueCreated, {
         ok: true,
         id: value.identifier,
-        project: currentProject.identifier
+        project: currentProject.identifier,
+        ...analyticsProps
       })
       console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {
