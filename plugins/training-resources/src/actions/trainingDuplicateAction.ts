@@ -24,7 +24,7 @@ export const trainingDuplicateAction = focusActionWithAvailability<Training>(
     const client = getClient()
     const currentEmployeeRef = getCurrentEmployeeRef()
 
-    const ops = client.apply(`training:duplicate:${object._id}`)
+    const ops = client.apply()
     const seqNumber = await getNextTrainingSeqNumber()
     const newTrainingRef = await ops.createDoc(object._class, object.space, {
       title: object.title,

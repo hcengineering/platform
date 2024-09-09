@@ -314,7 +314,7 @@ export async function updateNotifyContextsSpace (
     return []
   }
 
-  const notifyContexts = await control.findAllCtx(ctx, notification.class.DocNotifyContext, { objectId: tx.objectId })
+  const notifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, { objectId: tx.objectId })
 
   return notifyContexts.map((value) =>
     control.txFactory.createTxUpdateDoc(value._class, value.space, value._id, {

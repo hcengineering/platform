@@ -31,7 +31,7 @@ import core, {
 import { translate } from '@hcengineering/platform'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
-import { type IndexedDoc, type ServerStorage } from '../types'
+import { type IndexedDoc, type SessionFindAll } from '../types'
 import {
   contentStageId,
   type DocUpdateHandler,
@@ -63,7 +63,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
   // Summary should be not a bigger what 1mb of data.
   summaryLimit = 1024 * 1024
 
-  constructor (private readonly dbStorage: ServerStorage) {}
+  constructor (private readonly dbStorageFindAll: SessionFindAll) {}
 
   async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
 
@@ -86,7 +86,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
         'find-child',
         {},
         async (ctx) =>
-          await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+          await this.dbStorageFindAll(ctx, core.class.DocIndexState, {
             attachedTo: kids.length === 1 ? kids[0] : { $in: kids }
           })
       )
@@ -134,8 +134,8 @@ export class FullSummaryStage implements FullTextPipelineStage {
           const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
           if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
             // We need to include all parent content into this one.
-            const [parentDoc] = await this.dbStorage.findAll(
-              metrics.newChild('propagate', {}),
+            const [parentDoc] = await this.dbStorageFindAll(
+              metrics,
               core.class.DocIndexState,
               { _id: doc.attachedTo as Ref<DocIndexState> },
               { limit: 1 }
@@ -143,11 +143,10 @@ export class FullSummaryStage implements FullTextPipelineStage {
             if (parentDoc !== undefined) {
               const ctx = collectPropagateClasses(pipeline, parentDoc.objectClass)
               if (ctx.length > 0) {
-                const collections = await this.dbStorage.findAll(
-                  metrics.newChild('propagate', {}),
-                  core.class.DocIndexState,
-                  { attachedTo: parentDoc._id, objectClass: ctx.length === 1 ? ctx[0] : { $in: ctx } }
-                )
+                const collections = await this.dbStorageFindAll(metrics, core.class.DocIndexState, {
+                  attachedTo: parentDoc._id,
+                  objectClass: ctx.length === 1 ? ctx[0] : { $in: ctx }
+                })
                 for (const c of collections) {
                   embeddingText +=
                     '\n' +

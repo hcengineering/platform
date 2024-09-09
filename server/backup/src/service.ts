@@ -22,10 +22,11 @@ import {
   type MeasureContext,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
+import { PlatformError, unknownError } from '@hcengineering/platform'
 import { listAccountWorkspaces } from '@hcengineering/server-client'
 import {
   BackupClientOps,
-  SessionContextImpl,
+  SessionDataImpl,
   type Pipeline,
   type PipelineFactory,
   type StorageAdapter
@@ -46,7 +47,8 @@ class BackupWorker {
   constructor (
     readonly storageAdapter: StorageAdapter,
     readonly config: BackupConfig,
-    readonly pipelineFactory: PipelineFactory
+    readonly pipelineFactory: PipelineFactory,
+    readonly workspaceStorageAdapter: StorageAdapter
   ) {}
 
   canceled = false
@@ -130,7 +132,7 @@ class BackupWorker {
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
             blobDownloadLimit: 100,
             skipBlobContentTypes: [],
-            storageAdapter: pipeline.storage.storageAdapter,
+            storageAdapter: this.workspaceStorageAdapter,
             connection: this.wrapPipeline(ctx, pipeline, wsUrl)
           })
         })
@@ -144,8 +146,7 @@ class BackupWorker {
   }
 
   wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client & BackupClient {
-    const sctx = new SessionContextImpl(
-      ctx,
+    const contextData = new SessionDataImpl(
       systemAccountEmail,
       'backup',
       true,
@@ -154,16 +155,21 @@ class BackupWorker {
       null,
       false,
       new Map(),
-      new Map()
+      new Map(),
+      pipeline.context.modelDb
     )
-    const backupOps = new BackupClientOps(pipeline)
+    ctx.contextData = contextData
+    if (pipeline.context.lowLevelStorage === undefined) {
+      throw new PlatformError(unknownError('Low level storage is not available'))
+    }
+    const backupOps = new BackupClientOps(pipeline.context.lowLevelStorage)
 
     return {
       findAll: async (_class, query, options) => {
-        return await pipeline.findAll(sctx, _class, query, options)
+        return await pipeline.findAll(ctx, _class, query, options)
       },
       findOne: async (_class, query, options) => {
-        return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
+        return (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift()
       },
       clean: async (domain, docs) => {
         await backupOps.clean(ctx, domain, docs)
@@ -173,10 +179,10 @@ class BackupWorker {
         await backupOps.closeChunk(ctx, idx)
       },
       getHierarchy: () => {
-        return pipeline.storage.hierarchy
+        return pipeline.context.hierarchy
       },
       getModel: () => {
-        return pipeline.storage.modelDb
+        return pipeline.context.modelDb
       },
       loadChunk: async (domain, idx, recheck) => {
         return await backupOps.loadChunk(ctx, domain, idx, recheck)
@@ -206,9 +212,10 @@ export function backupService (
   ctx: MeasureContext,
   storage: StorageAdapter,
   config: BackupConfig,
-  pipelineFactory: PipelineFactory
+  pipelineFactory: PipelineFactory,
+  workspaceStorageAdapter: StorageAdapter
 ): () => void {
-  const backupWorker = new BackupWorker(storage, config, pipelineFactory)
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter)
 
   const shutdown = (): void => {
     void backupWorker.close()

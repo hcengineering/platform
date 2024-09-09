@@ -45,7 +45,7 @@ async function getDocs (
   if (states != null) query = { ...query, state: { $in: states } }
   if (controlledStates != null) query = { ...query, controlledState: { $in: controlledStates } }
 
-  const allDocs = await control.findAll(documents.class.ControlledDocument, query, {
+  const allDocs = await control.findAll(control.ctx, documents.class.ControlledDocument, query, {
     sort: { major: SortingOrder.Descending, minor: SortingOrder.Descending, patch: SortingOrder.Descending }
   })
 
@@ -106,7 +106,8 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
     return []
   }
 
-  const trainingObject = (await control.findAll(training.class.Training, { _id: documentTraining.training }))[0] ?? null
+  const trainingObject =
+    (await control.findAll(control.ctx, training.class.Training, { _id: documentTraining.training }))[0] ?? null
 
   if (trainingObject === null) {
     console.error(`Planned training ${documentTraining.training} not found`)
@@ -138,6 +139,7 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
 
     const space = (
       await control.findAll(
+        control.ctx,
         core.class.TypedSpace,
         {
           _id: trainingObject.space
@@ -173,7 +175,7 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
     })
 
     const employeeRefs = personAccounts.map((personAccount) => personAccount.person as Ref<Employee>)
-    const employees = await control.findAll(contact.mixin.Employee, {
+    const employees = await control.findAll(control.ctx, contact.mixin.Employee, {
       _id: { $in: employeeRefs }
     })
 
@@ -222,7 +224,7 @@ async function createDocumentTrainingRequest (doc: ControlledDocument, control: 
   // Force space to make transaction persistent and raise notifications
   resTx.space = core.space.Tx
 
-  await control.apply([resTx])
+  await control.apply(control.ctx, [resTx])
 
   return []
 }
@@ -273,7 +275,7 @@ export async function OnDocHasBecomeEffective (
   tx: TxUpdateDoc<ControlledDocument>,
   control: TriggerControl
 ): Promise<Tx[]> {
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
+  const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
   if (doc === undefined) {
     return []
   }
@@ -290,7 +292,7 @@ export async function OnDocHasBecomeEffective (
 }
 
 export async function OnDocDeleted (tx: TxUpdateDoc<ControlledDocument>, control: TriggerControl): Promise<Tx[]> {
-  const requests = await control.findAll(documents.class.DocumentRequest, {
+  const requests = await control.findAll(control.ctx, documents.class.DocumentRequest, {
     attachedTo: tx.objectId,
     status: RequestStatus.Active
   })
@@ -299,7 +301,7 @@ export async function OnDocDeleted (tx: TxUpdateDoc<ControlledDocument>, control
       status: RequestStatus.Cancelled
     })
   )
-  await control.apply([
+  await control.apply(control.ctx, [
     ...cancelTxes,
     control.txFactory.createTxUpdateDoc<ControlledDocument>(tx.objectClass, tx.objectSpace, tx.objectId, {
       controlledState: undefined
@@ -317,7 +319,7 @@ export async function OnDocPlannedEffectiveDateChanged (
     return []
   }
 
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
+  const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })).shift()
   if (doc === undefined) {
     return []
   }
@@ -326,7 +328,7 @@ export async function OnDocPlannedEffectiveDateChanged (
   if (tx.operations.plannedEffectiveDate === 0 && doc.controlledState === ControlledDocumentState.Approved) {
     // Create with not derived tx factory in order for notifications to work
     const factory = new TxFactory(control.txFactory.account)
-    await control.apply([makeDocEffective(doc, factory)])
+    await control.apply(control.ctx, [makeDocEffective(doc, factory)])
   }
 
   return []
@@ -336,14 +338,14 @@ export async function OnDocApprovalRequestApproved (
   tx: TxCollectionCUD<ControlledDocument, DocumentApprovalRequest>,
   control: TriggerControl
 ): Promise<Tx[]> {
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId })).shift()
+  const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId })).shift()
   if (doc == null || doc.plannedEffectiveDate !== 0) {
     return []
   }
 
   // Create with not derived tx factory in order for notifications to work
   const factory = new TxFactory(control.txFactory.account)
-  await control.apply([makeDocEffective(doc, factory)])
+  await control.apply(control.ctx, [makeDocEffective(doc, factory)])
 
   // make doc effective immediately
   return []
@@ -373,7 +375,7 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
   }
 
   const targetSpace = (
-    await control.findAll(documents.class.OrgSpace, {
+    await control.findAll(control.ctx, documents.class.OrgSpace, {
       _id: documents.space.QualityDocuments
     })
   )[0]

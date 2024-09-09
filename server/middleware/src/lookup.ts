@@ -21,31 +21,28 @@ import {
   FindResult,
   MeasureContext,
   Ref,
-  Tx,
   clone,
   toFindResult
 } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
-import { BaseMiddleware } from './base'
-
+import { BaseMiddleware, Middleware, type PipelineContext } from '@hcengineering/server-core'
 /**
  * @public
  */
 export class LookupMiddleware extends BaseMiddleware implements Middleware {
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<LookupMiddleware> {
-    return new LookupMiddleware(storage, next)
-  }
-
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    return await this.provideTx(ctx, tx)
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<LookupMiddleware> {
+    return new LookupMiddleware(context, next)
   }
 
   override async findAll<T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -70,8 +67,8 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
       }
 
       for (const d of result) {
+        const newDoc: any = { ...d }
         if (d.$lookup !== undefined) {
-          const newDoc: any = { ...d }
           newDoc.$lookup = clone(d.$lookup)
           newResult.push(newDoc)
           for (const [k, v] of Object.entries(d.$lookup)) {
@@ -81,6 +78,8 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
               newDoc.$lookup[k] = v.map((it) => (it != null ? mapDoc(it) : it))
             }
           }
+        } else {
+          newResult.push(newDoc)
         }
       }
       const lookupMap = Object.fromEntries(Array.from(Object.values(idClassMap)).map((it) => [it.id, it.doc]))

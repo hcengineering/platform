@@ -52,6 +52,7 @@ export function getPersonAccountById (_id: Ref<Account>, control: TriggerControl
 export async function getEmployee (employee: Ref<Employee>, control: TriggerControl): Promise<Employee | undefined> {
   const account = (
     await control.findAll(
+      control.ctx,
       contact.mixin.Employee,
       {
         _id: employee

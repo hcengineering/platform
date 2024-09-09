@@ -297,7 +297,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
                   if (docs.length === 0) {
                     break
                   }
-                  const ops = client.apply('delete' + project._id)
+                  const ops = client.apply(undefined, 'delete-project')
                   for (const object of docs) {
                     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
                       const adoc = object as AttachedDoc

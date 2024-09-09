@@ -26,15 +26,17 @@ import core, {
   type ModelDb,
   type Ref,
   TxFactory,
-  type WorkspaceId,
+  type WorkspaceIdWithUrl,
   _getOperator,
   docKey,
   groupByArray,
-  setObjectValue
+  setObjectValue,
+  systemAccountEmail
 } from '@hcengineering/core'
 import { type DbAdapter } from '../adapter'
 import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
+import { SessionDataImpl } from '../utils'
 import { type FullTextPipeline, type FullTextPipelineStage } from './types'
 
 export * from './content'
@@ -76,16 +78,17 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   updateTriggerTimer: any
   updateOps = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
+
   uploadOps: DocIndexState[] = []
 
   constructor (
     private readonly storage: DbAdapter,
     private readonly stages: FullTextPipelineStage[],
     readonly hierarchy: Hierarchy,
-    readonly workspace: WorkspaceId,
+    readonly workspace: WorkspaceIdWithUrl,
     readonly metrics: MeasureContext,
     readonly model: ModelDb,
-    readonly broadcastUpdate: (classes: Ref<Class<Doc>>[]) => void
+    readonly broadcastUpdate: (ctx: MeasureContext, classes: Ref<Class<Doc>>[]) => void
   ) {
     this.readyStages = stages.map((it) => it.stageId)
     this.readyStages.sort()
@@ -405,7 +408,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (this.broadcastClasses.size > 0) {
               const toSend = Array.from(this.broadcastClasses.values())
               this.broadcastClasses.clear()
-              this.broadcastUpdate(toSend)
+              this.broadcastUpdate(this.metrics, toSend)
             }
           }, 5000)
 
@@ -528,6 +531,19 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     _classUpdate: Set<Ref<Class<Doc>>>
   ): Promise<void> {
     this.toIndex = new Map(result.map((it) => [it._id, it]))
+    const contextData = new SessionDataImpl(
+      systemAccountEmail,
+      '',
+      true,
+      { targets: {}, txes: [] },
+      this.workspace,
+      null,
+      false,
+      new Map(),
+      new Map(),
+      this.model
+    )
+    ctx.contextData = contextData
     for (const st of this.stages) {
       this.extraIndex.clear()
       this.stageChanged = 0

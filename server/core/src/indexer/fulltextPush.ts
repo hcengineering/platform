@@ -36,7 +36,7 @@ import core, {
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
 import { updateDocWithPresenter } from '../mapper'
-import { type FullTextAdapter, type IndexedDoc, type ServerStorage } from '../types'
+import { type FullTextAdapter, type IndexedDoc, type SessionFindAll } from '../types'
 import {
   contentStageId,
   type DocUpdateHandler,
@@ -66,7 +66,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
   field_enabled = '_use'
 
   constructor (
-    private readonly dbStorage: ServerStorage,
+    private readonly dbStorageFindAll: SessionFindAll,
     readonly fulltextAdapter: FullTextAdapter,
     readonly workspace: WorkspaceId,
     readonly branding: Branding | null
@@ -128,7 +128,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
         'find-child',
         {},
         async (ctx) =>
-          await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+          await this.dbStorageFindAll(ctx, core.class.DocIndexState, {
             attachedTo: childIds.length === 1 ? childIds[0] : { $in: childIds }
           })
       )
@@ -139,7 +139,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           'find-spaces',
           {},
           async (ctx) =>
-            await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
+            await this.dbStorageFindAll(ctx, core.class.DocIndexState, {
               _id: {
                 $in: toIndexPart.map(
                   (doc) =>
@@ -190,7 +190,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
                 parentsMap.get(doc.attachedTo as Ref<DocIndexState>) ??
                 (await ctx.with('find-parent', {}, async (ctx) =>
                   (
-                    await this.dbStorage.findAll(
+                    await this.dbStorageFindAll(
                       ctx,
                       core.class.DocIndexState,
                       {
@@ -218,11 +218,10 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
                 const collectClasses = collectPropagateClasses(pipeline, parentDoc.objectClass)
                 if (collectClasses.length > 0) {
-                  const collections = await this.dbStorage.findAll<DocIndexState>(
-                    ctx.newChild('propagate', {}),
-                    core.class.DocIndexState,
-                    { attachedTo: parentDoc._id, objectClass: { $in: collectClasses } }
-                  )
+                  const collections = await this.dbStorageFindAll<DocIndexState>(ctx, core.class.DocIndexState, {
+                    attachedTo: parentDoc._id,
+                    objectClass: { $in: collectClasses }
+                  })
                   for (const c of collections) {
                     ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
                       updateDoc2Elastic(

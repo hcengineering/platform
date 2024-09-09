@@ -366,7 +366,7 @@ export class RepositorySyncMapper implements DocSyncManager {
           { _class: github.class.DocSyncInfo, repository: repo._id, processingId: { $ne: processingId } },
           { limit: 1000 }
         )
-        const ops = derivedClient.apply(repo._id)
+        const ops = derivedClient.apply()
         if (docs.length === 0) {
           break
         }

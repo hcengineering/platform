@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { type DbAdapterFactory } from './adapter'
 import { type FullTextPipelineStage } from './indexer/types'
 import { type StorageAdapter } from './storage'
@@ -23,8 +23,8 @@ import type {
   ContentTextAdapterFactory,
   FullTextAdapter,
   FullTextAdapterFactory,
-  ServerStorage,
-  ServiceAdapterConfig
+  ServiceAdapterConfig,
+  SessionFindAll
 } from './types'
 
 /**
@@ -49,7 +49,7 @@ export interface ContentTextAdapterConfiguration {
  */
 export type FullTextPipelineStageFactory = (
   adapter: FullTextAdapter,
-  storage: ServerStorage,
+  storageFindAll: SessionFindAll,
   storageAdapter: StorageAdapter,
   contentAdapter: ContentTextAdapter
 ) => FullTextPipelineStage[]
@@ -60,7 +60,6 @@ export interface DbConfiguration {
   adapters: Record<string, DbAdapterConfiguration>
   domains: Record<string, string>
   defaultAdapter: string
-  workspace: WorkspaceIdWithUrl
   metrics: MeasureContext
   fulltextAdapter: {
     factory: FullTextAdapterFactory
@@ -70,7 +69,4 @@ export interface DbConfiguration {
   contentAdapters: Record<string, ContentTextAdapterConfiguration>
   serviceAdapters: Record<string, ServiceAdapterConfig>
   defaultContentAdapter: string
-
-  // Should not be closed by server
-  storageFactory: StorageAdapter
 }

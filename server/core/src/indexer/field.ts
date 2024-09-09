@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   extractDocKey,
   getFullTextContext,
@@ -27,7 +28,7 @@ import core, {
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import { type DbAdapter } from '../adapter'
-import { type IndexedDoc, type ServerStorage } from '../types'
+import { type IndexedDoc, type SessionFindAll } from '../types'
 import {
   contentStageId,
   fieldStateId,
@@ -36,7 +37,6 @@ import {
   type FullTextPipelineStage
 } from './types'
 import { collectPropagate, docKey, docUpdKey, getContent, getCustomAttrKeys, isFullTextAttribute } from './utils'
-import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -52,7 +52,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
   updateFields: DocUpdateHandler[] = []
 
   enabled = true
-  constructor (private readonly dbStorage: ServerStorage) {}
+  constructor (private readonly dbStorageFindAll: SessionFindAll) {}
 
   async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
 
@@ -78,7 +78,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       const valueIds = new Map(values.map((it) => [it._id, it]))
       const objClass = v as Ref<Class<Doc>>
       const kids = Array.from(valueIds.keys())
-      const docs = await this.dbStorage.findAll(
+      const docs = await this.dbStorageFindAll(
         metrics,
         objClass,
         {
@@ -169,7 +169,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
                 'propagate',
                 {},
                 async (ctx) =>
-                  await this.dbStorage.findAll(
+                  await this.dbStorageFindAll(
                     ctx,
                     core.class.DocIndexState,
                     {

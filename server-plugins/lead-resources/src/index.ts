@@ -64,7 +64,7 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
   }
 
   const targetFunnel = (
-    await control.findAll(lead.class.Funnel, {
+    await control.findAll(control.ctx, lead.class.Funnel, {
       _id: lead.space.DefaultFunnel
     })
   )[0]

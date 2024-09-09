@@ -13,25 +13,7 @@
 // limitations under the License.
 //
 
-import core, {
-  Account,
-  Class,
-  Client,
-  Doc,
-  MeasureContext,
-  Ref,
-  Space,
-  Tx,
-  TxCreateDoc,
-  TxOperations,
-  TxProcessor,
-  Blob,
-  RateLimiter,
-  generateId,
-  TxRemoveDoc,
-  Data
-} from '@hcengineering/core'
-import aiBot, { AIBotEvent, aiBotAccountEmail, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
+import aiBot, { aiBotAccountEmail, AIBotEvent, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
 import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
 import contact, {
   AvatarType,
@@ -41,12 +23,29 @@ import contact, {
   Person,
   PersonAccount
 } from '@hcengineering/contact'
+import core, {
+  Account,
+  Blob,
+  Class,
+  Client,
+  Data,
+  Doc,
+  MeasureContext,
+  RateLimiter,
+  Ref,
+  Space,
+  Tx,
+  TxCreateDoc,
+  TxOperations,
+  TxProcessor,
+  TxRemoveDoc
+} from '@hcengineering/core'
+import { countTokens } from '@hcengineering/openai'
+import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
 import { BlobClient } from '@hcengineering/server-client'
-import fs from 'fs'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { countTokens } from '@hcengineering/openai'
 import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
+import fs from 'fs'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
 
@@ -229,7 +228,7 @@ export class WorkspaceClient {
     space: Ref<Space>,
     message: string
   ): Promise<void> {
-    const op = client.apply(generateId(), 'AIBotTransferEvent')
+    const op = client.apply(undefined, 'AIBotTransferEvent')
     if (event.messageClass === chunter.class.ChatMessage) {
       await this.startTyping(client, space, _id, _class)
       const ref = await op.addCollection<Doc, ChatMessage>(
@@ -426,7 +425,7 @@ export class WorkspaceClient {
     const client = await this.opClient
     const hierarchy = client.getHierarchy()
 
-    const op = client.apply(generateId(), 'AIBotResponseEvent')
+    const op = client.apply(undefined, 'AIBotResponseEvent')
     const { user, objectId, objectClass, messageClass } = event
     const space = hierarchy.isDerived(objectClass, core.class.Space) ? (objectId as Ref<Space>) : event.objectSpace
 

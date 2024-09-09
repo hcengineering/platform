@@ -66,46 +66,57 @@ export function measure (
   endOp?: (spend: number) => void
 ): () => void {
   const st = Date.now()
-  return (value?: number, override?: boolean) => {
-    const ed = Date.now()
-
-    const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
-    // Update params if required
-    for (const [k, v] of Object.entries(params)) {
-      let params = metrics.params[k]
-      if (params === undefined) {
-        params = {}
-        metrics.params[k] = params
-      }
-      const vKey = `${v?.toString() ?? ''}`
-      let param = params[vKey]
-      if (param === undefined) {
-        param = {
-          operations: 0,
-          value: 0
-        }
-        params[vKey] = param
-      }
-      if (override === true) {
-        metrics.operations = value ?? ed - st
-      } else {
-        param.value += value ?? ed - st
-        param.operations++
-      }
-
-      param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
-    }
-    // Update leaf data
-    if (override === true) {
-      metrics.operations = value ?? ed - st
-    } else {
-      metrics.value += value ?? ed - st
-      metrics.operations++
-    }
-
-    metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fParams)
-    endOp?.(ed - st)
+  return () => {
+    updateMeasure(metrics, st, params, fullParams, endOp)
   }
+}
+export function updateMeasure (
+  metrics: Metrics,
+  st: number,
+  params: ParamsType,
+  fullParams: FullParamsType | (() => FullParamsType),
+  endOp?: (spend: number) => void,
+  value?: number,
+  override?: boolean
+): void {
+  const ed = Date.now()
+
+  const fParams = typeof fullParams === 'function' ? fullParams() : fullParams
+  // Update params if required
+  for (const [k, v] of Object.entries(params)) {
+    let params = metrics.params[k]
+    if (params === undefined) {
+      params = {}
+      metrics.params[k] = params
+    }
+    const vKey = `${v?.toString() ?? ''}`
+    let param = params[vKey]
+    if (param === undefined) {
+      param = {
+        operations: 0,
+        value: 0
+      }
+      params[vKey] = param
+    }
+    if (override === true) {
+      param.operations = value ?? ed - st
+    } else {
+      param.value += value ?? ed - st
+      param.operations++
+    }
+
+    param.topResult = getUpdatedTopResult(param.topResult, ed - st, fParams)
+  }
+  // Update leaf data
+  if (override === true) {
+    metrics.operations = value ?? ed - st
+  } else {
+    metrics.value += value ?? ed - st
+    metrics.operations++
+  }
+
+  metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fParams)
+  endOp?.(ed - st)
 }
 
 /**

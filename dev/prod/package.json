@@ -42,7 +42,7 @@
     "postcss-load-config": "^4.0.1",
     "compression-webpack-plugin": "^10.0.0",
     "html-webpack-plugin": "^5.5.0",
-    "fork-ts-checker-webpack-plugin": "~7.3.0",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
     "update-browserslist-db": "^1.1.0",
     "browserslist": "^4.23.3",
     "esbuild": "^0.20.0",

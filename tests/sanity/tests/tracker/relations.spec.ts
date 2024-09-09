@@ -1,10 +1,10 @@
-import { expect, test } from '@playwright/test'
-import { IssuesPage } from '../model/tracker/issues-page'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { NewIssue } from '../model/tracker/types'
+import { test } from '@playwright/test'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { IssuesPage } from '../model/tracker/issues-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
+import { NewIssue } from '../model/tracker/types'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { prepareNewIssueStep } from './common-steps'
 
 test.use({
@@ -167,7 +167,7 @@ test.describe('Relations', () => {
 
       // delete here
       await issuesDetailsPage.clickRemoveBlockedBy()
-      expect(issuesDetailsPage.checkIfTextBlockedByIsVisible())
+      await issuesDetailsPage.checkIfTextBlockedByIsVisible()
     })
 
     await test.step('Check the second issue description', async () => {
@@ -175,7 +175,7 @@ test.describe('Relations', () => {
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueByName(secondIssue.title)
       await issuesDetailsPage.waitDetailsOpened(secondIssue.title)
-      expect(issuesDetailsPage.checkIfTextBlockedByIsVisible())
+      await issuesDetailsPage.checkIfTextBlockedByIsVisible()
     })
   })
 })

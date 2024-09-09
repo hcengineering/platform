@@ -589,12 +589,6 @@ interface TaskListStateCore extends StateCore {
 const startsWithTodoMarkdown = (token: Token): boolean => /^\[[xX \u00A0]\][ \u00A0]/.test(token.content)
 const isCheckedTodoItem = (token: Token): boolean => /^\[[xX]\][ \u00A0]/.test(token.content)
 
-const isTodoListItemInline = (tokens: Token[], index: number): boolean =>
-  isInlineToken(tokens[index]) &&
-  isParagraphToken(tokens[index - 1]) &&
-  isListItemToken(tokens[index - 2]) &&
-  startsWithTodoMarkdown(tokens[index])
-
 export class MarkdownParser {
   tokenizer: MarkdownIt
   tokenHandlers: Record<string, (state: MarkdownParseState, tok: Token) => void>
@@ -607,7 +601,7 @@ export class MarkdownParser {
     this.tokenizer = MarkdownIt('default', {
       html: true
     })
-    this.tokenizer.core.ruler.after('inline', 'task_list', this.taskListRule)
+    this.tokenizer.core.ruler.after('inline', 'task_list', this.listRule)
 
     this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule, extensions)
   }
@@ -625,98 +619,132 @@ export class MarkdownParser {
     return doc
   }
 
-  taskListRule: RuleCore = (state: TaskListStateCore): boolean => {
+  listRule: RuleCore = (state: TaskListStateCore): boolean => {
     const tokens = state.tokens
 
-    interface TodoListItemDescriptor {
-      start?: number
-      end?: number
+    // step #1 - convert list items to todo items
+    for (let open = 0; open < tokens.length; open++) {
+      if (isTodoListItem(tokens, open)) {
+        convertTodoItem(tokens, open)
+      }
     }
 
-    let todoListStartIdx: number | undefined
-    let todoListItems: TodoListItemDescriptor[] = []
-    let todoListItem: TodoListItemDescriptor | undefined
-    let isTodoList = false
-    for (let i = 0; i < tokens.length; i++) {
-      if (tokens[i].type === 'bullet_list_open') {
-        todoListStartIdx = i
-        isTodoList = true
-      }
-
-      if (tokens[i].type === 'list_item_open') {
-        todoListItem = {
-          start: i
-        }
-      }
-
-      if (tokens[i].type === 'inline') {
-        if (todoListItem === undefined || !isTodoListItemInline(tokens, i)) {
-          isTodoList = false
-        }
-      }
-
-      if (tokens[i].type === 'list_item_close' && todoListItem !== undefined) {
-        todoListItem.end = i
-        if (isTodoList) {
-          todoListItems.push(todoListItem)
-        }
-        todoListItem = undefined
-      }
-
+    // step #2 - convert lists to proper type
+    let closeIdx = -1
+    let lastItemIdx = -1
+    for (let i = tokens.length - 1; i >= 0; i--) {
       if (tokens[i].type === 'bullet_list_close') {
-        if (isTodoList && todoListStartIdx !== undefined) {
-          // Transform tokens
-          tokens[todoListStartIdx].type = 'todo_list_open'
-          tokens[i].type = 'todo_list_close'
-
-          for (const item of todoListItems) {
-            if (item.start !== undefined && item.end !== undefined) {
-              tokens[item.start].type = 'todo_item_open'
-              tokens[item.end].type = 'todo_item_close'
-
-              const inline = tokens[item.start + 2]
-
-              if (tokens[item.start].attrs == null) {
-                tokens[item.start].attrs = []
-              }
-
-              if (isCheckedTodoItem(inline)) {
-                ;(tokens[item.start].attrs as any).push(['checked', 'true'])
-              }
-
-              if (inline.children !== null) {
-                const newContent = inline.children[0].content.slice(4)
-                if (newContent.length > 0) {
-                  inline.children[0].content = newContent
-                } else {
-                  inline.children = inline.children.slice(1)
-                }
-
-                const metaTok = inline.children.find(
-                  (tok) => tok.type === 'html_inline' && tok.content.startsWith('<!--') && tok.content.endsWith('-->')
-                )
-                if (metaTok !== undefined) {
-                  const metaValues = metaTok.content.slice(5, -4).split(',')
-                  for (const mv of metaValues) {
-                    if (mv.startsWith('todoid')) {
-                      ;(tokens[item.start].attrs as any).push(['todoid', mv.slice(7)])
-                    }
-                    if (mv.startsWith('userid')) {
-                      ;(tokens[item.start].attrs as any).push(['userid', mv.slice(7)])
-                    }
-                  }
-                }
-              }
-            }
-          }
+        closeIdx = i
+        lastItemIdx = -1
+      } else if (tokens[i].type === 'list_item_close' || tokens[i].type === 'todo_item_close') {
+        // when found item close token of different type, split the list
+        if (lastItemIdx === -1) {
+          lastItemIdx = i
+        } else if (tokens[i].type !== tokens[lastItemIdx].type) {
+          tokens.splice(i + 1, 0, new state.Token('bullet_list_open', 'ul', 1))
+          tokens.splice(i + 1, 0, new state.Token('bullet_list_close', 'ul', -1))
+          convertTodoList(tokens, i + 2, closeIdx + 2, lastItemIdx + 2)
+          closeIdx = i + 1
+          lastItemIdx = i
+        }
+      } else if (tokens[i].type === 'bullet_list_open' && tokens[i].level === tokens[closeIdx].level) {
+        // when found list open token of the same level, decide what to do
+        if (lastItemIdx !== -1) {
+          convertTodoList(tokens, i, closeIdx, lastItemIdx)
         }
 
-        todoListStartIdx = undefined
-        todoListItems = []
-        isTodoList = false
+        // Reset closeIdx and lastItemIdx for the next list
+        closeIdx = -1
+        lastItemIdx = -1
       }
     }
 
     return true
   }
+}
+
+function convertTodoList (tokens: Token[], open: number, close: number, item: number): void {
+  if (tokens[open].type !== 'bullet_list_open') {
+    throw new Error('bullet_list_open token expected')
+  }
+  if (tokens[close].type !== 'bullet_list_close') {
+    throw new Error('bullet_list_close token expected')
+  }
+
+  if (tokens[item].type === 'todo_item_close') {
+    tokens[open].type = 'todo_list_open'
+    tokens[close].type = 'todo_list_close'
+  }
+}
+
+function convertTodoItem (tokens: Token[], open: number): boolean {
+  const close = findListItemCloseToken(tokens, open)
+  if (close !== -1) {
+    tokens[open].type = 'todo_item_open'
+    tokens[close].type = 'todo_item_close'
+
+    const inline = tokens[open + 2]
+
+    if (tokens[open].attrs == null) {
+      tokens[open].attrs = []
+    }
+
+    ;(tokens[open].attrs as any).push(['checked', isCheckedTodoItem(inline) ? 'true' : 'false'])
+
+    if (inline.children !== null) {
+      const newContent = inline.children[0].content.slice(4)
+      if (newContent.length > 0) {
+        inline.children[0].content = newContent
+      } else {
+        inline.children = inline.children.slice(1)
+      }
+
+      const metaTok = inline.children.find(
+        (tok) => tok.type === 'html_inline' && tok.content.startsWith('<!--') && tok.content.endsWith('-->')
+      )
+      if (metaTok !== undefined) {
+        const metaValues = metaTok.content.slice(5, -4).split(',')
+        for (const mv of metaValues) {
+          if (mv.startsWith('todoid')) {
+            ;(tokens[open].attrs as any).push(['todoid', mv.slice(7)])
+          }
+          if (mv.startsWith('userid')) {
+            ;(tokens[open].attrs as any).push(['userid', mv.slice(7)])
+          }
+        }
+      }
+    }
+
+    return true
+  }
+
+  return false
+}
+
+function findListItemCloseToken (tokens: Token[], open: number): number {
+  if (tokens[open].type !== 'list_item_open') {
+    throw new Error('list_item_open token expected')
+  }
+
+  const level = tokens[open].level
+  for (let close = open + 1; close < tokens.length; close++) {
+    if (tokens[close].type === 'list_item_close' && tokens[close].level === level) {
+      return close
+    }
+  }
+
+  return -1
+}
+
+// todo token structure
+// tokens[i].type === list_item_open
+// tokens[i + 1].type === paragraph
+// tokens[i + 2].type === inline
+function isTodoListItem (tokens: Token[], pos: number): boolean {
+  return (
+    isListItemToken(tokens[pos]) &&
+    isParagraphToken(tokens[pos + 1]) &&
+    isInlineToken(tokens[pos + 2]) &&
+    startsWithTodoMarkdown(tokens[pos + 2])
+  )
 }

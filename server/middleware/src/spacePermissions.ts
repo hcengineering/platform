@@ -17,7 +17,6 @@ import core, {
   AttachedDoc,
   Class,
   Doc,
-  MeasureContext,
   Permission,
   Ref,
   Role,
@@ -33,52 +32,61 @@ import core, {
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
-  TypedSpace
+  TypedSpace,
+  type MeasureContext,
+  type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
+import { Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 
-import { BaseMiddleware } from './base'
-import { getUser } from './utils'
+import { BaseMiddleware } from '@hcengineering/server-core'
 
 /**
  * @public
  */
 export class SpacePermissionsMiddleware extends BaseMiddleware implements Middleware {
-  private spaceMeasureCtx!: MeasureContext
   private whitelistSpaces = new Set<Ref<Space>>()
   private assignmentBySpace: Record<Ref<Space>, RolesAssignment> = {}
   private permissionsBySpace: Record<Ref<Space>, Record<Ref<Account>, Set<Ref<Permission>>>> = {}
   private typeBySpace: Record<Ref<Space>, Ref<SpaceType>> = {}
+  wasInit: Promise<void> | boolean = false
 
   static async create (
     ctx: MeasureContext,
-    storage: ServerStorage,
-    next?: Middleware
+    context: PipelineContext,
+    next: Middleware | undefined
   ): Promise<SpacePermissionsMiddleware> {
-    const res = new SpacePermissionsMiddleware(storage, next)
-    res.spaceMeasureCtx = ctx.newChild('space permisisons', {})
-    await res.init(res.spaceMeasureCtx)
-    return res
+    return new SpacePermissionsMiddleware(context, next)
   }
 
   private async init (ctx: MeasureContext): Promise<void> {
-    const spaces: Space[] = await this.storage.findAll(ctx, core.class.Space, {})
-
-    for (const space of spaces) {
-      if (this.isTypedSpace(space)) {
-        await this.addRestrictedSpace(space)
-      }
+    if (this.wasInit === true) {
+      return
     }
+    if (this.wasInit === false) {
+      this.wasInit = (async () => {
+        const spaces: Space[] = (await this.next?.findAll(ctx, core.class.Space, {})) ?? []
 
-    this.whitelistSpaces = new Set(spaces.filter((s) => !this.isTypedSpaceClass(s._class)).map((p) => p._id))
+        for (const space of spaces) {
+          if (this.isTypedSpace(space)) {
+            this.addRestrictedSpace(space)
+          }
+        }
+
+        this.whitelistSpaces = new Set(spaces.filter((s) => !this.isTypedSpaceClass(s._class)).map((p) => p._id))
+      })()
+    }
+    if (this.wasInit instanceof Promise) {
+      await this.wasInit
+      this.wasInit = true
+    }
   }
 
-  private async getRoles (spaceTypeId: Ref<SpaceType>): Promise<Role[]> {
-    return await this.storage.modelDb.findAll(core.class.Role, { attachedTo: spaceTypeId })
+  private getRoles (spaceTypeId: Ref<SpaceType>): Role[] {
+    return this.context.modelDb.findAllSync(core.class.Role, { attachedTo: spaceTypeId })
   }
 
-  private async setPermissions (spaceId: Ref<Space>, roles: Role[], assignment: RolesAssignment): Promise<void> {
+  private setPermissions (spaceId: Ref<Space>, roles: Role[], assignment: RolesAssignment): void {
     for (const role of roles) {
       const roleMembers: Ref<Account>[] = assignment[role._id] ?? []
 
@@ -94,10 +102,10 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     }
   }
 
-  private async addRestrictedSpace (space: TypedSpace): Promise<void> {
+  private addRestrictedSpace (space: TypedSpace): void {
     this.permissionsBySpace[space._id] = {}
 
-    const spaceType = await this.storage.modelDb.findOne(core.class.SpaceType, { _id: space.type })
+    const spaceType = this.context.modelDb.findAllSync(core.class.SpaceType, { _id: space.type })[0]
 
     if (spaceType === undefined) {
       return
@@ -105,12 +113,12 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
     this.typeBySpace[space._id] = space.type
 
-    const asMixin: RolesAssignment = this.storage.hierarchy.as(
+    const asMixin: RolesAssignment = this.context.hierarchy.as(
       space,
       spaceType.targetClass
     ) as unknown as RolesAssignment
 
-    const allPossibleRoles = this.storage.modelDb.findAllSync(core.class.Role, {})
+    const allPossibleRoles = this.context.modelDb.findAllSync(core.class.Role, {})
     const requiredValues: Record<string, any> = {}
     for (const role of allPossibleRoles) {
       const v = asMixin[role._id]
@@ -121,11 +129,11 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
     this.assignmentBySpace[space._id] = requiredValues
 
-    await this.setPermissions(space._id, await this.getRoles(spaceType._id), asMixin)
+    this.setPermissions(space._id, this.getRoles(spaceType._id), asMixin)
   }
 
   private isTypedSpaceClass (_class: Ref<Class<Space>>): boolean {
-    const h = this.storage.hierarchy
+    const h = this.context.hierarchy
 
     return h.isDerived(_class, core.class.TypedSpace)
   }
@@ -139,8 +147,8 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
    *
    * Checks if the required permission is present in the space for the given context
    */
-  private async checkPermission (ctx: SessionContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<boolean> {
-    const account = await getUser(this.storage, ctx)
+  private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, id: Ref<Permission>): boolean {
+    const account = ctx.contextData.account
     const permissions = this.permissionsBySpace[space]?.[account._id] ?? new Set()
 
     return permissions.has(id)
@@ -150,33 +158,33 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
-  /**
-   * @private
-   *
-   * Throws if the required permission is missing in the space for the given context
-   */
-  private async needPermission (ctx: SessionContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<void> {
-    if (await this.checkPermission(ctx, space, id)) {
-      return
-    }
+  // /**
+  //  * @private
+  //  *
+  //  * Throws if the required permission is missing in the space for the given context
+  //  */
+  // private async needPermission (ctx: MeasureContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<void> {
+  //   if (this.checkPermission(ctx, space, id)) {
+  //     return
+  //   }
 
-    this.throwForbidden()
-  }
+  //   this.throwForbidden()
+  // }
 
-  private async handleCreate (tx: TxCUD<Space>): Promise<void> {
+  private handleCreate (tx: TxCUD<Space>): void {
     const createTx = tx as TxCreateDoc<Space>
-    if (!this.storage.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
+    if (!this.context.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
     if (this.isTypedSpaceClass(createTx.objectClass)) {
       const res = TxProcessor.buildDoc2Doc<TypedSpace>([createTx])
       if (res !== undefined) {
-        await this.addRestrictedSpace(res)
+        this.addRestrictedSpace(res)
       }
     } else {
       this.whitelistSpaces.add(createTx.objectId)
     }
   }
 
-  private async handleMixin (tx: TxCUD<Space>): Promise<void> {
+  private handleMixin (tx: TxCUD<Space>): void {
     if (!this.isTypedSpaceClass(tx.objectClass)) {
       return
     }
@@ -188,7 +196,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return
     }
 
-    const spaceType = await this.storage.modelDb.findOne(core.class.SpaceType, { _id: spaceTypeId })
+    const spaceType = this.context.modelDb.findAllSync(core.class.SpaceType, { _id: spaceTypeId }).shift()
 
     if (spaceType === undefined) {
       return
@@ -204,7 +212,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     // so we can just rebuild the permissions
     const assignment: RolesAssignment = mixinDoc.attributes as RolesAssignment
 
-    const allPossibleRoles = this.storage.modelDb.findAllSync(core.class.Role, {})
+    const allPossibleRoles = this.context.modelDb.findAllSync(core.class.Role, {})
     const requiredValues: Record<string, any> = {}
     for (const role of allPossibleRoles) {
       const v = assignment[role._id]
@@ -216,12 +224,12 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     this.assignmentBySpace[spaceId] = requiredValues
 
     this.permissionsBySpace[tx.objectId] = {}
-    await this.setPermissions(spaceId, await this.getRoles(spaceType._id), assignment)
+    this.setPermissions(spaceId, this.getRoles(spaceType._id), assignment)
   }
 
   private handleRemove (tx: TxCUD<Space>): void {
     const removeTx = tx as TxRemoveDoc<Space>
-    if (!this.storage.hierarchy.isDerived(removeTx.objectClass, core.class.Space)) return
+    if (!this.context.hierarchy.isDerived(removeTx.objectClass, core.class.Space)) return
     if (removeTx._class !== core.class.TxCreateDoc) return
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete this.permissionsBySpace[tx.objectId]
@@ -234,18 +242,18 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   private isSpaceTxCUD (tx: TxCUD<Doc>): tx is TxCUD<Space> {
-    return this.storage.hierarchy.isDerived(tx.objectClass, core.class.Space)
+    return this.context.hierarchy.isDerived(tx.objectClass, core.class.Space)
   }
 
   private isTxCollectionCUD (tx: TxCUD<Doc>): tx is TxCollectionCUD<Doc, AttachedDoc> {
-    return this.storage.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)
+    return this.context.hierarchy.isDerived(tx._class, core.class.TxCollectionCUD)
   }
 
   private isRoleTxCUD (tx: TxCUD<Doc>): tx is TxCUD<Role> {
-    return this.storage.hierarchy.isDerived(tx.objectClass, core.class.Role)
+    return this.context.hierarchy.isDerived(tx.objectClass, core.class.Role)
   }
 
-  private async handlePermissionsUpdatesFromRoleTx (ctx: SessionContext, tx: TxCUD<Doc>): Promise<void> {
+  private handlePermissionsUpdatesFromRoleTx (ctx: MeasureContext, tx: TxCUD<Doc>): void {
     if (!this.isTxCollectionCUD(tx)) {
       return
     }
@@ -289,7 +297,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       }
 
       const assignment: RolesAssignment = this.assignmentBySpace[spaceId]
-      const roles = await this.getRoles(spaceTypeId)
+      const roles = this.getRoles(spaceTypeId)
       const targetRole = roles.find((r) => r._id === updateTx.objectId)
 
       if (targetRole === undefined) {
@@ -299,52 +307,55 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       targetRole.permissions = updateTx.operations.permissions
 
       this.permissionsBySpace[spaceId] = {}
-      await this.setPermissions(spaceId, roles, assignment)
+      this.setPermissions(spaceId, roles, assignment)
     }
   }
 
-  private async handlePermissionsUpdatesFromTx (ctx: SessionContext, tx: TxCUD<Doc>): Promise<void> {
+  private handlePermissionsUpdatesFromTx (ctx: MeasureContext, tx: TxCUD<Doc>): void {
     if (this.isSpaceTxCUD(tx)) {
       if (tx._class === core.class.TxCreateDoc) {
-        await this.handleCreate(tx)
+        this.handleCreate(tx)
         // } else if (tx._class === core.class.TxUpdateDoc) {
         // Roles assignment in spaces are managed through the space type mixin
         // so nothing to handle here
       } else if (tx._class === core.class.TxMixin) {
-        await this.handleMixin(tx)
+        this.handleMixin(tx)
       } else if (tx._class === core.class.TxRemoveDoc) {
         this.handleRemove(tx)
       }
     }
 
-    await this.handlePermissionsUpdatesFromRoleTx(ctx, tx)
+    this.handlePermissionsUpdatesFromRoleTx(ctx, tx)
   }
 
-  private async processPermissionsUpdatesFromTx (ctx: SessionContext, tx: Tx): Promise<void> {
+  private processPermissionsUpdatesFromTx (ctx: MeasureContext, tx: Tx): void {
     if (!TxProcessor.isExtendsCUD(tx._class)) {
       return
     }
 
     const cudTx = tx as TxCUD<Doc>
-    await this.handlePermissionsUpdatesFromTx(ctx, cudTx)
+    this.handlePermissionsUpdatesFromTx(ctx, cudTx)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    await this.processPermissionsUpdatesFromTx(ctx, tx)
-    await this.checkPermissions(ctx, tx)
-    const res = await this.provideTx(ctx, tx)
-    for (const txd of ctx.derived.txes) {
-      await this.processPermissionsUpdatesFromTx(ctx, txd)
+  async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
+    await this.init(ctx)
+    for (const tx of txes) {
+      this.processPermissionsUpdatesFromTx(ctx, tx)
+      this.checkPermissions(ctx, tx)
+    }
+    const res = await this.provideTx(ctx, txes)
+    for (const txd of ctx.contextData.broadcast.txes) {
+      this.processPermissionsUpdatesFromTx(ctx, txd)
     }
     return res
   }
 
-  protected async checkPermissions (ctx: SessionContext, tx: Tx): Promise<void> {
+  protected checkPermissions (ctx: MeasureContext, tx: Tx): void {
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
       for (const t of applyTx.txes) {
-        await this.checkPermissions(ctx, t)
+        this.checkPermissions(ctx, t)
       }
       return
     }
@@ -352,11 +363,11 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     if (tx._class === core.class.TxCollectionCUD) {
       const actualTx = TxProcessor.extractTx(tx)
 
-      await this.checkPermissions(ctx, actualTx)
+      this.checkPermissions(ctx, actualTx)
     }
 
     const cudTx = tx as TxCUD<Doc>
-    const h = this.storage.hierarchy
+    const h = this.context.hierarchy
     const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
     // NOTE: in assumption that we want to control permissions for space itself on that space level
     // and not on the system's spaces space level for now
@@ -369,7 +380,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     // NOTE: move this checking logic later to be defined in some server plugins?
     // so they can contribute checks into the middleware for their custom permissions?
     if (tx._class === core.class.TxRemoveDoc) {
-      if (await this.checkPermission(ctx, targetSpaceId as Ref<TypedSpace>, core.permission.ForbidDeleteObject)) {
+      if (this.checkPermission(ctx, targetSpaceId as Ref<TypedSpace>, core.permission.ForbidDeleteObject)) {
         this.throwForbidden()
       }
     }

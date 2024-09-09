@@ -1,7 +1,7 @@
 // Basic performance metrics suite.
 
 import { generateId } from '../utils'
-import { childMetrics, measure, newMetrics } from './metrics'
+import { childMetrics, newMetrics, updateMeasure } from './metrics'
 import {
   FullParamsType,
   MeasureContext,
@@ -12,15 +12,72 @@ import {
   type OperationLogEntry
 } from './types'
 
+const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
+  message,
+  stack,
+  ...rest
+})
+function replacer (value: any): any {
+  return value instanceof Error ? errorPrinter(value) : value
+}
+
+const consoleLogger = (logParams: Record<string, any>): MeasureLogger => ({
+  info: (msg, args) => {
+    console.info(
+      msg,
+      ...Object.entries({ ...(args ?? {}), ...(logParams ?? {}) }).map(
+        (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
+      )
+    )
+  },
+  error: (msg, args) => {
+    console.error(
+      msg,
+      ...Object.entries({ ...(args ?? {}), ...(logParams ?? {}) }).map(
+        (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
+      )
+    )
+  },
+  warn: (msg, args) => {
+    console.warn(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
+  },
+  close: async () => {},
+  logOperation: (operation, time, params) => {}
+})
+
+const noParamsLogger = consoleLogger({})
+
 /**
  * @public
  */
 export class MeasureMetricsContext implements MeasureContext {
   private readonly name: string
   private readonly params: ParamsType
+
+  private readonly fullParams: FullParamsType | (() => FullParamsType) = {}
   logger: MeasureLogger
   metrics: Metrics
-  private readonly done: (value?: number, override?: boolean) => void
+
+  st = Date.now()
+  contextData: object = {}
+  private done (value?: number, override?: boolean): void {
+    updateMeasure(
+      this.metrics,
+      this.st,
+      this.params,
+      this.fullParams,
+      (spend) => {
+        this.logger.logOperation(this.name, spend, {
+          ...this.params,
+          ...(typeof this.fullParams === 'function' ? this.fullParams() : this.fullParams),
+          ...this.fullParams,
+          ...(this.logParams ?? {})
+        })
+      },
+      value,
+      override
+    )
+  }
 
   constructor (
     name: string,
@@ -33,6 +90,7 @@ export class MeasureMetricsContext implements MeasureContext {
   ) {
     this.name = name
     this.params = params
+    this.fullParams = fullParams
     this.metrics = metrics
     this.metrics.namedParams = this.metrics.namedParams ?? {}
     for (const [k, v] of Object.entries(params)) {
@@ -42,51 +100,13 @@ export class MeasureMetricsContext implements MeasureContext {
         this.metrics.namedParams[k] = '*'
       }
     }
-    this.done = measure(metrics, params, fullParams, (spend) => {
-      this.logger.logOperation(this.name, spend, {
-        ...params,
-        ...(typeof fullParams === 'function' ? fullParams() : fullParams),
-        ...fullParams,
-        ...(this.logParams ?? {})
-      })
-    })
 
-    const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
-      message,
-      stack,
-      ...rest
-    })
-    function replacer (value: any): any {
-      return value instanceof Error ? errorPrinter(value) : value
-    }
-
-    this.logger = logger ?? {
-      info: (msg, args) => {
-        console.info(
-          msg,
-          ...Object.entries({ ...(args ?? {}), ...(this.logParams ?? {}) }).map(
-            (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
-          )
-        )
-      },
-      error: (msg, args) => {
-        console.error(
-          msg,
-          ...Object.entries({ ...(args ?? {}), ...(this.logParams ?? {}) }).map(
-            (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
-          )
-        )
-      },
-      warn: (msg, args) => {
-        console.warn(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
-      },
-      close: async () => {},
-      logOperation: (operation, time, params) => {}
-    }
+    this.logger = logger ?? (this.logParams != null ? consoleLogger(this.logParams ?? {}) : noParamsLogger)
   }
 
   measure (name: string, value: number, override?: boolean): void {
     const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]), this.logger, this)
+    c.contextData = this.contextData
     c.done(value, override)
   }
 
@@ -96,7 +116,7 @@ export class MeasureMetricsContext implements MeasureContext {
     fullParams?: FullParamsType | (() => FullParamsType),
     logger?: MeasureLogger
   ): MeasureContext {
-    return new MeasureMetricsContext(
+    const result = new MeasureMetricsContext(
       name,
       params,
       fullParams ?? {},
@@ -105,6 +125,8 @@ export class MeasureMetricsContext implements MeasureContext {
       this,
       this.logParams
     )
+    result.contextData = this.contextData
+    return result
   }
 
   with<T>(
@@ -147,15 +169,17 @@ export class MeasureMetricsContext implements MeasureContext {
     }
   }
 
-  async withLog<T>(
+  withLog<T>(
     name: string,
     params: ParamsType,
     op: (ctx: MeasureContext) => T | Promise<T>,
     fullParams?: ParamsType
   ): Promise<T> {
     const st = Date.now()
-    const r = await this.with(name, params, op, fullParams)
-    this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
+    const r = this.with(name, params, op, fullParams)
+    void r.finally(() => {
+      this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
+    })
     return r
   }
 
@@ -182,13 +206,9 @@ export class MeasureMetricsContext implements MeasureContext {
 export function withContext (name: string, params: ParamsType = {}): any {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor => {
     const originalMethod = descriptor.value
-    descriptor.value = async function (...args: any[]): Promise<any> {
+    descriptor.value = function (...args: any[]): Promise<any> {
       const ctx = args[0] as MeasureContext
-      return await ctx.with(
-        name,
-        params,
-        async (ctx) => await (originalMethod.apply(this, [ctx, ...args.slice(1)]) as Promise<any>)
-      )
+      return ctx.with(name, params, (ctx) => originalMethod.apply(this, [ctx, ...args.slice(1)]) as Promise<any>)
     }
     return descriptor
   }

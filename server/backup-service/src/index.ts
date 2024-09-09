@@ -41,7 +41,13 @@ export function startBackup (
   // A token to access account service
   const token = generateToken(systemAccountEmail, { name: 'backup' })
 
-  const shutdown = backupService(ctx, storageAdapter, { ...config, Token: token }, pipelineFactory)
+  const shutdown = backupService(
+    ctx,
+    storageAdapter,
+    { ...config, Token: token },
+    pipelineFactory,
+    workspaceStorageAdapter
+  )
 
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)

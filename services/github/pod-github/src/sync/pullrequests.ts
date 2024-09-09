@@ -18,11 +18,6 @@ import core, {
   generateId,
   makeCollaborativeDoc
 } from '@hcengineering/core'
-import task, { TaskType, calcRank, makeRank } from '@hcengineering/task'
-import time, { ToDo, ToDoPriority } from '@hcengineering/time'
-import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
-import { OctokitResponse } from '@octokit/types'
-import { ProjectsV2ItemEvent, PullRequestEvent } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubIntegrationRepository,
@@ -34,6 +29,11 @@ import github, {
   GithubTodo,
   LastReviewState
 } from '@hcengineering/github'
+import task, { TaskType, calcRank, makeRank } from '@hcengineering/task'
+import time, { ToDo, ToDoPriority } from '@hcengineering/time'
+import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
+import { OctokitResponse } from '@octokit/types'
+import { ProjectsV2ItemEvent, PullRequestEvent } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
 import config from '../config'
 import {
@@ -507,7 +507,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           pullRequestExternal.body
         )
 
-        const op = this.client.apply(generateId())
+        const op = this.client.apply()
         let createdPullRequest: GithubPullRequest | undefined
 
         await this.ctx.withLog(
@@ -1302,7 +1302,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       )
     }
 
-    const tx = derivedClient.apply('pullrequests_github' + prj._id)
+    const tx = derivedClient.apply()
     for (const d of syncDocs) {
       await tx.update(d, { derivedVersion: githubDerivedSyncVersion })
     }

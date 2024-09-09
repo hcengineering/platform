@@ -10,7 +10,7 @@ import {
   type ContentTextAdapter,
   type FullTextAdapter,
   type FullTextPipelineStage,
-  type ServerStorage,
+  type SessionFindAll,
   type StorageAdapter
 } from '@hcengineering/server-core'
 
@@ -19,7 +19,7 @@ export function createIndexStages (
   workspace: WorkspaceId,
   branding: Branding | null,
   adapter: FullTextAdapter,
-  storage: ServerStorage,
+  storageFindAll: SessionFindAll,
   storageAdapter: StorageAdapter,
   contentAdapter: ContentTextAdapter,
   indexParallel: number,
@@ -32,7 +32,7 @@ export function createIndexStages (
   const stages: FullTextPipelineStage[] = []
 
   // Add regular stage to for indexable fields change tracking.
-  stages.push(new IndexedFieldStage(storage))
+  stages.push(new IndexedFieldStage(storageFindAll))
 
   // Obtain text content from storage(like minio) and use content adapter to convert files to text content.
   stages.push(new ContentRetrievalStage(storageAdapter, workspace, fullText.newChild('content', {}), contentAdapter))
@@ -56,12 +56,12 @@ export function createIndexStages (
   // }
   // stages.push(retranslateStage)
   // Summary stage
-  const summaryStage = new FullSummaryStage(storage)
+  const summaryStage = new FullSummaryStage(storageFindAll)
 
   stages.push(summaryStage)
 
   // Push all content to elastic search
-  const pushStage = new FullTextPushStage(storage, adapter, workspace, branding)
+  const pushStage = new FullTextPushStage(storageFindAll, adapter, workspace, branding)
   stages.push(pushStage)
 
   // // OpenAI prepare stage
