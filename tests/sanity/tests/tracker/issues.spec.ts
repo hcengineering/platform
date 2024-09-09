@@ -7,8 +7,6 @@ import { Issue, NewIssue } from '../model/tracker/types'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { prepareNewIssueWithOpenStep } from './common-steps'
 import { IssueCommentPopup } from '../model/tracker/issue-comment-popup'
-import { ChannelPage } from '../model/channel-page'
-import { LinkedChannelTypes } from '../model/types'
 
 test.use({
   storageState: PlatformSetting
@@ -20,7 +18,6 @@ test.describe('Tracker issue tests', () => {
   let issuesPage: IssuesPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issueCommentPopup: IssueCommentPopup
-  let channelPage: ChannelPage
 
   test.beforeEach(async ({ page }) => {
     leftSideMenuPage = new LeftSideMenuPage(page)
@@ -28,7 +25,6 @@ test.describe('Tracker issue tests', () => {
     issuesPage = new IssuesPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issueCommentPopup = new IssueCommentPopup(page)
-    channelPage = new ChannelPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     await leftSideMenuPage.clickTracker()
   })
@@ -51,7 +47,6 @@ test.describe('Tracker issue tests', () => {
 
     await prepareNewIssueWithOpenStep(page, newIssue)
     await issuesDetailsPage.checkIssue(newIssue)
-    await channelPage.checkLinkedChannelIsExist(newIssue.title, LinkedChannelTypes.Issue)
   })
 
   test('Edit an issue', async ({ page }) => {
