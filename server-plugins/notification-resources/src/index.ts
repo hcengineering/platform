@@ -150,6 +150,7 @@ export async function getCommonNotificationTxes (
     control,
     res,
     receiver,
+    sender,
     attachedTo,
     attachedToClass,
     space,
@@ -333,6 +334,7 @@ export async function pushInboxNotifications (
   control: TriggerControl,
   res: Tx[],
   receiver: ReceiverInfo,
+  sender: SenderInfo,
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>,
@@ -354,6 +356,7 @@ export async function pushInboxNotifications (
       objectClass,
       objectSpace,
       receiver,
+      sender._id,
       shouldUpdateTimestamp ? modifiedOn : undefined,
       tx
     )
@@ -614,6 +617,7 @@ export async function pushActivityInboxNotifications (
     control,
     res,
     receiver,
+    sender,
     activityMessage.attachedTo,
     activityMessage.attachedToClass,
     object.space,
@@ -679,6 +683,7 @@ async function createNotifyContext (
   objectClass: Ref<Class<Doc>>,
   objectSpace: Ref<Space>,
   receiver: ReceiverInfo,
+  sender: Ref<Account>,
   updateTimestamp?: Timestamp,
   tx?: TxCUD<Doc>
 ): Promise<Ref<DocNotifyContext>> {
@@ -689,7 +694,8 @@ async function createNotifyContext (
     objectSpace,
     isPinned: false,
     tx: tx?._id,
-    lastUpdateTimestamp: updateTimestamp
+    lastUpdateTimestamp: updateTimestamp,
+    lastViewedTimestamp: sender === receiver._id ? updateTimestamp : undefined
   })
   await ctx.with('apply', {}, () => control.apply(control.ctx, [createTx]))
   if (receiver.account?.email !== undefined) {
@@ -776,6 +782,7 @@ export async function getNotificationTxes (
           message.attachedToClass,
           object.space,
           receiver,
+          sender._id,
           params.shouldUpdateTimestamp ? originTx.modifiedOn : undefined,
           tx
         )
@@ -1646,7 +1653,7 @@ async function updateCollaborators (
     if (info === undefined) continue
     const context = getDocNotifyContext(control, contexts, objectId, info._id)
     if (context !== undefined) continue
-    await createNotifyContext(ctx, control, objectId, objectClass, objectSpace, info, undefined, tx)
+    await createNotifyContext(ctx, control, objectId, objectClass, objectSpace, info, tx.modifiedBy, undefined, tx)
   }
 
   await removeContexts(ctx, contexts, removedCollaborators as Ref<PersonAccount>[], control)
@@ -1795,16 +1802,10 @@ async function OnActivityMessageRemove (message: ActivityMessage, control: Trigg
   }
 
   const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
-    objectId: message.attachedTo
+    objectId: message.attachedTo,
+    lastUpdateTimestamp: message.createdOn
   })
   if (contexts.length === 0) return []
-
-  const isLastUpdate = contexts.some((context) => {
-    const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
-    return lastUpdateTimestamp === message.createdOn && lastViewedTimestamp < lastUpdateTimestamp
-  })
-
-  if (!isLastUpdate) return []
 
   const lastMessage = (
     await control.findAll(
@@ -1819,13 +1820,11 @@ async function OnActivityMessageRemove (message: ActivityMessage, control: Trigg
   const res: Tx[] = []
 
   for (const context of contexts) {
-    if (context.lastUpdateTimestamp === message.createdOn) {
-      const tx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-        lastUpdateTimestamp: lastMessage.createdOn ?? lastMessage.modifiedOn
-      })
+    const tx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+      lastUpdateTimestamp: lastMessage.createdOn ?? lastMessage.modifiedOn
+    })
 
-      res.push(tx)
-    }
+    res.push(tx)
   }
 
   return res
