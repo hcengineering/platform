@@ -61,7 +61,6 @@
     "@tiptap/extension-code": "^2.2.4",
     "@tiptap/extension-underline": "^2.2.4",
     "@tiptap/suggestion": "^2.2.4",
-    "prosemirror-model": "^1.19.4",
     "prosemirror-codemark": "^0.4.2",
     "markdown-it": "^14.0.0",
     "fast-equals": "^5.0.1",

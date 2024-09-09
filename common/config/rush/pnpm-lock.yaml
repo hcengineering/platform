@@ -154,7 +154,7 @@ dependencies:
     version: file:projects/collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/collaborator':
     specifier: file:./projects/collaborator.tgz
-    version: file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(utf-8-validate@6.0.4)(y-protocols@1.0.6)
+    version: file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6)
   '@rush-temp/collaborator-client':
     specifier: file:./projects/collaborator-client.tgz
     version: file:projects/collaborator-client.tgz(ts-node@10.9.2)
@@ -997,7 +997,7 @@ dependencies:
     version: file:projects/text-editor-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/text-editor-resources':
     specifier: file:./projects/text-editor-resources.tgz
-    version: file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2)(utf-8-validate@6.0.4)
+    version: file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(highlight.js@11.8.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(utf-8-validate@6.0.4)
   '@rush-temp/theme':
     specifier: file:./projects/theme.tgz
     version: file:projects/theme.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -1127,6 +1127,9 @@ dependencies:
   '@tiptap/extension-code-block':
     specifier: ^2.2.4
     version: 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
+  '@tiptap/extension-code-block-lowlight':
+    specifier: ^2.2.4
+    version: 2.6.6(@tiptap/core@2.2.4)(@tiptap/extension-code-block@2.2.4)(@tiptap/pm@2.2.4)(highlight.js@11.8.0)(lowlight@3.1.0)
   '@tiptap/extension-collaboration':
     specifier: ^2.2.4
     version: 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)
@@ -1634,6 +1637,9 @@ dependencies:
   livekit-server-sdk:
     specifier: ^2.0.10
     version: 2.6.0
+  lowlight:
+    specifier: ^3.1.0
+    version: 3.1.0
   mammoth:
     specifier: ^1.6.0
     version: 1.8.0
@@ -1720,10 +1726,7 @@ dependencies:
     version: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
   prosemirror-codemark:
     specifier: ^0.4.2
-    version: 0.4.2(prosemirror-model@1.19.4)
-  prosemirror-model:
-    specifier: ^1.19.4
-    version: 1.19.4
+    version: 0.4.2
   puppeteer:
     specifier: ^22.6.1
     version: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
@@ -1867,7 +1870,7 @@ dependencies:
     version: 9.0.12(yjs@13.6.12)
   y-prosemirror:
     specifier: ^1.2.1
-    version: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+    version: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
   y-protocols:
     specifier: ^1.0.6
     version: 1.0.6(yjs@13.6.12)
@@ -4833,7 +4836,7 @@ packages:
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
       '@tiptap/pm': 2.2.4
       '@tiptap/starter-kit': 2.2.4(@tiptap/pm@2.2.4)
-      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      y-prosemirror: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
       yjs: 13.6.12
     dev: false
 
@@ -8390,6 +8393,22 @@ packages:
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
     dev: false
 
+  /@tiptap/extension-code-block-lowlight@2.6.6(@tiptap/core@2.2.4)(@tiptap/extension-code-block@2.2.4)(@tiptap/pm@2.2.4)(highlight.js@11.8.0)(lowlight@3.1.0):
+    resolution: {integrity: sha512-GXzuQGKxxOmozzvwBEKdEnX1fv9R8qt9Q4Q+j3Itc+um7nYNKHDT1xNIk1BQUeu8Mr6fQVFgCu3FDybsRp9Ncw==}
+    peerDependencies:
+      '@tiptap/core': ^2.6.6
+      '@tiptap/extension-code-block': ^2.6.6
+      '@tiptap/pm': ^2.6.6
+      highlight.js: ^11
+      lowlight: ^2 || ^3
+    dependencies:
+      '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
+      '@tiptap/extension-code-block': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
+      '@tiptap/pm': 2.2.4
+      highlight.js: 11.8.0
+      lowlight: 3.1.0
+    dev: false
+
   /@tiptap/extension-code-block@2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4):
     resolution: {integrity: sha512-h6WV9TmaBEZmvqe1ezMR83DhCPUap6P2mSR5pwVk0WVq6rvZjfgU0iF3EetBJOeDgPlz7cNe2NMDfVb1nGTM/g==}
     peerDependencies:
@@ -8415,7 +8434,7 @@ packages:
       y-prosemirror: ^1.2.1
     dependencies:
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
-      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      y-prosemirror: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
     dev: false
 
   /@tiptap/extension-collaboration@2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2):
@@ -8427,7 +8446,7 @@ packages:
     dependencies:
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
       '@tiptap/pm': 2.2.4
-      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      y-prosemirror: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
     dev: false
 
   /@tiptap/extension-document@2.2.4(@tiptap/core@2.2.4):
@@ -9008,6 +9027,12 @@ packages:
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
     dependencies:
       '@types/node': 20.11.19
+    dev: false
+
+  /@types/hast@3.0.4:
+    resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
+    dependencies:
+      '@types/unist': 2.0.10
     dev: false
 
   /@types/html-minifier-terser@6.1.0:
@@ -12691,6 +12716,12 @@ packages:
       - supports-color
     dev: false
 
+  /devlop@1.1.0:
+    resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
+    dependencies:
+      dequal: 2.0.3
+    dev: false
+
   /devtools-protocol@0.0.1312386:
     resolution: {integrity: sha512-DPnhUXvmvKT2dFA/j7B+riVLUt9Q6RKJlcppojL5CoRywJJKLDYnRlw0gTFKfgDPHP5E04UoB71SxoJlVZy8FA==}
     dev: false
@@ -15549,7 +15580,6 @@ packages:
     engines: {node: '>=12.0.0'}
     requiresBuild: true
     dev: false
-    optional: true
 
   /hogan.js@3.0.2:
     resolution: {integrity: sha512-RqGs4wavGYJWE07t35JQccByczmNUXQT0E12ZYV1VKYu5UiAU9lsos/yBAcf840+zrUQQxgVduCR5/B8nNtibg==}
@@ -17917,6 +17947,14 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /lowlight@3.1.0:
+    resolution: {integrity: sha512-CEbNVoSikAxwDMDPjXlqlFYiZLkDJHwyGu/MfOsJnF3d7f3tds5J3z8s/l9TMXhzfsJCCJEAsD78842mwmg0PQ==}
+    dependencies:
+      '@types/hast': 3.0.4
+      devlop: 1.1.0
+      highlight.js: 11.9.0
+    dev: false
+
   /lru-cache@10.2.0:
     resolution: {integrity: sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q==}
     engines: {node: 14 || >=16.14}
@@ -19901,15 +19939,13 @@ packages:
       prosemirror-transform: 1.8.0
     dev: false
 
-  /prosemirror-codemark@0.4.2(prosemirror-model@1.19.4):
+  /prosemirror-codemark@0.4.2:
     resolution: {integrity: sha512-4n+PnGQToa/vTjn0OiivUvE8/moLtguUAfry8UA4Q8p47MhqT2Qpf2zBLustX5Upi4mSp3z1ZYBqLLovZC6abA==}
     peerDependencies:
       prosemirror-inputrules: ^1.2.0
       prosemirror-model: ^1.18.1
       prosemirror-state: ^1.4.1
       prosemirror-view: ^1.26.2
-    dependencies:
-      prosemirror-model: 1.19.4
     dev: false
 
   /prosemirror-collab@1.3.1:
@@ -23971,7 +24007,7 @@ packages:
     dev: false
     optional: true
 
-  /y-prosemirror@1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12):
+  /y-prosemirror@1.2.2(y-protocols@1.0.6)(yjs@13.6.12):
     resolution: {integrity: sha512-hHdnIAhfa8mIoLWtTkMDb6RBzN3lye1QVkaZwVm58sledAA1zTl+yyEtgkrY/sdH6SaQL0rsLj61zHjgr5D0HQ==}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
     peerDependencies:
@@ -23982,7 +24018,6 @@ packages:
       yjs: ^13.5.38
     dependencies:
       lib0: 0.2.89
-      prosemirror-model: 1.19.4
       y-protocols: 1.0.6(yjs@13.6.12)
       yjs: 13.6.12
     dev: false
@@ -25363,7 +25398,7 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
+  file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
     resolution: {integrity: sha512-svaotn6ykOZH+tModYWz/Y3hct1yHDm/enwC9NCpH17VVNALvRIqUx8F2DWvQV5mUwJYxLcKgdsBqNPB4MjMag==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
@@ -25383,7 +25418,6 @@ packages:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       body-parser: 1.20.2
-      compression: 1.7.4
       cors: 2.8.5
       cross-env: 7.0.3
       esbuild: 0.20.1
@@ -25400,7 +25434,7 @@ packages:
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
       ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      y-prosemirror: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
       yjs: 13.6.12
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -30023,7 +30057,7 @@ packages:
     dev: false
 
   file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-nHK8VvEEKMela0QxFYFIFHgIjnQj8A01bct7tu+T54i9PP0bgk1zuS+6neAPX45/su+hRG+oiXjdXnuAPMYv3w==, tarball: file:projects/pod-telegram-bot.tgz}
+    resolution: {integrity: sha512-iYHC3LQQX/oFuRh+llDGC7Sj4smIcYENpabAX4HN+Gr0bmN8A2dKK69P7ngJ8ozhjAIUpLKwPKmCSwzyz+ZRpw==, tarball: file:projects/pod-telegram-bot.tgz}
     id: file:projects/pod-telegram-bot.tgz
     name: '@rush-temp/pod-telegram-bot'
     version: 0.0.0
@@ -34036,7 +34070,7 @@ packages:
     dev: false
 
   file:projects/telegram.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-e+PHTbBJ8rRCfiVXlZhoP/ZEQMabsxRySsXUYs+AEMTve0J/p/GiVp85veIxitGNOInRyfGkUakfAPsN7YxrxA==, tarball: file:projects/telegram.tgz}
+    resolution: {integrity: sha512-pONnGW65uWwdCHtwvxsANuytteLIKC07izzOVXL58qFKs5BQMZu6rOaT3RzbLvJIu+0FMgEIeyZtxABS8NEEMw==, tarball: file:projects/telegram.tgz}
     id: file:projects/telegram.tgz
     name: '@rush-temp/telegram'
     version: 0.0.0
@@ -34229,8 +34263,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-Qyx6oJpj8FfTxV0rqKs4gmH48kx9bYYDHPpdA36B5x71Mtss/cPWvq/fEgzVyNQKhH1qaqzWv9BnpKHCcpBNzQ==, tarball: file:projects/text-editor-resources.tgz}
+  file:projects/text-editor-resources.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(highlight.js@11.8.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(utf-8-validate@6.0.4):
+    resolution: {integrity: sha512-huPldI0/rDujfU2CwuJf+PLI/RUu73Ry7zZvomQt2HJHL+yxwIBXr/t4T5PIEblfnf6KpmiqMQ1dEbjRQEuGGw==, tarball: file:projects/text-editor-resources.tgz}
     id: file:projects/text-editor-resources.tgz
     name: '@rush-temp/text-editor-resources'
     version: 0.0.0
@@ -34240,6 +34274,7 @@ packages:
       '@tiptap/extension-bubble-menu': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
       '@tiptap/extension-code': 2.2.4(@tiptap/core@2.2.4)
       '@tiptap/extension-code-block': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
+      '@tiptap/extension-code-block-lowlight': 2.6.6(@tiptap/core@2.2.4)(@tiptap/extension-code-block@2.2.4)(@tiptap/pm@2.2.4)(highlight.js@11.8.0)(lowlight@3.1.0)
       '@tiptap/extension-collaboration': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)
       '@tiptap/extension-collaboration-cursor': 2.2.4(@tiptap/core@2.2.4)(y-prosemirror@1.2.2)
       '@tiptap/extension-hard-break': 2.2.4(@tiptap/core@2.2.4)
@@ -34270,9 +34305,10 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       lib0: 0.2.89
+      lowlight: 3.1.0
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
-      prosemirror-codemark: 0.4.2(prosemirror-model@1.19.4)
+      prosemirror-codemark: 0.4.2
       rfc6902: 5.1.1
       sass: 1.71.1
       slugify: 1.6.6
@@ -34284,7 +34320,7 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
       y-indexeddb: 9.0.12(yjs@13.6.12)
-      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      y-prosemirror: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
       y-protocols: 1.0.6(yjs@13.6.12)
       y-websocket: 2.0.4(yjs@13.6.12)
       yjs: 13.6.12
@@ -34297,6 +34333,7 @@ packages:
       - bufferutil
       - coffeescript
       - esbuild
+      - highlight.js
       - less
       - node-notifier
       - postcss
@@ -34351,7 +34388,7 @@ packages:
     dev: false
 
   file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-ZQInjd9DHWVEXBeaR3wy+jQjDfHYnvJGKBiRWjr6i1AKIl/GNdDG/3G8QTQpu6O637ME04TzDGRbe3/9KNY+0w==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-ScXfcb1Mfk2cvle6rh4X5/3b6/cpenpUGR+U5c/kkbaZ6H3TUg1jsOh/2C6Hy7z9JWu3oIxlLpxEnd9lRXTgbA==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
     version: 0.0.0
@@ -34391,11 +34428,11 @@ packages:
       jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
       markdown-it: 14.0.0
       prettier: 3.2.5
-      prosemirror-codemark: 0.4.2(prosemirror-model@1.19.4)
+      prosemirror-codemark: 0.4.2
       prosemirror-model: 1.19.4
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
-      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(y-protocols@1.0.6)(yjs@13.6.12)
+      y-prosemirror: 1.2.2(y-protocols@1.0.6)(yjs@13.6.12)
       yjs: 13.6.12
     transitivePeerDependencies:
       - '@babel/core'
@@ -34408,6 +34445,7 @@ packages:
       - esbuild
       - node-notifier
       - prosemirror-inputrules
+      - prosemirror-model
       - prosemirror-state
       - prosemirror-view
       - supports-color
