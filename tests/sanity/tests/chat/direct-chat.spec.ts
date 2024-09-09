@@ -61,7 +61,7 @@ test.describe('Check direct messages channels', () => {
 
       await channelPageSecond.clickChooseChannel(`${data.lastName} ${data.firstName}`)
       await channelPageSecond.checkMessageExist('Test direct question', true, 'Test direct question')
-      await channelPage.sendMessage('Test direct answer')
+      await channelPageSecond.sendMessage('Test direct answer')
 
       await channelPage.checkMessageExist('Test direct answer', true, 'Test direct answer')
     })
@@ -73,7 +73,10 @@ test.describe('Check direct messages channels', () => {
     })
 
     await test.step('Recreate a direct chat and see if messages are kept', async () => {
+      await page.reload()
       await leftSideMenuPage.clickChunter()
+      await channelPage.clickChooseChannel('general')
+
       await chunterPage.createDirectChat(newUser2)
       await channelPage.clickChooseChannel(`${newUser2.lastName} ${newUser2.firstName}`)
       await channelPage.checkMessageExist('Test direct answer', true, 'Test direct answer')
