@@ -78,7 +78,7 @@ import serverNotification, {
   SenderInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
-import { markupToText, stripTags } from '@hcengineering/text'
+import { markupToHTML, markupToText, stripTags } from '@hcengineering/text'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
@@ -233,6 +233,14 @@ export async function getContentByTemplate (
     notificationData !== undefined
       ? await getTranslatedNotificationContent(notificationData, notificationData._class, control)
       : {}
+
+  if (
+    notificationData !== undefined &&
+    control.hierarchy.isDerived(notificationData._class, notification.class.MentionInboxNotification)
+  ) {
+    const text = (notificationData as MentionInboxNotification).messageHtml
+    params.body = text !== undefined ? markupToHTML(text) : params.body
+  }
 
   if (message !== undefined) {
     const markup = await messageToMarkup(control, message)
