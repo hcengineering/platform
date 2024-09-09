@@ -453,7 +453,7 @@
     // TODO: We need a measure client and mark all operations with it as measure under one root,
     // to prevent other operations to infer our measurement.
     try {
-      const operations = client.apply(_id, 'tracker.createIssue')
+      const operations = client.apply(undefined, 'tracker.createIssue')
 
       const lastOne = await client.findOne<Issue>(
         tracker.class.Issue,

@@ -43,7 +43,7 @@ export const trainingDraftAction = focusActionWithAvailability<Training>(
       throw new Error(`Could not find a latest revision for training ${object.code}`)
     }
 
-    const ops = client.apply(`training:draft:${object._id}`)
+    const ops = client.apply()
     const newTrainingRef = await ops.createDoc(object._class, object.space, {
       title: object.title,
       description: object.description,

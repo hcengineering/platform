@@ -71,7 +71,7 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
   const applyTxes: Tx[] = []
 
   if (ctx.operations.$push?.approved !== undefined) {
-    const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+    const request = (await control.findAll(control.ctx, ctx.objectClass, { _id: ctx.objectId }))[0]
 
     if (request.approved.length === request.requiredApprovesCount) {
       const collectionTx = control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
@@ -104,14 +104,14 @@ async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: Trig
   }
 
   if (ctx.operations.status === RequestStatus.Rejected) {
-    const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+    const request = (await control.findAll(control.ctx, ctx.objectClass, { _id: ctx.objectId }))[0]
     if (request.rejectedTx != null) {
       applyTxes.push(request.rejectedTx)
     }
   }
 
   if (applyTxes.length > 0) {
-    await control.apply(applyTxes)
+    await control.apply(control.ctx, applyTxes)
   }
 
   return []
@@ -125,7 +125,7 @@ async function getRequest (tx: TxCUD<Request>, control: TriggerControl): Promise
     return control.removedMap.get(tx.objectId) as Request
   }
   if (tx._class === core.class.TxUpdateDoc) {
-    return (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+    return (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
   }
 
   return undefined
@@ -141,7 +141,7 @@ async function getRequestNotificationTx (
 
   if (request === undefined) return []
 
-  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+  const doc = (await control.findAll(control.ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
 
   if (doc === undefined) return []
 
@@ -159,7 +159,7 @@ async function getRequestNotificationTx (
 
   if (collaborators.length === 0) return res
 
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
+  const notifyContexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     objectId: doc._id
   })
   const usersInfo = await getUsersInfo(control.ctx, [...collaborators, tx.modifiedBy] as Ref<PersonAccount>[], control)
@@ -202,7 +202,9 @@ export async function requestTextPresenter (doc: Doc, control: TriggerControl): 
   const attachedDocTextPresenter = getTextPresenter(request.attachedToClass, control.hierarchy)
   if (attachedDocTextPresenter !== undefined) {
     const getTitle = await getResource(attachedDocTextPresenter.presenter)
-    const attachedDoc = (await control.findAll(request.attachedToClass, { _id: request.attachedTo }, { limit: 1 }))[0]
+    const attachedDoc = (
+      await control.findAll(control.ctx, request.attachedToClass, { _id: request.attachedTo }, { limit: 1 })
+    )[0]
 
     if (attachedDoc !== undefined) {
       title = `${title} — ${await getTitle(attachedDoc, control)}`

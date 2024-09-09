@@ -38,7 +38,6 @@ import core, {
   type Projection,
   type Ref,
   type ReverseLookups,
-  type SessionOperationContext,
   type SortingQuery,
   type StorageIterator,
   toFindResult,
@@ -52,6 +51,7 @@ import core, {
   type TxResult,
   type TxUpdateDoc,
   type WithLookup,
+  type SessionData,
   type WorkspaceId
 } from '@hcengineering/core'
 import {
@@ -76,7 +76,6 @@ import {
   getUpdateValue,
   isDataField,
   isOwner,
-  isSessionContext,
   type JoinProps,
   parseDoc,
   parseDocWithProjection,
@@ -255,11 +254,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   async findAll<T extends Doc>(
-    ctx: MeasureContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: ServerFindOptions<T>,
-    sessionContext?: SessionOperationContext
+    options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     return await ctx.with('findAll', { _class }, async () => {
       try {
@@ -267,7 +265,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const sqlChunks: string[] = []
         const joins = this.buildJoin(_class, options?.lookup)
         const select = `SELECT ${this.getProjection(ctx, _class, domain, options?.projection, joins)} FROM ${domain}`
-        const secJoin = this.addSecurity(query, domain, sessionContext)
+        const secJoin = this.addSecurity(query, domain, ctx.contextData)
         if (secJoin !== undefined) {
           sqlChunks.push(secJoin)
         }
@@ -309,12 +307,8 @@ abstract class PostgresAdapterBase implements DbAdapter {
     })
   }
 
-  addSecurity<T extends Doc>(
-    query: DocumentQuery<T>,
-    domain: string,
-    sessionContext: SessionOperationContext | undefined
-  ): string | undefined {
-    if (sessionContext !== undefined && isSessionContext(sessionContext)) {
+  addSecurity<T extends Doc>(query: DocumentQuery<T>, domain: string, sessionContext: SessionData): string | undefined {
+    if (sessionContext !== undefined) {
       if (sessionContext.admin !== true) {
         const accs = this.modelDb.findAllSync(core.class.Account, { email: sessionContext.userEmail })
         if (accs.length === 0) {

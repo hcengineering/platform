@@ -23,11 +23,10 @@ import core, {
   generateId,
   type Projection,
   type Ref,
-  type SessionOperationContext,
   type WorkspaceId
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import { type SessionContext, type DomainHelperOperations } from '@hcengineering/server-core'
+import { type DomainHelperOperations } from '@hcengineering/server-core'
 import { Pool, type PoolClient } from 'pg'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
@@ -240,10 +239,6 @@ export function convertDoc<T extends Doc> (doc: T, workspaceId: string): DBDoc {
 
 export function escapeBackticks (str: string): string {
   return str.replaceAll("'", "''")
-}
-
-export function isSessionContext (ctx: SessionOperationContext): ctx is SessionContext {
-  return (ctx as SessionContext).userEmail !== undefined
 }
 
 export function isOwner (account: Account): boolean {

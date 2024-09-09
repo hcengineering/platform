@@ -1,12 +1,12 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { type Class, type Doc, type Ref, type Space, SortingOrder, generateId } from '@hcengineering/core'
+  import { type Class, type Doc, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
-  import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor-resources'
-  import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
-  import time, { ToDo, ToDoPriority } from '@hcengineering/time'
   import { makeRank } from '@hcengineering/rank'
+  import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor-resources'
+  import time, { ToDo, ToDoPriority } from '@hcengineering/time'
+  import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
 
   import timeRes from '../../../plugin'
 
@@ -72,7 +72,7 @@
 
     const title = node.textBetween(0, node.content.size, undefined, ' ')
 
-    const ops = client.apply('todo' + generateId())
+    const ops = client.apply(undefined, 'assign-todo')
 
     if (todo !== undefined) {
       await ops.remove(todo)

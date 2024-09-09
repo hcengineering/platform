@@ -15,8 +15,9 @@
 
 export * from './content'
 export * from './field'
+export * from './fulltext'
+export * from './fulltextPush'
 export * from './indexer'
+export * from './summary'
 export * from './types'
 export * from './utils'
-export * from './fulltextPush'
-export * from './summary'

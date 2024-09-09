@@ -18,7 +18,6 @@ import contact, { type PersonAccount } from '@hcengineering/contact'
 import core, {
   type Account,
   AccountRole,
-  generateId,
   getCurrentAccount,
   hasAccountRole,
   type IdMap,
@@ -293,7 +292,7 @@ function getPinnedActions (contexts: DocNotifyContext[]): Action[] {
 }
 
 async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const ops = getClient().apply(generateId(), 'unpinAllChannels')
+  const ops = getClient().apply(undefined, 'unpinAllChannels')
 
   try {
     for (const context of contexts) {
@@ -387,7 +386,7 @@ export function loadSavedAttachments (): void {
 }
 
 export async function removeActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const ops = getClient().apply(generateId(), 'removeActivityChannels')
+  const ops = getClient().apply(undefined, 'removeActivityChannels')
 
   try {
     for (const context of contexts) {
@@ -408,7 +407,7 @@ export async function removeActivityChannels (contexts: DocNotifyContext[]): Pro
 export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const ops = getClient().apply(generateId(), 'readActivityChannels')
+  const ops = getClient().apply(undefined, 'readActivityChannels')
 
   try {
     for (const context of contexts) {

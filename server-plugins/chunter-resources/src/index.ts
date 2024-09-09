@@ -124,7 +124,9 @@ async function OnThreadMessageCreated (originTx: TxCUD<Doc>, control: TriggerCon
   const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<ThreadMessage>
 
   const threadMessage = TxProcessor.createDoc2Doc(tx)
-  const message = (await control.findAll(activity.class.ActivityMessage, { _id: threadMessage.attachedTo }))[0]
+  const message = (
+    await control.findAll(control.ctx, activity.class.ActivityMessage, { _id: threadMessage.attachedTo })
+  )[0]
 
   if (message === undefined) {
     return []
@@ -168,7 +170,9 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
     return []
   }
 
-  const targetDoc = (await control.findAll(message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
+  const targetDoc = (
+    await control.findAll(control.ctx, message.attachedToClass, { _id: message.attachedTo }, { limit: 1 })
+  )[0]
   if (targetDoc === undefined) {
     return []
   }
@@ -240,7 +244,7 @@ async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise
     return []
   }
 
-  const messages = await control.findAll(chunter.class.ThreadMessage, {
+  const messages = await control.findAll(control.ctx, chunter.class.ThreadMessage, {
     attachedTo: message.attachedTo
   })
 
@@ -366,7 +370,9 @@ async function OnChatMessageRemoved (tx: TxCollectionCUD<Doc, ChatMessage>, cont
   }
 
   const res: Tx[] = []
-  const notifications = await control.findAll(notification.class.InboxNotification, { attachedTo: tx.tx.objectId })
+  const notifications = await control.findAll(control.ctx, notification.class.InboxNotification, {
+    attachedTo: tx.tx.objectId
+  })
 
   notifications.forEach((notification) => {
     res.push(control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id))
@@ -466,12 +472,12 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
   const account = getPersonAccountById(status.user as Ref<PersonAccount>, control)
   if (account === undefined) return
 
-  const update = (await control.findAll(chunter.class.ChatInfo, { user: account.person })).shift()
+  const update = (await control.findAll(control.ctx, chunter.class.ChatInfo, { user: account.person })).shift()
   const shouldUpdate = update === undefined || date - update.timestamp > updateChatInfoDelay
 
   if (!shouldUpdate) return
 
-  const contexts = await control.findAll(notification.class.DocNotifyContext, {
+  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     user: account._id,
     isPinned: false
   })
@@ -517,9 +523,9 @@ export async function updateChatInfo (control: TriggerControl, status: UserStatu
 
   const txIds = res.map((tx) => tx._id)
 
-  await control.apply(res)
+  await control.apply(control.ctx, res)
 
-  control.operationContext.derived.targets.docNotifyContext = (it) => {
+  control.ctx.contextData.broadcast.targets.docNotifyContext = (it) => {
     if (txIds.includes(it._id)) {
       return [account.email]
     }

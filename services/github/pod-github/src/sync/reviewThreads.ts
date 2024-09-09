@@ -499,7 +499,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
   ): Promise<void> {
     if (kind === 'externalVersion') {
       // No need to perform external sync for review threads, so let's update marks
-      const tx = derivedClient.apply('review_threads_github' + prj._id)
+      const tx = derivedClient.apply()
       for (const d of syncDocs) {
         await tx.update(d, { externalVersion: githubExternalSyncVersion })
       }
@@ -545,7 +545,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
           { reviewThreadId: ext.id }
         )
       }
-      const tx = derivedClient.apply('reviewThread_github' + prj._id)
+      const tx = derivedClient.apply()
       for (const d of syncDocs) {
         await tx.update(d, { derivedVersion: githubDerivedSyncVersion })
       }

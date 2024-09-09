@@ -955,6 +955,13 @@ abstract class MongoAdapterBase implements DbAdapter {
       projection[ckey] = options.projection[key]
       count++
     }
+    if (options.sort != null) {
+      for (const k of Object.keys(options.sort) as (keyof T)[]) {
+        if (projection[k] == null) {
+          ;(projection as any)[k] = 1
+        }
+      }
+    }
     if (count === 0) {
       return undefined
     }
@@ -1277,24 +1284,25 @@ class MongoAdapter extends MongoAdapterBase {
         const coll = this.db.collection<Doc>(domain)
 
         promises.push(
-          addOperation(
-            ctx,
-            'bulk-write',
-            { domain, operations: ops.length },
-            async (ctx) =>
-              await ctx.with(
-                'bulk-write',
-                { domain },
-                () =>
-                  coll.bulkWrite(ops, {
+          addOperation(ctx, 'bulk-write', { domain, operations: ops.length }, async (ctx) => {
+            await ctx.with(
+              'bulk-write',
+              { domain },
+              async () => {
+                try {
+                  await coll.bulkWrite(ops, {
                     ordered: false
-                  }),
-                {
-                  domain,
-                  operations: ops.length
+                  })
+                } catch (err: any) {
+                  ctx.error('failed to perform bulk write', { error: err, txes: cutObjectArray(ops) })
                 }
-              )
-          )
+              },
+              {
+                domain,
+                operations: ops.length
+              }
+            )
+          })
         )
       }
       if (domainBulk.findUpdate.size > 0) {
@@ -1600,21 +1608,28 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       ctx,
       opName,
       {},
-      async (ctx) =>
+      async (ctx) => {
         await ctx.with(
           'insertMany',
           { domain: 'tx' },
-          () =>
-            this.txCollection().insertMany(
-              tx.map((it) => translateDoc(it)),
-              {
-                ordered: false
-              }
-            ),
+          async () => {
+            try {
+              await this.txCollection().insertMany(
+                tx.map((it) => translateDoc(it)),
+                {
+                  ordered: false
+                }
+              )
+            } catch (err: any) {
+              ctx.error('failed to write tx', { error: err, message: err.message })
+            }
+          },
+
           {
             count: tx.length
           }
-        ),
+        )
+      },
       { domain: 'tx', count: tx.length }
     )
     ctx.withSync('handleEvent', {}, () => {

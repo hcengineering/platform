@@ -8,17 +8,32 @@ import {
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
   type WorkspaceIdWithUrl,
+  Hierarchy,
+  ModelDb,
   type MeasureContext
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
+  ApplyTxMiddleware,
+  BroadcastMiddleware,
   ConfigurationMiddleware,
+  ContextNameMiddleware,
+  DBAdapterHelperMiddleware,
+  DBAdapterMiddleware,
+  DomainFindMiddleware,
+  DomainTxMiddleware,
+  LiveQueryMiddleware,
   LookupMiddleware,
+  LowLevelMiddleware,
+  MarkDerivedEntryMiddleware,
+  ModelMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
   SpacePermissionsMiddleware,
-  SpaceSecurityMiddleware
+  SpaceSecurityMiddleware,
+  TriggersMiddleware,
+  TxMiddleware
 } from '@hcengineering/middleware'
 import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
@@ -35,10 +50,11 @@ import {
   createInMemoryAdapter,
   createPipeline,
   type Middleware,
-  type ServerStorage,
   type DbAdapterFactory,
+  FullTextMiddleware,
   type DbConfiguration,
   type MiddlewareCreator,
+  type PipelineContext,
   type PipelineFactory,
   type StorageAdapter,
   type Pipeline,
@@ -95,19 +111,46 @@ export function createServerPipeline (
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
-  const middlewares: MiddlewareCreator[] = [
-    LookupMiddleware.create,
-    ModifiedMiddleware.create,
-    PrivateMiddleware.create,
-    (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) =>
-      SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, storage, next),
-    SpacePermissionsMiddleware.create,
-    ConfigurationMiddleware.create,
-    QueryJoinMiddleware.create
-  ]
   return (ctx, workspace, upgrade, broadcast, branding) => {
-    const conf = getConfig(metrics, dbUrls, workspace, branding, ctx, opt, extensions)
-    return createPipeline(ctx, conf, middlewares, upgrade, broadcast, branding, opt.disableTriggers)
+    const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
+    const wsMetrics = metricsCtx.newChild('🧲 session', {})
+    const conf = getConfig(metrics, dbUrls, workspace, branding, wsMetrics, opt, extensions)
+
+    const middlewares: MiddlewareCreator[] = [
+      LookupMiddleware.create,
+      ModifiedMiddleware.create,
+      PrivateMiddleware.create,
+      (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
+        SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
+      SpacePermissionsMiddleware.create,
+      ConfigurationMiddleware.create,
+      LowLevelMiddleware.create,
+      ContextNameMiddleware.create,
+      MarkDerivedEntryMiddleware.create,
+      ApplyTxMiddleware.create, // Extract apply
+      TxMiddleware.create, // Store tx into transaction domain
+      ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
+      FullTextMiddleware.create(conf, upgrade),
+      QueryJoinMiddleware.create,
+      LiveQueryMiddleware.create,
+      DomainFindMiddleware.create,
+      DomainTxMiddleware.create,
+      DBAdapterHelperMiddleware.create,
+      ModelMiddleware.create,
+      DBAdapterMiddleware.create(conf), // Configure DB adapters
+      BroadcastMiddleware.create(broadcast)
+    ]
+
+    const hierarchy = new Hierarchy()
+    const modelDb = new ModelDb(hierarchy)
+    const context: PipelineContext = {
+      workspace,
+      branding,
+      modelDb,
+      hierarchy,
+      storageAdapter: opt.externalStorage
+    }
+    return createPipeline(ctx, middlewares, context)
   }
 }
 
@@ -125,7 +168,7 @@ export async function getServerPipeline (
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
   const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
-  const pipelineFactory: PipelineFactory = createServerPipeline(
+  const pipelineFactory = createServerPipeline(
     ctx,
     dbUrls,
     {
@@ -157,8 +200,10 @@ export async function getServerPipeline (
     }
   )
 
-  const pipeline = await pipelineFactory(ctx, wsUrl, true, () => {}, null)
-  return { pipeline, storageAdapter }
+  return {
+    pipeline: await pipelineFactory(ctx, wsUrl, true, () => {}, null),
+    storageAdapter
+  }
 }
 
 function getConfig (
@@ -255,9 +300,7 @@ function getConfig (
       },
       ...extensions?.contentAdapters
     },
-    defaultContentAdapter: extensions?.defaultContentAdapter ?? 'Rekoni',
-    storageFactory: opt.externalStorage,
-    workspace
+    defaultContentAdapter: extensions?.defaultContentAdapter ?? 'Rekoni'
   }
   return conf
 }

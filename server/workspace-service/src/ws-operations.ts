@@ -1,31 +1,28 @@
 import core, {
-  type Client,
   getWorkspaceId,
+  Hierarchy,
+  ModelDb,
   systemAccountEmail,
+  TxOperations,
   versionToString,
   type BaseWorkspaceInfo,
   type Branding,
+  type Client,
   type Data,
   type MeasureContext,
   type Tx,
   type Version,
-  type WorkspaceIdWithUrl,
-  TxOperations,
-  ModelDb,
-  Hierarchy
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import {
   DummyFullTextAdapter,
+  SessionDataImpl,
   type Pipeline,
-  SessionContextImpl,
   type PipelineFactory,
   type StorageConfiguration
 } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { generateToken } from '@hcengineering/server-token'
-import { initModel, prepareTools, upgradeModel, initializeWorkspace, updateModel } from '@hcengineering/server-tool'
 import {
   createIndexStages,
   createServerPipeline,
@@ -34,10 +31,12 @@ import {
   registerServerPlugins,
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { generateToken } from '@hcengineering/server-token'
+import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
 
 function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client {
-  const sctx = new SessionContextImpl(
-    ctx,
+  const sctx = new SessionDataImpl(
     systemAccountEmail,
     'backup',
     true,
@@ -46,24 +45,27 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
     null,
     false,
     new Map(),
-    new Map()
+    new Map(),
+    pipeline.context.modelDb
   )
+
+  ctx.contextData = sctx
 
   return {
     findAll: async (_class, query, options) => {
-      return await pipeline.findAll(sctx, _class, query, options)
+      return await pipeline.findAll(ctx, _class, query, options)
     },
     findOne: async (_class, query, options) => {
-      return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
+      return (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift()
     },
     close: async () => {
       await pipeline.close()
     },
     getHierarchy: () => {
-      return pipeline.storage.hierarchy
+      return pipeline.context.hierarchy
     },
     getModel: () => {
-      return pipeline.storage.modelDb
+      return pipeline.context.modelDb
     },
     searchFulltext: async (query, options) => {
       return {
@@ -72,7 +74,7 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
       }
     },
     tx: async (tx) => {
-      return await pipeline.tx(sctx, tx)
+      return await pipeline.tx(ctx, [tx])
     },
     notify: (...tx) => {}
   }

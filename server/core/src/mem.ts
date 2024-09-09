@@ -27,7 +27,6 @@ import core, {
   type MeasureContext,
   ModelDb,
   type Ref,
-  type SessionOperationContext,
   type StorageIterator,
   toFindResult,
   type Tx,
@@ -57,8 +56,7 @@ export class DummyDbAdapter implements DbAdapter {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T> | undefined,
-    sessionContext?: SessionOperationContext
+    options?: FindOptions<T> | undefined
   ): Promise<FindResult<T>> {
     return toFindResult([])
   }
@@ -130,8 +128,7 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>,
-    sessionContext?: SessionOperationContext
+    options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     return await this.modeldb.findAll(_class, query, options)
   }

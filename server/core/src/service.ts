@@ -15,9 +15,9 @@
 
 import { type MeasureContext } from '@hcengineering/core'
 
-import { type ServiceAdapter, type ServiceAdapterConfig } from './types'
+import { type ServiceAdapter, type ServiceAdapterConfig, type ServiceAdaptersManager } from './types'
 
-export class ServiceAdaptersManager {
+export class ServiceAdaptersManagerImpl implements ServiceAdaptersManager {
   constructor (
     private readonly adapters: Map<string, ServiceAdapter>,
     private readonly context: MeasureContext
@@ -50,5 +50,5 @@ export async function createServiceAdaptersManager (
 
     adapters.set(key, adapter)
   }
-  return new ServiceAdaptersManager(adapters, context)
+  return new ServiceAdaptersManagerImpl(adapters, context)
 }

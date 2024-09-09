@@ -44,8 +44,6 @@ import {
   DbAdapter,
   DomainIndexHelperImpl,
   Pipeline,
-  ServerStorage,
-  SessionContextImpl,
   StorageAdapter
 } from '@hcengineering/server-core'
 import { connect } from './connect'
@@ -53,7 +51,7 @@ import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 import fs from 'fs'
 import * as yaml from 'js-yaml'
@@ -268,7 +266,7 @@ export async function upgradeModel (
 
   const prevModel = await fetchModel(ctx, pipeline)
   const { migrateClient: preMigrateClient } = await prepareMigrationClient(
-    pipeline.storage,
+    pipeline,
     prevModel.hierarchy,
     prevModel.modelDb,
     logger,
@@ -302,34 +300,24 @@ export async function upgradeModel (
   })
 
   if (!skipTxUpdate) {
-    const sctx = new SessionContextImpl(
-      ctx,
-      systemAccountEmail,
-      'upgrade',
-      true,
-      { targets: {}, txes: [] },
-      workspaceId,
-      null,
-      false,
-      new Map(),
-      new Map()
-    )
-
+    if (pipeline.context.lowLevelStorage === undefined) {
+      throw new PlatformError(unknownError('Low level storage is not available'))
+    }
     logger.log('removing model...', { workspaceId: workspaceId.name })
     await progress(10)
-    const toRemove = await pipeline.findAll(sctx, core.class.Tx, {
+    const toRemove = await pipeline.findAll(ctx, core.class.Tx, {
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
       objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
     })
-    await pipeline.clean(
+    await pipeline.context.lowLevelStorage.clean(
       ctx,
       DOMAIN_TX,
       toRemove.map((p) => p._id)
     )
     logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: toRemove.length })
     logger.log('creating model...', { workspaceId: workspaceId.name })
-    await pipeline.upload(ctx, DOMAIN_TX, txes)
+    await pipeline.context.lowLevelStorage.upload(ctx, DOMAIN_TX, txes)
 
     logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: txes.length })
     await progress(20)
@@ -348,7 +336,7 @@ export async function upgradeModel (
 
   const { hierarchy, modelDb, model } = await fetchModel(ctx, pipeline, newModel)
   const { migrateClient, migrateState } = await prepareMigrationClient(
-    pipeline.storage,
+    pipeline,
     hierarchy,
     modelDb,
     logger,
@@ -458,7 +446,7 @@ export async function upgradeModel (
 }
 
 async function prepareMigrationClient (
-  adapter: ServerStorage,
+  pipeline: Pipeline,
   hierarchy: Hierarchy,
   model: ModelDb,
   logger: ModelLogger,
@@ -468,7 +456,7 @@ async function prepareMigrationClient (
     migrateClient: MigrateClientImpl
     migrateState: Map<string, Set<string>>
   }> {
-  const migrateClient = new MigrateClientImpl(adapter, hierarchy, model, logger, storageAdapter, workspaceId)
+  const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, workspaceId)
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
   const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
@@ -486,7 +474,7 @@ export async function fetchModel (
   const modelDb = new ModelDb(hierarchy)
 
   if (model === undefined) {
-    const res = await ctx.with('get-model', {}, async (ctx) => await pipeline.storage.loadModel(0))
+    const res = await ctx.with('get-model', {}, async (ctx) => await pipeline.loadModel(ctx, 0))
     model = Array.isArray(res) ? res : res.transactions
   }
 
@@ -498,7 +486,7 @@ export async function fetchModel (
     }
     modelDb.addTxes(ctx, model as Tx[], false)
   })
-  return { hierarchy, modelDb, model }
+  return { hierarchy, modelDb, model: model ?? [] }
 }
 
 async function createUpdateIndexes (
@@ -516,7 +504,10 @@ async function createUpdateIndexes (
     if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT || domain === DOMAIN_BENCHMARK) {
       continue
     }
-    const adapter = pipeline.storage.getAdapter(domain, false)
+    const adapter = pipeline.context.adapterManager?.getAdapter(domain, false)
+    if (adapter === undefined) {
+      throw new PlatformError(unknownError(`Adapter for domain ${domain} not found`))
+    }
     const dbHelper = adapter.helper()
 
     await domainHelper.checkDomain(ctx, domain, await dbHelper.estimatedCount(domain), dbHelper)

@@ -19,34 +19,17 @@ import core, {
   type Doc,
   type DocChunk,
   type Domain,
-  DOMAIN_MODEL,
-  DOMAIN_TX,
-  type FullParamsType,
   generateId,
   getWorkspaceId,
   Hierarchy,
-  type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
-  type ParamsType,
   type Ref,
-  type SessionOperationContext,
   SortingOrder,
   type Space,
-  TxOperations,
-  type WorkspaceId
+  TxOperations
 } from '@hcengineering/core'
-import {
-  type ContentTextAdapter,
-  createNullStorageFactory,
-  createServerStorage,
-  type DbAdapter,
-  type DbConfiguration,
-  DummyDbAdapter,
-  DummyFullTextAdapter,
-  type FullTextAdapter,
-  type ServerStorage
-} from '@hcengineering/server-core'
+import { type DbAdapter } from '@hcengineering/server-core'
 import { createPostgresAdapter, createPostgresTxAdapter } from '..'
 import { getDBClient, type PostgresClientReference, shutdown } from '../utils'
 import { genMinModel } from './minmodel'
@@ -56,41 +39,15 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
-async function createNullAdapter (
-  ctx: MeasureContext,
-  hierarchy: Hierarchy,
-  url: string,
-  db: WorkspaceId,
-  modelDb: ModelDb
-): Promise<DbAdapter> {
-  return new DummyDbAdapter()
-}
-
-async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
-  return new DummyFullTextAdapter()
-}
-
-async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
-  return {
-    async content (name: string, type: string, doc) {
-      return ''
-    },
-    metrics (): MeasureContext {
-      return new MeasureMetricsContext('', {})
-    }
-  }
-}
-
 describe('postgres operations', () => {
   const baseDbUri: string = process.env.DB_URL ?? 'postgresql://postgres:example@localhost:5433'
   let dbId: string = 'pg_testdb_' + generateId()
-  let dbUri: string = baseDbUri + '/' + dbId
   const clientRef: PostgresClientReference = getDBClient(baseDbUri)
   let hierarchy: Hierarchy
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: ServerStorage
+  let serverStorage: DbAdapter
 
   afterAll(async () => {
     clientRef.close()
@@ -139,73 +96,13 @@ describe('postgres operations', () => {
 
     await txStorage.close()
 
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'Tx',
-        [DOMAIN_MODEL]: 'Null'
-      },
-      defaultAdapter: 'Postgres',
-      adapters: {
-        Tx: {
-          factory: createPostgresTxAdapter,
-          url: dbUri
-        },
-        Postgres: {
-          factory: createPostgresAdapter,
-          url: dbUri
-        },
-        Null: {
-          factory: createNullAdapter,
-          url: ''
-        }
-      },
-      metrics: new MeasureMetricsContext('', {}),
-      fulltextAdapter: {
-        factory: createNullFullTextAdapter,
-        url: '',
-        stages: () => []
-      },
-      contentAdapters: {
-        default: {
-          factory: createNullContentTextAdapter,
-          contentType: '',
-          url: ''
-        }
-      },
-      serviceAdapters: {},
-      defaultContentAdapter: 'default',
-      workspace: { ...getWorkspaceId(dbId), workspaceName: '', workspaceUrl: '' },
-      storageFactory: createNullStorageFactory()
-    }
     const ctx = new MeasureMetricsContext('client', {})
-    serverStorage = await createServerStorage(ctx, conf, {
-      upgrade: false,
-      broadcast: () => {},
-      branding: null
-    })
-    const soCtx: SessionOperationContext = {
-      ctx,
-      derived: {
-        txes: [],
-        targets: {}
-      },
-      with: <T>(
-        name: string,
-        params: ParamsType,
-        op: (ctx: SessionOperationContext) => T | Promise<T>,
-        fullParams?: FullParamsType
-      ): Promise<T> => {
-        const result = op(soCtx)
-        return result instanceof Promise ? result : Promise.resolve(result)
-      },
-      contextCache: new Map(),
-      removedMap: new Map()
-    }
+    serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         isConnected: () => true,
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(soCtx, tx),
+        tx: async (tx) => await serverStorage.tx(ctx, tx),
         searchFulltext: async () => ({ docs: [] }),
         close: async () => {},
         loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),

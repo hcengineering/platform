@@ -52,7 +52,7 @@ export async function FindReminders (
  */
 export async function ReminderHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const event = doc as Event
-  const target = (await control.findAll(event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
+  const target = (await control.findAll(control.ctx, event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
   if (target !== undefined) {
     const HTMLPresenter = getHTMLPresenter(target._class, control.hierarchy)
     const htmlPart =
@@ -66,7 +66,7 @@ export async function ReminderHTMLPresenter (doc: Doc, control: TriggerControl):
  */
 export async function ReminderTextPresenter (doc: Doc, control: TriggerControl): Promise<string | undefined> {
   const event = doc as Event
-  const target = (await control.findAll(event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
+  const target = (await control.findAll(control.ctx, event.attachedToClass, { _id: event.attachedTo }, { limit: 1 }))[0]
   if (target !== undefined) {
     const TextPresenter = getTextPresenter(target._class, control.hierarchy)
     if (TextPresenter === undefined) return

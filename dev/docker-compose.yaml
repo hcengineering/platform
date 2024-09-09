@@ -88,6 +88,8 @@ services:
     restart: unless-stopped
   workspace:
     image: hardcoreeng/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"    
     # deploy:
     #   mode: replicated
     #   replicas: 3
@@ -106,7 +108,7 @@ services:
       - FRONT_URL=http://localhost:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
-      - ACCOUNTS_URL=http://account:3000
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       - NOTIFY_INBOX_ONLY=true
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
@@ -161,7 +163,7 @@ services:
       - GITHUB_URL=http://localhost:3500
       - PRINT_URL=http://localhost:4005
       - SIGN_URL=http://localhost:4006
-      - ANALYTICS_COLLECTOR_URL=http://localhost:4007
+      - ANALYTICS_COLLECTOR_URL=http://localhost:4017
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://localhost:8087/branding.json
@@ -257,10 +259,10 @@ services:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
-      - 4007:4007
+      - 4017:4017
     environment:
       - SECRET=secret
-      - PORT=4007
+      - PORT=4017
       - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
       - SERVICE_ID=analytics-collector-service

@@ -4,26 +4,33 @@ import {
   Domain,
   FindOptions,
   Hierarchy,
+  LowLevelStorage,
   MeasureMetricsContext,
   ModelDb,
   Ref,
   WorkspaceId
 } from '@hcengineering/core'
 import { MigrateUpdate, MigrationClient, MigrationIterator, ModelLogger } from '@hcengineering/model'
-import { ServerStorage, StorageAdapter } from '@hcengineering/server-core'
+import { Pipeline, StorageAdapter } from '@hcengineering/server-core'
 
 /**
  * Upgrade client implementation.
  */
 export class MigrateClientImpl implements MigrationClient {
+  private readonly lowLevel: LowLevelStorage
   constructor (
-    readonly adapter: ServerStorage,
+    readonly pipeline: Pipeline,
     readonly hierarchy: Hierarchy,
     readonly model: ModelDb,
     readonly logger: ModelLogger,
     readonly storageAdapter: StorageAdapter,
     readonly workspaceId: WorkspaceId
-  ) {}
+  ) {
+    if (this.pipeline.context.lowLevelStorage === undefined) {
+      throw new Error('lowLevelStorage is not defined')
+    }
+    this.lowLevel = this.pipeline.context.lowLevelStorage
+  }
 
   migrateState = new Map<string, Set<string>>()
 
@@ -32,7 +39,7 @@ export class MigrateClientImpl implements MigrationClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
   ): Promise<T[]> {
-    return await this.adapter.rawFindAll(domain, query, options)
+    return await this.lowLevel.rawFindAll(domain, query, options)
   }
 
   async traverse<T extends Doc>(
@@ -40,13 +47,13 @@ export class MigrateClientImpl implements MigrationClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
   ): Promise<MigrationIterator<T>> {
-    return await this.adapter.traverse(domain, query, options)
+    return await this.lowLevel.traverse(domain, query, options)
   }
 
   async update<T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: MigrateUpdate<T>): Promise<void> {
     const t = Date.now()
     try {
-      await this.adapter.rawUpdate(domain, query, operations)
+      await this.lowLevel.rawUpdate(domain, query, operations)
     } finally {
       if (Date.now() - t > 1000) {
         this.logger.log(`update${Date.now() - t > 5000 ? 'slow' : ''}`, { domain, query, time: Date.now() - t })
@@ -59,7 +66,7 @@ export class MigrateClientImpl implements MigrationClient {
     operations: { filter: DocumentQuery<T>, update: MigrateUpdate<T> }[]
   ): Promise<void> {
     for (const ops of operations) {
-      await this.adapter.rawUpdate(domain, ops.filter, ops.update)
+      await this.lowLevel.rawUpdate(domain, ops.filter, ops.update)
     }
   }
 
@@ -67,10 +74,10 @@ export class MigrateClientImpl implements MigrationClient {
     const ctx = new MeasureMetricsContext('move', {})
     this.logger.log('move', { sourceDomain, query })
     while (true) {
-      const source = await this.adapter.rawFindAll(sourceDomain, query, { limit: 500 })
+      const source = await this.lowLevel.rawFindAll(sourceDomain, query, { limit: 500 })
       if (source.length === 0) break
-      await this.adapter.upload(ctx, targetDomain, source)
-      await this.adapter.clean(
+      await this.lowLevel.upload(ctx, targetDomain, source)
+      await this.lowLevel.clean(
         ctx,
         sourceDomain,
         source.map((p) => p._id)
@@ -80,18 +87,18 @@ export class MigrateClientImpl implements MigrationClient {
 
   async create<T extends Doc>(domain: Domain, doc: T | T[]): Promise<void> {
     const ctx = new MeasureMetricsContext('create', {})
-    await this.adapter.upload(ctx, domain, Array.isArray(doc) ? doc : [doc])
+    await this.lowLevel.upload(ctx, domain, Array.isArray(doc) ? doc : [doc])
   }
 
   async delete<T extends Doc>(domain: Domain, _id: Ref<T>): Promise<void> {
     const ctx = new MeasureMetricsContext('delete', {})
-    await this.adapter.clean(ctx, domain, [_id])
+    await this.lowLevel.clean(ctx, domain, [_id])
   }
 
   async deleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
     const ctx = new MeasureMetricsContext('deleteMany', {})
-    const docs = await this.adapter.rawFindAll(domain, query)
-    await this.adapter.clean(
+    const docs = await this.lowLevel.rawFindAll(domain, query)
+    await this.lowLevel.clean(
       ctx,
       domain,
       docs.map((d) => d._id)
