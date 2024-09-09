@@ -15,7 +15,7 @@ import {
   getSecondPageByInvite
 } from '../utils'
 
-test.describe('Channel tests', () => {
+test.describe.only('Channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let chunterPage: ChunterPage
   let channelPage: ChannelPage
@@ -92,7 +92,6 @@ test.describe('Channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, false)
-    await page2.close()
   })
 
   test('Create new public channel tests and check if the new user have access to it by default', async ({
@@ -110,13 +109,13 @@ test.describe('Channel tests', () => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
-    await page2.close()
   })
 
   test('Create new private channel and test if the user can exchange the messages', async ({ browser, page }) => {
@@ -131,6 +130,7 @@ test.describe('Channel tests', () => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -146,7 +146,6 @@ test.describe('Channel tests', () => {
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
     await channelPage.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
-    await page2.close()
   })
 
   test('Create new private channel add user to it', async ({ browser, page }) => {
@@ -161,6 +160,7 @@ test.describe('Channel tests', () => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -179,7 +179,6 @@ test.describe('Channel tests', () => {
     await channelPageSecond.checkMessageExist('One two', true, 'One two')
     await channelPage.clickChooseChannel(data.channelName)
     await channelPage.checkMessageExist('One two', true, 'One two')
-    await page2.close()
   })
 
   test('Go to general channel add user to it', async ({ browser, page }) => {
@@ -192,6 +191,7 @@ test.describe('Channel tests', () => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -204,7 +204,6 @@ test.describe('Channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('general')
     await channelPage.checkMessageExist('One two', true, 'One two')
-    await page2.close()
   })
 
   test('Go to random channel add user to it', async ({ browser, page }) => {
@@ -217,6 +216,7 @@ test.describe('Channel tests', () => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -229,7 +229,6 @@ test.describe('Channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('random')
     await channelPage.checkMessageExist('One two', true, 'One two')
-    await page2.close()
   })
 
   test('Check if user can add emoji', async () => {
@@ -275,7 +274,7 @@ test.describe('Channel tests', () => {
     await channelPage.checkIfMessageExist(true, 'Test message edited message 1')
   })
 
-  test.only('Check if user can copy message', async ({ page }) => {
+  test('Check if user can copy message', async ({ page }) => {
     const baseURL = process.env.PLATFORM_URI ?? 'http://localhost:8083'
     const expectedUrl = `${baseURL}/workbench/${data.workspaceName}/chunter/chunter:space:Random|chunter:class:Channel?message=`
     await leftSideMenuPage.clickChunter()
@@ -334,6 +333,7 @@ test.describe('Channel tests', () => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -370,6 +370,7 @@ test.describe('Channel tests', () => {
     await createAccount(request, newUser2)
     const linkText = await getInviteLink(page)
     const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await leftSideMenuPageSecond.clickChunter()
@@ -382,7 +383,6 @@ test.describe('Channel tests', () => {
 
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
-    await page2.close()
   })
 
   test('User can star and unstar a channel', async () => {

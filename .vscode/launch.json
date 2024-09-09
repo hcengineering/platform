@@ -48,7 +48,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "v0.6.287",
+        "MODEL_VERSION": "0.6.287",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         

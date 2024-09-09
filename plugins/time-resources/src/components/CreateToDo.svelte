@@ -21,7 +21,7 @@
     name = name.trim()
     if (name.length === 0) return
     description = description?.trim() ?? ''
-    const ops = client.apply('todo' + generateId())
+    const ops = client.apply(undefined, 'save-todo')
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {

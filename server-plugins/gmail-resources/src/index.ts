@@ -72,7 +72,9 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
 
   const message = TxProcessor.createDoc2Doc<Message>(createTx)
 
-  const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
+  const channel = (
+    await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
+  )[0]
   if (channel !== undefined) {
     if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
       const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {

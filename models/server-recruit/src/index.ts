@@ -61,7 +61,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverRecruit.trigger.OnRecruitUpdate
+    trigger: serverRecruit.trigger.OnRecruitUpdate,
+    txMatch: {
+      objectClass: recruit.class.Vacancy
+    }
   })
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, serverCore.mixin.SearchPresenter, {

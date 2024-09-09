@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import type { Doc, Domain, Ref } from './classes'
-import { MeasureContext, type FullParamsType, type ParamsType } from './measurements'
+import type { Account, Doc, Domain, Ref } from './classes'
+import { MeasureContext } from './measurements'
 import type { Tx } from './tx'
+import type { WorkspaceIdWithUrl } from './utils'
 
 /**
  * @public
@@ -35,22 +36,44 @@ export interface StorageIterator {
 
 export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
 
-export interface SessionOperationContext {
-  ctx: MeasureContext
-  // A parts of derived data to deal with after operation will be complete
+export interface SessionData {
+  broadcast: {
+    txes: Tx[]
+    targets: BroadcastTargets // A set of broadcast filters if required
+  }
+  contextCache: Map<string, any>
+  removedMap: Map<Ref<Doc>, Doc>
+
+  userEmail: string
+  sessionId: string
+  admin?: boolean
+
+  account: Account
+
+  getAccount: (account: Ref<Account>) => Account | undefined
+
+  workspace: WorkspaceIdWithUrl
+  branding: Branding | null
+}
+
+export interface ContextData {
   derived: {
     txes: Tx[]
     targets: BroadcastTargets // A set of broadcast filters if required
   }
-  with: <T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: SessionOperationContext) => T | Promise<T>,
-    fullParams?: FullParamsType
-  ) => Promise<T>
-
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>
+
+  userEmail: string
+  sessionId: string
+  admin?: boolean
+
+  account: Account
+
+  getAccount: (account: Ref<Account>) => Account | undefined
+
+  workspace: WorkspaceIdWithUrl
+  branding: Branding | null
 }
 
 /**

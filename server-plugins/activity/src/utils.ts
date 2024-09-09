@@ -1,4 +1,3 @@
-import type { TriggerControl } from '@hcengineering/server-core'
 import {
   AttachedDoc,
   Class,
@@ -12,10 +11,10 @@ import {
   TxUpdateDoc
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
-import { DocObjectCache } from './types'
+import { DocObjectCache, type ActivityControl } from './types'
 
 export async function getAllObjectTransactions (
-  control: Pick<TriggerControl, 'hierarchy' | 'findAll'>,
+  control: Pick<ActivityControl, 'hierarchy' | 'findAll' | 'ctx'>,
   _class: Ref<Class<Doc>>,
   docs: Ref<Doc>[],
   mixin?: Ref<Mixin<Doc>>
@@ -25,6 +24,7 @@ export async function getAllObjectTransactions (
   const isAttached = hierarchy.isDerived(_class, core.class.AttachedDoc)
 
   const ownTxes = await control.findAll<TxCUD<Doc>>(
+    control.ctx,
     isAttached ? core.class.TxCollectionCUD : core.class.TxCUD,
     isAttached
       ? { 'tx.objectId': { $in: docs as Ref<AttachedDoc>[] } }
@@ -43,6 +43,7 @@ export async function getAllObjectTransactions (
   }
 
   const collectionTxes = await control.findAll<TxCollectionCUD<Doc, AttachedDoc>>(
+    control.ctx,
     core.class.TxCollectionCUD,
     {
       objectId: { $in: docs },
@@ -58,6 +59,7 @@ export async function getAllObjectTransactions (
 
   const mixinTxes = isAttached
     ? await control.findAll<TxMixin<Doc, Doc>>(
+      control.ctx,
       core.class.TxMixin,
       {
         objectId: { $in: docs },
@@ -73,6 +75,7 @@ export async function getAllObjectTransactions (
   }
 
   const moveCollection = await control.findAll<TxCollectionCUD<Doc, AttachedDoc>>(
+    control.ctx,
     core.class.TxCollectionCUD,
     {
       'tx.operations.attachedTo': { $in: docs },

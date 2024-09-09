@@ -13,7 +13,7 @@ export async function changeTrainingOwner (training: Training, owner: Ref<Employ
   if (!canChangeTrainingOwner(training)) {
     return
   }
-  const ops = getClient().apply(training._id)
+  const ops = getClient().apply()
 
   await ops.updateDoc(training._class, training.space, training._id, {
     owner

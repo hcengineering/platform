@@ -184,7 +184,7 @@ class UIClient extends TxOperations implements Client, OptimisticTxes {
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
 
-      if (applyTx.match.length !== 0 || applyTx.notMatch.length !== 0) {
+      if ((applyTx.match?.length ?? 0) !== 0 || (applyTx.notMatch?.length ?? 0) !== 0) {
         // Cannot early apply conditional transactions
         return
       }

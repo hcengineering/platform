@@ -430,7 +430,7 @@ export async function moveIssueToSpace (
   space: Project,
   updates: Map<Ref<Issue>, DocumentUpdate<Issue>>
 ): Promise<void> {
-  const applyOps = client.apply(docs[0]._id)
+  const applyOps = client.apply()
   for (const doc of docs) {
     const lastOne = await client.findOne(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.updateDoc(

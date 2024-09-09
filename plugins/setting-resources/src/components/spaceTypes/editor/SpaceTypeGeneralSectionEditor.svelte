@@ -70,7 +70,7 @@
     if (push.size === 0 && pull.size === 0) {
       return
     }
-    const ops = client.apply(`typeMembers_${type._id}`)
+    const ops = client.apply(undefined, 'change-members')
     for (const pushMem of push) {
       ops.update(type, { $push: { members: pushMem } })
     }
