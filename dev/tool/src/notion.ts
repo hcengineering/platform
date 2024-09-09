@@ -1,8 +1,25 @@
-import { generateId, type AttachedData, type Ref, type WorkspaceIdWithUrl, makeCollaborativeDoc, type MeasureMetricsContext, type TxOperations, type Blob } from '@hcengineering/core'
+import {
+  generateId,
+  type AttachedData,
+  type Ref,
+  type WorkspaceIdWithUrl,
+  makeCollaborativeDoc,
+  type MeasureMetricsContext,
+  type TxOperations,
+  type Blob
+} from '@hcengineering/core'
 import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import document, { type Document, type Teamspace } from '@hcengineering/document'
 import { type StorageAdapter } from '@hcengineering/server-core'
-import { MarkupMarkType, type MarkupNode, MarkupNodeType, parseMessageMarkdown, traverseNode, traverseNodeMarks, jsonToYDocNoSchema } from '@hcengineering/text'
+import {
+  MarkupMarkType,
+  type MarkupNode,
+  MarkupNodeType,
+  parseMessageMarkdown,
+  traverseNode,
+  traverseNodeMarks,
+  jsonToYDocNoSchema
+} from '@hcengineering/text'
 
 import attachment from '@hcengineering/model-attachment'
 import { type Attachment } from '@hcengineering/attachment'
@@ -68,7 +85,7 @@ export async function importNotion (
 
 async function getFilesForImport (dir: string): Promise<Dirent[]> {
   const filesAndDirs = await readdir(dir, { recursive: true, withFileTypes: true })
-  const files = filesAndDirs.filter(file => {
+  const files = filesAndDirs.filter((file) => {
     return !file.isDirectory() && !(file.name === 'index.html' && file.path === dir)
   })
   return files
@@ -139,12 +156,10 @@ function collectFileMetadata (
     })
   })
 
-  const notionParentId = ancestors[ancestors.length - 1] !== undefined
-    ? extractNotionId(ancestors[ancestors.length - 1])
-    : undefined
-  const notionSubRootId = ancestors[1] !== undefined
-    ? extractNotionId(ancestors[1]) ?? extractOriginalName(ancestors[1])
-    : undefined
+  const notionParentId =
+    ancestors[ancestors.length - 1] !== undefined ? extractNotionId(ancestors[ancestors.length - 1]) : undefined
+  const notionSubRootId =
+    ancestors[1] !== undefined ? extractNotionId(ancestors[1]) ?? extractOriginalName(ancestors[1]) : undefined
 
   documentMetaMap.set(notionId, {
     id: generateId(),
@@ -185,12 +200,7 @@ async function createTeamspace (name: string, client: TxOperations): Promise<Ref
     autoJoin: false,
     archived: false
   }
-  await client.createDoc(
-    document.class.Teamspace,
-    core.space.Space,
-    data,
-    teamspaceId
-  )
+  await client.createDoc(document.class.Teamspace, core.space.Space, data, teamspaceId)
   return teamspaceId
 }
 
@@ -227,7 +237,7 @@ async function importFiles (
       if (docMeta === undefined) throw new Error('Cannot find metadata for entry: ' + fileMeta.fileName)
 
       const spaceId = docMeta.notionSubRootId !== undefined && spaceIdMap.get(docMeta.notionSubRootId)
-      if (spaceId === undefined || spaceId === false) throw new Error('Teamspace not found for document: ' + docMeta.name)
+      if (spaceId === undefined || spaceId === false) { throw new Error('Teamspace not found for document: ' + docMeta.name) }
 
       await importFile(ctx, client, storage, fileMeta, docMeta, spaceId, documentMetaMap, ws)
     }
@@ -249,12 +259,11 @@ async function importFile (
 
     console.log('IMPORT STARTED:', fileMeta.fileName)
     readFile(fileMeta.fileName)
-      .then(data => {
+      .then((data) => {
         const { notionParentId } = docMeta
 
-        const parentMeta = notionParentId !== undefined && notionParentId !== ''
-          ? documentMetaMap.get(notionParentId)
-          : undefined
+        const parentMeta =
+          notionParentId !== undefined && notionParentId !== '' ? documentMetaMap.get(notionParentId) : undefined
 
         const processFileData = getDataProcessor(fileMeta, docMeta)
         processFileData(ctx, client, storage, ws, data, docMeta, spaceId, parentMeta, documentMetaMap)
@@ -266,7 +275,8 @@ async function importFile (
           .catch((error) => {
             handleImportFailure(docMeta.name, error, reject)
           })
-      }).catch((error) => {
+      })
+      .catch((error) => {
         handleImportFailure(docMeta.name, error, reject)
       })
 
@@ -304,7 +314,7 @@ function getDataProcessor (fileMeta: FileMetadata, docMeta: DocumentMetadata): D
     console.log('DB FILE: ', docMeta.name)
     return createDBPageWithAttachments
   }
-  if (fileMeta.extension === CSV_EXTENSION && (/[\d\w]*_all$/).test(docMeta.notionId)) {
+  if (fileMeta.extension === CSV_EXTENSION && /[\d\w]*_all$/.test(docMeta.notionId)) {
     console.log('DB FILE (ALL): ', docMeta.name)
     return importDBAttachment
   }
@@ -329,9 +339,7 @@ async function createDBPageWithAttachments (
   const pageId = docMeta.id as Ref<Document>
   const collabId = makeCollaborativeDoc(pageId, 'content')
 
-  const parentId = parentMeta !== undefined
-    ? parentMeta.id as Ref<Document>
-    : document.ids.NoParent
+  const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 
   const object: AttachedData<Document> = {
     name: docMeta.name,
@@ -617,9 +625,7 @@ function extractNameWoExtension (fileName: string): string {
 function extractOriginalName (fileName: string): string {
   const woExtension = extractNameWoExtension(fileName)
   const notionId = extractNotionId(woExtension)
-  const nameOnly = (notionId !== undefined)
-    ? woExtension.replace(notionId, '')
-    : woExtension
+  const nameOnly = notionId !== undefined ? woExtension.replace(notionId, '') : woExtension
   return nameOnly.trimEnd()
 }
 
