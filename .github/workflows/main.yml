@@ -251,7 +251,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: profiling
-          path: ./tests/profiling
+          path: ./tests/profiles
       - name: 'Store docker logs'
         if: always()
         run: |
