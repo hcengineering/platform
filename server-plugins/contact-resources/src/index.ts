@@ -47,7 +47,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
-import serverCore, { TriggerControl, removeAllObjects } from '@hcengineering/server-core'
+import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
 
 export async function OnSpaceTypeMembers (tx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -180,12 +180,6 @@ export async function OnContactDelete (
   if (removeContact === undefined) {
     return []
   }
-
-  if (removeContact.avatar == null) {
-    return []
-  }
-
-  await removeAllObjects(ctx, storageAdapter, workspace, removeContact.avatar)
 
   const result: Tx[] = []
 

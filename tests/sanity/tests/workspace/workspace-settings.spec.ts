@@ -80,7 +80,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await userProfilePage.openProfileMenu()
     await userProfilePage.clickSettings()
-    await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.Branding)
+    await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.General)
     await ownersPage.clickOnWorkspaceLogo()
     await uploadFile(page, 'cat3.jpeg')
     await ownersPage.saveUploadedLogo()

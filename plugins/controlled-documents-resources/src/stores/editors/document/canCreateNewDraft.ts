@@ -17,15 +17,13 @@ import { DocumentState } from '@hcengineering/controlled-documents'
 import { combine } from 'effector'
 import { $controlledDocument, $documentAllVersionsDescSorted } from './editor'
 
-const states: DocumentState[] = [DocumentState.Deleted, DocumentState.Effective]
-
 export const $canCreateNewDraft = combine($controlledDocument, $documentAllVersionsDescSorted, (document, versions) => {
   if (document == null) return false
 
-  const effectiveIndex = versions.findIndex((p) => p.state === DocumentState.Effective)
   const currentIndex = versions.findIndex((p) => p._id === document._id)
 
-  return effectiveIndex === -1
-    ? states.includes(document.state)
-    : currentIndex <= effectiveIndex && versions.slice(0, effectiveIndex).every((p) => states.includes(p.state))
+  return (
+    versions.slice(0, currentIndex).every((p) => p.state === DocumentState.Deleted) &&
+    document.state !== DocumentState.Draft
+  )
 })

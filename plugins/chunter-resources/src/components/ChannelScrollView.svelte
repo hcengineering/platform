@@ -681,7 +681,7 @@
   $: void forceReadContext(isScrollAtBottom, notifyContext)
 
   async function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): Promise<void> {
-    if (context === undefined || !isScrollAtBottom || forceRead || !separatorElement) return
+    if (context === undefined || !isScrollAtBottom || forceRead) return
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastViewedTimestamp >= lastUpdateTimestamp) return

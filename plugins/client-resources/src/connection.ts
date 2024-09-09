@@ -223,7 +223,7 @@ class Connection implements ClientConnection {
 
   handleMsg (socketId: number, resp: Response<any>): void {
     if (resp.error !== undefined) {
-      if (resp.error?.code === UNAUTHORIZED.code) {
+      if (resp.error?.code === UNAUTHORIZED.code || resp.terminate === true) {
         Analytics.handleError(new PlatformError(resp.error))
         this.closed = true
         this.websocket?.close()

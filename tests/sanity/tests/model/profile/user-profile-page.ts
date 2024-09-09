@@ -13,7 +13,7 @@ export class UserProfilePage {
   selectProfile = (name: string): Locator => this.page.locator(`text=${name}`)
   leaveWorkspaceButton = (): Locator => this.page.getByRole('button', { name: 'Leave workspace' })
   leaveWorkspaceCancelButton = (): Locator => this.page.getByRole('button', { name: 'Cancel' })
-  leaveWorkspaceConfirmButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
+  leaveWorkspaceConfirmButton = (): Locator => this.page.getByRole('button', { name: 'Ok', exact: true })
   accountDissabledMessage = (): Locator => this.page.getByRole('heading')
   changeAccount = (): Locator => this.page.getByRole('link', { name: 'Change account' })
   settings = (): Locator => this.page.getByRole('button', { name: 'Settings' })
