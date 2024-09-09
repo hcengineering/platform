@@ -429,8 +429,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     )
     if (target === null) {
       // We need to wait, no milestone data yet.
-      this.ctx.error('target === null', { url: info.url })
-      return { needSync: '' }
+      this.ctx.error('target === null, no milestone data yet', { url: info.url })
+      return { needSync: githubSyncVersion }
     }
     if (target === undefined) {
       target = this.getProjectIssueTarget(container.project, issueExternal)
