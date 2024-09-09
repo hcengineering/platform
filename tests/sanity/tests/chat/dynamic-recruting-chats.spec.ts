@@ -37,11 +37,7 @@ test.describe('Dynamic reqruting chats', () => {
     await swp.selectWorkspace(data.workspaceName)
   })
 
-  test('User can work with a vacancy/talent/aplications and see linked chat', async ({
-    page,
-    browser,
-    request
-  }) => {
+  test('User can work with a vacancy/talent/aplications and see linked chat', async () => {
     await leftSideMenuPage.clickRecruiting()
     const newVacancyTitle = `Vacancy ${generateId()}`
     let talentName: TalentName
