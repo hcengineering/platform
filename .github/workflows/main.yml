@@ -40,6 +40,7 @@ env:
     .prettierrc
     tools
   PublishTempFolder: publish_artifacts
+  MODEL_VERSION_MODE: ${{ startsWith(github.ref, 'refs/tags/s') && 'tagTime' || 'file' }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
