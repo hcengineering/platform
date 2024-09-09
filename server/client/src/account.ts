@@ -18,11 +18,19 @@ import { getMetadata, PlatformError, unknownError } from '@hcengineering/platfor
 
 import plugin from './plugin'
 
+export interface WorkspaceLoginInfo extends LoginInfo {
+  workspace: string
+  workspaceId: string
+}
+export interface LoginInfo {
+  token: string
+  endpoint: string
+  confirmed: boolean
+  email: string
+}
+
 export async function listAccountWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
+  const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
       method: 'POST',
@@ -44,11 +52,7 @@ export async function getTransactorEndpoint (
   kind: 'internal' | 'external' = 'internal',
   timeout: number = -1
 ): Promise<string> {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
-
+  const accountsUrl = getAccoutsUrlOrFail()
   const st = Date.now()
   while (true) {
     try {
@@ -86,11 +90,7 @@ export async function getPendingWorkspace (
   version: Data<Version>,
   operation: 'create' | 'upgrade' | 'all'
 ): Promise<BaseWorkspaceInfo | undefined> {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
-
+  const accountsUrl = getAccoutsUrlOrFail()
   const workspaces = await (
     await fetch(accountsUrl, {
       method: 'POST',
@@ -115,10 +115,7 @@ export async function updateWorkspaceInfo (
   progress: number,
   message?: string
 ): Promise<void> {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
+  const accountsUrl = getAccoutsUrlOrFail()
   await (
     await fetch(accountsUrl, {
       method: 'POST',
@@ -139,11 +136,7 @@ export async function workerHandshake (
   version: Data<Version>,
   operation: 'create' | 'upgrade' | 'all'
 ): Promise<void> {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
-
+  const accountsUrl = getAccoutsUrlOrFail()
   await fetch(accountsUrl, {
     method: 'POST',
     headers: {
@@ -157,10 +150,7 @@ export async function workerHandshake (
 }
 
 export async function getWorkspaceInfo (token: string): Promise<BaseWorkspaceInfo | undefined> {
-  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
-  if (accountsUrl == null) {
-    throw new PlatformError(unknownError('No account endpoint specified'))
-  }
+  const accountsUrl = getAccoutsUrlOrFail()
   const workspaceInfo = await (
     await fetch(accountsUrl, {
       method: 'POST',
@@ -176,4 +166,64 @@ export async function getWorkspaceInfo (token: string): Promise<BaseWorkspaceInf
   ).json()
 
   return workspaceInfo.result as BaseWorkspaceInfo | undefined
+}
+
+export async function login (user: string, password: string, workspace: string): Promise<string> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      method: 'login',
+      params: [user, password, workspace]
+    })
+  })
+
+  const result = await response.json()
+  const { token } = result.result
+  return token
+}
+
+export async function getUserWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      method: 'getUserWorkspaces',
+      params: []
+    })
+  })
+  const result = await response.json()
+  return (result.result as BaseWorkspaceInfo[]) ?? []
+}
+
+export async function selectWorkspace (token: string, workspace: string): Promise<WorkspaceLoginInfo> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const response = await fetch(accountsUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token
+    },
+    body: JSON.stringify({
+      method: 'selectWorkspace',
+      params: [workspace, 'external']
+    })
+  })
+  const result = await response.json()
+  return result.result as WorkspaceLoginInfo
+}
+
+function getAccoutsUrlOrFail (): string {
+  const accountsUrl = getMetadata(plugin.metadata.Endpoint)
+  if (accountsUrl == null) {
+    throw new PlatformError(unknownError('No account endpoint specified'))
+  }
+  return accountsUrl
 }
