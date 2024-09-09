@@ -84,7 +84,9 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -108,7 +110,8 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
@@ -129,7 +132,8 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
@@ -159,7 +163,8 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
@@ -190,7 +195,8 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
@@ -215,7 +221,8 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
@@ -332,7 +339,8 @@ test.describe('Channel tests', () => {
   test('Check if the user can be added through preview tab', async ({ browser, page }) => {
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
@@ -341,7 +349,6 @@ test.describe('Channel tests', () => {
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.clickOnOpenChannelDetails()
     await channelPageSecond.checkIfUserIsAdded(data.lastName + ' ' + data.firstName, false)
-    await page2.close()
   })
 
   test('Check if we can create new public channel tests and check if the new user have can be added through preview', async ({
@@ -356,20 +363,23 @@ test.describe('Channel tests', () => {
 
     const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    await leftSideMenuPageSecond.clickChunter()
 
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('general')
     await channelPage.clickChannel(data.channelName)
     await channelPage.clickOnOpenChannelDetails()
     await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
-    await page2.close()
   })
 
   test('Checking backlinks in the Chat', async ({ browser, page, request }) => {
     await createAccount(request, newUser2)
     const linkText = await getInviteLink(page)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
 
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)

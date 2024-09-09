@@ -68,7 +68,9 @@ test.describe('Dynamic issues chats', () => {
   test('User can see chat for assigned issue from other user', async ({ page, browser, request }) => {
     const linkText = await getInviteLink(page)
     await createAccount(request, newUser2)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
+
     const channelPageSecond = new ChannelPage(page2)
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     await leftSideMenuPageSecond.clickChunter()

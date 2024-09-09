@@ -127,12 +127,25 @@ export async function getSecondPageByInvite (
   browser: Browser,
   linkText: string | null,
   newUser: SignUpData
-): Promise<Page> {
-  const page = await browser.newPage()
-  await page.goto(linkText ?? '')
-  const joinPage: SignInJoinPage = new SignInJoinPage(page)
+): Promise<{ page: Page, context: BrowserContext } & Disposable> {
+  const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
+  const newPage = await userSecondContext.newPage()
+  await newPage.goto(linkText ?? '')
+  const joinPage: SignInJoinPage = new SignInJoinPage(newPage)
   await joinPage.join(newUser)
-  return page
+
+  return {
+    page: newPage,
+    context: userSecondContext,
+    [Symbol.dispose]: () => {
+      void newPage
+        .close()
+        .finally(() => {
+          void userSecondContext.close().catch(() => {})
+        })
+        .catch(() => {})
+    }
+  }
 }
 
 export function expectToContainsOrdered (val: Locator, text: string[], timeout?: number): Promise<void> {

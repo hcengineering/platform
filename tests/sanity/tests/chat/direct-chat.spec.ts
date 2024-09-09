@@ -44,7 +44,8 @@ test.describe('Check direct messages channels', () => {
   test('User can create/close/reacreate direct chat with employee', async ({ request, page, browser }) => {
     const linkText = await getInviteLink(page)
     await createAccount(request, newUser2)
-    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const page2 = _page2.page
     const channelPageSecond = new ChannelPage(page2)
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     await leftSideMenuPageSecond.clickChunter()
