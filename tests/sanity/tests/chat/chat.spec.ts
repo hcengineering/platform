@@ -15,7 +15,7 @@ import {
   getSecondPageByInvite
 } from '../utils'
 
-test.describe.only('Channel tests', () => {
+test.describe('Channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let chunterPage: ChunterPage
   let channelPage: ChannelPage
