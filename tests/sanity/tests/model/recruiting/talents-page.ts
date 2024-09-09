@@ -34,6 +34,9 @@ export class TalentsPage extends CommonRecruitingPage {
   createButton = (): Locator => this.page.locator('button:has-text("Create")')
   assignedRecruiterButton = (): Locator => this.page.locator('button:has-text("Assigned recruiter")')
   chenRosamundButton = (): Locator => this.page.locator('button:has-text("Chen Rosamund")')
+  recruterSelectItemButton = (name: string): Locator =>
+    this.page.locator(`button.menu-item.withList:has-text("${name}")`)
+
   vacancyApplicatio = (vacancyId: string): Locator => this.page.locator(`tr:has-text("${vacancyId}") >> text=APP-`)
 
   recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
@@ -101,6 +104,10 @@ export class TalentsPage extends CommonRecruitingPage {
 
   async selectChenRosamund (): Promise<void> {
     await this.chenRosamundButton().click()
+  }
+
+  async selectRecruterToAssignByName (recruterName: string): Promise<void> {
+    await this.recruterSelectItemButton(recruterName).click()
   }
 
   async clickOnAndreyTalet (): Promise<void> {

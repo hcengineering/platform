@@ -12,7 +12,7 @@ import { NewIssue } from '../model/tracker/types'
 import { prepareNewIssueWithOpenStep } from '../tracker/common-steps'
 import { LinkedChannelTypes } from '../model/types'
 
-test.describe('Dynamic issues chats', () => {
+test.describe.only('Dynamic issues chats', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let channelPage: ChannelPage
   let loginPage: LoginPage
@@ -48,7 +48,7 @@ test.describe('Dynamic issues chats', () => {
       assignee: `${data.lastName} ${data.firstName}`
     }
 
-    await test.step('User 1 create Issue for himself', async () => {
+    await test.step('User 1 creates Issue for himself', async () => {
       await prepareNewIssueWithOpenStep(page, newIssue)
     })
 
@@ -80,7 +80,7 @@ test.describe('Dynamic issues chats', () => {
       assignee: `${newUser2.lastName} ${newUser2.firstName}`
     }
 
-    await test.step('User 1 create an issue and assign it to User 2', async () => {
+    await test.step('User 1 creates an issue and assign it to User 2', async () => {
       await prepareNewIssueWithOpenStep(page, newIssue)
     })
 
@@ -89,7 +89,7 @@ test.describe('Dynamic issues chats', () => {
       await channelPageSecond.checkLinkedChannelIsExist(newIssue.title, LinkedChannelTypes.Issue)
     })
 
-    await test.step('User 1 add comment and User 2 sees it in chat', async () => {
+    await test.step('User 1 adds comment and User 2 sees it in chat', async () => {
       const commentText = `Comment to show in chat-${generateId()}`
       const issuesDetailsPage = new IssuesDetailsPage(page)
       await issuesDetailsPage.waitDetailsOpened(newIssue.title)

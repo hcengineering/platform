@@ -236,6 +236,17 @@ export class ChannelPage extends CommonPage {
     await this.joinChannelButton().click()
   }
 
+  async getChannelsGroupLocatorByType (channelType: LinkedChannelTypes, channelName: string): Promise<Locator> {
+    const mapTypesToLocator = {
+      [LinkedChannelTypes.Issue]: this.issueChannelContainers(),
+      [LinkedChannelTypes.Vacancy]: this.vacancyChannelContainers(),
+      [LinkedChannelTypes.Application]: this.applicationChannelContainers()
+    } as const
+
+    const groupLocator: Locator = mapTypesToLocator[channelType] ?? this.issueChannelContainers()
+    return groupLocator.filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
+  }
+
   async checkIfChannelDefaultExist (shouldExist: boolean, channel: string): Promise<void> {
     if (shouldExist) {
       await expect(this.channelName(channel)).toBeVisible()
@@ -299,24 +310,10 @@ export class ChannelPage extends CommonPage {
   }
 
   async checkLinkedChannelIsExist (channelName: string, linkedChannelType: LinkedChannelTypes): Promise<void> {
-    switch (linkedChannelType) {
-      case LinkedChannelTypes.Issue:
-        await expect(
-          this.issueChannelContainers().filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
-        ).toHaveCount(1)
-        break
-      case LinkedChannelTypes.Vacancy:
-        await expect(
-          this.vacancyChannelContainers().filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
-        ).toHaveCount(1)
-        break
-      case LinkedChannelTypes.Application:
-        await expect(
-          this.applicationChannelContainers().filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
-        ).toHaveCount(1)
-        break
-      default:
-        break
-    }
+    await expect(await this.getChannelsGroupLocatorByType(linkedChannelType, channelName)).toHaveCount(1)
+  }
+
+  async openLinkedChannelIsExist (channelName: string, linkedChannelType: LinkedChannelTypes): Promise<void> {
+    await (await this.getChannelsGroupLocatorByType(linkedChannelType, channelName)).click()
   }
 }

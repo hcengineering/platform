@@ -9,7 +9,7 @@ import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
 import { PlatformURI, generateTestData, getInviteLink, generateUser, createAccount } from '../utils'
 
-test.describe('Check direct messages channels', () => {
+test.describe.only('Check direct messages channels', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let chunterPage: ChunterPage
   let channelPage: ChannelPage
