@@ -621,6 +621,7 @@ export class MarkdownParser {
 
   listRule: RuleCore = (state: TaskListStateCore): boolean => {
     const tokens = state.tokens
+    const states: Array<{ closeIdx: number, lastItemIdx: number }> = []
 
     // step #1 - convert list items to todo items
     for (let open = 0; open < tokens.length; open++) {
@@ -630,32 +631,36 @@ export class MarkdownParser {
     }
 
     // step #2 - convert lists to proper type
-    let closeIdx = -1
-    let lastItemIdx = -1
+    // listCloseIdx and itemCloseIdx tracks position of the list and item close tokens
+    // because we insert items into the list, the variables keep the position from the
+    // end of the list so we don't have to count inserts
+    let listCloseIdx = -1
+    let itemCloseIdx = -1
+
     for (let i = tokens.length - 1; i >= 0; i--) {
       if (tokens[i].type === 'bullet_list_close') {
-        closeIdx = i
-        lastItemIdx = -1
+        states.push({ closeIdx: listCloseIdx, lastItemIdx: itemCloseIdx })
+        listCloseIdx = tokens.length - i
+        itemCloseIdx = -1
       } else if (tokens[i].type === 'list_item_close' || tokens[i].type === 'todo_item_close') {
         // when found item close token of different type, split the list
-        if (lastItemIdx === -1) {
-          lastItemIdx = i
-        } else if (tokens[i].type !== tokens[lastItemIdx].type) {
+        if (itemCloseIdx === -1) {
+          itemCloseIdx = tokens.length - i
+        } else if (tokens[i].type !== tokens[tokens.length - itemCloseIdx].type) {
           tokens.splice(i + 1, 0, new state.Token('bullet_list_open', 'ul', 1))
           tokens.splice(i + 1, 0, new state.Token('bullet_list_close', 'ul', -1))
-          convertTodoList(tokens, i + 2, closeIdx + 2, lastItemIdx + 2)
-          closeIdx = i + 1
-          lastItemIdx = i
+          convertTodoList(tokens, i + 2, tokens.length - listCloseIdx, tokens.length - itemCloseIdx)
+          listCloseIdx = tokens.length - i - 1
+          itemCloseIdx = tokens.length - i
         }
-      } else if (tokens[i].type === 'bullet_list_open' && tokens[i].level === tokens[closeIdx].level) {
-        // when found list open token of the same level, decide what to do
-        if (lastItemIdx !== -1) {
-          convertTodoList(tokens, i, closeIdx, lastItemIdx)
+      } else if (tokens[i].type === 'bullet_list_open') {
+        if (itemCloseIdx !== -1) {
+          convertTodoList(tokens, i, tokens.length - listCloseIdx, tokens.length - itemCloseIdx)
         }
 
-        // Reset closeIdx and lastItemIdx for the next list
-        closeIdx = -1
-        lastItemIdx = -1
+        const prevState = states.pop() ?? { closeIdx: -1, lastItemIdx: -1 }
+        listCloseIdx = prevState.closeIdx
+        itemCloseIdx = prevState.lastItemIdx
       }
     }
 
