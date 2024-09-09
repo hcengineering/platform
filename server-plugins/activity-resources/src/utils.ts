@@ -243,7 +243,7 @@ export async function getTxAttributesUpdates (
 
   if (updateObject._id !== tx.objectId) {
     updateObject =
-      objectCache?.docs?.get(tx.objectId) ?? (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0]
+      objectCache?.docs?.get(tx.objectId) ?? (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }))[0]
   }
 
   if (updateObject === undefined) {

@@ -21,11 +21,11 @@ import {
   DocumentUpdate,
   MeasureContext,
   Ref,
-  WorkspaceId
+  WorkspaceId,
+  type LowLevelStorage
 } from '@hcengineering/core'
 import {
   contentStageId,
-  DbAdapter,
   docKey,
   DocUpdateHandler,
   docUpdKey,
@@ -58,7 +58,7 @@ export class LibRetranslateStage implements TranslationStage {
 
   constructor (readonly workspaceId: WorkspaceId) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
+  async initialize (ctx: MeasureContext, storage: LowLevelStorage, pipeline: FullTextPipeline): Promise<void> {}
 
   async search (
     _classes: Ref<Class<Doc>>[],

@@ -2,7 +2,6 @@
 // Copyright @ 2024 Hardcore Engineering Inc.
 //
 
-import { generateId } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import type { Question } from '@hcengineering/questions'
 import { canUpdateQuestion, findNextQuestion, updateQuestion } from '../utils'
@@ -21,7 +20,7 @@ export const questionMoveDownAction = focusActionWithAvailability<Question<unkno
     if (nextQuestion === undefined) {
       return
     }
-    const ops = getClient().apply(generateId() + 'down')
+    const ops = getClient().apply()
     await updateQuestion(ops, object, { rank: nextQuestion.rank })
     await updateQuestion(ops, nextQuestion, { rank: object.rank })
     await ops.commit()

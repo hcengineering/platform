@@ -7,7 +7,7 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
-import { PlatformURI, generateTestData, getInviteLink, generateUser, createAccount } from '../utils'
+import { PlatformURI, createAccount, generateTestData, generateUser, getInviteLink, getSecondPage } from '../utils'
 
 test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -81,7 +81,9 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
@@ -92,7 +94,6 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, false)
-    await page2.close()
   })
 
   test('create new public channel tests and check if the new user have access to it by default', async ({
@@ -111,7 +112,9 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
@@ -122,7 +125,6 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
     await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
-    await page2.close()
   })
 
   test('create new private channel and test if the user can exchange the messages', async ({ browser, page }) => {
@@ -138,7 +140,9 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await leftSideMenuPage.clickOnCloseInvite()
@@ -158,7 +162,6 @@ test.describe('channel tests', () => {
     await channelPageSecond.sendMessage('My dream is to fly')
     await channelPageSecond.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
     await channelPage.checkMessageExist('My dream is to fly', true, 'My dream is to fly')
-    await page2.close()
   })
 
   test('create new private channel add user to it', async ({ browser, page }) => {
@@ -174,7 +177,9 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await leftSideMenuPage.clickOnCloseInvite()
@@ -197,7 +202,6 @@ test.describe('channel tests', () => {
     await channelPageSecond.checkMessageExist('One two', true, 'One two')
     await channelPage.clickChooseChannel(data.channelName)
     await channelPage.checkMessageExist('One two', true, 'One two')
-    await page2.close()
   })
 
   test('go to general channel add user to it', async ({ browser, page }) => {
@@ -211,7 +215,9 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await leftSideMenuPage.clickOnCloseInvite()
@@ -228,7 +234,6 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('general')
     await channelPage.checkMessageExist('One two', true, 'One two')
-    await page2.close()
   })
 
   test('go to random channel add user to it', async ({ browser, page }) => {
@@ -242,7 +247,9 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
+
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await leftSideMenuPage.clickOnCloseInvite()
@@ -259,7 +266,6 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('random')
     await channelPage.checkMessageExist('One two', true, 'One two')
-    await page2.close()
   })
 
   test('check if user can add emoji', async () => {
@@ -366,7 +372,8 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
 
@@ -396,7 +403,8 @@ test.describe('channel tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     await leftSideMenuPage.clickOnCloseInvite()
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
     await page2.goto(linkText ?? '')
     const joinPage = new SignInJoinPage(page2)
@@ -406,13 +414,13 @@ test.describe('channel tests', () => {
     await channelPage.clickChannel(data.channelName)
     await channelPage.clickOnOpenChannelDetails()
     await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
-    await page2.close()
   })
 
   test('Checking backlinks in the Chat', async ({ browser, page, request }) => {
     await createAccount(request, newUser2)
     const linkText = await getInviteLink(page)
-    const page2 = await browser.newPage()
+    using _page = await getSecondPage(browser)
+    const page2 = _page.page
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     const channelPageSecond = new ChannelPage(page2)
     await page2.goto(linkText ?? '')
@@ -428,6 +436,5 @@ test.describe('channel tests', () => {
 
     await channelPageSecond.clickChannel('general')
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
-    await page2.close()
   })
 })

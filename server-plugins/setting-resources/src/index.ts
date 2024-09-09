@@ -49,7 +49,7 @@ async function getEmployee (control: TriggerControl, _id: Ref<Account>): Promise
   })[0]
   if (employeeAccount !== undefined) {
     const employee = (
-      await control.findAll(contact.class.Person, {
+      await control.findAll(control.ctx, contact.class.Person, {
         _id: employeeAccount.person
       })
     )[0]

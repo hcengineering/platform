@@ -48,7 +48,7 @@ import { type FullTextIndexPipeline } from './indexer'
 import { createStateDoc } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type StorageAdapter } from './storage'
-import type { FullTextAdapter, IndexedDoc, ServerStorage, WithFind } from './types'
+import type { FullTextAdapter, IndexedDoc, SessionFindAll, WithFind } from './types'
 
 /**
  * @public
@@ -59,7 +59,7 @@ export class FullTextIndex implements WithFind {
   constructor (
     private readonly hierarchy: Hierarchy,
     private readonly adapter: FullTextAdapter,
-    private readonly dbStorage: ServerStorage,
+    private readonly storageFindAll: SessionFindAll,
     readonly storageAdapter: StorageAdapter | undefined,
     readonly workspace: WorkspaceId,
     readonly indexer: FullTextIndexPipeline,
@@ -239,7 +239,7 @@ export class FullTextIndex implements WithFind {
     const scoreSearch: number | undefined = (options?.sort as any)?.['#score']
 
     const resultIds = Array.from(getResultIds(ids, _id))
-    let result = await this.dbStorage.findAll(
+    let result = await this.storageFindAll(
       ctx,
       _class,
       { _id: { $in: resultIds }, ...mainQuery },

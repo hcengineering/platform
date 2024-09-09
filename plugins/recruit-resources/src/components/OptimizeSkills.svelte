@@ -17,7 +17,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-  import { Button, CheckBox, EditBox, Lazy, ListView, Loading, Expandable } from '@hcengineering/ui'
+  import { Button, CheckBox, EditBox, Expandable, Lazy, ListView, Loading } from '@hcengineering/ui'
   import { FILTER_DEBOUNCE_MS } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
@@ -460,7 +460,7 @@
     for (const item of searchPlanElements) {
       console.log('Apply', item.original.title)
       const st = Date.now()
-      const ops = client.apply('optimize:' + item.original._id)
+      const ops = client.apply(undefined, 'optimize-skill')
       let allRefs: TagReference[] = await client.findAll(tags.class.TagReference, { tag: item.original._id })
 
       allRefs.sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0))

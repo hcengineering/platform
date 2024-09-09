@@ -93,7 +93,7 @@
       return
     }
 
-    const ops = client.apply(id)
+    const ops = client.apply()
 
     const version = {
       ...object,

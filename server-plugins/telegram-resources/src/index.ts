@@ -74,7 +74,9 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
   const res: Tx[] = []
 
   const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
-  const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
+  const channel = (
+    await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
+  )[0]
   if (channel !== undefined) {
     if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
       const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
@@ -109,7 +111,9 @@ export async function GetCurrentEmployeeTG (
     _id: control.txFactory.account as Ref<PersonAccount>
   })
   if (account === undefined) return
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  const employee = (
+    await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
+  )[0]
   if (employee !== undefined) {
     return await getContactChannel(control, employee, contact.channelProvider.Telegram)
   }
@@ -125,7 +129,9 @@ export async function GetIntegrationOwnerTG (
     _id: value.modifiedBy as Ref<PersonAccount>
   })
   if (account === undefined) return
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  const employee = (
+    await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
+  )[0]
   if (employee !== undefined) {
     return await getContactChannel(control, employee, contact.channelProvider.Telegram)
   }
@@ -138,7 +144,7 @@ async function getContactChannel (
 ): Promise<string | undefined> {
   if (value === undefined) return
   const res = (
-    await control.findAll(contact.class.Channel, {
+    await control.findAll(control.ctx, contact.class.Channel, {
       attachedTo: value._id,
       provider
     })

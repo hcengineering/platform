@@ -24,7 +24,7 @@ import {
 } from '@hcengineering/core'
 
 import { deepEqual } from 'fast-equals'
-import type { ServerStorage } from '../types'
+import type { Middleware } from '../types'
 
 interface Query {
   _class: Ref<Class<Doc>>
@@ -40,7 +40,7 @@ interface Query {
 export class QueryJoiner {
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
 
-  constructor (readonly _findAll: ServerStorage['findAll']) {}
+  constructor (readonly _findAll: Middleware['findAll']) {}
 
   async findAll<T extends Doc>(
     ctx: MeasureContext,

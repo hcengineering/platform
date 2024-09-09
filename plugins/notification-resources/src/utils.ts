@@ -128,7 +128,7 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
 
-  const ops = getClient().apply(doc._id, 'readNotifyContext')
+  const ops = getClient().apply(undefined, 'readNotifyContext')
   try {
     await inboxClient.readNotifications(
       ops,
@@ -152,7 +152,7 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
     return
   }
 
-  const ops = getClient().apply(doc._id, 'unReadNotifyContext')
+  const ops = getClient().apply(undefined, 'unReadNotifyContext')
 
   try {
     await inboxClient.unreadNotifications(
@@ -183,7 +183,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     return
   }
 
-  const ops = getClient().apply(doc._id, 'archiveContextNotifications')
+  const ops = getClient().apply(undefined, 'archiveContextNotifications')
 
   try {
     const notifications = await ops.findAll(
@@ -209,7 +209,7 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     return
   }
 
-  const ops = getClient().apply(doc._id, 'unarchiveContextNotifications')
+  const ops = getClient().apply(undefined, 'unarchiveContextNotifications')
 
   try {
     const notifications = await ops.findAll(

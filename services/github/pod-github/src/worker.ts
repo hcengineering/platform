@@ -1006,7 +1006,7 @@ export class GithubWorker implements IntegrationManager {
           // No more elements
           break
         }
-        const ops = derivedClient.apply(generateId())
+        const ops = derivedClient.apply()
 
         const uris: string[] = []
         // Check if some uris need to be lowercased
@@ -1448,7 +1448,7 @@ export class GithubWorker implements IntegrationManager {
           if (withError.length === 0) {
             break
           }
-          const ops = derivedClient.apply('cleanup_github' + generateId())
+          const ops = derivedClient.apply()
           for (const d of withError) {
             await ops.remove(d)
           }

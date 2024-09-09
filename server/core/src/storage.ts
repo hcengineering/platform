@@ -3,12 +3,12 @@ import {
   type Doc,
   type DocInfo,
   type Domain,
+  type LowLevelStorage,
   type MeasureContext,
   type Ref,
   type StorageIterator,
   type WorkspaceId
 } from '@hcengineering/core'
-import type { Pipeline } from './types'
 import { estimateDocSize } from './utils'
 
 export * from '@hcengineering/storage'
@@ -36,7 +36,7 @@ export interface ChunkInfo {
  * @public
  */
 export class BackupClientOps {
-  constructor (protected readonly _pipeline: Pipeline) {}
+  constructor (protected readonly storage: LowLevelStorage) {}
 
   idIndex = 0
   chunkInfo = new Map<number, ChunkInfo>()
@@ -64,7 +64,7 @@ export class BackupClientOps {
           }
         }
       } else {
-        chunk = { idx, iterator: this._pipeline.storage.find(ctx, domain, recheck), finished: false, index: 0 }
+        chunk = { idx, iterator: this.storage.find(ctx, domain, recheck), finished: false, index: 0 }
         this.chunkInfo.set(idx, chunk)
       }
       let size = 0
@@ -100,14 +100,14 @@ export class BackupClientOps {
   }
 
   async loadDocs (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this._pipeline.storage.load(ctx, domain, docs)
+    return await this.storage.load(ctx, domain, docs)
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await this._pipeline.storage.upload(ctx, domain, docs)
+    await this.storage.upload(ctx, domain, docs)
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this._pipeline.storage.clean(ctx, domain, docs)
+    await this.storage.clean(ctx, domain, docs)
   }
 }

@@ -13,23 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
-  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import { TimeEvents, ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
-  import tagsPlugin, { TagReference } from '@hcengineering/tags'
-  import { createEventDispatcher } from 'svelte'
-  import { VisibilityEditor } from '@hcengineering/calendar-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor-resources'
-  import { PersonAccount } from '@hcengineering/contact'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import task, { makeRank } from '@hcengineering/task'
-  import PriorityEditor from './PriorityEditor.svelte'
-  import DueDateEditor from './DueDateEditor.svelte'
-  import Workslots from './Workslots.svelte'
-  import time from '../plugin'
   import { Analytics } from '@hcengineering/analytics'
+  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import { VisibilityEditor } from '@hcengineering/calendar-resources'
+  import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import { PersonAccount } from '@hcengineering/contact'
+  import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import tagsPlugin, { TagReference } from '@hcengineering/tags'
+  import task, { makeRank } from '@hcengineering/task'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { TimeEvents, ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import time from '../plugin'
+  import DueDateEditor from './DueDateEditor.svelte'
+  import PriorityEditor from './PriorityEditor.svelte'
+  import Workslots from './Workslots.svelte'
 
   export let object: Doc | undefined
 
@@ -56,7 +56,7 @@
 
   async function saveToDo (): Promise<void> {
     loading = true
-    const ops = client.apply('todo-' + generateId())
+    const ops = client.apply(undefined, 'create-todo')
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {

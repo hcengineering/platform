@@ -12,7 +12,7 @@ export const trainingReleaseAction = focusActionWithAvailability<Training>(
     return canReleaseTraining(object)
   },
   async (object: Training) => {
-    const tx = getClient().apply(object._id)
+    const tx = getClient().apply()
 
     // There should be only 0 or 1 existing released version,
     // but let's find and archive them all, just in case
