@@ -18,10 +18,10 @@ import core, {
   TxFactory,
   WorkspaceEvent,
   generateId,
+  isWorkspaceCreating,
   systemAccountEmail,
   toWorkspaceString,
   versionToString,
-  isWorkspaceCreating,
   withContext,
   type BaseWorkspaceInfo,
   type Branding,
@@ -105,7 +105,11 @@ class TSessionManager implements SessionManager {
       branding: Branding | null
     ) => Session,
     readonly timeouts: Timeouts,
-    readonly brandingMap: BrandingMap
+    readonly brandingMap: BrandingMap,
+    readonly profiling?: {
+      start: () => void
+      stop: () => Promise<string | undefined>
+    }
   ) {
     this.checkInterval = setInterval(() => {
       this.handleInterval()
@@ -188,12 +192,7 @@ class TSessionManager implements SessionManager {
           continue
         }
         if (diff > 20000 && diff < 60000 && this.ticks % 10 === 0) {
-          void s[1].socket.send(
-            workspace.context,
-            { result: 'ping' },
-            s[1].session.binaryMode,
-            s[1].session.useCompression
-          )
+          s[1].socket.send(workspace.context, { result: 'ping' }, s[1].session.binaryMode, s[1].session.useCompression)
         }
 
         for (const r of s[1].session.requests.values()) {
@@ -376,7 +375,7 @@ class TSessionManager implements SessionManager {
           workspace: workspaceInfo.workspaceId,
           wsUrl: workspaceInfo.workspaceUrl
         })
-        pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
+        pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
       } else {
         ctx.warn('reconnect workspace in upgrade switch', {
           email: token.email,
@@ -406,7 +405,7 @@ class TSessionManager implements SessionManager {
         })
         return { upgrade: true }
       }
-      pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
+      pipeline = await ctx.with('💤 wait', { workspaceName }, () => (workspace as Workspace).pipeline)
     }
 
     const session = this.createSession(
@@ -431,7 +430,7 @@ class TSessionManager implements SessionManager {
     void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true, _workspace.workspaceId))
 
     if (this.timeMinutes > 0) {
-      void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+      ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
     }
     return { session, context: workspace.context, workspaceId: wsString }
   }
@@ -738,7 +737,7 @@ class TSessionManager implements SessionManager {
     const sessions = Array.from(workspace.sessions)
     workspace.sessions = new Map()
 
-    const closeS = async (s: Session, webSocket: ConnectionSocket): Promise<void> => {
+    const closeS = (s: Session, webSocket: ConnectionSocket): void => {
       s.workspaceClosed = true
       if (reason === 'upgrade' || reason === 'force-close') {
         // Override message handler, to wait for upgrading response from clients.
@@ -754,9 +753,12 @@ class TSessionManager implements SessionManager {
         wsName: workspace.workspaceName
       })
     }
-    await Promise.all(
-      sessions.filter((it) => it[1].socket.id !== ignoreSocket?.id).map((s) => closeS(s[1].session, s[1].socket))
-    )
+
+    sessions
+      .filter((it) => it[1].socket.id !== ignoreSocket?.id)
+      .forEach((s) => {
+        closeS(s[1].session, s[1].socket)
+      })
 
     const closePipeline = async (): Promise<void> => {
       try {
@@ -779,7 +781,7 @@ class TSessionManager implements SessionManager {
   }
 
   private sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean): void {
-    void webSocket.send(
+    webSocket.send(
       ctx,
       {
         result: {
@@ -868,7 +870,7 @@ class TSessionManager implements SessionManager {
         }
         const wsRef = this.workspaces.get(workspace)
         if (wsRef === undefined) {
-          await ws.send(
+          ws.send(
             ctx,
             {
               id: request.id,
@@ -891,7 +893,7 @@ class TSessionManager implements SessionManager {
             id: request.id,
             result: done
           }
-          await ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
+          ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
           return
         }
         if (request.id === -1 && request.method === 'hello') {
@@ -922,7 +924,7 @@ class TSessionManager implements SessionManager {
             binary: service.binaryMode,
             reconnect
           }
-          await ws.send(requestCtx, helloResponse, false, false)
+          ws.send(requestCtx, helloResponse, false, false)
           return
         }
         const opContext = (ctx: MeasureContext): ClientSessionCtx => ({
@@ -963,13 +965,13 @@ class TSessionManager implements SessionManager {
         try {
           const params = [...request.params]
 
-          await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [opContext(callTx), ...params]))
+          await ctx.with('🧨 process', {}, (callTx) => f.apply(service, [opContext(callTx), ...params]))
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             this.ctx.error('error handle request', { error: err, request })
           }
-          await ws.send(
+          ws.send(
             ctx,
             {
               id: request.id,
@@ -1006,6 +1008,10 @@ export function start (
     enableCompression?: boolean
     accountsUrl: string
     externalStorage: StorageAdapter
+    profiling?: {
+      start: () => void
+      stop: () => Promise<string | undefined>
+    }
   } & Partial<Timeouts>
 ): () => Promise<void> {
   const sessions = new TSessionManager(
@@ -1015,7 +1021,8 @@ export function start (
       pingTimeout: opt.pingTimeout ?? 10000,
       reconnectTimeout: 500
     },
-    opt.brandingMap
+    opt.brandingMap,
+    opt.profiling
   )
   return opt.serverFactory(
     sessions,

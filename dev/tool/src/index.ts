@@ -187,6 +187,12 @@ export function devTool (
 
   program.version('0.0.1')
 
+  program.command('version').action(() => {
+    console.log(
+      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`
+    )
+  })
+
   // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
   program
     .command('create-account <email>')
@@ -937,8 +943,9 @@ export function devTool (
   program
     .command('generate-token <name> <workspace>')
     .description('generate token')
-    .action(async (name: string, workspace: string) => {
-      console.log(generateToken(name, getWorkspaceId(workspace)))
+    .option('--admin', 'Generate token with admin access', false)
+    .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
+      console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
     })
   program
     .command('decode-token <token>')

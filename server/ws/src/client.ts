@@ -108,11 +108,7 @@ export class ClientSession implements Session {
       this._pipeline.context.modelDb
     )
     ctx.ctx.contextData = contextData
-    const result = await ctx.ctx.with(
-      'load-model',
-      {},
-      async () => await this._pipeline.loadModel(ctx.ctx, lastModelTx, hash)
-    )
+    const result = await ctx.ctx.with('load-model', {}, () => this._pipeline.loadModel(ctx.ctx, lastModelTx, hash))
     await ctx.sendResponse(result)
   }
 
@@ -265,7 +261,7 @@ export class ClientSession implements Session {
       }
       const bevent = createBroadcastEvent(Array.from(classes))
       this.broadcastTx = []
-      await socket.send(
+      socket.send(
         ctx,
         {
           result: [bevent]
