@@ -237,7 +237,9 @@ async function importFiles (
       if (docMeta === undefined) throw new Error('Cannot find metadata for entry: ' + fileMeta.fileName)
 
       const spaceId = docMeta.notionSubRootId !== undefined && spaceIdMap.get(docMeta.notionSubRootId)
-      if (spaceId === undefined || spaceId === false) { throw new Error('Teamspace not found for document: ' + docMeta.name) }
+      if (spaceId === undefined || spaceId === false) {
+        throw new Error('Teamspace not found for document: ' + docMeta.name)
+      }
 
       await importFile(ctx, client, storage, fileMeta, docMeta, spaceId, documentMetaMap, ws)
     }
