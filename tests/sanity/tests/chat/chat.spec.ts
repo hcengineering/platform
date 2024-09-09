@@ -9,7 +9,7 @@ import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignInJoinPage } from '../model/signin-page'
 import { PlatformURI, generateTestData, getInviteLink, generateUser, createAccount } from '../utils'
 
-test.describe.only('channel tests', () => {
+test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let chunterPage: ChunterPage
   let channelPage: ChannelPage

@@ -10,7 +10,7 @@ import { VacanciesPage } from '../model/recruiting/vacancies-page'
 import { TalentsPage } from '../model/recruiting/talents-page'
 import { TalentName } from '../model/recruiting/types'
 
-test.describe.only('Dynamic reqruting chats', () => {
+test.describe('Dynamic reqruting chats', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let channelPage: ChannelPage
   let vacanciesPage: VacanciesPage
@@ -37,7 +37,7 @@ test.describe.only('Dynamic reqruting chats', () => {
     await swp.selectWorkspace(data.workspaceName)
   })
 
-  test.only('User can work with a vacancy/talent/aplications and see linked chat', async ({
+  test('User can work with a vacancy/talent/aplications and see linked chat', async ({
     page,
     browser,
     request
