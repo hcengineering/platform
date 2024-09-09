@@ -5,8 +5,15 @@ import { SignUpData } from '../model/common-types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
-import { SignInJoinPage } from '../model/signin-page'
-import { PlatformURI, generateTestData, generateUser, getInviteLink, createAccount, generateId } from '../utils'
+import {
+  PlatformURI,
+  generateTestData,
+  generateUser,
+  getInviteLink,
+  createAccount,
+  generateId,
+  getSecondPageByInvite
+} from '../utils'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { NewIssue } from '../model/tracker/types'
 import { prepareNewIssueWithOpenStep } from '../tracker/common-steps'
@@ -59,18 +66,12 @@ test.describe('Dynamic issues chats', () => {
   })
 
   test('User can see chat for assigned issue from other user', async ({ page, browser, request }) => {
-    const page2 = await browser.newPage()
+    const linkText = await getInviteLink(page)
+    await createAccount(request, newUser2)
+    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
     const channelPageSecond = new ChannelPage(page2)
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-
-    await test.step('Prepare employee', async () => {
-      await createAccount(request, newUser2)
-      const linkText = await getInviteLink(page)
-      await page2.goto(linkText ?? '')
-      const joinPage = new SignInJoinPage(page2)
-      await joinPage.join(newUser2)
-      await leftSideMenuPageSecond.clickChunter()
-    })
+    await leftSideMenuPageSecond.clickChunter()
 
     const newIssue: NewIssue = {
       title: `Issue to test dynamic chat-${generateId()}`,

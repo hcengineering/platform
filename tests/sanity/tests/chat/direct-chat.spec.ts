@@ -6,8 +6,14 @@ import { SignUpData } from '../model/common-types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
-import { SignInJoinPage } from '../model/signin-page'
-import { PlatformURI, generateTestData, getInviteLink, generateUser, createAccount } from '../utils'
+import {
+  PlatformURI,
+  generateTestData,
+  getInviteLink,
+  generateUser,
+  createAccount,
+  getSecondPageByInvite
+} from '../utils'
 
 test.describe('Check direct messages channels', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -33,22 +39,15 @@ test.describe('Check direct messages channels', () => {
     await loginPage.login(data.userName, '1234')
     const swp = new SelectWorkspacePage(page)
     await swp.selectWorkspace(data.workspaceName)
-    // await (await page.goto(`${PlatformURI}/workbench/${data.workspaceName}`))?.finished()
   })
 
   test('User can create/close/reacreate direct chat with employee', async ({ request, page, browser }) => {
-    const page2 = await browser.newPage()
+    const linkText = await getInviteLink(page)
+    await createAccount(request, newUser2)
+    const page2 = await getSecondPageByInvite(browser, linkText, newUser2)
     const channelPageSecond = new ChannelPage(page2)
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
-
-    await test.step('Prepare employee', async () => {
-      await createAccount(request, newUser2)
-      const linkText = await getInviteLink(page)
-      await page2.goto(linkText ?? '')
-      const joinPage = new SignInJoinPage(page2)
-      await joinPage.join(newUser2)
-      await leftSideMenuPageSecond.clickChunter()
-    })
+    await leftSideMenuPageSecond.clickChunter()
 
     await test.step('Create a direct chat', async () => {
       await leftSideMenuPage.clickChunter()
