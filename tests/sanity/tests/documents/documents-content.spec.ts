@@ -103,7 +103,7 @@ test.describe('Content in the Documents tests', () => {
     for (const line of contents) await documentContentPage.checkToDo(line, true)
   })
 
-  test.only('Table in the Document', async ({ page, browser, request }) => {
+  test('Table in the Document', async ({ page, browser, request }) => {
     newUser2 = generateUser()
     await createAccount(request, newUser2)
     const linkText = await getInviteLink(page)
