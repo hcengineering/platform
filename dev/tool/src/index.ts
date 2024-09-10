@@ -46,7 +46,14 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, {
+  BlobClient,
+  createClient,
+  getTransactorEndpoint,
+  getUserWorkspaces,
+  login,
+  selectWorkspace
+} from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
 import path from 'path'
@@ -65,14 +72,14 @@ import core, {
   systemAccountEmail,
   TxOperations,
   versionToString,
-  type WorkspaceIdWithUrl,
   type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
   type Tx,
   type Version,
-  type WorkspaceId
+  type WorkspaceId,
+  concatLink
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
@@ -98,7 +105,7 @@ import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, syncFiles } from './storage'
-import { importNotion, importToTeamspace } from './notion'
+import { importNotion } from './notion'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -150,6 +157,15 @@ export function devTool (
       process.exit(1)
     }
     return elasticUrl
+  }
+
+  function getFrontUrl (): string {
+    const frontUrl = process.env.FRONT_URL
+    if (frontUrl === undefined) {
+      console.error('please provide front url')
+      process.exit(1)
+    }
+    return frontUrl
   }
 
   const initWS = process.env.INIT_WORKSPACE
@@ -212,83 +228,76 @@ export function devTool (
       })
     })
 
-  // import-notion /home/anna/work/notion/pages/exported --workspace workspace
+  // import-notion-with-teamspaces /home/anna/work/notion/pages/exported --workspace workspace
   program
-    .command('import-notion <dir>')
+    .command('import-notion-with-teamspaces <dir>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-u, --user <user>', 'user')
+    .requiredOption('-pw, --password <password>', 'password')
     .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
     .action(async (dir: string, cmd) => {
-      if (cmd.workspace === '') return
-
-      const { mongodbUri } = prepareTools()
-
-      await withDatabase(mongodbUri, async (db) => {
-        const ws = await getWorkspaceById(db, cmd.workspace)
-        if (ws === null) {
-          console.log('Workspace not found: ', cmd.workspace)
-          return
-        }
-
-        const wsUrl: WorkspaceIdWithUrl = {
-          name: ws.workspace,
-          workspaceName: ws.workspaceName ?? '',
-          workspaceUrl: ws.workspaceUrl ?? ''
-        }
-
-        await withStorage(mongodbUri, async (storageAdapter) => {
-          const token = generateToken(systemAccountEmail, { name: ws.workspace })
-          const endpoint = await getTransactorEndpoint(token, 'external')
-          const connection = (await connect(endpoint, wsUrl, undefined, {
-            mode: 'backup'
-          })) as unknown as CoreClient
-          const client = new TxOperations(connection, core.account.System)
-
-          await importNotion(toolCtx, client, storageAdapter, dir, wsUrl)
-
-          await connection.close()
-        })
-      })
+      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace)
     })
 
   // import-notion-to-teamspace /home/anna/work/notion/pages/exported --workspace workspace --teamspace notion
   program
     .command('import-notion-to-teamspace <dir>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-u, --user <user>', 'user')
+    .requiredOption('-pw, --password <password>', 'password')
     .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
-    .requiredOption('-ts, --teamspace <teamspace>', 'teamspace where the documents should be imported to')
+    .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
     .action(async (dir: string, cmd) => {
-      if (cmd.workspace === '') return
-      if (cmd.teamspace === '') return
-
-      const { mongodbUri } = prepareTools()
-
-      await withDatabase(mongodbUri, async (db) => {
-        const ws = await getWorkspaceById(db, cmd.workspace)
-        if (ws === null) {
-          console.log('Workspace not found: ', cmd.workspace)
-          return
-        }
-
-        const wsUrl: WorkspaceIdWithUrl = {
-          name: ws.workspace,
-          workspaceName: ws.workspaceName ?? '',
-          workspaceUrl: ws.workspaceUrl ?? ''
-        }
-
-        await withStorage(mongodbUri, async (storageAdapter) => {
-          const token = generateToken(systemAccountEmail, { name: ws.workspace })
-          const endpoint = await getTransactorEndpoint(token, 'external')
-          const connection = (await connect(endpoint, wsUrl, undefined, {
-            mode: 'backup'
-          })) as unknown as CoreClient
-          const client = new TxOperations(connection, core.account.System)
-
-          await importToTeamspace(toolCtx, client, storageAdapter, dir, wsUrl, cmd.teamspace)
-
-          await connection.close()
-        })
-      })
+      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
     })
+
+  async function importFromNotion (
+    dir: string,
+    user: string,
+    password: string,
+    workspace: string,
+    teamspace?: string
+  ): Promise<void> {
+    if (workspace === '' || user === '' || password === '' || teamspace === '') {
+      return
+    }
+
+    const userToken = await login(user, password, workspace)
+    const allWorkspaces = await getUserWorkspaces(userToken)
+    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
+    if (workspaces.length < 1) {
+      console.log('Workspace not found: ', workspace)
+      return
+    }
+    const selectedWs = await selectWorkspace(userToken, workspaces[0].workspace)
+    console.log(selectedWs)
+
+    function uploader (token: string) {
+      return (id: string, data: any) => {
+        return fetch(concatLink(getFrontUrl(), '/files'), {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token
+          },
+          body: data
+        })
+      }
+    }
+
+    const connection = (await connect(
+      selectedWs.endpoint,
+      {
+        name: selectedWs.workspaceId
+      },
+      undefined,
+      {
+        mode: 'backup'
+      }
+    )) as unknown as CoreClient
+    const client = new TxOperations(connection, core.account.System)
+    await importNotion(client, uploader(selectedWs.token), dir, teamspace)
+    await connection.close()
+  }
 
   program
     .command('reset-account <email>')
