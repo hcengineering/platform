@@ -521,7 +521,6 @@ export function start (
           ])
         } catch (error: any) {
           ctx.error('error-post-files', error)
-          console.error(error.stack)
           res.status(500).send()
         }
       },

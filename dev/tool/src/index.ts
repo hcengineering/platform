@@ -46,7 +46,14 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint, getUserWorkspaces, login, selectWorkspace, WorkspaceLoginInfo } from '@hcengineering/server-client'
+import serverClientPlugin, {
+  BlobClient,
+  createClient,
+  getTransactorEndpoint,
+  getUserWorkspaces,
+  login,
+  selectWorkspace
+} from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
 import path from 'path'
@@ -244,14 +251,20 @@ export function devTool (
       await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
     })
 
-  async function importFromNotion (dir: string, user: string, password: string, workspace: string, teamspace?: string): Promise<void> {
+  async function importFromNotion (
+    dir: string,
+    user: string,
+    password: string,
+    workspace: string,
+    teamspace?: string
+  ): Promise<void> {
     if (workspace === '' || user === '' || password === '' || teamspace === '') {
       return
     }
 
     const userToken = await login(user, password, workspace)
-    const allWorkspaces = (await getUserWorkspaces(userToken))
-    const workspaces = allWorkspaces.filter(ws => ws.workspace === workspace)
+    const allWorkspaces = await getUserWorkspaces(userToken)
+    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
     if (workspaces.length < 1) {
       console.log('Workspace not found: ', workspace)
       return
@@ -271,11 +284,16 @@ export function devTool (
       }
     }
 
-    const connection = (await connect(selectedWs.endpoint, {
-      name: selectedWs.workspaceId
-    }, undefined, {
-      mode: 'backup'
-    })) as unknown as CoreClient
+    const connection = (await connect(
+      selectedWs.endpoint,
+      {
+        name: selectedWs.workspaceId
+      },
+      undefined,
+      {
+        mode: 'backup'
+      }
+    )) as unknown as CoreClient
     const client = new TxOperations(connection, core.account.System)
     await importNotion(client, uploader(selectedWs.token), dir, teamspace)
     await connection.close()
