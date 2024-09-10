@@ -19,6 +19,7 @@ import accountPlugin, {
   assignWorkspace,
   confirmEmail,
   createAcc,
+  createWorkspace as createWorkspaceRecord,
   dropAccount,
   dropWorkspace,
   dropWorkspaceFull,
@@ -32,10 +33,8 @@ import accountPlugin, {
   setAccountAdmin,
   setRole,
   updateWorkspace,
-  createWorkspace as createWorkspaceRecord,
   type Workspace
 } from '@hcengineering/account'
-import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
@@ -47,9 +46,10 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import { getServerPipeline } from '@hcengineering/server-pipeline'
-import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
+import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -65,14 +65,16 @@ import core, {
   MeasureMetricsContext,
   metricsToString,
   systemAccountEmail,
+  TxOperations,
   versionToString,
-  type WorkspaceIdWithUrl,
+  type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
   type Tx,
   type Version,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
@@ -104,6 +106,7 @@ import { changeConfiguration } from './configuration'
 import { moveFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
+import { importNotion, importToTeamspace } from './notion'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, syncFiles } from './storage'
 
@@ -199,6 +202,12 @@ export function devTool (
 
   program.version('0.0.1')
 
+  program.command('version').action(() => {
+    console.log(
+      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`
+    )
+  })
+
   // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
   program
     .command('create-account <email>')
@@ -211,6 +220,84 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
         await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
+      })
+    })
+
+  // import-notion /home/anna/work/notion/pages/exported --workspace workspace
+  program
+    .command('import-notion <dir>')
+    .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      if (cmd.workspace === '') return
+
+      const { mongodbUri } = prepareTools()
+
+      await withDatabase(mongodbUri, async (db) => {
+        const ws = await getWorkspaceById(db, cmd.workspace)
+        if (ws === null) {
+          console.log('Workspace not found: ', cmd.workspace)
+          return
+        }
+
+        const wsUrl: WorkspaceIdWithUrl = {
+          name: ws.workspace,
+          workspaceName: ws.workspaceName ?? '',
+          workspaceUrl: ws.workspaceUrl ?? ''
+        }
+
+        await withStorage(mongodbUri, async (storageAdapter) => {
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const connection = (await connect(endpoint, wsUrl, undefined, {
+            mode: 'backup'
+          })) as unknown as CoreClient
+          const client = new TxOperations(connection, core.account.System)
+
+          await importNotion(toolCtx, client, storageAdapter, dir, wsUrl)
+
+          await connection.close()
+        })
+      })
+    })
+
+  // import-notion-to-teamspace /home/anna/work/notion/pages/exported --workspace workspace --teamspace notion
+  program
+    .command('import-notion-to-teamspace <dir>')
+    .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ts, --teamspace <teamspace>', 'teamspace where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      if (cmd.workspace === '') return
+      if (cmd.teamspace === '') return
+
+      const { mongodbUri } = prepareTools()
+
+      await withDatabase(mongodbUri, async (db) => {
+        const ws = await getWorkspaceById(db, cmd.workspace)
+        if (ws === null) {
+          console.log('Workspace not found: ', cmd.workspace)
+          return
+        }
+
+        const wsUrl: WorkspaceIdWithUrl = {
+          name: ws.workspace,
+          workspaceName: ws.workspaceName ?? '',
+          workspaceUrl: ws.workspaceUrl ?? ''
+        }
+
+        await withStorage(mongodbUri, async (storageAdapter) => {
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const connection = (await connect(endpoint, wsUrl, undefined, {
+            mode: 'backup'
+          })) as unknown as CoreClient
+          const client = new TxOperations(connection, core.account.System)
+
+          await importToTeamspace(toolCtx, client, storageAdapter, dir, wsUrl, cmd.teamspace)
+
+          await connection.close()
+        })
       })
     })
 
@@ -949,8 +1036,9 @@ export function devTool (
   program
     .command('generate-token <name> <workspace>')
     .description('generate token')
-    .action(async (name: string, workspace: string) => {
-      console.log(generateToken(name, getWorkspaceId(workspace)))
+    .option('--admin', 'Generate token with admin access', false)
+    .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
+      console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
     })
   program
     .command('decode-token <token>')

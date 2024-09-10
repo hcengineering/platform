@@ -5,6 +5,30 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug notion import",
+      "type": "node",
+      "request": "launch",
+      // "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-ws", "w-user1-ws1-66d8018b-ce1e0c3164-006bb0", "-ts", "notion"],
+      "args": ["src/__start.ts", "import-notion", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-ws", "w-user1-ws1-66d8018b-ce1e0c3164-006bb0"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "TELEGRAM_DATABASE": "telegram-service",
+        "ELASTIC_URL": "http://localhost:9200",
+        "REKONI_URL": "http://localhost:4004"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool"
+    },
+    {
       "address": "127.0.0.1",
       "localRoot": "${workspaceFolder}",
       "name": "Attach to Remote",
@@ -252,6 +276,7 @@
         "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
       },
+      "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "outputCapture": "std",

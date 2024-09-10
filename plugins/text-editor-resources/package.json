@@ -50,6 +50,7 @@
     "@hcengineering/collaborator-client": "^0.6.4",
     "@tiptap/core": "^2.2.4",
     "@tiptap/pm": "^2.2.4",
+    "@tiptap/extension-code-block-lowlight": "^2.2.4",
     "@tiptap/extension-collaboration": "^2.2.4",
     "@tiptap/extension-collaboration-cursor": "^2.2.4",
     "@tiptap/extension-placeholder": "^2.2.4",
@@ -79,6 +80,7 @@
     "diff": "^5.1.0",
     "slugify": "^1.6.6",
     "lib0": "^0.2.88",
-    "y-indexeddb": "^9.0.12"
+    "y-indexeddb": "^9.0.12",
+    "lowlight": "^3.1.0"
   }
 }

@@ -19,6 +19,7 @@ import serverTelegram from '@hcengineering/server-telegram'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import { join } from 'path'
 import { start } from '.'
+import { profileStart, profileStop } from './inspector'
 const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
 
 configureAnalytics(process.env.SENTRY_DSN, {})
@@ -68,7 +69,11 @@ const shutdown = start(config.url, {
   indexProcessing: 500,
   brandingMap: loadBrandingMap(config.brandingPath),
   accountsUrl: config.accountsUrl,
-  enableCompression: config.enableCompression
+  enableCompression: config.enableCompression,
+  profiling: {
+    start: profileStart,
+    stop: profileStop
+  }
 })
 
 const close = (): void => {

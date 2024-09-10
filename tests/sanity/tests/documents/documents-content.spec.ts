@@ -50,26 +50,27 @@ test.describe('Content in the Documents tests', () => {
     }
 
     testData = generateTestData()
-    newUser2 = generateUser()
     await createAccountAndWorkspace(page, request, testData)
-    await createAccount(request, newUser2)
 
-    const linkText = await getInviteLink(page)
     await leftSideMenuPage.clickDocuments()
     await documentsPage.checkTeamspaceNotExist(testTeamspace.title)
     await documentsPage.createNewTeamspace(testTeamspace)
-    secondPage = await getSecondPageByInvite(browser, linkText, newUser2)
-
-    leftSideMenuSecondPage = new LeftSideMenuPage(secondPage)
-    documentsSecondPage = new DocumentsPage(secondPage)
-    documentContentSecondPage = new DocumentContentPage(secondPage)
     await documentsPage.clickOnButtonCreateDocument()
     await documentsPage.createDocument(testDocument)
     await documentsPage.openDocument(testDocument.title)
     await documentContentPage.checkDocumentTitle(testDocument.title)
   })
 
-  test('ToDos in the Document', async () => {
+  test('ToDos in the Document', async ({ page, request, browser }) => {
+    newUser2 = generateUser()
+    await createAccount(request, newUser2)
+    const linkText = await getInviteLink(page)
+    using _secondPage = await getSecondPageByInvite(browser, linkText, newUser2)
+    secondPage = _secondPage.page
+    leftSideMenuSecondPage = new LeftSideMenuPage(secondPage)
+    documentsSecondPage = new DocumentsPage(secondPage)
+    documentContentSecondPage = new DocumentContentPage(secondPage)
+
     const contents: string[] = ['work', 'meet up']
     let content: string = ''
 
@@ -98,12 +99,20 @@ test.describe('Content in the Documents tests', () => {
     await planningPage.checkInSchedule(contents[1])
     await planningPage.markDoneInToDos(contents[0])
     await planningPage.markDoneInToDos(contents[1])
-    await secondPage.close()
 
     for (const line of contents) await documentContentPage.checkToDo(line, true)
   })
 
-  test('Table in the Document', async ({ page }) => {
+  test('Table in the Document', async ({ page, browser, request }) => {
+    newUser2 = generateUser()
+    await createAccount(request, newUser2)
+    const linkText = await getInviteLink(page)
+    using _secondPage = await getSecondPageByInvite(browser, linkText, newUser2)
+    secondPage = _secondPage.page
+    leftSideMenuSecondPage = new LeftSideMenuPage(secondPage)
+    documentsSecondPage = new DocumentsPage(secondPage)
+    documentContentSecondPage = new DocumentContentPage(secondPage)
+
     await documentContentPage.inputContentParapraph().click()
     await documentContentPage.leftMenu().click()
     await documentContentPage.menuPopupItemButton('Table').click()
@@ -138,6 +147,5 @@ test.describe('Content in the Documents tests', () => {
     await documentContentSecondPage.proseTableCell(1, 1).dblclick()
     await documentContentSecondPage.proseTableCell(1, 1).fill('Center')
     await expect(documentContentPage.proseTableCell(1, 1)).toContainText('Center', { timeout: 5000 })
-    await secondPage.close()
   })
 })

@@ -25,8 +25,10 @@ import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
+import { common, createLowlight } from 'lowlight'
 
 import LinkPopup from '../components/LinkPopup.svelte'
+import { CodeBlockExtension } from '../components/extension/codeblock'
 
 export interface DefaultKitOptions {
   codeBlock?: Partial<CodeBlockOptions> | false
@@ -50,7 +52,7 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
           }
         },
         code: this.options.code ?? codeOptions,
-        codeBlock: this.options.codeBlock ?? codeBlockOptions,
+        codeBlock: false,
         hardBreak: this.options.hardBreak,
         heading: this.options.heading,
         history: this.options.history
@@ -63,6 +65,10 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
       Link.configure({
         openOnClick: true,
         HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
+      }),
+      CodeBlockExtension.configure({
+        ...codeBlockOptions,
+        lowlight: createLowlight(common)
       })
     ]
   }

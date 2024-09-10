@@ -91,7 +91,7 @@ export interface ConnectionSocket {
   id: string
   isClosed: boolean
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<number>
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => void
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
@@ -176,6 +176,11 @@ export interface SessionManager {
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
   scheduleMaintenance: (timeMinutes: number) => void
+
+  profiling?: {
+    start: () => void
+    stop: () => Promise<string | undefined>
+  }
 }
 
 /**

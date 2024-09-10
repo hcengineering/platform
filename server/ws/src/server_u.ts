@@ -24,12 +24,12 @@ import { RPCHandler } from '@hcengineering/rpc'
 import { getStatistics, wipeStatistics } from './stats'
 import { LOGGING_ENABLED, type ConnectionSocket, type HandleRequestFunction, type SessionManager } from './types'
 
+import { unknownStatus } from '@hcengineering/platform'
 import { type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
 import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 import { Readable } from 'stream'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
-import { unknownStatus } from '@hcengineering/platform'
 
 const rpcHandler = new RPCHandler()
 
@@ -55,6 +55,7 @@ export function startUWebsocketServer (
 ): () => Promise<void> {
   if (LOGGING_ENABLED) console.log(`starting U server on port ${port} ...`)
 
+  let profiling = false
   const uAPP = uWebSockets.App()
 
   const writeStatus = (response: HttpResponse, status: string): HttpResponse => {
@@ -134,28 +135,21 @@ export function startUWebsocketServer (
       if (data.session instanceof Promise) {
         void data.session.then((s) => {
           if ('error' in s) {
-            void cs
-              .send(
-                ctx,
-                { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
-                false,
-                false
-              )
-              .then(() => {
-                // No connection to account service, retry from client.
-                setTimeout(() => {
-                  cs.close()
-                }, 1000)
-              })
+            cs.send(
+              ctx,
+              { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
+              false,
+              false
+            )
+            setTimeout(() => {
+              cs.close()
+            }, 1000)
           }
           if ('upgrade' in s) {
-            void cs
-              .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
-              .then(() => {
-                setTimeout(() => {
-                  cs.close()
-                }, 5000)
-              })
+            cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+            setTimeout(() => {
+              cs.close()
+            }, 5000)
           }
         })
       }
@@ -227,7 +221,23 @@ export function startUWebsocketServer (
         const json = JSON.stringify({
           ...getStatistics(ctx, sessions, admin),
           users: getUsers,
-          admin
+          admin,
+          profiling
+        })
+
+        writeStatus(response, '200 OK').writeHeader('Content-Type', 'application/json').end(json)
+      } catch (err: any) {
+        Analytics.handleError(err)
+        writeStatus(response, '404 ERROR').end()
+      }
+    })
+    .any('/api/v1/profiling', (response, request) => {
+      const token = request.getQuery('token') ?? ''
+      try {
+        decodeToken(token ?? '')
+
+        const json = JSON.stringify({
+          profiling
         })
 
         writeStatus(response, '200 OK').writeHeader('Content-Type', 'application/json').end(json)
@@ -265,6 +275,35 @@ export function startUWebsocketServer (
           case 'maintenance': {
             const timeMinutes = parseInt(req.getQuery('timeout' as string) ?? '5')
             sessions.scheduleMaintenance(timeMinutes)
+
+            writeStatus(res, '200 OK').end()
+            return
+          }
+          case 'profile-start': {
+            ctx.warn(
+              '---------------------------------------------PROFILING SESSION STARTED---------------------------------------------'
+            )
+            profiling = true
+            sessions.profiling?.start()
+
+            writeStatus(res, '200 OK').end()
+            return
+          }
+          case 'profile-stop': {
+            profiling = false
+            if (sessions.profiling?.stop != null) {
+              void sessions.profiling?.stop()?.then((profile) => {
+                ctx.warn(
+                  '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
+                  { profile }
+                )
+                writeStatus(res, '200 OK')
+                  .writeHeader('Content-Type', 'application/json')
+                  .end(profile ?? '{ error: "no profiling" }')
+              })
+            } else {
+              writeStatus(res, '404 ERROR').end()
+            }
 
             writeStatus(res, '200 OK').end()
             return
@@ -311,9 +350,9 @@ export function startUWebsocketServer (
         })
         const range = req.getHeader('range')
         if (range !== undefined) {
-          void ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrappedRes)
-          })
+          void ctx.with('file-range', { workspace: payload.workspace.name }, (ctx) =>
+            getFileRange(ctx, range, externalStorage, payload.workspace, name, wrappedRes)
+          )
         } else {
           void getFile(ctx, externalStorage, payload.workspace, name, wrappedRes)
         }
@@ -341,15 +380,7 @@ export function startUWebsocketServer (
           .with(
             'storage upload',
             { workspace: payload.workspace.name },
-            async () =>
-              await externalStorage.put(
-                ctx,
-                payload.workspace,
-                name,
-                pipe,
-                contentType,
-                size !== -1 ? size : undefined
-              ),
+            () => externalStorage.put(ctx, payload.workspace, name, pipe, contentType, size !== -1 ? size : undefined),
             { file: name, contentType }
           )
           .then(() => {
@@ -401,28 +432,29 @@ function createWebSocketClientSocket (
     readRequest: (buffer: Buffer, binary: boolean) => {
       return rpcHandler.readRequest(buffer, binary)
     },
-    send: async (ctx, msg, binary, compression): Promise<number> => {
-      if (data.backPressure !== undefined) {
-        await data.backPressure
-      }
-      const serialized = rpcHandler.serialize(msg, binary)
-      try {
-        const sendR = ws.send(serialized, binary, compression)
-        if (sendR === 2) {
-          data.backPressure = new Promise((resolve) => {
-            data.backPressureResolve = resolve
-          })
-          data.unsendMsg.push({ data: serialized, binary, compression })
-        } else {
-          ctx.measure('send-data', serialized.length)
+    send: (ctx, msg, binary, compression) => {
+      void (async (): Promise<void> => {
+        if (data.backPressure !== undefined) {
+          await data.backPressure
         }
-      } catch (err: any) {
-        if (!((err.message ?? '') as string).includes('Invalid access of closed')) {
-          console.error(err)
+        const serialized = rpcHandler.serialize(msg, binary)
+        try {
+          const sendR = ws.send(serialized, binary, compression)
+          if (sendR === 2) {
+            data.backPressure = new Promise((resolve) => {
+              data.backPressureResolve = resolve
+            })
+            data.unsendMsg.push({ data: serialized, binary, compression })
+          } else {
+            ctx.measure('send-data', serialized.length)
+          }
+        } catch (err: any) {
+          if (!((err.message ?? '') as string).includes('Invalid access of closed')) {
+            console.error(err)
+          }
+          // Ignore socket is closed
         }
-        // Ignore socket is closed
-      }
-      return serialized.length
+      })()
     }
   }
   return cs

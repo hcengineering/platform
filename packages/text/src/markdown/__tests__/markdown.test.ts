@@ -395,6 +395,286 @@ Lorem ipsum dolor sit amet.
         }
       ]
     }
+  },
+  {
+    name: 'nested todos',
+    markdown: `# nested todos
+- [ ] todo
+  - [x] sub todo
+`,
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 1 },
+          content: [
+            {
+              type: 'text',
+              text: 'nested todos',
+              marks: []
+            }
+          ]
+        },
+        {
+          type: 'todoList',
+          content: [
+            {
+              type: 'todoItem',
+              attrs: { checked: false },
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'todo',
+                      marks: []
+                    }
+                  ]
+                },
+                {
+                  type: 'todoList',
+                  content: [
+                    {
+                      type: 'todoItem',
+                      attrs: { checked: true },
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [
+                            {
+                              type: 'text',
+                              text: 'sub todo',
+                              marks: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    name: 'nested lists',
+    markdown: `# nested lists
+- [ ] todo
+  - sub list item
+  - [x] sub todo
+- list item
+  - [x] sub todo
+  - sub list item
+`,
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 1 },
+          content: [
+            {
+              type: 'text',
+              text: 'nested lists',
+              marks: []
+            }
+          ]
+        },
+        {
+          type: 'todoList',
+          content: [
+            {
+              type: 'todoItem',
+              attrs: { checked: false },
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'todo',
+                      marks: []
+                    }
+                  ]
+                },
+                {
+                  type: 'bulletList',
+                  content: [
+                    {
+                      type: 'listItem',
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [
+                            {
+                              type: 'text',
+                              text: 'sub list item',
+                              marks: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  type: 'todoList',
+                  content: [
+                    {
+                      type: 'todoItem',
+                      attrs: { checked: true },
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [
+                            {
+                              type: 'text',
+                              text: 'sub todo',
+                              marks: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          type: 'bulletList',
+          content: [
+            {
+              type: 'listItem',
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'list item',
+                      marks: []
+                    }
+                  ]
+                },
+                {
+                  type: 'todoList',
+                  content: [
+                    {
+                      type: 'todoItem',
+                      attrs: { checked: true },
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [
+                            {
+                              type: 'text',
+                              text: 'sub todo',
+                              marks: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  type: 'bulletList',
+                  content: [
+                    {
+                      type: 'listItem',
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [
+                            {
+                              type: 'text',
+                              text: 'sub list item',
+                              marks: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    name: 'nested todos',
+    markdown: `# nested todos
+- [ ] todo
+  - [x] sub todo
+`,
+    markup: {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 1 },
+          content: [
+            {
+              type: 'text',
+              text: 'nested todos',
+              marks: []
+            }
+          ]
+        },
+        {
+          type: 'todoList',
+          content: [
+            {
+              type: 'todoItem',
+              attrs: { checked: false },
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [
+                    {
+                      type: 'text',
+                      text: 'todo',
+                      marks: []
+                    }
+                  ]
+                },
+                {
+                  type: 'todoList',
+                  content: [
+                    {
+                      type: 'todoItem',
+                      attrs: { checked: true },
+                      content: [
+                        {
+                          type: 'paragraph',
+                          content: [
+                            {
+                              type: 'text',
+                              text: 'sub todo',
+                              marks: []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 ]
 

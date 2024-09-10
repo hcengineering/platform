@@ -53,7 +53,7 @@
       return
     }
 
-    Analytics.handleEvent('Connect project to github')
+    Analytics.handleEvent('github.project.connected', { project: projectInst.identifier, repository: repository._id })
 
     if (!client.getHierarchy().hasMixin(projectInst, github.mixin.GithubProject)) {
       // We need to add GithubProject mixin

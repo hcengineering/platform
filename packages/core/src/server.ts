@@ -57,26 +57,6 @@ export interface SessionData {
   branding: Branding | null
 }
 
-export interface ContextData {
-  derived: {
-    txes: Tx[]
-    targets: BroadcastTargets // A set of broadcast filters if required
-  }
-  contextCache: Map<string, any>
-  removedMap: Map<Ref<Doc>, Doc>
-
-  userEmail: string
-  sessionId: string
-  admin?: boolean
-
-  account: Account
-
-  getAccount: (account: Ref<Account>) => Account | undefined
-
-  workspace: WorkspaceIdWithUrl
-  branding: Branding | null
-}
-
 /**
  * @public
  */

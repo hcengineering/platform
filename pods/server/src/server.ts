@@ -46,6 +46,11 @@ export function start (
     enableCompression?: boolean
 
     accountsUrl: string
+
+    profiling?: {
+      start: () => void
+      stop: () => Promise<string | undefined>
+    }
   }
 ): () => Promise<void> {
   const metrics = getMetricsContext()
@@ -90,7 +95,8 @@ export function start (
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage
+    externalStorage,
+    profiling: opt.profiling
   })
   return async () => {
     await externalStorage.close()

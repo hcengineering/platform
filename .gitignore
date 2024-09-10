@@ -100,3 +100,4 @@ services/github/pod-github/src/github.graphql
 dev/tool/report.csv
 bundle/*
 bundle.js.map
+tests/profiles
