@@ -1499,7 +1499,7 @@ export async function getPendingWorkspace (
     ]
   }
 
-  return (
+  const result =
     (await wsCollection.findOneAndUpdate(
       query,
       {
@@ -1517,7 +1517,19 @@ export async function getPendingWorkspace (
         }
       }
     )) ?? undefined
-  )
+
+  if (result != null) {
+    ctx.info('getPendingWorkspace', {
+      workspaceId: result.workspace,
+      mode: result.mode,
+      workspaceName: result.workspaceName,
+      operation,
+      region,
+      version
+    })
+  }
+
+  return result
 }
 
 /**
