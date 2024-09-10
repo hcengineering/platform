@@ -2,6 +2,43 @@
 
 Changelog.
 
+## [0.6.289] - 2024-09-10
+
+* 🚀 FEATURES: · Codeblock syntax highlight ([#6505](https://github.com/hcengineering/platform/issues/6505)) 
+* 🐛 BUG FIXES: · Pass actionPopup to action props ([#6467](https://github.com/hcengineering/platform/issues/6467)) · Retry requests to collaborator in case of failure ([#6468](https://github.com/hcengineering/platform/issues/6468)) · Get rid of removeAllObjects by prefix ([#6479](https://github.com/hcengineering/platform/issues/6479)) · Remove prefixes from listStream method parameters ([#6480](https://github.com/hcengineering/platform/issues/6480)) · Implement better todos parsing ([#6497](https://github.com/hcengineering/platform/issues/6497)) · Better nested todos parsing ([#6499](https://github.com/hcengineering/platform/issues/6499)) 
+* UBERF-7684: · Workspace service ([#6460](https://github.com/hcengineering/platform/issues/6460)) 
+* UBERF-7915: · Support tg bot attachments ([#6471](https://github.com/hcengineering/platform/issues/6471)) 
+* UBERF-7922: · Split Server Storage to middlewares ([#6464](https://github.com/hcengineering/platform/issues/6464)) 
+* UBERF-8005: · Add tests to tracker projects, fix failed tests ([#6454](https://github.com/hcengineering/platform/issues/6454)) 
+* UBERF-8017: · Support updating workspace name and deleting workspace ([#6476](https://github.com/hcengineering/platform/issues/6476)) 
+* UBERF-8044: · Staging model version ([#6492](https://github.com/hcengineering/platform/issues/6492)) 
+* UBERF-8047: · Add tests to channels and chats ([#6496](https://github.com/hcengineering/platform/issues/6496)) 
+* UBERF-8052: · Allow easy profiling of transactor ([#6502](https://github.com/hcengineering/platform/issues/6502)) 
+* UBERF-8053: · Disable re-check for milestones 
+* EZQMS-1149: · Allow archiving effective doc ([#6489](https://github.com/hcengineering/platform/issues/6489)) 
+* EZQMS-1171: · Drop h4-h6 during import of controlled doc ([#6487](https://github.com/hcengineering/platform/issues/6487)) 
+* EZQMS-1185: · Fix delete document availability ([#6485](https://github.com/hcengineering/platform/issues/6485)) 
+* UBERF-7684: · Add workspace pod to docker build ([#6465](https://github.com/hcengineering/platform/issues/6465)) 
+
+## [s0.6.288b] - 2024-08-30
+
+* 🐛 BUG FIXES: · Copy template content when creating controlled document ([#6441](https://github.com/hcengineering/platform/issues/6441)) · Use workspace id in collaborator ([#6447](https://github.com/hcengineering/platform/issues/6447)) · URI encode datalake blob id and more workspace fixes ([#6449](https://github.com/hcengineering/platform/issues/6449)) 
+
+## [s0.6.288a] - 2024-08-29
+
+* 🐛 BUG FIXES: · Build and push docker containers for s-prefixed tags ([#6442](https://github.com/hcengineering/platform/issues/6442)) 
+
+## [s0.6.278] - 2024-08-29
+
+* 🐛 BUG FIXES: · Improve codeblock wrapping ([#6440](https://github.com/hcengineering/platform/issues/6440)) 
+* UBERF-7985: · Fix private targets ([#6439](https://github.com/hcengineering/platform/issues/6439)) 
+* UBERF-8053: · Disable re-check for milestones 
+* QFIX: · Add fire and rocket smiley ([#6438](https://github.com/hcengineering/platform/issues/6438)) 
+
+## [0.6.288] - 2024-09-03
+
+* 🐛 BUG FIXES: · Pass actionPopup to action props ([#6467](https://github.com/hcengineering/platform/issues/6467)) · Get rid of removeAllObjects by prefix ([#6479](https://github.com/hcengineering/platform/issues/6479)) 
+
 ## [0.6.286] - 2024-08-28
 
 * 🐛 BUG FIXES: · Wrap lines in codeblock ([#6406](https://github.com/hcengineering/platform/issues/6406)) 
@@ -9,11 +46,12 @@ Changelog.
 
 ## [0.6.285a] - 2024-08-27
 
-* 🐛 BUG FIXES: · Migrate collaborative markup in activity ([#6400](https://github.com/hcengineering/platform/issues/6400)) · Ignore ydoc migration errors ([#6402](https://github.com/hcengineering/platform/issues/6402)) 
+* 🐛 BUG FIXES: · Ignore ydoc migration errors ([#6402](https://github.com/hcengineering/platform/issues/6402)) 
 
 ## [0.6.285] - 2024-08-27
 
 * 🚀 FEATURES: · Markup migration tool ([#6398](https://github.com/hcengineering/platform/issues/6398)) 
+* 🐛 BUG FIXES: · Migrate collaborative markup in activity ([#6400](https://github.com/hcengineering/platform/issues/6400)) 
 * UBERF-7944: · Support for not_planed close for issues ([#6396](https://github.com/hcengineering/platform/issues/6396)) 
 * UBERF-7946: · Remove bulk in mongo adapter ([#6395](https://github.com/hcengineering/platform/issues/6395)) 
 
