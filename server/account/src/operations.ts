@@ -1490,11 +1490,16 @@ export async function getPendingWorkspace (
       operationQuery,
       attemptsQuery,
       region !== '' ? { region } : defaultRegionQuery,
-      { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+      {
+        $or: [
+          { lastProcessingTime: { $exists: false } },
+          { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+        ]
+      }
     ]
   }
 
-  return (
+  const result =
     (await wsCollection.findOneAndUpdate(
       query,
       {
@@ -1512,7 +1517,19 @@ export async function getPendingWorkspace (
         }
       }
     )) ?? undefined
-  )
+
+  if (result != null) {
+    ctx.info('getPendingWorkspace', {
+      workspaceId: result.workspace,
+      mode: result.mode,
+      workspaceName: result.workspaceName,
+      operation,
+      region,
+      version
+    })
+  }
+
+  return result
 }
 
 /**
