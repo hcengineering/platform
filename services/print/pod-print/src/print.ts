@@ -39,8 +39,10 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
   const page = await browser.newPage()
 
   page
-    .on('pageerror', ({ message }) => { console.log(message) })
-    .on('requestfailed', request => {
+    .on('pageerror', ({ message }) => {
+      console.log(message)
+    })
+    .on('requestfailed', (request) => {
       console.log(`${request.failure()?.errorText} ${request.url()}`)
     })
 
