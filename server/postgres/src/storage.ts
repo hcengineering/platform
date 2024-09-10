@@ -309,19 +309,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
   addSecurity<T extends Doc>(query: DocumentQuery<T>, domain: string, sessionContext: SessionData): string | undefined {
     if (sessionContext !== undefined) {
-      if (sessionContext.admin !== true) {
-        const accs = this.modelDb.findAllSync(core.class.Account, { email: sessionContext.userEmail })
-        if (accs.length === 0) {
-          return
-        }
-        const acc = accs[0]
-        if (isOwner(acc) || acc._id === AccountRole.DocGuest) {
+      if (sessionContext.admin !== true && sessionContext.account !== undefined) {
+        const acc = sessionContext.account
+        if (isOwner(acc) || acc.role === AccountRole.DocGuest) {
           return
         }
         if (query.space === acc._id) return
-        const key = domain === DOMAIN_SPACE ? 'space' : domain === DOMAIN_TX ? 'data ->> "objectSpace"' : 'space'
+        const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? 'data ->> "objectSpace"' : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? " OR sec.data ->> 'private' = 'false'" : ''
-        const q = `(sec.data #>> 'members' @> '${acc._id}' OR sec."_class" === ${core.class.SystemSpace}${privateCheck})`
+        const q = `(sec.data -> 'members' @> '"${acc._id}"' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
         return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = '${this.workspaceId.name}' AND ${q}`
       }
     }
@@ -883,7 +879,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
     projection: Projection<T> | undefined,
     joins: JoinProps[]
   ): string | '*' {
-    if (projection === undefined && joins.length === 0) return '*'
+    if (projection === undefined && joins.length === 0) return `${baseDomain}.*`
     const res: string[] = []
     let dataAdded = false
     if (projection === undefined) {
@@ -892,7 +888,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       for (const key in projection) {
         if (isDataField(key)) {
           if (!dataAdded) {
-            res.push('data as data')
+            res.push(`${baseDomain}.data as data`)
             dataAdded = true
           }
         } else {
@@ -1051,7 +1047,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${escapeBackticks(JSON.stringify(d.data))}')`
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? '[NULL]'}', '${escapeBackticks(JSON.stringify(d.data))}')`
           })
           .join(', ')
         await client.query(
@@ -1138,7 +1134,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? 'NULL'}', '${escapeBackticks(JSON.stringify(d.data))}')`
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? '[NULL]'}', '${escapeBackticks(JSON.stringify(d.data))}')`
           })
           .join(', ')
         await client.query(
