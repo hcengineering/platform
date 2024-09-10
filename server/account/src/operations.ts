@@ -1490,7 +1490,12 @@ export async function getPendingWorkspace (
       operationQuery,
       attemptsQuery,
       region !== '' ? { region } : defaultRegionQuery,
-      { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+      {
+        $or: [
+          { lastProcessingTime: { $exists: false } },
+          { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+        ]
+      }
     ]
   }
 
