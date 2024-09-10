@@ -1,0 +1,23 @@
+{
+  "ACCOUNTS_URL": "https://account.huly.app/",
+  "UPLOAD_URL": "/files",
+  "FILES_URL": "/files/:workspace/:filename?file=:blobId&workspace=:workspace",
+  "REKONI_URL": "https://rekoni.huly.app",
+  "TELEGRAM_URL": "https://telegram.huly.app",
+  "GMAIL_URL": "https://gmail.huly.app/",
+  "CALENDAR_URL": "https://calendar.huly.app/",
+  "COLLABORATOR_URL": "wss://collaborator.huly.app",
+  "BRANDING_URL": "https://huly.app/huly-branding_v2.json",
+  "PREVIEW_CONFIG": "https://huly.app/files/:workspace?file=:blobId&size=:size",
+  "GITHUB_APP": "huly-for-github",
+  "GITHUB_CLIENTID": "Iv1.e263a087de0910e0",
+  "INTERCOM_APP_ID": "",
+  "INTERCOM_API_URL": "",
+  "GITHUB_URL": "https://github.huly.app",
+  "LIVEKIT_WS": "",
+  "LOVE_ENDPOINT": "https://love.huly.app/",
+  "SIGN_URL": "https://sign.huly.app",
+  "PRINT_URL": "https://print.huly.app",
+  "DESKTOP_UPDATES_CHANNEL": "huly",
+  "TELEGRAM_BOT_URL": "https://telegram-bot.huly.app"
+}

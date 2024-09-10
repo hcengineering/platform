@@ -14,7 +14,6 @@
 //
 
 import core, {
-  DOMAIN_TRANSIENT,
   TxProcessor,
   type Doc,
   type Domain,
@@ -49,13 +48,7 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
 
     for (const tx of txes) {
       if (TxProcessor.isExtendsCUD(tx._class)) {
-        const objectClass = (tx as TxCUD<Doc>).objectClass
-        if (
-          objectClass !== core.class.BenchmarkDoc &&
-          this.context.hierarchy.findDomain(objectClass) !== DOMAIN_TRANSIENT
-        ) {
-          txToStore.push(tx)
-        }
+        txToStore.push(tx)
       }
     }
     let result: TxMiddlewareResult = {}
