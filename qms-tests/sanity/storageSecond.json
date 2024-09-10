@@ -2,7 +2,7 @@
   "cookies": [],
   "origins": [
     {
-      "origin": "http://localhost:8083",
+      "origin": "http://host.docker.internal:8083",
       "localStorage": [
         {
           "name": "login:metadata:LoginEmail",
@@ -14,7 +14,7 @@
         },
         {
           "name": "login:metadata:LoginEndpoint",
-          "value": "ws://localhost:3334"
+          "value": "ws://host.docker.internal:3334"
         },
         {
           "name": "#platform.notification.logging",

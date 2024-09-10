@@ -341,6 +341,9 @@ jobs:
         run: node common/scripts/install-run-rush.js docker:build  -p 20
         env:
           DOCKER_CLI_HINTS: false
+      - name: Configure /etc/hosts
+        run: |
+            sudo echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
       - name: Prepare server
         run: |
           cd ./qms-tests

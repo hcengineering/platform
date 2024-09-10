@@ -23,6 +23,8 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
   const kind = options?.kind ?? 'pdf'
   const viewport = options?.viewport ?? { width: 1440, height: 900 }
 
+  console.log(`Printing ${url} to ${kind} with viewport ${JSON.stringify(viewport)}`)
+
   // TODO: think of having a "hot" browser instance to avoid the overhead of launching a new one every time
   const browser = await puppeteer.launch({
     headless: true,
@@ -35,6 +37,12 @@ export async function print (url: string, options?: PrintOptions): Promise<Buffe
     ]
   })
   const page = await browser.newPage()
+
+  page
+    .on('pageerror', ({ message }) => { console.log(message) })
+    .on('requestfailed', request => {
+      console.log(`${request.failure()?.errorText} ${request.url()}`)
+    })
 
   await page.setViewport(viewport)
 

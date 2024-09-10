@@ -127,12 +127,17 @@ Alternatively, you can just execute:
 sh ./scripts/create-workspace.sh
 ```
 
-Accessing the URL http://localhost:8087 will lead you to the app in production mode.
+Add the following line to your /etc/hosts file
+
+```
+127.0.0.1 host.docker.internal
+```
+
+Accessing the URL http://host.docker.internal:8087 will lead you to the app in production mode.
 
 Limitations:
 
 - Local installation does not support sending emails, thus disabling functionalities such as password recovery and email notifications.
-- Integrations with Telegram, Gmail, and other content sources are exclusively available as Docker containers, sourced from private repositories. However, these integrations are fully functional and can be utilized with the platform.
 
 ## Run in development mode
 
