@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonPage } from './common-page'
+import { LinkedChannelTypes } from './types'
 
 export class ChannelPage extends CommonPage {
   readonly page: Page
@@ -72,6 +73,23 @@ export class ChannelPage extends CommonPage {
   readonly userAdded = (user: string): Locator => this.page.locator('.members').getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
+
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+  readonly inputSearchChannel = (): Locator => this.page.locator('.hulyHeader-container').getByPlaceholder('Search')
+
+  readonly channelContainers = (): Locator => this.page.locator('.hulyNavItem-container')
+
+  readonly starredChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-starred').locator('.hulyNavItem-container')
+
+  readonly issueChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-tracker\\:class\\:Issue').locator('.hulyNavItem-container')
+
+  readonly vacancyChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-recruit\\:class\\:Vacancy').locator('.hulyNavItem-container')
+
+  readonly applicationChannelContainers = (): Locator =>
+    this.page.locator('#navGroup-recruit\\:class\\:Applicant').locator('.hulyNavItem-container')
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -218,6 +236,17 @@ export class ChannelPage extends CommonPage {
     await this.joinChannelButton().click()
   }
 
+  async getChannelsGroupLocatorByType (channelType: LinkedChannelTypes, channelName: string): Promise<Locator> {
+    const mapTypesToLocator = {
+      [LinkedChannelTypes.Issue]: this.issueChannelContainers(),
+      [LinkedChannelTypes.Vacancy]: this.vacancyChannelContainers(),
+      [LinkedChannelTypes.Application]: this.applicationChannelContainers()
+    } as const
+
+    const groupLocator: Locator = mapTypesToLocator[channelType] ?? this.issueChannelContainers()
+    return groupLocator.filter({ has: this.page.locator(`span:has-text("${channelName}")`) })
+  }
+
   async checkIfChannelDefaultExist (shouldExist: boolean, channel: string): Promise<void> {
     if (shouldExist) {
       await expect(this.channelName(channel)).toBeVisible()
@@ -259,5 +288,32 @@ export class ChannelPage extends CommonPage {
     await expect(this.channel(channel).nth(0)).toBeVisible()
     await expect(this.channel(channel).nth(1)).toBeVisible()
     await expect(this.channel(channel).nth(2)).toBeVisible()
+  }
+
+  async makeActionWithChannelInMenu (channelName: string, action: string): Promise<void> {
+    await this.channelContainers().filter({ hasText: channelName }).hover()
+    await this.channelContainers().filter({ hasText: channelName }).locator('.hulyNavItem-actions').click()
+    await this.selectFromDropdown(this.page, action)
+  }
+
+  async checkChannelStarred (shouldExist: boolean, channelName: string): Promise<void> {
+    if (shouldExist) {
+      await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(1)
+    } else {
+      await expect(this.starredChannelContainers().filter({ hasText: channelName })).toHaveCount(0)
+    }
+  }
+
+  async searchChannel (channelName: string): Promise<void> {
+    await this.inputSearchIcon().click()
+    await this.inputSearchChannel().fill(channelName)
+  }
+
+  async checkLinkedChannelIsExist (channelName: string, linkedChannelType: LinkedChannelTypes): Promise<void> {
+    await expect(await this.getChannelsGroupLocatorByType(linkedChannelType, channelName)).toHaveCount(1)
+  }
+
+  async openLinkedChannelIsExist (channelName: string, linkedChannelType: LinkedChannelTypes): Promise<void> {
+    await (await this.getChannelsGroupLocatorByType(linkedChannelType, channelName)).click()
   }
 }

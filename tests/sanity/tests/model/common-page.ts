@@ -18,6 +18,8 @@ export class CommonPage {
   popupSpanLabel = (point: string): Locator =>
     this.page.locator('div[class$="opup"] span[class*="label"]', { hasText: point })
 
+  readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
+
   selectPopupSpanLines = (item: string): Locator =>
     this.page.locator('div.selectPopup span[class^="lines"]', { hasText: item })
 
@@ -49,6 +51,7 @@ export class CommonPage {
 
   buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
   inputFilterTitle = (): Locator => this.page.locator('div.selectPopup input[placeholder="Title"]')
+  inputFilterName = (): Locator => this.page.locator('div.selectPopup input[placeholder="Name"]')
   inputSearch = (): Locator => this.page.locator('div.selectPopup input[placeholder="Search..."]')
   buttonFilterApply = (): Locator => this.page.locator('div.selectPopup button[type="button"]', { hasText: 'Apply' })
   buttonClearFilters = (): Locator => this.page.locator('button > span', { hasText: 'Clear filters' })
@@ -211,6 +214,10 @@ export class CommonPage {
       switch (filter) {
         case 'Title':
           await this.inputFilterTitle().fill(filterSecondLevel)
+          await this.buttonFilterApply().click()
+          break
+        case 'Name':
+          await this.inputFilterName().fill(filterSecondLevel)
           await this.buttonFilterApply().click()
           break
         case 'Labels':
