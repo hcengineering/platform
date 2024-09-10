@@ -233,10 +233,26 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js ci
+      - name: Start profiling
+        run: |
+          cd ./tests
+          ./profile-start.sh
       - name: Run UI tests
         run: |
-          cd ./tests/sanity
+          cd ./tests/sanity          
           node ../../common/scripts/install-run-rushx.js uitest
+      - name: Download profile
+        run: |
+          cd ./tests
+          ./profile-download.sh
+          npm install -g cpupro
+          ./profile-generate.sh
+      - name: Upload profiling results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profiling
+          path: ./tests/profiles
       - name: 'Store docker logs'
         if: always()
         run: |

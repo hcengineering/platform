@@ -25,6 +25,7 @@ import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
+const defaultSchema = getSchema(defaultExtensions)
 
 /** @public */
 export function getMarkup (editor?: Editor): Markup {
@@ -157,7 +158,7 @@ export function markupToJSON (markup: Markup): MarkupNode {
 
 /** @public */
 export function jsonToPmNode (json: MarkupNode, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions == null ? defaultSchema : getSchema(extensions ?? defaultExtensions)
   return ProseMirrorNode.fromJSON(schema, json)
 }
 
@@ -210,7 +211,7 @@ export function jsonToHTML (json: MarkupNode, extensions?: Extensions): string {
 
 /** @public */
 export function htmlToPmNode (html: string, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
-  schema ??= getSchema(extensions ?? defaultExtensions)
+  schema ??= extensions == null ? defaultSchema : getSchema(extensions ?? defaultExtensions)
   const json = htmlToJSON(html, extensions)
   return ProseMirrorNode.fromJSON(schema, json)
 }
@@ -225,8 +226,6 @@ export function pmNodeToHTML (node: ProseMirrorNode, extensions?: Extensions): s
 
 const ELLIPSIS_CHAR = '…'
 const WHITESPACE = ' '
-
-const defaultSchema = getSchema(defaultExtensions)
 
 /** @public */
 export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions | undefined = undefined): string {

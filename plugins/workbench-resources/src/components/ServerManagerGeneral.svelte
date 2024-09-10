@@ -3,7 +3,7 @@
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
   import presentation, { getClient, isAdminUser } from '@hcengineering/presentation'
-  import { Button, IconArrowLeft, IconArrowRight, fetchMetadataLocalStorage } from '@hcengineering/ui'
+  import { Button, IconArrowLeft, IconArrowRight, fetchMetadataLocalStorage, ticker } from '@hcengineering/ui'
   import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
@@ -33,6 +33,22 @@
   let dataSize = 0
 
   let responseSize = 0
+
+  let profiling = false
+
+  async function fetchStats (time: number): Promise<void> {
+    await fetch(endpoint + `/api/v1/profiling?token=${token}`, {})
+      .then(async (json) => {
+        data = await json.json()
+        profiling = data?.profiling ?? false
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+  let data: any
+
+  $: void fetchStats($ticker)
 
   function genData (dataSize: number): string {
     let result = ''
@@ -96,6 +112,26 @@
     await rate.waitProcessing()
     running = false
     clearInterval(int)
+  }
+
+  async function downloadProfile (): Promise<void> {
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.setAttribute('target', '_blank')
+    const json = await (
+      await fetch(endpoint + `/api/v1/manage?token=${token}&operation=profile-stop`, {
+        method: 'PUT'
+      })
+    ).json()
+    link.setAttribute(
+      'href',
+      'data:application/json;charset=utf-8,%EF%BB%BF' + encodeURIComponent(JSON.stringify(json))
+    )
+    link.setAttribute('download', `profile-${Date.now()}.cpuprofile`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    fetchStats(0)
   }
 </script>
 
@@ -175,6 +211,22 @@
           })
         }}
       />
+    </div>
+    <div class="flex-row-center p-1">
+      <div class="p-3">3.</div>
+      {#if !profiling}
+        <Button
+          label={getEmbeddedLabel('Profile server')}
+          on:click={() => {
+            void fetch(endpoint + `/api/v1/manage?token=${token}&operation=profile-start`, {
+              method: 'PUT'
+            })
+            fetchStats(0)
+          }}
+        />
+      {:else}
+        <Button label={getEmbeddedLabel('Profile Stop')} on:click={downloadProfile} />
+      {/if}
     </div>
   </div>
 {/if}
