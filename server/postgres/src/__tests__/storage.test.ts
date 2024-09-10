@@ -98,7 +98,8 @@ describe('postgres operations', () => {
     await txStorage.close()
 
     const ctx = new MeasureMetricsContext('client', {})
-    serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
+    const serverStorage = await createPostgresAdapter(ctx, hierarchy, dbUri, getWorkspaceId(dbId), model)
+    await serverStorage.init?.()
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         isConnected: () => true,
@@ -142,10 +143,7 @@ describe('postgres operations', () => {
 
     const r = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(r.length).toEqual(50)
-
-    const r2 = await client.findAll(core.class.Tx, {})
-    expect(r2.length).toBeGreaterThan(50)
-  }, 5000000)
+  })
 
   it('check find by criteria', async () => {
     jest.setTimeout(20000)

@@ -1410,8 +1410,7 @@ export async function createPostgresAdapter (
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
-  modelDb: ModelDb,
-  storage?: StorageAdapter
+  modelDb: ModelDb
 ): Promise<DbAdapter> {
   const client = getDBClient(url)
   const adapter = new PostgresAdapter(await client.getClient(), client, workspaceId, hierarchy, modelDb)

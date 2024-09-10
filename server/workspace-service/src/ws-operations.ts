@@ -240,6 +240,7 @@ export async function upgradeWorkspace (
   if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
     return
   }
+
   ctx.info('upgrading', {
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
@@ -268,7 +269,19 @@ export async function upgradeWorkspace (
   }
 
   const { pipeline, storageAdapter } = await getServerPipeline(ctx, mongodbUri, dbUrl, wsUrl)
-
+  const contextData = new SessionDataImpl(
+    systemAccountEmail,
+    'backup',
+    true,
+    { targets: {}, txes: [] },
+    wsUrl,
+    null,
+    false,
+    new Map(),
+    new Map(),
+    pipeline.context.modelDb
+  )
+  ctx.contextData = contextData
   try {
     await handleWsEvent?.('upgrade-started', version, 0)
 
@@ -290,6 +303,7 @@ export async function upgradeWorkspace (
 
     await handleWsEvent?.('upgrade-done', version, 100, '')
   } catch (err: any) {
+    ctx.error('upgrade-failed', { message: err.message })
     await handleWsEvent?.('ping', version, 0, `Upgrade failed: ${err.message}`)
   } finally {
     await pipeline.close()
