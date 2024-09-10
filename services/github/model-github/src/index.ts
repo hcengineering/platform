@@ -655,6 +655,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.DocCreateExtension, core.space.Model, {
     ofClass: tracker.class.Issue,
     apply: github.functions.UpdateIssue,
+    getAnalyticsProps: github.functions.GetCreateIssueAnalyticsProps,
     components: {
       createButton: github.component.GithubIssueInfoHeader
     }

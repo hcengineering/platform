@@ -29,6 +29,7 @@ import {
   type DocAttributeRule,
   type DocCreateExtension,
   type DocCreateFunction,
+  type DocCreateAnalyticsPropsFunction,
   type DocRules,
   type FileOrBlob,
   type FilePreviewExtension,
@@ -42,7 +43,14 @@ import presentation from './plugin'
 
 export { presentationId } from '@hcengineering/presentation/src/plugin'
 export { default } from './plugin'
-export type { CreateExtensionKind, DocCreateExtension, DocCreateFunction, ObjectSearchCategory, ObjectSearchFactory }
+export type {
+  CreateExtensionKind,
+  DocCreateExtension,
+  DocCreateFunction,
+  ObjectSearchCategory,
+  ObjectSearchFactory,
+  DocCreateAnalyticsPropsFunction
+}
 
 @Model(presentation.class.ObjectSearchCategory, core.class.Doc, DOMAIN_MODEL)
 export class TObjectSearchCategory extends TDoc implements ObjectSearchCategory {
@@ -76,6 +84,7 @@ export class TDocCreateExtension extends TDoc implements DocCreateExtension {
 
   components!: Record<CreateExtensionKind, AnyComponent>
   apply!: Resource<DocCreateFunction>
+  getAnalyticsProps?: Resource<(doc: Doc) => Record<string, string>>
 }
 
 @Model(presentation.class.DocRules, core.class.Doc, DOMAIN_MODEL)

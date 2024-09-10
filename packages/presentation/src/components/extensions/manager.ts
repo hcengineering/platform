@@ -65,6 +65,20 @@ export class DocCreateExtensionManager {
     }
   }
 
+  async getAnalyticsProps (space: Space, data: DocData<Doc>): Promise<Record<string, string>> {
+    let result: Record<string, string> = {}
+    for (const e of this._extensions) {
+      if (e.getAnalyticsProps === undefined) continue
+      const state = get(this.getState(e._id))
+      const fn = await getResource(e.getAnalyticsProps)
+      const props = fn?.(space, data, state)
+
+      result = { ...result, ...props }
+    }
+
+    return result
+  }
+
   close (): void {
     this.query.unsubscribe()
   }
