@@ -71,7 +71,8 @@
       }
     }
 
-    const missingAccounts = direct !== undefined ? accIds.filter((id) => !direct.members.includes(id)) : []
+    const existingMembers = direct?.members
+    const missingAccounts = existingMembers !== undefined ? accIds.filter((id) => !existingMembers.includes(id)) : []
 
     if (direct !== undefined && missingAccounts.length > 0) {
       await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, {
