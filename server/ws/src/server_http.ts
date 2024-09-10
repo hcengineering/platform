@@ -158,7 +158,7 @@ export function startHttpServer (
             void sessions.profiling.stop().then((profile) => {
               ctx.warn(
                 '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
-                { profile }
+                {}
               )
               res.writeHead(200, { 'Content-Type': 'application/json' })
               res.end(profile ?? '{ error: "no profiling" }')
@@ -205,7 +205,12 @@ export function startHttpServer (
       const name = req.query.name as string
       const contentType = req.query.contentType as string
       const size = parseInt((req.query.size as string) ?? '-1')
-
+      if (Number.isNaN(size)) {
+        ctx.error('/api/v1/blob put error', { message: 'invalid NaN file size' })
+        res.writeHead(404, {})
+        res.end()
+        return
+      }
       ctx
         .with(
           'storage upload',
