@@ -2,15 +2,13 @@ import {
   generateId,
   type AttachedData,
   type Ref,
-  type WorkspaceIdWithUrl,
   makeCollaborativeDoc,
-  type MeasureMetricsContext,
   type TxOperations,
-  type Blob
+  type Blob,
+  collaborativeDocParse
 } from '@hcengineering/core'
-import { saveCollaborativeDoc } from '@hcengineering/collaboration'
+import { yDocToBuffer } from '@hcengineering/collaboration'
 import document, { type Document, type Teamspace } from '@hcengineering/document'
-import { type StorageAdapter } from '@hcengineering/server-core'
 import {
   MarkupMarkType,
   type MarkupNode,
@@ -58,12 +56,13 @@ enum NOTION_MD_LINK_TYPES {
   UNKNOWN
 }
 
+export type FileUploader = (id: string, data: any) => Promise<any>
+
 export async function importNotion (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
+  uploadFile: FileUploader,
   dir: string,
-  ws: WorkspaceIdWithUrl
+  teamspace?: string
 ): Promise<void> {
   const files = await getFilesForImport(dir)
 
@@ -74,13 +73,17 @@ export async function importNotion (
   console.log(fileMetaMap)
   console.log(documentMetaMap)
 
-  const spaceIdMap = await createTeamspaces(fileMetaMap, client)
-  if (spaceIdMap.size === 0) {
-    console.error('No teamspaces found in directory: ', dir)
-    return
+  if (teamspace === undefined) {
+    const spaceIdMap = await createTeamspaces(fileMetaMap, client)
+    if (spaceIdMap.size === 0) {
+      console.error('No teamspaces found in directory: ', dir)
+      return
+    }
+    await importFiles(client, uploadFile, fileMetaMap, documentMetaMap, spaceIdMap)
+  } else {
+    const spaceId = await createTeamspace(teamspace, client)
+    await importFilesToSpace(client, uploadFile, fileMetaMap, documentMetaMap, spaceId)
   }
-
-  await importFiles(ctx, client, storage, fileMetaMap, documentMetaMap, spaceIdMap, ws)
 }
 
 async function getFilesForImport (dir: string): Promise<Dirent[]> {
@@ -89,28 +92,6 @@ async function getFilesForImport (dir: string): Promise<Dirent[]> {
     return !file.isDirectory() && !(file.name === 'index.html' && file.path === dir)
   })
   return files
-}
-
-export async function importToTeamspace (
-  ctx: MeasureMetricsContext,
-  client: TxOperations,
-  storage: StorageAdapter,
-  dir: string,
-  ws: WorkspaceIdWithUrl,
-  teamspace: string
-): Promise<void> {
-  const files = await getFilesForImport(dir)
-
-  const fileMetaMap = new Map<string, FileMetadata>()
-  const documentMetaMap = new Map<string, DocumentMetadata>()
-
-  await collectMetadata(dir, files, fileMetaMap, documentMetaMap)
-  console.log(fileMetaMap)
-  console.log(documentMetaMap)
-
-  const spaceId = await createTeamspace(teamspace, client)
-
-  await importFilesToSpace(ctx, client, storage, fileMetaMap, documentMetaMap, spaceId, ws)
 }
 
 async function collectMetadata (
@@ -205,31 +186,27 @@ async function createTeamspace (name: string, client: TxOperations): Promise<Ref
 }
 
 async function importFilesToSpace (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
+  uploadFile: FileUploader,
   fileMetaMap: Map<string, FileMetadata>,
   documentMetaMap: Map<string, DocumentMetadata>,
-  spaceId: Ref<Teamspace>,
-  ws: WorkspaceIdWithUrl
+  spaceId: Ref<Teamspace>
 ): Promise<void> {
   for (const [notionId, fileMeta] of fileMetaMap) {
     if (!fileMeta.isFolder) {
       const docMeta = documentMetaMap.get(notionId)
       if (docMeta === undefined) throw new Error('Cannot find metadata for entry: ' + fileMeta.fileName)
-      await importFile(ctx, client, storage, fileMeta, docMeta, spaceId, documentMetaMap, ws)
+      await importFile(client, uploadFile, fileMeta, docMeta, spaceId, documentMetaMap)
     }
   }
 }
 
 async function importFiles (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
+  uploadFile: FileUploader,
   fileMetaMap: Map<string, FileMetadata>,
   documentMetaMap: Map<string, DocumentMetadata>,
-  spaceIdMap: Map<string, Ref<Teamspace>>,
-  ws: WorkspaceIdWithUrl
+  spaceIdMap: Map<string, Ref<Teamspace>>
 ): Promise<void> {
   for (const [notionId, fileMeta] of fileMetaMap) {
     if (!fileMeta.isFolder) {
@@ -241,20 +218,18 @@ async function importFiles (
         throw new Error('Teamspace not found for document: ' + docMeta.name)
       }
 
-      await importFile(ctx, client, storage, fileMeta, docMeta, spaceId, documentMetaMap, ws)
+      await importFile(client, uploadFile, fileMeta, docMeta, spaceId, documentMetaMap)
     }
   }
 }
 
 async function importFile (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
+  uploadFile: FileUploader,
   fileMeta: FileMetadata,
   docMeta: DocumentMetadata,
   spaceId: Ref<Teamspace>,
-  documentMetaMap: Map<string, DocumentMetadata>,
-  ws: WorkspaceIdWithUrl
+  documentMetaMap: Map<string, DocumentMetadata>
 ): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     if (fileMeta.isFolder) throw new Error('Importing folder entry is not supported: ' + fileMeta.fileName)
@@ -268,7 +243,7 @@ async function importFile (
           notionParentId !== undefined && notionParentId !== '' ? documentMetaMap.get(notionParentId) : undefined
 
         const processFileData = getDataProcessor(fileMeta, docMeta)
-        processFileData(ctx, client, storage, ws, data, docMeta, spaceId, parentMeta, documentMetaMap)
+        processFileData(client, uploadFile, data, docMeta, spaceId, parentMeta, documentMetaMap)
           .then(() => {
             console.log('IMPORT SUCCEED:', docMeta.name)
             console.log('------------------------------------------------------------------')
@@ -292,10 +267,8 @@ async function importFile (
 }
 
 type DataProcessor = (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
-  ws: WorkspaceIdWithUrl,
+  uploadFile: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -328,10 +301,8 @@ function getDataProcessor (fileMeta: FileMetadata, docMeta: DocumentMetadata): D
 }
 
 async function createDBPageWithAttachments (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
-  ws: WorkspaceIdWithUrl,
+  uploadFile: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -380,14 +351,12 @@ async function createDBPageWithAttachments (
     size: docMeta.size
   }
 
-  await importAttachment(ctx, client, storage, ws, data, attachment, space, dbPage)
+  await importAttachment(client, uploadFile, data, attachment, space, dbPage)
 }
 
 async function importDBAttachment (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
-  ws: WorkspaceIdWithUrl,
+  uploadFile: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -413,14 +382,12 @@ async function importDBAttachment (
     mimeType: docMeta.mimeType,
     size: docMeta.size
   }
-  await importAttachment(ctx, client, storage, ws, data, attachment, space, dbPage)
+  await importAttachment(client, uploadFile, data, attachment, space, dbPage)
 }
 
 async function importAttachment (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
-  ws: WorkspaceIdWithUrl,
+  uploadFile: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -433,7 +400,17 @@ async function importAttachment (
 
   const size = docMeta.size ?? 0
   const type = docMeta.mimeType ?? DEFAULT_ATTACHMENT_MIME_TYPE
-  await storage.put(ctx, ws, docMeta.id, data, type, size)
+
+  const form = new FormData()
+  const file = new File([new Blob([data])], docMeta.name)
+  form.append('file', file, docMeta.id)
+  form.append('type', type)
+  form.append('size', size.toString())
+  form.append('name', docMeta.name)
+  form.append('id', docMeta.id)
+  form.append('data', new Blob([data])) // ?
+
+  await uploadFile(docMeta.id, form)
 
   const attachedData: AttachedData<Attachment> = {
     file: docMeta.id as Ref<Blob>,
@@ -455,10 +432,8 @@ async function importAttachment (
 }
 
 async function importPageDocument (
-  ctx: MeasureMetricsContext,
   client: TxOperations,
-  storage: StorageAdapter,
-  ws: WorkspaceIdWithUrl,
+  uploadFile: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -474,7 +449,19 @@ async function importPageDocument (
   const id = docMeta.id as Ref<Document>
   const collabId = makeCollaborativeDoc(id, 'content')
   const yDoc = jsonToYDocNoSchema(json, 'content')
-  await saveCollaborativeDoc(storage, ws, collabId, yDoc, ctx)
+  const { documentId } = collaborativeDocParse(collabId)
+  const buffer = yDocToBuffer(yDoc)
+
+  const form = new FormData()
+  const file = new File([new Blob([buffer])], docMeta.name)
+  form.append('file', file, documentId)
+  form.append('type', 'application/ydoc')
+  form.append('size', buffer.length.toString())
+  form.append('name', docMeta.name)
+  form.append('id', docMeta.id)
+  form.append('data', new Blob([buffer])) // ?
+
+  await uploadFile(docMeta.id, form)
 
   const parentId = parentMeta?.id ?? document.ids.NoParent
 
