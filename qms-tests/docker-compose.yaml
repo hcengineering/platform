@@ -99,6 +99,8 @@ services:
       - COLLABORATOR_URL=ws://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=http://localhost:8083/branding-test.json
+      - PRINT_URL=http://localhost:4005
+      - SIGN_URL=http://localhost:4006
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
@@ -147,11 +149,44 @@ services:
   rekoni:
     image: hardcoreeng/rekoni-service
     restart: on-failure
+  print:
+    image: hardcoreeng/print
+    restart: unless-stopped
     ports:
-      - 4005:4004
+      - 4005:4005
+    environment:
+      - SECRET=secret
+      - MONGO_URL=${MONGO_URL}
+      - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 300M
+  sign:
+    image: hardcoreeng/sign
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    ports:
+      - 4006:4006
+    volumes:
+      - ../services/sign/pod-sign/debug/certificate.p12:/var/cfg/certificate.p12
+      - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
+    environment:
+      - SECRET=secret
+      - MONGO_URL=${MONGO_URL}
+      - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
+      - MINIO_ENDPOINT=minio
+      - MINIO_ACCESS_KEY=minioadmin
+      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - MINIO_SECRET_KEY=minioadmin
+      - CERTIFICATE_PATH=/var/cfg/certificate.p12
+      - SERVICE_ID=sign-service      
+      - BRANDING_PATH=/var/cfg/branding.json
+    deploy:
+      resources:
+        limits:
+          memory: 300M
 volumes:
   files:
