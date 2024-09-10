@@ -40,6 +40,7 @@ import {
 
 import documents from './plugin'
 import { TEMPLATE_PREFIX } from './utils'
+import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -71,7 +72,8 @@ export async function createControlledDocFromTemplate (
   space: Ref<DocumentSpace>,
   project: Ref<Project> | undefined,
   parent: Ref<ProjectDocument> | undefined,
-  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
+  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
+  copyContent: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void> = async () => {}
 ): Promise<{ seqNumber: number, success: boolean }> {
   if (templateId == null) {
     return { seqNumber: -1, success: false }
@@ -99,6 +101,8 @@ export async function createControlledDocFromTemplate (
   const seqNumber = template.sequence + 1
   const prefix = template.docPrefix
 
+  const _copyContent = (doc: CollaborativeDoc): Promise<void> => copyContent(template.content, doc)
+
   return await createControlledDoc(
     client,
     templateId,
@@ -109,7 +113,8 @@ export async function createControlledDocFromTemplate (
     prefix,
     seqNumber,
     path,
-    docClass
+    docClass,
+    _copyContent
   )
 }
 
@@ -123,13 +128,14 @@ async function createControlledDoc (
   prefix: string,
   seqNumber: number,
   path: Ref<DocumentMeta>[] = [],
-  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
+  docClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument,
+  copyContent: (doc: CollaborativeDoc) => Promise<void>
 ): Promise<{ seqNumber: number, success: boolean }> {
   const projectId = project ?? documents.ids.NoProject
 
   const collaborativeDoc = getCollaborativeDocForDocument(`DOC-${prefix}`, seqNumber, 0, 1)
 
-  const ops = client.apply(documentId)
+  const ops = client.apply()
 
   ops.notMatch(documents.class.Document, {
     template: templateId,
@@ -185,6 +191,15 @@ async function createControlledDoc (
 
   const success = await ops.commit()
 
+  if (success.result) {
+    try {
+      await copyContent(collaborativeDoc)
+    } catch (err) {
+      await setPlatformStatus(unknownError(err))
+      return { seqNumber, success: false }
+    }
+  }
+
   return { seqNumber, success: success.result }
 }
 
@@ -222,7 +237,7 @@ export async function createDocumentTemplate (
     path = await getParentPath(client, parent)
   }
 
-  const ops = client.apply(templateId)
+  const ops = client.apply()
 
   ops.notMatch(documents.class.Document, {
     template: { $exists: false },

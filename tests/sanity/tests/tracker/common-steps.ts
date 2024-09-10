@@ -15,7 +15,7 @@ export async function prepareNewIssueStep (page: Page, issue: NewIssue): Promise
 }
 
 export async function prepareNewIssueWithOpenStep (page: Page, issue: NewIssue): Promise<string> {
-  return await test.step('Prepare document', async () => {
+  return await test.step('Prepare Issue', async () => {
     const issuesPage = new IssuesPage(page)
     await issuesPage.linkSidebarAll().click()
     await issuesPage.clickModelSelectorAll()

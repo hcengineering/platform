@@ -19,14 +19,15 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import { IncomingHttpHeaders, type Server } from 'http'
 import { MeasureContext } from '@hcengineering/core'
 import { Telegraf } from 'telegraf'
-import telegram, { TelegramNotificationRecord } from '@hcengineering/telegram'
+import telegram, { TelegramNotificationRequest } from '@hcengineering/telegram'
 import { translate } from '@hcengineering/platform'
 
 import { ApiError } from './error'
 import { PlatformWorker } from './worker'
 import { Limiter } from './limiter'
 import config from './config'
-import { toTelegramHtml } from './utils'
+import { toTelegramHtml, toMediaGroups } from './utils'
+import { TgContext } from './telegraf/types'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {
@@ -95,8 +96,12 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: MeasureContext): Express {
-  const limiter = new Limiter()
+export function createServer (
+  bot: Telegraf<TgContext>,
+  worker: PlatformWorker,
+  ctx: MeasureContext,
+  limiter: Limiter
+): Express {
   const app = express()
 
   app.use(cors())
@@ -122,6 +127,33 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
   )
 
   app.post(
+    '/updateWorkspace',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null || typeof req.body !== 'object' || req.body.enabled == null) {
+        throw new ApiError(400)
+      }
+
+      const enabled: boolean = req.body.enabled
+      const record = await worker.getUserRecordByEmail(token.email)
+
+      if (record === undefined) {
+        return
+      }
+
+      if (enabled && !record.workspaces.includes(token.workspace.name)) {
+        await worker.addWorkspace(token.email, token.workspace.name)
+      }
+
+      if (!enabled && record.workspaces.includes(token.workspace.name)) {
+        await worker.removeWorkspace(token.email, token.workspace.name)
+      }
+
+      res.status(200)
+      res.json({})
+    })
+  )
+
+  app.post(
     '/auth',
     wrapRequest(async (req, res, token) => {
       if (req.body == null || typeof req.body !== 'object') {
@@ -140,7 +172,7 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
         throw new ApiError(409, 'User already authorized')
       }
 
-      const newRecord = await worker.authorizeUser(code, token.email)
+      const newRecord = await worker.authorizeUser(code, token.email, token.workspace.name)
 
       if (newRecord === undefined) {
         throw new ApiError(500)
@@ -159,7 +191,7 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
 
   app.get(
     '/info',
-    wrapRequest(async (_, res, token) => {
+    wrapRequest(async (_, res) => {
       const me = await bot.telegram.getMe()
       const profilePhotos = await bot.telegram.getUserProfilePhotos(me.id)
       const photoId = profilePhotos.photos[0]?.[0]?.file_id
@@ -183,7 +215,7 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
         throw new ApiError(400)
       }
 
-      const notificationRecords = req.body as TelegramNotificationRecord[]
+      const notificationRequests = req.body as TelegramNotificationRequest[]
       const userRecord = await worker.getUserRecordByEmail(token.email)
 
       if (userRecord === undefined) {
@@ -194,21 +226,37 @@ export function createServer (bot: Telegraf, worker: PlatformWorker, ctx: Measur
       ctx.info('Received notification', {
         email: token.email,
         username: userRecord.telegramUsername,
-        ids: notificationRecords.map((it) => it.notificationId)
+        ids: notificationRequests.map((it) => it.notificationId)
       })
 
-      for (const notificationRecord of notificationRecords) {
+      for (const request of notificationRequests) {
         void limiter.add(userRecord.telegramId, async () => {
-          const formattedMessage = toTelegramHtml(notificationRecord)
-          const message = await bot.telegram.sendMessage(userRecord.telegramId, formattedMessage, {
-            parse_mode: 'HTML'
-          })
-          await worker.addNotificationRecord({
-            notificationId: notificationRecord.notificationId,
-            email: userRecord.email,
-            workspace: notificationRecord.workspace,
-            telegramId: message.message_id
-          })
+          const { full: fullMessage, short: shortMessage } = toTelegramHtml(request)
+          const files = await worker.getFiles(request)
+          const messageIds: number[] = []
+
+          if (files.length === 0) {
+            const message = await bot.telegram.sendMessage(userRecord.telegramId, fullMessage, {
+              parse_mode: 'HTML'
+            })
+
+            messageIds.push(message.message_id)
+          } else {
+            const groups = toMediaGroups(files, fullMessage, shortMessage)
+            for (const group of groups) {
+              const mediaGroup = await bot.telegram.sendMediaGroup(userRecord.telegramId, group)
+              messageIds.push(...mediaGroup.map((it) => it.message_id))
+            }
+          }
+
+          for (const messageId of messageIds) {
+            await worker.addNotificationRecord({
+              notificationId: request.notificationId,
+              email: userRecord.email,
+              workspace: request.workspace,
+              telegramId: messageId
+            })
+          }
         })
       }
 

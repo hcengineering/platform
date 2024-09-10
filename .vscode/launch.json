@@ -5,6 +5,30 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug notion import",
+      "type": "node",
+      "request": "launch",
+      // "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-ws", "w-user1-ws1-66d8018b-ce1e0c3164-006bb0", "-ts", "notion"],
+      "args": ["src/__start.ts", "import-notion", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-ws", "w-user1-ws1-66d8018b-ce1e0c3164-006bb0"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "TELEGRAM_DATABASE": "telegram-service",
+        "ELASTIC_URL": "http://localhost:9200",
+        "REKONI_URL": "http://localhost:4004"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/tool"
+    },
+    {
       "address": "127.0.0.1",
       "localRoot": "${workspaceFolder}",
       "name": "Attach to Remote",
@@ -48,7 +72,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": "",
+        "MODEL_VERSION": "0.6.287",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         
@@ -75,15 +99,45 @@
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
-        "outputCapture": "std",
         "SES_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost"
+        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
+        // "INIT_WORKSPACE": "onboarding",
       },
+      "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
+      "outputCapture": "std",
       "cwd": "${workspaceRoot}/pods/account",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Workspace",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "MONGO_URL": "mongodb://localhost:27017",
+        "SERVER_SECRET": "secret",
+        "TRANSACTOR_URL": "ws://localhost:3333",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "FRONT_URL": "http://localhost:8080",
+        "SES_URL": "",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost",
+        "MODEL_VERSION": "v0.6.286",
+        // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
+        // "INIT_WORKSPACE": "onboarding",
+        "NOTIFY_INBOX_ONLY": "true"
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/pods/workspace",
       "protocol": "inspector"
     },
     {
@@ -199,6 +253,7 @@
         "ELASTIC_URL": "http://localhost:9200",
         "REKONI_URL": "http://localhost:4004"
       },
+      "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
       "outputCapture": "std",
@@ -405,12 +460,25 @@
         "MONGO_DB": "telegram-bot",
         "SECRET": "secret",
         "ACCOUNTS_URL": "http://localhost:3000",
-        "SERVICE_ID": "telegram-bot-service"
+        "SERVICE_ID": "telegram-bot-service",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin",
+        "MINIO_ENDPOINT": "localhost"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/telegram-bot/pod-telegram-bot"
-    }
+    },
+    {
+      "type": "chrome",
+      "name": "Attach to Browser",
+      "request": "attach",
+      "urlFilter": "http://localhost:8080/*",
+      "port": 9222,
+      "sourceMapPathOverrides": {
+        "webpack://*": "${workspaceFolder}/*",
+      }
+    },
   ]
 }

@@ -271,7 +271,7 @@ export class GmailClient {
         status: 'error',
         error: JSON.stringify(err)
       })
-      console.log('Create message error', this.user.workspace, this.user.userId, JSON.stringify(err))
+      console.log('Create message error', this.user.workspace, this.user.userId, err.message)
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
@@ -389,7 +389,7 @@ export class GmailClient {
       const controller = GmailController.getGmailController()
       controller.addClient(me, this)
     } catch (err) {
-      console.log('Add client error', this.user.workspace, this.user.userId, JSON.stringify(err))
+      console.log('Add client error', this.user.workspace, this.user.userId, (err as any).message)
     }
   }
 
@@ -398,7 +398,7 @@ export class GmailClient {
       this.oAuth2Client.setCredentials(token)
       await this.getMe()
     } catch (err: any) {
-      console.log('Set token error', this.user.workspace, this.user.userId, JSON.stringify(err))
+      console.log('Set token error', this.user.workspace, this.user.userId, err.message)
       if (this.checkError(err)) {
         await this.signout(true)
       }
@@ -420,7 +420,7 @@ export class GmailClient {
         })
       }
     } catch (err) {
-      console.log('update token error', this.user.workspace, this.user.userId, JSON.stringify(err))
+      console.log('update token error', this.user.workspace, this.user.userId, (err as any).message)
     }
   }
 
@@ -640,7 +640,7 @@ export class GmailClient {
         data
       )
     } catch (err: any) {
-      console.log('Add attachment error', this.user.workspace, this.user.userId, JSON.stringify(err))
+      console.log('Add attachment error', this.user.workspace, this.user.userId, err.message)
     }
   }
 
@@ -746,7 +746,7 @@ export class GmailClient {
         30 * 60 * 1000
       )
     } catch (err: any) {
-      console.log("Couldn't refresh token, error:", JSON.stringify(err))
+      console.log("Couldn't refresh token, error:", err.message)
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.workspace.signoutByUserId(this.user.userId, true)
       } else {
@@ -771,7 +771,7 @@ export class GmailClient {
         }
       })
     } catch (err) {
-      console.log('Watch error', JSON.stringify(err))
+      console.log('Watch error', (err as any).message)
     }
   }
 
@@ -838,7 +838,7 @@ export class GmailClient {
         userId: 'me'
       })
     } catch (err) {
-      console.log('close error', JSON.stringify(err))
+      console.log('close error', (err as any).message)
     }
   }
 }

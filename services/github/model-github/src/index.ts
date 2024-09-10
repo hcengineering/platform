@@ -355,25 +355,31 @@ export class TGithubAuthentication extends TPreference implements GithubAuthenti
 export class TGithubProject extends TProject implements GithubProject {
   @Prop(TypeRef(github.class.GithubIntegration), getEmbeddedLabel('Integration'))
   @ReadOnly()
+  @Hidden()
     integration!: Ref<GithubIntegration>
 
   @Prop(ArrOf(TypeRef(github.class.GithubIntegrationRepository)), getEmbeddedLabel('Repositories'))
   @ReadOnly()
+  @Hidden()
     repositories!: Ref<GithubIntegrationRepository>[]
 
   @Prop(TypeString(), getEmbeddedLabel('NodeID'))
   @ReadOnly()
+  @Hidden()
     projectNodeId!: string
 
   @Prop(TypeNumber(), getEmbeddedLabel('Number'))
   @ReadOnly()
+  @Hidden()
     projectNumber!: number
 
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Attribute Class'))
   @ReadOnly()
+  @Hidden()
     mixinClass!: Ref<Class<GithubIssue>>
 
   @Prop(ArrOf(TypeRecord()), getEmbeddedLabel('Field mappings'))
+  @Hidden()
   // Mapping of all fields in this project.
     mappings!: GithubFieldMapping[]
 }
@@ -649,6 +655,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(presentation.class.DocCreateExtension, core.space.Model, {
     ofClass: tracker.class.Issue,
     apply: github.functions.UpdateIssue,
+    getAnalyticsProps: github.functions.GetCreateIssueAnalyticsProps,
     components: {
       createButton: github.component.GithubIssueInfoHeader
     }

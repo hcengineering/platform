@@ -4,7 +4,12 @@
 
 import { type Data, type Ref, type Space, type TxOperations } from '@hcengineering/core'
 import { type Resources } from '@hcengineering/platform'
-import { getClient, type DocCreateFunction, type DocCreatePhase } from '@hcengineering/presentation'
+import {
+  getClient,
+  type DocCreateFunction,
+  type DocCreatePhase,
+  type DocCreateAnalyticsPropsFunction
+} from '@hcengineering/presentation'
 import tracker, { type Issue } from '@hcengineering/tracker'
 import { type GithubIntegrationRepository } from '@hcengineering/github'
 import AuthenticationCheck from './components/AuthenticationCheck.svelte'
@@ -51,6 +56,25 @@ async function updateIssue (
   }
 }
 
+function getCreateIssueAnalyticsProps (
+  space: Space,
+  issue: Data<Issue>,
+  settings: Record<string, any>
+): Record<string, any> {
+  const hierarchy = getClient().getHierarchy()
+  if (hierarchy.hasMixin(space, github.mixin.GithubProject)) {
+    const repository = settings.repository as Ref<GithubIntegrationRepository>
+    if (repository == null) return {}
+
+    return {
+      github: true,
+      githubRepository: repository
+    }
+  }
+
+  return {}
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     Connect,
@@ -85,6 +109,7 @@ export default async (): Promise<Resources> => ({
       const client = getClient()
       return spaces.some((it) => client.getHierarchy().hasMixin(it, github.mixin.GithubProject))
     },
-    UpdateIssue: updateIssue as DocCreateFunction
+    UpdateIssue: updateIssue as DocCreateFunction,
+    GetCreateIssueAnalyticsProps: getCreateIssueAnalyticsProps as DocCreateAnalyticsPropsFunction
   }
 })

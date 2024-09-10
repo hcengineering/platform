@@ -48,6 +48,23 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
       - BRANDING_PATH=/var/cfg/branding.json
+  workspace:
+    image: hardcoreeng/workspace
+    links:
+      - mongodb
+      - minio
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
+    environment:
+      - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27018
+      - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://account:3003
+      - BRANDING_PATH=/var/cfg/branding.json
+      - NOTIFY_INBOX_ONLY=true
+    restart: unless-stopped
   front:
     image: hardcoreeng/front
     pull_policy: never

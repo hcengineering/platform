@@ -6,6 +6,12 @@ import { type AnyExtension, type Content, type Editor, type SingleCommands } fro
 import { type ParseOptions } from '@tiptap/pm/model'
 
 export type { AnyExtension, Editor } from '@tiptap/core'
+
+/**
+ * @public
+ */
+export type CollaboratorType = 'local' | 'cloud'
+
 /**
  * @public
  */
@@ -122,8 +128,7 @@ export interface CollaborationUser {
 }
 
 /** @public */
-export interface CollaborationUserState {
-  clientId: number
+export interface AwarenessState {
   user: CollaborationUser
   cursor?: {
     anchor: RelativePosition
@@ -133,9 +138,10 @@ export interface CollaborationUserState {
 }
 
 /** @public */
-export interface AwarenessChangeEvent {
-  states: CollaborationUserState[]
-}
+export type AwarenessClientId = number
+
+/** @public */
+export type AwarenessStateMap = Map<AwarenessClientId, AwarenessState>
 
 export type TextEditorMode = 'full' | 'compact'
 export type ExtensionCreator = (mode: TextEditorMode, ctx: any) => AnyExtension

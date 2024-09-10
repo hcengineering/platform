@@ -1,9 +1,9 @@
 import { type Locator, type Page } from '@playwright/test'
 
 export enum ButtonType {
+  General,
   Owners,
   Spaces,
-  Branding,
   TextTemplate,
   RelatedIssues,
   Classes,
@@ -18,9 +18,9 @@ export class WorkspaceSettingsPage {
     this.page = page
   }
 
+  general = (): Locator => this.page.getByRole('button', { name: 'General' })
   owners = (): Locator => this.page.getByRole('button', { name: 'Owners' })
   spaces = (): Locator => this.page.getByRole('button', { name: 'Spaces', exact: true })
-  branding = (): Locator => this.page.getByRole('button', { name: 'Branding' })
   textTemplate = (): Locator => this.page.getByRole('button', { name: 'Text Templates' })
   relatedIssues = (): Locator => this.page.getByRole('button', { name: 'Related issues' })
   classes = (): Locator => this.page.locator('#navGroup-setting').getByRole('button', { name: 'Classes' })
@@ -29,14 +29,14 @@ export class WorkspaceSettingsPage {
 
   async selectWorkspaceSettingsTab (button: ButtonType): Promise<void> {
     switch (button) {
+      case ButtonType.General:
+        await this.general().click()
+        break
       case ButtonType.Owners:
         await this.owners().click()
         break
       case ButtonType.Spaces:
         await this.spaces().click()
-        break
-      case ButtonType.Branding:
-        await this.branding().click()
         break
       case ButtonType.TextTemplate:
         await this.textTemplate().click()

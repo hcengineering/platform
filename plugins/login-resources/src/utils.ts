@@ -441,6 +441,7 @@ export function navigateToWorkspace (
   }
   setMetadata(presentation.metadata.Token, loginInfo.token)
   setMetadata(presentation.metadata.Workspace, loginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceId, loginInfo.workspaceId)
   setLoginInfo(loginInfo)
 
   if (navigateUrl !== undefined) {
@@ -896,6 +897,7 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
       setMetadata(presentation.metadata.Workspace, result.workspace)
+      setMetadata(presentation.metadata.WorkspaceId, result.workspaceId)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setLoginInfo(result)
 

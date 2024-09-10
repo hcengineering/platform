@@ -101,7 +101,6 @@
     "Automations": "自动化",
     "Collections": "集合",
     "ClassColon": "类别：",
-    "Branding": "品牌",
     "SpaceTypes": "空间类型",
     "NewSpaceType": "新空间类型",
     "SpaceTypeTitle": "空间类型标题",
@@ -113,6 +112,10 @@
     "Permissions": "权限",
     "Assignees": "受托人",
     "DeleteRole": "删除角色",
-    "DeleteRoleConfirmation": "您确定要删除此角色吗？拥有此角色的所有用户将失去其权限。"
+    "DeleteRoleConfirmation": "您确定要删除此角色吗？拥有此角色的所有用户将失去其权限。",
+    "DeleteWorkspace": "删除工作区",
+    "DeleteWorkspaceConfirm": "您确定要删除此工作区吗？您和所有其他成员将失去对此工作区的访问权限。工作区中的所有信息将丢失。此操作无法撤销。您要继续吗？",
+    "WorkspaceName": "工作区名称",
+    "Workspace": "工作区"
   }
 }

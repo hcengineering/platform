@@ -6,17 +6,32 @@ import {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  Hierarchy,
+  ModelDb,
   type MeasureContext
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
+  ApplyTxMiddleware,
+  BroadcastMiddleware,
   ConfigurationMiddleware,
+  ContextNameMiddleware,
+  DBAdapterHelperMiddleware,
+  DBAdapterMiddleware,
+  DomainFindMiddleware,
+  DomainTxMiddleware,
+  LiveQueryMiddleware,
   LookupMiddleware,
+  LowLevelMiddleware,
+  MarkDerivedEntryMiddleware,
+  ModelMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
   SpacePermissionsMiddleware,
-  SpaceSecurityMiddleware
+  SpaceSecurityMiddleware,
+  TriggersMiddleware,
+  TxMiddleware
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import {
@@ -29,8 +44,10 @@ import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
   createPipeline,
+  FullTextMiddleware,
   type DbConfiguration,
   type MiddlewareCreator,
+  type PipelineContext,
   type PipelineFactory,
   type StorageAdapter
 } from '@hcengineering/server-core'
@@ -55,15 +72,6 @@ export function createServerPipeline (
   },
   extensions?: Partial<DbConfiguration>
 ): PipelineFactory {
-  const middlewares: MiddlewareCreator[] = [
-    LookupMiddleware.create,
-    ModifiedMiddleware.create,
-    PrivateMiddleware.create,
-    SpaceSecurityMiddleware.create,
-    SpacePermissionsMiddleware.create,
-    ConfigurationMiddleware.create,
-    QueryJoinMiddleware.create
-  ]
   return (ctx, workspace, upgrade, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
@@ -140,10 +148,42 @@ export function createServerPipeline (
         },
         ...extensions?.contentAdapters
       },
-      defaultContentAdapter: extensions?.defaultContentAdapter ?? 'Rekoni',
-      storageFactory: opt.externalStorage,
-      workspace
+      defaultContentAdapter: extensions?.defaultContentAdapter ?? 'Rekoni'
     }
-    return createPipeline(ctx, conf, middlewares, upgrade, broadcast, branding, opt.disableTriggers)
+
+    const middlewares: MiddlewareCreator[] = [
+      LookupMiddleware.create,
+      ModifiedMiddleware.create,
+      PrivateMiddleware.create,
+      SpaceSecurityMiddleware.create,
+      SpacePermissionsMiddleware.create,
+      ConfigurationMiddleware.create,
+      LowLevelMiddleware.create,
+      ContextNameMiddleware.create,
+      MarkDerivedEntryMiddleware.create,
+      ApplyTxMiddleware.create, // Extract apply
+      TxMiddleware.create, // Store tx into transaction domain
+      ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
+      FullTextMiddleware.create(conf, upgrade),
+      QueryJoinMiddleware.create,
+      LiveQueryMiddleware.create,
+      DomainFindMiddleware.create,
+      DomainTxMiddleware.create,
+      DBAdapterHelperMiddleware.create,
+      ModelMiddleware.create,
+      DBAdapterMiddleware.create(conf), // Configure DB adapters
+      BroadcastMiddleware.create(broadcast)
+    ]
+
+    const hierarchy = new Hierarchy()
+    const modelDb = new ModelDb(hierarchy)
+    const context: PipelineContext = {
+      workspace,
+      branding,
+      modelDb,
+      hierarchy,
+      storageAdapter: opt.externalStorage
+    }
+    return createPipeline(ctx, middlewares, context)
   }
 }

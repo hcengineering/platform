@@ -18,7 +18,6 @@ import { PlatformError, Severity, Status, getMetadata } from '@hcengineering/pla
 import { v4 as uuid } from 'uuid'
 
 import plugin from './plugin'
-import { decodeTokenPayload } from './utils'
 
 interface FileUploadError {
   key: string
@@ -42,8 +41,8 @@ function getFilesUrl (): string {
   return filesUrl.includes('://') ? filesUrl : concatLink(frontUrl, filesUrl)
 }
 
-export function getCurrentWorkspace (): string {
-  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').workspace
+export function getCurrentWorkspaceId (): string {
+  return getMetadata(plugin.metadata.WorkspaceId) ?? ''
 }
 
 /**
@@ -59,7 +58,7 @@ export function generateFileId (): string {
 export function getUploadUrl (): string {
   const template = getMetadata(plugin.metadata.UploadURL) ?? defaultUploadUrl
 
-  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
+  return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
 }
 
 /**
@@ -73,7 +72,7 @@ export function getFileUrl (file: string, filename?: string): string {
   const template = getFilesUrl()
   return template
     .replaceAll(':filename', encodeURIComponent(filename ?? file))
-    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
     .replaceAll(':blobId', encodeURIComponent(file))
 }
 

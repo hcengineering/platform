@@ -50,6 +50,8 @@ export function docImportTool (): void {
     process.exit(1)
   }
 
+  const collaborator = process.env.COLLABORATOR
+
   const uploadUrl = process.env.UPLOAD_URL ?? '/files'
 
   const mongodbUri = process.env.MONGO_URL
@@ -105,6 +107,7 @@ export function docImportTool (): void {
             uploadURL: uploadUrl,
             storageAdapter,
             collaboratorURL: collaboratorUrl,
+            collaborator,
             token: generateToken(systemAccountEmail, workspaceId)
           }
 

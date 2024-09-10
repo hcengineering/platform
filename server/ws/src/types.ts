@@ -8,7 +8,8 @@ import {
   type MeasureContext,
   type Ref,
   type Tx,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Request, type Response } from '@hcengineering/rpc'
 import { type Pipeline, type PipelineFactory, type StorageAdapter } from '@hcengineering/server-core'
@@ -35,10 +36,6 @@ export interface ClientSessionCtx {
   ctx: MeasureContext
   sendResponse: (msg: any) => Promise<void>
   sendError: (msg: any, error: any) => Promise<void>
-
-  // target === undefined, send to all except exclude
-  // target !== undefined, send to selected target only, exclude is not used.
-  send: (msg: Tx[], target?: string, exclude?: string[]) => Promise<void>
 }
 
 /**
@@ -94,7 +91,7 @@ export interface ConnectionSocket {
   id: string
   isClosed: boolean
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<number>
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => void
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
@@ -136,7 +133,7 @@ export interface AddSessionActive {
   context: MeasureContext
   workspaceId: string
 }
-export type AddSessionResponse = AddSessionActive | { upgrade: true } | { error: any }
+export type AddSessionResponse = AddSessionActive | { upgrade: true } | { error: any, terminate?: boolean }
 
 /**
  * @public
@@ -145,7 +142,12 @@ export interface SessionManager {
   workspaces: Map<string, Workspace>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
 
-  createSession: (token: Token, pipeline: Pipeline) => Session
+  createSession: (
+    token: Token,
+    pipeline: Pipeline,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null
+  ) => Session
 
   addSession: (
     ctx: MeasureContext,
@@ -174,6 +176,11 @@ export interface SessionManager {
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
   scheduleMaintenance: (timeMinutes: number) => void
+
+  profiling?: {
+    start: () => void
+    stop: () => Promise<string | undefined>
+  }
 }
 
 /**

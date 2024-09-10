@@ -48,6 +48,11 @@
     "AccountConnectedHtml": "Vous avez été connecté avec succès en tant que <b>{email}</b>",
     "AccountAlreadyConnected": "Compte déjà connecté",
     "InvalidCode": "Code invalide",
-    "SomethingWentWrong": "Quelque chose s'est mal passé. Veuillez réessayer."
+    "SomethingWentWrong": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "Configure": "Configurer",
+    "ConnectTelegramBot": "Connecter le bot Telegram",
+    "DisconnectMessage": "⚠️Vous avez été déconnecté du service. Veuillez reconnecter votre compte sur {app} en utilisant /{command}.",
+    "SyncAllChannels": "Synchroniser tous les canaux",
+    "SyncStarredChannels": "Synchroniser les chaînes marquées"
   }
 }

@@ -9,10 +9,15 @@ export class TrackerNavigationMenuPage extends CommonPage {
     this.page = page
   }
 
-  buttonCreateProject = (): Locator => this.page.locator('div#navGroup-tree-projects').locator('xpath=../button[1]')
+  yoursProjectsMenuSelector = '#navGroup-tree-projects'
+  starredProjectsMenuSelector = '#navGroup-tree-stared'
+
+  buttonCreateProject = (): Locator => this.page.locator(this.yoursProjectsMenuSelector).locator('xpath=../button[1]')
   buttonProjectsParent = (): Locator => this.page.locator('button.hulyNavGroup-header span')
   templateLinkForProject = (projectName: string): Locator =>
     this.page.locator(`a[href$="templates"][href*="${projectName}"]`)
+
+  starredProjectsInMenu = (): Locator => this.page.locator(`${this.starredProjectsMenuSelector} span`)
 
   issuesLinkForProject = (projectName: string): Locator =>
     this.page
@@ -49,6 +54,22 @@ export class TrackerNavigationMenuPage extends CommonPage {
     await expect(this.buttonProjectsParent().filter({ hasText: projectName })).toHaveCount(1)
   }
 
+  async checkProjectStarred (projectName: string): Promise<void> {
+    await expect(this.starredProjectsInMenu().filter({ hasText: projectName })).toHaveCount(1)
+  }
+
+  async checkProjectWillBeRemovedFromYours (projectName: string): Promise<void> {
+    await this.page.waitForSelector(`${this.yoursProjectsMenuSelector} span:has-text("${projectName}")`, {
+      state: 'detached'
+    })
+  }
+
+  async checkProjectWillBeRemovedFromStarred (projectName: string): Promise<void> {
+    await this.page.waitForSelector(`${this.starredProjectsMenuSelector} span:has-text("${projectName}")`, {
+      state: 'detached'
+    })
+  }
+
   async checkProjectNotExist (projectName: string): Promise<void> {
     await expect(this.buttonProjectsParent().filter({ hasText: projectName })).toHaveCount(0)
   }
@@ -68,6 +89,16 @@ export class TrackerNavigationMenuPage extends CommonPage {
   async makeActionWithProject (projectName: string, action: string): Promise<void> {
     await this.buttonProjectsParent().filter({ hasText: projectName }).hover()
     await this.buttonProjectsParent()
+      .filter({ hasText: projectName })
+      .locator('xpath=../..')
+      .locator('div[class*="tools"] button')
+      .click()
+    await this.selectFromDropdown(this.page, action)
+  }
+
+  async makeActionWithStarredProject (projectName: string, action: string): Promise<void> {
+    await this.starredProjectsInMenu().filter({ hasText: projectName }).hover()
+    await this.starredProjectsInMenu()
       .filter({ hasText: projectName })
       .locator('xpath=../..')
       .locator('div[class*="tools"] button')
@@ -95,5 +126,9 @@ export class TrackerNavigationMenuPage extends CommonPage {
     await expect(this.components()).toBeVisible()
     await expect(this.milestone()).toBeVisible()
     await expect(this.templates()).toBeVisible()
+  }
+
+  async openAllProjects (): Promise<void> {
+    await this.allProjects().click()
   }
 }

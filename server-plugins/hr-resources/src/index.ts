@@ -53,6 +53,7 @@ async function getOldDepartment (
   control: TriggerControl
 ): Promise<Ref<Department> | undefined> {
   const txes = await control.findAll<TxMixin<Employee, Staff>>(
+    control.ctx,
     core.class.TxMixin,
     {
       objectId: currentTx.objectId
@@ -72,7 +73,7 @@ async function getOldDepartment (
 async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): Promise<Department[]> {
   const res: Department[] = []
   const ancestors = new Map<Ref<Department>, Ref<Department>>()
-  const departments = await control.findAll(hr.class.Department, {})
+  const departments = await control.findAll(control.ctx, hr.class.Department, {})
   for (const department of departments) {
     if (department._id === hr.ids.Head || department.parent === undefined) continue
     ancestors.set(department._id, department.parent)
@@ -184,7 +185,7 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
   const department = control.removedMap.get(ctx.objectId) as Department
   if (department === undefined) return []
   const res: Tx[] = []
-  const nested = await control.findAll(hr.class.Department, { parent: department._id })
+  const nested = await control.findAll(control.ctx, hr.class.Department, { parent: department._id })
   for (const dep of nested) {
     res.push(control.txFactory.createTxRemoveDoc(dep._class, dep.space, dep._id))
   }
@@ -193,7 +194,7 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
   })
   const employeeIds = targetAccounts.map((acc) => acc.person as Ref<Staff>)
 
-  const employee = await control.findAll(contact.mixin.Employee, {
+  const employee = await control.findAll(control.ctx, contact.mixin.Employee, {
     _id: { $in: employeeIds }
   })
   const removed = await buildHierarchy(department._id, control)
@@ -217,7 +218,7 @@ export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Prom
 export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxMixin<Person, Employee>
 
-  const person = (await control.findAll(contact.class.Person, { _id: ctx.objectId }))[0]
+  const person = (await control.findAll(control.ctx, contact.class.Person, { _id: ctx.objectId }))[0]
   if (person === undefined) {
     return []
   }
@@ -297,12 +298,12 @@ async function sendEmailNotifications (
     }
   }
 
-  const channels = await control.findAll(contact.class.Channel, {
+  const channels = await control.findAll(control.ctx, contact.class.Channel, {
     provider: contact.channelProvider.Email,
     attachedTo: { $in: Array.from(contacts) }
   })
 
-  const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
+  const senderPerson = (await control.findAll(control.ctx, contact.class.Person, { _id: sender.person }))[0]
 
   const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
   const content = await getContentByTemplate(doc, senderName, type._id, control, '')
@@ -337,7 +338,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
   const sender = getPersonAccountById(ctx.modifiedBy, control)
   if (sender === undefined) return []
 
-  const request = (await control.findAll(hr.class.Request, { _id: ctx.objectId }))[0] as Request
+  const request = (await control.findAll(control.ctx, hr.class.Request, { _id: ctx.objectId }))[0] as Request
   if (request === undefined) return []
 
   await sendEmailNotifications(control, sender, request, request.department, hr.ids.UpdateRequestNotification)
@@ -365,7 +366,7 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
  */
 export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: request.attachedTo }))[0]
+  const employee = (await control.findAll(control.ctx, contact.mixin.Employee, { _id: request.attachedTo }))[0]
   const who = getName(control.hierarchy, employee, control.branding?.lastNameFirst)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
@@ -383,7 +384,7 @@ export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): 
  */
 export async function RequestTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: request.attachedTo }))[0]
+  const employee = (await control.findAll(control.ctx, contact.mixin.Employee, { _id: request.attachedTo }))[0]
   const who = getName(control.hierarchy, employee, control.branding?.lastNameFirst)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 

@@ -196,7 +196,7 @@
 
   async function createMessage (event: CustomEvent, _id: Ref<ChatMessage>, msg: string): Promise<CommitResult> {
     const { message, attachments } = event.detail
-    const operations = client.apply(_id, msg)
+    const operations = client.apply(undefined, msg)
 
     if (_class === chunter.class.ThreadMessage) {
       const parentMessage = object as ActivityMessage

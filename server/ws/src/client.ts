@@ -18,8 +18,8 @@ import core, {
   TxFactory,
   TxProcessor,
   reduceCalls,
-  toIdMap,
   type Account,
+  type Branding,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -31,11 +31,10 @@ import core, {
   type SearchQuery,
   type Timestamp,
   type Tx,
-  type TxApplyIf,
-  type TxApplyResult,
-  type TxCUD
+  type TxCUD,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
+import { SessionDataImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import {
   type ClientSessionCtx,
@@ -65,7 +64,9 @@ export class ClientSession implements Session {
 
   constructor (
     protected readonly token: Token,
-    protected readonly _pipeline: Pipeline
+    protected readonly _pipeline: Pipeline,
+    readonly workspaceId: WorkspaceIdWithUrl,
+    readonly branding: Branding | null
   ) {}
 
   getUser (): string {
@@ -91,18 +92,30 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
-    const result = await ctx.ctx.with(
-      'load-model',
-      {},
-      async () => await this._pipeline.storage.loadModel(lastModelTx, hash)
+    const contextData = new SessionDataImpl(
+      this.token.email,
+      this.sessionId,
+      this.token.extra?.admin === 'true',
+      {
+        txes: [],
+        targets: {}
+      },
+      this.workspaceId,
+      this.branding,
+      false,
+      new Map(),
+      new Map(),
+      this._pipeline.context.modelDb
     )
+    ctx.ctx.contextData = contextData
+    const result = await ctx.ctx.with('load-model', {}, () => this._pipeline.loadModel(ctx.ctx, lastModelTx, hash))
     await ctx.sendResponse(result)
   }
 
   async getAccount (ctx: ClientSessionCtx): Promise<void> {
-    const account = await this._pipeline.modelDb.findAll(core.class.Account, { email: this.token.email })
+    const account = this._pipeline.context.modelDb.findAllSync(core.class.Account, { email: this.token.email })
     if (account.length === 0 && this.token.extra?.admin === 'true') {
-      const systemAccount = await this._pipeline.modelDb.findAll(core.class.Account, {
+      const systemAccount = this._pipeline.context.modelDb.findAllSync(core.class.Account, {
         _id: this.token.email as Ref<Account>
       })
       if (systemAccount.length === 0) {
@@ -118,8 +131,7 @@ export class ClientSession implements Session {
           },
           this.token.email as Ref<Account>
         )
-        const context = new SessionContextImpl(
-          ctx.ctx,
+        const contextData = new SessionDataImpl(
           this.token.email,
           this.sessionId,
           this.token.extra?.admin === 'true',
@@ -127,13 +139,15 @@ export class ClientSession implements Session {
             txes: [],
             targets: {}
           },
-          this._pipeline.storage.workspaceId,
-          this._pipeline.storage.branding,
+          this.workspaceId,
+          this.branding,
           false,
           new Map(),
-          new Map()
+          new Map(),
+          this._pipeline.context.modelDb
         )
-        await this._pipeline.tx(context, createTx)
+        ctx.ctx.contextData = contextData
+        await this._pipeline.tx(ctx.ctx, [createTx])
         const acc = TxProcessor.createDoc2Doc(createTx)
         await ctx.sendResponse(acc)
         return
@@ -145,7 +159,7 @@ export class ClientSession implements Session {
     await ctx.sendResponse(account[0])
   }
 
-  async findAllRaw<T extends Doc>(
+  findAllRaw<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -154,8 +168,7 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.total.find++
     this.current.find++
-    const context = new SessionContextImpl(
-      ctx,
+    const contextData = new SessionDataImpl(
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
@@ -163,13 +176,15 @@ export class ClientSession implements Session {
         txes: [],
         targets: {}
       },
-      this._pipeline.storage.workspaceId,
-      this._pipeline.storage.branding,
+      this.workspaceId,
+      this.branding,
       false,
       new Map(),
-      new Map()
+      new Map(),
+      this._pipeline.context.modelDb
     )
-    return await this._pipeline.findAll(context, _class, query, options)
+    ctx.contextData = contextData
+    return this._pipeline.findAll(ctx, _class, query, options)
   }
 
   async findAll<T extends Doc>(
@@ -183,8 +198,7 @@ export class ClientSession implements Session {
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
     this.lastRequest = Date.now()
-    const context = new SessionContextImpl(
-      ctx.ctx,
+    const contextData = new SessionDataImpl(
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
@@ -192,21 +206,22 @@ export class ClientSession implements Session {
         txes: [],
         targets: {}
       },
-      this._pipeline.storage.workspaceId,
-      this._pipeline.storage.branding,
+      this.workspaceId,
+      this.branding,
       false,
       new Map(),
-      new Map()
+      new Map(),
+      this._pipeline.context.modelDb
     )
-    await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
+    ctx.ctx.contextData = contextData
+    await ctx.sendResponse(await this._pipeline.searchFulltext(ctx.ctx, query, options))
   }
 
   async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
     this.lastRequest = Date.now()
     this.total.tx++
     this.current.tx++
-    const context = new SessionContextImpl(
-      ctx.ctx,
+    const contextData = new SessionDataImpl(
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
@@ -214,108 +229,22 @@ export class ClientSession implements Session {
         txes: [],
         targets: {}
       },
-      this._pipeline.storage.workspaceId,
-      this._pipeline.storage.branding,
+      this.workspaceId,
+      this.branding,
       false,
       new Map(),
-      new Map()
+      new Map(),
+      this._pipeline.context.modelDb
     )
+    ctx.ctx.contextData = contextData
 
-    const result = await this._pipeline.tx(context, tx)
+    const result = await this._pipeline.tx(ctx.ctx, [tx])
 
     // Send result immideately
     await ctx.sendResponse(result)
-    if (tx == null) {
-      return
-    }
 
-    // We need to combine all derived data and check if we need to send it
-
-    // Combine targets by sender
-
-    const toSendTarget = new Map<string, Tx[]>()
-
-    const getTxes = (key: string): Tx[] => {
-      let txes = toSendTarget.get(key)
-      if (txes === undefined) {
-        txes = []
-        toSendTarget.set(key, txes)
-      }
-      return txes
-    }
-
-    // Put current user as send target
-    for (const txd of context.derived.txes) {
-      let target: string[] | undefined
-      for (const tt of Object.values(context.derived.targets ?? {})) {
-        target = tt(txd)
-        if (target !== undefined) {
-          break
-        }
-      }
-      if (target === undefined) {
-        getTxes('') // Be sure we have empty one
-
-        // Also add to all other targeted sends
-        for (const v of toSendTarget.values()) {
-          v.push(txd)
-        }
-      } else {
-        for (const t of target) {
-          getTxes(t).push(txd)
-        }
-      }
-    }
-
-    const handleSend = async (derived: Tx[], target?: string, exclude?: string[]): Promise<void> => {
-      if (derived.length === 0) {
-        return
-      }
-
-      if (derived.length > 10000) {
-        await this.sendWithPart(derived, ctx, target, exclude)
-      } else {
-        // Let's send after our response will go out
-        await ctx.send(derived, target, exclude)
-      }
-    }
-
-    const toSendAll = toSendTarget.get('') ?? []
-    toSendTarget.delete('')
-
-    // Send original Txes first.
-    if (tx._class === core.class.TxApplyIf && (result as TxApplyResult).success) {
-      const txMap = toIdMap((tx as TxApplyIf).txes as Tx[])
-
-      for (const [k, derived] of toSendTarget.entries()) {
-        // good, we could send apply transactions first.
-        const part1 = derived.filter((it) => txMap.has(it._id))
-        await ctx.send(part1, k, undefined)
-
-        toSendTarget.set(
-          k,
-          derived.filter((it) => !txMap.has(it._id))
-        )
-      }
-    }
-    if (tx._class !== core.class.TxApplyIf) {
-      for (const [k, derived] of toSendTarget.entries()) {
-        // good, we could send apply transactions first.
-        const part1 = derived.filter((it) => it._id === tx._id)
-        await ctx.send(part1, k, undefined)
-
-        toSendTarget.set(
-          k,
-          derived.filter((it) => it._id !== tx._id)
-        )
-      }
-    }
-    // Then send targeted and all other
-    for (const [k, v] of toSendTarget.entries()) {
-      void handleSend(v, k)
-    }
-    // Send all other except us.
-    void handleSend(toSendAll, undefined, Array.from(toSendTarget.keys()))
+    // We need to broadcast all collected transactions
+    await this._pipeline.handleBroadcast(ctx.ctx)
   }
 
   doBroadcast = reduceCalls(async (ctx: MeasureContext, socket: ConnectionSocket) => {
@@ -332,7 +261,7 @@ export class ClientSession implements Session {
       }
       const bevent = createBroadcastEvent(Array.from(classes))
       this.broadcastTx = []
-      await socket.send(
+      socket.send(
         ctx,
         {
           result: [bevent]
@@ -356,26 +285,6 @@ export class ClientSession implements Session {
     clearTimeout(this.timeout)
     this.timeout = setTimeout(() => {
       void this.doBroadcast(ctx, socket)
-    }, 5)
-  }
-
-  private async sendWithPart (
-    derived: Tx[],
-    ctx: ClientSessionCtx,
-    target: string | undefined,
-    exclude: string[] | undefined
-  ): Promise<void> {
-    const classes = new Set<Ref<Class<Doc>>>()
-    for (const dtx of derived) {
-      if (TxProcessor.isExtendsCUD(dtx._class)) {
-        classes.add((dtx as TxCUD<Doc>).objectClass)
-      }
-      const etx = TxProcessor.extractTx(dtx)
-      if (TxProcessor.isExtendsCUD(etx._class)) {
-        classes.add((etx as TxCUD<Doc>).objectClass)
-      }
-    }
-    const bevent = createBroadcastEvent(Array.from(classes))
-    await ctx.send([bevent], target, exclude)
+    }, 1)
   }
 }

@@ -1,6 +1,7 @@
 import { type Locator, type Page } from '@playwright/test'
 import { CalendarPage } from '../calendar-page'
 import { NewDocument } from '../types'
+
 export class DocumentsPage extends CalendarPage {
   readonly page: Page
   readonly buttonCreateDocument: Locator
@@ -15,6 +16,7 @@ export class DocumentsPage extends CalendarPage {
   readonly nextStep: Locator
   readonly addMember: Locator
   readonly newMember: Locator
+  readonly changeSpaceButton: Locator
 
   constructor (page: Page) {
     super(page)
@@ -35,6 +37,7 @@ export class DocumentsPage extends CalendarPage {
     this.nextStep = page.getByRole('button', { name: 'Next step' })
     this.addMember = page.getByText('Add member')
     this.newMember = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.changeSpaceButton = page.locator('[id="space\\.selector"]')
   }
 
   async createDocument (data: NewDocument, startSecondStep: boolean = false): Promise<void> {
@@ -47,6 +50,7 @@ export class DocumentsPage extends CalendarPage {
 
     // template
     if (!startSecondStep) {
+      await this.changeSpaceInCreateDocumentForm('Quality documents')
       await this.buttonPopupNextStep.click()
     }
     await this.page.locator('div.templates div.tmpHeader', { hasText: data.template }).click()
@@ -66,7 +70,15 @@ export class DocumentsPage extends CalendarPage {
     await this.inputNewDocumentCreateDaft.click()
   }
 
-  async createTemplate (title: string, description: string, category: string): Promise<void> {
+  async changeSpaceInCreateDocumentForm (space: string): Promise<void> {
+    await this.changeSpaceButton.click()
+    await this.page
+      .locator(`div.list-container.flex-col.flex-grow.svelte-15na0wa >> text=${space}`)
+      .click({ force: true })
+  }
+
+  async createTemplate (title: string, description: string, category: string, spaceName: string): Promise<void> {
+    await this.changeSpaceInCreateDocumentForm(spaceName)
     await this.buttonPopupNextStep.click()
     await this.inputNewDocumentTitle.fill(title)
     await this.inputNewDocumentDescription.fill(description)

@@ -8,7 +8,11 @@ import github from '@hcengineering/github-resources/src/plugin'
 
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import { type Doc, type Ref, type Space } from '@hcengineering/core'
-import { type DocCreateFunction, type ObjectSearchCategory } from '@hcengineering/model-presentation'
+import {
+  type DocCreateFunction,
+  type ObjectSearchCategory,
+  type DocCreateAnalyticsPropsFunction
+} from '@hcengineering/model-presentation'
 import { type NotificationGroup } from '@hcengineering/notification'
 import type { AnyComponent } from '@hcengineering/ui'
 import { type ActionCategory, type Viewlet } from '@hcengineering/view'
@@ -55,7 +59,8 @@ export default mergeIds(githubId, github, {
   },
   functions: {
     ShowForRepositoryOnly: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
-    UpdateIssue: '' as Resource<DocCreateFunction>
+    UpdateIssue: '' as Resource<DocCreateFunction>,
+    GetCreateIssueAnalyticsProps: '' as Resource<DocCreateAnalyticsPropsFunction>
   },
   ids: {
     AssigneeNotification: '' as Ref<Doc>,

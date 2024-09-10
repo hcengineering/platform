@@ -363,7 +363,10 @@ table.proseTable {
 }
 
 pre.proseCodeBlock {
+  position: relative;
   white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: normal;
 }
 
 // Fixes for MessageViewer
@@ -380,4 +383,12 @@ pre.proseCodeBlock > pre.proseCode {
 .ProseMirror {
   h1, h2, h3, p, pre, code { cursor: text; }
   p div { cursor: auto; }
+}
+
+.theme-dark {
+  @import './github-dark.scss';
+}
+
+.theme-light {
+  @import './github-light.scss';
 }

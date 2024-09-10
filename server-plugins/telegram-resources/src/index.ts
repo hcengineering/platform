@@ -30,8 +30,13 @@ import {
   TxProcessor
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
-import telegram, { TelegramMessage, TelegramNotificationRecord } from '@hcengineering/telegram'
-import { BaseNotificationType, InboxNotification, NotificationType } from '@hcengineering/notification'
+import notification, {
+  BaseNotificationType,
+  InboxNotification,
+  MentionInboxNotification,
+  NotificationType
+} from '@hcengineering/notification'
+import telegram, { TelegramMessage, TelegramNotificationRequest } from '@hcengineering/telegram'
 import setting, { Integration } from '@hcengineering/setting'
 import { NotificationProviderFunc, ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
@@ -74,7 +79,9 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
   const res: Tx[] = []
 
   const message = TxProcessor.createDoc2Doc<TelegramMessage>(tx as TxCreateDoc<TelegramMessage>)
-  const channel = (await control.findAll(contact.class.Channel, { _id: message.attachedTo }, { limit: 1 }))[0]
+  const channel = (
+    await control.findAll(control.ctx, contact.class.Channel, { _id: message.attachedTo }, { limit: 1 })
+  )[0]
   if (channel !== undefined) {
     if (channel.lastMessage === undefined || channel.lastMessage < message.sendOn) {
       const tx = control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
@@ -109,7 +116,9 @@ export async function GetCurrentEmployeeTG (
     _id: control.txFactory.account as Ref<PersonAccount>
   })
   if (account === undefined) return
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  const employee = (
+    await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
+  )[0]
   if (employee !== undefined) {
     return await getContactChannel(control, employee, contact.channelProvider.Telegram)
   }
@@ -125,7 +134,9 @@ export async function GetIntegrationOwnerTG (
     _id: value.modifiedBy as Ref<PersonAccount>
   })
   if (account === undefined) return
-  const employee = (await control.findAll(contact.mixin.Employee, { _id: account.person as Ref<Employee> }))[0]
+  const employee = (
+    await control.findAll(control.ctx, contact.mixin.Employee, { _id: account.person as Ref<Employee> })
+  )[0]
   if (employee !== undefined) {
     return await getContactChannel(control, employee, contact.channelProvider.Telegram)
   }
@@ -138,7 +149,7 @@ async function getContactChannel (
 ): Promise<string | undefined> {
   if (value === undefined) return
   const res = (
-    await control.findAll(contact.class.Channel, {
+    await control.findAll(control.ctx, contact.class.Channel, {
       attachedTo: value._id,
       provider
     })
@@ -190,7 +201,10 @@ async function getTranslatedData (
   let { title, body } = await getTranslatedNotificationContent(data, data._class, control)
   let quote: string | undefined
 
-  if (data.data !== undefined) {
+  if (hierarchy.isDerived(data._class, notification.class.MentionInboxNotification)) {
+    const text = (data as MentionInboxNotification).messageHtml
+    body = text !== undefined ? markupToHTML(text) : body
+  } else if (data.data !== undefined) {
     body = markupToHTML(data.data)
   } else if (message !== undefined) {
     const html = await activityMessageToHtml(control, message)
@@ -216,6 +230,19 @@ async function getTranslatedData (
     body,
     link: await getNotificationLink(control, doc, message?._id)
   }
+}
+
+function hasAttachments (doc: ActivityMessage | undefined, hierarchy: Hierarchy): boolean {
+  if (doc === undefined) {
+    return false
+  }
+
+  if (hierarchy.isDerived(doc._class, chunter.class.ChatMessage)) {
+    const chatMessage = doc as ChatMessage
+    return (chatMessage.attachments ?? 0) > 0
+  }
+
+  return false
 }
 
 const SendTelegramNotifications: NotificationProviderFunc = async (
@@ -244,11 +271,13 @@ const SendTelegramNotifications: NotificationProviderFunc = async (
 
   try {
     const { title, body, quote, link } = await getTranslatedData(data, doc, control, message)
-    const record: TelegramNotificationRecord = {
+    const record: TelegramNotificationRequest = {
       notificationId: data._id,
+      messageId: message?._id,
       account: receiver._id,
       workspace: toWorkspaceString(control.workspace),
       sender: data.intlParams?.senderName?.toString() ?? formatName(sender.person?.name ?? 'System'),
+      attachments: hasAttachments(message, control.hierarchy),
       title,
       quote,
       body,

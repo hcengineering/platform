@@ -14,7 +14,14 @@
 //
 import { generateToken, Token } from '@hcengineering/server-token'
 import { AnalyticEvent } from '@hcengineering/analytics-collector'
-import { AccountRole, getWorkspaceId, MeasureContext, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
+import {
+  AccountRole,
+  getWorkspaceId,
+  MeasureContext,
+  toWorkspaceString,
+  isWorkspaceCreating,
+  WorkspaceId
+} from '@hcengineering/core'
 import { Person } from '@hcengineering/contact'
 import { Db, Collection } from 'mongodb'
 
@@ -137,7 +144,7 @@ export class Collector {
       return false
     }
 
-    if (info?.creating === true) {
+    if (isWorkspaceCreating(info?.mode)) {
       return false
     }
 

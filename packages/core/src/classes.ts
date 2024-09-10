@@ -652,6 +652,8 @@ export interface DomainIndexConfiguration extends Doc {
   skip?: string[]
 }
 
+export type WorkspaceMode = 'pending-creation' | 'creating' | 'upgrading' | 'pending-deletion' | 'deleting' | 'active'
+
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
   disabled?: boolean
@@ -665,8 +667,8 @@ export interface BaseWorkspaceInfo {
 
   createdBy: string
 
-  creating?: boolean
-  createProgress?: number // Some progress
+  mode: WorkspaceMode
+  progress?: number // Some progress
 
   endpoint: string
 }

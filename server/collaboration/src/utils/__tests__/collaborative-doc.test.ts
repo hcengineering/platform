@@ -19,11 +19,11 @@ import { collaborativeHistoryDocId, isEditableDoc, isEditableDocVersion } from '
 describe('collaborative-doc', () => {
   describe('collaborativeHistoryDocId', () => {
     it('returns valid history doc id', async () => {
-      expect(collaborativeHistoryDocId('minioDocumentId')).toEqual('minioDocumentId#history')
+      expect(collaborativeHistoryDocId('documentId')).toEqual('documentId#history')
     })
 
     it('returns valid history doc id for history doc id', async () => {
-      expect(collaborativeHistoryDocId('minioDocumentId#history')).toEqual('minioDocumentId#history')
+      expect(collaborativeHistoryDocId('documentId#history')).toEqual('documentId#history')
     })
   })
 

@@ -12,21 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { collaborativeDocParse, type CollaborativeDoc } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
+
 import { type Doc as YDoc } from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
+import { type Awareness } from 'y-protocols/awareness'
 
-export class IndexeddbProvider extends IndexeddbPersistence {
-  loaded: Promise<void>
+import { type Provider } from './types'
 
-  constructor (collaborativeDoc: CollaborativeDoc, doc: YDoc) {
-    const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
-    const name = `${documentId}/${versionId}`
+export class IndexeddbProvider extends IndexeddbPersistence implements Provider {
+  readonly loaded: Promise<void>
+  readonly awareness: Awareness | null = null
+
+  constructor (documentId: string, doc: YDoc) {
+    const workspaceId: string = getMetadata(presentation.metadata.WorkspaceId) ?? ''
+
+    const name = `${workspaceId}/${documentId}`
 
     super(name, doc)
 
     this.loaded = new Promise((resolve) => {
       this.on('synced', resolve)
     })
+  }
+
+  async destroy (): Promise<void> {
+    await super.destroy()
   }
 }

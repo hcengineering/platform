@@ -79,7 +79,7 @@ export { default as ChatMessagesPresenter } from './components/chat-message/Chat
 export { default as Header } from './components/Header.svelte'
 export { default as ThreadView } from './components/threads/ThreadView.svelte'
 
-export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?: () => void): Promise<void> {
+export async function ArchiveChannel (channel: Channel, evt: any, props?: { afterArchive?: () => void }): Promise<void> {
   showPopup(MessageBox, {
     label: chunter.string.ArchiveChannel,
     message: chunter.string.ArchiveConfirm,
@@ -88,7 +88,7 @@ export async function ArchiveChannel (channel: Channel, evt: any, afterArchive?:
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       await client.update(channel, { archived: true })
-      if (afterArchive != null) afterArchive()
+      if (props?.afterArchive != null) props.afterArchive()
 
       const loc = getLocation()
       if (loc.path[3] === channel._id) {

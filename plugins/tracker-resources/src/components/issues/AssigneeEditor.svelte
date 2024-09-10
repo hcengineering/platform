@@ -59,7 +59,7 @@
       return
     }
     progress = true
-    const ops = client.apply(generateId())
+    const ops = client.apply()
     if (Array.isArray(_object)) {
       for (const p of _object) {
         if ('_class' in p) {

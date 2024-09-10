@@ -19,23 +19,19 @@ import { formatDocumentId, parseDocumentId } from '../utils'
 
 describe('utils', () => {
   it('formatDocumentId', () => {
-    expect(formatDocumentId('minio', 'ws1', 'doc1:HEAD:v1' as CollaborativeDoc)).toEqual(
-      'minio://ws1/doc1:HEAD' as DocumentId
-    )
-    expect(formatDocumentId('minio', 'ws1', 'doc1:HEAD:v1#doc2:v2:v2' as CollaborativeDoc)).toEqual(
-      'minio://ws1/doc1:HEAD/doc2:v2' as DocumentId
+    expect(formatDocumentId('ws1', 'doc1:HEAD:v1' as CollaborativeDoc)).toEqual('ws1://doc1:HEAD' as DocumentId)
+    expect(formatDocumentId('ws1', 'doc1:HEAD:v1#doc2:v2:v2' as CollaborativeDoc)).toEqual(
+      'ws1://doc1:HEAD/doc2:v2' as DocumentId
     )
   })
 
   describe('parseDocumentId', () => {
-    expect(parseDocumentId('minio://ws1/doc1:HEAD' as DocumentId)).toEqual({
-      storage: 'minio',
-      workspaceUrl: 'ws1',
+    expect(parseDocumentId('ws1://doc1:HEAD' as DocumentId)).toEqual({
+      workspaceId: 'ws1',
       collaborativeDoc: 'doc1:HEAD:HEAD' as CollaborativeDoc
     })
-    expect(parseDocumentId('minio://ws1/doc1:HEAD/doc2:v2' as DocumentId)).toEqual({
-      storage: 'minio',
-      workspaceUrl: 'ws1',
+    expect(parseDocumentId('ws1://doc1:HEAD/doc2:v2' as DocumentId)).toEqual({
+      workspaceId: 'ws1',
       collaborativeDoc: 'doc1:HEAD:HEAD#doc2:v2:v2' as CollaborativeDoc
     })
   })

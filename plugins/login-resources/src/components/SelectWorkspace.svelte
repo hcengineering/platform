@@ -125,8 +125,8 @@
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
                 {wsName}
-                {#if workspace.creating === true}
-                  ({workspace.createProgress}%)
+                {#if workspace.mode === 'creating'}
+                  ({workspace.progress}%)
                 {/if}
               </span>
               {#if isAdmin && wsName !== workspace.workspace}

@@ -2,14 +2,14 @@ import type { Blob, Ref } from '@hcengineering/core'
 import { concatLink } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 
-import { getFileUrl, getCurrentWorkspace } from './file'
+import { getFileUrl, getCurrentWorkspaceId } from './file'
 import presentation from './plugin'
 
 export interface PreviewConfig {
   previewUrl: string
 }
 
-const defaultPreview = (): string => `/files/${getCurrentWorkspace()}?file=:blobId&size=:size`
+const defaultPreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`
 
 /**
  *
@@ -58,7 +58,7 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
     return ''
   }
 
-  let url = cfg.previewUrl.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspace()))
+  let url = cfg.previewUrl.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
   const downloadUrl = getFileUrl(blob)
 
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin

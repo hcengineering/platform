@@ -101,7 +101,6 @@
     "Automations": "Automatisations",
     "Collections": "Collections",
     "ClassColon": "Classe :",
-    "Branding": "Image de marque",
     "SpaceTypes": "Types d'espace",
     "NewSpaceType": "Nouveau type d'espace",
     "SpaceTypeTitle": "Titre du type d'espace",
@@ -113,6 +112,10 @@
     "Permissions": "Permissions",
     "Assignees": "Assignés",
     "DeleteRole": "Supprimer le rôle",
-    "DeleteRoleConfirmation": "Êtes-vous sûr de vouloir supprimer ce rôle ? Tous les utilisateurs ayant ce rôle perdront leurs permissions."
+    "DeleteRoleConfirmation": "Êtes-vous sûr de vouloir supprimer ce rôle ? Tous les utilisateurs ayant ce rôle perdront leurs permissions.",
+    "DeleteWorkspace": "Supprimer l'espace de travail",
+    "DeleteWorkspaceConfirm": "Êtes-vous sûr de vouloir supprimer cet espace de travail ? Vous et tous les autres membres perdrez l'accès à cet espace de travail. Toutes les informations de l'espace de travail seront perdues. Cette action est irréversible. Voulez-vous continuer?",
+    "WorkspaceName": "Nom de l'espace de travail",
+    "Workspace": "Espace de travail"
   }
 }

@@ -33,6 +33,7 @@ import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
 
 const rpcHandler = new RPCHandler()
+let profiling = false
 
 /**
  * @public
@@ -81,7 +82,25 @@ export function startHttpServer (
       const jsonData = {
         ...getStatistics(ctx, sessions, admin),
         users: getUsers(),
-        admin
+        admin,
+        profiling
+      }
+      const json = JSON.stringify(jsonData)
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(json)
+    } catch (err: any) {
+      Analytics.handleError(err)
+      ctx.error('error', { err })
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+  app.get('/api/v1/profiling', (req, res) => {
+    try {
+      const token = req.query.token as string
+      decodeToken(token)
+      const jsonData = {
+        profiling
       }
       const json = JSON.stringify(jsonData)
       res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -98,6 +117,7 @@ export function startHttpServer (
       const token = req.query.token as string
       const payload = decodeToken(token)
       if (payload.extra?.admin !== 'true') {
+        console.warn('Non admin attempt to maintenance action', { payload })
         res.writeHead(404, {})
         res.end()
         return
@@ -119,6 +139,35 @@ export function startHttpServer (
 
           res.writeHead(200)
           res.end()
+          return
+        }
+        case 'profile-start': {
+          ctx.warn(
+            '---------------------------------------------PROFILING SESSION STARTED---------------------------------------------'
+          )
+          profiling = true
+          sessions.profiling?.start()
+
+          res.writeHead(200)
+          res.end()
+          return
+        }
+        case 'profile-stop': {
+          profiling = false
+          if (sessions.profiling?.stop != null) {
+            void sessions.profiling.stop().then((profile) => {
+              ctx.warn(
+                '---------------------------------------------PROFILING SESSION STOPPED---------------------------------------------',
+                { profile }
+              )
+              res.writeHead(200, { 'Content-Type': 'application/json' })
+              res.end(profile ?? '{ error: "no profiling" }')
+            })
+          } else {
+            res.writeHead(404)
+            res.end()
+          }
+
           return
         }
         case 'force-close': {
@@ -157,12 +206,11 @@ export function startHttpServer (
       const contentType = req.query.contentType as string
       const size = parseInt((req.query.size as string) ?? '-1')
 
-      void ctx
+      ctx
         .with(
           'storage upload',
           { workspace: payload.workspace.name },
-          async (ctx) =>
-            await externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
+          (ctx) => externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
           { file: name, contentType }
         )
         .then(() => {
@@ -196,10 +244,10 @@ export function startHttpServer (
 
       const range = req.headers.range
       if (range !== undefined) {
-        void ctx
-          .with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
-          })
+        ctx
+          .with('file-range', { workspace: payload.workspace.name }, (ctx) =>
+            getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+          )
           .catch((err) => {
             Analytics.handleError(err)
             ctx.error('/api/v1/blob get error', { err })
@@ -276,23 +324,22 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          void cs
-            .send(ctx, { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error') }, false, false)
-            .then(() => {
-              // No connection to account service, retry from client.
-              setTimeout(() => {
-                cs.close()
-              }, 1000)
-            })
+          cs.send(
+            ctx,
+            { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
+            false,
+            false
+          )
+          // No connection to account service, retry from client.
+          setTimeout(() => {
+            cs.close()
+          }, 1000)
         }
         if ('upgrade' in s) {
-          void cs
-            .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
-            .then(() => {
-              setTimeout(() => {
-                cs.close()
-              }, 5000)
-            })
+          cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+          setTimeout(() => {
+            cs.close()
+          }, 5000)
         }
       })
       void webSocketData.session.catch((err) => {
@@ -327,7 +374,7 @@ export function startHttpServer (
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', async (code: number, reason: Buffer) => {
+    ws.on('close', (code: number, reason: Buffer) => {
       doSessionOp(
         webSocketData,
         (s) => {
@@ -433,7 +480,7 @@ function createWebsocketClientSocket (
       return rpcHandler.readRequest(buffer, binary)
     },
     data: () => data,
-    send: async (ctx: MeasureContext, msg, binary, compression) => {
+    send: (ctx: MeasureContext, msg, binary, compression) => {
       const smsg = rpcHandler.serialize(msg, binary)
 
       ctx.measure('send-data', smsg.length)
@@ -450,7 +497,6 @@ function createWebsocketClientSocket (
         }
         ctx.measure('msg-send-delta', Date.now() - st)
       })
-      return smsg.length
     }
   }
   return cs

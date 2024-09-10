@@ -13,18 +13,57 @@
 // limitations under the License.
 //
 
-import { Context, Telegraf } from 'telegraf'
+import { BotCommand } from 'telegraf/typings/core/types/typegram'
 import { translate } from '@hcengineering/platform'
 import telegram from '@hcengineering/telegram'
-import { htmlToMarkup } from '@hcengineering/text'
-import { message } from 'telegraf/filters'
-import { toHTML } from '@telegraf/entity'
-import { TextMessage } from '@telegraf/entity/types/types'
+import { Context, Telegraf } from 'telegraf'
 
-import config from './config'
-import { PlatformWorker } from './worker'
-import { getBotCommands, getCommandsHelp } from './utils'
-import { NotificationRecord } from './types'
+import config from '../config'
+import { PlatformWorker } from '../worker'
+import { TgContext } from './types'
+
+export enum Command {
+  Start = 'start',
+  Connect = 'connect',
+  SyncAllChannels = 'sync_all_channels',
+  SyncStarredChannels = 'sync_starred_channels',
+  Help = 'help',
+  Stop = 'stop'
+}
+
+export async function getBotCommands (lang: string = 'en'): Promise<BotCommand[]> {
+  return [
+    {
+      command: Command.Start,
+      description: await translate(telegram.string.StartBot, { app: config.App }, lang)
+    },
+    {
+      command: Command.Connect,
+      description: await translate(telegram.string.ConnectAccount, { app: config.App }, lang)
+    },
+    {
+      command: Command.SyncAllChannels,
+      description: await translate(telegram.string.SyncAllChannels, { app: config.App }, lang)
+    },
+    {
+      command: Command.SyncStarredChannels,
+      description: await translate(telegram.string.SyncStarredChannels, { app: config.App }, lang)
+    },
+    {
+      command: Command.Help,
+      description: await translate(telegram.string.ShowCommandsDetails, { app: config.App }, lang)
+    },
+    {
+      command: Command.Stop,
+      description: await translate(telegram.string.TurnNotificationsOff, { app: config.App }, lang)
+    }
+  ]
+}
+
+export async function getCommandsHelp (lang: string): Promise<string> {
+  const myCommands = await getBotCommands(lang)
+  return myCommands.map(({ command, description }) => `/${command} - ${description}`).join('\n')
+}
 
 async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
@@ -57,7 +96,6 @@ async function onStart (ctx: Context, worker: PlatformWorker): Promise<void> {
 async function onHelp (ctx: Context): Promise<void> {
   const lang = ctx.from?.language_code ?? 'en'
   const commandsHelp = await getCommandsHelp(lang)
-
   await ctx.reply(commandsHelp)
 }
 
@@ -69,6 +107,26 @@ async function onStop (ctx: Context, worker: PlatformWorker): Promise<void> {
   const message = await translate(telegram.string.StopMessage, { app: config.App }, lang)
 
   await ctx.reply(message)
+}
+
+async function onSyncChannels (ctx: Context, worker: PlatformWorker, onlyStarred: boolean): Promise<void> {
+  const id = ctx.from?.id
+
+  if (id === undefined) {
+    return
+  }
+
+  const record = await worker.getUserRecord(id)
+
+  if (record === undefined) return
+
+  const workspaces = record.workspaces
+
+  for (const workspace of workspaces) {
+    await worker.syncChannels(record.email, workspace, onlyStarred)
+  }
+
+  await ctx.reply('List of channels updated')
 }
 
 async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
@@ -95,95 +153,14 @@ async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
   await ctx.reply(`*${code}*`, { parse_mode: 'MarkdownV2' })
 }
 
-async function findNotificationRecord (
-  worker: PlatformWorker,
-  from: number,
-  replyTo: number,
-  email: string
-): Promise<NotificationRecord | undefined> {
-  const record = await worker.getNotificationRecord(replyTo, email)
-
-  if (record !== undefined) {
-    return record
-  }
-
-  const reply = await worker.getReply(from, replyTo)
-
-  if (reply === undefined) {
-    return undefined
-  }
-
-  return await worker.getNotificationRecordById(reply.notificationId, email)
-}
-
-async function onReply (
-  from: number,
-  message: TextMessage,
-  messageId: number,
-  replyTo: number,
-  worker: PlatformWorker,
-  username?: string
-): Promise<boolean> {
-  const userRecord = await worker.getUserRecord(from)
-
-  if (userRecord === undefined) {
-    return false
-  }
-
-  if (userRecord.telegramUsername !== username) {
-    await worker.updateTelegramUsername(userRecord, username)
-  }
-
-  const notification = await findNotificationRecord(worker, from, replyTo, userRecord.email)
-
-  if (notification === undefined) {
-    return false
-  }
-
-  await worker.saveReply({ replyId: messageId, telegramId: from, notificationId: notification.notificationId })
-
-  return await worker.reply(notification, htmlToMarkup(toHTML(message)))
-}
-
-export async function setUpBot (worker: PlatformWorker): Promise<Telegraf> {
-  const bot = new Telegraf(config.BotToken)
-
+export async function defineCommands (bot: Telegraf<TgContext>, worker: PlatformWorker): Promise<void> {
   await bot.telegram.setMyCommands(await getBotCommands())
 
   bot.start((ctx) => onStart(ctx, worker))
   bot.help(onHelp)
 
-  bot.command('stop', (ctx) => onStop(ctx, worker))
-  bot.command('connect', (ctx) => onConnect(ctx, worker))
-
-  bot.on(message('reply_to_message'), async (ctx) => {
-    const id = ctx.chat?.id
-    const message = ctx.message
-
-    if (id === undefined || message.reply_to_message === undefined) {
-      return
-    }
-
-    const replyTo = message.reply_to_message
-    const isReplied = await onReply(
-      id,
-      message as TextMessage,
-      message.message_id,
-      replyTo.message_id,
-      worker,
-      ctx.from.username
-    )
-
-    if (isReplied) {
-      await ctx.react('👍')
-    }
-  })
-
-  const description = await translate(telegram.string.BotDescription, { app: config.App })
-  const shortDescription = await translate(telegram.string.BotShortDescription, { app: config.App })
-
-  await bot.telegram.setMyDescription(description, 'en')
-  await bot.telegram.setMyShortDescription(shortDescription, 'en')
-
-  return bot
+  bot.command(Command.Stop, (ctx) => onStop(ctx, worker))
+  bot.command(Command.Connect, (ctx) => onConnect(ctx, worker))
+  bot.command(Command.SyncAllChannels, (ctx) => onSyncChannels(ctx, worker, false))
+  bot.command(Command.SyncStarredChannels, (ctx) => onSyncChannels(ctx, worker, true))
 }

@@ -20,34 +20,17 @@ import core, {
   type Doc,
   type DocChunk,
   type Domain,
-  DOMAIN_MODEL,
-  DOMAIN_TX,
-  type FullParamsType,
   generateId,
   getWorkspaceId,
   Hierarchy,
-  type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
-  type ParamsType,
   type Ref,
-  type SessionOperationContext,
   SortingOrder,
   type Space,
-  TxOperations,
-  type WorkspaceId
+  TxOperations
 } from '@hcengineering/core'
-import {
-  type ContentTextAdapter,
-  createNullStorageFactory,
-  createServerStorage,
-  type DbAdapter,
-  type DbConfiguration,
-  DummyDbAdapter,
-  DummyFullTextAdapter,
-  type FullTextAdapter,
-  type ServerStorage
-} from '@hcengineering/server-core'
+import { type DbAdapter } from '@hcengineering/server-core'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
 import { getMongoClient, type MongoClientReference, shutdown } from '../utils'
 import { genMinModel } from './minmodel'
@@ -57,31 +40,6 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
-async function createNullAdapter (
-  ctx: MeasureContext,
-  hierarchy: Hierarchy,
-  url: string,
-  db: WorkspaceId,
-  modelDb: ModelDb
-): Promise<DbAdapter> {
-  return new DummyDbAdapter()
-}
-
-async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
-  return new DummyFullTextAdapter()
-}
-
-async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
-  return {
-    async content (name: string, type: string, doc) {
-      return ''
-    },
-    metrics (): MeasureContext {
-      return new MeasureMetricsContext('', {})
-    }
-  }
-}
-
 describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
   let mongoClient!: MongoClientReference
@@ -90,7 +48,7 @@ describe('mongo operations', () => {
   let model: ModelDb
   let client: Client
   let operations: TxOperations
-  let serverStorage: ServerStorage
+  let serverStorage: DbAdapter
 
   beforeAll(async () => {
     mongoClient = getMongoClient(mongodbUri)
@@ -132,6 +90,14 @@ describe('mongo operations', () => {
       model
     )
 
+    serverStorage = await createMongoAdapter(
+      new MeasureMetricsContext('', {}),
+      hierarchy,
+      mongodbUri,
+      getWorkspaceId(dbId),
+      model
+    )
+
     // Put all transactions to Tx
     for (const t of txes) {
       await txStorage.tx(mctx, t)
@@ -139,73 +105,13 @@ describe('mongo operations', () => {
 
     await txStorage.close()
 
-    const conf: DbConfiguration = {
-      domains: {
-        [DOMAIN_TX]: 'MongoTx',
-        [DOMAIN_MODEL]: 'Null'
-      },
-      defaultAdapter: 'Mongo',
-      adapters: {
-        MongoTx: {
-          factory: createMongoTxAdapter,
-          url: mongodbUri
-        },
-        Mongo: {
-          factory: createMongoAdapter,
-          url: mongodbUri
-        },
-        Null: {
-          factory: createNullAdapter,
-          url: ''
-        }
-      },
-      metrics: new MeasureMetricsContext('', {}),
-      fulltextAdapter: {
-        factory: createNullFullTextAdapter,
-        url: '',
-        stages: () => []
-      },
-      contentAdapters: {
-        default: {
-          factory: createNullContentTextAdapter,
-          contentType: '',
-          url: ''
-        }
-      },
-      serviceAdapters: {},
-      defaultContentAdapter: 'default',
-      workspace: { ...getWorkspaceId(dbId), workspaceName: '', workspaceUrl: '' },
-      storageFactory: createNullStorageFactory()
-    }
     const ctx = new MeasureMetricsContext('client', {})
-    serverStorage = await createServerStorage(ctx, conf, {
-      upgrade: false,
-      broadcast: () => {},
-      branding: null
-    })
-    const soCtx: SessionOperationContext = {
-      ctx,
-      derived: {
-        txes: [],
-        targets: {}
-      },
-      with: <T>(
-        name: string,
-        params: ParamsType,
-        op: (ctx: SessionOperationContext) => T | Promise<T>,
-        fullParams?: FullParamsType
-      ): Promise<T> => {
-        const result = op(soCtx)
-        return result instanceof Promise ? result : Promise.resolve(result)
-      },
-      contextCache: new Map(),
-      removedMap: new Map()
-    }
+
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         isConnected: () => true,
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => await serverStorage.tx(soCtx, tx),
+        tx: async (tx) => await serverStorage.tx(ctx, tx),
         searchFulltext: async () => ({ docs: [] }),
         close: async () => {},
         loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
@@ -244,9 +150,6 @@ describe('mongo operations', () => {
 
     const r = await client.findAll<Task>(taskPlugin.class.Task, {})
     expect(r.length).toEqual(50)
-
-    const r2 = await client.findAll(core.class.Tx, {})
-    expect(r2.length).toBeGreaterThan(50)
   })
 
   it('check find by criteria', async () => {

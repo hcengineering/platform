@@ -5,10 +5,9 @@
   import { CollaborationIds, type Ydoc } from '@hcengineering/text-editor'
   import {
     CollaborationDiffViewer,
+    Provider,
     StringDiffViewer,
-    TiptapCollabProvider,
-    createTiptapCollaborationData,
-    formatCollaborativeDocumentId
+    createTiptapCollaborationData
   } from '@hcengineering/text-editor-resources'
   import { Dropdown, Label, ListItem, Loading, Scroller, themeStore } from '@hcengineering/ui'
   import documents, {
@@ -25,7 +24,7 @@
     $documentComparisonVersions as documentComparisonVersions,
     comparisonRequested
   } from '../../stores/editors/document'
-  import { COLLABORATOR_URL, TOKEN, getTranslatedControlledDocStates, getTranslatedDocumentStates } from '../../utils'
+  import { getTranslatedControlledDocStates, getTranslatedDocumentStates } from '../../utils'
   import DocumentTitle from './DocumentTitle.svelte'
 
   const client = getClient()
@@ -33,7 +32,7 @@
   const ydoc = getContext<Ydoc>(CollaborationIds.Doc)
 
   let comparedYdoc: Ydoc | undefined = undefined
-  let comparedProvider: TiptapCollabProvider | undefined = undefined
+  let comparedProvider: Provider | undefined = undefined
   let loading = true
 
   const handleSelect = (event: CustomEvent<ListItem>) => {
@@ -86,23 +85,20 @@
   }))
   $: if ($compareTo) {
     if (comparedProvider) {
-      comparedProvider.disconnect()
+      comparedProvider.destroy()
     }
     loading = true
-    const collaborativeDoc = $compareTo.content
 
     const data = createTiptapCollaborationData({
-      collaboratorURL: COLLABORATOR_URL,
-      token: TOKEN,
-      documentId: formatCollaborativeDocumentId(collaborativeDoc)
+      document: $compareTo.content
     })
     comparedYdoc = data.ydoc
     comparedProvider = data.provider
-    comparedProvider.loaded.then(() => (loading = false))
+    void comparedProvider.loaded.then(() => (loading = false))
   }
 
   onDestroy(() => {
-    comparedProvider?.destroy()
+    void comparedProvider?.destroy()
   })
 </script>
 

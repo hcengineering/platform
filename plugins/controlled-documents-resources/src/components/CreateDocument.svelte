@@ -27,7 +27,7 @@
     Ref,
     SortingOrder
   } from '@hcengineering/core'
-  import { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, copyDocument, createQuery, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
   import {
@@ -91,7 +91,17 @@
       return
     }
 
-    await createControlledDocFromTemplate(client, templateId, id, object, space, undefined, undefined, documentClass)
+    await createControlledDocFromTemplate(
+      client,
+      templateId,
+      id,
+      object,
+      space,
+      undefined,
+      undefined,
+      documentClass,
+      copyDocument
+    )
 
     dispatch('close', id)
   }

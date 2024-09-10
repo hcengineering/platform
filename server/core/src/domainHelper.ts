@@ -11,7 +11,7 @@ import type {
 } from '@hcengineering/core'
 import core, { DOMAIN_BENCHMARK, DOMAIN_MODEL, IndexKind, IndexOrder } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
-import type { DomainHelper, DomainHelperOperations } from '../adapter'
+import type { DomainHelper, DomainHelperOperations } from './adapter'
 
 export class DomainIndexHelperImpl implements DomainHelper {
   domains = new Map<Domain, Set<FieldIndexConfig<Doc>>>()

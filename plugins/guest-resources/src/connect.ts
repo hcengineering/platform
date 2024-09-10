@@ -52,6 +52,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, token)
   setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   if (_token !== token && _client !== undefined) {
@@ -183,7 +184,7 @@ function clearMetadata (ws: string): void {
     delete tokens[loc.path[1]]
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
   }
-  const currentWorkspace = getMetadata(presentation.metadata.Workspace)
+  const currentWorkspace = getMetadata(presentation.metadata.WorkspaceId)
   if (currentWorkspace !== undefined) {
     setPresentationCookie('', currentWorkspace)
   }

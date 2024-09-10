@@ -21,7 +21,7 @@ export async function getFile (
   file: string,
   res: BlobResponse
 ): Promise<void> {
-  const stat = await ctx.with('stat', {}, async () => await client.stat(ctx, workspace, file))
+  const stat = await ctx.with('stat', {}, () => client.stat(ctx, workspace, file))
   if (stat === undefined) {
     ctx.error('No such key', { file })
     res.cork(() => {
@@ -36,7 +36,7 @@ export async function getFile (
     { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, async () => await client.get(ctx, workspace, file))
+        const dataStream = await ctx.with('readable', {}, () => client.get(ctx, workspace, file))
         await new Promise<void>((resolve, reject) => {
           res.cork(() => {
             res.writeHead(200, {
@@ -99,7 +99,7 @@ export async function getFileRange (
   uuid: string,
   res: BlobResponse
 ): Promise<void> {
-  const stat = await ctx.with('stats', {}, async () => await client.stat(ctx, workspace, uuid))
+  const stat = await ctx.with('stats', {}, () => client.stat(ctx, workspace, uuid))
   if (stat === undefined) {
     ctx.error('No such key', { file: uuid })
     res.cork(() => {
@@ -133,7 +133,7 @@ export async function getFileRange (
         const dataStream = await ctx.with(
           'partial',
           {},
-          async () => await client.partial(ctx, workspace, uuid, start, end - start + 1),
+          () => client.partial(ctx, workspace, uuid, start, end - start + 1),
           {}
         )
         await new Promise<void>((resolve, reject) => {

@@ -45,7 +45,8 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly addSpaceButton: Locator
   readonly inputSpaceName: Locator
   readonly roleSelector: Locator
-  readonly selectRoleMember: Locator
+  readonly selectRoleMemberAJ: Locator
+  readonly selectRoleMemberDK: Locator
   readonly createButton: Locator
   readonly createNewDocument: Locator
   readonly selectCustom: Locator
@@ -71,6 +72,15 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly newTemplate: Locator
   readonly filter: Locator
   readonly filterCategory: Locator
+  readonly qualityButtonDots: Locator
+  readonly editDocumentSpace: Locator
+  readonly qualityButtonMembers: Locator
+  readonly userMemberCainVelasquez: Locator
+  readonly qualityDocument: Locator
+  readonly saveButton: Locator
+  readonly addMember: Locator
+  readonly addMemberDropdown: Locator
+  readonly changeSpaceButton: Locator
 
   constructor (page: Page) {
     super(page)
@@ -126,7 +136,8 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.addSpaceButton = page.locator('#tree-orgspaces')
     this.inputSpaceName = page.getByPlaceholder('New documents space')
     this.roleSelector = page.getByRole('button', { name: 'Members' })
-    this.selectRoleMember = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.selectRoleMemberAJ = page.getByRole('button', { name: 'AJ Appleseed John' })
+    this.selectRoleMemberDK = page.getByRole('button', { name: 'DK Dirak Kainin' })
     this.createButton = page.getByRole('button', { name: 'Create' })
     this.createNewDocument = page.getByRole('button', { name: 'Create new document' })
     this.selectCustom = page.getByText('Custom')
@@ -152,6 +163,15 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.newTemplate = page.getByRole('button', { name: 'New template', exact: true })
     this.filter = page.getByRole('button', { name: 'Filter' })
     this.filterCategory = page.locator('span').filter({ hasText: /^Category$/ })
+    this.qualityButtonDots = page.getByRole('button', { name: 'Quality documents' }).getByRole('button')
+    this.editDocumentSpace = page.getByRole('button', { name: 'Edit documents space' })
+    this.qualityButtonMembers = page.getByRole('button', { name: 'AJ DK AQ 3 members' }).first()
+    this.userMemberCainVelasquez = page.getByRole('button', { name: 'VC Velasquez Cain' })
+    this.qualityDocument = page.getByRole('button', { name: 'Quality documents' })
+    this.saveButton = page.getByRole('button', { name: 'Save' })
+    this.addMember = page.getByText('Add member')
+    this.addMemberDropdown = page.locator('.selectPopup')
+    this.changeSpaceButton = page.locator('[id="space\\.selector"]')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -198,6 +218,28 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
+  async addMemberToQualityDocument (): Promise<void> {
+    await this.qualityDocument.hover()
+    await this.qualityButtonDots.click()
+    await this.editDocumentSpace.click()
+    await this.qualityButtonMembers.click()
+    await this.userMemberCainVelasquez.click()
+    await this.page.keyboard.press('Escape')
+    await this.saveButton.click()
+  }
+
+  async clickAddMember (): Promise<void> {
+    await this.addMember.click()
+  }
+
+  async checkIfMemberDropdownHasMember (member: string, contains: boolean): Promise<void> {
+    if (contains) {
+      await expect(this.addMemberDropdown).toContainText(member)
+    } else {
+      await expect(this.addMemberDropdown).not.toContainText(member)
+    }
+  }
+
   async fillCategoryForm (categoryTitle: string, description: string, categoryCode: string): Promise<void> {
     await this.categoryTitle.fill(categoryTitle)
     await this.description.fill(description)
@@ -205,7 +247,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
-  async checkIfCategoryIsCreated (categoryTitle: string, categoryCode: string): Promise<void> {
+  async expectCategoryCreated (categoryTitle: string, categoryCode: string): Promise<void> {
     await expect(this.page.getByText(categoryTitle)).toBeVisible()
     await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
   }
@@ -256,6 +298,11 @@ export class DocumentContentPage extends DocumentCommonPage {
     await expect(this.contentLocator).toHaveText(content)
   }
 
+  async changeSpaceInCreateDocumentForm (space: string): Promise<void> {
+    await this.changeSpaceButton.click()
+    await this.page.getByRole('button', { name: space, exact: true }).nth(1).click()
+  }
+
   async executeMoreActions (action: string): Promise<void> {
     await this.buttonMoreActions.click()
     await this.selectFromDropdown(this.page, action)
@@ -281,13 +328,26 @@ export class DocumentContentPage extends DocumentCommonPage {
     await expect(this.page.getByText(code, { exact: true })).toBeVisible()
   }
 
+  async checkIfCategoryExists (category: string): Promise<void> {
+    await expect(this.page.getByText(category)).toBeVisible()
+  }
+
   async fillDocumentSpaceForm (spaceName: string): Promise<void> {
     await this.inputSpaceName.fill(spaceName)
     await this.roleSelector.nth(2).click()
-    await this.selectRoleMember.nth(2).click()
+    await this.selectRoleMemberAJ.nth(2).click()
     await this.page.keyboard.press('Escape')
-    await this.selectRoleMember.nth(1).click()
+    await this.selectRoleMemberAJ.nth(1).click()
     await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
+    await this.page.keyboard.press('Escape')
+    await this.page.waitForTimeout(1000)
+    await this.createButton.click()
+  }
+
+  async fillDocumentSpaceFormManager (spaceName: string): Promise<void> {
+    await this.inputSpaceName.fill(spaceName)
+    await this.roleSelector.nth(1).click()
+    await this.selectRoleMemberDK.nth(2).click()
     await this.page.keyboard.press('Escape')
     await this.page.waitForTimeout(1000)
     await this.createButton.click()

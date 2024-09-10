@@ -21,3 +21,9 @@ export enum TaskTypes {
   Subtask = 'Sub-task',
   TaskAndSubtask = 'Task & Sub-task'
 }
+
+export enum LinkedChannelTypes {
+  Issue = 'Issue',
+  Vacancy = 'Vacancy',
+  Application = 'Application'
+}

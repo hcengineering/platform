@@ -27,13 +27,12 @@ import core, {
   Tx,
   TxCUD,
   TxProcessor,
-  systemAccountEmail
+  systemAccountEmail,
+  type SessionData
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
+import { BaseMiddleware, Middleware, TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
-import { BaseMiddleware } from './base'
-import { getUser } from './utils'
 
 /**
  * @public
@@ -41,45 +40,60 @@ import { getUser } from './utils'
 export class PrivateMiddleware extends BaseMiddleware implements Middleware {
   private readonly targetDomains = [DOMAIN_PREFERENCE]
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<PrivateMiddleware> {
-    return new PrivateMiddleware(storage, next)
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<PrivateMiddleware> {
+    return new PrivateMiddleware(context, next)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    let target: string[] | undefined
+  isTargetDomain (tx: Tx): boolean {
     if (TxProcessor.isExtendsCUD(tx._class)) {
       const txCUD = tx as TxCUD<Doc>
-      const domain = this.storage.hierarchy.getDomain(txCUD.objectClass)
-      if (this.targetDomains.includes(domain)) {
-        const account = (await getUser(this.storage, ctx))._id
+      const domain = this.context.hierarchy.getDomain(txCUD.objectClass)
+      return this.targetDomains.includes(domain)
+    }
+    return false
+  }
+
+  tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
+    for (const tx of txes) {
+      let target: string[] | undefined
+      if (this.isTargetDomain(tx)) {
+        const account = ctx.contextData.account._id
         if (account !== tx.modifiedBy && account !== core.account.System) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-        const modifiedByAccount = await this.storage.modelDb.findAll(core.class.Account, { _id: tx.modifiedBy })
-        target = [ctx.userEmail, systemAccountEmail]
-        if (modifiedByAccount.length > 0 && !target.includes(modifiedByAccount[0].email)) {
-          target.push(modifiedByAccount[0].email)
+        const modifiedByAccount = ctx.contextData.getAccount(tx.modifiedBy)
+        target = [ctx.contextData.userEmail, systemAccountEmail]
+        if (modifiedByAccount !== undefined && !target.includes(modifiedByAccount.email)) {
+          target.push(modifiedByAccount.email)
+        }
+        ctx.contextData.broadcast.targets['checkDomain' + account] = (tx) => {
+          if (this.isTargetDomain(tx)) {
+            return target
+          }
         }
       }
     }
-    return await this.provideTx(ctx, tx)
+    return this.provideTx(ctx, txes)
   }
 
   override async findAll<T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     let newQuery = query
-    const hierarchy = this.storage.hierarchy
-    const domain = hierarchy.getDomain(_class)
+    const domain = this.context.hierarchy.getDomain(_class)
     if (this.targetDomains.includes(domain)) {
-      const account = await getUser(this.storage, ctx)
+      const account = ctx.contextData.account
       if (account._id !== core.account.System) {
         newQuery = {
           ...query,
@@ -89,11 +103,11 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
     if (domain === DOMAIN_TX) {
-      const account = await getUser(this.storage, ctx)
+      const account = ctx.contextData.account
       if (account._id !== core.account.System) {
         const targetClasses = new Set(
-          hierarchy.getDescendants(core.class.Doc).filter((p) => {
-            const domain = hierarchy.findDomain(p)
+          this.context.hierarchy.getDescendants(core.class.Doc).filter((p) => {
+            const domain = this.context.hierarchy.findDomain(p)
             return domain != null && this.targetDomains.includes(domain)
           })
         )
@@ -115,26 +129,26 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     return findResult
   }
 
-  async isAvailable (ctx: SessionContext, doc: Doc): Promise<boolean> {
-    const domain = this.storage.hierarchy.getDomain(doc._class)
+  isAvailable (ctx: MeasureContext<SessionData>, doc: Doc): boolean {
+    const domain = this.context.hierarchy.getDomain(doc._class)
     if (!this.targetDomains.includes(domain)) return true
-    const account = (await getUser(this.storage, ctx))._id
+    const account = ctx.contextData.account._id
     return doc.createdBy === account || account === core.account.System
   }
 
-  async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {
+  async filterLookup<T extends Doc>(ctx: MeasureContext, lookup: LookupData<T>): Promise<void> {
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {
         const arr: AttachedDoc[] = []
         for (const value of val) {
-          if (await this.isAvailable(ctx, value)) {
+          if (this.isAvailable(ctx, value)) {
             arr.push(value)
           }
         }
         lookup[key] = arr as any
       } else if (val !== undefined) {
-        if (!(await this.isAvailable(ctx, val))) {
+        if (!this.isAvailable(ctx, val)) {
           lookup[key] = undefined
         }
       }

@@ -15,10 +15,9 @@
 //
 -->
 <script lang="ts">
-  import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
   import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
-  import { IntlString, getMetadata, translate } from '@hcengineering/platform'
-  import presentation, { getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import { IntlString, translate } from '@hcengineering/platform'
+  import { getFileUrl, getImageSize } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
@@ -43,9 +42,8 @@
   import { deleteAttachment } from '../command/deleteAttachment'
   import { textEditorCommandHandler } from '../commands'
   import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
-  import { IndexeddbProvider } from '../provider/indexeddb'
-  import { TiptapCollabProvider } from '../provider/tiptap'
-  import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
+  import { Provider } from '../provider/types'
+  import { createLocalProvider, createRemoteProvider } from '../provider/utils'
   import textEditor, {
     CollaborationIds,
     CollaborationUser,
@@ -103,37 +101,19 @@
 
   const dispatch = createEventDispatcher()
 
-  const token = getMetadata(presentation.metadata.Token) ?? ''
-  const collaboratorURL = getMetadata(textEditor.metadata.CollaboratorUrl) ?? ''
-
-  const documentId = formatCollaborativeDocumentId(collaborativeDoc)
-
-  let initialContentId: DocumentId | undefined
-  if (initialCollaborativeDoc !== undefined) {
-    initialContentId = formatCollaborativeDocumentId(collaborativeDoc)
-  }
-
-  let platformDocumentId: PlatformDocumentId | undefined
-  if (objectClass !== undefined && objectId !== undefined && objectAttr !== undefined) {
-    platformDocumentId = formatPlatformDocumentId(objectClass, objectId, objectAttr)
-  }
-
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
-  const contextProvider = getContext<TiptapCollabProvider>(CollaborationIds.Provider)
+  const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
-  const localProvider = new IndexeddbProvider(collaborativeDoc, ydoc)
+  const localProvider = createLocalProvider(ydoc, collaborativeDoc)
 
-  const remoteProvider: TiptapCollabProvider =
+  const remoteProvider =
     contextProvider ??
-    new TiptapCollabProvider({
-      url: collaboratorURL,
-      name: documentId,
-      document: ydoc,
-      token,
-      parameters: {
-        initialContentId,
-        platformDocumentId
-      }
+    createRemoteProvider(ydoc, {
+      document: collaborativeDoc,
+      initialDocument: initialCollaborativeDoc,
+      objectClass,
+      objectId,
+      objectAttr
     })
 
   let localSynced = false
@@ -478,7 +458,7 @@
       } catch (err: any) {}
     }
     if (contextProvider === undefined) {
-      remoteProvider.destroy()
+      void remoteProvider.destroy()
     }
     void localProvider.destroy()
   })

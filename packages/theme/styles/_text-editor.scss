@@ -348,6 +348,14 @@
   }
 }
 
+.theme-dark {
+  @import './github-dark.scss';
+}
+
+.theme-light {
+  @import './github-light.scss';
+}
+
 .theme-dark .text-editor-note-marker {
   background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%20id%3D%22note%22%3E%3Crect%20width%3D%22256%22%20height%3D%22256%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Cline%20x1%3D%2296%22%20x2%3D%22160%22%20y1%3D%2296%22%20y2%3D%2296%22%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cline%20x1%3D%2296%22%20x2%3D%22160%22%20y1%3D%22128%22%20y2%3D%22128%22%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cline%20x1%3D%2296%22%20x2%3D%22128%22%20y1%3D%22160%22%20y2%3D%22160%22%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%3E%3C%2Fline%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%20d%3D%22M156.68629%2C216H48a8%2C8%2C0%2C0%2C1-8-8V48a8%2C8%2C0%2C0%2C1%2C8-8H208a8%2C8%2C0%2C0%2C1%2C8%2C8V156.68629a8%2C8%2C0%2C0%2C1-2.34315%2C5.65686l-51.3137%2C51.3137A8%2C8%2C0%2C0%2C1%2C156.68629%2C216Z%22%3E%3C%2Fpath%3E%3Cpolyline%20fill%3D%22none%22%20stroke%3D%22%23FDFDF7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%228%22%20points%3D%22215.277%20159.992%20160%20159.992%20160%20215.272%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');
 }

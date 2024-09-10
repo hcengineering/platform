@@ -46,7 +46,7 @@ async function updateSubIssues (
   control: TriggerControl,
   update: DocumentUpdate<Issue> | ((node: Issue) => DocumentUpdate<Issue>)
 ): Promise<TxUpdateDoc<Issue>[]> {
-  const subIssues = await control.findAll(tracker.class.Issue, { 'parents.parentId': updateTx.objectId })
+  const subIssues = await control.findAll(control.ctx, tracker.class.Issue, { 'parents.parentId': updateTx.objectId })
 
   return subIssues.map((issue) => {
     const docUpdate = typeof update === 'function' ? update(issue) : update
@@ -70,7 +70,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
  */
 export async function getIssueId (doc: Issue, control: TriggerControl): Promise<string> {
   const issue = doc
-  const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
+  const project = (await control.findAll(control.ctx, tracker.class.Project, { _id: issue.space }))[0]
   return `${project?.identifier ?? '?'}-${issue.number}`
 }
 
@@ -163,7 +163,7 @@ export async function getIssueNotificationContent (
 export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Component>
 
-  const issues = await control.findAll(tracker.class.Issue, {
+  const issues = await control.findAll(control.ctx, tracker.class.Issue, {
     component: ctx.objectId
   })
   if (issues === undefined) return []
@@ -204,7 +204,7 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
   }
 
   const targetProject = (
-    await control.findAll(tracker.class.Project, {
+    await control.findAll(control.ctx, tracker.class.Project, {
       _id: tracker.project.DefaultProject
     })
   )[0]
@@ -265,7 +265,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   if (actualTx._class === core.class.TxRemoveDoc) {
     const removeTx = actualTx as TxRemoveDoc<Issue>
     if (control.hierarchy.isDerived(removeTx.objectClass, tracker.class.Issue)) {
-      const parentIssue = await control.findAll(tracker.class.Issue, {
+      const parentIssue = await control.findAll(control.ctx, tracker.class.Issue, {
         'childInfo.childId': removeTx.objectId
       })
       const res: Tx[] = []
@@ -298,7 +298,12 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
   switch (cud._class) {
     case core.class.TxCreateDoc: {
       const ccud = cud as TxCreateDoc<TimeSpendReport>
-      const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+      const [currentIssue] = await control.findAll(
+        control.ctx,
+        tracker.class.Issue,
+        { _id: parentTx.objectId },
+        { limit: 1 }
+      )
       const res = [
         control.txFactory.createTxUpdateDoc<Issue>(
           parentTx.objectClass,
@@ -320,7 +325,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
       const upd = cud as TxUpdateDoc<TimeSpendReport>
       if (upd.operations.value !== undefined) {
         const logTxes = Array.from(
-          await control.findAll(core.class.TxCollectionCUD, {
+          await control.findAll(control.ctx, core.class.TxCollectionCUD, {
             'tx.objectId': cud.objectId
           })
         )
@@ -330,7 +335,12 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
 
         const res: Tx[] = []
-        const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+        const [currentIssue] = await control.findAll(
+          control.ctx,
+          tracker.class.Issue,
+          { _id: parentTx.objectId },
+          { limit: 1 }
+        )
         if (doc !== undefined) {
           res.push(
             control.txFactory.createTxUpdateDoc<Issue>(
@@ -357,7 +367,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
     case core.class.TxRemoveDoc: {
       if (!control.removedMap.has(parentTx.objectId)) {
         const logTxes = Array.from(
-          await control.findAll(core.class.TxCollectionCUD, {
+          await control.findAll(control.ctx, core.class.TxCollectionCUD, {
             'tx.objectId': cud.objectId
           })
         )
@@ -366,7 +376,12 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
           .map(TxProcessor.extractTx)
         const doc: TimeSpendReport | undefined = TxProcessor.buildDoc2Doc(logTxes)
         if (doc !== undefined) {
-          const [currentIssue] = await control.findAll(tracker.class.Issue, { _id: parentTx.objectId }, { limit: 1 })
+          const [currentIssue] = await control.findAll(
+            control.ctx,
+            tracker.class.Issue,
+            { _id: parentTx.objectId },
+            { limit: 1 }
+          )
           const res = [
             control.txFactory.createTxUpdateDoc<Issue>(
               parentTx.objectClass,
@@ -404,12 +419,13 @@ async function doIssueUpdate (
       return currentIssue
     }
     // We need to remove estimation information from out parent issue
-    ;[currentIssue] = await control.findAll(tracker.class.Issue, { _id: updateTx.objectId }, { limit: 1 })
+    ;[currentIssue] = await control.findAll(control.ctx, tracker.class.Issue, { _id: updateTx.objectId }, { limit: 1 })
     return currentIssue
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')) {
     const [newParent] = await control.findAll(
+      control.ctx,
       tracker.class.Issue,
       { _id: updateTx.operations.attachedTo as Ref<Issue> },
       { limit: 1 }

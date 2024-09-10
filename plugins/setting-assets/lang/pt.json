@@ -101,9 +101,12 @@
     "Automations": "Automações",
     "Collections": "Coleções",
     "ClassColon": "Classe:",
-    "Branding": "Marca",
     "Assignees": "Atribuídos",
     "DeleteRole": "Eliminar função",
-    "DeleteRoleConfirmation": "Tem a certeza de que pretende eliminar esta função? Todos os utilizadores com esta função perderão as suas permissões."
+    "DeleteRoleConfirmation": "Tem a certeza de que pretende eliminar esta função? Todos os utilizadores com esta função perderão as suas permissões.",
+    "DeleteWorkspace": "Eliminar espaço de trabalho",
+    "DeleteWorkspaceConfirm": "Tem certeza de que deseja excluir este espaço de trabalho? Você e todos os outros membros perderão o acesso a este espaço de trabalho. Todas as informações do espaço de trabalho serão perdidas. Esta ação não pode ser desfeita. Deseja prosseguir?",
+    "WorkspaceName": "Nome do espaço de trabalho",
+    "Workspace": "Espaço de trabalho"
   }
 }

@@ -217,7 +217,7 @@
   $: templateProvider && !Array.isArray(value) && templateProvider.set(contact.class.Contact, value)
 
   settingsQuery.query(setting.class.Integration, { type: plugin.integrationType.Gmail, disabled: false }, (res) => {
-    integrations = res.filter((p) => p.createdBy === me || p.shared?.includes(me))
+    integrations = res.filter((p) => p.createdBy === me || (p.shared?.includes(me) && p.value !== ''))
     selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 

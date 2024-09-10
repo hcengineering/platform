@@ -19,7 +19,6 @@ import accountPlugin, {
   assignWorkspace,
   confirmEmail,
   createAcc,
-  createWorkspace,
   dropAccount,
   dropWorkspace,
   dropWorkspaceFull,
@@ -32,10 +31,11 @@ import accountPlugin, {
   replacePassword,
   setAccountAdmin,
   setRole,
-  UpgradeWorker,
-  upgradeWorkspace,
+  updateWorkspace,
+  createWorkspace as createWorkspaceRecord,
   type Workspace
 } from '@hcengineering/account'
+import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
@@ -48,7 +48,8 @@ import {
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
+import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import path from 'path'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
@@ -62,7 +63,10 @@ import core, {
   MeasureMetricsContext,
   metricsToString,
   systemAccountEmail,
+  TxOperations,
   versionToString,
+  type WorkspaceIdWithUrl,
+  type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
@@ -94,6 +98,7 @@ import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, syncFiles } from './storage'
+import { importNotion, importToTeamspace } from './notion'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -186,6 +191,12 @@ export function devTool (
 
   program.version('0.0.1')
 
+  program.command('version').action(() => {
+    console.log(
+      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`
+    )
+  })
+
   // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
   program
     .command('create-account <email>')
@@ -198,6 +209,84 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
         await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
+      })
+    })
+
+  // import-notion /home/anna/work/notion/pages/exported --workspace workspace
+  program
+    .command('import-notion <dir>')
+    .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      if (cmd.workspace === '') return
+
+      const { mongodbUri } = prepareTools()
+
+      await withDatabase(mongodbUri, async (db) => {
+        const ws = await getWorkspaceById(db, cmd.workspace)
+        if (ws === null) {
+          console.log('Workspace not found: ', cmd.workspace)
+          return
+        }
+
+        const wsUrl: WorkspaceIdWithUrl = {
+          name: ws.workspace,
+          workspaceName: ws.workspaceName ?? '',
+          workspaceUrl: ws.workspaceUrl ?? ''
+        }
+
+        await withStorage(mongodbUri, async (storageAdapter) => {
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const connection = (await connect(endpoint, wsUrl, undefined, {
+            mode: 'backup'
+          })) as unknown as CoreClient
+          const client = new TxOperations(connection, core.account.System)
+
+          await importNotion(toolCtx, client, storageAdapter, dir, wsUrl)
+
+          await connection.close()
+        })
+      })
+    })
+
+  // import-notion-to-teamspace /home/anna/work/notion/pages/exported --workspace workspace --teamspace notion
+  program
+    .command('import-notion-to-teamspace <dir>')
+    .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ts, --teamspace <teamspace>', 'teamspace where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      if (cmd.workspace === '') return
+      if (cmd.teamspace === '') return
+
+      const { mongodbUri } = prepareTools()
+
+      await withDatabase(mongodbUri, async (db) => {
+        const ws = await getWorkspaceById(db, cmd.workspace)
+        if (ws === null) {
+          console.log('Workspace not found: ', cmd.workspace)
+          return
+        }
+
+        const wsUrl: WorkspaceIdWithUrl = {
+          name: ws.workspace,
+          workspaceName: ws.workspaceName ?? '',
+          workspaceUrl: ws.workspaceUrl ?? ''
+        }
+
+        await withStorage(mongodbUri, async (storageAdapter) => {
+          const token = generateToken(systemAccountEmail, { name: ws.workspace })
+          const endpoint = await getTransactorEndpoint(token, 'external')
+          const connection = (await connect(endpoint, wsUrl, undefined, {
+            mode: 'backup'
+          })) as unknown as CoreClient
+          const client = new TxOperations(connection, core.account.System)
+
+          await importToTeamspace(toolCtx, client, storageAdapter, dir, wsUrl, cmd.teamspace)
+
+          await connection.close()
+        })
       })
     })
 
@@ -327,19 +416,28 @@ export function devTool (
     .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string, branding?: string }) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await createWorkspace(
-          toolCtx,
-          version,
-          txes,
-          migrateOperations,
-          db,
-          cmd.init !== undefined || cmd.branding !== undefined
-            ? { initWorkspace: cmd.init, key: cmd.branding ?? 'huly' }
-            : null,
-          cmd.email,
-          cmd.workspaceName,
-          workspace
-        )
+        const measureCtx = new MeasureMetricsContext('create-workspace', {})
+        const brandingObj =
+          cmd.branding !== undefined || cmd.init !== undefined ? { key: cmd.branding, initWorkspace: cmd.init } : null
+        const wsInfo = await createWorkspaceRecord(measureCtx, db, brandingObj, cmd.email, cmd.workspaceName, workspace)
+
+        // update the record so it's not taken by one of the workers for the next 60 seconds
+        await updateWorkspace(db, wsInfo, {
+          mode: 'creating',
+          progress: 0,
+          lastProcessingTime: Date.now() + 1000 * 60
+        })
+
+        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations)
+
+        await updateWorkspace(db, wsInfo, {
+          mode: 'active',
+          progress: 100,
+          disabled: false,
+          version
+        })
+
+        console.log('create-workspace done')
       })
     })
 
@@ -387,30 +485,36 @@ export function devTool (
           throw new Error(`workspace ${workspace} not found`)
         }
 
-        const measureCtx = new MeasureMetricsContext('upgrade', {})
+        const measureCtx = new MeasureMetricsContext('upgrade-workspace', {})
 
         await upgradeWorkspace(
           measureCtx,
           version,
           txes,
           migrateOperations,
-          db,
-          info.workspaceUrl ?? info.workspace,
+          info,
           consoleModelLogger,
+          async () => {},
           cmd.force,
-          cmd.indexes
+          cmd.indexes,
+          true
         )
-        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60), {})
-        console.log('upgrade done')
+
+        await updateWorkspace(db, info, {
+          mode: 'active',
+          progress: 100,
+          version
+        })
+
+        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
+        console.log('upgrade-workspace done')
       })
     })
 
   program
     .command('upgrade')
     .description('upgrade')
-    .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
-    .option('-r|--retry <retry>', 'Number of apply retries', '0')
     .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
     .option(
       '-c|--console',
@@ -418,29 +522,45 @@ export function devTool (
       false
     )
     .option('-f|--force [force]', 'Force update', false)
-    .action(
-      async (cmd: {
-        parallel: string
-        logs: string
-        retry: string
-        force: boolean
-        console: boolean
-        ignore: string
-      }) => {
-        const { mongodbUri, version, txes, migrateOperations } = prepareTools()
-        await withDatabase(mongodbUri, async (db, client) => {
-          const worker = new UpgradeWorker(db, client, version, txes, migrateOperations)
-          await worker.upgradeAll(toolCtx, {
-            errorHandler: async (ws, err) => {},
-            force: cmd.force,
-            console: cmd.console,
-            logs: cmd.logs,
-            parallel: parseInt(cmd.parallel ?? '1'),
-            ignore: cmd.ignore
-          })
-        })
-      }
-    )
+    .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string }) => {
+      const { mongodbUri, version, txes, migrateOperations } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
+        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+        const measureCtx = new MeasureMetricsContext('upgrade', {})
+
+        for (const ws of workspaces) {
+          try {
+            const logger = cmd.console
+              ? consoleModelLogger
+              : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
+
+            await upgradeWorkspace(
+              measureCtx,
+              version,
+              txes,
+              migrateOperations,
+              ws,
+              logger,
+              async () => {},
+              cmd.force,
+              false,
+              true
+            )
+
+            await updateWorkspace(db, ws, {
+              mode: 'active',
+              progress: 100,
+              version
+            })
+          } catch (err: any) {
+            console.error(err)
+          }
+        }
+
+        console.log('upgrade done')
+      })
+    })
 
   program
     .command('list-unused-workspaces')
@@ -905,8 +1025,9 @@ export function devTool (
   program
     .command('generate-token <name> <workspace>')
     .description('generate token')
-    .action(async (name: string, workspace: string) => {
-      console.log(generateToken(name, getWorkspaceId(workspace)))
+    .option('--admin', 'Generate token with admin access', false)
+    .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
+      console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
     })
   program
     .command('decode-token <token>')

@@ -50,6 +50,7 @@ export const roles = [
       documents.permission.ReviewDocument,
       documents.permission.ApproveDocument,
       documents.permission.CoAuthorDocument,
+      documents.permission.ArchiveDocument,
       documents.permission.UpdateDocumentOwner
     ]
   }

@@ -73,11 +73,7 @@ export class DatalakeService implements StorageAdapter {
   }
 
   @withContext('listStream')
-  async listStream (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceId,
-    prefix?: string | undefined
-  ): Promise<BlobStorageIterator> {
+  async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
     throw new Error('not supported')
   }
 

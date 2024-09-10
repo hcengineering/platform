@@ -96,6 +96,7 @@
       const blobURL = await getBlobURL(direct)
       url = blobURL
       avatarProvider = undefined
+      srcSet = undefined
     } else if (avatar != null) {
       const avatarProviderId = getAvatarProviderId(avatar.avatarType)
       avatarProvider = avatarProviderId !== undefined ? await getProvider(avatarProviderId) : undefined

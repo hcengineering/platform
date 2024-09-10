@@ -135,6 +135,7 @@ export default plugin(presentationId, {
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
     Workspace: '' as Metadata<string>,
+    WorkspaceId: '' as Metadata<string>,
     FrontUrl: '' as Asset,
     PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
     ClientHook: '' as Metadata<ClientHook>,

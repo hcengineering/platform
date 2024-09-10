@@ -14,18 +14,25 @@
 //
 
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
-import { setMetadata } from '@hcengineering/platform'
+import { setMetadata, translate } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import serverClient from '@hcengineering/server-client'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import { Analytics } from '@hcengineering/analytics'
 import { join } from 'path'
+import type { StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import telegram from '@hcengineering/telegram'
+import { Telegraf } from 'telegraf'
 
 import config from './config'
 import { createServer, listen } from './server'
-import { setUpBot } from './bot'
+import { setUpBot } from './telegraf/bot'
 import { PlatformWorker } from './worker'
 import { registerLoaders } from './loaders'
+import { TgContext } from './telegraf/types'
+import { Command } from './telegraf/commands'
+import { Limiter } from './limiter'
 
 const ctx = new MeasureMetricsContext(
   'telegram-bot-service',
@@ -41,15 +48,42 @@ const ctx = new MeasureMetricsContext(
 configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'telegram-bot-service')
 
+export async function requestReconnect (
+  bot: Telegraf<TgContext>,
+  worker: PlatformWorker,
+  limiter: Limiter
+): Promise<void> {
+  const toReconnect = await worker.getUsersToDisconnect()
+
+  if (toReconnect.length > 0) {
+    ctx.info('Disconnecting users', { users: toReconnect.map((it) => it.email) })
+    const message = await translate(telegram.string.DisconnectMessage, { app: config.App, command: Command.Connect })
+    for (const userRecord of toReconnect) {
+      try {
+        await limiter.add(userRecord.telegramId, async () => {
+          await bot.telegram.sendMessage(userRecord.telegramId, message)
+        })
+      } catch (e) {
+        ctx.error('Failed to send message', { user: userRecord.email, error: e })
+      }
+    }
+    await worker.disconnectUsers()
+  }
+}
+
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
   setMetadata(serverClient.metadata.UserAgent, config.ServiceId)
   registerLoaders()
 
-  const worker = await PlatformWorker.create()
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
+
+  const worker = await PlatformWorker.create(ctx, storageAdapter)
   const bot = await setUpBot(worker)
-  const app = createServer(bot, worker, ctx)
+  const limiter = new Limiter()
+  const app = createServer(bot, worker, ctx, limiter)
 
   if (config.Domain === '') {
     ctx.info('Starting bot with polling')
@@ -71,6 +105,7 @@ export const start = async (): Promise<void> => {
     res.status(200).send()
   })
 
+  await requestReconnect(bot, worker, limiter)
   const server = listen(app, ctx, config.Port)
 
   const onClose = (): void => {

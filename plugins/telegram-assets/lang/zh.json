@@ -48,6 +48,11 @@
     "AccountConnectedHtml": "您已成功连接为 <b>{email}</b>",
     "AccountAlreadyConnected": "帐户已连接",
     "InvalidCode": "无效代码",
-    "SomethingWentWrong": "出现问题。 请重试。"
+    "SomethingWentWrong": "出现问题。 请重试。",
+    "Configure": "配置",
+    "ConnectTelegramBot": "连接 Telegram 机器人",
+    "DisconnectMessage": "⚠️您已从服务中断开连接。 请使用 /{command} 在 {app} 上重新连接您的帐户。",
+    "SyncAllChannels": "同步所有频道",
+    "SyncStarredChannels": "同步标记的频道"
   }
 }

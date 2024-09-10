@@ -23,7 +23,7 @@ export const TrainingRequestTextPresenter: Presenter<TrainingRequest> = async (
   request: TrainingRequest,
   control: TriggerControl
 ) => {
-  const trainingObject = (await control.findAll(training.class.Training, { _id: request.attachedTo }))[0]
+  const trainingObject = (await control.findAll(control.ctx, training.class.Training, { _id: request.attachedTo }))[0]
 
   if (trainingObject === undefined) {
     throw new Error(`Training #${request.attachedTo} not found`)

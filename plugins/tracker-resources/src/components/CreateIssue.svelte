@@ -453,7 +453,7 @@
     // TODO: We need a measure client and mark all operations with it as measure under one root,
     // to prevent other operations to infer our measurement.
     try {
-      const operations = client.apply(_id, 'tracker.createIssue')
+      const operations = client.apply(undefined, 'tracker.createIssue')
 
       const lastOne = await client.findOne<Issue>(
         tracker.class.Issue,
@@ -575,10 +575,12 @@
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
       const d1 = Date.now()
+      const analyticsProps = await docCreateManager.getAnalyticsProps(currentProject, value)
       Analytics.handleEvent(TrackerEvents.IssueCreated, {
         ok: true,
         id: value.identifier,
-        project: currentProject.identifier
+        project: currentProject.identifier,
+        ...analyticsProps
       })
       console.log('createIssue measure', result, Date.now() - d1)
     } catch (err: any) {

@@ -26,16 +26,17 @@
     messageInFocus,
     sortActivityMessages
   } from '@hcengineering/activity-resources'
-  import { Doc, generateId, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Loading, ModernButton, Scroller, ScrollParams } from '@hcengineering/ui'
   import { afterUpdate, beforeUpdate, onDestroy, onMount, tick } from 'svelte'
   import { get } from 'svelte/store'
-  import { DocNotifyContext } from '@hcengineering/notification'
 
   import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
+  import chunter from '../plugin'
   import {
     chatReadMessagesStore,
     filterChatMessages,
@@ -43,11 +44,10 @@
     readChannelMessages,
     recheckNotifications
   } from '../utils'
+  import BlankView from './BlankView.svelte'
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import HistoryLoading from './LoadingHistory.svelte'
-  import BlankView from './BlankView.svelte'
-  import chunter from '../plugin'
 
   export let provider: ChannelDataProvider
   export let object: Doc
@@ -672,7 +672,7 @@
       scrollToBottom()
     }
 
-    const op = client.apply(generateId(), 'chunter.scrollDown')
+    const op = client.apply(undefined, 'chunter.scrollDown')
     await inboxClient.readDoc(op, doc._id)
     await op.commit()
   }
@@ -681,7 +681,7 @@
   $: void forceReadContext(isScrollAtBottom, notifyContext)
 
   async function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): Promise<void> {
-    if (context === undefined || !isScrollAtBottom || forceRead || !separatorElement) return
+    if (context === undefined || !isScrollAtBottom || forceRead) return
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastViewedTimestamp >= lastUpdateTimestamp) return
@@ -691,7 +691,7 @@
 
     if (unViewed.length === 0) {
       forceRead = true
-      const op = client.apply(generateId(), 'chunter.forceReadContext')
+      const op = client.apply(undefined, 'chunter.forceReadContext')
       await inboxClient.readDoc(op, object._id)
       await op.commit()
     }

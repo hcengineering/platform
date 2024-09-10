@@ -253,6 +253,16 @@ export async function toTime (value: number): Promise<string> {
   ].join(' ')
 }
 export const getIssueName = (postfix: string = generateId()): string => `issue-${postfix}`
+
+/**
+ * Return random capitalized string like "AFJKD"
+ *
+ * @returns string
+ */
+export function generateProjectId (size: number = 5): string {
+  return Array.from({ length: size }, () => String.fromCharCode(65 + Math.floor(Math.random() * 26))).join('')
+}
+
 export async function performPanelTest (page: Page, statuses: string[], panel: string, mode: string): Promise<void> {
   const locator = page.locator('.list-container')
   const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))

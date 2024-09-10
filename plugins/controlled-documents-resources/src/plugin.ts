@@ -172,6 +172,9 @@ export default mergeIds(documentsId, documents, {
     MarkDocsAsDeleted: '' as IntlString,
     MarkDocAsDeletedConfirm: '' as IntlString,
 
+    ArchiveDocs: '' as IntlString,
+    ArchiveDocsConfirm: '' as IntlString,
+
     DocumentInHierarchy: '' as IntlString,
     FirstDraftVersion: '' as IntlString,
 
@@ -231,7 +234,8 @@ export default mergeIds(documentsId, documents, {
     GetAllDocumentStates: '' as Resource<() => Promise<DocumentState[]>>,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     GetDocumentMetaLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    IsLatestDraftDoc: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanDeleteDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanArchiveDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

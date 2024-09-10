@@ -34,57 +34,35 @@ import core, {
   getWorkspaceId,
   groupByArray,
   MeasureContext,
-  MeasureMetricsContext,
   RateLimiter,
   Ref,
   roleOrder,
   systemAccountEmail,
   Timestamp,
-  Tx,
   TxOperations,
   Version,
   versionToString,
+  isWorkspaceCreating,
   WorkspaceId,
-  WorkspaceIdWithUrl,
-  type Branding
+  type Branding,
+  type WorkspaceMode
 } from '@hcengineering/core'
-import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import {
-  DummyFullTextAdapter,
-  Pipeline,
-  PipelineFactory,
-  SessionContextImpl,
-  StorageConfiguration,
-  type StorageAdapter
-} from '@hcengineering/server-core'
-import {
-  createIndexStages,
-  createServerPipeline,
-  registerServerPlugins,
-  registerStringLoaders
-} from '@hcengineering/server-pipeline'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hcengineering/server-token'
-import toolPlugin, {
-  connect,
-  initializeWorkspace,
-  initModel,
-  prepareTools,
-  updateModel,
-  upgradeModel
-} from '@hcengineering/server-tool'
+import toolPlugin, { connect } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import otpGenerator from 'otp-generator'
-
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
 const OTP_COLLECTION = 'otp'
 const INVITE_COLLECTION = 'invite'
+const UPGRADE_COLLECTION = 'upgrade'
 /**
  * @public
  */
@@ -102,8 +80,8 @@ export const ACCOUNT_DB = 'account'
  * (The hash value of the empty string is zero.)
  *
  */
-function hashWorkspace (workspace: Workspace): number {
-  return [...workspace.workspace].reduce((hash, c) => (Math.imul(31, hash) + c.charCodeAt(0)) | 0, 0)
+function hashWorkspace (dbWorkspaceName: string): number {
+  return [...dbWorkspaceName].reduce((hash, c) => (Math.imul(31, hash) + c.charCodeAt(0)) | 0, 0)
 }
 
 export enum EndpointKind {
@@ -111,7 +89,7 @@ export enum EndpointKind {
   External
 }
 
-const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: EndpointKind): string => {
+const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {
   const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
   if (transactorsUrl === undefined) {
     throw new Error('Please provide transactor endpoint url')
@@ -125,30 +103,30 @@ const getEndpoint = (ctx: MeasureContext, workspaceInfo: Workspace, kind: Endpoi
     throw new Error('Please provide transactor endpoint url')
   }
 
-  const toTransactor = (line: string): { internalUrl: string, group: string, externalUrl: string } => {
-    const [internalUrl, externalUrl, group] = line.split(';')
-    return { internalUrl, group: group ?? '', externalUrl: externalUrl ?? internalUrl }
+  const toTransactor = (line: string): { internalUrl: string, region: string, externalUrl: string } => {
+    const [internalUrl, externalUrl, region] = line.split(';')
+    return { internalUrl, region: region ?? '', externalUrl: externalUrl ?? internalUrl }
   }
 
-  const groups = groupByArray(endpoints.map(toTransactor), (it) => it.group)
-  let transactors = (groups.get(workspaceInfo.transactor ?? '') ?? [])
+  const byRegions = groupByArray(endpoints.map(toTransactor), (it) => it.region)
+  let transactors = (byRegions.get(workspaceInfo.region ?? '') ?? [])
     .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
     .flat()
 
   // This is really bad
   if (transactors.length === 0) {
-    ctx.error('No transactors for group, will use default group', { group: workspaceInfo.transactor })
+    ctx.error('No transactors for the target region, will use default region', { group: workspaceInfo.region })
   }
-  transactors = (groups.get('') ?? [])
+  transactors = (byRegions.get('') ?? [])
     .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
     .flat()
 
   if (transactors.length === 0) {
-    ctx.error('No transactors for default group', { group: workspaceInfo.transactor })
+    ctx.error('No transactors for the default region')
     throw new Error('Please provide transactor endpoint url')
   }
 
-  const hash = hashWorkspace(workspaceInfo)
+  const hash = hashWorkspace(workspaceInfo.workspace)
   return transactors[Math.abs(hash % transactors.length)]
 }
 
@@ -201,7 +179,10 @@ export interface Workspace extends BaseWorkspaceInfo {
   _id: ObjectId
   accounts: ObjectId[]
 
-  transactor?: string // Transactor group name
+  region?: string // Transactor group name
+  lastProcessingTime?: number
+  attempts?: number
+  message?: string
 }
 
 export interface OtpRecord {
@@ -233,8 +214,8 @@ export interface WorkspaceLoginInfo extends LoginInfo {
 
   workspaceId: string
 
-  creating?: boolean
-  createProgress?: number
+  mode: WorkspaceMode
+  progress?: number
 }
 
 /**
@@ -621,8 +602,8 @@ export async function selectWorkspace (
       token,
       workspace: workspaceUrl,
       workspaceId: workspaceInfo.workspace,
-      creating: workspaceInfo.creating,
-      createProgress: workspaceInfo.createProgress
+      mode: workspaceInfo.mode,
+      progress: workspaceInfo.progress
     }
   }
 
@@ -653,13 +634,13 @@ export async function selectWorkspace (
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
       workspace: workspaceUrl,
       workspaceId: workspaceInfo.workspace,
-      creating: workspaceInfo.creating,
-      createProgress: workspaceInfo.createProgress
+      mode: workspaceInfo.mode,
+      progress: workspaceInfo.progress
     }
   }
 
   if (workspaceInfo !== null) {
-    if (workspaceInfo.disabled === true && workspaceInfo.creating !== true) {
+    if (workspaceInfo.disabled === true && workspaceInfo.mode === 'active') {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
@@ -675,8 +656,8 @@ export async function selectWorkspace (
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(accountInfo)),
           workspace: workspaceUrl,
           workspaceId: workspaceInfo.workspace,
-          creating: workspaceInfo.creating,
-          createProgress: workspaceInfo.createProgress
+          mode: workspaceInfo.mode,
+          progress: workspaceInfo.progress
         }
         return result
       }
@@ -1033,6 +1014,39 @@ export async function listWorkspacesByAccount (db: Db, email: string): Promise<W
 /**
  * @public
  */
+export async function countWorkspacesInRegion (
+  db: Db,
+  region: string = '',
+  upToVersion?: Data<Version>
+): Promise<number> {
+  const regionQuery = region === '' ? { $or: [{ region: { $exists: false } }, { region: '' }] } : { region }
+  const query: Filter<Workspace>['$and'] = [
+    regionQuery,
+    { $or: [{ disabled: false }, { disabled: { $exists: false } }] }
+  ]
+
+  if (upToVersion !== undefined) {
+    query.push({
+      $or: [
+        { 'version.major': { $lt: upToVersion.major } },
+        { 'version.major': upToVersion.major, 'version.minor': { $lt: upToVersion.minor } },
+        {
+          'version.major': upToVersion.major,
+          'version.minor': upToVersion.minor,
+          'version.patch': { $lt: upToVersion.patch }
+        }
+      ]
+    })
+  }
+
+  return await db.collection<Workspace>(WORKSPACE_COLLECTION).countDocuments({
+    $and: query
+  })
+}
+
+/**
+ * @public
+ */
 export async function listWorkspacesRaw (db: Db): Promise<Workspace[]> {
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find({}).toArray()).filter((it) => it.disabled !== true)
 }
@@ -1048,15 +1062,6 @@ export async function listWorkspacesPure (db: Db): Promise<Workspace[]> {
  */
 export async function setWorkspaceDisabled (db: Db, workspaceId: Workspace['_id'], disabled: boolean): Promise<void> {
   await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $set: { disabled } })
-}
-
-export async function cleanInProgressWorkspaces (db: Db): Promise<void> {
-  const toDelete = await db.collection<Workspace>(WORKSPACE_COLLECTION).find({ creating: true }).toArray()
-
-  const ctx = new MeasureMetricsContext('clean', {})
-  for (const d of toDelete) {
-    await dropWorkspace(ctx, db, null, d.workspace)
-  }
 }
 
 export async function cleanExpiredOtp (db: Db): Promise<void> {
@@ -1106,36 +1111,38 @@ function getEmailName (email: string): string {
 async function generateWorkspaceRecord (
   db: Db,
   email: string,
-  version: Data<Version>,
   branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string
 ): Promise<Workspace> {
-  const coll = db.collection<Omit<Workspace, '_id' | 'endpoint'>>(WORKSPACE_COLLECTION)
+  type WorkspaceData = Omit<Workspace, '_id' | 'endpoint'>
+  const wsCollection = db.collection<WorkspaceData>(WORKSPACE_COLLECTION)
   const brandingKey = branding?.key ?? 'huly'
   if (fixedWorkspace !== undefined) {
-    const ws = await coll.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
+    const ws = await wsCollection.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
     if ((await getWorkspaceById(db, fixedWorkspace)) !== null || ws.length > 0) {
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: fixedWorkspace })
       )
     }
-    const data = {
+    const data: WorkspaceData = {
       workspace: fixedWorkspace,
       workspaceUrl: fixedWorkspace,
-      version,
+      version: { major: 0, minor: 0, patch: 0 }, // We do not know version until it will be created
       branding: brandingKey,
       workspaceName,
       accounts: [],
       disabled: true,
-      creating: true,
-      createProgress: 0,
+      mode: 'pending-creation',
+      progress: 0,
       createdOn: Date.now(),
       lastVisit: Date.now(),
-      createdBy: email
+      createdBy: email,
+      lastProcessingTime: 0,
+      attempts: 0
     }
     // Add fixed workspace
-    const id = await coll.insertOne(data)
+    const id = await wsCollection.insertOne(data)
     return { _id: id.insertedId, ...data, endpoint: '' }
   }
   const workspaceUrlPrefix = stripId(workspaceName)
@@ -1150,24 +1157,26 @@ async function generateWorkspaceRecord (
     if (workspaceUrl.trim().length === 0) {
       workspaceUrl = generateId('-')
     }
-    const ws = await coll.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
+    const ws = await wsCollection.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
     if (ws.length === 0) {
-      const data = {
+      const data: WorkspaceData = {
         workspace,
         workspaceUrl,
-        version,
+        version: { major: 0, minor: 0, patch: 0 }, // We do not know version until it will be created,
         branding: brandingKey,
         workspaceName,
         accounts: [],
         disabled: true,
-        creating: true,
-        createProgress: 0,
+        mode: 'pending-creation',
+        progress: 0,
         createdOn: Date.now(),
         lastVisit: Date.now(),
-        createdBy: email
+        createdBy: email,
+        lastProcessingTime: 0,
+        attempts: 0
       }
       // Nice we do not have a workspace or workspaceUrl duplicated.
-      const id = await coll.insertOne(data)
+      const id = await wsCollection.insertOne(data)
       return { _id: id.insertedId, ...data, endpoint: '' }
     }
     for (const w of ws) {
@@ -1187,348 +1196,371 @@ async function generateWorkspaceRecord (
   }
 }
 
-let searchPromise: Promise<Workspace> | undefined
-
-const rateLimiter = new RateLimiter(parseInt(process.env.RATELIMIT ?? '10'))
+// It always should be one.
+const createQueue = new RateLimiter(1)
 
 /**
  * @public
  */
 export async function createWorkspace (
   ctx: MeasureContext,
-  version: Data<Version>,
-  txes: Tx[],
-  migrationOperation: [string, MigrateOperation][],
   db: Db,
   branding: Branding | null,
   email: string,
   workspaceName: string,
-  workspace?: string,
-  notifyHandler?: (workspace: Workspace) => void,
-  postInitHandler?: (workspace: Workspace, model: Tx[]) => Promise<void>
-): Promise<{ workspaceInfo: Workspace, err?: any, model?: Tx[] }> {
+  workspace?: string
+): Promise<Workspace> {
   // We need to search for duplicate workspaceUrl
-  await searchPromise
-
   // Safe generate workspace record.
-  searchPromise = generateWorkspaceRecord(db, email, version, branding, workspaceName, workspace)
-
-  const workspaceInfo = await searchPromise
-
-  notifyHandler?.(workspaceInfo)
-
-  const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
-
-  async function updateInfo (ops: Partial<Workspace>): Promise<void> {
-    await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
-    console.log('update', ops)
-  }
-
-  await updateInfo({ createProgress: 10 })
-
-  return await rateLimiter.exec(async () => {
-    const childLogger = ctx.newChild('createUserWorkspace', {}, { workspace: workspaceInfo.workspace })
-    const ctxModellogger: ModelLogger = {
-      log: (msg, data) => {
-        childLogger.info(msg, data)
-      },
-      error: (msg, data) => {
-        childLogger.error(msg, data)
-      }
-    }
-    const model: Tx[] = []
-    try {
-      const wsUrl: WorkspaceIdWithUrl = {
-        name: workspaceInfo.workspace,
-        workspaceName: workspaceInfo.workspaceName ?? '',
-        workspaceUrl: workspaceInfo.workspaceUrl ?? ''
-      }
-
-      const wsId = getWorkspaceId(workspaceInfo.workspace)
-
-      await childLogger.withLog('init-workspace', {}, async (ctx) => {
-        await initModel(ctx, wsId, txes, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 10 + Math.round((Math.min(value, 100) / 100) * 10) })
-        })
-      })
-
-      const { mongodbUri } = prepareTools([])
-
-      const storageConfig: StorageConfiguration = storageConfigFromEnv()
-      const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
-
-      try {
-        registerServerPlugins()
-        registerStringLoaders()
-        const factory: PipelineFactory = createServerPipeline(
-          ctx,
-          mongodbUri,
-          {
-            externalStorage: storageAdapter,
-            fullTextUrl: 'http://localhost:9200',
-            indexParallel: 0,
-            indexProcessing: 0,
-            rekoniUrl: '',
-            usePassedCtx: true
-          },
-          {
-            fulltextAdapter: {
-              factory: async () => new DummyFullTextAdapter(),
-              url: '',
-              stages: (adapter, storage, storageAdapter, contentAdapter) =>
-                createIndexStages(
-                  ctx.newChild('stages', {}),
-                  wsUrl,
-                  branding,
-                  adapter,
-                  storage,
-                  storageAdapter,
-                  contentAdapter,
-                  0,
-                  0
-                )
-            }
-          }
-        )
-
-        const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
-        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
-
-        await updateModel(ctx, wsId, migrationOperation, client, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 10) })
-        })
-
-        await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
-          await updateInfo({ createProgress: 30 + Math.round((Math.min(value, 100) / 100) * 70) })
-        })
-        await pipeline.close()
-      } finally {
-        await storageAdapter.close()
-      }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      return { workspaceInfo, err, client: null as any }
-    }
-
-    if (postInitHandler !== undefined) {
-      await ctx.withLog('post-handler', {}, async (ctx) => {
-        await postInitHandler?.(workspaceInfo, model)
-      })
-    }
-
-    childLogger.end()
-    // Workspace is created, we need to clear disabled flag.
-    await updateInfo({ createProgress: 100, disabled: false, creating: false })
-    return { workspaceInfo, model }
+  return await createQueue.exec(async () => {
+    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace)
   })
 }
 
-function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client {
-  const sctx = new SessionContextImpl(
-    ctx,
-    systemAccountEmail,
-    'backup',
-    true,
-    { targets: {}, txes: [] },
-    wsUrl,
-    null,
-    false,
-    new Map(),
-    new Map()
-  )
-
-  return {
-    findAll: async (_class, query, options) => {
-      return await pipeline.findAll(sctx, _class, query, options)
-    },
-    findOne: async (_class, query, options) => {
-      return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
-    },
-    close: async () => {
-      await pipeline.close()
-    },
-    getHierarchy: () => {
-      return pipeline.storage.hierarchy
-    },
-    getModel: () => {
-      return pipeline.storage.modelDb
-    },
-    searchFulltext: async (query, options) => {
-      return {
-        docs: [],
-        total: 0
-      }
-    },
-    tx: async (tx) => {
-      return await pipeline.tx(sctx, tx)
-    },
-    notify: (...tx) => {}
-  }
+export interface UpgradeStatistic {
+  region: string
+  version: string
+  startTime: number
+  total: number
+  toProcess: number
+  lastUpdate?: number
 }
 
 /**
  * @public
  */
-export async function upgradeWorkspace (
+export async function workerHandshake (
   ctx: MeasureContext,
-  version: Data<Version>,
-  txes: Tx[],
-  migrationOperation: [string, MigrateOperation][],
   db: Db,
-  workspaceUrl: string,
-  logger: ModelLogger = consoleModelLogger,
-  forceUpdate: boolean = true,
-  forceIndexes: boolean = false
-): Promise<string> {
-  const ws = await getWorkspaceByUrl(db, workspaceUrl)
-  if (ws === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
+  branding: Branding | null,
+  token: string,
+  region: string, // A worker region
+  version: Data<Version>, // A worker version
+  operation: WorkspaceOperation
+): Promise<void> {
+  const decodedToken = decodeToken(ctx, token)
+  if (decodedToken.extra?.service !== 'workspace') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  const versionStr = versionToString(version)
 
-  if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
-    return versionStr
+  if (!['all', 'upgrade'].includes(operation)) {
+    return
   }
-  ctx.info('upgrading', {
-    force: forceUpdate,
-    currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
-    toVersion: versionStr,
-    workspace: ws.workspace
-  })
-  await upgradeModel(
-    ctx,
-    getEndpoint(ctx, ws, EndpointKind.Internal),
-    getWorkspaceId(ws.workspace),
-    txes,
-    migrationOperation,
-    logger,
-    false,
-    async (value) => {},
-    forceIndexes
+
+  const strVersion = versionToString(version)
+
+  if ((await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).findOne({ version: strVersion, region })) !== null) {
+    return
+  }
+
+  const workspacesCnt = await ctx.with(
+    'count-workspaces-in-region',
+    {},
+    async (ctx) => await countWorkspacesInRegion(db, region, version)
   )
 
-  await db.collection(WORKSPACE_COLLECTION).updateOne(
-    { _id: ws._id },
+  await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).insertOne({
+    region,
+    version: strVersion,
+    startTime: Date.now(),
+    total: workspacesCnt,
+    toProcess: workspacesCnt
+  })
+}
+
+export type WorkspaceEvent = 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done'
+export type WorkspaceOperation = 'create' | 'upgrade' | 'all'
+
+/**
+ * @public
+ */
+export async function updateWorkspaceInfo (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  workspaceId: string,
+  event: WorkspaceEvent,
+  version: Data<Version>, // A worker version
+  progress: number,
+  message?: string
+): Promise<void> {
+  const decodedToken = decodeToken(ctx, token)
+  if (decodedToken.extra?.service !== 'workspace') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const workspaceInfo = await getWorkspaceById(db, workspaceId)
+  if (workspaceInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
+  }
+
+  const wsCollection = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+  const update: Partial<WorkspaceInfo> = {}
+  switch (event) {
+    case 'create-started':
+      update.mode = 'creating'
+      if (workspaceInfo.mode !== 'creating') {
+        update.attempts = 0
+      }
+      update.progress = progress
+      break
+    case 'upgrade-started':
+      if (workspaceInfo.mode !== 'upgrading') {
+        update.attempts = 0
+      }
+      update.mode = 'upgrading'
+      update.progress = progress
+      break
+    case 'create-done':
+      ctx.info('update workspace info: create-done', { workspaceId, event, version, progress })
+      await wsCollection.updateOne(
+        { _id: workspaceInfo._id },
+        {
+          $set: {
+            version,
+            lastProcessingTime: Date.now()
+          }
+        }
+      )
+      await postCreateUserWorkspace(ctx, db, branding, workspaceInfo)
+      update.mode = 'active'
+      update.disabled = false
+      update.progress = progress
+      break
+    case 'upgrade-done':
+      ctx.info('update workspace info: upgrade-done', { workspaceId, event, version, progress })
+      await postUpgradeUserWorkspace(ctx, db, branding, workspaceInfo.region ?? '', version)
+      update.mode = 'active'
+      update.version = version
+      update.progress = progress
+      break
+    case 'progress':
+      update.progress = progress
+      break
+    case 'ping':
+    default:
+      break
+  }
+
+  if (message != null) {
+    update.message = message
+  }
+
+  await wsCollection.updateOne(
+    { _id: workspaceInfo._id },
     {
-      $set: { version }
+      $set: {
+        ...update,
+        lastProcessingTime: Date.now()
+      }
     }
   )
-  return versionStr
+}
+
+async function postCreateUserWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  workspace: Workspace
+): Promise<void> {
+  const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
+  const shouldUpdateAccount = initWS !== undefined
+  const client = await connect(
+    getEndpoint(ctx, workspace, EndpointKind.Internal),
+    getWorkspaceId(workspace.workspace),
+    undefined,
+    {
+      admin: 'true'
+    }
+  )
+  try {
+    await assignWorkspace(
+      ctx,
+      db,
+      branding,
+      workspace.createdBy,
+      workspace.workspace,
+      AccountRole.Owner,
+      undefined,
+      shouldUpdateAccount,
+      client
+    )
+    ctx.info('Creating server side done', { workspaceName: workspace.workspaceName, email: workspace.workspaceName })
+  } catch (err: any) {
+    Analytics.handleError(err)
+  } finally {
+    await client.close()
+  }
+}
+
+async function postUpgradeUserWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  region: string,
+  version: Data<Version>
+): Promise<void> {
+  await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).findOneAndUpdate(
+    {
+      region,
+      version: versionToString(version),
+      toProcess: { $gt: 0 }
+    },
+    {
+      $inc: {
+        toProcess: -1
+      },
+      $set: {
+        lastUpdate: Date.now()
+      }
+    }
+  )
+}
+
+/**
+ * Retrieves one workspace for which there are things to process.
+ *
+ * Workspace is provided for 30seconds. This timeout is reset
+ * on every progress update.
+ * If no progress is reported for the workspace during this time,
+ * it will become available again to be processed by another executor.
+ */
+export async function getPendingWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  region: string, // A region requested
+  version: Data<Version>, // A workspace version requested, if it doesn't match for the region, workspace will be returned for upgrade
+  operation: WorkspaceOperation
+): Promise<WorkspaceInfo | undefined> {
+  const decodedToken = decodeToken(ctx, token)
+  if (decodedToken.extra?.service !== 'workspace') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const wsCollection = db.collection<Workspace>(WORKSPACE_COLLECTION)
+  // Move to config?
+  const processingTimeoutMs = 30 * 1000
+
+  const pendingCreationQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-creation', 'creating'] } }]
+
+  const versionQuery = {
+    $or: [
+      { 'version.major': { $lt: version.major } },
+      { 'version.major': version.major, 'version.minor': { $lt: version.minor } },
+      { 'version.major': version.major, 'version.minor': version.minor, 'version.patch': { $lt: version.patch } }
+    ]
+  }
+  const pendingUpgradeQuery: Filter<Workspace>['$or'] = [
+    {
+      $and: [
+        {
+          $or: [{ disabled: false }, { disabled: { $exists: false } }]
+        },
+        {
+          $or: [{ mode: 'active' }, { mode: { $exists: false } }]
+        },
+        versionQuery
+      ]
+    },
+    {
+      $or: [{ disabled: false }, { disabled: { $exists: false } }],
+      mode: 'upgrading'
+    }
+  ]
+  // TODO: support returning pending deletion workspaces when we will actually want
+  // to clear them with the worker.
+
+  const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
+  const operationQuery = {
+    $or:
+      operation === 'create'
+        ? pendingCreationQuery
+        : operation === 'upgrade'
+          ? pendingUpgradeQuery
+          : [...pendingCreationQuery, ...pendingUpgradeQuery]
+  }
+  const attemptsQuery = { $or: [{ attempts: { $exists: false } }, { attempts: { $lte: 3 } }] }
+
+  // We must have all the conditions in the DB query and we cannot filter anything in the code
+  // because of possible concurrency between account services. We have to update "lastProcessingTime"
+  // at the time of retrieval and not after some additional processing.
+  const query: Filter<Workspace> = {
+    $and: [
+      operationQuery,
+      attemptsQuery,
+      region !== '' ? { region } : defaultRegionQuery,
+      { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+    ]
+  }
+
+  return (
+    (await wsCollection.findOneAndUpdate(
+      query,
+      {
+        $inc: {
+          attempts: 1
+        },
+        $set: {
+          lastProcessingTime: Date.now()
+        }
+      },
+      {
+        returnDocument: 'after',
+        sort: {
+          lastVisit: -1 // Use last visit as a priority
+        }
+      }
+    )) ?? undefined
+  )
 }
 
 /**
  * @public
  */
-export const createUserWorkspace =
-  (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
-    async (
-      ctx: MeasureContext,
-      db: Db,
-      branding: Branding | null,
-      token: string,
-      workspaceName: string
-    ): Promise<LoginInfo> => {
-      const { email } = decodeToken(ctx, token)
+export async function createUserWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  workspaceName: string
+): Promise<LoginInfo> {
+  const { email } = decodeToken(ctx, token)
 
-      ctx.info('Creating workspace', { workspaceName, email })
+  ctx.info('Creating workspace', { workspaceName, email })
 
-      const info = await getAccount(db, email)
+  const userAccount = await getAccount(db, email)
 
-      if (info === null) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
-      }
-      if (info.confirmed === false) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
-      }
+  if (userAccount === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+  if (userAccount.confirmed === false) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
+  }
 
-      if (info.lastWorkspace !== undefined && info.admin === false) {
-        if (Date.now() - info.lastWorkspace < 60 * 1000) {
-          throw new PlatformError(
-            new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
-          )
-        }
-      }
-
-      async function doCreate (info: Account, notifyHandler: (workspace: Workspace) => void): Promise<void> {
-        const { workspaceInfo, err } = await createWorkspace(
-          ctx,
-          version,
-          txes,
-          migrationOperation,
-          db,
-          branding,
-          email,
-          workspaceName,
-          undefined,
-          notifyHandler,
-          async (workspace, model) => {
-            const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
-            const shouldUpdateAccount = initWS !== undefined
-            const client = await connect(
-              getEndpoint(ctx, workspace, EndpointKind.Internal),
-              getWorkspaceId(workspace.workspace),
-              undefined,
-              {
-                admin: 'true'
-              },
-              model
-            )
-            try {
-              await assignWorkspace(
-                ctx,
-                db,
-                branding,
-                email,
-                workspace.workspace,
-                AccountRole.Owner,
-                undefined,
-                shouldUpdateAccount,
-                client
-              )
-              ctx.info('Creating server side done', { workspaceName, email })
-            } catch (err: any) {
-              Analytics.handleError(err)
-            } finally {
-              await client.close()
-            }
-          }
-        )
-
-        if (err != null) {
-          ctx.error('failed to create workspace', { err, workspaceName, email })
-          // We need to drop workspace, to prevent wrong data usage.
-
-          await db.collection(WORKSPACE_COLLECTION).updateOne(
-            {
-              _id: workspaceInfo._id
-            },
-            { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
-          )
-          throw err
-        }
-        info.lastWorkspace = Date.now()
-
-        // Update last workspace time.
-        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
-      }
-
-      const workspaceInfo = await new Promise<Workspace>((resolve) => {
-        void doCreate(info, (info: Workspace) => {
-          resolve(info)
-        })
-      })
-
-      await assignWorkspaceRaw(db, { account: info, workspace: workspaceInfo })
-
-      const result = {
-        endpoint: getEndpoint(ctx, workspaceInfo, EndpointKind.External),
-        email,
-        token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(info)),
-        workspace: workspaceInfo.workspaceUrl
-      }
-      ctx.info('Creating user side done', { workspaceName, email })
-      return result
+  if (userAccount.lastWorkspace !== undefined && userAccount.admin === false) {
+    if (Date.now() - userAccount.lastWorkspace < 60 * 1000) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
+      )
     }
+  }
+  const workspaceInfo = await createWorkspace(ctx, db, branding, email, workspaceName, undefined)
+
+  // Update last workspace time.
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: userAccount._id }, { $set: { lastWorkspace: Date.now() } })
+
+  await assignWorkspaceRaw(db, { account: userAccount, workspace: workspaceInfo })
+
+  const result = {
+    endpoint: getEndpoint(ctx, workspaceInfo, EndpointKind.External),
+    email,
+    token: generateToken(email, getWorkspaceId(workspaceInfo.workspace), getExtra(userAccount)),
+    workspace: workspaceInfo.workspaceUrl
+  }
+  ctx.info('Creating user side done', { workspaceName, email })
+  return result
+}
 
 /**
  * @public
@@ -1609,8 +1641,17 @@ export async function getUserWorkspaces (
       .sort({ lastVisit: -1 })
       .toArray()
   )
-    .filter((it) => it.disabled !== true || it.creating === true)
+    .filter((it) => it.disabled !== true || isWorkspaceCreating(it.mode))
     .map(mapToClientWorkspace)
+}
+
+export type ClientWSInfoWithUpgrade = ClientWorkspaceInfo & {
+  upgrade?: {
+    toProcess: number
+    total: number
+    elapsed: number
+    eta: number
+  }
 }
 
 /**
@@ -1622,7 +1663,7 @@ export async function getWorkspaceInfo (
   branding: Branding | null,
   token: string,
   _updateLastVisit: boolean = false
-): Promise<ClientWorkspaceInfo> {
+): Promise<ClientWSInfoWithUpgrade> {
   const { email, workspace, extra } = decodeToken(ctx, token)
   const guest = extra?.guest === 'true'
   let account: Pick<Account, 'admin' | 'workspaces'> | Account | null = null
@@ -1653,7 +1694,7 @@ export async function getWorkspaceInfo (
 
   const [ws] = await ctx.with('get-workspace', {}, async () =>
     (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(query).toArray()).filter(
-      (it) => it.disabled !== true || account?.admin === true || it.creating === true
+      (it) => it.disabled !== true || account?.admin === true || it.mode !== 'active'
     )
   )
   if (ws == null) {
@@ -1665,7 +1706,34 @@ export async function getWorkspaceInfo (
       await updateLastVisit(db, ws, account as Account)
     })
   }
-  return mapToClientWorkspace(ws)
+
+  const clientWs: ClientWSInfoWithUpgrade = mapToClientWorkspace(ws)
+  const statistic = await getUpgradeStatistics(db, ws.region ?? '')
+  let upgrade: ClientWSInfoWithUpgrade['upgrade']
+
+  if (statistic !== undefined) {
+    const elapsed = Date.now() - statistic.startTime
+
+    upgrade = {
+      toProcess: statistic.toProcess,
+      total: statistic.total,
+      elapsed,
+      eta: Math.floor((elapsed / (statistic.total - statistic.toProcess + 1)) * statistic.toProcess)
+    }
+  }
+
+  clientWs.upgrade = upgrade
+
+  return clientWs
+}
+
+async function getUpgradeStatistics (db: Db, region: string): Promise<UpgradeStatistic | undefined> {
+  return (
+    (await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).findOne({
+      region,
+      toProcess: { $gt: 0 }
+    })) ?? undefined
+  )
 }
 
 function isAccount (data: Pick<Account, 'admin' | 'workspaces'> | Account | null): data is Account {
@@ -1687,15 +1755,15 @@ async function getWorkspaceAndAccount (
   workspaceUrl: string
 ): Promise<{ account: Account, workspace: Workspace }> {
   const email = cleanEmail(_email)
-  const wsPromise = await getWorkspaceById(db, workspaceUrl)
-  if (wsPromise === null) {
+  const workspace = await getWorkspaceById(db, workspaceUrl)
+  if (workspace === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl }))
   }
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  return { account, workspace: wsPromise }
+  return { account, workspace }
 }
 
 /**
@@ -1751,7 +1819,7 @@ export async function createMissingEmployee (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  await createPersonAccount(ctx, db, account, wsInfo.workspaceId, AccountRole.Guest)
+  await createPersonAccount(ctx, wsInfo, account, wsInfo.workspaceId, AccountRole.Guest)
 }
 
 /**
@@ -1781,7 +1849,7 @@ export async function assignWorkspace (
   if (workspaceInfo.account !== null) {
     await createPersonAccount(
       ctx,
-      db,
+      workspaceInfo.workspace,
       workspaceInfo.account,
       workspaceId,
       role,
@@ -1902,7 +1970,7 @@ async function replaceCurrentAccount (
 
 async function createPersonAccount (
   ctx: MeasureContext,
-  db: Db,
+  workspaceInfo: WorkspaceInfo,
   account: Account,
   workspace: string,
   role: AccountRole,
@@ -1911,10 +1979,6 @@ async function createPersonAccount (
   client?: Client,
   personAccountId?: Ref<PersonAccount>
 ): Promise<void> {
-  const workspaceInfo = await getWorkspaceById(db, workspace)
-  if (workspaceInfo == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
-  }
   const connection =
     client ?? (await connect(getEndpoint(ctx, workspaceInfo, EndpointKind.Internal), getWorkspaceId(workspace)))
   try {
@@ -2563,11 +2627,77 @@ export async function changeUsername (
 /**
  * @public
  */
-export function getMethods (
-  version: Data<Version>,
-  txes: Tx[],
-  migrateOperations: [string, MigrateOperation][]
-): Record<string, AccountMethod> {
+export async function updateWorkspaceName (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  name: string
+): Promise<void> {
+  const decodedToken = decodeToken(ctx, token)
+  const workspaceInfo = await getWorkspaceById(db, decodedToken.workspace.name)
+  if (workspaceInfo === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: decodedToken.workspace.name })
+    )
+  }
+
+  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne(
+    { _id: workspaceInfo._id },
+    {
+      $set: {
+        workspaceName: name
+      }
+    }
+  )
+}
+
+/**
+ * @public
+ */
+export async function deleteWorkspace (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string
+): Promise<void> {
+  const { workspace, email } = decodeToken(ctx, token)
+  const workspaceInfo = await getWorkspaceById(db, workspace.name)
+  if (workspaceInfo === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
+    )
+  }
+
+  const connection = await connect(
+    getEndpoint(ctx, workspaceInfo, EndpointKind.Internal),
+    getWorkspaceId(workspaceInfo.workspace)
+  )
+  try {
+    const ops = new TxOperations(connection, core.account.System)
+    const ownerAccount = await ops.findOne(contact.class.PersonAccount, { email, role: AccountRole.Owner })
+    if (ownerAccount == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne(
+      { _id: workspaceInfo._id },
+      {
+        $set: {
+          disabled: true,
+          mode: 'pending-deletion'
+        }
+      }
+    )
+  } finally {
+    await connection.close()
+  }
+}
+
+/**
+ * @public
+ */
+export function getMethods (): Record<string, AccountMethod> {
   return {
     login: wrap(login),
     join: wrap(join),
@@ -2582,7 +2712,7 @@ export function getMethods (
     getAccountInfo: wrap(getAccountInfo),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     createAccount: wrap(createAccount),
-    createWorkspace: wrap(createUserWorkspace(version, txes, migrateOperations)),
+    createWorkspace: wrap(createUserWorkspace),
     assignWorkspace: wrap(assignWorkspace),
     removeWorkspace: wrap(removeWorkspace),
     leaveWorkspace: wrap(leaveWorkspace),
@@ -2594,8 +2724,14 @@ export function getMethods (
     confirm: wrap(confirm),
     getAccountInfoByToken: wrap(getAccountInfoByToken),
     createMissingEmployee: wrap(createMissingEmployee),
-    changeUsername: wrap(changeUsername)
-    // updateAccount: wrap(updateAccount)
+    changeUsername: wrap(changeUsername),
+    updateWorkspaceName: wrap(updateWorkspaceName),
+    deleteWorkspace: wrap(deleteWorkspace),
+    // updateAccount: wrap(updateAccount),
+    // Workspace service methods
+    getPendingWorkspace: wrap(getPendingWorkspace),
+    updateWorkspaceInfo: wrap(updateWorkspaceInfo),
+    workerHandshake: wrap(workerHandshake)
   }
 }
 

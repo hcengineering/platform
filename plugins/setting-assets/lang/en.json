@@ -101,7 +101,6 @@
     "Automations": "Automations",
     "Collections": "Collections",
     "ClassColon": "Class:",
-    "Branding": "Branding",
     "SpaceTypes": "Space types",
     "NewSpaceType": "New space type",
     "SpaceTypeTitle": "Space type title",
@@ -113,6 +112,10 @@
     "Permissions": "Permissions",
     "Assignees": "Assignees",
     "DeleteRole": "Delete role",
-    "DeleteRoleConfirmation": "Are you sure you want to delete this role? All users with this role will lose their permissions."
+    "DeleteRoleConfirmation": "Are you sure you want to delete this role? All users with this role will lose their permissions.",
+    "DeleteWorkspace": "Delete workspace",
+    "DeleteWorkspaceConfirm": "Are you sure you want to delete this workspace? You and all other members will lose access to this workspace. All information from the workspace will be lost. This action cannot be undone. Do you want to proceed?",
+    "WorkspaceName": "Workspace name",
+    "Workspace": "Workspace"
   }
 }

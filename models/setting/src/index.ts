@@ -205,6 +205,19 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
+      name: 'general',
+      label: setting.string.General,
+      icon: setting.icon.Setting,
+      component: setting.component.General,
+      order: 900,
+      role: AccountRole.Owner
+    },
+    setting.ids.General
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
       name: 'owners',
       label: setting.string.Owners,
       icon: setting.icon.Owners,
@@ -240,19 +253,6 @@ export function createModel (builder: Builder): void {
       adminOnly: true
     },
     setting.ids.Configure
-  )
-  builder.createDoc(
-    setting.class.WorkspaceSettingCategory,
-    core.space.Model,
-    {
-      name: 'workspaceSettings',
-      label: setting.string.Branding,
-      icon: setting.icon.AccountSettings,
-      component: setting.component.WorkspaceSetting,
-      order: 1300,
-      role: AccountRole.Owner
-    },
-    setting.ids.WorkspaceSetting
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,

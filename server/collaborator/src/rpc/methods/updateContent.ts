@@ -14,25 +14,20 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import {
-  parseDocumentId,
-  type UpdateContentRequest,
-  type UpdateContentResponse
-} from '@hcengineering/collaborator-client'
-import { YDocVersion, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
-import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
+import { type UpdateContentRequest, type UpdateContentResponse } from '@hcengineering/collaborator-client'
+import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
 
 export async function updateContent (
   ctx: MeasureContext,
   context: Context,
+  documentId: string,
   payload: UpdateContentRequest,
   params: RpcMethodParams
 ): Promise<UpdateContentResponse> {
-  const { documentId, content, snapshot } = payload
-  const { hocuspocus, transformer, storageAdapter } = params
-  const { workspaceId } = context
+  const { content } = payload
+  const { hocuspocus, transformer } = params
 
   const updates = await ctx.with('transform', {}, () => {
     const updates: Record<string, Uint8Array> = {}
@@ -41,6 +36,7 @@ export async function updateContent (
       const ydoc = transformer.toYdoc(markup, field)
       updates[field] = encodeStateAsUpdate(ydoc)
     })
+
     return updates
   })
 
@@ -60,22 +56,6 @@ export async function updateContent (
         })
       })
     })
-
-    if (snapshot !== undefined && snapshot.versionId !== 'HEAD') {
-      const ydoc = connection.document ?? new YDoc()
-      const { collaborativeDoc } = parseDocumentId(documentId)
-
-      const version: YDocVersion = {
-        versionId: snapshot.versionId,
-        name: snapshot.versionName ?? snapshot.versionId,
-        createdBy: snapshot.createdBy,
-        createdOn: Date.now()
-      }
-
-      await ctx.with('snapshot', {}, async () => {
-        await takeCollaborativeDocSnapshot(storageAdapter, workspaceId, collaborativeDoc, ydoc, version, ctx)
-      })
-    }
   } finally {
     await connection.disconnect()
   }

@@ -52,7 +52,9 @@
         String.fromCodePoint(0x0033, 0xfe0f, 0x20e3),
         String.fromCodePoint(0x1f44b, 0x1f3fc),
         String.fromCodePoint(0x1f44d, 0x1f3fc),
-        String.fromCodePoint(0x1f44c, 0x1f3fc)
+        String.fromCodePoint(0x1f44c, 0x1f3fc),
+        String.fromCodePoint(0x1f525),
+        String.fromCodePoint(0x1f680)
       ],
       icon: Work
     },

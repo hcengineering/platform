@@ -14,16 +14,16 @@
 // limitations under the License.
 //
 
-import { type BrandingMap } from '@hcengineering/core'
+import { type Branding, type BrandingMap, type WorkspaceIdWithUrl } from '@hcengineering/core'
 import { BackupClientSession, buildStorageFromConfig, getMetricsContext } from '@hcengineering/server'
 
 import { type Pipeline, type StorageConfiguration } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { ClientSession, start as startJsonRpc, type ServerFactory, type Session } from '@hcengineering/server-ws'
 
-import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 import { serverAiBotId } from '@hcengineering/server-ai-bot'
 import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
+import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 
 registerStringLoaders()
 
@@ -46,6 +46,11 @@ export function start (
     enableCompression?: boolean
 
     accountsUrl: string
+
+    profiling?: {
+      start: () => void
+      stop: () => Promise<string | undefined>
+    }
   }
 ): () => Promise<void> {
   const metrics = getMetricsContext()
@@ -68,11 +73,16 @@ export function start (
       }
     }
   )
-  const sessionFactory = (token: Token, pipeline: Pipeline): Session => {
+  const sessionFactory = (
+    token: Token,
+    pipeline: Pipeline,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null
+  ): Session => {
     if (token.extra?.mode === 'backup') {
-      return new BackupClientSession(token, pipeline)
+      return new BackupClientSession(token, pipeline, workspaceId, branding)
     }
-    return new ClientSession(token, pipeline)
+    return new ClientSession(token, pipeline, workspaceId, branding)
   }
 
   const onClose = startJsonRpc(getMetricsContext(), {
@@ -83,7 +93,8 @@ export function start (
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,
-    externalStorage
+    externalStorage,
+    profiling: opt.profiling
   })
   return async () => {
     await externalStorage.close()

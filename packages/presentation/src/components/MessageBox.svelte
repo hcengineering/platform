@@ -24,6 +24,7 @@
   export let richMessage: boolean = false
   export let params: Record<string, any> = {}
   export let okLabel: IntlString | undefined = undefined
+  export let dangerous: boolean = false
   export let canSubmit = true
   export let action: (() => Promise<void>) | undefined = undefined
 
@@ -48,11 +49,11 @@
   </div>
   <div class="footer">
     <Button
-      focus
+      focus={!dangerous}
       focusIndex={1}
       label={okLabel ?? presentation.string.Ok}
       size={'large'}
-      kind={'primary'}
+      kind={dangerous ? 'dangerous' : 'primary'}
       loading={processing}
       on:click={() => {
         processing = true

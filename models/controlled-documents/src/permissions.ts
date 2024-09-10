@@ -31,6 +31,16 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
+      label: documents.string.ArchiveDocumentPermission,
+      description: documents.string.ArchiveDocumentDescription
+    },
+    documents.permission.ArchiveDocument
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
       label: documents.string.CoAuthorDocumentPermission,
       description: documents.string.CoAuthorDocumentDescription
     },

@@ -15,20 +15,43 @@
 
 <script lang="ts">
   import { ModernButton, showPopup } from '@hcengineering/ui'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import telegram from '@hcengineering/telegram'
+  import presentation from '@hcengineering/presentation'
+  import { concatLink } from '@hcengineering/core'
+  import { getMetadata } from '@hcengineering/platform'
 
   import ConfigureBotPopup from './ConfigureBotPopup.svelte'
 
   export let enabled: boolean
 
+  const url = getMetadata(telegram.metadata.BotUrl) ?? ''
+
   function configureBot (): void {
     showPopup(ConfigureBotPopup, {})
+  }
+
+  $: void updateWorkspace(enabled)
+
+  async function updateWorkspace (enabled: boolean): Promise<void> {
+    if (url === '') return
+
+    try {
+      const link = concatLink(url, '/updateWorkspace')
+      await fetch(link, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + getMetadata(presentation.metadata.Token),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ enabled })
+      })
+    } catch (e) {}
   }
 </script>
 
 {#if enabled}
   <div class="configure mt-2">
-    <ModernButton label={getEmbeddedLabel('Configure')} kind="primary" size="small" on:click={configureBot} />
+    <ModernButton label={telegram.string.Configure} kind="primary" size="small" on:click={configureBot} />
   </div>
 {/if}
 

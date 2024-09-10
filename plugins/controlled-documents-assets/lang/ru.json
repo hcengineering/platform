@@ -222,6 +222,8 @@
     "MarkDocAsDeleted": "Пометить документ как удаленный",
     "MarkDocsAsDeleted": "Пометить несколько документов как удаленные",
     "MarkDocAsDeletedConfirm": "Вы действительно хотите пометить следующие документы как удаленные: {titles}?",
+    "ArchiveDocs": "Архивировать {count, plural, =0 {документ} other {документы}}",
+    "ArchiveDocsConfirm": "Вы действительно хотите архивировать следующие документы: {titles}?",
 
     "DocumentInHierarchy": "Документ в иерархии",
     "FirstDraftVersion": "Это первая рабочая копия документа. Для него пока нет истории.",
@@ -275,6 +277,8 @@
     "ReviewDocumentDescription": "Предоставляет пользователям разрешение рецензировать документ",
     "ApproveDocumentPermission": "Утверждать документ",
     "ApproveDocumentDescription": "Предоставляет пользователям разрешение утверждать документ",
+    "ArchiveDocumentPermission": "Архивировать документ",
+    "ArchiveDocumentDescription": "Предоставляет пользователям разрешение архивировать документ",
     "CoAuthorDocumentPermission": "Быть со-автором документа",
     "CoAuthorDocumentDescription": "Предоставляет пользователям разрешение быть со-автором документа",
     "CreateDocumentPermission": "Создавать документ",

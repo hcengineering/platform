@@ -222,7 +222,7 @@
       }
     }
 
-    const applyOps = client.apply(_id, 'create-candidate')
+    const applyOps = client.apply(undefined, 'create-candidate')
 
     await applyOps.createDoc(contact.class.Person, contact.space.Contacts, candidate, _id)
     await applyOps.createMixin(

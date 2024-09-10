@@ -22,16 +22,8 @@ import core, {
   Ref,
   Space,
   Status,
-  TxOperations,
-  generateId
+  TxOperations
 } from '@hcengineering/core'
-import { IntlString } from '@hcengineering/platform'
-import { LiveQuery } from '@hcengineering/query'
-import task, { TaskType } from '@hcengineering/task'
-import { MarkupNode, MarkupNodeType, areEqualMarkups, markupToJSON, traverseNode } from '@hcengineering/text'
-import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
-import time, { type ToDo } from '@hcengineering/time'
-import { ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubFieldMapping,
@@ -41,6 +33,13 @@ import github, {
   GithubMilestone,
   GithubProject
 } from '@hcengineering/github'
+import { IntlString } from '@hcengineering/platform'
+import { LiveQuery } from '@hcengineering/query'
+import task, { TaskType } from '@hcengineering/task'
+import { MarkupNode, MarkupNodeType, areEqualMarkups, markupToJSON, traverseNode } from '@hcengineering/text'
+import time, { type ToDo } from '@hcengineering/time'
+import tracker, { Issue, IssuePriority } from '@hcengineering/tracker'
+import { ProjectsV2ItemEvent } from '@octokit/webhooks-types'
 import { deepEqual } from 'fast-equals'
 import { Octokit } from 'octokit'
 import {
@@ -372,16 +371,7 @@ export abstract class IssueSyncManagerBase {
           !areEqualMarkups(update.description, syncData.current?.description ?? '')
         ) {
           try {
-            const versionId = `${Date.now()}`
-            issueData.description = await this.collaborator.updateContent(
-              doc.description,
-              { description: update.description },
-              {
-                versionId,
-                versionName: versionId,
-                createdBy: account
-              }
-            )
+            await this.collaborator.updateContent(doc.description, { description: update.description })
           } catch (err: any) {
             Analytics.handleError(err)
             this.ctx.error(err)
@@ -402,7 +392,7 @@ export abstract class IssueSyncManagerBase {
             return true
           })
 
-          const updateTodos = this.client.apply('todos' + account)
+          const updateTodos = this.client.apply()
           for (const [k, v] of Object.entries(todos)) {
             await updateTodos.updateDoc(time.class.ToDo, time.space.ToDos, k as Ref<ToDo>, {
               doneOn: v ? Date.now() : null
@@ -926,17 +916,8 @@ export abstract class IssueSyncManagerBase {
         workspace: this.provider.getWorkspaceId().name
       })
       try {
-        const versionId = `${Date.now()}`
         issueData.description = update.description
-        update.description = await this.collaborator.updateContent(
-          existingIssue.description,
-          { description: update.description },
-          {
-            versionId,
-            versionName: versionId,
-            createdBy: account
-          }
-        )
+        await this.collaborator.updateContent(existingIssue.description, { description: update.description })
       } catch (err: any) {
         Analytics.handleError(err)
         this.ctx.error('error during description update', err)
@@ -1089,7 +1070,7 @@ export abstract class IssueSyncManagerBase {
       url: { $in: issues.map((it) => (it.url ?? '').toLowerCase()) }
     })
 
-    const ops = derivedClient.apply('sync-issyes' + generateId())
+    const ops = derivedClient.apply()
 
     for (const issue of issues) {
       try {

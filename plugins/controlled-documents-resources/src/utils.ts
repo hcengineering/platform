@@ -27,11 +27,10 @@ import core, {
   getCurrentAccount,
   checkPermission
 } from '@hcengineering/core'
-import { type IntlString, getMetadata, translate } from '@hcengineering/platform'
-import presentation, { getClient } from '@hcengineering/presentation'
+import { type IntlString, translate } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
 import { type Person, type Employee, type PersonAccount } from '@hcengineering/contact'
 import request, { RequestStatus } from '@hcengineering/request'
-import textEditor from '@hcengineering/text-editor'
 import { isEmptyMarkup } from '@hcengineering/text'
 import { showPopup, getUserTimezone, type Location } from '@hcengineering/ui'
 import { type KeyFilter } from '@hcengineering/view'
@@ -61,9 +60,6 @@ import { getProjectDocumentLink } from './navigation'
 import { wizardOpened } from './stores/wizards/create-document'
 
 export type TranslatedDocumentStates = Readonly<Record<DocumentState, string>>
-
-export const TOKEN = getMetadata(presentation.metadata.Token) ?? ''
-export const COLLABORATOR_URL = getMetadata(textEditor.metadata.CollaboratorUrl) ?? ''
 
 export const isDocumentCommentAttachedTo = (
   value: DocumentComment | null | undefined,

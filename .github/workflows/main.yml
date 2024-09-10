@@ -13,6 +13,7 @@ on:
     branches: [develop]
     tags:
       - v*
+      - s*
   pull_request:
     branches: [develop, main]
 
@@ -39,6 +40,7 @@ env:
     .prettierrc
     tools
   PublishTempFolder: publish_artifacts
+  MODEL_VERSION_MODE: ${{ startsWith(github.ref, 'refs/tags/s') && 'tagTime' || 'file' }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -231,10 +233,26 @@ jobs:
         run: |
           cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js ci
+      - name: Start profiling
+        run: |
+          cd ./tests
+          ./profile-start.sh
       - name: Run UI tests
         run: |
-          cd ./tests/sanity
+          cd ./tests/sanity          
           node ../../common/scripts/install-run-rushx.js uitest
+      - name: Download profile
+        run: |
+          cd ./tests
+          ./profile-download.sh
+          npm install -g cpupro
+          ./profile-generate.sh
+      - name: Upload profiling results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profiling
+          path: ./tests/profiles
       - name: 'Store docker logs'
         if: always()
         run: |
@@ -504,7 +522,7 @@ jobs:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       - name: Login to Docker Hub
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -513,13 +531,13 @@ jobs:
       #   if: ${{ github.ref == 'refs/heads/main' }}
       #   run: node common/scripts/install-run-rush.js docker:staging -v
       - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
           echo Pushing release of tag ${{ github.ref }}
           node common/scripts/install-run-rush.js docker:push -v
   dist-build:
-    # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
     needs: build
     runs-on: macos-latest
     timeout-minutes: 60

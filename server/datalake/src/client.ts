@@ -49,7 +49,7 @@ export class Client {
   constructor (private readonly endpoint: string) {}
 
   getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
-    const path = `/blob/${workspace.name}/${objectName}`
+    const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
     return concatLink(this.endpoint, path)
   }
 
@@ -91,7 +91,7 @@ export class Client {
 
     const form = new FormData()
     const options: FormData.AppendOptions = {
-      filename: objectName,
+      filename: encodeURIComponent(objectName),
       contentType: metadata.type,
       knownLength: metadata.size,
       header: {

@@ -11,7 +11,7 @@ export class OwnersPage {
   spacesAdminText = (): Locator => this.page.getByText('Admin Members')
   addMemberButton = (): Locator => this.page.getByRole('button', { name: 'Members' })
   selectMember = (memberName: string): Locator => this.page.getByRole('button', { name: memberName })
-  workspaceLogo = (): Locator => this.page.locator('.hulyComponent > .cursor-pointer')
+  workspaceLogo = (): Locator => this.page.locator('.hulyComponent .cursor-pointer')
   publicTemplate = (): Locator => this.page.getByText('Public templates')
   createTemplate = (): Locator => this.page.getByRole('button', { name: 'CREATE TEMPLATE' })
   saveTemplate = (): Locator => this.page.getByRole('button', { name: 'Save template' })
@@ -27,7 +27,7 @@ export class OwnersPage {
   linkValidFor = (): Locator => this.page.getByRole('spinbutton')
   emailMask = (): Locator => this.page.getByRole('textbox', { name: 'Type text...' })
   noLimitToggleButton = (): Locator => this.page.locator('label span')
-  avatarLarge = (): Locator => this.page.locator('.hulyAvatarSize-x-large.ava-image')
+  avatarLarge = (): Locator => this.page.locator('.hulyAvatarSize-medium.ava-image')
 
   async addMember (memberName: string): Promise<void> {
     await expect(this.spacesAdminText()).toBeVisible()

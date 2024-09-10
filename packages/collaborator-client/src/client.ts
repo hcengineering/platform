@@ -13,31 +13,12 @@
 // limitations under the License.
 //
 
-import {
-  Account,
-  CollaborativeDoc,
-  Markup,
-  Ref,
-  Timestamp,
-  WorkspaceId,
-  collaborativeDocWithLastVersion,
-  collaborativeDocWithVersion,
-  concatLink
-} from '@hcengineering/core'
-import { DocumentId } from './types'
-import { formatMinioDocumentId } from './utils'
+import { CollaborativeDoc, Markup, WorkspaceId, concatLink } from '@hcengineering/core'
+import { formatDocumentId } from './utils'
 
 /** @public */
-export interface DocumentSnapshotParams {
-  createdBy: Ref<Account>
-  versionId: string
-  versionName?: string
-}
-
-/** @public */
-export interface GetContentRequest {
-  documentId: DocumentId
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface GetContentRequest {}
 
 /** @public */
 export interface GetContentResponse {
@@ -46,9 +27,7 @@ export interface GetContentResponse {
 
 /** @public */
 export interface UpdateContentRequest {
-  documentId: DocumentId
   content: Record<string, Markup>
-  snapshot?: DocumentSnapshotParams
 }
 
 /** @public */
@@ -56,71 +35,10 @@ export interface UpdateContentRequest {
 export interface UpdateContentResponse {}
 
 /** @public */
-export interface CopyContentRequest {
-  documentId: DocumentId
-  sourceField: string
-  targetField: string
-  snapshot?: DocumentSnapshotParams
-}
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface CopyContentResponse {}
-
-/** @public */
-export interface BranchDocumentRequest {
-  sourceDocumentId: DocumentId
-  targetDocumentId: DocumentId
-}
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface BranchDocumentResponse {}
-
-/** @public */
-export interface RemoveDocumentRequest {
-  documentId: DocumentId
-}
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RemoveDocumentResponse {}
-
-/** @public */
-export interface TakeSnapshotRequest {
-  documentId: DocumentId
-  snapshot: DocumentSnapshotParams
-}
-
-/** @public */
-export interface TakeSnapshotResponse {
-  versionId: string
-  name: string
-
-  createdBy: Ref<Account>
-  createdOn: Timestamp
-}
-
-/** @public */
 export interface CollaboratorClient {
-  // field operations
-  getContent: (collaborativeDoc: CollaborativeDoc) => Promise<Record<string, Markup>>
-  updateContent: (
-    document: CollaborativeDoc,
-    content: Record<string, Markup>,
-    snapshot?: DocumentSnapshotParams
-  ) => Promise<CollaborativeDoc>
-  copyContent: (
-    document: CollaborativeDoc,
-    sourceField: string,
-    targetField: string,
-    snapshot?: DocumentSnapshotParams
-  ) => Promise<CollaborativeDoc>
-
-  // document operations
-  branch: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
-  remove: (collaborativeDoc: CollaborativeDoc) => Promise<void>
-  snapshot: (collaborativeDoc: CollaborativeDoc, params: DocumentSnapshotParams) => Promise<CollaborativeDoc>
+  getContent: (document: CollaborativeDoc) => Promise<Record<string, Markup>>
+  updateContent: (document: CollaborativeDoc, content: Record<string, Markup>) => Promise<void>
+  copyContent: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
 }
 
 /** @public */
@@ -136,7 +54,10 @@ class CollaboratorClientImpl implements CollaboratorClient {
     private readonly collaboratorUrl: string
   ) {}
 
-  private async rpc (method: string, payload: any): Promise<any> {
+  private async rpc (document: CollaborativeDoc, method: string, payload: any): Promise<any> {
+    const workspace = this.workspace.name
+    const documentId = formatDocumentId(workspace, document)
+
     const url = concatLink(this.collaboratorUrl, '/rpc')
 
     const res = await fetch(url, {
@@ -145,8 +66,12 @@ class CollaboratorClientImpl implements CollaboratorClient {
         Authorization: 'Bearer ' + this.token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ method, payload })
+      body: JSON.stringify({ method, documentId, payload })
     })
+
+    if (!res.ok) {
+      throw new Error('HTTP error ' + res.status)
+    }
 
     const result = await res.json()
 
@@ -158,70 +83,44 @@ class CollaboratorClientImpl implements CollaboratorClient {
   }
 
   async getContent (document: CollaborativeDoc): Promise<Record<string, Markup>> {
-    const workspace = this.workspace.name
-
-    const documentId = formatMinioDocumentId(workspace, document)
-    const payload: GetContentRequest = { documentId }
-    const res = (await this.rpc('getContent', payload)) as GetContentResponse
-
+    const res = await retry(
+      3,
+      async () => {
+        return (await this.rpc(document, 'getContent', {})) as GetContentResponse
+      },
+      50
+    )
     return res.content ?? {}
   }
 
-  async updateContent (
-    document: CollaborativeDoc,
-    content: Record<string, Markup>,
-    snapshot?: DocumentSnapshotParams
-  ): Promise<CollaborativeDoc> {
-    const workspace = this.workspace.name
-
-    const documentId = formatMinioDocumentId(workspace, document)
-    const payload: UpdateContentRequest = { documentId, content, snapshot }
-    await this.rpc('updateContent', payload)
-
-    return snapshot !== undefined ? collaborativeDocWithLastVersion(document, snapshot.versionId) : document
+  async updateContent (document: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
+    await retry(
+      3,
+      async () => {
+        await this.rpc(document, 'updateContent', { content })
+      },
+      50
+    )
   }
 
-  async copyContent (
-    document: CollaborativeDoc,
-    sourceField: string,
-    targetField: string,
-    snapshot?: DocumentSnapshotParams
-  ): Promise<CollaborativeDoc> {
-    const workspace = this.workspace.name
-
-    const documentId = formatMinioDocumentId(workspace, document)
-    const payload: CopyContentRequest = { documentId, sourceField, targetField, snapshot }
-    await this.rpc('copyContent', payload)
-
-    return snapshot !== undefined ? collaborativeDocWithLastVersion(document, snapshot.versionId) : document
+  async copyContent (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
+    const content = await this.getContent(source)
+    await this.updateContent(target, content)
   }
+}
 
-  async branch (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
-    const workspace = this.workspace.name
-
-    const sourceDocumentId = formatMinioDocumentId(workspace, source)
-    const targetDocumentId = formatMinioDocumentId(workspace, target)
-
-    const payload: BranchDocumentRequest = { sourceDocumentId, targetDocumentId }
-    await this.rpc('branchDocument', payload)
+async function retry<T> (retries: number, op: () => Promise<T>, delay: number = 100): Promise<T> {
+  let error: any
+  while (retries > 0) {
+    retries--
+    try {
+      return await op()
+    } catch (err: any) {
+      error = err
+      if (retries !== 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+    }
   }
-
-  async remove (document: CollaborativeDoc): Promise<void> {
-    const workspace = this.workspace.name
-
-    const documentId = formatMinioDocumentId(workspace, document)
-
-    const payload: RemoveDocumentRequest = { documentId }
-    await this.rpc('removeDocument', payload)
-  }
-
-  async snapshot (document: CollaborativeDoc, snapshot: DocumentSnapshotParams): Promise<CollaborativeDoc> {
-    const workspace = this.workspace.name
-
-    const documentId = formatMinioDocumentId(workspace, document)
-    const payload: TakeSnapshotRequest = { documentId, snapshot }
-    const res = (await this.rpc('takeSnapshot', payload)) as TakeSnapshotResponse
-
-    return collaborativeDocWithVersion(document, res.versionId)
-  }
+  throw error
 }

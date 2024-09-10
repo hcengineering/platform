@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import { MeasureContext, systemAccountEmail, isWorkspaceCreating } from '@hcengineering/core'
 import { aiBotAccountEmail, AIBotTransferEvent } from '@hcengineering/ai-bot'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
@@ -125,7 +125,7 @@ export class AIBotController {
         return
       }
 
-      if (info.creating === true) {
+      if (isWorkspaceCreating(info?.mode)) {
         this.ctx.info('Workspace is creating -> waiting...', { workspace })
         this.assignTimeout = setTimeout(() => {
           void this.assignToWorkspace(workspace)

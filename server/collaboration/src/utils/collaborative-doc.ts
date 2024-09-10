@@ -25,9 +25,7 @@ import {
 import { Doc as YDoc } from 'yjs'
 
 import { StorageAdapter } from '@hcengineering/server-core'
-import { yDocBranch } from '../history/branch'
-import { YDocVersion } from '../history/history'
-import { createYdocSnapshot, restoreYdocSnapshot } from '../history/snapshot'
+import { restoreYdocSnapshot } from '../history/snapshot'
 import { yDocFromStorage, yDocToStorage } from './storage'
 
 /** @public */
@@ -148,69 +146,6 @@ export async function removeCollaborativeDoc (
         await storageAdapter.remove(ctx, workspace, toRemove)
       })
     }
-  })
-}
-
-/** @public */
-export async function copyCollaborativeDoc (
-  storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
-  source: CollaborativeDoc,
-  target: CollaborativeDoc,
-  ctx: MeasureContext
-): Promise<YDoc | undefined> {
-  const { documentId: sourceDocumentId } = collaborativeDocParse(source)
-  const { documentId: targetDocumentId, versionId: targetVersionId } = collaborativeDocParse(target)
-
-  if (sourceDocumentId === targetDocumentId) {
-    // no need to copy into itself
-    return
-  }
-
-  await ctx.with('copyCollaborativeDoc', {}, async (ctx) => {
-    const ySource = await ctx.with('loadCollaborativeDocVersion', {}, async (ctx) => {
-      return await loadCollaborativeDoc(storageAdapter, workspace, source, ctx)
-    })
-
-    if (ySource === undefined) {
-      return
-    }
-
-    const yTarget = await ctx.with('yDocBranch', {}, () => {
-      return yDocBranch(ySource)
-    })
-
-    await ctx.with('saveCollaborativeDocVersion', {}, async (ctx) => {
-      await saveCollaborativeDocVersion(storageAdapter, workspace, targetDocumentId, targetVersionId, yTarget, ctx)
-    })
-  })
-}
-
-/** @public */
-export async function takeCollaborativeDocSnapshot (
-  storageAdapter: StorageAdapter,
-  workspace: WorkspaceId,
-  collaborativeDoc: CollaborativeDoc,
-  ydoc: YDoc,
-  version: YDocVersion,
-  ctx: MeasureContext
-): Promise<void> {
-  const { documentId } = collaborativeDocParse(collaborativeDoc)
-  const historyDocumentId = collaborativeHistoryDocId(documentId)
-
-  await ctx.with('takeCollaborativeDocSnapshot', {}, async (ctx) => {
-    const yHistory =
-      (await ctx.with('yDocFromStorage', { type: 'history' }, async (ctx) => {
-        return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc({ gc: false }))
-      })) ?? new YDoc()
-
-    await ctx.with('createYdocSnapshot', {}, async () => {
-      createYdocSnapshot(ydoc, yHistory, version)
-    })
-
-    await ctx.with('yDocToStorage', { type: 'history' }, async (ctx) => {
-      await yDocToStorage(ctx, storageAdapter, workspace, historyDocumentId, yHistory)
-    })
   })
 }
 

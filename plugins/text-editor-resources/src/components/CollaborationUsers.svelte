@@ -16,29 +16,32 @@
 -->
 
 <script lang="ts">
+  import type { AwarenessState, AwarenessStateMap } from '@hcengineering/text-editor'
   import { AnySvelteComponent, Button, DelayedCaller } from '@hcengineering/ui'
-  import { onMount } from 'svelte'
   import { Editor } from '@tiptap/core'
+  import { onMount } from 'svelte'
   import { createRelativePositionFromJSON } from 'yjs'
   import { relativePositionToAbsolutePosition, ySyncPluginKey } from 'y-prosemirror'
+  import { Provider } from '../provider/types'
 
-  import { TiptapCollabProvider } from '../provider/tiptap'
-  import { AwarenessChangeEvent, CollaborationUserState } from '@hcengineering/text-editor'
-
-  export let provider: TiptapCollabProvider
+  export let provider: Provider
   export let editor: Editor
   export let component: AnySvelteComponent
 
-  let states: CollaborationUserState[] = []
+  let states: AwarenessState[] = []
 
   const debounce = new DelayedCaller(100)
-  const onAwarenessChange = (event: AwarenessChangeEvent): void => {
+  const onAwarenessChange = (): void => {
     debounce.call(() => {
-      states = event.states.filter((p) => p.user != null).filter((p) => p.clientId !== provider.awareness?.clientID)
+      const map: AwarenessStateMap = provider.awareness?.states ?? new Map()
+      const entries: Array<[number, AwarenessState]> = Array.from(map.entries())
+      states = entries
+        .filter(([clientId, state]) => clientId !== provider.awareness?.clientID && state.user != null)
+        .map(([_, state]) => state)
     })
   }
 
-  function goToCursor (state: CollaborationUserState): void {
+  function goToCursor (state: AwarenessState): void {
     const cursor = state.cursor
     if (cursor?.head != null) {
       try {
@@ -60,8 +63,8 @@
   }
 
   onMount(() => {
-    provider.on('awarenessUpdate', onAwarenessChange)
-    return () => provider.off('awarenessUpdate', onAwarenessChange)
+    provider.awareness?.on('update', onAwarenessChange)
+    return () => provider.awareness?.off('update', onAwarenessChange)
   })
 </script>
 

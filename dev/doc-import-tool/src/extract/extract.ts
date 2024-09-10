@@ -1,5 +1,6 @@
 import { parseDocument } from 'htmlparser2'
 import { AnyNode, Document } from 'domhandler'
+import { findAll } from 'domutils'
 
 import { FileSpec, FileSpecType, TocFileSpec } from './types'
 import { createMetadataExtractor } from './meta'
@@ -62,6 +63,13 @@ class TocContentExtractor implements ContentExtractor {
 export async function extract (contents: string, spec: FileSpec, headerRoot?: AnyNode): Promise<ExtractedFile> {
   const extractor = new TocContentExtractor(spec)
   const doc = parseDocument(contents)
+
+  // We do not support headers > 3 so
+  // Traverse all Document's childrent and replace all h4-h6 with paragraphs
+  findAll((n) => ['h4', 'h5', 'h6'].includes(n.tagName), doc.childNodes).forEach((node) => {
+    node.name = 'p'
+  })
+
   return extractor.extract(doc, headerRoot)
 }
 

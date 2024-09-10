@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
   import core, {
@@ -49,7 +50,6 @@
   import { IconPicker } from '@hcengineering/view-resources'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
@@ -230,7 +230,7 @@
     const projectData = getProjectData()
     if (typeId !== undefined && typeType !== undefined) {
       const ops = client
-        .apply(projectId)
+        .apply('create-project')
         .notMatch(tracker.class.Project, { identifier: projectData.identifier.toUpperCase() })
 
       isSaving = true

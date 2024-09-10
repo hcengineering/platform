@@ -24,7 +24,7 @@
     type Data,
     type Ref
   } from '@hcengineering/core'
-  import { MessageBox, getClient } from '@hcengineering/presentation'
+  import { MessageBox, copyDocument, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     addNotification,
@@ -160,7 +160,9 @@
       docObject,
       _space,
       $locationStep.project,
-      $locationStep.parent
+      $locationStep.parent,
+      documents.class.ControlledDocument,
+      copyDocument
     )
 
     if (!success) {

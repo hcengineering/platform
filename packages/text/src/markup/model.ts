@@ -23,6 +23,7 @@ export enum MarkupNodeType {
   code_block = 'codeBlock',
   text = 'text',
   image = 'image',
+  file = 'file',
   reference = 'reference',
   hard_break = 'hardBreak',
   ordered_list = 'orderedList',
