@@ -115,6 +115,8 @@
     "DeleteRoleConfirmation": "Êtes-vous sûr de vouloir supprimer ce rôle ? Tous les utilisateurs ayant ce rôle perdront leurs permissions.",
     "DeleteWorkspace": "Supprimer l'espace de travail",
     "DeleteWorkspaceConfirm": "Êtes-vous sûr de vouloir supprimer cet espace de travail ? Vous et tous les autres membres perdrez l'accès à cet espace de travail. Toutes les informations de l'espace de travail seront perdues. Cette action est irréversible. Voulez-vous continuer?",
+    "DeleteSpaceType": "Supprimer le type d'espace",
+    "DeleteSpaceTypeConfirm": "Êtes-vous sûr de vouloir supprimer ce type d'espace ?",
     "WorkspaceName": "Nom de l'espace de travail",
     "Workspace": "Espace de travail"
   }
