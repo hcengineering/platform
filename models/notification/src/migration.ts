@@ -387,7 +387,11 @@ export const notificationOperation: MigrateOperation = {
       {
         state: 'set-default-hidden',
         func: async () => {
-          await client.update(DOMAIN_DOC_NOTIFY, { _class: notification.class.DocNotifyContext }, { hidden: false })
+          await client.update(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, hidden: { $exists: false } },
+            { hidden: false }
+          )
         }
       }
     ])
