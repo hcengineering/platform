@@ -27,6 +27,7 @@
     "Rename": "Renommer",
     "Restore": "Restaurer",
     "RoleLabel": "Rôle",
-    "Root": "/"
+    "Root": "/",
+    "UnarchiveConfirm": "Êtes-vous sûr de vouloir désarchiver le disque?"
   }
 }

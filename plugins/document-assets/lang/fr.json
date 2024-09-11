@@ -51,6 +51,7 @@
     "Icon": "Icône",
     "Color": "Couleur",
     "RoleLabel": "Rôle : {role}",
-    "Embeddings": "Intégrations"
+    "Embeddings": "Intégrations",
+    "UnarchiveConfirm": "Voulez-vous désarchiver le l'espace d'équipe ?"
   }
 }
