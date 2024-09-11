@@ -13,6 +13,13 @@
     "language": "en",
     "lastNameFirst": "true"
   },
+  "host.docker.internal:8087": {
+    "key": "huly-docker",
+    "title": "Huly",
+    "protocol": "http",
+    "language": "en",
+    "lastNameFirst": "true"
+  },
   "localhost:8081": {
     "key": "tracex-dev",
     "title": "TraceX",
@@ -24,6 +31,13 @@
     "title": "TraceX",
     "protocol": "http",
     "language": "en"
+  },
+  "host.docker.internal:8088": {
+    "key": "tracex-docker",
+    "title": "Huly",
+    "protocol": "http",
+    "language": "en",
+    "lastNameFirst": "true"
   },
   "example.localhost": {
     "key": "example",
