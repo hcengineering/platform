@@ -67,6 +67,7 @@ export async function createDocNotifyContexts (
         objectId,
         objectClass,
         objectSpace,
+        hidden: false,
         isPinned: false
       })
     }
@@ -330,6 +331,19 @@ export const chunterOperation: MigrateOperation = {
         state: 'remove-wrong-activity-v1',
         func: async (client) => {
           await removeWrongActivity(client)
+        }
+      },
+      {
+        state: 'remove-chat-info-v1',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChatInfo' as Ref<Class<Doc>> })
+          await client.deleteMany(DOMAIN_TX, { objectClass: 'chunter:class:ChatInfo' })
+          await client.update(
+            DOMAIN_DOC_NOTIFY,
+            { 'chunter:mixin:ChannelInfo': { $exists: true } },
+            { $unset: { 'chunter:mixin:ChannelInfo': true } }
+          )
+          await client.deleteMany(DOMAIN_TX, { mixin: 'chunter:mixin:ChannelInfo' })
         }
       },
       {

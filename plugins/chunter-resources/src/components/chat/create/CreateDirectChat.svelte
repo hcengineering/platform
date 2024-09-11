@@ -97,9 +97,12 @@
     })
 
     if (context !== undefined) {
+      if (context.hidden) {
+        await client.updateDoc(context._class, context.space, context._id, { hidden: false })
+      }
+
       dispatch('close')
       openChannel(dmId, chunter.class.DirectMessage)
-
       return
     }
 
@@ -110,6 +113,7 @@
       objectId: dmId,
       objectClass: chunter.class.DirectMessage,
       objectSpace: core.space.Space,
+      hidden: false,
       isPinned: false
     })
 
