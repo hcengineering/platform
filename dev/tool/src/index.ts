@@ -46,7 +46,10 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverClientPlugin, {
-  BlobClient, createClient, getTransactorEndpoint, getUserWorkspaces,
+  BlobClient,
+  createClient,
+  getTransactorEndpoint,
+  getUserWorkspaces,
   login,
   selectWorkspace
 } from '@hcengineering/server-client'

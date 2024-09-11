@@ -38,6 +38,7 @@ import core, {
   type Projection,
   type Ref,
   type ReverseLookups,
+  type SessionData,
   type SortingQuery,
   type StorageIterator,
   toFindResult,
@@ -51,7 +52,6 @@ import core, {
   type TxResult,
   type TxUpdateDoc,
   type WithLookup,
-  type SessionData,
   type WorkspaceId
 } from '@hcengineering/core'
 import {
@@ -60,7 +60,6 @@ import {
   type DomainHelperOperations,
   estimateDocSize,
   type ServerFindOptions,
-  type StorageAdapter,
   type TxAdapter,
   updateHashForDoc
 } from '@hcengineering/server-core'
@@ -308,7 +307,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   }
 
   addSecurity<T extends Doc>(query: DocumentQuery<T>, domain: string, sessionContext: SessionData): string | undefined {
-    if (sessionContext !== undefined) {
+    if (sessionContext !== undefined && sessionContext.isTriggerCtx !== true) {
       if (sessionContext.admin !== true && sessionContext.account !== undefined) {
         const acc = sessionContext.account
         if (isOwner(acc) || acc.role === AccountRole.DocGuest) {

@@ -49,6 +49,8 @@ export interface SessionData {
   sessionId: string
   admin?: boolean
 
+  isTriggerCtx?: boolean
+
   account: Account
 
   getAccount: (account: Ref<Account>) => Account | undefined
