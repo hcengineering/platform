@@ -8,6 +8,13 @@ services:
     ports:
       - 27018:27018
     restart: unless-stopped
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=example
+    ports:
+      - 5433:5432
+    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"

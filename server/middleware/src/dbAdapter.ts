@@ -13,14 +13,15 @@
 // limitations under the License.
 //
 
-import { type MeasureContext } from '@hcengineering/core'
+import { DOMAIN_TX, type MeasureContext } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import type {
   DbAdapter,
   DbConfiguration,
   Middleware,
   MiddlewareCreator,
-  PipelineContext
+  PipelineContext,
+  TxAdapter
 } from '@hcengineering/server-core'
 import { BaseMiddleware, createServiceAdaptersManager, DbAdapterManagerImpl } from '@hcengineering/server-core'
 
@@ -67,11 +68,51 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
       }
     })
 
+    const txAdapterName = this.conf.domains[DOMAIN_TX]
+    const txAdapter = adapters.get(txAdapterName) as TxAdapter
+    const txAdapterDomains: string[] = []
+    for (const key in this.conf.domains) {
+      if (this.conf.domains[key] === txAdapterName) {
+        txAdapterDomains.push(key)
+      }
+    }
+    await txAdapter.init?.(txAdapterDomains)
+    const model = await txAdapter.getModel(ctx)
+
+    for (const tx of model) {
+      try {
+        this.context.hierarchy.tx(tx)
+      } catch (err: any) {
+        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
+      }
+    }
+
     await ctx.with('init-adapters', {}, async (ctx) => {
-      for (const adapter of adapters.values()) {
-        await adapter.init?.()
+      for (const [key, adapter] of adapters) {
+        // already initialized
+        if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
+          let excludeDomains: string[] | undefined
+          let domains: string[] | undefined
+          if (this.conf.defaultAdapter === key) {
+            excludeDomains = []
+            for (const domain in this.conf.domains) {
+              if (this.conf.domains[domain] !== key) {
+                excludeDomains.push(domain)
+              }
+            }
+          } else {
+            domains = []
+            for (const domain in this.conf.domains) {
+              if (this.conf.domains[domain] === key) {
+                domains.push(domain)
+              }
+            }
+          }
+          await adapter.init(domains, excludeDomains)
+        }
       }
     })
+
     const metrics = this.conf.metrics.newChild('📔 server-storage', {})
 
     const defaultAdapter = adapters.get(this.conf.defaultAdapter)

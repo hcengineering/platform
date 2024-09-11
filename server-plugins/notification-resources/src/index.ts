@@ -164,6 +164,7 @@ export async function getCommonNotificationTxes (
 
   if (notificationTx !== undefined) {
     const notificationData = TxProcessor.createDoc2Doc(notificationTx)
+    const subscriptions = await control.findAll(ctx, notification.class.PushSubscription, { user: receiver._id })
     await applyNotificationProviders(
       notificationData,
       notifyResult,
@@ -173,7 +174,8 @@ export async function getCommonNotificationTxes (
       res,
       doc,
       receiver,
-      sender
+      sender,
+      subscriptions
     )
   }
 
@@ -492,6 +494,7 @@ export async function createPushFromInbox (
   _class: Ref<Class<InboxNotification>>,
   sender: SenderInfo,
   _id: Ref<Doc>,
+  subscriptions: PushSubscription[],
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx | undefined> {
   let { title, body } = await getTranslatedNotificationContent(data, _class, control)
@@ -521,7 +524,16 @@ export async function createPushFromInbox (
   }
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
-  await createPushNotification(control, receiver._id as Ref<PersonAccount>, title, body, _id, senderPerson, path)
+  await createPushNotification(
+    control,
+    receiver._id as Ref<PersonAccount>,
+    title,
+    body,
+    _id,
+    subscriptions,
+    senderPerson,
+    path
+  )
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
     user: receiver._id,
     status: NotificationStatus.New,
@@ -541,6 +553,7 @@ export async function createPushNotification (
   title: string,
   body: string,
   _id: string,
+  subscriptions: PushSubscription[],
   senderAvatar?: Data<AvatarInfo>,
   path?: string[]
 ): Promise<void> {
@@ -548,7 +561,7 @@ export async function createPushNotification (
   const privateKey = getMetadata(serverNotification.metadata.PushPrivateKey)
   const subject = getMetadata(serverNotification.metadata.PushSubject) ?? 'mailto:hey@huly.io'
   if (privateKey === undefined || publicKey === undefined) return
-  const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, { user: target })
+  const userSubscriptions = subscriptions.filter((it) => it.user === target)
   const data: PushData = {
     title,
     body
@@ -576,7 +589,7 @@ export async function createPushNotification (
 
   webpush.setVapidDetails(subject, publicKey, privateKey)
 
-  for (const subscription of subscriptions) {
+  for (const subscription of userSubscriptions) {
     void sendPushToSubscription(control, target, subscription, data)
   }
 }
@@ -648,6 +661,7 @@ export async function applyNotificationProviders (
   object: Doc,
   receiver: ReceiverInfo,
   sender: SenderInfo,
+  subscriptions: PushSubscription[],
   message?: ActivityMessage
 ): Promise<void> {
   const resources = control.modelDb.findAllSync(serverNotification.class.NotificationProviderResources, {})
@@ -662,7 +676,8 @@ export async function applyNotificationProviders (
         data,
         notification.class.ActivityInboxNotification,
         sender,
-        data._id
+        data._id,
+        subscriptions
       )
       if (pushTx !== undefined) {
         res.push(pushTx)
@@ -728,7 +743,8 @@ export async function getNotificationTxes (
   params: NotifyParams,
   docNotifyContexts: DocNotifyContext[],
   activityMessages: ActivityMessage[],
-  settings: NotificationProviderControl
+  settings: NotificationProviderControl,
+  subscriptions: PushSubscription[]
 ): Promise<Tx[]> {
   if (receiver.account === undefined) {
     return []
@@ -777,6 +793,7 @@ export async function getNotificationTxes (
           object,
           receiver,
           sender,
+          subscriptions,
           message
         )
       }
@@ -942,7 +959,9 @@ export async function createCollabDocInfo (
   }
 
   const settings = await getNotificationProviderControl(ctx, control)
-
+  const subscriptions = await control.findAll(ctx, notification.class.PushSubscription, {
+    user: { $in: Array.from(targets) }
+  })
   for (const target of targets) {
     const info: ReceiverInfo | undefined = toReceiverInfo(control.hierarchy, usersInfo.get(target))
 
@@ -959,7 +978,8 @@ export async function createCollabDocInfo (
       params,
       notifyContexts,
       docMessages,
-      settings
+      settings,
+      subscriptions
     )
     const ids = new Set(targetRes.map((it) => it._id))
     if (info.account?.email !== undefined) {

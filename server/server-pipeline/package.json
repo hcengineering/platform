@@ -48,6 +48,7 @@
     "@hcengineering/server-collaboration-resources": "^0.6.0",
     "@hcengineering/server": "^0.6.4",
     "@hcengineering/server-storage": "^0.6.0",
+    "@hcengineering/postgres": "^0.6.0",
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/elastic": "^0.6.0",
     "elastic-apm-node": "~3.26.0",

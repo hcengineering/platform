@@ -73,12 +73,21 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     core.space.Tx
   ]
 
+  private constructor (
+    private readonly skipFindCheck: boolean,
+    context: PipelineContext,
+    next?: Middleware
+  ) {
+    super(context, next)
+  }
+
   static async create (
+    skipFindCheck: boolean,
     ctx: MeasureContext,
     context: PipelineContext,
     next: Middleware | undefined
   ): Promise<SpaceSecurityMiddleware> {
-    return new SpaceSecurityMiddleware(context, next)
+    return new SpaceSecurityMiddleware(skipFindCheck, context, next)
   }
 
   private resyncDomains (): void {
@@ -496,7 +505,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (!isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
+    if (!this.skipFindCheck && !isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace)

@@ -862,7 +862,7 @@ export async function backup (
             addedDocuments += descrJson.length
             addedDocuments += blob.size
 
-            printDownloaded(blob._id, descrJson.length)
+            printDownloaded('', descrJson.length)
             try {
               const buffers: Buffer[] = []
               await blobClient.writeTo(ctx, blob._id, blob.size, {
@@ -907,7 +907,7 @@ export async function backup (
                 })
               }
 
-              printDownloaded(blob._id, blob.size)
+              printDownloaded('', blob.size)
             } catch (err: any) {
               if (err.message?.startsWith('No file for') === true) {
                 ctx.error('failed to download blob', { message: err.message })
@@ -925,7 +925,7 @@ export async function backup (
               if (err != null) throw err
             })
             processChanges(d)
-            printDownloaded(d._id, data.length)
+            printDownloaded('', data.length)
           }
         }
       }
@@ -1141,6 +1141,9 @@ export async function restore (
   let uploaded = 0
 
   const printUploaded = (msg: string, size: number): void => {
+    if (size == null) {
+      return
+    }
     uploaded += size
     const newDownloadedMb = Math.round(uploaded / (1024 * 1024))
     const newId = Math.round(newDownloadedMb / 10)
@@ -1275,6 +1278,10 @@ export async function restore (
                     blobs.delete(name)
                     const doc = d?.doc as Blob
                     ;(doc as any)['%hash%'] = changeset.get(doc._id)
+                    let sz = doc.size
+                    if (Number.isNaN(sz) || sz !== bf.length) {
+                      sz = bf.length
+                    }
                     void blobClient.upload(ctx, doc._id, doc.size, doc.contentType, bf).then(() => {
                       void sendChunk(doc, bf.length).finally(() => {
                         requiredDocs.delete(doc._id)

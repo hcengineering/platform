@@ -69,37 +69,41 @@ async function migrateAvatars (client: MigrationClient): Promise<void> {
     _class: { $in: classes },
     avatar: { $regex: 'color|gravatar://.*' }
   })
-  while (true) {
-    const docs = await i.next(50)
-    if (docs === null || docs?.length === 0) {
-      break
-    }
-    const updates: { filter: MigrationDocumentQuery<Contact>, update: MigrateUpdate<Contact> }[] = []
-    for (const d of docs) {
-      if (d.avatar?.startsWith(colorPrefix) ?? false) {
-        d.avatarProps = { color: d.avatar?.slice(colorPrefix.length) ?? '' }
-        updates.push({
-          filter: { _id: d._id },
-          update: {
-            avatarType: AvatarType.COLOR,
-            avatar: null,
-            avatarProps: { color: d.avatar?.slice(colorPrefix.length) ?? '' }
-          }
-        })
-      } else if (d.avatar?.startsWith(gravatarPrefix) ?? false) {
-        updates.push({
-          filter: { _id: d._id },
-          update: {
-            avatarType: AvatarType.GRAVATAR,
-            avatar: null,
-            avatarProps: { url: d.avatar?.slice(gravatarPrefix.length) ?? '' }
-          }
-        })
+  try {
+    while (true) {
+      const docs = await i.next(50)
+      if (docs === null || docs?.length === 0) {
+        break
+      }
+      const updates: { filter: MigrationDocumentQuery<Contact>, update: MigrateUpdate<Contact> }[] = []
+      for (const d of docs) {
+        if (d.avatar?.startsWith(colorPrefix) ?? false) {
+          d.avatarProps = { color: d.avatar?.slice(colorPrefix.length) ?? '' }
+          updates.push({
+            filter: { _id: d._id },
+            update: {
+              avatarType: AvatarType.COLOR,
+              avatar: null,
+              avatarProps: { color: d.avatar?.slice(colorPrefix.length) ?? '' }
+            }
+          })
+        } else if (d.avatar?.startsWith(gravatarPrefix) ?? false) {
+          updates.push({
+            filter: { _id: d._id },
+            update: {
+              avatarType: AvatarType.GRAVATAR,
+              avatar: null,
+              avatarProps: { url: d.avatar?.slice(gravatarPrefix.length) ?? '' }
+            }
+          })
+        }
+      }
+      if (updates.length > 0) {
+        await client.bulk(DOMAIN_CONTACT, updates)
       }
     }
-    if (updates.length > 0) {
-      await client.bulk(DOMAIN_CONTACT, updates)
-    }
+  } finally {
+    await i.close()
   }
 
   await client.update(

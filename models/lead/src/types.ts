@@ -95,9 +95,9 @@ export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
     leads?: number
 
-  @Prop(TypeCollaborativeDoc(), core.string.Description)
+  @Prop(TypeCollaborativeDoc(), lead.string.Description)
   @Index(IndexKind.FullText)
-    description!: CollaborativeDoc
+    customerDescription!: CollaborativeDoc
 }
 
 @Mixin(lead.mixin.DefaultFunnelTypeData, lead.class.Funnel)

@@ -31,7 +31,7 @@ registerStringLoaders()
  * @public
  */
 export function start (
-  dbUrl: string,
+  dbUrls: string,
   opt: {
     fullTextUrl: string
     storageConfig: StorageConfiguration
@@ -57,18 +57,20 @@ export function start (
 
   registerServerPlugins()
 
-  const externalStorage = buildStorageFromConfig(opt.storageConfig, dbUrl)
+  const [mainDbUrl, rawDbUrl] = dbUrls.split(';')
+
+  const externalStorage = buildStorageFromConfig(opt.storageConfig, rawDbUrl ?? mainDbUrl)
 
   const pipelineFactory = createServerPipeline(
     metrics,
-    dbUrl,
-    { ...opt, externalStorage },
+    dbUrls,
+    { ...opt, externalStorage, adapterSecurity: rawDbUrl !== undefined },
     {
       serviceAdapters: {
         [serverAiBotId]: {
           factory: createAIBotAdapter,
           db: '%ai-bot',
-          url: dbUrl
+          url: rawDbUrl ?? mainDbUrl
         }
       }
     }

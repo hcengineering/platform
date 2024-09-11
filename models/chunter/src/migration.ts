@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { chunterId, type ThreadMessage } from '@hcengineering/chunter'
+import { chunterId, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import core, {
   type Account,
   TxOperations,
@@ -33,12 +33,13 @@ import {
 } from '@hcengineering/model'
 import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
-import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
+import contactPlugin, { type Person, type PersonAccount } from '@hcengineering/contact'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION } from '@hcengineering/model-notification'
+import { type DocUpdateMessage } from '@hcengineering/activity'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 import chunter from './plugin'
 import { DOMAIN_CHUNTER } from './index'
-import { type DocUpdateMessage } from '@hcengineering/activity'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -240,6 +241,53 @@ async function removeWrongActivity (client: MigrationClient): Promise<void> {
   })
 }
 
+async function removeDuplicatedDirects (client: MigrationClient): Promise<void> {
+  const directs = await client.find<DirectMessage>(DOMAIN_SPACE, { _class: chunter.class.DirectMessage })
+  const personAccounts = await client.model.findAll<PersonAccount>(contactPlugin.class.PersonAccount, {})
+  const personByAccount = new Map(personAccounts.map((it) => [it._id, it.person]))
+
+  const accountsToPersons = (members: Ref<Account>[]): Ref<Person>[] => {
+    const personsSet = new Set(
+      members
+        .map((it) => personByAccount.get(it as Ref<PersonAccount>))
+        .filter((it): it is Ref<Person> => it !== undefined)
+    )
+    return Array.from(personsSet)
+  }
+
+  const map: Map<string, DirectMessage[]> = new Map<string, DirectMessage[]>()
+  const toRemove: Ref<DirectMessage>[] = []
+
+  for (const direct of directs) {
+    const persons = accountsToPersons(direct.members)
+
+    if (persons.length === 0) {
+      toRemove.push(direct._id)
+      continue
+    }
+
+    const key = persons.sort().join(',')
+
+    if (!map.has(key)) {
+      map.set(key, [direct])
+    } else {
+      map.get(key)?.push(direct)
+    }
+  }
+
+  for (const [, directs] of map) {
+    if (directs.length === 1) continue
+    const toSave = directs.reduce((acc, it) => ((it.messages ?? 0) > (acc.messages ?? 0) ? it : acc), directs[0])
+    const rest = directs.filter((it) => it._id !== toSave._id)
+    toRemove.push(...rest.map((it) => it._id))
+  }
+
+  await client.deleteMany(DOMAIN_SPACE, { _id: { $in: toRemove } })
+  await client.deleteMany(DOMAIN_ACTIVITY, { attachedTo: { $in: toRemove } })
+  await client.deleteMany(DOMAIN_ACTIVITY, { objectId: { $in: toRemove } })
+  await client.deleteMany(DOMAIN_DOC_NOTIFY, { objectId: { $in: toRemove } })
+}
+
 export const chunterOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, chunterId, [
@@ -286,7 +334,7 @@ export const chunterOperation: MigrateOperation = {
         }
       },
       {
-        state: 'remove-chat-info-v2',
+        state: 'remove-chat-info-v1',
         func: async (client) => {
           await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChatInfo' as Ref<Class<Doc>> })
           await client.deleteMany(DOMAIN_TX, { objectClass: 'chunter:class:ChatInfo' })
@@ -296,6 +344,12 @@ export const chunterOperation: MigrateOperation = {
             { $unset: { 'chunter:mixin:ChannelInfo': true } }
           )
           await client.deleteMany(DOMAIN_TX, { mixin: 'chunter:mixin:ChannelInfo' })
+        }
+      },
+      {
+        state: 'remove-duplicated-directs-v1',
+        func: async (client) => {
+          await removeDuplicatedDirects(client)
         }
       }
     ])

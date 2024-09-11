@@ -35,11 +35,12 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   console.log('Starting account service with brandings: ', brandings)
   const methods = getMethods()
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
-  const dbUri = process.env.MONGO_URL
-  if (dbUri === undefined) {
-    console.log('Please provide mongodb url')
+  const dbUrls = process.env.MONGO_URL
+  if (dbUrls === undefined) {
+    console.log('Please provide db url')
     process.exit(1)
   }
+  const [dbUrl, mongoUrl] = dbUrls.split(';')
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
@@ -89,7 +90,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   }
   setMetadata(serverClientPlugin.metadata.UserAgent, 'AccountService')
 
-  const client: MongoClientReference = getMongoClient(dbUri)
+  const client: MongoClientReference = getMongoClient(mongoUrl ?? dbUrl)
   let _client: MongoClient | Promise<MongoClient> = client.getClient()
 
   const app = new Koa()

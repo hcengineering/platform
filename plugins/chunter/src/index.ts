@@ -25,7 +25,9 @@ import { Person, ChannelProvider as SocialChannelProvider } from '@hcengineering
 /**
  * @public
  */
-export interface ChunterSpace extends Space {}
+export interface ChunterSpace extends Space {
+  messages?: number
+}
 
 /**
  * @public

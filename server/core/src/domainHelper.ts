@@ -93,7 +93,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
     const added = new Set<string>()
 
     try {
-      if (!operations.exists(domain)) {
+      if (!(await operations.exists(domain))) {
         return
       }
       const has50Documents = documents > 50

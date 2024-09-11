@@ -14,6 +14,7 @@
 //
 
 import {
+  type LowLevelStorage,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -26,7 +27,6 @@ import {
   type MeasureContext,
   type ModelDb,
   type Ref,
-  type StorageIterator,
   type Tx,
   type TxResult,
   type WorkspaceId
@@ -36,7 +36,7 @@ import type { ServerFindOptions } from './types'
 
 export interface DomainHelperOperations {
   create: (domain: Domain) => Promise<void>
-  exists: (domain: Domain) => boolean
+  exists: (domain: Domain) => Promise<boolean>
 
   listDomains: () => Promise<Set<Domain>>
   createIndex: (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }) => Promise<void>
@@ -99,8 +99,8 @@ export type DbAdapterHandler = (
 /**
  * @public
  */
-export interface DbAdapter {
-  init?: () => Promise<void>
+export interface DbAdapter extends LowLevelStorage {
+  init?: (domains?: string[], excludeDomains?: string[]) => Promise<void>
 
   helper: () => DomainHelperOperations
 
@@ -113,14 +113,6 @@ export interface DbAdapter {
   ) => Promise<FindResult<T>>
 
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
-
-  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
-
-  load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
-  upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
-  clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
-
-  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
 
   // Bulk update operations
   update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>

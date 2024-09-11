@@ -80,7 +80,7 @@ export interface MigrationClient {
   traverse: <T extends Doc>(
     domain: Domain,
     query: MigrationDocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'lookup'>
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
   ) => Promise<MigrationIterator<T>>
 
   // Allow to raw update documents inside domain.
@@ -88,15 +88,15 @@ export interface MigrationClient {
     domain: Domain,
     query: MigrationDocumentQuery<T>,
     operations: MigrateUpdate<T>
-  ) => Promise<MigrationResult>
+  ) => Promise<void>
 
   bulk: <T extends Doc>(
     domain: Domain,
     operations: { filter: MigrationDocumentQuery<T>, update: MigrateUpdate<T> }[]
-  ) => Promise<MigrationResult>
+  ) => Promise<void>
 
   // Move documents per domain
-  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<MigrationResult>
+  move: <T extends Doc>(sourceDomain: Domain, query: DocumentQuery<T>, targetDomain: Domain) => Promise<void>
 
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>

@@ -165,6 +165,17 @@ function $unset (document: Doc, keyval: Record<string, PropertyType>): void {
   }
 }
 
+function $rename (document: Doc, keyval: Record<string, string>): void {
+  const doc = document as any
+  for (const key in keyval) {
+    if (doc[key] !== undefined) {
+      doc[keyval[key]] = doc[key]
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete doc[key]
+    }
+  }
+}
+
 const operators: Record<string, _OperatorFunc> = {
   $push,
   $pull,
@@ -172,7 +183,8 @@ const operators: Record<string, _OperatorFunc> = {
   $move,
   $pushMixin,
   $inc,
-  $unset
+  $unset,
+  $rename
 }
 
 /**

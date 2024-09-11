@@ -33,6 +33,7 @@ import core, {
   generateId,
   getWorkspaceId,
   groupByArray,
+  isWorkspaceCreating,
   MeasureContext,
   RateLimiter,
   Ref,
@@ -42,13 +43,11 @@ import core, {
   TxOperations,
   Version,
   versionToString,
-  isWorkspaceCreating,
   WorkspaceId,
   type Branding,
   type WorkspaceMode
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hcengineering/server-token'
 import toolPlugin, { connect } from '@hcengineering/server-tool'
@@ -1490,11 +1489,16 @@ export async function getPendingWorkspace (
       operationQuery,
       attemptsQuery,
       region !== '' ? { region } : defaultRegionQuery,
-      { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+      {
+        $or: [
+          { lastProcessingTime: { $exists: false } },
+          { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+        ]
+      }
     ]
   }
 
-  return (
+  const result =
     (await wsCollection.findOneAndUpdate(
       query,
       {
@@ -1512,7 +1516,19 @@ export async function getPendingWorkspace (
         }
       }
     )) ?? undefined
-  )
+
+  if (result != null) {
+    ctx.info('getPendingWorkspace', {
+      workspaceId: result.workspace,
+      mode: result.mode,
+      workspaceName: result.workspaceName,
+      operation,
+      region,
+      version
+    })
+  }
+
+  return result
 }
 
 /**

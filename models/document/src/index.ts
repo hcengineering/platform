@@ -47,7 +47,7 @@ import { generateClassNotificationTypes } from '@hcengineering/model-notificatio
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import tracker from '@hcengineering/model-tracker'
-import view, { actionTemplates, createAction } from '@hcengineering/model-view'
+import view, { actionTemplates, createAction, type ViewAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
@@ -231,6 +231,30 @@ function defineTeamspace (builder: Builder): void {
 
   builder.mixin(document.class.Teamspace, core.class.Class, view.mixin.IgnoreActions, {
     actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
+
+  createAction(builder, {
+    label: view.string.UnArchive,
+    icon: view.icon.Archive,
+    action: view.actionImpl.UpdateDocument as ViewAction,
+    actionProps: {
+      key: 'archived',
+      ask: true,
+      value: false,
+      label: view.string.UnArchive,
+      message: document.string.UnarchiveConfirm
+    },
+    input: 'any',
+    category: view.category.General,
+    target: document.class.Teamspace,
+    visibilityTester: view.function.CanArchiveSpace,
+    query: {
+      archived: true
+    },
+    context: {
+      mode: ['context', 'browser'],
+      group: 'tools'
+    }
   })
 
   createAction(

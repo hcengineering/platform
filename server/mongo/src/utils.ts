@@ -81,7 +81,8 @@ class MongoClientReferenceImpl {
       }
       this.onclose()
       void (async () => {
-        await (await this.client).close()
+        const cl = await this.client
+        await cl.close()
       })()
     }
   }
@@ -214,7 +215,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
     }
   }
 
-  exists (domain: Domain): boolean {
+  async exists (domain: Domain): Promise<boolean> {
     return this.collections.has(domain)
   }
 
@@ -242,7 +243,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 
   async estimatedCount (domain: Domain): Promise<number> {
-    if (this.exists(domain)) {
+    if (await this.exists(domain)) {
       const c = this.collection(domain)
       return await c.estimatedDocumentCount()
     }

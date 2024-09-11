@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole, DOMAIN_TX, TxOperations, type Ref, type Status } from '@hcengineering/core'
+import { AccountRole, DOMAIN_TX, makeCollaborativeDoc, TxOperations, type Ref, type Status } from '@hcengineering/core'
 import { leadId, type Lead } from '@hcengineering/lead'
 import {
   tryMigrate,
@@ -25,7 +25,7 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 
-import contact from '@hcengineering/model-contact'
+import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 
 import lead from './plugin'
@@ -191,6 +191,60 @@ export const leadOperation: MigrateOperation = {
       {
         state: 'migrateDefaultProjectOwners',
         func: migrateDefaultProjectOwners
+      },
+      {
+        state: 'migrate-customer-description',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_CONTACT,
+            {
+              [lead.mixin.Customer + '.description']: { $exists: true }
+            },
+            {
+              $rename: {
+                [lead.mixin.Customer + '.description']: lead.mixin.Customer + '.customerDescription'
+              }
+            }
+          )
+          const it = await client.traverse(DOMAIN_CONTACT, {
+            _class: contact.class.Organization,
+            description: { $exists: false }
+          })
+          while (true) {
+            const docs = await it.next(50)
+            if (docs == null || docs.length === 0) {
+              break
+            }
+            await client.bulk(
+              DOMAIN_CONTACT,
+              docs.map((doc) => ({
+                filter: { _id: doc._id },
+                update: { $set: { description: makeCollaborativeDoc(doc._id, 'description') } }
+              }))
+            )
+          }
+          const it2 = await client.traverse(DOMAIN_CONTACT, { [lead.mixin.Customer + '.customerDescription']: null })
+          while (true) {
+            const docs = await it2.next(50)
+            if (docs == null || docs.length === 0) {
+              break
+            }
+            await client.bulk(
+              DOMAIN_CONTACT,
+              docs.map((doc) => ({
+                filter: { _id: doc._id },
+                update: {
+                  $set: {
+                    [lead.mixin.Customer + '.customerDescription']: makeCollaborativeDoc(
+                      docs[0]._id,
+                      'customerDescription'
+                    )
+                  }
+                }
+              }))
+            )
+          }
+        }
       }
     ])
   },

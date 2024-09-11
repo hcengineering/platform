@@ -15,13 +15,13 @@
 
 import {
   DOMAIN_MODEL,
+  DOMAIN_SPACE,
   IndexKind,
   type Account,
   type AccountRole,
   type Arr,
   type Class,
   type CollectionSize,
-  type Domain,
   type Permission,
   type Ref,
   type Role,
@@ -47,8 +47,6 @@ import {
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TAttachedDoc, TDoc } from './core'
-
-export const DOMAIN_SPACE = 'space' as Domain
 
 // S P A C E
 

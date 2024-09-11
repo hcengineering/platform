@@ -64,6 +64,7 @@ export default mergeIds(documentId, document, {
     ConfigDescription: '' as IntlString,
     ParentDocument: '' as IntlString,
     ChildDocument: '' as IntlString,
-    LockedBy: '' as IntlString
+    LockedBy: '' as IntlString,
+    UnarchiveConfirm: '' as IntlString
   }
 })

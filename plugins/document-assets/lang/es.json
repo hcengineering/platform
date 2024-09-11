@@ -51,6 +51,7 @@
     "Icon": "Icono",
     "Color": "Color",
     "RoleLabel": "Role: {role}",
-    "Embeddings": "Incrustaciones"
+    "Embeddings": "Incrustaciones",
+    "UnarchiveConfirm": "¿Quieres desarchivar el trabajo?"
   }
 }
