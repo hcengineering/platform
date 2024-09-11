@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import { type Doc, type Domain, type MeasureContext, type Ref, type StorageIterator } from '@hcengineering/core'
+import {
+  DocumentQuery,
+  DocumentUpdate,
+  FindOptions,
+  type Doc,
+  type Domain,
+  type MeasureContext,
+  type Ref,
+  type StorageIterator,
+  type Iterator
+} from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import type { Middleware, PipelineContext } from '@hcengineering/server-core'
 import { BaseMiddleware } from '@hcengineering/server-core'
@@ -48,8 +58,25 @@ export class LowLevelMiddleware extends BaseMiddleware implements Middleware {
       async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
         await adapterManager.getAdapter(domain, true).clean(ctx, domain, docs)
       },
-      async groupBy (ctx, domain, field) {
+      async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
         return await adapterManager.getAdapter(domain, false).groupBy(ctx, domain, field)
+      },
+      async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
+        return await adapterManager.getAdapter(domain, false).rawFindAll(domain, query, options)
+      },
+      async rawUpdate<T extends Doc>(
+        domain: Domain,
+        query: DocumentQuery<T>,
+        operations: DocumentUpdate<T>
+      ): Promise<void> {
+        await adapterManager.getAdapter(domain, true).rawUpdate(domain, query, operations)
+      },
+      async traverse<T extends Doc>(
+        domain: Domain,
+        query: DocumentQuery<T>,
+        options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+      ): Promise<Iterator<T>> {
+        return await adapterManager.getAdapter(domain, false).traverse(domain, query, options)
       }
     }
     return undefined

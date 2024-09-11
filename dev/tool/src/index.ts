@@ -19,6 +19,7 @@ import accountPlugin, {
   assignWorkspace,
   confirmEmail,
   createAcc,
+  createWorkspace as createWorkspaceRecord,
   dropAccount,
   dropWorkspace,
   dropWorkspaceFull,
@@ -32,10 +33,8 @@ import accountPlugin, {
   setAccountAdmin,
   setRole,
   updateWorkspace,
-  createWorkspace as createWorkspaceRecord,
   type Workspace
 } from '@hcengineering/account'
-import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
@@ -54,8 +53,10 @@ import serverClientPlugin, {
   login,
   selectWorkspace
 } from '@hcengineering/server-client'
+import { getServerPipeline } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -66,6 +67,8 @@ import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
 import core, {
   AccountRole,
+  concatLink,
+  generateId,
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
@@ -79,7 +82,7 @@ import core, {
   type Tx,
   type Version,
   type WorkspaceId,
-  concatLink
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
@@ -87,7 +90,14 @@ import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
-import { benchmark, benchmarkWorker, stressBenchmark, type StressBenchmarkMode } from './benchmark'
+import {
+  benchmark,
+  benchmarkWorker,
+  generateWorkspaceData,
+  stressBenchmark,
+  testFindAll,
+  type StressBenchmarkMode
+} from './benchmark'
 import {
   cleanArchivedSpaces,
   cleanRemovedTransactions,
@@ -101,11 +111,12 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
+import { moveFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
+import { importNotion } from './notion'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, syncFiles } from './storage'
-import { importNotion } from './notion'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -125,6 +136,7 @@ const colorConstants = {
 export function devTool (
   prepareTools: () => {
     mongodbUri: string
+    dbUrl: string | undefined
     txes: Tx[]
     version: Data<Version>
     migrateOperations: [string, MigrateOperation][]
@@ -1470,7 +1482,7 @@ export function devTool (
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
     .action(async (cmd: { workspace: string, concurrency: string }) => {
-      const { mongodbUri } = prepareTools()
+      const { mongodbUri, dbUrl } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
@@ -1482,8 +1494,15 @@ export function devTool (
 
             const wsId = getWorkspaceId(workspace.workspace)
             console.log('processing workspace', workspace.workspace, index, workspaces.length)
+            const wsUrl: WorkspaceIdWithUrl = {
+              name: workspace.workspace,
+              workspaceName: workspace.workspaceName ?? '',
+              workspaceUrl: workspace.workspaceUrl ?? ''
+            }
 
-            await migrateMarkup(toolCtx, adapter, wsId, client, mongodbUri, parseInt(cmd.concurrency))
+            const { pipeline } = await getServerPipeline(toolCtx, mongodbUri, dbUrl, wsUrl)
+
+            await migrateMarkup(toolCtx, adapter, wsId, client, pipeline, parseInt(cmd.concurrency))
 
             console.log('...done', workspace.workspace)
             index++
@@ -1499,6 +1518,57 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         await removeDuplicateIds(toolCtx, mongodbUri, adapter, accountsUrl, workspaces)
+      })
+    })
+
+  program.command('move-to-pg').action(async () => {
+    const { mongodbUri, dbUrl } = prepareTools()
+    await withDatabase(mongodbUri, async (db) => {
+      const workspaces = await listWorkspacesRaw(db)
+      await moveFromMongoToPG(
+        mongodbUri,
+        dbUrl,
+        workspaces.map((it) => getWorkspaceId(it.workspace))
+      )
+    })
+  })
+
+  program
+    .command('perfomance')
+    .option('-p, --parallel', '', false)
+    .action(async (cmd: { parallel: boolean }) => {
+      const { mongodbUri, txes, version, migrateOperations } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const email = generateId()
+        const ws = generateId()
+        const wsid = getWorkspaceId(ws)
+        const start = new Date()
+        const measureCtx = new MeasureMetricsContext('create-workspace', {})
+        const wsInfo = await createWorkspaceRecord(measureCtx, db, null, email, ws, ws)
+
+        // update the record so it's not taken by one of the workers for the next 60 seconds
+        await updateWorkspace(db, wsInfo, {
+          mode: 'creating',
+          progress: 0,
+          lastProcessingTime: Date.now() + 1000 * 60
+        })
+
+        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations)
+
+        await updateWorkspace(db, wsInfo, {
+          mode: 'active',
+          progress: 100,
+          disabled: false,
+          version
+        })
+        await createAcc(toolCtx, db, null, email, '1234', '', '', true)
+        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
+        console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
+        const token = generateToken(systemAccountEmail, wsid)
+        const endpoint = await getTransactorEndpoint(token, 'external')
+        await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
+        await testFindAll(endpoint, ws, email)
+        await dropWorkspace(toolCtx, db, null, ws)
       })
     })
 

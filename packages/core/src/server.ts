@@ -15,7 +15,8 @@
 
 import type { Account, Doc, Domain, Ref } from './classes'
 import { MeasureContext } from './measurements'
-import type { Tx } from './tx'
+import { DocumentQuery, FindOptions } from './storage'
+import type { DocumentUpdate, Tx } from './tx'
 import type { WorkspaceIdWithUrl } from './utils'
 
 /**
@@ -48,6 +49,8 @@ export interface SessionData {
   sessionId: string
   admin?: boolean
 
+  isTriggerCtx?: boolean
+
   account: Account
 
   getAccount: (account: Ref<Account>) => Account | undefined
@@ -76,6 +79,23 @@ export interface LowLevelStorage {
 
   // Low level direct group API
   groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
+
+  // migrations
+  rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
+
+  rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  // Traverse documents
+  traverse: <T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ) => Promise<Iterator<T>>
+}
+
+export interface Iterator<T extends Doc> {
+  next: (count: number) => Promise<T[] | null>
+  close: () => Promise<void>
 }
 
 export interface Branding {

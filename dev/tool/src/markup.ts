@@ -14,8 +14,8 @@ import core, {
   makeCollaborativeDoc
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
-import { type StorageAdapter } from '@hcengineering/server-core'
-import { connect, fetchModelFromMongo } from '@hcengineering/server-tool'
+import { type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
+import { connect, fetchModel } from '@hcengineering/server-tool'
 import { jsonToText, markupToYDoc } from '@hcengineering/text'
 import { type Db, type FindCursor, type MongoClient } from 'mongodb'
 
@@ -120,10 +120,10 @@ export async function migrateMarkup (
   storageAdapter: StorageAdapter,
   workspaceId: WorkspaceId,
   client: MongoClient,
-  mongodbUri: string,
+  pipeline: Pipeline,
   concurrency: number
 ): Promise<void> {
-  const { hierarchy } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+  const { hierarchy } = await fetchModel(ctx, pipeline)
 
   const workspaceDb = client.db(workspaceId.name)
 

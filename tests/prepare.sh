@@ -2,7 +2,7 @@
 
 docker compose -p sanity kill
 docker compose -p sanity down --volumes
-docker compose -p sanity up -d --force-recreate --renew-anon-volumes
+docker compose -p sanity -f docker-compose.yaml up -d --force-recreate --renew-anon-volumes
 docker_exit=$?
 if [ ${docker_exit} -eq 0 ]; then
     echo "Container started successfully"

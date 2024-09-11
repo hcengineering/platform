@@ -19,6 +19,16 @@ services:
     ports:
       - 27017:27017
     restart: unless-stopped
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=example
+    volumes:
+      - db:/data/db
+    ports:
+      - 5432:5432
+    restart: unless-stopped
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
