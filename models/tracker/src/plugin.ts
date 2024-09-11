@@ -40,8 +40,6 @@ export default mergeIds(trackerId, tracker, {
     CreatedDate: '' as IntlString,
     ChangeStatus: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    Unarchive: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString,
     AllProjects: '' as IntlString,
     MapRelatedIssues: '' as IntlString,
     Extensions: '' as IntlString

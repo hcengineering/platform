@@ -285,30 +285,6 @@ function defineDrive (builder: Builder): void {
     actions: [tracker.action.EditRelatedTargets, print.action.Print, tracker.action.NewRelatedIssue]
   })
 
-  createAction(builder, {
-    label: view.string.UnArchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: view.string.UnArchive,
-      message: drive.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: view.category.General,
-    target: drive.class.Drive,
-    visibilityTester: view.function.CanArchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    }
-  })
-
   createAction(
     builder,
     {

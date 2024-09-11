@@ -273,8 +273,6 @@
     "NoStatusFound": "未找到匹配的状态",
     "CreateMissingStatus": "创建缺失的状态",
     "UnsetParent": "父问题将被取消设置",
-    "Unarchive": "取消归档",
-    "UnarchiveConfirm": "您想要取消归档项目吗？",
     "AllProjects": "所有项目",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "由 {senderName} 更新",

@@ -79,7 +79,6 @@ import {
 } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-import { type ViewAction } from '@hcengineering/view'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 
 import task from './plugin'
@@ -254,51 +253,6 @@ export const actionTemplates = template({
     action: task.actionImpl.EditStatuses,
     input: 'focus',
     category: task.category.Task
-  },
-  archiveSpace: {
-    label: task.string.Archive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      value: true,
-      ask: true,
-      label: task.string.Archive,
-      message: task.string.ArchiveConfirm
-    },
-    visibilityTester: view.function.CanArchiveSpace,
-    input: 'any',
-    category: task.category.Task,
-    query: {
-      archived: false
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    },
-    override: [view.action.Archive, view.action.Delete]
-  },
-  unarchiveSpace: {
-    label: task.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: task.string.Unarchive,
-      message: task.string.UnarchiveConfirm
-    },
-    visibilityTester: view.function.CanArchiveSpace,
-    input: 'any',
-    category: task.category.Task,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    }
   }
 })
 

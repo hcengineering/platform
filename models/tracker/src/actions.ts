@@ -151,29 +151,6 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.DeleteProjectClean
   )
-  createAction(builder, {
-    label: tracker.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: tracker.string.Unarchive,
-      message: tracker.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: tracker.category.Tracker,
-    visibilityTester: view.function.CanArchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    },
-    target: tracker.class.Project
-  })
 
   createAction(
     builder,
