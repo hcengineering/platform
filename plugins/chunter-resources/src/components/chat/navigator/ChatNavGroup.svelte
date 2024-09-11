@@ -50,7 +50,9 @@
 
   let sections: Section[] = []
 
-  $: contexts = $contextsStore.filter(({ objectClass, isPinned }) => {
+  $: contexts = $contextsStore.filter((it) => {
+    const { objectClass, isPinned, hidden } = it
+    if (hidden) return false
     if (model.isPinned !== isPinned) return false
     if (model._class !== undefined && model._class !== objectClass) return false
     if (model.skipClasses !== undefined && model.skipClasses.includes(objectClass)) return false

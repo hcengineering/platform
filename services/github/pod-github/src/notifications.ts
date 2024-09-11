@@ -17,7 +17,8 @@ export async function createNotification (
       objectClass: forDoc._class,
       objectSpace: forDoc.space,
       user: data.user,
-      isPinned: false
+      isPinned: false,
+      hidden: false
     })
     docNotifyContext = await client.findOne(notification.class.DocNotifyContext, { _id: docNotifyContextId })
   }
