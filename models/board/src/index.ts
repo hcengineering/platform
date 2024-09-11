@@ -426,8 +426,8 @@ export function createModel (builder: Builder): void {
         key: 'isArchived',
         value: true,
         ask: true,
-        label: task.string.Archive,
-        message: task.string.ArchiveConfirm
+        label: view.string.Archive,
+        message: view.string.ArchiveConfirm
       },
       query: {
         isArchived: { $nin: [true] }

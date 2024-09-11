@@ -21,7 +21,7 @@ import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
 import { TrackerEvents, trackerId } from '@hcengineering/tracker'
-import { type KeyBinding, type ViewAction } from '@hcengineering/view'
+import { type KeyBinding } from '@hcengineering/view'
 import tracker from './plugin'
 
 import tags from '@hcengineering/tags'

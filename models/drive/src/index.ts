@@ -58,13 +58,7 @@ import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-cor
 import presentation from '@hcengineering/model-presentation'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, {
-  type ViewAction,
-  type Viewlet,
-  actionTemplates,
-  classPresenter,
-  createAction
-} from '@hcengineering/model-view'
+import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
