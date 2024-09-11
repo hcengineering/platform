@@ -74,7 +74,10 @@ export { chunterOperation } from './migration'
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 
 @Model(chunter.class.ChunterSpace, core.class.Space)
-export class TChunterSpace extends TSpace implements ChunterSpace {}
+export class TChunterSpace extends TSpace implements ChunterSpace {
+  @Prop(PropCollection(activity.class.ActivityMessage), chunter.string.Messages)
+    messages?: number
+}
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
 @UX(chunter.string.Channel, chunter.icon.Hashtag, undefined, undefined, undefined, chunter.string.Channels)
