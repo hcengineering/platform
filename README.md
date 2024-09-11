@@ -133,7 +133,7 @@ Add the following line to your /etc/hosts file
 127.0.0.1 host.docker.internal
 ```
 
-Accessing the URL http://host.docker.internal:8087 will lead you to the app in production mode.
+Accessing the URL http://host.docker.internal:8087 will lead you to the app in development mode.
 
 Limitations:
 
