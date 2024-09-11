@@ -115,6 +115,8 @@
     "DeleteRoleConfirmation": "Are you sure you want to delete this role? All users with this role will lose their permissions.",
     "DeleteWorkspace": "Delete workspace",
     "DeleteWorkspaceConfirm": "Are you sure you want to delete this workspace? You and all other members will lose access to this workspace. All information from the workspace will be lost. This action cannot be undone. Do you want to proceed?",
+    "DeleteSpaceType": "Delete space type",
+    "DeleteSpaceTypeConfirm": "Are you sure you want to delete this space type?",
     "WorkspaceName": "Workspace name",
     "Workspace": "Workspace"
   }

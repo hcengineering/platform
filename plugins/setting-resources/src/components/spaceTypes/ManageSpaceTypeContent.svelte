@@ -148,34 +148,6 @@
 >
   {#if type !== undefined && descriptor !== undefined}
     <Header>
-      {#if canEdit}
-        <ButtonIcon
-          icon={IconCopy}
-          size={'small'}
-          kind={'secondary'}
-          disabled
-          on:click={(ev) => {
-            // TODO: copy space type
-          }}
-        />
-        <ButtonIcon
-          icon={IconDelete}
-          size={'small'}
-          kind={'secondary'}
-          disabled
-          on:click={(ev) => {
-            // TODO: delete space type
-          }}
-        />
-        <ButtonIcon
-          icon={IconMoreV}
-          size={'small'}
-          kind={'secondary'}
-          on:click={(ev) => {
-            showMenu(ev, { object: type })
-          }}
-        />
-      {/if}
       <Breadcrumbs
         items={bcItems}
         size="large"

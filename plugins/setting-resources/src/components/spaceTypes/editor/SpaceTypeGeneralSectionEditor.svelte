@@ -16,8 +16,19 @@
   import contact from '@hcengineering/contact'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, { Account, reduceCalls, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, IconSquareExpand, Label, ModernButton, ModernEditbox, TextArea, Toggle } from '@hcengineering/ui'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import {
+    ButtonIcon,
+    IconDelete,
+    IconSquareExpand,
+    Label,
+    ModernButton,
+    ModernEditbox,
+    showPopup,
+    TextArea,
+    Toggle
+  } from '@hcengineering/ui'
+  import { deleteObjects } from '@hcengineering/view-resources'
 
   import settingRes from '../../../plugin'
 
@@ -28,6 +39,7 @@
   const client = getClient()
   let shortDescription = type?.shortDescription ?? ''
 
+  let loading: boolean = true
   let spacesCount: number = 0
   const spacesCountQuery = createQuery()
   $: if (type !== undefined) {
@@ -36,6 +48,7 @@
       { type: type._id },
       (res) => {
         spacesCount = res.length
+        loading = false
       },
       {
         projection: { _id: 1 }
@@ -44,6 +57,8 @@
   } else {
     spacesCountQuery.unsubscribe()
   }
+
+  $: canDelete = !loading && spacesCount === 0
 
   async function attributeUpdated<T extends keyof SpaceType> (field: T, value: SpaceType[T]): Promise<void> {
     if (disabled || type === undefined || type[field] === value) {
@@ -79,6 +94,24 @@
     }
     await ops.commit()
   })
+
+  async function handleDelete (): Promise<void> {
+    if (!canDelete || disabled || type == null) {
+      return
+    }
+
+    showPopup(MessageBox, {
+      label: settingRes.string.DeleteSpaceType,
+      message: settingRes.string.DeleteSpaceTypeConfirm,
+      action: async () => {
+        if (type == null) {
+          return
+        }
+
+        await deleteObjects(client, [type])
+      }
+    })
+  }
 </script>
 
 {#if descriptor !== undefined}
@@ -97,15 +130,20 @@
           }}
         />
       </div>
-      <ModernButton
-        icon={IconSquareExpand}
-        label={settingRes.string.CountSpaces}
-        labelParams={{ count: spacesCount }}
-        disabled={spacesCount === 0}
-        kind="tertiary"
-        size="medium"
-        hasMenu
-      />
+      <div class="flex-row">
+        <ModernButton
+          icon={IconSquareExpand}
+          label={settingRes.string.CountSpaces}
+          labelParams={{ count: spacesCount }}
+          disabled={spacesCount === 0}
+          kind="tertiary"
+          size="medium"
+          hasMenu
+        />
+        {#if canDelete}
+          <ButtonIcon icon={IconDelete} size="small" kind="secondary" {disabled} on:click={handleDelete} />
+        {/if}
+      </div>
     </div>
     <TextArea
       placeholder={settingRes.string.Description}
