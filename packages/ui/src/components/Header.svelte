@@ -21,7 +21,8 @@
     ButtonIcon,
     deviceOptionsStore as deviceInfo,
     resizeObserver,
-    HeaderAdaptive
+    HeaderAdaptive,
+    popupstore
   } from '..'
 
   export let type: 'type-aside' | 'type-popup' | 'type-component' | 'type-panel' = 'type-component'
@@ -62,6 +63,11 @@
     if (closeButton && ev.key === 'Escape') {
       ev.preventDefault()
       ev.stopPropagation()
+
+      if (type === 'type-aside' && $popupstore.length > 0) {
+        return
+      }
+
       dispatch('close')
     }
   }
