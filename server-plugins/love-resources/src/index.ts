@@ -284,8 +284,12 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
             const body = await translate(love.string.IsKnocking, {
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
+
+            const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+              user: userAcc[0]._id
+            })
             // TODO: Select proper account target
-            await createPushNotification(control, userAcc[0]._id, title, body, request._id, from, path)
+            await createPushNotification(control, userAcc[0]._id, title, body, request._id, subscriptions, from, path)
           }
         }
         return res
@@ -323,8 +327,11 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
             : await translate(love.string.InivitingLabel, {})
+        const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+          user: userAcc[0]._id
+        })
         // TODO: Select a proper user
-        await createPushNotification(control, userAcc[0]._id, title, body, invite._id, from, path)
+        await createPushNotification(control, userAcc[0]._id, title, body, invite._id, subscriptions, from, path)
       }
     }
   }

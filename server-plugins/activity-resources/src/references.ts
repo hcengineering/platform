@@ -253,6 +253,9 @@ export async function getPersonNotificationTxes (
         modifiedOn: originTx.modifiedOn,
         modifiedBy: sender._id
       }
+      const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+        user: receiverInfo._id
+      })
       await applyNotificationProviders(
         notificationData,
         notifyResult,
@@ -262,7 +265,8 @@ export async function getPersonNotificationTxes (
         res,
         doc,
         receiverInfo,
-        senderInfo
+        senderInfo,
+        subscriptions
       )
     }
   }

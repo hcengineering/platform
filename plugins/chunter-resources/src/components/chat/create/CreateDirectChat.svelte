@@ -17,9 +17,9 @@
   import { deepEqual } from 'fast-equals'
 
   import { DirectMessage } from '@hcengineering/chunter'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
+  import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { SelectUsersPopup } from '@hcengineering/contact-resources'
+  import { personIdByAccountId, SelectUsersPopup } from '@hcengineering/contact-resources'
   import notification from '@hcengineering/notification'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
@@ -55,13 +55,29 @@
     const accIds = [myAcc._id, ...employeeAccounts.filter(({ _id }) => _id !== myAcc._id).map(({ _id }) => _id)].sort()
 
     const existingDms = await client.findAll(chunter.class.DirectMessage, {})
+    const newDirectPersons = Array.from(new Set([...employeeIds, myAcc.person])).sort()
 
     let direct: DirectMessage | undefined
+
     for (const dm of existingDms) {
-      if (deepEqual(dm.members.sort(), accIds)) {
+      const existDirectPersons = Array.from(
+        new Set(dm.members.map((id) => $personIdByAccountId.get(id as Ref<PersonAccount>)))
+      )
+        .filter((person): person is Ref<Person> => person !== undefined)
+        .sort()
+      if (deepEqual(existDirectPersons, newDirectPersons)) {
         direct = dm
         break
       }
+    }
+
+    const existingMembers = direct?.members
+    const missingAccounts = existingMembers !== undefined ? accIds.filter((id) => !existingMembers.includes(id)) : []
+
+    if (direct !== undefined && missingAccounts.length > 0) {
+      await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, {
+        members: [...direct.members, ...missingAccounts]
+      })
     }
 
     const dmId =
@@ -75,12 +91,13 @@
       }))
 
     const context = await client.findOne(notification.class.DocNotifyContext, {
-      person: myAcc.person,
+      user: myAcc._id,
       objectId: dmId,
       objectClass: chunter.class.DirectMessage
     })
 
     if (context !== undefined) {
+      dispatch('close')
       openChannel(dmId, chunter.class.DirectMessage)
 
       return
@@ -97,6 +114,7 @@
     })
 
     openChannel(dmId, chunter.class.DirectMessage)
+    dispatch('close')
   }
 
   function handleCancel (): void {
