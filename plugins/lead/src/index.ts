@@ -36,7 +36,7 @@ export interface Funnel extends Project {
 export interface Customer extends Contact {
   leads?: number
 
-  description: CollaborativeDoc
+  customerDescription: CollaborativeDoc
 }
 
 /**

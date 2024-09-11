@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AvatarType, Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, Contact, findContacts, type Organization } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import {
@@ -29,7 +29,8 @@
   } from '@hcengineering/core'
   import { Customer, LeadEvents } from '@hcengineering/lead'
   import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
-  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import { EmptyMarkup } from '@hcengineering/text'
   import {
     Button,
     createFocusManager,
@@ -82,11 +83,16 @@
       candidate.avatarType = info.avatarType
       candidate.avatarProps = info.avatarProps
     }
-    const candidateData: MixinData<Contact, Customer> = {
-      description: makeCollaborativeDoc(customerId, 'description')
+
+    if (client.getHierarchy().isDerived(targetClass._id, contact.class.Organization)) {
+      ;(candidate as Organization).description = makeCollaborativeDoc(customerId, 'description')
     }
 
-    await updateMarkup(candidateData.description, { description })
+    const candidateData: MixinData<Contact, Customer> = {
+      customerDescription: makeCollaborativeDoc(customerId, 'customerDescription')
+    }
+
+    await updateMarkup(candidateData.customerDescription, { customerDescription: description })
 
     const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
     await client.createMixin(
@@ -231,6 +237,18 @@
         autoFocus
         focusIndex={1}
       />
+    </div>
+    <div class="flex-col flex-grow">
+      <div class="mt-1">
+        <StyledTextBox
+          bind:content={description}
+          placeholder={lead.string.IssueDescriptionPlaceholder}
+          kind={'normal'}
+          alwaysEdit={true}
+          showButtons={false}
+          focusIndex={4}
+        />
+      </div>
     </div>
   {/if}
   <svelte:fragment slot="pool">

@@ -55,6 +55,7 @@
     "@hcengineering/task-resources": "^0.6.0",
     "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/text-editor-resources": "^0.6.0",
+    "@hcengineering/text": "^0.6.5",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
