@@ -351,10 +351,8 @@ async function tryLoadModel (
   }
 
   const lastTxTime = getLastTxTime(current.transactions)
-  const result = await ctx.with(
-    'connection-load-model',
-    { hash: current.hash !== '' },
-    async (ctx) => await conn.loadModel(lastTxTime, current.hash)
+  const result = await ctx.with('connection-load-model', { hash: current.hash !== '' }, (ctx) =>
+    conn.loadModel(lastTxTime, current.hash)
   )
 
   if (Array.isArray(result)) {

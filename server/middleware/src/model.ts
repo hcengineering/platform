@@ -29,7 +29,9 @@ import crypto from 'node:crypto'
  * @public
  */
 export class ModelMiddleware extends BaseMiddleware implements Middleware {
-  hashes!: string[]
+  hashes!: Map<string, number> // Hash to position
+  lastHash: string = ''
+  lastHashResponse!: Promise<LoadModelResponse>
   model!: Tx[]
 
   static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
@@ -63,35 +65,52 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
   private addModelTx (tx: Tx): void {
     this.model.push(tx)
     const h = crypto.createHash('sha1')
-    h.update(this.hashes[this.hashes.length - 1])
+    h.update(this.lastHash)
     h.update(JSON.stringify(tx))
-    this.hashes.push(h.digest('hex'))
+    const hash = h.digest('hex')
+    this.hashes.set(hash, this.model.length - 1)
+    this.setLastHash(hash)
+  }
+
+  private setLastHash (hash: string): void {
+    this.lastHash = hash
+    this.lastHashResponse = Promise.resolve({
+      full: false,
+      hash,
+      transactions: []
+    })
   }
 
   private setModel (model: Tx[]): void {
-    let prev = ''
-    this.hashes = model.map((it) => {
-      const h = crypto.createHash('sha1')
-      h.update(prev)
-      h.update(JSON.stringify(it))
-      prev = h.digest('hex')
-      return prev
-    })
+    let last = ''
+    this.hashes = new Map(
+      model.map((it, index) => {
+        const h = crypto.createHash('sha1')
+        h.update(last)
+        h.update(JSON.stringify(it))
+        last = h.digest('hex')
+        return [last, index]
+      })
+    )
+    this.setLastHash(last)
   }
 
   loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
     if (hash !== undefined) {
-      const pos = this.hashes.indexOf(hash)
-      if (pos >= 0) {
+      if (hash === this.lastHash) {
+        return this.lastHashResponse
+      }
+      const pos = this.hashes.get(hash)
+      if (pos != null && pos >= 0) {
         return Promise.resolve({
           full: false,
-          hash: this.hashes[this.hashes.length - 1],
+          hash: this.lastHash,
           transactions: this.model.slice(pos + 1)
         })
       }
       return Promise.resolve({
         full: true,
-        hash: this.hashes[this.hashes.length - 1],
+        hash: this.lastHash,
         transactions: [...this.model]
       })
     }
