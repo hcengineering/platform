@@ -27,6 +27,7 @@
     "Rename": "Renombrar",
     "Restore": "Restaurar",
     "RoleLabel": "Rol",
-    "Root": "/"
+    "Root": "/",
+    "UnarchiveConfirm": "¿Estás seguro de que deseas desarchivar la unidad?"
   }
 }
