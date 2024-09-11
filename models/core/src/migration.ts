@@ -17,6 +17,7 @@ import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TX,
   MeasureMetricsContext,
@@ -49,7 +50,6 @@ import {
 } from '@hcengineering/model'
 import { type StorageAdapter, type StorageAdapterEx } from '@hcengineering/storage'
 import { markupToYDoc } from '@hcengineering/text'
-import { DOMAIN_SPACE } from './security'
 
 async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
   // Move statuses to model:
@@ -325,6 +325,16 @@ export const coreOperation: MigrateOperation = {
             { name: 'Spaces', description: 'Space for all spaces', type: core.spaceType.SpacesType },
             core.class.TypedSpace
           )
+        }
+      },
+      {
+        state: 'default-space',
+        func: async (client) => {
+          await createDefaultSpace(client, core.space.Tx, { name: 'Space for all txes' })
+          await createDefaultSpace(client, core.space.DerivedTx, { name: 'Space for derived txes' })
+          await createDefaultSpace(client, core.space.Model, { name: 'Space for model' })
+          await createDefaultSpace(client, core.space.Configuration, { name: 'Space for config' })
+          await createDefaultSpace(client, core.space.Workspace, { name: 'Space for common things' })
         }
       }
     ])

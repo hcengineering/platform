@@ -58,6 +58,7 @@
     "Icon": "Icon",
     "Color": "Color",
     "RoleLabel": "Role: {role}",
-    "Embeddings": "Embeddings"
+    "Embeddings": "Embeddings",
+    "UnarchiveConfirm": "Do you want to unarchive teamspace?"
   }
 }

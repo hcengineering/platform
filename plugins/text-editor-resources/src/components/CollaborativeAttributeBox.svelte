@@ -88,29 +88,31 @@
   ]
 </script>
 
-<CollaborativeTextEditor
-  bind:this={editor}
-  {collaborativeDoc}
-  objectId={object._id}
-  objectClass={key.attr.attributeOf}
-  objectSpace={object.space}
-  objectAttr={key.key}
-  {user}
-  {userComponent}
-  {refActions}
-  {extensions}
-  {attachFile}
-  {placeholder}
-  {boundary}
-  {readonly}
-  field={key.key}
-  canEmbedFiles={false}
-  withSideMenu={false}
-  kitOptions={{
-    note: false
-  }}
-  on:focus
-  on:blur
-  on:update
-  on:open-document
-/>
+{#if collaborativeDoc != null}
+  <CollaborativeTextEditor
+    bind:this={editor}
+    {collaborativeDoc}
+    objectId={object._id}
+    objectClass={key.attr.attributeOf}
+    objectSpace={object.space}
+    objectAttr={key.key}
+    {user}
+    {userComponent}
+    {refActions}
+    {extensions}
+    {attachFile}
+    {placeholder}
+    {boundary}
+    {readonly}
+    field={key.key}
+    canEmbedFiles={false}
+    withSideMenu={false}
+    kitOptions={{
+      note: false
+    }}
+    on:focus
+    on:blur
+    on:update
+    on:open-document
+  />
+{/if}

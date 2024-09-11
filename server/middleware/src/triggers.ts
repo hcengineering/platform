@@ -87,6 +87,9 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     const findAll: SessionFindAll = async (ctx, _class, query, options) => {
       const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? ctx
       delete (options as ServerFindOptions<Doc>)?.ctx
+      if (_ctx.contextData !== undefined) {
+        _ctx.contextData.isTriggerCtx = true
+      }
 
       const results = await this.findAll(_ctx, _class, query, options)
       return toFindResult(

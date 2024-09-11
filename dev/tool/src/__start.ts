@@ -73,6 +73,7 @@ addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'
 
 function prepareTools (): {
   mongodbUri: string
+  dbUrl: string | undefined
   txes: Tx[]
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]
