@@ -246,7 +246,7 @@ export function devTool (
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
     .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace)
     })
@@ -257,7 +257,7 @@ export function devTool (
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
     .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
@@ -267,23 +267,31 @@ export function devTool (
     dir: string,
     user: string,
     password: string,
-    workspace: string,
+    workspaceUrl: string,
     teamspace?: string
   ): Promise<void> {
-    if (workspace === '' || user === '' || password === '' || teamspace === '') {
+    if (workspaceUrl === '' || user === '' || password === '' || teamspace === '') {
       return
     }
 
     const config = await (await fetch(concatLink(getFrontUrl(), '/config.json'))).json()
+    console.log('Setting up Accounts URL: ', config.ACCOUNTS_URL)
     setupAccountsUrlMetadata(config.ACCOUNTS_URL)
-
-    const userToken = await login(user, password, workspace)
-    const allWorkspaces = await getUserWorkspaces(userToken)
-    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
-    if (workspaces.length < 1) {
-      console.log('Workspace not found: ', workspace)
+    console.log('Trying to login user: ', user)
+    const userToken = await login(user, password, workspaceUrl)
+    if (userToken === undefined) {
+      console.log('Login failed for user: ', user)
       return
     }
+
+    console.log('Looking for workspace: ', workspaceUrl)
+    const allWorkspaces = await getUserWorkspaces(userToken)
+    const workspaces = allWorkspaces.filter((ws) => ws.workspaceUrl === workspaceUrl)
+    if (workspaces.length < 1) {
+      console.log('Workspace not found: ', workspaceUrl)
+      return
+    }
+    console.log('Workspace found')
     const selectedWs = await selectWorkspace(userToken, workspaces[0].workspace)
     console.log(selectedWs)
 
@@ -299,6 +307,7 @@ export function devTool (
       }
     }
 
+    console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = (await connect(
       selectedWs.endpoint,
       {
@@ -310,6 +319,7 @@ export function devTool (
       }
     )) as unknown as CoreClient
     const client = new TxOperations(connection, core.account.System)
+    console.log('OK. Start the import directory: ', dir)
     await importNotion(client, uploader(selectedWs.token), dir, teamspace)
     await connection.close()
   }
