@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -20,13 +20,9 @@ import {
   FindOptions,
   FindResult,
   type MeasureContext,
-  Ref,
-  type Tx
+  Ref
 } from '@hcengineering/core'
-import { Middleware, type ServerStorage, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
-import { BaseMiddleware } from './base'
-
-import { QueryJoiner } from '@hcengineering/server-core'
+import { BaseMiddleware, Middleware, type PipelineContext, QueryJoiner } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -34,28 +30,28 @@ import { QueryJoiner } from '@hcengineering/server-core'
 export class QueryJoinMiddleware extends BaseMiddleware implements Middleware {
   private readonly joiner: QueryJoiner
 
-  private constructor (storage: ServerStorage, next?: Middleware) {
-    super(storage, next)
+  private constructor (context: PipelineContext, next?: Middleware) {
+    super(context, next)
     this.joiner = new QueryJoiner((ctx, _class, query, options) => {
-      return storage.findAll(ctx, _class, query, options)
+      return this.provideFindAll(ctx, _class, query, options)
     })
   }
 
-  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<QueryJoinMiddleware> {
-    return new QueryJoinMiddleware(storage, next)
+  static async create (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined
+  ): Promise<QueryJoinMiddleware> {
+    return new QueryJoinMiddleware(context, next)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
-    return await this.provideTx(ctx, tx)
-  }
-
-  override async findAll<T extends Doc>(
-    ctx: SessionContext,
+  override findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     // Will find a query or add + 1 to callbacks
-    return await this.joiner.findAll(ctx.ctx, _class, query, options)
+    return this.joiner.findAll(ctx, _class, query, options)
   }
 }

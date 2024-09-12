@@ -51,7 +51,7 @@ export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]
   const val = actualTx.attributes.active
   if (val === undefined) return []
   if (val) {
-    const freeRoom = (await control.findAll(love.class.Office, { person: null }))[0]
+    const freeRoom = (await control.findAll(control.ctx, love.class.Office, { person: null }))[0]
     if (freeRoom !== undefined) {
       return [
         control.txFactory.createTxUpdateDoc(freeRoom._class, freeRoom.space, freeRoom._id, {
@@ -60,7 +60,7 @@ export async function OnEmployee (tx: Tx, control: TriggerControl): Promise<Tx[]
       ]
     }
   } else {
-    const room = (await control.findAll(love.class.Office, { person: actualTx.objectId }))[0]
+    const room = (await control.findAll(control.ctx, love.class.Office, { person: actualTx.objectId }))[0]
     if (room !== undefined) {
       return [
         control.txFactory.createTxUpdateDoc(room._class, room.space, room._id, {
@@ -78,11 +78,11 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   const personId = account.person
 
   // we already have participantInfo for this person
-  const infos = await control.findAll(love.class.ParticipantInfo, { person: personId })
+  const infos = await control.findAll(control.ctx, love.class.ParticipantInfo, { person: personId })
   if (infos.length > 0) return []
 
-  const person = (await control.findAll(contact.class.Person, { _id: personId }))[0]
-  const room = (await control.findAll(love.class.Office, { person: personId }))[0]
+  const person = (await control.findAll(control.ctx, contact.class.Person, { _id: personId }))[0]
+  const room = (await control.findAll(control.ctx, love.class.Office, { person: personId }))[0]
   const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, core.space.Workspace, {
     person: personId,
     name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
@@ -112,11 +112,11 @@ async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   if (account === undefined) return []
 
   // recheck that user is still offline
-  const status = (await control.findAll(core.class.UserStatus, { user: acc }))[0]
+  const status = (await control.findAll(control.ctx, core.class.UserStatus, { user: acc }))[0]
   if (status !== undefined && status.online) return []
 
   const person = account.person
-  const infos = await control.findAll(love.class.ParticipantInfo, { person })
+  const infos = await control.findAll(control.ctx, love.class.ParticipantInfo, { person })
   const res: Tx[] = []
   for (const info of infos) {
     res.push(control.txFactory.createTxRemoveDoc(info._class, info.space, info._id))
@@ -135,7 +135,7 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
     const updateTx = actualTx as TxUpdateDoc<UserStatus>
     const val = updateTx.operations.online
     if (val === undefined) return []
-    const status = (await control.findAll(core.class.UserStatus, { _id: updateTx.objectId }))[0]
+    const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
     if (status !== undefined) {
       if (val) {
         return await createUserInfo(status.user, control)
@@ -164,7 +164,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
       })
     ]
   } else {
-    const room = (await control.findAll(love.class.Room, { _id: info.room }))[0]
+    const room = (await control.findAll(control.ctx, love.class.Room, { _id: info.room }))[0]
     if (room === undefined) return []
     return [
       control.txFactory.createTxCreateDoc(love.class.RoomInfo, core.space.Workspace, {
@@ -183,7 +183,7 @@ async function rejectJoinRequests (info: ParticipantInfo, control: TriggerContro
   if (oldRoomInfo !== undefined) {
     const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
     if (restPersons.length === 0) {
-      const requests = await control.findAll(love.class.JoinRequest, {
+      const requests = await control.findAll(control.ctx, love.class.JoinRequest, {
         room: oldRoomInfo.room,
         status: RequestStatus.Pending
       })
@@ -242,7 +242,9 @@ export async function OnParticipantInfo (tx: Tx, control: TriggerControl): Promi
   if (actualTx._class === core.class.TxUpdateDoc) {
     const newRoom = (actualTx as TxUpdateDoc<ParticipantInfo>).operations.room
     if (newRoom === undefined) return []
-    const info = (await control.findAll(love.class.ParticipantInfo, { _id: actualTx.objectId }, { limit: 1 }))[0]
+    const info = (
+      await control.findAll(control.ctx, love.class.ParticipantInfo, { _id: actualTx.objectId }, { limit: 1 })
+    )[0]
     if (info === undefined) return []
     const res: Tx[] = []
     res.push(...(await rejectJoinRequests(info, control)))
@@ -258,10 +260,10 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   if (actualTx._class === core.class.TxCreateDoc) {
     const request = TxProcessor.createDoc2Doc(actualTx)
     if (request.status === RequestStatus.Pending) {
-      const roomInfo = (await control.findAll(love.class.RoomInfo, { room: request.room }))[0]
+      const roomInfo = (await control.findAll(control.ctx, love.class.RoomInfo, { room: request.room }))[0]
       if (roomInfo !== undefined) {
         const res: Tx[] = []
-        const from = (await control.findAll(contact.class.Person, { _id: request.person }))[0]
+        const from = (await control.findAll(control.ctx, contact.class.Person, { _id: request.person }))[0]
         if (from === undefined) return []
         const type = await control.modelDb.findOne(notification.class.NotificationType, {
           _id: love.ids.KnockNotification
@@ -282,8 +284,12 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
             const body = await translate(love.string.IsKnocking, {
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
+
+            const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+              user: userAcc[0]._id
+            })
             // TODO: Select proper account target
-            await createPushNotification(control, userAcc[0]._id, title, body, request._id, from, path)
+            await createPushNotification(control, userAcc[0]._id, title, body, request._id, subscriptions, from, path)
           }
         }
         return res
@@ -298,11 +304,11 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
   if (actualTx._class === core.class.TxCreateDoc) {
     const invite = TxProcessor.createDoc2Doc(actualTx)
     if (invite.status === RequestStatus.Pending) {
-      const target = (await control.findAll(contact.class.Person, { _id: invite.target }))[0]
+      const target = (await control.findAll(control.ctx, contact.class.Person, { _id: invite.target }))[0]
       if (target === undefined) return []
       const userAcc = control.modelDb.getAccountByPersonId(target._id) as PersonAccount[]
       if (userAcc.length === 0) return []
-      const from = (await control.findAll(contact.class.Person, { _id: invite.from }))[0]
+      const from = (await control.findAll(control.ctx, contact.class.Person, { _id: invite.from }))[0]
       const type = await control.modelDb.findOne(notification.class.NotificationType, {
         _id: love.ids.InviteNotification
       })
@@ -321,8 +327,11 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
               name: formatName(from.name, control.branding?.lastNameFirst)
             })
             : await translate(love.string.InivitingLabel, {})
+        const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+          user: userAcc[0]._id
+        })
         // TODO: Select a proper user
-        await createPushNotification(control, userAcc[0]._id, title, body, invite._id, from, path)
+        await createPushNotification(control, userAcc[0]._id, title, body, invite._id, subscriptions, from, path)
       }
     }
   }

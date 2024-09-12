@@ -1,39 +1,42 @@
 import core, {
-  type Client,
   getWorkspaceId,
+  Hierarchy,
+  ModelDb,
   systemAccountEmail,
+  TxOperations,
   versionToString,
   type BaseWorkspaceInfo,
   type Branding,
+  type Client,
   type Data,
   type MeasureContext,
   type Tx,
   type Version,
-  type WorkspaceIdWithUrl,
-  TxOperations
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import {
   DummyFullTextAdapter,
+  SessionDataImpl,
   type Pipeline,
-  SessionContextImpl,
   type PipelineFactory,
   type StorageConfiguration
 } from '@hcengineering/server-core'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { generateToken } from '@hcengineering/server-token'
-import { initModel, prepareTools, upgradeModel, initializeWorkspace, updateModel } from '@hcengineering/server-tool'
 import {
   createIndexStages,
   createServerPipeline,
+  getServerPipeline,
+  getTxAdapterFactory,
   registerServerPlugins,
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { generateToken } from '@hcengineering/server-token'
+import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
 
 function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: WorkspaceIdWithUrl): Client {
-  const sctx = new SessionContextImpl(
-    ctx,
+  const sctx = new SessionDataImpl(
     systemAccountEmail,
     'backup',
     true,
@@ -42,24 +45,27 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
     null,
     false,
     new Map(),
-    new Map()
+    new Map(),
+    pipeline.context.modelDb
   )
+
+  ctx.contextData = sctx
 
   return {
     findAll: async (_class, query, options) => {
-      return await pipeline.findAll(sctx, _class, query, options)
+      return await pipeline.findAll(ctx, _class, query, options)
     },
     findOne: async (_class, query, options) => {
-      return (await pipeline.findAll(sctx, _class, query, { ...options, limit: 1 })).shift()
+      return (await pipeline.findAll(ctx, _class, query, { ...options, limit: 1 })).shift()
     },
     close: async () => {
       await pipeline.close()
     },
     getHierarchy: () => {
-      return pipeline.storage.hierarchy
+      return pipeline.context.hierarchy
     },
     getModel: () => {
-      return pipeline.storage.modelDb
+      return pipeline.context.modelDb
     },
     searchFulltext: async (query, options) => {
       return {
@@ -68,7 +74,7 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
       }
     },
     tx: async (tx) => {
-      return await pipeline.tx(sctx, tx)
+      return await pipeline.tx(ctx, [tx])
     },
     notify: (...tx) => {}
   }
@@ -116,31 +122,46 @@ export async function createWorkspace (
 
     await handleWsEvent?.('create-started', version, 10)
 
-    await childLogger.withLog('init-workspace', {}, async (ctx) => {
-      const deleteModelFirst = workspaceInfo.mode === 'creating'
+    const { mongodbUri, dbUrl } = prepareTools([])
+    const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
+    const hierarchy = new Hierarchy()
+    const modelDb = new ModelDb(hierarchy)
 
-      await initModel(
-        ctx,
-        wsId,
-        txes,
-        ctxModellogger,
-        async (value) => {
-          await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
-        },
-        deleteModelFirst
-      )
-    })
-
-    const { mongodbUri } = prepareTools([])
     const storageConfig: StorageConfiguration = storageConfigFromEnv()
     const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
     try {
+      const txFactory = getTxAdapterFactory(ctx, dbUrls, wsUrl, null, {
+        externalStorage: storageAdapter,
+        fullTextUrl: 'http://localhost:9200',
+        indexParallel: 0,
+        indexProcessing: 0,
+        rekoniUrl: '',
+        usePassedCtx: true
+      })
+      const txAdapter = await txFactory(ctx, hierarchy, dbUrl ?? mongodbUri, wsId, modelDb, storageAdapter)
+
+      await childLogger.withLog('init-workspace', {}, async (ctx) => {
+        const deleteModelFirst = workspaceInfo.mode === 'creating'
+
+        await initModel(
+          ctx,
+          wsId,
+          txes,
+          txAdapter,
+          storageAdapter,
+          ctxModellogger,
+          async (value) => {
+            await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
+          },
+          deleteModelFirst
+        )
+      })
       registerServerPlugins()
       registerStringLoaders()
       const factory: PipelineFactory = createServerPipeline(
         ctx,
-        mongodbUri,
+        dbUrls,
         {
           externalStorage: storageAdapter,
           fullTextUrl: 'http://localhost:9200',
@@ -172,7 +193,7 @@ export async function createWorkspace (
       const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
       const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
 
-      await updateModel(ctx, wsId, migrationOperation, client, ctxModellogger, async (value) => {
+      await updateModel(ctx, wsId, migrationOperation, client, pipeline, ctxModellogger, async (value) => {
         await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 10))
       })
 
@@ -219,13 +240,19 @@ export async function upgradeWorkspace (
   if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
     return
   }
+
   ctx.info('upgrading', {
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
     toVersion: versionStr,
     workspace: ws.workspace
   })
-  const wsId = getWorkspaceId(ws.workspace)
+  const wsId: WorkspaceIdWithUrl = {
+    name: ws.workspace,
+    workspaceName: ws.workspaceName ?? '',
+    workspaceUrl: ws.workspaceUrl ?? ''
+  }
+
   const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
   let progress = 0
 
@@ -233,14 +260,38 @@ export async function upgradeWorkspace (
     void handleWsEvent?.('progress', version, progress)
   }, 5000)
 
+  const { mongodbUri, dbUrl } = prepareTools([])
+
+  const wsUrl: WorkspaceIdWithUrl = {
+    name: ws.workspace,
+    workspaceName: ws.workspaceName ?? '',
+    workspaceUrl: ws.workspaceUrl ?? ''
+  }
+
+  const { pipeline, storageAdapter } = await getServerPipeline(ctx, mongodbUri, dbUrl, wsUrl)
+  const contextData = new SessionDataImpl(
+    systemAccountEmail,
+    'backup',
+    true,
+    { targets: {}, txes: [] },
+    wsUrl,
+    null,
+    false,
+    new Map(),
+    new Map(),
+    pipeline.context.modelDb
+  )
+  ctx.contextData = contextData
   try {
     await handleWsEvent?.('upgrade-started', version, 0)
 
     await upgradeModel(
       ctx,
       await getTransactorEndpoint(token, external ? 'external' : 'internal'),
-      getWorkspaceId(ws.workspace),
+      wsId,
       txes,
+      pipeline,
+      storageAdapter,
       migrationOperation,
       logger,
       false,
@@ -252,8 +303,11 @@ export async function upgradeWorkspace (
 
     await handleWsEvent?.('upgrade-done', version, 100, '')
   } catch (err: any) {
+    ctx.error('upgrade-failed', { message: err.message })
     await handleWsEvent?.('ping', version, 0, `Upgrade failed: ${err.message}`)
   } finally {
+    await pipeline.close()
+    await storageAdapter.close()
     clearInterval(updateProgressHandle)
   }
 }

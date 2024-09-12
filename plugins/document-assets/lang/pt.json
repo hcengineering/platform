@@ -51,6 +51,7 @@
     "Icon": "Ícone",
     "Color": "Cor",
     "RoleLabel": "Papel: {role}",
-    "Embeddings": "Incorporações"
+    "Embeddings": "Incorporações",
+    "UnarchiveConfirm": "Você deseja desarquivar o trabalho?"
   }
 }

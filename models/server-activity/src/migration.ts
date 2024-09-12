@@ -50,10 +50,11 @@ function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
 
   return {
+    ctx: new MeasureMetricsContext('migration', {}),
     txFactory,
     modelDb: client.model,
     hierarchy: client.hierarchy,
-    findAll: async (_class, query, options) =>
+    findAll: async (ctx, _class, query, options) =>
       toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options)),
     storageAdapter: client.storageAdapter,
     workspace: client.workspaceId
@@ -111,9 +112,10 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
 
   const notificationControl = getActivityControl(client)
 
-  const txClient: Pick<ActivityControl, 'hierarchy' | 'findAll'> = {
+  const txClient: Pick<ActivityControl, 'hierarchy' | 'findAll' | 'ctx'> = {
     hierarchy: notificationControl.hierarchy,
-    findAll: notificationControl.findAll
+    findAll: notificationControl.findAll,
+    ctx: new MeasureMetricsContext('migration', {})
   }
 
   let processed = 0
@@ -177,7 +179,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
           for (const di of ids) {
             docIds.set(di, null)
           }
-          const edocs = await txClient.findAll(_class, { _id: { $in: ids } })
+          const edocs = await txClient.findAll(txClient.ctx, _class, { _id: { $in: ids } })
           for (const ed of edocs) {
             docIds.set(ed._id, ed)
           }

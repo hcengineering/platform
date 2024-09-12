@@ -58,12 +58,12 @@ export async function sendResponse (
   socket: ConnectionSocket,
   resp: Response<any>
 ): Promise<void> {
-  await handleSend(ctx, socket, resp, 32 * 1024, session.binaryMode, session.useCompression)
+  await handleSend(ctx, socket, resp, 1024 * 1024, session.binaryMode, session.useCompression)
 }
 
 function waitNextTick (): Promise<void> | undefined {
   return new Promise<void>((resolve) => {
-    setTimeout(resolve)
+    setImmediate(resolve)
   })
 }
 export async function handleSend (
@@ -96,7 +96,7 @@ export async function handleSend (
         chunk.lookupMap = orig.lookupMap
       }
       if (chunk !== undefined) {
-        await ws.send(
+        ws.send(
           ctx,
           { ...msg, result: chunk, chunk: { index: cid, final: data.length === 0 } },
           useBinary,
@@ -110,6 +110,6 @@ export async function handleSend (
       }
     }
   } else {
-    await ws.send(ctx, msg, useBinary, useCompression)
+    ws.send(ctx, msg, useBinary, useCompression)
   }
 }

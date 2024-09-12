@@ -122,13 +122,13 @@ export interface DocumentClassQuery<T extends Doc> {
  */
 export interface TxApplyIf extends Tx {
   // only one operation per scope is allowed at one time.
-  scope: string
+  scope?: string
 
   // All matches should be true with at least one document.
-  match: DocumentClassQuery<Doc>[]
+  match?: DocumentClassQuery<Doc>[]
 
   // All matches should be false for all documents.
-  notMatch: DocumentClassQuery<Doc>[]
+  notMatch?: DocumentClassQuery<Doc>[]
 
   // If all matched execute following transactions.
   txes: TxCUD<Doc>[]
@@ -628,7 +628,7 @@ export class TxFactory {
 
   createTxApplyIf (
     space: Ref<Space>,
-    scope: string,
+    scope: string | undefined,
     match: DocumentClassQuery<Doc>[],
     notMatch: DocumentClassQuery<Doc>[],
     txes: TxCUD<Doc>[],

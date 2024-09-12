@@ -20,6 +20,7 @@ import {
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
+  DOMAIN_SPACE,
   DOMAIN_STATUS,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
@@ -76,7 +77,6 @@ import {
 } from './core'
 import { definePermissions } from './permissions'
 import {
-  DOMAIN_SPACE,
   TAccount,
   TPermission,
   TRole,
@@ -101,7 +101,7 @@ import {
   TTxWorkspaceEvent
 } from './tx'
 
-export { coreId } from '@hcengineering/core'
+export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
 export { coreOperation } from './migration'
 export * from './security'

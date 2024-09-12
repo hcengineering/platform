@@ -15,7 +15,7 @@
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
-import { DocNotifyContext, NotificationType } from '@hcengineering/notification'
+import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -25,7 +25,9 @@ import { Person, ChannelProvider as SocialChannelProvider } from '@hcengineering
 /**
  * @public
  */
-export interface ChunterSpace extends Space {}
+export interface ChunterSpace extends Space {
+  messages?: number
+}
 
 /**
  * @public
@@ -75,9 +77,8 @@ export interface ChatMessageViewlet extends ActivityMessageViewlet {
   label?: IntlString
 }
 
-export interface ChatInfo extends Doc {
+export interface ChatSyncInfo extends Doc {
   user: Ref<Person>
-  hidden: Ref<DocNotifyContext>[]
   timestamp: Timestamp
 }
 
@@ -86,10 +87,6 @@ export interface TypingInfo extends Doc {
   objectClass: Ref<Class<Doc>>
   person: Ref<Person>
   lastTyping: Timestamp
-}
-
-export interface ChannelInfo extends DocNotifyContext {
-  hidden: boolean
 }
 
 export type InlineButtonAction = (button: InlineButton, message: Ref<ChatMessage>, channel: Ref<Doc>) => Promise<void>
@@ -144,13 +141,12 @@ export default plugin(chunterId, {
     DirectMessage: '' as Ref<Class<DirectMessage>>,
     ChatMessage: '' as Ref<Class<ChatMessage>>,
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
-    ChatInfo: '' as Ref<Class<ChatInfo>>,
+    ChatSyncInfo: '' as Ref<Class<ChatSyncInfo>>,
     InlineButton: '' as Ref<Class<InlineButton>>,
     TypingInfo: '' as Ref<Class<TypingInfo>>
   },
   mixin: {
-    ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>,
-    ChannelInfo: '' as Ref<Mixin<ChannelInfo>>
+    ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
   },
   string: {
     Reactions: '' as IntlString,

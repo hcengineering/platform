@@ -48,6 +48,10 @@
   afterUpdate(adjustHeight)
 
   function adjustHeight (): void {
+    if (input == null) {
+      return
+    }
+
     input.style.height = 'auto'
     input.style.height = `${input.scrollHeight + 2}px`
   }

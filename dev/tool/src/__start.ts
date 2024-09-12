@@ -73,6 +73,7 @@ addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'
 
 function prepareTools (): {
   mongodbUri: string
+  dbUrl: string | undefined
   txes: Tx[]
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]
@@ -81,7 +82,5 @@ function prepareTools (): {
   const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
   return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version: getModelVersion(), migrateOperations }
 }
-
-console.log(`tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`)
 
 devTool(prepareTools)

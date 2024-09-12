@@ -12,7 +12,7 @@ export const trainingDeleteAction = focusActionWithAvailability<Training>(
     return canDeleteTraining(object)
   },
   async (object: Training) => {
-    const tx = getClient().apply(object._id)
+    const tx = getClient().apply()
 
     await tx.update(object, { state: TrainingState.Deleted })
 

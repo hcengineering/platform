@@ -18,7 +18,6 @@ import contact, { type PersonAccount } from '@hcengineering/contact'
 import core, {
   type Account,
   AccountRole,
-  generateId,
   getCurrentAccount,
   hasAccountRole,
   type IdMap,
@@ -293,7 +292,7 @@ function getPinnedActions (contexts: DocNotifyContext[]): Action[] {
 }
 
 async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const ops = getClient().apply(generateId(), 'unpinAllChannels')
+  const ops = getClient().apply(undefined, 'unpinAllChannels')
 
   try {
     for (const context of contexts) {
@@ -358,7 +357,7 @@ function archiveActivityChannels (contexts: DocNotifyContext[]): void {
       label: chunter.string.ArchiveActivityConfirmationTitle,
       message: chunter.string.ArchiveActivityConfirmationMessage,
       action: async () => {
-        await removeActivityChannels(contexts)
+        await hideActivityChannels(contexts)
       }
     },
     'top'
@@ -386,19 +385,12 @@ export function loadSavedAttachments (): void {
   }
 }
 
-export async function removeActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const ops = getClient().apply(generateId(), 'removeActivityChannels')
+export async function hideActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
+  const ops = getClient().apply(undefined, 'hideActivityChannels')
 
   try {
     for (const context of contexts) {
-      await ops.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
-    }
-    const hidden = contexts.map(({ _id }) => _id)
-    const account = getCurrentAccount() as PersonAccount
-    const chatInfo = await ops.findOne(chunter.class.ChatInfo, { user: account.person })
-
-    if (chatInfo !== undefined) {
-      await ops.update(chatInfo, { hidden: chatInfo.hidden.concat(hidden) })
+      await ops.update(context, { hidden: true })
     }
   } finally {
     await ops.commit()
@@ -408,12 +400,12 @@ export async function removeActivityChannels (contexts: DocNotifyContext[]): Pro
 export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const ops = getClient().apply(generateId(), 'readActivityChannels')
+  const ops = getClient().apply(undefined, 'readActivityChannels')
 
   try {
     for (const context of contexts) {
       const notifications = notificationsByContext.get(context._id) ?? []
-      await client.archiveNotifications(
+      await client.readNotifications(
         ops,
         notifications
           .filter(({ _class }) => _class === notification.class.ActivityInboxNotification)

@@ -33,6 +33,7 @@ import core, {
   generateId,
   getWorkspaceId,
   groupByArray,
+  isWorkspaceCreating,
   MeasureContext,
   RateLimiter,
   Ref,
@@ -42,13 +43,11 @@ import core, {
   TxOperations,
   Version,
   versionToString,
-  isWorkspaceCreating,
   WorkspaceId,
   type Branding,
   type WorkspaceMode
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hcengineering/server-token'
 import toolPlugin, { connect } from '@hcengineering/server-tool'
@@ -1480,23 +1479,26 @@ export async function getPendingWorkspace (
           ? pendingUpgradeQuery
           : [...pendingCreationQuery, ...pendingUpgradeQuery]
   }
-  let query: Filter<Workspace>
+  const attemptsQuery = { $or: [{ attempts: { $exists: false } }, { attempts: { $lte: 3 } }] }
 
-  if (region !== '') {
-    query = {
-      ...operationQuery,
-      region
-    }
-  } else {
-    query = {
-      $and: [operationQuery, defaultRegionQuery]
-    }
+  // We must have all the conditions in the DB query and we cannot filter anything in the code
+  // because of possible concurrency between account services. We have to update "lastProcessingTime"
+  // at the time of retrieval and not after some additional processing.
+  const query: Filter<Workspace> = {
+    $and: [
+      operationQuery,
+      attemptsQuery,
+      region !== '' ? { region } : defaultRegionQuery,
+      {
+        $or: [
+          { lastProcessingTime: { $exists: false } },
+          { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
+        ]
+      }
+    ]
   }
 
-  query.lastProcessingTime = { $lt: Date.now() - processingTimeoutMs }
-  query.attempts = { $lte: 3 }
-
-  return (
+  const result =
     (await wsCollection.findOneAndUpdate(
       query,
       {
@@ -1514,7 +1516,19 @@ export async function getPendingWorkspace (
         }
       }
     )) ?? undefined
-  )
+
+  if (result != null) {
+    ctx.info('getPendingWorkspace', {
+      workspaceId: result.workspace,
+      mode: result.mode,
+      workspaceName: result.workspaceName,
+      operation,
+      region,
+      version
+    })
+  }
+
+  return result
 }
 
 /**

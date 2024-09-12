@@ -58,7 +58,13 @@ import { TAttachedDoc, TDoc, TType, TTypedSpace } from '@hcengineering/model-cor
 import presentation from '@hcengineering/model-presentation'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, { type Viewlet, actionTemplates, classPresenter, createAction } from '@hcengineering/model-view'
+import view, {
+  type ViewAction,
+  type Viewlet,
+  actionTemplates,
+  classPresenter,
+  createAction
+} from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
@@ -277,6 +283,30 @@ function defineDrive (builder: Builder): void {
 
   builder.mixin(drive.class.Drive, core.class.Class, view.mixin.IgnoreActions, {
     actions: [tracker.action.EditRelatedTargets, print.action.Print, tracker.action.NewRelatedIssue]
+  })
+
+  createAction(builder, {
+    label: view.string.UnArchive,
+    icon: view.icon.Archive,
+    action: view.actionImpl.UpdateDocument as ViewAction,
+    actionProps: {
+      key: 'archived',
+      ask: true,
+      value: false,
+      label: view.string.UnArchive,
+      message: drive.string.UnarchiveConfirm
+    },
+    input: 'any',
+    category: view.category.General,
+    target: drive.class.Drive,
+    visibilityTester: view.function.CanArchiveSpace,
+    query: {
+      archived: true
+    },
+    context: {
+      mode: ['context', 'browser'],
+      group: 'tools'
+    }
   })
 
   createAction(

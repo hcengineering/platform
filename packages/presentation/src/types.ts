@@ -106,6 +106,12 @@ export type DocCreateFunction = (
   phase: DocCreatePhase
 ) => Promise<void>
 
+export type DocCreateAnalyticsPropsFunction = (
+  space: Space,
+  document: DocData<Doc>,
+  extraData: Record<string, any>
+) => Record<string, any>
+
 /**
  * @public
  */
@@ -123,6 +129,7 @@ export interface DocCreateExtension extends Doc {
 
   components: Partial<Record<CreateExtensionKind, AnyComponent>>
   apply: Resource<DocCreateFunction>
+  getAnalyticsProps?: Resource<DocCreateAnalyticsPropsFunction>
 }
 
 export interface DocAttributeRule {

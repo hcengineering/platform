@@ -110,10 +110,11 @@ export async function getPersonNotificationTxes (
     return []
   }
 
-  const doc = (await control.findAll(reference.srcDocClass, { _id: reference.srcDocId }))[0]
+  const doc = (await control.findAll(ctx, reference.srcDocClass, { _id: reference.srcDocId }))[0]
 
   const receiverPerson = (
     await control.findAll(
+      ctx,
       contact.mixin.Employee,
       { _id: receiverPersonId as Ref<Employee>, active: true },
       { limit: 1 }
@@ -122,7 +123,7 @@ export async function getPersonNotificationTxes (
   if (receiverPerson === undefined) return res
 
   const receiverSpace = (
-    await control.findAll(contact.class.PersonSpace, { person: receiverPersonId }, { limit: 1 })
+    await control.findAll(ctx, contact.class.PersonSpace, { person: receiverPersonId }, { limit: 1 })
   )[0]
   if (receiverSpace === undefined) return res
 
@@ -136,7 +137,7 @@ export async function getPersonNotificationTxes (
   }
 
   const info = (
-    await control.findAll<UserMentionInfo>(activity.class.UserMentionInfo, {
+    await control.findAll<UserMentionInfo>(ctx, activity.class.UserMentionInfo, {
       user: receiverPersonId,
       attachedTo: reference.attachedDocId
     })
@@ -176,7 +177,7 @@ export async function getPersonNotificationTxes (
 
   const senderPerson =
     sender !== undefined
-      ? (await control.findAll(contact.class.Person, { _id: sender.person }, { limit: 1 }))[0]
+      ? (await control.findAll(ctx, contact.class.Person, { _id: sender.person }, { limit: 1 }))[0]
       : undefined
 
   const receiverInfo = toReceiverInfo(control.hierarchy, {
@@ -234,6 +235,7 @@ export async function getPersonNotificationTxes (
   } else {
     const context = (
       await control.findAll(
+        ctx,
         notification.class.DocNotifyContext,
         { objectId: reference.srcDocId, user: { $in: receiver.map((it) => it._id) } },
         { projection: { _id: 1 } }
@@ -251,6 +253,9 @@ export async function getPersonNotificationTxes (
         modifiedOn: originTx.modifiedOn,
         modifiedBy: sender._id
       }
+      const subscriptions = await control.findAll(control.ctx, notification.class.PushSubscription, {
+        user: receiverInfo._id
+      })
       await applyNotificationProviders(
         notificationData,
         notifyResult,
@@ -260,7 +265,8 @@ export async function getPersonNotificationTxes (
         res,
         doc,
         receiverInfo,
-        senderInfo
+        senderInfo,
+        subscriptions
       )
     }
   }
@@ -274,7 +280,7 @@ async function checkSpace (
   control: TriggerControl,
   res: Tx[]
 ): Promise<boolean> {
-  const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }, { limit: 1 }))[0]
+  const space = (await control.findAll<Space>(control.ctx, core.class.Space, { _id: spaceId }, { limit: 1 }))[0]
   const toAdd = users.filter((user) => !space.members.includes(user._id))
   const isMember = toAdd.length === 0
   if (space.private) {
@@ -320,6 +326,7 @@ async function getCollaboratorsTxes (
 
   const message = (
     await control.findAll<ActivityMessage>(
+      control.ctx,
       reference.attachedDocClass,
       {
         _id: reference.attachedDocId as Ref<ActivityMessage>
@@ -480,13 +487,13 @@ async function getUpdateReferencesTxes (
   // There is a chance that references are managed manually
   // do not update references if there are no reference sources in the doc
   if (hasReferenceAttrs) {
-    const current = await control.findAll(activity.class.ActivityReference, {
+    const current = await control.findAll(ctx, activity.class.ActivityReference, {
       srcDocId,
       srcDocClass,
       attachedDocId,
       collection: 'references'
     })
-    const userMentions = await control.findAll(activity.class.UserMentionInfo, {
+    const userMentions = await control.findAll(ctx, activity.class.UserMentionInfo, {
       attachedTo: attachedDocId
     })
 
@@ -625,12 +632,12 @@ async function getRemoveActivityReferenceTxes (
   removedDocId: Ref<Doc>
 ): Promise<Tx[]> {
   const txes: Tx[] = []
-  const refs = await control.findAll(activity.class.ActivityReference, {
+  const refs = await control.findAll(control.ctx, activity.class.ActivityReference, {
     attachedDocId: removedDocId,
     collection: 'references'
   })
 
-  const mentions = await control.findAll(activity.class.UserMentionInfo, {
+  const mentions = await control.findAll(control.ctx, activity.class.UserMentionInfo, {
     attachedTo: removedDocId
   })
 
@@ -696,7 +703,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
   )
 
   if (txes.length !== 0) {
-    await control.apply(txes)
+    await control.apply(control.ctx, txes)
   }
 
   return []
@@ -721,7 +728,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
     return []
   }
 
-  const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+  const rawDoc = (await control.findAll(control.ctx, ctx.objectClass, { _id: ctx.objectId }))[0]
 
   if (rawDoc === undefined) {
     return []
@@ -744,7 +751,7 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, etx: TxCUD<Doc>, control
   )
 
   if (txes.length !== 0) {
-    await control.apply(txes)
+    await control.apply(control.ctx, txes)
   }
 
   return []
@@ -768,7 +775,7 @@ async function ActivityReferenceRemove (tx: Tx, etx: TxCUD<Doc>, control: Trigge
 
     const txes: Tx[] = await getRemoveActivityReferenceTxes(control, txFactory, ctx.objectId)
     if (txes.length !== 0) {
-      await control.apply(txes)
+      await control.apply(control.ctx, txes)
     }
   }
 

@@ -1,13 +1,13 @@
-import { Browser, BrowserContext, Locator, Page, expect, APIRequestContext } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { faker } from '@faker-js/faker'
-import { TestData } from './chat/types'
+import { APIRequestContext, Browser, BrowserContext, Locator, Page, expect } from '@playwright/test'
+import { allure } from 'allure-playwright'
 import path from 'path'
-import { LeftSideMenuPage } from './model/left-side-menu-page'
-import { SignUpData } from './model/common-types'
 import { ApiEndpoint } from './API/Api'
-import { SelectWorkspacePage } from './model/select-workspace-page'
+import { TestData } from './chat/types'
+import { SignUpData } from './model/common-types'
+import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { LoginPage } from './model/login-page'
+import { SelectWorkspacePage } from './model/select-workspace-page'
 import { SignInJoinPage } from './model/signin-page'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
@@ -106,21 +106,46 @@ export async function fillSearch (page: Page, search: string): Promise<Locator> 
   return searchBox
 }
 
-export async function getSecondPage (browser: Browser): Promise<{ page: Page, context: BrowserContext }> {
+export async function getSecondPage (browser: Browser): Promise<{ page: Page, context: BrowserContext } & Disposable> {
   const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
-  return { page: await userSecondContext.newPage(), context: userSecondContext }
+  const newPage = await userSecondContext.newPage()
+  return {
+    page: newPage,
+    context: userSecondContext,
+    [Symbol.dispose]: () => {
+      void newPage
+        .close()
+        .finally(() => {
+          void userSecondContext.close().catch(() => {})
+        })
+        .catch(() => {})
+    }
+  }
 }
 
 export async function getSecondPageByInvite (
   browser: Browser,
   linkText: string | null,
   newUser: SignUpData
-): Promise<Page> {
-  const page = await browser.newPage()
-  await page.goto(linkText ?? '')
-  const joinPage: SignInJoinPage = new SignInJoinPage(page)
+): Promise<{ page: Page, context: BrowserContext } & Disposable> {
+  const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
+  const newPage = await userSecondContext.newPage()
+  await newPage.goto(linkText ?? '')
+  const joinPage: SignInJoinPage = new SignInJoinPage(newPage)
   await joinPage.join(newUser)
-  return page
+
+  return {
+    page: newPage,
+    context: userSecondContext,
+    [Symbol.dispose]: () => {
+      void newPage
+        .close()
+        .finally(() => {
+          void userSecondContext.close().catch(() => {})
+        })
+        .catch(() => {})
+    }
+  }
 }
 
 export function expectToContainsOrdered (val: Locator, text: string[], timeout?: number): Promise<void> {

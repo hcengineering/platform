@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachedData, generateId } from '@hcengineering/core'
+  import { AttachedData } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { DatePopup } from '@hcengineering/ui'
@@ -29,7 +29,7 @@
     const newDueDate = detail?.getTime()
 
     const vv = Array.isArray(value) ? value : [value]
-    const ops = getClient().apply(generateId())
+    const ops = getClient().apply()
     for (const docValue of vv) {
       if ('_class' in docValue && newDueDate !== undefined && newDueDate !== docValue.dueDate) {
         await ops.update(docValue, { dueDate: newDueDate })

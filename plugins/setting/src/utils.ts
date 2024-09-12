@@ -134,7 +134,7 @@ export async function deleteSpaceTypeRole (
   targetClass: Ref<Class<Space>>
 ): Promise<void> {
   const attribute = await client.findOne(core.class.Attribute, { name: role._id, attributeOf: targetClass })
-  const ops = client.apply(role._id)
+  const ops = client.apply()
 
   await ops.removeCollection(
     core.class.Role,

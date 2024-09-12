@@ -33,9 +33,8 @@ import {
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type SessionOperationContext,
+  type SessionData,
   type Space,
-  type Storage,
   type Timestamp,
   type Tx,
   type TxFactory,
@@ -44,8 +43,9 @@ import {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
+import type { LiveQuery } from '@hcengineering/query'
 import { type Readable } from 'stream'
-import { type ServiceAdaptersManager } from './service'
+import type { DbAdapter, DomainHelper } from './adapter'
 import { type StorageAdapter } from './storage'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
@@ -58,92 +58,128 @@ export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   // Optional measure context, for server side operations
   ctx?: MeasureContext
 }
-/**
- * @public
- */
-export interface ServerStorage extends LowLevelStorage {
-  hierarchy: Hierarchy
-  modelDb: ModelDb
-  findAll: <T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: ServerFindOptions<T>
-  ) => Promise<FindResult<T>>
-  searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-  tx: (ctx: SessionOperationContext, tx: Tx) => Promise<TxResult>
-  apply: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
-  close: () => Promise<void>
-  loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
-  workspaceId: WorkspaceIdWithUrl
-  branding: Branding | null
-  storageAdapter: StorageAdapter
-}
 
-/**
- * @public
- */
-export interface SessionContext extends SessionOperationContext {
-  userEmail: string
-  sessionId: string
-  admin?: boolean
-
-  workspace: WorkspaceIdWithUrl
-  branding: Branding | null
-}
+export type SessionFindAll = <T extends Doc>(
+  ctx: MeasureContext<SessionData>,
+  _class: Ref<Class<T>>,
+  query: DocumentQuery<T>,
+  options?: ServerFindOptions<T>
+) => Promise<FindResult<T>>
 
 /**
  * @public
  */
 export interface Middleware {
-  tx: (ctx: SessionContext, tx: Tx) => Promise<TxMiddlewareResult>
   findAll: <T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    options?: ServerFindOptions<T>
   ) => Promise<FindResult<T>>
+  tx: (ctx: MeasureContext<SessionData>, tx: Tx[]) => Promise<TxResult>
 
-  groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
-  handleBroadcast: HandleBroadcastFunc
-  searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
+  groupBy: <T>(ctx: MeasureContext<SessionData>, domain: Domain, field: string) => Promise<Set<T>>
+  searchFulltext: (
+    ctx: MeasureContext<SessionData>,
+    query: SearchQuery,
+    options: SearchOptions
+  ) => Promise<SearchResult>
+
+  handleBroadcast: (ctx: MeasureContext<SessionData>) => Promise<void>
+
+  loadModel: (
+    ctx: MeasureContext<SessionData>,
+    lastModelTx: Timestamp,
+    hash?: string
+  ) => Promise<Tx[] | LoadModelResponse>
+
+  close: () => Promise<void>
 }
 
 /**
  * @public
  */
-export type BroadcastFunc = (tx: Tx[], targets?: string | string[], exclude?: string[]) => void
+export type BroadcastFunc = (
+  ctx: MeasureContext<SessionData>,
+  tx: Tx[],
+  targets?: string | string[],
+  exclude?: string[]
+) => void
 
 /**
  * @public
  */
-export type HandleBroadcastFunc = (tx: Tx[], targets?: string | string[], exclude?: string[]) => Promise<void>
+export type MiddlewareCreator = (
+  ctx: MeasureContext,
+  context: PipelineContext,
+  next?: Middleware
+) => Promise<Middleware | undefined>
 
-/**
- * @public
- */
-export type MiddlewareCreator = (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) => Promise<Middleware>
+export interface ServiceAdaptersManager {
+  getAdapter: (adapterId: string) => ServiceAdapter | undefined
+  close: () => Promise<void>
+  metrics: () => MeasureContext
+}
 
 /**
  * @public
  */
 export type TxMiddlewareResult = TxResult
 
+export interface DBAdapterManager {
+  getAdapter: (domain: Domain, requireExists: boolean) => DbAdapter
+
+  getDefaultAdapter: () => DbAdapter
+
+  close: () => Promise<void>
+
+  registerHelper: (helper: DomainHelper) => Promise<void>
+}
+
+export interface PipelineContext {
+  workspace: WorkspaceIdWithUrl
+  hierarchy: Hierarchy
+  modelDb: ModelDb
+  branding: Branding | null
+
+  adapterManager?: DBAdapterManager
+  storageAdapter?: StorageAdapter
+  serviceAdapterManager?: ServiceAdaptersManager
+  lowLevelStorage?: LowLevelStorage
+  liveQuery?: LiveQuery
+
+  // Entry point for derived data procvessing
+  derived?: Middleware
+  head?: Middleware
+
+  broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
+}
 /**
  * @public
  */
-export interface Pipeline extends LowLevelStorage {
-  modelDb: ModelDb
-  storage: ServerStorage
+export interface Pipeline {
+  context: PipelineContext
   findAll: <T extends Doc>(
-    ctx: SessionContext,
+    ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-  tx: (ctx: SessionContext, tx: Tx) => Promise<TxResult>
+  searchFulltext: (
+    ctx: MeasureContext<SessionData>,
+    query: SearchQuery,
+    options: SearchOptions
+  ) => Promise<SearchResult>
+  tx: (ctx: MeasureContext<SessionData>, tx: Tx[]) => Promise<TxResult>
   close: () => Promise<void>
+
+  loadModel: (
+    ctx: MeasureContext<SessionData>,
+    lastModelTx: Timestamp,
+    hash?: string
+  ) => Promise<Tx[] | LoadModelResponse>
+
+  handleBroadcast: (ctx: MeasureContext<SessionData>) => Promise<void>
 }
 
 /**
@@ -161,13 +197,11 @@ export type PipelineFactory = (
  * @public
  */
 export interface TriggerControl {
-  operationContext: SessionOperationContext
-  ctx: MeasureContext
+  ctx: MeasureContext<SessionData>
   workspace: WorkspaceIdWithUrl
   branding: Branding | null
   txFactory: TxFactory
-  findAll: Storage['findAll']
-  findAllCtx: <T extends Doc>(
+  findAll: <T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -184,8 +218,7 @@ export interface TriggerControl {
   storageAdapter: StorageAdapter
   serviceAdaptersManager: ServiceAdaptersManager
   // Bulk operations in case trigger require some
-  apply: (tx: Tx[], needResult?: boolean) => Promise<TxResult>
-  applyCtx: (ctx: SessionOperationContext, tx: Tx[], needResult?: boolean) => Promise<TxResult>
+  apply: (ctx: MeasureContext, tx: Tx[], needResult?: boolean) => Promise<TxResult>
 
   // Will create a live query if missing and return values immediately if already asked.
   queryFind: <T extends Doc>(
@@ -196,10 +229,7 @@ export interface TriggerControl {
   ) => Promise<FindResult<T>>
 
   // Current set of transactions to being processed for apply/bulks
-  txes: {
-    apply: Tx[]
-    result: Tx[]
-  }
+  txes: Tx[]
 }
 
 /**
@@ -457,22 +487,6 @@ export interface SearchPresenter extends Class<Doc> {
   searchConfig: ClassSearchConfig
   getSearchShortTitle?: SearchPresenterFunc
   getSearchTitle?: SearchPresenterFunc
-}
-
-/**
- * @public
- */
-export interface ServerStorageOptions {
-  // If defined, will skip update of attached documents on document update.
-  skipUpdateAttached?: boolean
-
-  // Indexing is not required to be started for upgrade mode.
-  upgrade: boolean
-
-  broadcast: BroadcastFunc
-  branding: Branding | null
-
-  disableTriggers?: boolean
 }
 
 export interface ServiceAdapter {

@@ -220,7 +220,7 @@ export class WorkspaceWorker {
     workspace: BaseWorkspaceInfo,
     opt: WorkspaceOptions
   ): Promise<void> {
-    switch (workspace.mode) {
+    switch (workspace.mode ?? 'active') {
       case 'creating':
       case 'pending-creation':
         // We need to either start workspace creation
@@ -237,6 +237,8 @@ export class WorkspaceWorker {
         // Seems we failed to delete, so let's restore deletion.
         // TODO: move from account
         break
+      default:
+        ctx.error('Unknown workspace mode', { workspace: workspace.workspace, mode: workspace.mode })
     }
   }
 

@@ -14,11 +14,14 @@
 //
 
 import core, {
+  AccountRole,
   MeasureMetricsContext,
   RateLimiter,
   TxOperations,
   concatLink,
   generateId,
+  getWorkspaceId,
+  makeCollaborativeDoc,
   metricsToString,
   newMetrics,
   systemAccountEmail,
@@ -40,6 +43,10 @@ import os from 'os'
 import { Worker, isMainThread, parentPort } from 'worker_threads'
 import { CSVWriter } from './csv'
 
+import { AvatarType, type PersonAccount } from '@hcengineering/contact'
+import contact from '@hcengineering/model-contact'
+import recruit from '@hcengineering/model-recruit'
+import { type Vacancy } from '@hcengineering/recruit'
 import { WebSocket } from 'ws'
 
 interface StartMessage {
@@ -501,5 +508,119 @@ export async function stressBenchmark (transactor: string, mode: StressBenchmark
         // Ignore
       }
     }
+  }
+}
+
+export async function testFindAll (endpoint: string, workspace: string, email: string): Promise<void> {
+  const connection = await connect(endpoint, getWorkspaceId(workspace), email)
+  try {
+    const client = new TxOperations(connection, core.account.System)
+    const start = Date.now()
+    const res = await client.findAll(
+      recruit.class.Applicant,
+      {},
+      {
+        lookup: {
+          attachedTo: recruit.mixin.Candidate,
+          space: recruit.class.Vacancy
+        }
+      }
+    )
+    console.log('Find all', res.length, 'time', Date.now() - start)
+  } finally {
+    await connection.close()
+  }
+}
+
+export async function generateWorkspaceData (
+  endpoint: string,
+  workspace: string,
+  parallel: boolean,
+  user: string
+): Promise<void> {
+  const connection = await connect(endpoint, getWorkspaceId(workspace))
+  const client = new TxOperations(connection, core.account.System)
+  try {
+    const acc = await client.findOne(contact.class.PersonAccount, { email: user })
+    if (acc == null) {
+      throw new Error('User not found')
+    }
+    const employees: Ref<PersonAccount>[] = [acc._id]
+    const start = Date.now()
+    for (let i = 0; i < 100; i++) {
+      const acc = await generateEmployee(client)
+      employees.push(acc)
+    }
+    if (parallel) {
+      const promises: Promise<void>[] = []
+      for (let i = 0; i < 10; i++) {
+        promises.push(generateVacancy(client, employees))
+      }
+      await Promise.all(promises)
+    } else {
+      for (let i = 0; i < 10; i++) {
+        await generateVacancy(client, employees)
+      }
+    }
+    console.log('Generate', Date.now() - start)
+  } finally {
+    await connection.close()
+  }
+}
+
+export async function generateEmployee (client: TxOperations): Promise<Ref<PersonAccount>> {
+  const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
+    name: generateId().toString(),
+    city: '',
+    avatarType: AvatarType.COLOR
+  })
+  await client.createMixin(personId, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+    active: true
+  })
+  const acc = await client.createDoc(contact.class.PersonAccount, core.space.Model, {
+    person: personId,
+    role: AccountRole.User,
+    email: personId
+  })
+  return acc
+}
+
+async function generateVacancy (client: TxOperations, members: Ref<PersonAccount>[]): Promise<void> {
+  // generate vacancies
+  const _id = generateId<Vacancy>()
+  await client.createDoc(
+    recruit.class.Vacancy,
+    core.space.Space,
+    {
+      name: generateId().toString(),
+      number: 0,
+      fullDescription: makeCollaborativeDoc(_id, 'fullDescription'),
+      type: recruit.template.DefaultVacancy,
+      description: '',
+      private: false,
+      members,
+      archived: false
+    },
+    _id
+  )
+  for (let i = 0; i < 100; i++) {
+    // generate candidate
+    const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, {
+      name: generateId().toString(),
+      city: '',
+      avatarType: AvatarType.COLOR
+    })
+    await client.createMixin(personId, contact.class.Person, contact.space.Contacts, recruit.mixin.Candidate, {})
+    // generate applicants
+    await client.addCollection(recruit.class.Applicant, _id, personId, recruit.mixin.Candidate, 'applications', {
+      status: recruit.taskTypeStatus.Backlog,
+      number: i + 1,
+      identifier: `APP-${i + 1}`,
+      assignee: null,
+      rank: '',
+      startDate: null,
+      dueDate: null,
+      kind: recruit.taskTypes.Applicant
+    })
   }
 }

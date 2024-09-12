@@ -23,8 +23,7 @@ import {
   type ChunterSpace,
   type ObjectChatPanel,
   type ThreadMessage,
-  type ChatInfo,
-  type ChannelInfo,
+  type ChatSyncInfo,
   type InlineButton,
   type TypingInfo,
   type InlineButtonAction
@@ -52,12 +51,10 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
-  UX,
-  Hidden
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
-import notification, { TDocNotifyContext } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { type IntlString, type Resource } from '@hcengineering/platform'
@@ -74,7 +71,10 @@ export { chunterOperation } from './migration'
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 
 @Model(chunter.class.ChunterSpace, core.class.Space)
-export class TChunterSpace extends TSpace implements ChunterSpace {}
+export class TChunterSpace extends TSpace implements ChunterSpace {
+  @Prop(PropCollection(activity.class.ActivityMessage), chunter.string.Messages)
+    messages?: number
+}
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
 @UX(chunter.string.Channel, chunter.icon.Hashtag, undefined, undefined, undefined, chunter.string.Channels)
@@ -149,14 +149,8 @@ export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
 }
 
-@Mixin(chunter.mixin.ChannelInfo, notification.class.DocNotifyContext)
-export class TChannelInfo extends TDocNotifyContext implements ChannelInfo {
-  @Hidden()
-    hidden!: boolean
-}
-
-@Model(chunter.class.ChatInfo, core.class.Doc, DOMAIN_CHUNTER)
-export class TChatInfo extends TDoc implements ChatInfo {
+@Model(chunter.class.ChatSyncInfo, core.class.Doc, DOMAIN_CHUNTER)
+export class TChatSyncInfo extends TDoc implements ChatSyncInfo {
   user!: Ref<Person>
   hidden!: Ref<DocNotifyContext>[]
   timestamp!: Timestamp
@@ -187,8 +181,7 @@ export function createModel (builder: Builder): void {
     TThreadMessage,
     TChatMessageViewlet,
     TObjectChatPanel,
-    TChatInfo,
-    TChannelInfo,
+    TChatSyncInfo,
     TInlineButton,
     TTypingInfo
   )

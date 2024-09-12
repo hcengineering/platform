@@ -19,6 +19,7 @@ import accountPlugin, {
   assignWorkspace,
   confirmEmail,
   createAcc,
+  createWorkspace as createWorkspaceRecord,
   dropAccount,
   dropWorkspace,
   dropWorkspaceFull,
@@ -32,10 +33,8 @@ import accountPlugin, {
   setAccountAdmin,
   setRole,
   updateWorkspace,
-  createWorkspace as createWorkspaceRecord,
   type Workspace
 } from '@hcengineering/account'
-import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
@@ -46,9 +45,18 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, {
+  BlobClient,
+  createClient,
+  getTransactorEndpoint,
+  getUserWorkspaces,
+  login,
+  selectWorkspace
+} from '@hcengineering/server-client'
+import { getServerPipeline } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
@@ -59,17 +67,22 @@ import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
 import core, {
   AccountRole,
+  concatLink,
+  generateId,
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
   systemAccountEmail,
+  TxOperations,
   versionToString,
+  type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
   type Tx,
   type Version,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
@@ -77,7 +90,14 @@ import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
-import { benchmark, benchmarkWorker, stressBenchmark, type StressBenchmarkMode } from './benchmark'
+import {
+  benchmark,
+  benchmarkWorker,
+  generateWorkspaceData,
+  stressBenchmark,
+  testFindAll,
+  type StressBenchmarkMode
+} from './benchmark'
 import {
   cleanArchivedSpaces,
   cleanRemovedTransactions,
@@ -91,8 +111,10 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
+import { moveFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
+import { importNotion } from './notion'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, syncFiles } from './storage'
 
@@ -114,6 +136,7 @@ const colorConstants = {
 export function devTool (
   prepareTools: () => {
     mongodbUri: string
+    dbUrl: string | undefined
     txes: Tx[]
     version: Data<Version>
     migrateOperations: [string, MigrateOperation][]
@@ -146,6 +169,15 @@ export function devTool (
       process.exit(1)
     }
     return elasticUrl
+  }
+
+  function getFrontUrl (): string {
+    const frontUrl = process.env.FRONT_URL
+    if (frontUrl === undefined) {
+      console.error('please provide front url')
+      process.exit(1)
+    }
+    return frontUrl
   }
 
   const initWS = process.env.INIT_WORKSPACE
@@ -187,6 +219,12 @@ export function devTool (
 
   program.version('0.0.1')
 
+  program.command('version').action(() => {
+    console.log(
+      `tools git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${process.env.MODEL_VERSION ?? ''}`
+    )
+  })
+
   // create-account john.appleseed@gmail.com --password 123 --workspace workspace --fullname "John Appleseed"
   program
     .command('create-account <email>')
@@ -201,6 +239,77 @@ export function devTool (
         await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
       })
     })
+
+  // import-notion-with-teamspaces /home/anna/work/notion/pages/exported --workspace workspace
+  program
+    .command('import-notion-with-teamspaces <dir>')
+    .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-u, --user <user>', 'user')
+    .requiredOption('-pw, --password <password>', 'password')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace)
+    })
+
+  // import-notion-to-teamspace /home/anna/work/notion/pages/exported --workspace workspace --teamspace notion
+  program
+    .command('import-notion-to-teamspace <dir>')
+    .description('import extracted archive exported from Notion as "Markdown & CSV"')
+    .requiredOption('-u, --user <user>', 'user')
+    .requiredOption('-pw, --password <password>', 'password')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
+    .action(async (dir: string, cmd) => {
+      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
+    })
+
+  async function importFromNotion (
+    dir: string,
+    user: string,
+    password: string,
+    workspace: string,
+    teamspace?: string
+  ): Promise<void> {
+    if (workspace === '' || user === '' || password === '' || teamspace === '') {
+      return
+    }
+
+    const userToken = await login(user, password, workspace)
+    const allWorkspaces = await getUserWorkspaces(userToken)
+    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
+    if (workspaces.length < 1) {
+      console.log('Workspace not found: ', workspace)
+      return
+    }
+    const selectedWs = await selectWorkspace(userToken, workspaces[0].workspace)
+    console.log(selectedWs)
+
+    function uploader (token: string) {
+      return (id: string, data: any) => {
+        return fetch(concatLink(getFrontUrl(), '/files'), {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token
+          },
+          body: data
+        })
+      }
+    }
+
+    const connection = (await connect(
+      selectedWs.endpoint,
+      {
+        name: selectedWs.workspaceId
+      },
+      undefined,
+      {
+        mode: 'backup'
+      }
+    )) as unknown as CoreClient
+    const client = new TxOperations(connection, core.account.System)
+    await importNotion(client, uploader(selectedWs.token), dir, teamspace)
+    await connection.close()
+  }
 
   program
     .command('reset-account <email>')
@@ -937,8 +1046,9 @@ export function devTool (
   program
     .command('generate-token <name> <workspace>')
     .description('generate token')
-    .action(async (name: string, workspace: string) => {
-      console.log(generateToken(name, getWorkspaceId(workspace)))
+    .option('--admin', 'Generate token with admin access', false)
+    .action(async (name: string, workspace: string, opt: { admin: boolean }) => {
+      console.log(generateToken(name, getWorkspaceId(workspace), { ...(opt.admin ? { admin: 'true' } : {}) }))
     })
   program
     .command('decode-token <token>')
@@ -1372,7 +1482,7 @@ export function devTool (
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
     .action(async (cmd: { workspace: string, concurrency: string }) => {
-      const { mongodbUri } = prepareTools()
+      const { mongodbUri, dbUrl } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
@@ -1384,8 +1494,15 @@ export function devTool (
 
             const wsId = getWorkspaceId(workspace.workspace)
             console.log('processing workspace', workspace.workspace, index, workspaces.length)
+            const wsUrl: WorkspaceIdWithUrl = {
+              name: workspace.workspace,
+              workspaceName: workspace.workspaceName ?? '',
+              workspaceUrl: workspace.workspaceUrl ?? ''
+            }
 
-            await migrateMarkup(toolCtx, adapter, wsId, client, mongodbUri, parseInt(cmd.concurrency))
+            const { pipeline } = await getServerPipeline(toolCtx, mongodbUri, dbUrl, wsUrl)
+
+            await migrateMarkup(toolCtx, adapter, wsId, client, pipeline, parseInt(cmd.concurrency))
 
             console.log('...done', workspace.workspace)
             index++
@@ -1401,6 +1518,57 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         await removeDuplicateIds(toolCtx, mongodbUri, adapter, accountsUrl, workspaces)
+      })
+    })
+
+  program.command('move-to-pg').action(async () => {
+    const { mongodbUri, dbUrl } = prepareTools()
+    await withDatabase(mongodbUri, async (db) => {
+      const workspaces = await listWorkspacesRaw(db)
+      await moveFromMongoToPG(
+        mongodbUri,
+        dbUrl,
+        workspaces.map((it) => getWorkspaceId(it.workspace))
+      )
+    })
+  })
+
+  program
+    .command('perfomance')
+    .option('-p, --parallel', '', false)
+    .action(async (cmd: { parallel: boolean }) => {
+      const { mongodbUri, txes, version, migrateOperations } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const email = generateId()
+        const ws = generateId()
+        const wsid = getWorkspaceId(ws)
+        const start = new Date()
+        const measureCtx = new MeasureMetricsContext('create-workspace', {})
+        const wsInfo = await createWorkspaceRecord(measureCtx, db, null, email, ws, ws)
+
+        // update the record so it's not taken by one of the workers for the next 60 seconds
+        await updateWorkspace(db, wsInfo, {
+          mode: 'creating',
+          progress: 0,
+          lastProcessingTime: Date.now() + 1000 * 60
+        })
+
+        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations)
+
+        await updateWorkspace(db, wsInfo, {
+          mode: 'active',
+          progress: 100,
+          disabled: false,
+          version
+        })
+        await createAcc(toolCtx, db, null, email, '1234', '', '', true)
+        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
+        console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
+        const token = generateToken(systemAccountEmail, wsid)
+        const endpoint = await getTransactorEndpoint(token, 'external')
+        await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
+        await testFindAll(endpoint, ws, email)
+        await dropWorkspace(toolCtx, db, null, ws)
       })
     })
 

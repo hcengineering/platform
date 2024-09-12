@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
-import type { Doc, Domain, Ref } from './classes'
-import { MeasureContext, type FullParamsType, type ParamsType } from './measurements'
-import type { Tx } from './tx'
+import type { Account, Doc, Domain, Ref } from './classes'
+import { MeasureContext } from './measurements'
+import { DocumentQuery, FindOptions } from './storage'
+import type { DocumentUpdate, Tx } from './tx'
+import type { WorkspaceIdWithUrl } from './utils'
 
 /**
  * @public
@@ -35,22 +37,26 @@ export interface StorageIterator {
 
 export type BroadcastTargets = Record<string, (tx: Tx) => string[] | undefined>
 
-export interface SessionOperationContext {
-  ctx: MeasureContext
-  // A parts of derived data to deal with after operation will be complete
-  derived: {
+export interface SessionData {
+  broadcast: {
     txes: Tx[]
     targets: BroadcastTargets // A set of broadcast filters if required
   }
-  with: <T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: SessionOperationContext) => T | Promise<T>,
-    fullParams?: FullParamsType
-  ) => Promise<T>
-
   contextCache: Map<string, any>
   removedMap: Map<Ref<Doc>, Doc>
+
+  userEmail: string
+  sessionId: string
+  admin?: boolean
+
+  isTriggerCtx?: boolean
+
+  account: Account
+
+  getAccount: (account: Ref<Account>) => Account | undefined
+
+  workspace: WorkspaceIdWithUrl
+  branding: Branding | null
 }
 
 /**
@@ -73,6 +79,23 @@ export interface LowLevelStorage {
 
   // Low level direct group API
   groupBy: <T>(ctx: MeasureContext, domain: Domain, field: string) => Promise<Set<T>>
+
+  // migrations
+  rawFindAll: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
+
+  rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
+
+  // Traverse documents
+  traverse: <T extends Doc>(
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
+  ) => Promise<Iterator<T>>
+}
+
+export interface Iterator<T extends Doc> {
+  next: (count: number) => Promise<T[] | null>
+  close: () => Promise<void>
 }
 
 export interface Branding {

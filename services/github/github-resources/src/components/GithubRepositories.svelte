@@ -20,6 +20,8 @@
     showPopup
   } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { Analytics } from '@hcengineering/analytics'
+
   import github from '../plugin'
   import ConnectProject from './ConnectProject.svelte'
   import { githubLanguageColors } from './languageColors'
@@ -44,6 +46,10 @@
     })
     await client.update(prj, {
       $pull: { repositories: repository._id }
+    })
+    Analytics.handleEvent('github.project.disconnected', {
+      project: prj.identifier,
+      repository: repository._id
     })
     // // We need to delete all issues related to repository
     // const ops = client.apply('cleanup:' + repository._id)

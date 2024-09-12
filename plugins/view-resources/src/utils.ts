@@ -22,7 +22,6 @@ import core, {
   Hierarchy,
   SortingOrder,
   TxProcessor,
-  generateId,
   getCurrentAccount,
   getObjectValue,
   type Account,
@@ -583,7 +582,7 @@ export async function deleteObjects (client: TxOperations, objects: Doc[], skipC
   } else {
     realObjects = objects
   }
-  const ops = client.apply('delete' + generateId())
+  const ops = client.apply(undefined, 'delete-objects')
   for (const object of realObjects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc

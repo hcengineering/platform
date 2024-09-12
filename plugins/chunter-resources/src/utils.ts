@@ -19,11 +19,11 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
+import { isReactionMessage } from '@hcengineering/activity-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
 import { PersonIcon, employeeByIdStore } from '@hcengineering/contact-resources'
 import core, {
-  generateId,
   getCurrentAccount,
   type Account,
   type Class,
@@ -46,7 +46,6 @@ import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
-import { isReactionMessage } from '@hcengineering/activity-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -417,7 +416,7 @@ export function recheckNotifications (context: DocNotifyContext): void {
     const toReadData = Array.from(toRead)
     toRead.clear()
     void (async () => {
-      const _client = client.apply(generateId(), 'recheckNotifications')
+      const _client = client.apply(undefined, 'recheckNotifications')
       await inboxClient.readNotifications(_client, toReadData)
       await _client.commit()
     })()
@@ -434,7 +433,7 @@ export async function readChannelMessages (
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  const client = getClient().apply(generateId(), 'readViewportMessages')
+  const client = getClient().apply(undefined, 'readViewportMessages')
   try {
     const readMessages = get(chatReadMessagesStore)
     const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
@@ -514,21 +513,12 @@ export async function removeChannelAction (context?: DocNotifyContext, _?: Event
   if (hierarchy.isDerived(objectClass, chunter.class.Channel)) {
     const channel = await client.findOne(chunter.class.Channel, { _id: objectId as Ref<Channel>, space: objectSpace })
     await leaveChannel(channel, getCurrentAccount()._id)
+    await client.remove(context)
   } else {
     const object = await client.findOne(objectClass, { _id: objectId, space: objectSpace })
-    // const account = getCurrentAccount() as PersonAccount
-
-    // await client.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
-    //
-    // const chatInfo = await client.findOne(chunter.class.ChatInfo, { user: account.person })
-    //
-    // if (chatInfo !== undefined) {
-    //   await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
-    // }
+    await client.update(context, { hidden: true })
     await resetChunterLocIfEqual(objectId, objectClass, object)
   }
-
-  await client.remove(context)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {

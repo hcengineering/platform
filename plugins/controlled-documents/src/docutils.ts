@@ -135,7 +135,7 @@ async function createControlledDoc (
 
   const collaborativeDoc = getCollaborativeDocForDocument(`DOC-${prefix}`, seqNumber, 0, 1)
 
-  const ops = client.apply(documentId)
+  const ops = client.apply()
 
   ops.notMatch(documents.class.Document, {
     template: templateId,
@@ -237,7 +237,7 @@ export async function createDocumentTemplate (
     path = await getParentPath(client, parent)
   }
 
-  const ops = client.apply(templateId)
+  const ops = client.apply()
 
   ops.notMatch(documents.class.Document, {
     template: { $exists: false },

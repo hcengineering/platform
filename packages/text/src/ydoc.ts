@@ -15,7 +15,7 @@
 
 import { Markup } from '@hcengineering/core'
 import { Extensions, getSchema } from '@tiptap/core'
-import { Node, Schema } from 'prosemirror-model'
+import { Node, Schema } from '@tiptap/pm/model'
 import { prosemirrorJSONToYDoc, prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate, XmlElement as YXmlElement, XmlText as YXmlText } from 'yjs'
 import { defaultExtensions } from './extensions'
