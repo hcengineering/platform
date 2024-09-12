@@ -8,7 +8,7 @@
   "CALENDAR_URL": "https://calendar.huly.app/",
   "COLLABORATOR_URL": "wss://collaborator.huly.app",
   "BRANDING_URL": "https://huly.app/huly-branding_v2.json",
-  "PREVIEW_CONFIG": "https://huly.app/files/:workspace?file=:blobId&size=:size",
+  "PREVIEW_CONFIG": "image|https://huly.app/files/:workspace?file=:blobId&size=:size",
   "GITHUB_APP": "huly-for-github",
   "GITHUB_CLIENTID": "Iv1.e263a087de0910e0",
   "INTERCOM_APP_ID": "",

@@ -31,7 +31,7 @@ A `;` separated list of triples, providerName|previewUrl|supportedFormats.
 - supportedFormats - a `,` separated list of file extensions.
 - contentTypes - a ',' separated list of content type patterns.
 
-PREVIEW_CONFIG=https://front.hc.engineering/files/:workspace/api/preview/?width=:size&image=:downloadFile
+PREVIEW_CONFIG=image|https://front.hc.engineering/files/:workspace/api/preview/?width=:size&image=:downloadFile
 
 ## Variables
 

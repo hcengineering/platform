@@ -6,27 +6,51 @@ import { getFileUrl, getCurrentWorkspaceId } from './file'
 import presentation from './plugin'
 
 export interface PreviewConfig {
-  previewUrl: string
+  image: string
+  video: string
 }
 
-const defaultPreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`
+export interface VideoMeta {
+  status: 'ready' | 'error' | 'inprogress' | 'queued' | 'downloading' | 'pendingupload'
+  thumbnail: string
+  hls: string
+}
+
+const defaultImagePreview = (): string => `/files/${getCurrentWorkspaceId()}?file=:blobId&size=:size`
 
 /**
  *
  * PREVIEW_CONFIG env variable format.
- * previewUrl - an Url with :workspace, :blobId, :downloadFile, :size placeholders, they will be replaced in UI with an appropriate blob values.
+ * - image - an Url with :workspace, :blobId, :downloadFile, :size placeholders.
+ * - video - an Url with :workspace, :blobId placeholders.
  */
 export function parsePreviewConfig (config?: string): PreviewConfig | undefined {
   if (config === undefined) {
     return
   }
-  return { previewUrl: config }
+
+  const previewConfig = { image: defaultImagePreview(), video: '' }
+
+  const configs = config.split(';')
+  for (const c of configs) {
+    const [key, value] = c.split('|')
+    if (key === 'image') {
+      previewConfig.image = value
+    } else if (key === 'video') {
+      previewConfig.video = value
+    } else {
+      throw new Error(`Unknown preview config key: ${key}`)
+    }
+  }
+
+  return Object.freeze(previewConfig)
 }
 
 export function getPreviewConfig (): PreviewConfig {
   return (
     (getMetadata(presentation.metadata.PreviewConfig) as PreviewConfig) ?? {
-      previewUrl: defaultPreview()
+      image: defaultImagePreview(),
+      video: ''
     }
   )
 }
@@ -58,7 +82,7 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
     return ''
   }
 
-  let url = cfg.previewUrl.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+  let url = cfg.image.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
   const downloadUrl = getFileUrl(blob)
 
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
@@ -88,4 +112,26 @@ function blobToSrcSet (cfg: PreviewConfig, blob: Ref<Blob>, width: number | unde
  */
 export function getFileSrcSet (_blob: Ref<Blob>, width?: number): string {
   return blobToSrcSet(getPreviewConfig(), _blob, width)
+}
+
+/**
+ * @public
+ */
+export async function getVideoMeta (file: string, filename?: string): Promise<VideoMeta | undefined> {
+  const cfg = getPreviewConfig()
+
+  const url = cfg.video
+    .replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
+    .replaceAll(':blobId', encodeURIComponent(file))
+
+  if (url === '') {
+    return undefined
+  }
+
+  try {
+    const response = await fetch(url)
+    if (response.ok) {
+      return (await response.json()) as VideoMeta
+    }
+  } catch {}
 }
