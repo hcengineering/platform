@@ -118,6 +118,7 @@
     "Type": "Type",
     "ToViewCommands": "to view available commands",
     "UnArchive": "Unarchive",
+    "UnArchiveConfirm": "Do you want to unarchive this {count, plural, =1 {object} other {# objects}}?",
     "Pin": "Pin",
     "Unpin": "Unpin",
     "Archived": "Archived",

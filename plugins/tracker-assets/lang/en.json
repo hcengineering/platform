@@ -273,8 +273,6 @@
     "NoStatusFound": "No matching status found",
     "CreateMissingStatus": "Create missing status",
     "UnsetParent": "Parent issue will be unset",
-    "Unarchive": "Unarchive",
-    "UnarchiveConfirm": "Do you want to unarchive project?",
     "AllProjects": "All projects",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Updated by {senderName}",

@@ -15,8 +15,6 @@
     "CreateProductVersion": "Создать версию продукта",
     "NoProductVersionParent": "Нет родительской версии",
     "NoProductVersions": "Нет версий продукта",
-    "Unarchive": "Разархивировать",
-    "UnarchiveConfirm": "Вы действительно хотите разархивировать продукт?",
     "CreateDialogClose": "Вы действительно хотите закрыть окно?",
     "CreateDialogCloseNote": "Все внесенные изменения будут потеряны",
     "Description": "Описание",

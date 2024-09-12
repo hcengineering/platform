@@ -26,16 +26,12 @@ import type { Action, ActionCategory, ViewAction, Viewlet } from '@hcengineering
 export default mergeIds(taskId, task, {
   action: {
     EditStatuses: '' as Ref<Action>,
-    ArchiveSpace: '' as Ref<Action>,
-    UnarchiveSpace: '' as Ref<Action>,
     ArchiveState: '' as Ref<Action>,
     PublicLink: '' as Ref<Action<Doc, any>>,
     ExportTasks: '' as Ref<Action>
   },
   actionImpl: {
     EditStatuses: '' as ViewAction,
-    ArchiveSpace: '' as ViewAction,
-    UnarchiveSpace: '' as ViewAction,
     SelectStatus: '' as ViewAction,
     ExportTasks: '' as ViewAction
   },

@@ -58,7 +58,6 @@
     "Icon": "Иконка",
     "Color": "Цвет",
     "RoleLabel": "Роль: {role}",
-    "Embeddings": "Вложения",
-    "UnarchiveConfirm": "Вы уверены, что хотите разархивировать пространство?"
+    "Embeddings": "Вложения"
   }
 }

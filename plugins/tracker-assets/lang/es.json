@@ -256,8 +256,6 @@
     "NoStatusFound": "No se encontró ningún estado coincidente",
     "CreateMissingStatus": "Crear estado faltante",
     "UnsetParent": "El problema padre será desmarcado",
-    "Unarchive": "Desarchivar",
-    "UnarchiveConfirm": "¿Desea desarchivar el proyecto?",
     "AllProjects": "Todos los proyectos",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Actualizado por {senderName}",
