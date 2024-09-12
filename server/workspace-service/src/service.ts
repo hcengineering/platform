@@ -43,7 +43,7 @@ export interface WorkspaceOptions {
 }
 
 export class WorkspaceWorker {
-  rateLimit: RateLimiter
+  executor: RateLimiter
   constructor (
     readonly version: Data<Version>,
     readonly txes: Tx[],
@@ -53,7 +53,7 @@ export class WorkspaceWorker {
     readonly operation: 'create' | 'upgrade' | 'all',
     readonly brandings: BrandingMap
   ) {
-    this.rateLimit = new RateLimiter(limit)
+    this.executor = new RateLimiter(limit)
   }
 
   // Note: not gonna use it for now
@@ -69,6 +69,10 @@ export class WorkspaceWorker {
     await workerHandshake(token, this.region, this.version, this.operation)
 
     while (true) {
+      if (!this.executor.isAvailable()) {
+        await this.executor.waitNext()
+      }
+
       const workspace = await ctx.with('get-pending-workspace', {}, async (ctx) => {
         try {
           return await getPendingWorkspace(token, this.region, this.version, this.operation)
@@ -79,8 +83,15 @@ export class WorkspaceWorker {
       if (workspace === undefined) {
         await this.doSleep(ctx, opt)
       } else {
-        await this.rateLimit.exec(async () => {
-          await this.doWorkspaceOperation(ctx, workspace, opt)
+        void this.executor.exec(async () => {
+          await this.doWorkspaceOperation(
+            ctx.newChild('workspaceOperation', {
+              workspace: workspace.workspace,
+              workspaceName: workspace.workspaceName
+            }),
+            workspace,
+            opt
+          )
         })
       }
     }

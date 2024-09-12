@@ -411,8 +411,16 @@ export class RateLimiter {
     }
   }
 
+  isAvailable (): boolean {
+    return this.processingQueue.size < this.rate
+  }
+
   async waitProcessing (): Promise<void> {
     await Promise.all(this.processingQueue.values())
+  }
+
+  async waitNext (): Promise<void> {
+    await Promise.race(this.processingQueue.values())
   }
 }
 
