@@ -80,7 +80,6 @@ export async function cleanWorkspace (
   mongoUrl: string,
   workspaceId: WorkspaceId,
   storageAdapter: StorageAdapter,
-  elasticUrl: string,
   transactorUrl: string,
   opt: { recruit: boolean, tracker: boolean, removedTx: boolean }
 ): Promise<void> {
