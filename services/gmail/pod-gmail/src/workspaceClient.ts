@@ -19,14 +19,14 @@ import core, {
   type AttachedDoc,
   type Client,
   type Doc,
+  MeasureContext,
   type Ref,
   type Tx,
   type TxCollectionCUD,
   type TxCreateDoc,
   TxProcessor,
   type TxRemoveDoc,
-  type TxUpdateDoc,
-  MeasureContext
+  type TxUpdateDoc
 } from '@hcengineering/core'
 import gmailP, { type NewMessage } from '@hcengineering/gmail'
 import type { StorageAdapter } from '@hcengineering/server-core'
@@ -92,9 +92,7 @@ export class WorkspaceClient {
   }
 
   async getUserId (email: string): Promise<Ref<Account>> {
-    const user = await this.client.findOne(core.class.Account, {
-      email
-    })
+    const user = this.client.getModel().getAccountByEmail(email)
     if (user === undefined) {
       throw new Error('User not found')
     }

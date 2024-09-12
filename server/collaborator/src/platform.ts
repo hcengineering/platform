@@ -23,7 +23,7 @@ async function connect (token: string): Promise<Client> {
 }
 
 async function getTxOperations (client: Client, token: Token, isDerived: boolean = false): Promise<TxOperations> {
-  const account = await client.findOne(core.class.Account, { email: token.email })
+  const account = client.getModel().getAccountByEmail(token.email)
   const accountId = account?._id ?? core.account.System
 
   return new TxOperations(client, accountId, isDerived)
