@@ -513,21 +513,12 @@ export async function removeChannelAction (context?: DocNotifyContext, _?: Event
   if (hierarchy.isDerived(objectClass, chunter.class.Channel)) {
     const channel = await client.findOne(chunter.class.Channel, { _id: objectId as Ref<Channel>, space: objectSpace })
     await leaveChannel(channel, getCurrentAccount()._id)
+    await client.remove(context)
   } else {
     const object = await client.findOne(objectClass, { _id: objectId, space: objectSpace })
-    // const account = getCurrentAccount() as PersonAccount
-
-    // await client.createMixin(context._id, context._class, context.space, chunter.mixin.ChannelInfo, { hidden: true })
-    //
-    // const chatInfo = await client.findOne(chunter.class.ChatInfo, { user: account.person })
-    //
-    // if (chatInfo !== undefined) {
-    //   await client.update(chatInfo, { hidden: chatInfo.hidden.concat([context._id]) })
-    // }
+    await client.update(context, { hidden: true })
     await resetChunterLocIfEqual(objectId, objectClass, object)
   }
-
-  await client.remove(context)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {

@@ -74,14 +74,14 @@ services:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
       - MONGO_URL=${MONGO_URL}
-      - TRANSACTOR_URL=ws://host.docker.internal:3333;ws://localhost:3333
+      - TRANSACTOR_URL=ws://host.docker.internal:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
-      - ACCOUNTS_URL=http://localhost:3000
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding      
@@ -102,15 +102,16 @@ services:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
       - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
-      - TRANSACTOR_URL=ws://transactor:3333;ws://localhost:3333
+      - TRANSACTOR_URL=ws://transactor:3333;ws://host.docker.internal:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://localhost:8087
+      - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       - NOTIFY_INBOX_ONLY=true
+      # - PARALLEL=2
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding
     restart: unless-stopped
@@ -151,22 +152,22 @@ services:
       - SERVER_SECRET=secret
       - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
-      - ACCOUNTS_URL=http://localhost:3000
+      - ACCOUNTS_URL=http://host.docker.internal:3000
       - UPLOAD_URL=/files
       - ELASTIC_URL=http://host.docker.internal:9200
-      - GMAIL_URL=http://localhost:8088
-      - CALENDAR_URL=http://localhost:8095
-      - TELEGRAM_URL=http://localhost:8086
-      - REKONI_URL=http://localhost:4004
-      - COLLABORATOR_URL=ws://localhost:3078
+      - GMAIL_URL=http://host.docker.internal:8088
+      - CALENDAR_URL=http://host.docker.internal:8095
+      - TELEGRAM_URL=http://host.docker.internal:8086
+      - REKONI_URL=http://host.docker.internal:4004
+      - COLLABORATOR_URL=ws://host.docker.internal:3078
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - GITHUB_URL=http://localhost:3500
-      - PRINT_URL=http://localhost:4005
-      - SIGN_URL=http://localhost:4006
-      - ANALYTICS_COLLECTOR_URL=http://localhost:4017
+      - GITHUB_URL=http://host.docker.internal:3500
+      - PRINT_URL=http://host.docker.internal:4005
+      - SIGN_URL=http://host.docker.internal:4006
+      - ANALYTICS_COLLECTOR_URL=http://host.docker.internal:4017
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
-      - BRANDING_URL=http://localhost:8087/branding.json
+      - BRANDING_URL=http://host.docker.internal:8087/branding.json
     restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor
@@ -197,7 +198,7 @@ services:
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://host.docker.internal:4004
-      - FRONT_URL=http://localhost:8087
+      - FRONT_URL=http://host.docker.internal:8087
       # - APM_SERVER_URL=http://apm-server:8200
       - SES_URL=''
       - ACCOUNTS_URL=http://host.docker.internal:3000

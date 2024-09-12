@@ -48,8 +48,6 @@ export default mergeIds(productsId, products, {
     CreateProductVersion: '' as IntlString,
     NoProductVersionParent: '' as IntlString,
     NoProductVersions: '' as IntlString,
-    Unarchive: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString,
     CreateDialogClose: '' as IntlString,
     CreateDialogCloseNote: '' as IntlString,
     Description: '' as IntlString,

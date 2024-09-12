@@ -74,7 +74,8 @@ export async function getDirect (
     objectId: dmId,
     objectClass: chunter.class.DirectMessage,
     objectSpace: core.space.Space,
-    isPinned: false
+    isPinned: false,
+    hidden: false
   })
 
   return dmId

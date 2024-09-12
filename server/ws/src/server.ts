@@ -629,15 +629,7 @@ class TSessionManager implements SessionManager {
     workspaceId: WorkspaceId
   ): Promise<void> {
     try {
-      const user = (
-        await session.pipeline().context.modelDb.findAll(
-          core.class.Account,
-          {
-            email: session.getUser()
-          },
-          { limit: 1 }
-        )
-      )[0]
+      const user = session.pipeline().context.modelDb.getAccountByEmail(session.getUser())
       if (user === undefined) return
 
       const clientCtx: ClientSessionCtx = {

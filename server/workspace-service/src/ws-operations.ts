@@ -197,7 +197,9 @@ export async function createWorkspace (
         await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 10))
       })
 
+      ctx.info('Starting init script if any')
       await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
+        ctx.info('Init script progress', { value })
         await handleWsEvent?.('progress', version, 30 + Math.round((Math.min(value, 100) / 100) * 70))
       })
 

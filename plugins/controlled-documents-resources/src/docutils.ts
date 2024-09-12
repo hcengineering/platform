@@ -50,10 +50,20 @@ export async function createNewDraftForControlledDoc (
   version: { major: number, minor: number },
   project: Ref<Project>,
   newDraftDocId?: Ref<ControlledDocument>
-): Promise<Ref<ControlledDocument>> {
+): Promise<{ success: boolean, id: Ref<ControlledDocument> }> {
   const hierarchy = client.getHierarchy()
 
   newDraftDocId = newDraftDocId ?? generateId()
+
+  const ops = client.apply(document.code)
+
+  const notMatchQuery = {
+    ...(document.template != null ? { template: document.template } : { template: { $exists: false } }),
+    seqNumber: document.seqNumber,
+    state: DocumentState.Draft
+  }
+
+  ops.notMatch(documents.class.Document, notMatchQuery)
 
   const collaborativeDoc = getCollaborativeDocForDocument(
     `DOC-${document.prefix}`,
@@ -76,7 +86,7 @@ export async function createNewDraftForControlledDoc (
     impactedDocuments: []
   }
 
-  await createChangeControl(client, newCCId, newCCSpec, document.space)
+  await createChangeControl(ops, newCCId, newCCSpec, document.space)
 
   // TODO: copy labels?
   const docSpec: AttachedData<ControlledDocument> = {
@@ -110,7 +120,7 @@ export async function createNewDraftForControlledDoc (
   })
 
   if (meta !== undefined) {
-    await client.addCollection(documents.class.ProjectDocument, meta.space, meta._id, meta._class, 'documents', {
+    await ops.addCollection(documents.class.ProjectDocument, meta.space, meta._id, meta._class, 'documents', {
       project,
       initial: project,
       document: newDraftDocId
@@ -119,7 +129,7 @@ export async function createNewDraftForControlledDoc (
     console.error('project meta not found', project)
   }
 
-  await client.addCollection(
+  await ops.addCollection(
     document._class,
     space,
     document.attachedTo,
@@ -131,7 +141,7 @@ export async function createNewDraftForControlledDoc (
 
   if (hierarchy.hasMixin(document, documents.mixin.DocumentTemplate)) {
     const template = hierarchy.as<Document, DocumentTemplate>(document, documents.mixin.DocumentTemplate)
-    await client.updateMixin(newDraftDocId, documents.class.Document, space, documents.mixin.DocumentTemplate, {
+    await ops.updateMixin(newDraftDocId, documents.class.Document, space, documents.mixin.DocumentTemplate, {
       sequence: template.sequence,
       docPrefix: template.docPrefix
     })
@@ -143,7 +153,7 @@ export async function createNewDraftForControlledDoc (
     if (newDraftDoc === undefined) {
       console.error(`Document #${newDraftDocId} not found`)
     } else {
-      await createDocumentTraining(client, newDraftDoc, {
+      await createDocumentTraining(ops, newDraftDoc, {
         enabled: false,
         roles: documentTraining.roles,
         training: documentTraining.training,
@@ -154,7 +164,9 @@ export async function createNewDraftForControlledDoc (
     }
   }
 
-  return newDraftDocId
+  const res = await ops.commit()
+
+  return { success: res.result, id: newDraftDocId }
 }
 
 export async function createDocumentSnapshotAndEdit (client: TxOperations, document: ControlledDocument): Promise<void> {

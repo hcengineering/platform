@@ -716,6 +716,7 @@ async function createNotifyContext (
     objectClass,
     objectSpace,
     isPinned: false,
+    hidden: false,
     tx: tx?._id,
     lastUpdateTimestamp: updateTimestamp,
     lastViewedTimestamp: sender === receiver._id ? updateTimestamp : undefined
@@ -828,10 +829,11 @@ async function updateContextsTimestamp (
   const res: Tx[] = []
 
   for (const context of contexts) {
-    const account = getPersonAccountById(context.user, control) // accounts.find(({ _id }) => _id === context.user)
+    const account = getPersonAccountById(context.user, control)
     const isViewed =
       context.lastViewedTimestamp !== undefined && (context.lastUpdateTimestamp ?? 0) <= context.lastViewedTimestamp
     const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+      hidden: false,
       lastUpdateTimestamp: timestamp,
       ...(isViewed && modifiedBy === context.user
         ? {
@@ -1680,7 +1682,11 @@ async function updateCollaborators (
     const info = toReceiverInfo(hierarchy, addedUser)
     if (info === undefined) continue
     const context = getDocNotifyContext(control, contexts, objectId, info._id)
-    if (context !== undefined) continue
+    if (context !== undefined) {
+      if (context.hidden) {
+        res.push(control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, { hidden: false }))
+      }
+    }
     await createNotifyContext(ctx, control, objectId, objectClass, objectSpace, info, tx.modifiedBy, undefined, tx)
   }
 

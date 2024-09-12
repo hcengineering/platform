@@ -32,6 +32,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
   private readonly objectById = new Map<Ref<Doc>, Doc>()
 
   private readonly accountByPersonId = new Map<Ref<Doc>, Account[]>()
+  private readonly accountByEmail = new Map<string, Account>()
 
   constructor (protected readonly hierarchy: Hierarchy) {
     super()
@@ -79,6 +80,10 @@ export abstract class MemDb extends TxProcessor implements Storage {
 
   getAccountByPersonId (ref: Ref<Doc>): Account[] {
     return this.accountByPersonId.get(ref) ?? []
+  }
+
+  getAccountByEmail (email: Account['email']): Account | undefined {
+    return this.accountByEmail.get(email)
   }
 
   findObject<T extends Doc>(_id: Ref<T>): T | undefined {
@@ -227,6 +232,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
     })
     if (this.hierarchy.isDerived(doc._class, core.class.Account)) {
       const account = doc as Account
+      this.accountByEmail.set(account.email, account)
       if (account.person !== undefined) {
         this.accountByPersonId.set(account.person, [...(this.accountByPersonId.get(account.person) ?? []), account])
       }
@@ -245,6 +251,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
     })
     if (this.hierarchy.isDerived(doc._class, core.class.Account)) {
       const account = doc as Account
+      this.accountByEmail.delete(account.email)
       if (account.person !== undefined) {
         const acc = this.accountByPersonId.get(account.person) ?? []
         this.accountByPersonId.set(

@@ -16,6 +16,7 @@
 import calendar, { Event, ExternalCalendar } from '@hcengineering/calendar'
 import contact, { Channel, Contact, type Employee, type PersonAccount } from '@hcengineering/contact'
 import core, {
+  TxOperations,
   TxProcessor,
   toIdMap,
   type Account,
@@ -25,17 +26,16 @@ import core, {
   type Tx,
   type TxCreateDoc,
   type TxRemoveDoc,
-  type TxUpdateDoc,
-  TxOperations
+  type TxUpdateDoc
 } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 import setting, { Integration } from '@hcengineering/setting'
 import { Collection, type Db } from 'mongodb'
 import { CalendarClient } from './calendar'
+import { CalendarController } from './calendarController'
 import { getClient } from './client'
 import config from './config'
 import { SyncHistory, type ProjectCredentials, type User } from './types'
-import { CalendarController } from './calendarController'
-import { generateToken } from '@hcengineering/server-token'
 
 export class WorkspaceClient {
   private readonly txHandlers: ((...tx: Tx[]) => Promise<void>)[] = []
@@ -109,9 +109,7 @@ export class WorkspaceClient {
   }
 
   async getUserId (email: string): Promise<Ref<Account>> {
-    const user = await this.client.findOne(core.class.Account, {
-      email
-    })
+    const user = this.client.getModel().getAccountByEmail(email)
     if (user === undefined) {
       throw new Error('User not found')
     }
