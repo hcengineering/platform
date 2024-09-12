@@ -140,7 +140,7 @@ export function getUser (modelDb: ModelDb, userEmail: string | undefined, admin?
   if (userEmail === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  const account = modelDb.findAllSync(core.class.Account, { email: userEmail })[0]
+  const account = modelDb.getAccountByEmail(userEmail)
   if (account === undefined) {
     if (userEmail === systemAccountEmail || admin === true) {
       return {
@@ -181,7 +181,7 @@ export class SessionDataImpl implements SessionData {
   }
 
   getAccount (account: Ref<Account>): Account | undefined {
-    return this.modelDb.findAllSync(core.class.Account, { _id: account })[0]
+    return this.modelDb.findObject(account)
   }
 }
 

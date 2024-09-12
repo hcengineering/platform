@@ -113,12 +113,10 @@ export class ClientSession implements Session {
   }
 
   async getAccount (ctx: ClientSessionCtx): Promise<void> {
-    const account = this._pipeline.context.modelDb.findAllSync(core.class.Account, { email: this.token.email })
-    if (account.length === 0 && this.token.extra?.admin === 'true') {
-      const systemAccount = this._pipeline.context.modelDb.findAllSync(core.class.Account, {
-        _id: this.token.email as Ref<Account>
-      })
-      if (systemAccount.length === 0) {
+    const account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
+    if (account === undefined && this.token.extra?.admin === 'true') {
+      const systemAccount = this._pipeline.context.modelDb.findObject(this.token.email as Ref<Account>)
+      if (systemAccount === undefined) {
         // Generate account for admin user
         const factory = new TxFactory(core.account.System)
         const email = `system:${this.token.email}`
@@ -152,11 +150,11 @@ export class ClientSession implements Session {
         await ctx.sendResponse(acc)
         return
       } else {
-        await ctx.sendResponse(systemAccount[0])
+        await ctx.sendResponse(systemAccount)
         return
       }
     }
-    await ctx.sendResponse(account[0])
+    await ctx.sendResponse(account)
   }
 
   findAllRaw<T extends Doc>(
