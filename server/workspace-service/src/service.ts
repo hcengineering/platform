@@ -14,7 +14,6 @@
 //
 import {
   type BrandingMap,
-  RateLimiter,
   systemAccountEmail,
   type BaseWorkspaceInfo,
   type Data,
@@ -43,7 +42,9 @@ export interface WorkspaceOptions {
 }
 
 export class WorkspaceWorker {
-  rateLimit: RateLimiter
+  runningTasks: number = 0
+  resolveBusy: (() => void) | null = null
+
   constructor (
     readonly version: Data<Version>,
     readonly txes: Tx[],
@@ -52,8 +53,20 @@ export class WorkspaceWorker {
     readonly limit: number,
     readonly operation: 'create' | 'upgrade' | 'all',
     readonly brandings: BrandingMap
-  ) {
-    this.rateLimit = new RateLimiter(limit)
+  ) {}
+
+  hasAvailableThread (): boolean {
+    return this.runningTasks < this.limit
+  }
+
+  async waitForAvailableThread (): Promise<void> {
+    if (this.hasAvailableThread()) {
+      return
+    }
+
+    await new Promise<void>((resolve) => {
+      this.resolveBusy = resolve
+    })
   }
 
   // Note: not gonna use it for now
@@ -69,6 +82,8 @@ export class WorkspaceWorker {
     await workerHandshake(token, this.region, this.version, this.operation)
 
     while (true) {
+      await this.waitForAvailableThread()
+
       const workspace = await ctx.with('get-pending-workspace', {}, async (ctx) => {
         try {
           return await getPendingWorkspace(token, this.region, this.version, this.operation)
@@ -79,11 +94,31 @@ export class WorkspaceWorker {
       if (workspace === undefined) {
         await this.doSleep(ctx, opt)
       } else {
-        await this.rateLimit.exec(async () => {
-          await this.doWorkspaceOperation(ctx, workspace, opt)
+        void this.exec(async () => {
+          await this.doWorkspaceOperation(
+            ctx.newChild('workspaceOperation', {
+              workspace: workspace.workspace,
+              workspaceName: workspace.workspaceName
+            }),
+            workspace,
+            opt
+          )
         })
       }
     }
+  }
+
+  async exec (op: () => Promise<void>): Promise<void> {
+    this.runningTasks++
+
+    await op().finally(() => {
+      this.runningTasks--
+
+      if (this.resolveBusy !== null) {
+        this.resolveBusy()
+        this.resolveBusy = null
+      }
+    })
   }
 
   private async _createWorkspace (ctx: MeasureContext, ws: BaseWorkspaceInfo, opt: WorkspaceOptions): Promise<void> {
