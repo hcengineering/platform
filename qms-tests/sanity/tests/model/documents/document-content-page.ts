@@ -177,7 +177,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.changeSpaceButton = page.locator('[id="space\\.selector"]')
     this.createNewTemplateFromSpace = page.getByRole('button', { name: 'Create new template' })
     this.okButton = page.getByRole('button', { name: 'Ok', exact: true })
-    this.documentThreeDots = page.locator('div:nth-child(5) > .no-print > .antiButton')
+    this.documentThreeDots = page.locator("div[class='no-print ml-1'] button[type='button']")
   }
 
   async checkDocumentTitle (title: string): Promise<void> {

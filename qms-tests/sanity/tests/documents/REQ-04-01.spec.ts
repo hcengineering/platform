@@ -71,7 +71,7 @@ test.describe('QMS. PDF Download', () => {
       await documentApprovalsPage.checkSuccessApproval(documentDetails.owner)
       await attachScreenshot('TESTS-271_approve_document.png', page)
     })
-    await test.step('5. Check the document history', async () => {
+    await test.step('5. Download PDF', async () => {
       await documentContentPage.clickDocumentThreeDots()
       const pdfPages = new PdfPages(page)
       await pdfPages.printToPdfClick()
