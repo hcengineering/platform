@@ -163,8 +163,8 @@ export function devTool (
     return accountsUrl
   }
 
-  function setupAccountsUrlMetadata (): void {
-    setMetadata(serverClientPlugin.metadata.Endpoint, getAccountsUrl())
+  function setupAccountsUrlMetadata (accountsUrl?: string): void {
+    setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl ?? getAccountsUrl())
   }
 
   const transactorUrl = process.env.TRANSACTOR_URL
@@ -274,6 +274,9 @@ export function devTool (
       return
     }
 
+    const config = await (await fetch(concatLink(getFrontUrl(), '/config.json'))).json()
+    setupAccountsUrlMetadata(config.ACCOUNTS_URL)
+
     const userToken = await login(user, password, workspace)
     const allWorkspaces = await getUserWorkspaces(userToken)
     const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
@@ -286,7 +289,7 @@ export function devTool (
 
     function uploader (token: string) {
       return (id: string, data: any) => {
-        return fetch(concatLink(getFrontUrl(), '/files'), {
+        return fetch(concatLink(getFrontUrl(), config.UPLOAD_URL), {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + token
