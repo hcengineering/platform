@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { codeBlockOptions, codeOptions } from '@hcengineering/text'
+import { codeOptions } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { type Editor, Extension } from '@tiptap/core'
 import type { CodeOptions } from '@tiptap/extension-code'
@@ -25,10 +25,9 @@ import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
-import { common, createLowlight } from 'lowlight'
 
 import LinkPopup from '../components/LinkPopup.svelte'
-import { CodeBlockExtension } from '../components/extension/codeblock'
+import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeblock'
 
 export interface DefaultKitOptions {
   codeBlock?: Partial<CodeBlockOptions> | false
@@ -66,10 +65,7 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
         openOnClick: true,
         HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
       }),
-      CodeBlockExtension.configure({
-        ...codeBlockOptions,
-        lowlight: createLowlight(common)
-      })
+      CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)
     ]
   }
 })
