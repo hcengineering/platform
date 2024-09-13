@@ -263,22 +263,25 @@ export abstract class MemDb extends TxProcessor implements Storage {
   }
 
   updateDoc (_id: Ref<Doc>, doc: Doc, update: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): void {
-    if (
-      this.hierarchy.isDerived(doc._class, core.class.Account) &&
-      update._class === core.class.TxUpdateDoc &&
-      (update as TxUpdateDoc<Account>).operations.person !== undefined
-    ) {
-      const account = doc as Account
-      if (account.person !== undefined) {
-        const acc = this.accountByPersonId.get(account.person) ?? []
-        this.accountByPersonId.set(
-          account.person,
-          acc.filter((it) => it._id !== _id)
-        )
-      }
-      const newPerson = (update as TxUpdateDoc<Account>).operations.person
-      if (newPerson !== undefined) {
-        this.accountByPersonId.set(newPerson, [...(this.accountByPersonId.get(newPerson) ?? []), account])
+    if (this.hierarchy.isDerived(doc._class, core.class.Account) && update._class === core.class.TxUpdateDoc) {
+      const newEmail = (update as TxUpdateDoc<Account>).operations.email
+      if ((update as TxUpdateDoc<Account>).operations.person !== undefined) {
+        const account = doc as Account
+        if (account.person !== undefined) {
+          const acc = this.accountByPersonId.get(account.person) ?? []
+          this.accountByPersonId.set(
+            account.person,
+            acc.filter((it) => it._id !== _id)
+          )
+        }
+        const newPerson = (update as TxUpdateDoc<Account>).operations.person
+        if (newPerson !== undefined) {
+          this.accountByPersonId.set(newPerson, [...(this.accountByPersonId.get(newPerson) ?? []), account])
+        }
+      } else if (newEmail !== undefined) {
+        const account = doc as Account
+        this.accountByEmail.delete(account.email)
+        this.accountByEmail.set(newEmail, account)
       }
     }
   }
