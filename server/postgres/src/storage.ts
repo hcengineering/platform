@@ -753,12 +753,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (!isDataField(key)) return `"${key}"`
     const arr = key.split('.').filter((p) => p)
     let tKey = ''
+    let isNestedField = false
 
     for (let i = 0; i < arr.length; i++) {
       const element = arr[i]
       if (element === '$lookup') {
         tKey += arr[++i] + '_lookup'
       } else if (this.hierarchy.isMixin(element as Ref<Class<Doc>>)) {
+        isNestedField = true
         tKey += `${element}`
         if (i !== arr.length - 1) {
           tKey += "'->'"
@@ -773,7 +775,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       tKey = this.checkMixinKey<T>(tKey, _class, isDataArray)
     }
 
-    return isDataArray ? `data->'${tKey}'` : `data#>>'{${tKey}}'`
+    return isDataArray || isNestedField ? `data->'${tKey}'` : `data#>>'{${tKey}}'`
   }
 
   private checkMixinKey<T extends Doc>(key: string, _class: Ref<Class<T>>, isDataArray: boolean): string {
@@ -1046,7 +1048,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? '[NULL]'}', '${escapeBackticks(JSON.stringify(d.data))}')`
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
+              d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
+            }, '${escapeBackticks(JSON.stringify(d.data))}')`
           })
           .join(', ')
         await client.query(
@@ -1133,7 +1137,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const vals = part
           .map((doc) => {
             const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', '${d.attachedTo ?? '[NULL]'}', '${escapeBackticks(JSON.stringify(d.data))}')`
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
+              d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
+            }, '${escapeBackticks(JSON.stringify(d.data))}')`
           })
           .join(', ')
         await client.query(
