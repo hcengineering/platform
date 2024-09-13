@@ -164,4 +164,23 @@ test.describe('Workspace tests', () => {
     await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.InviteSettings)
     await ownersPage.createEnumWithName(enumTitle, enumName)
   })
+
+  test('User is able to update workspace name', async ({ page }) => {
+    newUser = {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: '1234'
+    }
+    const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
+    const updatedWorkspaceName = `Updated Workspace Name - ${generateId(3)}`
+    await loginPage.goto()
+    await loginPage.linkSignUp().click()
+    await signUpPage.signUp(newUser)
+    await selectWorkspacePage.createWorkspace(newWorkspaceName)
+    await userProfilePage.openProfileMenu()
+    await userProfilePage.clickSettings()
+    await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.General)
+    await ownersPage.updateWorkspaceName(updatedWorkspaceName)
+  })
 })
