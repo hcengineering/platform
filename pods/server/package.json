@@ -15,7 +15,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --sourcemap=inline --bundle --keep-names --platform=node --external:*.node --external:bufferutil --external:snappy --external:utf-8-validate --external:msgpackr-extract --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
+    "bundle": "mkdir -p bundle && esbuild src/__start.ts --sourcemap=inline --bundle --keep-names --platform=node --external:*.node --external:bufferutil --external:snappy --external:utf-8-validate --external:msgpackr-extract --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/transactor",
     "docker:tbuild": "docker build -t hardcoreeng/transactor . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
     "docker:abuild": "docker build -t hardcoreeng/transactor . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
