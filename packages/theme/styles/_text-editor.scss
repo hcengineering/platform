@@ -10,6 +10,7 @@
 .text-editor-view {
   // overflow-y: auto;
   color: var(--theme-text-primary-color);
+  margin: 0.25rem 0;
 
   .suggestion {
     padding-left: 0.25rem;
