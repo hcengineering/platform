@@ -28,9 +28,7 @@ export function highlightText (text: string, options: HighlightOptions): string 
   const { language } = options
   const validLanguage = language !== undefined && hljs.getLanguage(language) !== undefined
 
-  const { value: highlighted } = validLanguage
-    ? hljs.highlight(text, { language })
-    : hljs.highlightAuto(text)
+  const { value: highlighted } = validLanguage ? hljs.highlight(text, { language }) : hljs.highlightAuto(text)
 
   return normalizeHighlightTags(highlighted)
 }

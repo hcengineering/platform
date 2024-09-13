@@ -13,14 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Html } from '@hcengineering/ui'
-
-  import { highlightText } from '../highlight'
+  import dompurify from 'dompurify'
 
   export let value: string
-  export let language: string | undefined = undefined
 
-  $: highlighted = highlightText(value, { language })
+  $: sanitized = dompurify.sanitize(value)
 </script>
 
-<Html value={highlighted} />
+{@html sanitized}
