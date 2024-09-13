@@ -12,11 +12,6 @@ import core, {
   TxOperations,
   generateId
 } from '@hcengineering/core'
-import { getEmbeddedLabel, translate } from '@hcengineering/platform'
-import { LiveQuery } from '@hcengineering/query'
-import task from '@hcengineering/task'
-import tracker, { Milestone } from '@hcengineering/tracker'
-import { RepositoryEvent } from '@octokit/webhooks-types'
 import github, {
   DocSyncInfo,
   GithubFieldMapping,
@@ -25,6 +20,11 @@ import github, {
   GithubProject,
   GithubProjectSyncData
 } from '@hcengineering/github'
+import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+import { LiveQuery } from '@hcengineering/query'
+import task from '@hcengineering/task'
+import tracker, { Milestone } from '@hcengineering/tracker'
+import { RepositoryEvent } from '@octokit/webhooks-types'
 import { deepEqual } from 'fast-equals'
 import { Octokit } from 'octokit'
 import {
@@ -238,6 +238,28 @@ export class ProjectsSyncManager implements DocSyncManager {
           external: data,
           needSync: ''
         })
+
+        // We also need to notify all issues with milestone set to this milestone.
+        const milestonedIds = await this.client.findAll(
+          tracker.class.Issue,
+          { milestone: milestone._id },
+          { projection: { _id: 1 } }
+        )
+        while (milestonedIds.length > 0) {
+          const part = milestonedIds.splice(0, 100)
+          const docInfos = await this.client.findAll(
+            github.class.DocSyncInfo,
+            { _id: { $in: part.map((it) => it._id as unknown as Ref<DocSyncInfo>) } },
+            { projection: { _id: 1 } }
+          )
+          if (docInfos.length > 0) {
+            const ops = derivedClient.apply()
+            for (const d of docInfos) {
+              await ops.update(d, { needSync: '' })
+            }
+            await ops.commit()
+          }
+        }
       }
     }
   }
