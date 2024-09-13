@@ -67,8 +67,6 @@ export interface Session {
 
   requests: Map<string, SessionRequest>
 
-  broadcastTx: Tx[]
-
   binaryMode: boolean
   useCompression: boolean
   total: StatisticsElement
