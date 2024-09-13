@@ -178,7 +178,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: calendar.string.ConfigLabel,
         description: calendar.string.ConfigDescription,
-        enabled: false,
+        enabled: true,
         beta: true,
         icon: calendar.icon.Calendar,
         classFilter: defaultFilter
