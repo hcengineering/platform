@@ -1049,9 +1049,6 @@ dependencies:
   '@rush-temp/uploader-resources':
     specifier: file:./projects/uploader-resources.tgz
     version: file:projects/uploader-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
-  '@rush-temp/uws':
-    specifier: file:./projects/uws.tgz
-    version: file:projects/uws.tgz
   '@rush-temp/view':
     specifier: file:./projects/view.tgz
     version: file:projects/view.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -30099,7 +30096,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz:
-    resolution: {integrity: sha512-ZxtZx6xD8K6aE/+YNCmfUaRxZCU8LQdOEhhPY32sdCdD/JbTI0TiooPxFTqJ7ywmFt2P/QIUgGi+KbYqzjxOlQ==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-whFq8Jk23rIMTrUXr4OjzFdc5zsKYr5mOSKwwVntT2JYVi1Wr05s4+Y2ulpcS7Sjvi0rLCRjd7PQNgDopmlM2A==, tarball: file:projects/pod-server.tgz}
     name: '@rush-temp/pod-server'
     version: 0.0.0
     dependencies:
@@ -33579,7 +33576,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-YrBVAtr3TNiYfwgohue5M/bOosO2VQnlmkRC2t8YWix+eviRY+RLECpxlGmBqGdrIjgG3fLF+ZE5Qv01Uf9qzw==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-TkAzjnl1QK2rx7iiItSZsZHPD2Evt+OViuZWwgwxm9cDKki7j3txpo7G21rkOsTMohXiS4FcA9fKkCiVFfvERw==, tarball: file:projects/server-ws.tgz}
     id: file:projects/server-ws.tgz
     name: '@rush-temp/server-ws'
     version: 0.0.0
@@ -35301,12 +35298,6 @@ packages:
       - node-notifier
       - supports-color
       - ts-node
-    dev: false
-
-  file:projects/uws.tgz:
-    resolution: {integrity: sha512-cJKrvv/9a935gnsLADANzT1ZcSe9j47NxbDaYX93htNBgTZRhke5VQ9zJ+hViufzd4u0aZNHRkdtnES7cPEHGw==, tarball: file:projects/uws.tgz}
-    name: '@rush-temp/uws'
-    version: 0.0.0
     dev: false
 
   file:projects/view-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):

@@ -487,11 +487,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/uws",
-      "projectFolder": "server/uws",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/theme",
       "projectFolder": "packages/theme",
       "shouldPublish": true
