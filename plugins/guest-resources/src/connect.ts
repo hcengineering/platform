@@ -113,7 +113,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                   location.reload()
                 }
               }
-              versionError.set(`${currentVersionStr} => ${reconnectVersionStr}`)
+              versionError.set(`${reconnectVersionStr} => ${currentVersionStr}`)
             }
 
             const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
