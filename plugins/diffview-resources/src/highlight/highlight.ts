@@ -19,16 +19,17 @@ import { hljsDefineSvelte } from './languages/svelte-hljs'
 hljs.registerLanguage('svelte', hljsDefineSvelte)
 
 export interface HighlightOptions {
-  language: string
+  language: string | undefined
 }
 
 export function highlightText (text: string, options: HighlightOptions): string {
   // We should always use highlighter because it sanitizes the input
   // We have to always use highlighter to ensure that the input is sanitized
-  const validLanguage = options.language !== '' && hljs.getLanguage(options.language) !== undefined
+  const { language } = options
+  const validLanguage = language !== undefined && hljs.getLanguage(language) !== undefined
 
   const { value: highlighted } = validLanguage
-    ? hljs.highlight(text, { language: options.language })
+    ? hljs.highlight(text, { language })
     : hljs.highlightAuto(text)
 
   return normalizeHighlightTags(highlighted)
