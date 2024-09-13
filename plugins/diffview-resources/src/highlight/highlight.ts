@@ -26,11 +26,12 @@ export function highlightText (text: string, options: HighlightOptions): string 
   // We should always use highlighter because it sanitizes the input
   // We have to always use highlighter to ensure that the input is sanitized
   const validLanguage = options.language !== '' && hljs.getLanguage(options.language) !== undefined
-  const language = validLanguage ? options.language : 'text'
 
-  const { value: highlighted } = hljs.highlight(text, { language })
-  const normalized = normalizeHighlightTags(highlighted)
-  return normalized
+  const { value: highlighted } = validLanguage
+    ? hljs.highlight(text, { language: options.language })
+    : hljs.highlightAuto(text)
+
+  return normalizeHighlightTags(highlighted)
 }
 
 export function highlightLines (lines: string[], options: HighlightOptions): string[] {
