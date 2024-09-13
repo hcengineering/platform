@@ -4,14 +4,15 @@ import core, {
   ClientConnectEvent,
   concatLink,
   getCurrentAccount,
-  MeasureMetricsContext,
+  isWorkspaceCreating,
   metricsToString,
   setCurrentAccount,
   versionToString,
-  isWorkspaceCreating,
   type Account,
   type AccountClient,
   type Client,
+  type MeasureContext,
+  type MeasureMetricsContext,
   type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
@@ -22,7 +23,8 @@ import presentation, {
   purgeClient,
   refreshClient,
   setClient,
-  setPresentationCookie
+  setPresentationCookie,
+  uiContext
 } from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
@@ -51,7 +53,7 @@ export async function disconnect (): Promise<void> {
 }
 
 export async function connect (title: string): Promise<Client | undefined> {
-  const ctx = new MeasureMetricsContext('connect', {})
+  const ctx = uiContext.newChild('connect', {})
   const loc = getCurrentLocation()
   const ws = loc.path[1]
   if (ws === undefined) {
@@ -315,12 +317,12 @@ export async function connect (title: string): Promise<Client | undefined> {
   await ctx.with('broadcast-connected', {}, async () => {
     await broadcastEvent(plugin.event.NotifyConnection, getCurrentAccount())
   })
-  console.log(metricsToString(ctx.metrics, 'connect', 50))
+  console.log(metricsToString((ctx as MeasureMetricsContext).metrics, 'connect', 50))
   return newClient
 }
 
 async function createEmployee (
-  ctx: MeasureMetricsContext,
+  ctx: MeasureContext,
   ws: string,
   me: Account,
   newClient: AccountClient
