@@ -32,7 +32,6 @@ import github, {
 import task, { TaskType, calcRank, makeRank } from '@hcengineering/task'
 import time, { ToDo, ToDoPriority } from '@hcengineering/time'
 import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
-import { OctokitResponse } from '@octokit/types'
 import { ProjectsV2ItemEvent, PullRequestEvent } from '@octokit/webhooks-types'
 import { Octokit } from 'octokit'
 import config from '../config'
@@ -59,7 +58,16 @@ import {
 } from './githubTypes'
 import { GithubIssueData, IssueSyncManagerBase, IssueSyncTarget, WithMarkup } from './issueBase'
 import { syncConfig } from './syncConfig'
-import { errorToObj, getSinceRaw, gqlp, guessStatus, isGHWriteAllowed, syncDerivedDocuments, syncRunner } from './utils'
+import {
+  errorToObj,
+  getSinceRaw,
+  gqlp,
+  guessStatus,
+  isGHWriteAllowed,
+  syncChilds,
+  syncDerivedDocuments,
+  syncRunner
+} from './utils'
 
 type GithubPullRequestData = GithubIssueData &
 Omit<GithubPullRequest, keyof Issue | 'commits' | 'reviews' | 'reviewComments'>
@@ -487,8 +495,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         await this.ctx.withLog(
           'retrieve pull request patch',
           {},
-          async () =>
-            await this.handlePatch(
+          () =>
+            this.handlePatch(
               info,
               container,
               pullRequestExternal,
@@ -526,7 +534,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               info.repository as Ref<GithubIntegrationRepository>,
               container.project,
               taskTypes[0]._id,
-              container.repository.find((it) => it._id === info.repository) as GithubIntegrationRepository,
+              (await this.provider.getRepositoryById(info.repository)) as GithubIntegrationRepository,
               !markdownCompatible
             )
           },
@@ -543,6 +551,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         }
 
         await op.commit()
+
+        // To sync reviews/review threads in case they are created before us.
+        await syncChilds(info, this.client, derivedClient)
 
         return {
           needSync: '',
@@ -563,7 +574,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           await this.ctx.withLog(
             'update pull request patch',
             {},
-            async () =>
+            async () => {
               await this.handlePatch(
                 info,
                 container,
@@ -575,7 +586,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
                 },
                 lastModified,
                 accountGH
-              ),
+              )
+            },
             { url: pullRequestExternal.url }
           )
         }
@@ -966,10 +978,6 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       existing as Issue,
       pullRequestExternal
     )
-    if (target === null) {
-      // We need to wait, no milestone data yet.
-      return { needSync: '' }
-    }
     if (target === undefined) {
       target = this.getProjectIssueTarget(container.project, pullRequestExternal)
     }
@@ -1085,18 +1093,17 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     existingPR: Pick<GithubPullRequest, '_id' | 'space' | '_class'>,
     lastModified: number,
     account: Ref<Account>
-  ): Promise<string | null> {
-    let patch: string | null = null
-    const repo = container.repository.find((it) => it._id === info.repository)
+  ): Promise<void> {
+    const repo = await this.provider.getRepositoryById(info.repository)
     if (repo?.nodeId === undefined) {
-      return null
+      return
     }
     if (info.external?.patch !== true) {
-      patch = await this.fetchPatch(pullRequestExternal, container.container.octokit, repo)
+      const { patch, contentType } = await this.fetchPatch(pullRequestExternal, container.container.octokit, repo)
 
       // Update attached patch data.
       const patchAttachment = await this.client.findOne(github.class.GithubPatch, { attachedTo: existingPR._id })
-      const blob = await this.provider.uploadFile(patch, patchAttachment?.file)
+      const blob = await this.provider.uploadFile(patch, patchAttachment?.file, contentType)
       if (blob !== undefined) {
         if (patchAttachment === undefined) {
           await this.client.addCollection(
@@ -1131,7 +1138,6 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         }
       }
     }
-    return patch
   }
 
   private async createPullRequest (
@@ -1544,8 +1550,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     pullRequest: PullRequestExternalData,
     octokit: Octokit,
     repository: GithubIntegrationRepository
-  ): Promise<string> {
+  ): Promise<{ patch: string, contentType: string }> {
     let patch = ''
+    let contentType = 'application/vnd.github.VERSION.diff'
     try {
       const patchContent = await octokit.rest.pulls.get({
         owner: repository.owner?.login as string,
@@ -1556,12 +1563,13 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           'X-GitHub-Api-Version': '2022-11-28'
         }
       })
-      patch = ((patchContent as unknown as OctokitResponse<string>).data ?? '').slice(0, 2 * 1024 * 1024)
+      patch = (patchContent.data as unknown as string) ?? ''
+      contentType = patchContent.headers['content-type'] ?? 'application/vnd.github.VERSION.diff'
     } catch (err: any) {
       this.ctx.error('Error', { err })
       Analytics.handleError(err)
     }
-    return patch
+    return { patch, contentType }
   }
 
   async deleteGithubDocument (container: ContainerFocus, account: Ref<Account>, id: string): Promise<void> {
