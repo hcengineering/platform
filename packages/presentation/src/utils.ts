@@ -16,6 +16,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  MeasureMetricsContext,
   TxOperations,
   TxProcessor,
   getCurrentAccount,
@@ -89,6 +90,8 @@ export function removeTxListener (l: (tx: Tx) => void): void {
 export interface OptimisticTxes {
   pendingCreatedDocs: Writable<Record<Ref<Doc>, boolean>>
 }
+
+export const uiContext = new MeasureMetricsContext('client-ui', {})
 
 class UIClient extends TxOperations implements Client, OptimisticTxes {
   hook = getMetadata(plugin.metadata.ClientHook)
