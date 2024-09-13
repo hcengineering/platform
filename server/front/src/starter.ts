@@ -104,7 +104,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   let previewConfig = process.env.PREVIEW_CONFIG
   if (previewConfig === undefined) {
     // Use universal preview config
-    previewConfig = `image|${uploadUrl}/:workspace?file=:blobId&size=:size`
+    previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
   }
 
   let filesUrl = process.env.FILES_URL

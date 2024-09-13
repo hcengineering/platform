@@ -33,13 +33,18 @@ export function parsePreviewConfig (config?: string): PreviewConfig | undefined 
 
   const configs = config.split(';')
   for (const c of configs) {
-    const [key, value] = c.split('|')
-    if (key === 'image') {
-      previewConfig.image = value
-    } else if (key === 'video') {
-      previewConfig.video = value
+    if (c.includes('|')) {
+      const [key, value] = c.split('|')
+      if (key === 'image') {
+        previewConfig.image = value
+      } else if (key === 'video') {
+        previewConfig.video = value
+      } else {
+        throw new Error(`Unknown preview config key: ${key}`)
+      }
     } else {
-      throw new Error(`Unknown preview config key: ${key}`)
+      // fallback to image-only config for compatibility
+      previewConfig.image = c
     }
   }
 

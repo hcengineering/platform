@@ -23,13 +23,10 @@ Front service is suited to deliver application bundles and resource assets, it a
 
 PREVIEW_CONFIG env variable format.
 
-A `;` separated list of triples, providerName|previewUrl|supportedFormats.
+A `;` separated list of pairs, mediaType|previewUrl.
 
-- providerName - a provider name should be same as in Storage configuration.
-  It coult be empty and it will match by content types.
-- previewUrl - an Url with :workspace, :blobId, :downloadFile, :size placeholders, they will be replaced in UI with an appropriate blob values.
-- supportedFormats - a `,` separated list of file extensions.
-- contentTypes - a ',' separated list of content type patterns.
+* mediaType - a type of media, image or video.
+* previewUrl - an Url with :workspace, :blobId, :downloadFile, :size placeholders, they will be replaced in UI with an appropriate blob values.
 
 PREVIEW_CONFIG=image|https://front.hc.engineering/files/:workspace/api/preview/?width=:size&image=:downloadFile
 
