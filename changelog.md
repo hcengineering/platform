@@ -2,6 +2,15 @@
 
 Changelog.
 
+## [0.6.294] - 2024-09-13
+
+* 🚀 FEATURES: · Hls video support ([#6542](https://github.com/hcengineering/platform/issues/6542))
+* 🐛 BUG FIXES: · Codeblock various fixes ([#6550](https://github.com/hcengineering/platform/issues/6550))
+* UBERF-8053: · Github fixes ([#6554](https://github.com/hcengineering/platform/issues/6554))
+* UBERF-8100: · Fix backup ([#6558](https://github.com/hcengineering/platform/issues/6558))
+* UBERF-8102: · Remove client timeout on broadcast ([#6560](https://github.com/hcengineering/platform/issues/6560))
+* UBERF-8095: · Fix server version ([#6553](https://github.com/hcengineering/platform/issues/6553))
+
 ## [0.6.293] - 2024-09-12
 
 * UBERF-8071: · Fix workspace service parallel param ([#6540](https://github.com/hcengineering/platform/issues/6540))
