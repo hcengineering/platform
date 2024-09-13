@@ -20,7 +20,7 @@
   export let node: MarkupNode
   export let preview = false
 
-  $: language = node.attrs.language
+  $: language = node.attrs?.language
   $: content = node.content ?? []
   $: value = content.map((node) => node.text).join('/n')
 </script>
