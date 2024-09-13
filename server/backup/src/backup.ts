@@ -636,11 +636,7 @@ export async function backup (
       // Load all digest from collection.
       while (true) {
         try {
-          const currentChunk = await ctx.with(
-            'loadChunk',
-            {},
-            async () => await connection.loadChunk(domain, idx, options.recheck)
-          )
+          const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx, options.recheck))
           idx = currentChunk.idx
 
           let needRetrieve: Ref<Doc>[] = []
@@ -1201,10 +1197,22 @@ export async function restore (
       workspace: workspaceId.name
     })
 
+    const doTrim = (s: string | undefined): string | undefined => {
+      if (s == null) {
+        return s
+      }
+      if (s.startsWith('"') && s.endsWith('"')) {
+        return s.slice(1, s.length - 1)
+      }
+      return s
+    }
+
     // Let's find difference
     const docsToAdd = new Map(
       Array.from(changeset.entries()).filter(
-        ([it]) => !serverChangeset.has(it) || (serverChangeset.has(it) && serverChangeset.get(it) !== changeset.get(it))
+        ([it]) =>
+          !serverChangeset.has(it) ||
+          (serverChangeset.has(it) && doTrim(serverChangeset.get(it)) !== doTrim(changeset.get(it)))
       )
     )
     const docsToRemove = Array.from(serverChangeset.keys()).filter((it) => !changeset.has(it))

@@ -14,8 +14,8 @@
 //
 
 import { Extension } from '@tiptap/core'
-import Suggestion, { type SuggestionOptions } from './suggestion'
 import { PluginKey } from '@tiptap/pm/state'
+import Suggestion, { type SuggestionOptions } from './suggestion'
 
 export interface InlineCommandsOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
@@ -31,7 +31,11 @@ export const InlineCommandsExtension = Extension.create<InlineCommandsOptions>({
     return {
       suggestion: {
         char: '/',
-        startOfLine: true
+        allow: ({ state }) => {
+          const { $anchor } = state.selection
+          const parent = $anchor.parent
+          return parent.type.name === 'paragraph'
+        }
       }
     }
   },

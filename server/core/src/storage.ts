@@ -9,7 +9,6 @@ import {
   type StorageIterator,
   type WorkspaceId
 } from '@hcengineering/core'
-import { estimateDocSize } from './utils'
 
 export * from '@hcengineering/storage'
 
@@ -77,7 +76,7 @@ export class BackupClientOps {
           break
         }
 
-        size += estimateDocSize(doc)
+        size += doc.size
         docs.push(doc)
       }
 
@@ -99,15 +98,15 @@ export class BackupClientOps {
     })
   }
 
-  async loadDocs (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.storage.load(ctx, domain, docs)
+  loadDocs (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return this.storage.load(ctx, domain, docs)
   }
 
-  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await this.storage.upload(ctx, domain, docs)
+  upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    return this.storage.upload(ctx, domain, docs)
   }
 
-  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.storage.clean(ctx, domain, docs)
+  clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    return this.storage.clean(ctx, domain, docs)
   }
 }

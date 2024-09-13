@@ -16,15 +16,15 @@ import core, {
   Type,
   toIdMap
 } from '@hcengineering/core'
-import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import task, { TaskType, calculateStatuses, createState, findStatusAttr } from '@hcengineering/task'
-import tracker, { IssueStatus } from '@hcengineering/tracker'
 import github, {
   DocSyncInfo,
   GithubIntegrationRepository,
   GithubIssueStateReason,
   GithubProject
 } from '@hcengineering/github'
+import { PlatformError, unknownStatus } from '@hcengineering/platform'
+import task, { TaskType, calculateStatuses, createState, findStatusAttr } from '@hcengineering/task'
+import tracker, { IssueStatus } from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
 import { IntegrationManager, githubExternalSyncVersion } from '../types'
 import { GithubDataType } from './githubTypes'
@@ -410,4 +410,15 @@ export function compareMarkdown (a: string, b: string): boolean {
     .join('\n')
 
   return na === nb
+}
+
+export async function syncChilds (info: DocSyncInfo, client: TxOperations, derivedClient: TxOperations): Promise<void> {
+  const childInfos = await client.findAll(github.class.DocSyncInfo, { parent: info.url.toLowerCase() })
+  if (childInfos.length > 0) {
+    const ops = derivedClient.apply()
+    for (const child of childInfos) {
+      await ops?.update(child, { needSync: '' })
+    }
+    await ops.commit()
+  }
 }

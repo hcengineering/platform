@@ -206,7 +206,11 @@ export function startHttpServer (
       const contentType = req.query.contentType as string
       const size = parseInt((req.query.size as string) ?? '-1')
       if (Number.isNaN(size)) {
-        ctx.error('/api/v1/blob put error', { message: 'invalid NaN file size' })
+        ctx.error('/api/v1/blob put error', {
+          message: 'invalid NaN file size',
+          name,
+          workspace: payload.workspace.name
+        })
         res.writeHead(404, {})
         res.end()
         return
