@@ -31,6 +31,9 @@ export class OwnersPage {
   updateWorkspaceNameButton = (): Locator => this.page.locator('.ws > .antiButton')
   confirmUpdateWorkspaceName = (): Locator => this.page.locator('.ws > button').first()
   inputWorkspaceName = (): Locator => this.page.getByPlaceholder('Workspace name')
+  deleteWorkspaceButton = (): Locator => this.page.getByRole('button', { name: 'Delete workspace' })
+  cancelDeleteWorkspace = (): Locator => this.page.getByRole('button', { name: 'Cancel' })
+  confirmDeleteWorkspace = (): Locator => this.page.getByRole('button', { name: 'Ok' })
 
   async addMember (memberName: string): Promise<void> {
     await expect(this.spacesAdminText()).toBeVisible()
@@ -83,5 +86,13 @@ export class OwnersPage {
     await this.inputWorkspaceName().fill(newName)
     await this.confirmUpdateWorkspaceName().click()
     await expect(this.inputWorkspaceName()).toHaveValue(newName)
+  }
+
+  async deleteWorkspace (): Promise<void> {
+    await this.deleteWorkspaceButton().click()
+    await this.cancelDeleteWorkspace().click()
+    await this.deleteWorkspaceButton().click()
+    await this.confirmDeleteWorkspace().click()
+    await expect(this.page.getByText('Select workspace')).toBeVisible();
   }
 }

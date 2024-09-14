@@ -183,4 +183,22 @@ test.describe('Workspace tests', () => {
     await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.General)
     await ownersPage.updateWorkspaceName(updatedWorkspaceName)
   })
+  
+  test('User is able to delete workspace', async ({ page }) => {
+    newUser = {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: '1234'
+    }
+    const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
+    await loginPage.goto()
+    await loginPage.linkSignUp().click()
+    await signUpPage.signUp(newUser)
+    await selectWorkspacePage.createWorkspace(newWorkspaceName)
+    await userProfilePage.openProfileMenu()
+    await userProfilePage.clickSettings()
+    await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.General)
+    await ownersPage.deleteWorkspace()
+  })
 })
