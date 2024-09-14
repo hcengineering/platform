@@ -28,6 +28,9 @@ export class OwnersPage {
   emailMask = (): Locator => this.page.getByRole('textbox', { name: 'Type text...' })
   noLimitToggleButton = (): Locator => this.page.locator('label span')
   avatarLarge = (): Locator => this.page.locator('.hulyAvatarSize-medium.ava-image')
+  updateWorkspaceNameButton = (): Locator => this.page.locator('.ws > .antiButton')
+  confirmUpdateWorkspaceName = (): Locator => this.page.locator('.ws > button').first()
+  inputWorkspaceName = (): Locator => this.page.getByPlaceholder('Workspace name')
 
   async addMember (memberName: string): Promise<void> {
     await expect(this.spacesAdminText()).toBeVisible()
@@ -73,5 +76,12 @@ export class OwnersPage {
   async checkIfPictureIsUploaded (): Promise<void> {
     await expect(this.avatarLarge()).toBeVisible()
     await expect(this.avatarLarge()).toHaveAttribute('src')
+  }
+
+  async updateWorkspaceName (newName: string): Promise<void> {
+    await this.updateWorkspaceNameButton().click()
+    await this.inputWorkspaceName().fill(newName)
+    await this.confirmUpdateWorkspaceName().click()
+    await expect(this.inputWorkspaceName()).toHaveValue(newName)
   }
 }
