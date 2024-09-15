@@ -20,7 +20,7 @@ import { TestData } from '../chat/types'
 
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
-test.describe('Content in the Documents tests', () => {
+test.describe.only('Content in the Documents tests', () => {
   let testData: TestData
   let newUser2: SignUpData
   let testTeamspace: NewTeamspace
@@ -147,5 +147,77 @@ test.describe('Content in the Documents tests', () => {
     await documentContentSecondPage.proseTableCell(1, 1).dblclick()
     await documentContentSecondPage.proseTableCell(1, 1).fill('Center')
     await expect(documentContentPage.proseTableCell(1, 1)).toContainText('Center', { timeout: 5000 })
+  })
+
+  test.describe('Image in the document', () => {
+    test('Check Image alignment setting', async ({ page }) => {
+      await documentContentPage.addImageToDocument(page)
+
+      await test.step('Align image to right', async () => {
+        await documentContentPage.clickImageAlignButton('right')
+        await documentContentPage.checkImageAlign('right')
+      })
+
+      await test.step('Align image to left', async () => {
+        await documentContentPage.clickImageAlignButton('left')
+        await documentContentPage.checkImageAlign('left')
+      })
+
+      await test.step('Align image to center', async () => {
+        await documentContentPage.clickImageAlignButton('center')
+        await documentContentPage.checkImageAlign('center')
+      })
+    })
+
+    test('Check Image Views', async ({ page }) => {
+      await documentContentPage.addImageToDocument(page)
+      const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
+
+      await test.step('Set size of image to the 25%', async () => {
+        await documentContentPage.clickImageSizeButton('25%')
+        await documentContentPage.checkImageSize('25%')
+      })
+
+      await test.step('Set size of image to the 50%', async () => {
+        await documentContentPage.clickImageSizeButton('50%')
+        await documentContentPage.checkImageSize('50%')
+      })
+
+      await test.step('Set size of image to the 100%', async () => {
+        await documentContentPage.clickImageSizeButton('100%')
+        await documentContentPage.checkImageSize('100%')
+      })
+
+      await test.step('Set size of image to the unset', async () => {
+        const IMAGE_ORIGINAL_SIZE = 199
+        await documentContentPage.clickImageSizeButton('Unset')
+        await documentContentPage.checkImageSize(IMAGE_ORIGINAL_SIZE)
+      })
+
+      await test.step('User can open image in fullscreen on current page', async () => {
+        await documentContentPage.clickImageFullscreenButton()
+        await expect(documentContentPage.fullscreenImage()).toBeVisible()
+        await documentContentPage.page.keyboard.press('Escape')
+        await expect(documentContentPage.fullscreenImage()).toBeHidden()
+      })
+
+      await test.step('User can open image original in the new tab', async () => {
+        const [newPage] = await Promise.all([
+          page.waitForEvent('popup'),
+          documentContentPage.clickImageOriginalButton()
+        ])
+
+        await newPage.waitForLoadState('domcontentloaded')
+        expect(newPage.url()).toBe(imageSrc)
+        await newPage.close()
+      })
+    })
+
+    test('Remove Image with Backspace', async ({ page }) => {
+      await documentContentPage.addImageToDocument(page)
+      await documentContentPage.selectedFirstImageInDocument()
+      await documentContentPage.page.keyboard.press('Backspace')
+      await expect(documentContentPage.firstImageInDocument()).toBeHidden()
+    })
   })
 })
