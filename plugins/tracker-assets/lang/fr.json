@@ -256,8 +256,6 @@
     "NoStatusFound": "Aucun statut correspondant trouvé",
     "CreateMissingStatus": "Créer un statut manquant",
     "UnsetParent": "Le problème parent sera désélectionné",
-    "Unarchive": "Désarchiver",
-    "UnarchiveConfirm": "Voulez-vous désarchiver le projet ?",
     "AllProjects": "Tous les projets",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Mis à jour par {senderName}",

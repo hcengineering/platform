@@ -345,7 +345,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         }
         if (info.repository == null) {
           // No need to sync if component it not yet set
-          const repos = container.repository.map((it) => it.name).join(', ')
+          const repos = (await this.provider.getProjectRepositories(container.project._id))
+            .map((it) => it.name)
+            .join(', ')
           this.ctx.error('Not syncing repository === null', {
             url: info.url,
             identifier: (existing as Issue).identifier,
@@ -360,9 +362,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
 
     let issueExternal = info.external as IssueExternalData
     if (info.external === undefined && existing !== undefined) {
-      const repository = container.repository.find((it) => it._id === info.repository)
+      const repository = await this.provider.getRepositoryById(info.repository)
       if (repository === undefined) {
-        const repos = container.repository.map((it) => it.name).join(', ')
+        const repos = (await this.provider.getProjectRepositories(container.project._id))
+          .map((it) => it.name)
+          .join(', ')
         this.ctx.error('Not syncing repository === undefined', {
           url: info.url,
           identifier: (existing as Issue).identifier,
@@ -427,11 +431,6 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       existing as Issue,
       issueExternal
     )
-    if (target === null) {
-      // We need to wait, no milestone data yet.
-      this.ctx.error('target === null, no milestone data yet', { url: info.url })
-      return { needSync: githubSyncVersion }
-    }
     if (target === undefined) {
       target = this.getProjectIssueTarget(container.project, issueExternal)
     }
@@ -573,6 +572,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           container.container,
           issueExternal.body
         )
+        const repo = await this.provider.getRepositoryById(info.repository)
+        if (repo == null) {
+          // No repository, it probable deleted
+          return { needSync: githubSyncVersion }
+        }
         await this.ctx.withLog(
           'create platform issue',
           {},
@@ -590,7 +594,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               info.repository as Ref<GithubIntegrationRepository>,
               container.project,
               taskTypes[0]._id,
-              container.repository.find((it) => it._id === info.repository) as GithubIntegrationRepository & {
+              repo as GithubIntegrationRepository & {
                 repository: IntegrationRepositoryData
               },
               !markdownCompatible

@@ -273,8 +273,6 @@
     "NoStatusFound": "Статус не найдет",
     "CreateMissingStatus": "Создать отсутствующий статус",
     "UnsetParent": "Родительская задача будет убрана",
-    "Unarchive": "Разархивировать",
-    "UnarchiveConfirm": "Вы действительно хотите разархивировать?",
     "AllProjects": "All projects",
     "IssueNotificationTitle": "{issueTitle}",
     "IssueNotificationBody": "Обновлено {senderName}",

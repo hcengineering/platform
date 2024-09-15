@@ -14,20 +14,46 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl, type BlobMetadata } from '@hcengineering/presentation'
+  import { getFileUrl, getVideoMeta, type BlobMetadata } from '@hcengineering/presentation'
+  import HLS from 'hls.js'
 
   export let value: Ref<Blob>
   export let name: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 
+  let video: HTMLVideoElement
+
+  async function fetchVideoMeta (value: Ref<Blob>, name: string): Promise<void> {
+    const src = getFileUrl(value, name)
+    const meta = await getVideoMeta(value, name)
+    if (meta != null && meta.status === 'ready' && HLS.isSupported()) {
+      const hls = new HLS()
+      hls.loadSource(meta.hls)
+      hls.attachMedia(video)
+      video.poster = meta.thumbnail
+    } else {
+      video.src = src
+    }
+  }
+
+  $: aspectRatio =
+    metadata?.originalWidth && metadata?.originalHeight
+      ? `${metadata.originalWidth} / ${metadata.originalHeight}`
+      : '16 / 9'
   $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
   $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
-
-  $: src = getFileUrl(value, name)
+  $: void fetchVideoMeta(value, name)
 </script>
 
-<video style:max-width={fit ? '100%' : maxWidth} style:max-height={fit ? '100%' : maxHeight} controls preload={'auto'}>
-  <source {src} />
+<video
+  bind:this={video}
+  width="100%"
+  style:aspect-ratio={aspectRatio}
+  style:max-width={fit ? '100%' : maxWidth}
+  style:max-height={fit ? '100%' : maxHeight}
+  controls
+  preload={'auto'}
+>
   <track kind="captions" label={name} />
 </video>

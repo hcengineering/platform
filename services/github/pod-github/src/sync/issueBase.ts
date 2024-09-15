@@ -302,8 +302,7 @@ export abstract class IssueSyncManagerBase {
                 const ff = await this.toPlatformField(
                   {
                     container: integration,
-                    project: prj,
-                    repository: repositories.filter((it) => it.githubProject === prj._id)
+                    project: prj
                   },
                   f,
                   target,
@@ -949,17 +948,19 @@ export abstract class IssueSyncManagerBase {
     existing: WithMarkup<Issue>,
     issueExternal: IssueExternalData
   ): Promise<void> {
-    const repo = container.repository.find((it) => it._id === info.repository) as GithubIntegrationRepository
-    await this.addConnectToMessage(
-      existing._class === github.class.GithubPullRequest
-        ? github.string.PullRequestConnectedActivityInfo
-        : github.string.IssueConnectedActivityInfo,
-      existing.space,
-      existing._id,
-      existing._class,
-      issueExternal,
-      repo
-    )
+    const repo = await this.provider.getRepositoryById(info.repository)
+    if (repo != null) {
+      await this.addConnectToMessage(
+        existing._class === github.class.GithubPullRequest
+          ? github.string.PullRequestConnectedActivityInfo
+          : github.string.IssueConnectedActivityInfo,
+        existing.space,
+        existing._id,
+        existing._class,
+        issueExternal,
+        repo
+      )
+    }
   }
 
   async collectIssueUpdate (
@@ -1125,7 +1126,7 @@ export abstract class IssueSyncManagerBase {
     container: IntegrationContainer,
     existingIssue: Issue | undefined,
     external: IssueExternalData
-  ): Promise<IssueSyncTarget | undefined | null> {
+  ): Promise<IssueSyncTarget | undefined> {
     if (existingIssue !== undefined) {
       // Select a milestone project
       if (existingIssue.milestone != null) {
@@ -1133,14 +1134,7 @@ export abstract class IssueSyncManagerBase {
           await this.provider.liveQuery.queryFind<GithubMilestone>(github.mixin.GithubMilestone, {})
         ).find((it) => it._id === existingIssue.milestone)
         if (milestone === undefined) {
-          // Let's search for milestone, and if it doesn't have mixin, return undefined.
-          const mstone = await this.client.findOne(github.mixin.GithubMilestone, {
-            _id: existingIssue.milestone as Ref<GithubMilestone>
-          })
-          if (mstone === undefined) {
-            return undefined
-          }
-          return null
+          return
         }
         return {
           project,

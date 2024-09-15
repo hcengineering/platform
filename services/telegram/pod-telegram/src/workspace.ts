@@ -179,7 +179,7 @@ export class WorkspaceWorker {
   // #region Users
 
   async addUser ({ email, phone, conn }: TgUser): Promise<void> {
-    const user = (await this.client.findAll(core.class.Account, { email }, { limit: 1 }))[0]
+    const user = this.client.getModel().getAccountByEmail(email)
 
     if (user === undefined) {
       throw Error(`Unable to find user by email: ${email}`)

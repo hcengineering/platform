@@ -62,7 +62,6 @@
     "Icon": "图标",
     "Color": "颜色",
     "RoleLabel": "角色：{role}",
-    "Embeddings": "嵌入",
-    "UnarchiveConfirm": "您确定要取消存档吗？"
+    "Embeddings": "嵌入"
   }
 }

@@ -15,4 +15,4 @@ COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./
 
 EXPOSE 3078
-CMD [ "node", "--inspect", "--async-stack-traces", "--enable-source-maps", "bundle.js" ]
+CMD [ "node", "bundle.js" ]

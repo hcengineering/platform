@@ -113,6 +113,7 @@
     "Type": "Tipo",
     "ToViewCommands": "para ver los comandos disponibles",
     "UnArchive": "Desarchivar",
+    "UnArchiveConfirm": "¿Desea desarchivar {count, plural, =1 {este objeto} other {# objetos}}?",
     "Pin": "Fijar",
     "Unpin": "Desfijar",
     "Archived": "Archivado",

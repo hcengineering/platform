@@ -17,7 +17,6 @@ import core, {
   AccountRole,
   TxFactory,
   TxProcessor,
-  reduceCalls,
   type Account,
   type Branding,
   type Class,
@@ -55,8 +54,6 @@ export class ClientSession implements Session {
   sessionId = ''
   lastRequest = Date.now()
 
-  broadcastTx: Tx[] = []
-
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
   mins5: StatisticsElement = { find: 0, tx: 0 }
@@ -92,33 +89,16 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: ClientSessionCtx, lastModelTx: Timestamp, hash?: string): Promise<void> {
-    const contextData = new SessionDataImpl(
-      this.token.email,
-      this.sessionId,
-      this.token.extra?.admin === 'true',
-      {
-        txes: [],
-        targets: {}
-      },
-      this.workspaceId,
-      this.branding,
-      false,
-      new Map(),
-      new Map(),
-      this._pipeline.context.modelDb
-    )
-    ctx.ctx.contextData = contextData
+    this.includeSessionContext(ctx.ctx)
     const result = await ctx.ctx.with('load-model', {}, () => this._pipeline.loadModel(ctx.ctx, lastModelTx, hash))
     await ctx.sendResponse(result)
   }
 
   async getAccount (ctx: ClientSessionCtx): Promise<void> {
-    const account = this._pipeline.context.modelDb.findAllSync(core.class.Account, { email: this.token.email })
-    if (account.length === 0 && this.token.extra?.admin === 'true') {
-      const systemAccount = this._pipeline.context.modelDb.findAllSync(core.class.Account, {
-        _id: this.token.email as Ref<Account>
-      })
-      if (systemAccount.length === 0) {
+    const account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
+    if (account === undefined && this.token.extra?.admin === 'true') {
+      const systemAccount = this._pipeline.context.modelDb.findObject(this.token.email as Ref<Account>)
+      if (systemAccount === undefined) {
         // Generate account for admin user
         const factory = new TxFactory(core.account.System)
         const email = `system:${this.token.email}`
@@ -131,43 +111,20 @@ export class ClientSession implements Session {
           },
           this.token.email as Ref<Account>
         )
-        const contextData = new SessionDataImpl(
-          this.token.email,
-          this.sessionId,
-          this.token.extra?.admin === 'true',
-          {
-            txes: [],
-            targets: {}
-          },
-          this.workspaceId,
-          this.branding,
-          false,
-          new Map(),
-          new Map(),
-          this._pipeline.context.modelDb
-        )
-        ctx.ctx.contextData = contextData
+        this.includeSessionContext(ctx.ctx)
         await this._pipeline.tx(ctx.ctx, [createTx])
         const acc = TxProcessor.createDoc2Doc(createTx)
         await ctx.sendResponse(acc)
         return
       } else {
-        await ctx.sendResponse(systemAccount[0])
+        await ctx.sendResponse(systemAccount)
         return
       }
     }
-    await ctx.sendResponse(account[0])
+    await ctx.sendResponse(account)
   }
 
-  findAllRaw<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    this.lastRequest = Date.now()
-    this.total.find++
-    this.current.find++
+  includeSessionContext (ctx: MeasureContext): void {
     const contextData = new SessionDataImpl(
       this.token.email,
       this.sessionId,
@@ -184,6 +141,18 @@ export class ClientSession implements Session {
       this._pipeline.context.modelDb
     )
     ctx.contextData = contextData
+  }
+
+  findAllRaw<T extends Doc>(
+    ctx: MeasureContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ): Promise<FindResult<T>> {
+    this.lastRequest = Date.now()
+    this.total.find++
+    this.current.find++
+    this.includeSessionContext(ctx)
     return this._pipeline.findAll(ctx, _class, query, options)
   }
 
@@ -198,22 +167,7 @@ export class ClientSession implements Session {
 
   async searchFulltext (ctx: ClientSessionCtx, query: SearchQuery, options: SearchOptions): Promise<void> {
     this.lastRequest = Date.now()
-    const contextData = new SessionDataImpl(
-      this.token.email,
-      this.sessionId,
-      this.token.extra?.admin === 'true',
-      {
-        txes: [],
-        targets: {}
-      },
-      this.workspaceId,
-      this.branding,
-      false,
-      new Map(),
-      new Map(),
-      this._pipeline.context.modelDb
-    )
-    ctx.ctx.contextData = contextData
+    this.includeSessionContext(ctx.ctx)
     await ctx.sendResponse(await this._pipeline.searchFulltext(ctx.ctx, query, options))
   }
 
@@ -221,22 +175,7 @@ export class ClientSession implements Session {
     this.lastRequest = Date.now()
     this.total.tx++
     this.current.tx++
-    const contextData = new SessionDataImpl(
-      this.token.email,
-      this.sessionId,
-      this.token.extra?.admin === 'true',
-      {
-        txes: [],
-        targets: {}
-      },
-      this.workspaceId,
-      this.branding,
-      false,
-      new Map(),
-      new Map(),
-      this._pipeline.context.modelDb
-    )
-    ctx.ctx.contextData = contextData
+    this.includeSessionContext(ctx.ctx)
 
     const result = await this._pipeline.tx(ctx.ctx, [tx])
 
@@ -247,10 +186,10 @@ export class ClientSession implements Session {
     await this._pipeline.handleBroadcast(ctx.ctx)
   }
 
-  doBroadcast = reduceCalls(async (ctx: MeasureContext, socket: ConnectionSocket) => {
-    if (this.broadcastTx.length > 10000) {
+  broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
+    if (this.tx.length > 10000) {
       const classes = new Set<Ref<Class<Doc>>>()
-      for (const dtx of this.broadcastTx) {
+      for (const dtx of tx) {
         if (TxProcessor.isExtendsCUD(dtx._class)) {
           classes.add((dtx as TxCUD<Doc>).objectClass)
         }
@@ -260,7 +199,6 @@ export class ClientSession implements Session {
         }
       }
       const bevent = createBroadcastEvent(Array.from(classes))
-      this.broadcastTx = []
       socket.send(
         ctx,
         {
@@ -270,21 +208,7 @@ export class ClientSession implements Session {
         this.useCompression
       )
     } else {
-      const txes = [...this.broadcastTx]
-      this.broadcastTx = []
-      await handleSend(ctx, socket, { result: txes }, 32 * 1024, this.binaryMode, this.useCompression)
+      void handleSend(ctx, socket, { result: tx }, 1024 * 1024, this.binaryMode, this.useCompression)
     }
-  })
-
-  timeout: any
-
-  broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
-    this.broadcastTx.push(...tx)
-    // We need to put into client broadcast queue, to send user requests first
-    // Collapse events in 1 second interval
-    clearTimeout(this.timeout)
-    this.timeout = setTimeout(() => {
-      void this.doBroadcast(ctx, socket)
-    }, 1)
   }
 }

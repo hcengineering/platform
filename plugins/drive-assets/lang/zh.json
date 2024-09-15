@@ -27,7 +27,6 @@
     "Rename": "重命名",
     "Restore": "恢复",
     "RoleLabel": "角色",
-    "Root": "/",
-    "UnarchiveConfirm": "您确定要取消存档磁盘吗？"
+    "Root": "/"
   }
 }

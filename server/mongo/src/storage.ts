@@ -1000,7 +1000,7 @@ abstract class MongoAdapterBase implements DbAdapter {
               await coll.bulkWrite(
                 Array.from(bulkUpdate.entries()).map((it) => ({
                   updateOne: {
-                    filter: { _id: it[0] },
+                    filter: { _id: it[0], '%hash%': null },
                     update: { $set: { '%hash%': it[1] } }
                   }
                 }))
