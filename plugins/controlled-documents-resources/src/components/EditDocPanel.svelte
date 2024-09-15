@@ -96,6 +96,7 @@
 
   let innerWidth: number
   let isTitlePressed: boolean = false
+  let creating: boolean = false
 
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
@@ -212,30 +213,41 @@
   }
 
   async function onCreateNewDraft (): Promise<void> {
-    if ($controlledDocument != null && $canCreateNewDraft && $documentLatestVersion != null) {
-      const latest = $documentLatestVersion
-      const version = { major: latest.major, minor: latest.minor + 1 }
-      const project = await getLatestProjectId($controlledDocument.space)
+    if (creating) {
+      return
+    }
 
-      if (project !== undefined) {
-        try {
-          const id = await createNewDraftForControlledDoc(
-            client,
-            $controlledDocument,
-            $controlledDocument.space,
-            version,
-            project
-          )
-          const loc = getProjectDocumentLink(id, project)
-          navigate(loc)
-        } catch (err) {
-          await setPlatformStatus(unknownError(err))
+    creating = true
+    try {
+      if ($controlledDocument != null && $canCreateNewDraft && $documentLatestVersion != null) {
+        const latest = $documentLatestVersion
+        const version = { major: latest.major, minor: latest.minor + 1 }
+        const project = await getLatestProjectId($controlledDocument.space)
+
+        if (project !== undefined) {
+          try {
+            const { id, success } = await createNewDraftForControlledDoc(
+              client,
+              $controlledDocument,
+              $controlledDocument.space,
+              version,
+              project
+            )
+            if (success) {
+              const loc = getProjectDocumentLink(id, project)
+              navigate(loc)
+            }
+          } catch (err) {
+            await setPlatformStatus(unknownError(err))
+          }
+        } else {
+          console.warn('No document project found for space', $controlledDocument.space)
         }
       } else {
-        console.warn('No document project found for space', $controlledDocument.space)
+        console.warn('Unexpected document state', $documentState)
       }
-    } else {
-      console.warn('Unexpected document state', $documentState)
+    } finally {
+      creating = false
     }
   }
 
@@ -349,7 +361,13 @@
             {/if}
 
             {#if $canCreateNewDraft}
-              <Button label={documentRes.string.CreateNewDraft} kind="regular" on:click={onCreateNewDraft} />
+              <Button
+                label={documentRes.string.CreateNewDraft}
+                kind="regular"
+                loading={creating}
+                disabled={creating}
+                on:click={onCreateNewDraft}
+              />
             {:else if $canCreateNewSnapshot}
               <Button label={documentRes.string.EditDocument} kind="regular" on:click={onEditDocument} />
             {/if}

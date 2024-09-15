@@ -582,7 +582,7 @@ async function changeIssueStatusHandler (
   return []
 }
 
-async function changeIssueNumberHandler (control: TriggerControl, issueId: Ref<Issue>): Promise<Tx[]> {
+async function changeIssueDataHandler (control: TriggerControl, issueId: Ref<Issue>): Promise<Tx[]> {
   const res: Tx[] = []
   const issue = (await control.findAll(control.ctx, tracker.class.Issue, { _id: issueId }))[0]
   if (issue !== undefined) {
@@ -632,9 +632,10 @@ async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerContr
   if (newStatus !== undefined) {
     res.push(...(await changeIssueStatusHandler(control, newStatus, tx.objectId)))
   }
+  const name = tx.operations.title
   const number = tx.operations.number
-  if (number !== undefined) {
-    res.push(...(await changeIssueNumberHandler(control, tx.objectId)))
+  if (number !== undefined || name !== undefined) {
+    res.push(...(await changeIssueDataHandler(control, tx.objectId)))
   }
   return res
 }

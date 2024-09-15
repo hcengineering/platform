@@ -76,14 +76,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.OnContextUpdate,
-    txMatch: {
-      _class: core.class.TxUpdateDoc,
-      objectClass: notification.class.DocNotifyContext
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnChatMessageRemoved,
     txMatch: {
       _class: core.class.TxCollectionCUD,

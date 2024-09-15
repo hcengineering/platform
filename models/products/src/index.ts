@@ -45,7 +45,7 @@ import attachment from '@hcengineering/model-attachment'
 import core, { TType } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 import tracker from '@hcengineering/model-tracker'
-import { type Action, type ViewAction } from '@hcengineering/view'
+import { type Action } from '@hcengineering/view'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
@@ -238,30 +238,6 @@ function defineProduct (builder: Builder): void {
 
   builder.mixin(products.class.Product, core.class.Class, view.mixin.IgnoreActions, {
     actions: [tracker.action.NewRelatedIssue]
-  })
-
-  createAction(builder, {
-    label: products.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: products.string.Unarchive,
-      message: products.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: view.category.General,
-    target: products.class.Product,
-    visibilityTester: view.function.CanArchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    }
   })
 }
 

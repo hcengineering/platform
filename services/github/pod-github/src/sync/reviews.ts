@@ -11,7 +11,6 @@ import core, {
   Ref,
   TxOperations
 } from '@hcengineering/core'
-import { LiveQuery } from '@hcengineering/query'
 import github, {
   DocSyncInfo,
   GithubIntegrationRepository,
@@ -19,6 +18,7 @@ import github, {
   GithubPullRequestReviewState,
   GithubReview
 } from '@hcengineering/github'
+import { LiveQuery } from '@hcengineering/query'
 import {
   ContainerFocus,
   DocSyncManager,
@@ -29,7 +29,7 @@ import {
   githubSyncVersion
 } from '../types'
 import { PullRequestExternalData, Review as ReviewExternalData, reviewDetails, toReviewState } from './githubTypes'
-import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed } from './utils'
+import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed, syncChilds } from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewEvent, PullRequestReviewSubmittedEvent } from '@octokit/webhooks-types'
@@ -284,11 +284,11 @@ export class ReviewSyncManager implements DocSyncManager {
       return {}
     }
     if (parent === undefined) {
-      return { needSync: '' }
+      return { needSync: githubSyncVersion }
     }
     if (info.external === undefined) {
       // TODO: Use selected repository
-      const repo = container.repository.find((it) => it._id === parent?.repository)
+      const repo = await this.provider.getRepositoryById(parent?.repository)
       if (repo?.nodeId === undefined) {
         // No need to sync if parent repository is not defined.
         return { needSync: githubSyncVersion }
@@ -310,6 +310,8 @@ export class ReviewSyncManager implements DocSyncManager {
     if (existing === undefined) {
       try {
         await this.createReview(info, messageData, parent, review, account)
+
+        await syncChilds(info, this.client, derivedClient)
         return { needSync: githubSyncVersion, current: messageData }
       } catch (err: any) {
         this.ctx.error('Error', { err })
@@ -331,7 +333,7 @@ export class ReviewSyncManager implements DocSyncManager {
     review: ReviewExternalData,
     account: Ref<Account>
   ): Promise<void> {
-    const repository = container.repository.find((it) => it._id === info.repository)
+    const repository = await this.provider.getRepositoryById(info.repository)
     if (repository === undefined) {
       return
     }
@@ -400,7 +402,7 @@ export class ReviewSyncManager implements DocSyncManager {
     derivedClient: TxOperations
   ): Promise<DocumentUpdate<DocSyncInfo>> {
     // TODO: Use selected repository
-    const repo = container.repository.find((it) => it._id === parent?.repository)
+    const repo = await this.provider.getRepositoryById(parent?.repository)
     if (repo?.nodeId === undefined) {
       // No need to sync if parent repository is not defined.
       return { needSync: githubSyncVersion }

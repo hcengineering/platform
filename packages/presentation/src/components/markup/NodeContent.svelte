@@ -17,6 +17,7 @@
   import { AttrValue, MarkupNode, MarkupNodeType } from '@hcengineering/text'
 
   import MarkupNodes from './Nodes.svelte'
+  import CodeBlockNode from './CodeBlockNode.svelte'
   import ObjectNode from './ObjectNode.svelte'
 
   export let node: MarkupNode
@@ -71,7 +72,7 @@
       <MarkupNodes {nodes} {preview} />
     </svelte:element>
   {:else if node.type === MarkupNodeType.code_block}
-    <pre class="proseCodeBlock" style:margin={preview ? '0' : null}><code><MarkupNodes {nodes} {preview} /></code></pre>
+    <CodeBlockNode {node} {preview} />
   {:else if node.type === MarkupNodeType.image}
     {@const src = toString(attrs.src)}
     {@const alt = toString(attrs.alt)}

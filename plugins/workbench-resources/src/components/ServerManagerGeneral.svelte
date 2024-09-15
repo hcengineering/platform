@@ -1,10 +1,11 @@
 <script lang="ts">
-  import core, { RateLimiter, concatLink } from '@hcengineering/core'
+  import core, { RateLimiter, concatLink, metricsAggregate, type Metrics } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
-  import presentation, { getClient, isAdminUser } from '@hcengineering/presentation'
+  import presentation, { getClient, isAdminUser, uiContext } from '@hcengineering/presentation'
   import { Button, IconArrowLeft, IconArrowRight, fetchMetadataLocalStorage, ticker } from '@hcengineering/ui'
   import EditBox from '@hcengineering/ui/src/components/EditBox.svelte'
+  import MetricsInfo from './statistics/MetricsInfo.svelte'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -133,6 +134,14 @@
     document.body.removeChild(link)
     fetchStats(0)
   }
+
+  let metrics: Metrics | undefined
+
+  function update (tick: number) {
+    metrics = metricsAggregate(uiContext.metrics)
+  }
+
+  $: update($ticker)
 </script>
 
 {#if isAdminUser()}
@@ -229,6 +238,10 @@
       {/if}
     </div>
   </div>
+{/if}
+
+{#if metrics}
+  <MetricsInfo {metrics} />
 {/if}
 
 <style lang="scss">

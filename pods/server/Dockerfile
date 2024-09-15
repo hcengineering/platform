@@ -16,4 +16,4 @@ COPY bundle/bundle.js.map ./
 
 EXPOSE 8080
 ENV UWS_HTTP_MAX_HEADERS_SIZE 32768
-CMD node --enable-source-maps --inspect=0.0.0.0:9229 bundle.js
+CMD node bundle.js

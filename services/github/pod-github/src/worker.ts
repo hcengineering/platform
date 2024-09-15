@@ -186,26 +186,42 @@ export class GithubWorker implements IntegrationManager {
   }
 
   async getContainer (space: Ref<Space>): Promise<ContainerFocus | undefined> {
-    for (const v of this.integrations.values()) {
-      if (v.octokit === undefined) {
-        continue
-      }
-      const project = (
-        await this.liveQuery.queryFind<GithubProject>(github.mixin.GithubProject, {
-          _id: space as Ref<GithubProject>
-        })
-      ).shift()
-      if (project !== undefined) {
-        const repositories = await this.liveQuery.queryFind<GithubIntegrationRepository>(
-          github.class.GithubIntegrationRepository,
-          {}
-        )
+    const project = (
+      await this.liveQuery.queryFind<GithubProject>(github.mixin.GithubProject, {
+        _id: space as Ref<GithubProject>
+      })
+    ).shift()
+    if (project !== undefined) {
+      for (const v of this.integrations.values()) {
+        if (v.octokit === undefined) {
+          continue
+        }
+        if (project.integration !== v.integration._id) {
+          continue
+        }
         return {
           container: v,
-          repository: repositories.filter((it) => it.githubProject === space),
           project
         }
       }
+    }
+  }
+
+  async getProjectRepositories (space: Ref<Space>): Promise<GithubIntegrationRepository[]> {
+    const repositories = await this.liveQuery.queryFind<GithubIntegrationRepository>(
+      github.class.GithubIntegrationRepository,
+      {}
+    )
+    return repositories.filter((it) => it.githubProject === space)
+  }
+
+  async getRepositoryById (
+    _id?: Ref<GithubIntegrationRepository> | null
+  ): Promise<GithubIntegrationRepository | undefined> {
+    if (_id != null) {
+      return (
+        await this.liveQuery.queryFind<GithubIntegrationRepository>(github.class.GithubIntegrationRepository, { _id })
+      ).shift()
     }
   }
 
@@ -584,9 +600,9 @@ export class GithubWorker implements IntegrationManager {
     return record !== undefined && accountRef !== undefined
   }
 
-  async uploadFile (patch: string, file?: string): Promise<Blob | undefined> {
+  async uploadFile (patch: string, file?: string, contentType?: string): Promise<Blob | undefined> {
     const id: string = file ?? generateId()
-    await this.storageAdapter.put(this.ctx, this.workspace, id, patch, 'text/x-patch', patch.length)
+    await this.storageAdapter.put(this.ctx, this.workspace, id, patch, contentType ?? 'text/x-patch')
     return await this.storageAdapter.stat(this.ctx, this.workspace, id)
   }
 
@@ -1101,17 +1117,6 @@ export class GithubWorker implements IntegrationManager {
     const _projects = projects.map((it) => it._id)
     const _repositories = repositories.map((it) => it._id)
 
-    const h = this.client.getHierarchy()
-    const sortCases = this.mappers
-      .map((it) => it._class)
-      .flat()
-      .map((it) => h.getDescendants(it))
-      .flat()
-      .map((it, idx) => ({
-        query: it,
-        index: idx
-      }))
-
     const docs = await this.ctx.with(
       'find-doc-sync-info',
       {},
@@ -1125,13 +1130,7 @@ export class GithubWorker implements IntegrationManager {
             repository: { $in: [null, ..._repositories] }
           },
           {
-            limit: 50,
-            sort: {
-              objectClass: {
-                order: SortingOrder.Ascending,
-                cases: sortCases
-              }
-            }
+            limit: 50
           }
         ),
       { _projects, _repositories }
@@ -1261,8 +1260,7 @@ export class GithubWorker implements IntegrationManager {
           })
           continue
         }
-        const container = await this.getContainer(info.space)
-        const repo = container?.repository.find((it) => it._id === info.repository)
+        const repo = await this.getRepositoryById(info.repository)
         if (repo !== undefined && !repo.enabled) {
           continue
         }

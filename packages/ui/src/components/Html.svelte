@@ -1,5 +1,5 @@
-//
-// Copyright © 2023 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,16 +11,13 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import dompurify from 'dompurify'
 
-import { type Resources } from '@hcengineering/platform'
-import DiffView from './components/DiffView.svelte'
-import Highlight from './components/Highlight.svelte'
-import InlineDiffView from './components/InlineDiffView.svelte'
-export default async (): Promise<Resources> => ({
-  component: {
-    DiffView,
-    InlineDiffView,
-    Highlight
-  }
-})
+  export let value: string
+
+  $: sanitized = dompurify.sanitize(value)
+</script>
+
+{@html sanitized}

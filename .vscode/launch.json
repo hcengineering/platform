@@ -59,11 +59,11 @@
       "args": ["src/__start.ts"],
       "env": {
         "ELASTIC_URL": "http://localhost:9200",
-        "MONGO_URL": "postgresql://postgres:example@localhost:5432;mongodb://localhost:27017",
+        "MONGO_URL": "mongodb://localhost:27017",
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
-        "STORAGE_CONFIG": "minio|localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
         "SERVER_SECRET": "secret",
         "ENABLE_CONSOLE": "true",
         "COLLABORATOR_URL": "ws://localhost:3078",

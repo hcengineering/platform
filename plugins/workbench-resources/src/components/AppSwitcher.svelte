@@ -68,7 +68,9 @@
 
   const me = getCurrentAccount()
 
-  const filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me))
+  const filteredApps = apps.filter(
+    (it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me) && it.position !== 'top'
+  )
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->

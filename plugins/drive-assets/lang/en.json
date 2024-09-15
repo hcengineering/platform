@@ -27,7 +27,6 @@
     "Rename": "Rename",
     "Restore": "Restore",
     "RoleLabel": "Role",
-    "Root": "/",
-    "UnarchiveConfirm": "Are you sure you want to unarchive the drive?"
+    "Root": "/"
   }
 }

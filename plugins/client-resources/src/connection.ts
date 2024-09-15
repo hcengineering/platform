@@ -28,6 +28,7 @@ import core, {
   FindOptions,
   FindResult,
   LoadModelResponse,
+  MeasureMetricsContext,
   Ref,
   SearchOptions,
   SearchQuery,
@@ -38,7 +39,8 @@ import core, {
   TxHandler,
   TxResult,
   generateId,
-  toFindResult
+  toFindResult,
+  type MeasureContext
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
@@ -96,6 +98,7 @@ class Connection implements ClientConnection {
   rpcHandler = new RPCHandler()
 
   constructor (
+    private readonly ctx: MeasureContext,
     private readonly url: string,
     private readonly handler: TxHandler,
     readonly workspace: string,
@@ -121,7 +124,7 @@ class Connection implements ClientConnection {
       this.sessionId = generateId()
     }
 
-    this.scheduleOpen(false)
+    this.scheduleOpen(this.ctx, false)
   }
 
   private schedulePing (socketId: number): void {
@@ -181,26 +184,33 @@ class Connection implements ClientConnection {
   delay = 0
   onConnectHandlers: (() => void)[] = []
 
-  private waitOpenConnection (): Promise<void> | undefined {
+  private waitOpenConnection (ctx: MeasureContext): Promise<void> | undefined {
     if (this.isConnected()) {
       return undefined
     }
 
-    return new Promise((resolve) => {
-      this.onConnectHandlers.push(() => {
-        resolve()
-      })
-      // Websocket is null for first time
-      this.scheduleOpen(false)
-    })
+    return ctx.with(
+      'wait-connection',
+      {},
+      (ctx) =>
+        new Promise((resolve) => {
+          this.onConnectHandlers.push(() => {
+            resolve()
+          })
+          // Websocket is null for first time
+          this.scheduleOpen(ctx, false)
+        })
+    )
   }
 
-  scheduleOpen (force: boolean): void {
+  scheduleOpen (ctx: MeasureContext, force: boolean): void {
     if (force) {
-      if (this.websocket !== null) {
-        this.websocket.close()
-        this.websocket = null
-      }
+      ctx.withSync('close-ws', {}, () => {
+        if (this.websocket !== null) {
+          this.websocket.close()
+          this.websocket = null
+        }
+      })
       clearTimeout(this.openAction)
       this.openAction = undefined
     }
@@ -210,11 +220,11 @@ class Connection implements ClientConnection {
         const socketId = ++this.sockets
         // Re create socket in case of error, if not closed
         if (this.delay === 0) {
-          this.openConnection(socketId)
+          this.openConnection(ctx, socketId)
         } else {
           this.openAction = setTimeout(() => {
             this.openAction = undefined
-            this.openConnection(socketId)
+            this.openConnection(ctx, socketId)
           }, this.delay * 1000)
         }
       }
@@ -377,7 +387,7 @@ class Connection implements ClientConnection {
     }
   }
 
-  private openConnection (socketId: number): void {
+  private openConnection (ctx: MeasureContext, socketId: number): void {
     this.binaryMode = false
     // Use defined factory or browser default one.
     const clientSocketFactory =
@@ -391,7 +401,9 @@ class Connection implements ClientConnection {
     if (socketId !== this.sockets) {
       return
     }
-    const wsocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
+    const wsocket = ctx.withSync('create-socket', {}, () =>
+      clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
+    )
 
     if (socketId !== this.sockets) {
       wsocket.close()
@@ -405,7 +417,7 @@ class Connection implements ClientConnection {
         this.dialTimer = null
         if (!opened && !this.closed) {
           void this.opt?.onDialTimeout?.()
-          this.scheduleOpen(true)
+          this.scheduleOpen(this.ctx, true)
         }
       }, dialTimeout)
     }
@@ -434,7 +446,7 @@ class Connection implements ClientConnection {
       }
       // console.log('client websocket closed', socketId, ev?.reason)
       void broadcastEvent(client.event.NetworkRequests, -1)
-      this.scheduleOpen(true)
+      this.scheduleOpen(this.ctx, true)
     }
     wsocket.onopen = () => {
       if (this.websocket !== wsocket) {
@@ -450,7 +462,7 @@ class Connection implements ClientConnection {
         binary: useBinary,
         compression: useCompression
       }
-      this.websocket?.send(this.rpcHandler.serialize(helloRequest, false))
+      ctx.withSync('send-hello', {}, () => this.websocket?.send(this.rpcHandler.serialize(helloRequest, false)))
     }
 
     wsocket.onerror = (event: any) => {
@@ -477,60 +489,63 @@ class Connection implements ClientConnection {
     measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
     allowReconnect?: boolean
   }): Promise<any> {
-    if (this.closed) {
-      throw new PlatformError(unknownError('connection closed'))
-    }
+    return await this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
+      if (this.closed) {
+        throw new PlatformError(unknownError('connection closed'))
+      }
 
-    if (data.once === true) {
-      // Check if has same request already then skip
-      const dparams = JSON.stringify(data.params)
-      for (const [, v] of this.requests) {
-        if (v.method === data.method && JSON.stringify(v.params) === dparams) {
-          // We have same unanswered, do not add one more.
-          return
+      if (data.once === true) {
+        // Check if has same request already then skip
+        const dparams = JSON.stringify(data.params)
+        for (const [, v] of this.requests) {
+          if (v.method === data.method && JSON.stringify(v.params) === dparams) {
+            // We have same unanswered, do not add one more.
+            return
+          }
         }
       }
-    }
 
-    const id = this.lastId++
-    const promise = new RequestPromise(data.method, data.params, data.handleResult)
-    promise.handleTime = data.measure
+      const id = this.lastId++
+      const promise = new RequestPromise(data.method, data.params, data.handleResult)
+      promise.handleTime = data.measure
 
-    const w = this.waitOpenConnection()
-    if (w instanceof Promise) {
-      await w
-    }
-    this.requests.set(id, promise)
-    const sendData = async (): Promise<void> => {
-      if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
-        promise.startTime = Date.now()
+      const w = this.waitOpenConnection(ctx)
+      if (w instanceof Promise) {
+        await w
+      }
+      this.requests.set(id, promise)
+      const sendData = async (): Promise<void> => {
+        if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
+          promise.startTime = Date.now()
 
-        this.websocket?.send(
-          this.rpcHandler.serialize(
-            {
-              method: data.method,
-              params: data.params,
-              id,
-              time: Date.now()
-            },
-            this.binaryMode
+          const dta = ctx.withSync('serialize', {}, () =>
+            this.rpcHandler.serialize(
+              {
+                method: data.method,
+                params: data.params,
+                id,
+                time: Date.now()
+              },
+              this.binaryMode
+            )
           )
-        )
+          ctx.withSync('send-data', {}, () => this.websocket?.send(dta))
+        }
       }
-    }
-    if (data.allowReconnect ?? true) {
-      promise.reconnect = () => {
-        setTimeout(async () => {
-          // In case we don't have response yet.
-          if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-            void sendData()
-          }
-        }, 50)
+      if (data.allowReconnect ?? true) {
+        promise.reconnect = () => {
+          setTimeout(async () => {
+            // In case we don't have response yet.
+            if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
+              void sendData()
+            }
+          }, 50)
+        }
       }
-    }
-    void sendData()
-    void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-    return await promise.promise
+      void ctx.with('send-data', {}, () => sendData())
+      void ctx.with('broadcast-event', {}, () => broadcastEvent(client.event.NetworkRequests, this.requests.size))
+      return await promise.promise
+    })
   }
 
   async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
@@ -652,5 +667,12 @@ export function connect (
   user: string,
   opt?: ClientFactoryOptions
 ): ClientConnection {
-  return new Connection(url, handler, workspace, user, opt)
+  return new Connection(
+    opt?.ctx?.newChild?.('connection', {}) ?? new MeasureMetricsContext('connection', {}),
+    url,
+    handler,
+    workspace,
+    user,
+    opt
+  )
 }

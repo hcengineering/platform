@@ -693,6 +693,24 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.UnArchive,
+      label: view.string.UnArchive,
+      icon: view.icon.Archive,
+      category: view.category.General,
+      input: 'any',
+      query: {
+        archived: true
+      },
+      target: core.class.Space,
+      visibilityTester: view.function.CanArchiveSpace,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    view.action.UnArchive
+  )
+
+  createAction(
+    builder,
+    {
       action: view.actionImpl.Join,
       label: view.string.Join,
       icon: view.icon.Join,

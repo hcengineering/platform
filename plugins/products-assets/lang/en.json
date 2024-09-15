@@ -15,8 +15,6 @@
     "CreateProductVersion": "Create product version",
     "NoProductVersionParent": "No parent version",
     "NoProductVersions": "No product versions",
-    "Unarchive": "Unarchive",
-    "UnarchiveConfirm": "Do you want to unarchive product?",
     "CreateDialogClose": "Do you want to close this dialog?",
     "CreateDialogCloseNote": "All changes will be lost",
     "Description": "Description",

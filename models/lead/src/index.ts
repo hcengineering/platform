@@ -157,9 +157,6 @@ export function createModel (builder: Builder): void {
     lead.viewlet.TableFunnel
   )
 
-  createAction(builder, { ...actionTemplates.archiveSpace, target: lead.class.Funnel })
-  createAction(builder, { ...actionTemplates.unarchiveSpace, target: lead.class.Funnel })
-
   createAction(builder, {
     ...viewTemplates.open,
     target: lead.class.Funnel,
