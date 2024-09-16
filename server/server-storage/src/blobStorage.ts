@@ -170,9 +170,9 @@ export async function createStorageDataAdapter (
     calculateHash: (d) => {
       const blob = d as Blob
       if (storageEx?.adapters !== undefined && storageEx.adapters.get(blob.provider) === undefined) {
-        return blob.etag + '_' + storageEx.defaultAdapter // Replace tag to be able to move to new provider
+        return { digest: blob.etag + '_' + storageEx.defaultAdapter, size: blob.size }
       }
-      return blob.etag
+      return { digest: blob.etag, size: blob.size }
     }
   })
   return new StorageBlobAdapter(workspaceId, storage, ctx, blobAdapter)

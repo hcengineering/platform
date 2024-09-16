@@ -40,20 +40,22 @@ export async function syncFiles (
       const iterator = await adapter.listStream(ctx, workspaceId)
       try {
         while (true) {
-          const data = await iterator.next()
-          if (data === undefined) break
+          const dataBulk = await iterator.next()
+          if (dataBulk.length === 0) break
 
-          const blob = await exAdapter.stat(ctx, workspaceId, data._id)
-          if (blob !== undefined) continue
+          for (const data of dataBulk) {
+            const blob = await exAdapter.stat(ctx, workspaceId, data._id)
+            if (blob !== undefined) continue
 
-          await exAdapter.syncBlobFromStorage(ctx, workspaceId, data._id, name)
+            await exAdapter.syncBlobFromStorage(ctx, workspaceId, data._id, name)
 
-          count += 1
-          if (count % 100 === 0) {
-            const duration = Date.now() - time
-            time = Date.now()
+            count += 1
+            if (count % 100 === 0) {
+              const duration = Date.now() - time
+              time = Date.now()
 
-            console.log('...processed', count, Math.round(duration / 1000) + 's')
+              console.log('...processed', count, Math.round(duration / 1000) + 's')
+            }
           }
         }
         console.log('processed', count)
@@ -112,64 +114,67 @@ async function processAdapter (
   const iterator = await source.listStream(ctx, workspaceId)
   try {
     while (true) {
-      const data = await iterator.next()
-      if (data === undefined) break
+      const dataBulk = await iterator.next()
+      if (dataBulk.length === 0) break
 
-      const blob = (await exAdapter.stat(ctx, workspaceId, data._id)) ?? (await source.stat(ctx, workspaceId, data._id))
+      for (const data of dataBulk) {
+        const blob =
+          (await exAdapter.stat(ctx, workspaceId, data._id)) ?? (await source.stat(ctx, workspaceId, data._id))
 
-      if (blob === undefined) {
-        console.error('blob not found', data._id)
-        continue
-      }
-
-      if (blob.provider !== exAdapter.defaultAdapter) {
-        if (blob.size <= params.blobSizeLimitMb * 1024 * 1024) {
-          await rateLimiter.exec(async () => {
-            try {
-              await retryOnFailure(
-                ctx,
-                5,
-                async () => {
-                  await processFile(ctx, source, params.move ? exAdapter : target, workspaceId, blob)
-                },
-                50
-              )
-              movedCnt += 1
-              movedBytes += blob.size
-              batchBytes += blob.size
-            } catch (err) {
-              console.error('failed to process blob', data._id, err)
-            }
-          })
-        } else {
-          skippedCnt += 1
-          console.log('skipping large blob', data._id, Math.round(blob.size / 1024 / 1024))
+        if (blob === undefined) {
+          console.error('blob not found', data._id)
+          continue
         }
-      }
 
-      processedCnt += 1
-      processedBytes += blob.size
+        if (blob.provider !== exAdapter.defaultAdapter) {
+          if (blob.size <= params.blobSizeLimitMb * 1024 * 1024) {
+            await rateLimiter.exec(async () => {
+              try {
+                await retryOnFailure(
+                  ctx,
+                  5,
+                  async () => {
+                    await processFile(ctx, source, params.move ? exAdapter : target, workspaceId, blob)
+                  },
+                  50
+                )
+                movedCnt += 1
+                movedBytes += blob.size
+                batchBytes += blob.size
+              } catch (err) {
+                console.error('failed to process blob', data._id, err)
+              }
+            })
+          } else {
+            skippedCnt += 1
+            console.log('skipping large blob', data._id, Math.round(blob.size / 1024 / 1024))
+          }
+        }
 
-      if (processedCnt % 100 === 0) {
-        await rateLimiter.waitProcessing()
+        processedCnt += 1
+        processedBytes += blob.size
 
-        const duration = Date.now() - time
+        if (processedCnt % 100 === 0) {
+          await rateLimiter.waitProcessing()
 
-        console.log(
-          '...processed',
-          processedCnt,
-          Math.round(processedBytes / 1024 / 1024) + 'MB',
-          'moved',
-          movedCnt,
-          Math.round(movedBytes / 1024 / 1024) + 'MB',
-          '+' + Math.round(batchBytes / 1024 / 1024) + 'MB',
-          'skipped',
-          skippedCnt,
-          Math.round(duration / 1000) + 's'
-        )
+          const duration = Date.now() - time
 
-        batchBytes = 0
-        time = Date.now()
+          console.log(
+            '...processed',
+            processedCnt,
+            Math.round(processedBytes / 1024 / 1024) + 'MB',
+            'moved',
+            movedCnt,
+            Math.round(movedBytes / 1024 / 1024) + 'MB',
+            '+' + Math.round(batchBytes / 1024 / 1024) + 'MB',
+            'skipped',
+            skippedCnt,
+            Math.round(duration / 1000) + 's'
+          )
+
+          batchBytes = 0
+          time = Date.now()
+        }
       }
     }
 
