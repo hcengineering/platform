@@ -103,7 +103,7 @@ export class ProjectsSyncManager implements DocSyncManager {
   ): Promise<DocumentUpdate<DocSyncInfo> | undefined> {
     const container = await this.provider.getContainer(info.space)
     if (container?.container === undefined) {
-      return {}
+      return { needSync: githubSyncVersion }
     }
 
     const okit = await this.provider.getOctokit(container.project.createdBy as Ref<PersonAccount>)
