@@ -307,14 +307,14 @@ export class ReviewCommentSyncManager implements DocSyncManager {
   ): Promise<DocumentUpdate<DocSyncInfo> | undefined> {
     const container = await this.provider.getContainer(info.space)
     if (container?.container === undefined) {
-      return {}
+      return { needSync: githubSyncVersion }
     }
     if (parent === undefined) {
-      return { needSync: '' }
+      return { needSync: githubSyncVersion }
     }
     if (info.external === undefined) {
       // TODO: Use selected repository
-      const repo = container.repository.find((it) => it._id === parent?.repository)
+      const repo = await this.provider.getRepositoryById(parent?.repository)
       if (repo?.nodeId === undefined) {
         // No need to sync if parent repository is not defined.
         return { needSync: githubSyncVersion }
@@ -381,7 +381,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     account: Ref<Account>,
     derivedClient: TxOperations
   ): Promise<void> {
-    const repository = container.repository.find((it) => it._id === info.repository)
+    const repository = await this.provider.getRepositoryById(info.repository)
     if (repository === undefined) {
       return
     }
@@ -473,7 +473,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     derivedClient: TxOperations
   ): Promise<DocumentUpdate<DocSyncInfo>> {
     // TODO: Use selected repository
-    const repo = container.repository.find((it) => it._id === parent?.repository)
+    const repo = await this.provider.getRepositoryById(parent?.repository)
     if (repo?.nodeId === undefined) {
       // No need to sync if parent repository is not defined.
       return { needSync: githubSyncVersion }

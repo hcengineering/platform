@@ -128,6 +128,27 @@ function Archive (object: Space | Space[]): void {
   )
 }
 
+function UnArchive (object: Space | Space[]): void {
+  showPopup(
+    MessageBox,
+    {
+      label: view.string.UnArchive,
+      message: view.string.UnArchiveConfirm,
+      params: { count: Array.isArray(object) ? object.length : 1 },
+      action: async () => {
+        const objs = Array.isArray(object) ? object : [object]
+        const client = getClient()
+        const promises: Array<Promise<TxResult>> = []
+        for (const obj of objs) {
+          promises.push(client.update(obj, { archived: false }))
+        }
+        await Promise.all(promises)
+      }
+    },
+    undefined
+  )
+}
+
 async function Leave (object: Space | Space[]): Promise<void> {
   const client = getClient()
   const promises: Array<Promise<TxResult>> = []
@@ -564,6 +585,7 @@ export const actionImpl = {
   CopyTextToClipboard,
   Delete,
   Archive,
+  UnArchive,
   Join,
   Leave,
   Move,

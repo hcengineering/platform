@@ -287,22 +287,22 @@ export function createModel (builder: Builder): void {
     calendar.category.Calendar
   )
 
-  createAction(
-    builder,
-    {
-      action: calendar.actionImpl.SaveEventReminder,
-      label: calendar.string.RemindMeAt,
-      icon: calendar.icon.Reminder,
-      input: 'focus',
-      category: calendar.category.Calendar,
-      target: calendar.class.Event,
-      context: {
-        mode: 'context',
-        group: 'create'
-      }
-    },
-    calendar.action.SaveEventReminder
-  )
+  // createAction(
+  //   builder,
+  //   {
+  //     action: calendar.actionImpl.SaveEventReminder,
+  //     label: calendar.string.RemindMeAt,
+  //     icon: calendar.icon.Reminder,
+  //     input: 'focus',
+  //     category: calendar.category.Calendar,
+  //     target: calendar.class.Event,
+  //     context: {
+  //       mode: 'context',
+  //       group: 'create'
+  //     }
+  //   },
+  //   calendar.action.SaveEventReminder
+  // )
 
   createAction(
     builder,

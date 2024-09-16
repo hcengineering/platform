@@ -39,7 +39,6 @@
     "@types/body-parser": "~1.19.2"
   },
   "dependencies": {
-    "@hcengineering/uws": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",

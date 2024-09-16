@@ -126,6 +126,7 @@ const view = plugin(viewId, {
   action: {
     Delete: '' as Ref<Action>,
     Archive: '' as Ref<Action>,
+    UnArchive: '' as Ref<Action>,
     Join: '' as Ref<Action>,
     Leave: '' as Ref<Action>,
     Move: '' as Ref<Action>,

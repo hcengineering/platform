@@ -161,15 +161,7 @@
       editor?.commands.insertTable(options)
     },
     insertCodeBlock: () => {
-      editor?.commands.insertContent(
-        {
-          type: 'codeBlock',
-          content: [{ type: 'text', text: ' ' }]
-        },
-        {
-          updateSelection: false
-        }
-      )
+      editor?.commands.setCodeBlock()
     },
     insertContent: (content) => {
       editor?.commands.insertContent(content)
@@ -341,28 +333,18 @@
             targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
         }
 
-        // We need to trigger it asynchronously in order for the editor to finish its focus event
-        // Otherwise, it hoggs the focus from the popup and keyboard navigation doesn't work
-        setTimeout(() => {
-          addTableHandler(editor.commands.insertTable, position)
-        })
+        // addTableHandler opens popup so the editor loses focus
+        // so in the callback we need to refocus again
+        void addTableHandler((options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
+          editor.chain().insertTable(options).focus(pos).run()
+        }, position)
         break
       }
       case 'code-block':
-        // For some reason .setCodeBlock doesnt work in our case
-        editor.commands.insertContent(
-          {
-            type: 'codeBlock',
-            content: [{ type: 'text', text: ' ' }]
-          },
-          {
-            updateSelection: false
-          }
-        )
-        editor.commands.focus(pos, { scrollIntoView: false })
+        editor.commands.insertContentAt(pos, { type: 'codeBlock' })
         break
       case 'todo-list':
-        editor.commands.toggleTaskList()
+        editor.chain().insertContentAt(pos, { type: 'paragraph' }).toggleTaskList().run()
         break
       case 'separator-line':
         editor.commands.setHorizontalRule()

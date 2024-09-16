@@ -97,7 +97,12 @@ export class ApplyTxMiddleware extends BaseMiddleware implements Middleware {
       return { passed: true, onEnd: () => {} }
     }
     // Wait for synchronized.
-    ;(await this.scopes.get(applyIf.scope)) ?? Promise.resolve()
+    const scopePromise = this.scopes.get(applyIf.scope)
+
+    if (scopePromise != null) {
+      await scopePromise
+    }
+
     let onEnd = (): void => {}
     // Put sync code
     this.scopes.set(

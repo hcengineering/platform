@@ -21,7 +21,7 @@ import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
 import { TrackerEvents, trackerId } from '@hcengineering/tracker'
-import { type KeyBinding, type ViewAction } from '@hcengineering/view'
+import { type KeyBinding } from '@hcengineering/view'
 import tracker from './plugin'
 
 import tags from '@hcengineering/tags'
@@ -151,29 +151,6 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.DeleteProjectClean
   )
-  createAction(builder, {
-    label: tracker.string.Unarchive,
-    icon: view.icon.Archive,
-    action: view.actionImpl.UpdateDocument as ViewAction,
-    actionProps: {
-      key: 'archived',
-      ask: true,
-      value: false,
-      label: tracker.string.Unarchive,
-      message: tracker.string.UnarchiveConfirm
-    },
-    input: 'any',
-    category: tracker.category.Tracker,
-    visibilityTester: view.function.CanArchiveSpace,
-    query: {
-      archived: true
-    },
-    context: {
-      mode: ['context', 'browser'],
-      group: 'tools'
-    },
-    target: tracker.class.Project
-  })
 
   createAction(
     builder,

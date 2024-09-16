@@ -6,7 +6,13 @@ import { NavigationMenuPage } from '../model/documents/navigation-menu-page'
 import { CategoriesPage } from '../model/documents/categories-page'
 import { CategoryCreatePopup } from '../model/documents/category-create-popup'
 
-export async function prepareDocumentStep (page: Page, document: NewDocument, stepNumber: number = 1): Promise<void> {
+export async function prepareDocumentStep (
+  page: Page,
+  document: NewDocument,
+  stepNumber: number = 1,
+  startSecondStep?: boolean,
+  spaceName?: string
+): Promise<void> {
   await test.step(`${stepNumber}. Create a new document`, async () => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonDocuments.click()
@@ -14,7 +20,7 @@ export async function prepareDocumentStep (page: Page, document: NewDocument, st
     const documentsPage = new DocumentsPage(page)
     await documentsPage.buttonCreateDocument.click()
 
-    await documentsPage.createDocument(document)
+    await documentsPage.createDocument(document, startSecondStep, spaceName)
   })
 }
 

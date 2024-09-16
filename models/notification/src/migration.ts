@@ -383,6 +383,16 @@ export const notificationOperation: MigrateOperation = {
       {
         state: 'migrate-duplicated-contexts-v1',
         func: migrateDuplicateContexts
+      },
+      {
+        state: 'set-default-hidden',
+        func: async () => {
+          await client.update(
+            DOMAIN_DOC_NOTIFY,
+            { _class: notification.class.DocNotifyContext, hidden: { $exists: false } },
+            { hidden: false }
+          )
+        }
       }
     ])
 

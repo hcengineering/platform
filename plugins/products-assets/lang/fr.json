@@ -15,8 +15,6 @@
     "CreateProductVersion": "Créer une version de produit",
     "NoProductVersionParent": "Aucune version parente",
     "NoProductVersions": "Aucune version de produit",
-    "Unarchive": "Désarchiver",
-    "UnarchiveConfirm": "Voulez-vous désarchiver le produit ?",
     "CreateDialogClose": "Voulez-vous fermer cette fenêtre ?",
     "CreateDialogCloseNote": "Tous les changements seront perdus",
     "Description": "Description",

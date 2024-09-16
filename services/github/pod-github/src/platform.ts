@@ -408,7 +408,7 @@ export class PlatformWorker {
         }
 
         // We need to re-bind previously created github:login account to a proper person.
-        const account = (await client.findOne(core.class.Account, { _id: payload.accountId })) as PersonAccount
+        const account = client.getModel().getObject(payload.accountId) as PersonAccount
         const person = (await client.findOne(contact.class.Person, { _id: account.person })) as Person
         if (person !== undefined) {
           if (!revoke) {
@@ -424,9 +424,7 @@ export class PlatformWorker {
               })
             }
 
-            const githubAccount = (await client.findOne(core.class.Account, {
-              email: 'github:' + update.login
-            })) as PersonAccount
+            const githubAccount = client.getModel().getAccountByEmail('github:' + update.login) as PersonAccount
             if (githubAccount !== undefined && githubAccount.person !== account.person) {
               const dummyPerson = githubAccount.person
               // To add activity entry to dummy person.

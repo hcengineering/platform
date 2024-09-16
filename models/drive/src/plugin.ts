@@ -103,7 +103,6 @@ export default mergeIds(driveId, drive, {
     Files: '' as IntlString,
     Folders: '' as IntlString,
     Version: '' as IntlString,
-    Restore: '' as IntlString,
-    UnarchiveConfirm: '' as IntlString
+    Restore: '' as IntlString
   }
 })

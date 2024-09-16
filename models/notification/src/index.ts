@@ -217,6 +217,9 @@ export class TDocNotifyContext extends TDoc implements DocNotifyContext {
   @Prop(TypeBoolean(), notification.string.Pinned)
     isPinned!: boolean
 
+  @Prop(TypeBoolean(), view.string.Hide)
+    hidden!: boolean
+
   tx?: Ref<TxCUD<Doc>>
 }
 

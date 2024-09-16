@@ -14,12 +14,18 @@
 //
 
 import activity, { type ActivityMessageControl } from '@hcengineering/activity'
-import { chunterId, type ChunterSpace } from '@hcengineering/chunter'
+import {
+  chunterId,
+  type ChunterSpace,
+} from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
-import { type Builder } from '@hcengineering/model'
+import {
+  type Builder,
+} from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import { WidgetType } from '@hcengineering/workbench'
 
 import chunter from './plugin'
 import { defineActions } from './actions'
@@ -27,10 +33,8 @@ import { defineNotifications } from './notifications'
 import {
   DOMAIN_CHUNTER,
   TChannel,
-  TChannelInfo,
-  TChatInfo,
   TChatMessage,
-  TChatMessageViewlet,
+  TChatMessageViewlet, TChatSyncInfo,
   TChunterSpace,
   TDirectMessage,
   TInlineButton,
@@ -38,7 +42,6 @@ import {
   TThreadMessage,
   TTypingInfo
 } from './types'
-import { WidgetType } from '@hcengineering/workbench'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
@@ -53,8 +56,7 @@ export function createModel (builder: Builder): void {
     TThreadMessage,
     TChatMessageViewlet,
     TObjectChatPanel,
-    TChatInfo,
-    TChannelInfo,
+    TChatSyncInfo,
     TInlineButton,
     TTypingInfo
   )

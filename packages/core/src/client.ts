@@ -344,7 +344,7 @@ async function tryLoadModel (
   reload: boolean,
   persistence?: TxPersistenceStore
 ): Promise<LoadModelResponse> {
-  const current = (await ctx.with('persistence-load', {}, async () => await persistence?.load())) ?? {
+  const current = (await ctx.with('persistence-load', {}, () => persistence?.load())) ?? {
     full: true,
     transactions: [],
     hash: ''
@@ -365,14 +365,11 @@ async function tryLoadModel (
   }
 
   // Save concatenated
-  void (await ctx.with(
-    'persistence-store',
-    {},
-    async (ctx) =>
-      await persistence?.store({
-        ...result,
-        transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
-      })
+  void (await ctx.with('persistence-store', {}, (ctx) =>
+    persistence?.store({
+      ...result,
+      transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+    })
   ))
 
   if (!result.full && !reload) {
@@ -405,10 +402,8 @@ async function loadModel (
 ): Promise<LoadModelResponse> {
   const t = Date.now()
 
-  const modelResponse = await ctx.with(
-    'try-load-model',
-    { reload },
-    async (ctx) => await tryLoadModel(ctx, conn, reload, persistence)
+  const modelResponse = await ctx.with('try-load-model', { reload }, (ctx) =>
+    tryLoadModel(ctx, conn, reload, persistence)
   )
 
   if (reload && modelResponse.full) {
@@ -423,9 +418,7 @@ async function loadModel (
     )
   }
 
-  await ctx.with('build-model', {}, async (ctx) => {
-    await buildModel(ctx, modelResponse, allowedPlugins, configs, hierarchy, model)
-  })
+  await ctx.with('build-model', {}, (ctx) => buildModel(ctx, modelResponse, allowedPlugins, configs, hierarchy, model))
   return modelResponse
 }
 

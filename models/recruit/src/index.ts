@@ -1067,9 +1067,6 @@ export function createModel (builder: Builder): void {
     recruit.completion.VacancyCategory
   )
 
-  createAction(builder, { ...actionTemplates.archiveSpace, target: recruit.class.Vacancy })
-  createAction(builder, { ...actionTemplates.unarchiveSpace, target: recruit.class.Vacancy })
-
   createAction(builder, {
     label: view.string.Open,
     icon: view.icon.Open,

@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import { codeBlockOptions } from '@hcengineering/text'
 import { DropdownLabelsPopup, getEventPositionElement, showPopup } from '@hcengineering/ui'
 import { type CodeBlockLowlightOptions, CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
-import { type createLowlight } from 'lowlight'
+import { common, createLowlight } from 'lowlight'
 
 type Lowlight = ReturnType<typeof createLowlight>
 
@@ -26,14 +27,19 @@ const chevronSvg = `<svg width="16" height="16" viewBox="0 0 32 32" fill="curren
   <path d="M16 22L6 12L7.4 10.6L16 19.2L24.6 10.6L26 12L16 22Z" />
 </svg>`
 
-export const CodeBlockExtension = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
+export const codeBlockHighlightOptions: CodeBlockLowlightOptions = {
+  ...codeBlockOptions,
+  lowlight: createLowlight(common)
+}
+
+export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
   addProseMirrorPlugins () {
     return [...(this.parent?.() ?? []), LanguageSelector(this.options)]
   }
 })
 
 export function LanguageSelector (options: CodeBlockLowlightOptions): Plugin {
-  return new Plugin({
+  return new Plugin<DecorationSet>({
     key: new PluginKey('codeblock-language-selector'),
     props: {
       decorations (state) {
@@ -41,13 +47,14 @@ export function LanguageSelector (options: CodeBlockLowlightOptions): Plugin {
       }
     },
     state: {
-      init () {
-        return DecorationSet.empty
+      init (config, state) {
+        return createDecorations(state.doc, options)
       },
       apply (tr, prev) {
         if (tr.docChanged) {
           return createDecorations(tr.doc, options)
         }
+
         return prev
       }
     }
@@ -84,7 +91,7 @@ function createDecorations (doc: ProseMirrorNode, options: CodeBlockLowlightOpti
 
 function createLangButton (language: string | null): HTMLButtonElement {
   const button = document.createElement('button')
-  button.className = 'antiButton ghost small sh-no-shape bs-none gap-medium iconR'
+  button.className = 'antiButton link-bordered small sh-no-shape bs-none gap-medium iconR'
   button.style.position = 'absolute'
   button.style.top = '0.375rem'
   button.style.right = '0.375rem'

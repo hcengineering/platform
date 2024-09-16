@@ -285,6 +285,7 @@ export interface DocNotifyContext extends Doc<PersonSpace> {
   objectSpace: Ref<Space>
 
   isPinned: boolean
+  hidden: boolean
   lastViewedTimestamp?: Timestamp
   lastUpdateTimestamp?: Timestamp
 

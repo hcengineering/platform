@@ -93,7 +93,6 @@ test.describe('QMS. Templates tests', () => {
 
     await test.step('2. Delete the template', async () => {
       await documentContentPage.executeMoreActions('Delete')
-      await documentContentPage.pressYesForPopup(page)
     })
 
     await test.step('3. Check that the document status is equal to the deleted', async () => {
