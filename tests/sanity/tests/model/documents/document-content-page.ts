@@ -52,6 +52,10 @@ export class DocumentContentPage extends CommonPage {
   readonly assigneeToDo = (hasText: string): Locator => this.rowToDo(hasText).locator('div.assignee')
   readonly checkboxToDo = (hasText: string): Locator => this.rowToDo(hasText).locator('input.chBox')
 
+  readonly tocItems = (): Locator => this.page.locator('.toc-container .toc-item')
+  readonly buttonTocPopupHeader = (headerText: string): Locator => this.page.locator(`.popup button:has-text("${headerText}")`)
+  readonly headerElementInDocument = (headerType: 'h1' | 'h2' | 'h3' = 'h1', text: string): Locator => this.page.locator(`.textInput ${headerType}:has-text("${text}")`)
+
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle()).toHaveValue(title)
   }

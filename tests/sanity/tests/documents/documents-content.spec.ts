@@ -17,10 +17,11 @@ import { PlanningNavigationMenuPage } from '../model/planning/planning-navigatio
 import { PlanningPage } from '../model/planning/planning-page'
 import { SignUpData } from '../model/common-types'
 import { TestData } from '../chat/types'
+import { faker } from '@faker-js/faker'
 
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
-test.describe.only('Content in the Documents tests', () => {
+test.describe('Content in the Documents tests', () => {
   let testData: TestData
   let newUser2: SignUpData
   let testTeamspace: NewTeamspace
@@ -218,6 +219,43 @@ test.describe.only('Content in the Documents tests', () => {
       await documentContentPage.selectedFirstImageInDocument()
       await documentContentPage.page.keyboard.press('Backspace')
       await expect(documentContentPage.firstImageInDocument()).toBeHidden()
+    })
+
+    test('Check Table of Content', async ({ page }) => {
+      const HEADER_1_CONTENT = 'Header 1'
+      const HEADER_2_CONTENT = 'Header 2'
+      const HEADER_3_CONTENT = 'Header 3'
+      const contentParts = [
+        `# ${HEADER_1_CONTENT}\n\n${faker.lorem.paragraph(20)}\n`,
+        `## ${HEADER_2_CONTENT}\n\n${faker.lorem.paragraph(20)}\n`,
+        `### ${HEADER_3_CONTENT}\n\n${faker.lorem.paragraph(20)}`
+      ]
+
+      await test.step('Fill in the document and check the appearance of the ToC items', async () => {
+        await documentContentPage.inputContentParapraph().click()
+
+        let partIndex = 0
+        for (const contentPart of contentParts) {
+          await documentContentPage.page.keyboard.type(contentPart)
+          await expect(documentContentPage.tocItems()).toHaveCount(++partIndex)
+        }
+      })
+
+      await test.step('Check if ToC element is visible', async () => {
+        await expect(documentContentPage.page.locator('.toc-container .toc-item')).toHaveCount(3)
+      })
+
+      await test.step('User go to first header by ToC', async () => {
+        await documentContentPage.tocItems().first().click()
+        await documentContentPage.buttonTocPopupHeader(HEADER_1_CONTENT).click()
+        await expect(documentContentPage.headerElementInDocument('h1', HEADER_1_CONTENT)).toBeInViewport()
+      })
+
+      await test.step('User go to last header by ToC', async () => {
+        await documentContentPage.tocItems().first().click()
+        await documentContentPage.buttonTocPopupHeader(HEADER_3_CONTENT).click()
+        await expect(documentContentPage.headerElementInDocument('h3', HEADER_3_CONTENT)).toBeInViewport()
+      })
     })
   })
 })
