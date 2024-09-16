@@ -258,4 +258,41 @@ test.describe('Content in the Documents tests', () => {
       })
     })
   })
+
+  test.only('Check slash handling', async ({ page }) => {
+    await test.step('User can open the popup if types "/" in empty document', async () => {
+      await documentContentPage.inputContentParapraph().click()
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
+      await documentContentPage.page.keyboard.press('Escape')
+    })
+
+    await test.step('User can open the popup if types "/" after some content', async () => {
+      await documentContentPage.inputContentParapraph().click()
+      await documentContentPage.page.keyboard.type('First paragraph\n\n')
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
+      await documentContentPage.page.keyboard.press('Escape')
+    })
+
+    await test.step('User cannot open a popup if he types "/" inside code block', async () => {
+      await documentContentPage.page.keyboard.press('Enter')
+      await documentContentPage.page.keyboard.type('/')
+      await documentContentPage.menuPopupItemButton('Code block').click()
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeHidden()
+      await documentContentPage.page.keyboard.press('ArrowDown')
+      await documentContentPage.page.keyboard.press('ArrowDown')
+    })
+
+    await test.step('User can create table by slash and open a popup if he types "/" inside a table', async () => {
+      await documentContentPage.page.keyboard.type('/')
+      await documentContentPage.menuPopupItemButton('Table').click()
+      await documentContentPage.menuPopupItemButton('1x2').first().click()
+      await documentContentPage.proseTableCell(0, 1).click()
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
+      await documentContentPage.page.keyboard.press('Escape')
+    })
+  })
 })

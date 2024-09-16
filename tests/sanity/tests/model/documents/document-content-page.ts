@@ -56,6 +56,8 @@ export class DocumentContentPage extends CommonPage {
   readonly buttonTocPopupHeader = (headerText: string): Locator => this.page.locator(`.popup button:has-text("${headerText}")`)
   readonly headerElementInDocument = (headerType: 'h1' | 'h2' | 'h3' = 'h1', text: string): Locator => this.page.locator(`.textInput ${headerType}:has-text("${text}")`)
 
+  readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
+
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle()).toHaveValue(title)
   }
