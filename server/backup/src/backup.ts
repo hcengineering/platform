@@ -609,7 +609,10 @@ export async function backup (
     let downloadedMb = 0
     let downloaded = 0
 
-    const printDownloaded = (msg: string, size: number): void => {
+    const printDownloaded = (msg: string, size?: number | null): void => {
+      if (size == null || Number.isNaN(size)) {
+        return
+      }
       downloaded += size
       const newDownloadedMb = Math.round(downloaded / (1024 * 1024))
       const newId = Math.round(newDownloadedMb / 10)
