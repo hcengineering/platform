@@ -94,7 +94,7 @@
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
   import TopMenu from './icons/TopMenu.svelte'
-  import WidgetsBar from './sidebar/SIdebar.svelte'
+  import WidgetsBar from './sidebar/Sidebar.svelte'
   import { sidebarStore, SidebarVariant, syncSidebarState } from '../sidebar'
 
   let contentPanel: HTMLElement
