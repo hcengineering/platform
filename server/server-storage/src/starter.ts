@@ -1,4 +1,4 @@
-import { type DatalakeConfig, DatalakeService } from '@hcengineering/datalake'
+import { DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
 import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
 import { S3Service, type S3Config } from '@hcengineering/s3'
@@ -30,10 +30,10 @@ import {
 
 */
 
-export function storageConfigFromEnv (configEnv: string = 'STORAGE_CONFIG'): StorageConfiguration {
+export function storageConfigFromEnv (configEnv?: string): StorageConfiguration {
   const storageConfig: StorageConfiguration = { default: '', storages: [] }
 
-  const storageEnv = process.env[configEnv]
+  const storageEnv = configEnv ?? process.env.STORAGE_CONFIG
   if (storageEnv !== undefined) {
     parseStorageEnv(storageEnv, storageConfig)
   }

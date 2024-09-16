@@ -16,6 +16,7 @@
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --sourcemap=inline --platform=node --external:*.node --external:bufferutil --external:snappy > bundle/bundle.js",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/backup",
+    "docker:tbuild": "docker build -t hardcoreeng/backup . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/backup",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/backup staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/backup",
     "run-local": "cross-env ACCOUNTS_URL=http://localhost:3000/ SECRET=secret MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost BUCKET_NAME=backups INTERVAL=30 ts-node src/index.ts",
