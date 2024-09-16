@@ -170,7 +170,7 @@ test.describe('Content in the Documents tests', () => {
       })
     })
 
-    test('Check Image Views', async ({ page }) => {
+    test('Check Image view and size actions', async ({ page }) => {
       await documentContentPage.addImageToDocument(page)
       const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
 
@@ -214,7 +214,7 @@ test.describe('Content in the Documents tests', () => {
       })
     })
 
-    test('Remove Image with Backspace', async ({ page }) => {
+    test('Remove image with Backspace', async ({ page }) => {
       await documentContentPage.addImageToDocument(page)
       await documentContentPage.selectedFirstImageInDocument()
       await documentContentPage.page.keyboard.press('Backspace')
@@ -259,7 +259,7 @@ test.describe('Content in the Documents tests', () => {
     })
   })
 
-  test('Check slash handling', async ({ page }) => {
+  test('Check a slash typing handling', async ({ page }) => {
     await test.step('User can open the popup if types "/" in empty document', async () => {
       await documentContentPage.inputContentParapraph().click()
       await documentContentPage.page.keyboard.type('/')

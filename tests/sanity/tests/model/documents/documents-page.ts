@@ -189,4 +189,8 @@ export class DocumentsPage extends CommonPage {
     await expect(this.rowTeamspace(name)).toBeVisible()
     await this.buttonJoinTeamspace(name).click()
   }
+
+  async checkIfParentDocumentIsExistInBreadcrumbs (parentDocumentTitle: string): Promise<void> {
+    await expect(this.breadcrumbsByDocumentParent(parentDocumentTitle)).toBeVisible()
+  }
 }

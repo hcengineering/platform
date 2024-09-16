@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { test } from '@playwright/test'
 import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
 import { NewDocument, NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Documents tests', () => {
+test.describe.only('Documents tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let documentsPage: DocumentsPage
   let documentContentPage: DocumentContentPage
@@ -120,7 +120,7 @@ test.describe('Documents tests', () => {
     })
 
     await test.step('Check nesting of documents', async () => {
-      await expect(documentsPage.breadcrumbsByDocumentParent(parentDocument.title)).toBeVisible()
+      await documentsPage.checkIfParentDocumentIsExistInBreadcrumbs(parentDocument.title)
     })
   })
 
