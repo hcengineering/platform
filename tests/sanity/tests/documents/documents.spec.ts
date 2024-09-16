@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
 import { NewDocument, NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
@@ -85,6 +85,43 @@ test.describe('Documents tests', () => {
     await documentsPage.openTeamspace(moveTeamspace.title)
     await documentsPage.openDocumentForTeamspace(moveTeamspace.title, moveDocument.title)
     await documentContentPage.checkDocumentTitle(moveDocument.title)
+  })
+
+  test.only('Create a document inside another document', async () => {
+    const contentFirst = 'Text first line'
+    const parentTeamspace: NewTeamspace = {
+      title: `Parent Teamspace-${generateId()}`,
+      description: 'Parent Teamspace description',
+      private: false
+    }
+    const parentDocument: NewDocument = {
+      title: `Parent Document Title-${generateId()}`,
+      space: 'Default'
+    }
+    const childDocument: NewDocument = {
+      title: `Child Document Title-${generateId()}`,
+      space: 'Default'
+    }
+    
+    await test.step('Create a parent document by button "+" in left menu documents list', async () => {
+      await leftSideMenuPage.clickDocuments()
+      await documentsPage.checkTeamspaceNotExist(parentTeamspace.title)
+      await documentsPage.createNewTeamspace(parentTeamspace)
+      await documentsPage.checkTeamspaceExist(parentTeamspace.title)
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument({ space: parentTeamspace.title, title: parentDocument.title })
+    })
+    
+    await test.step('Create a child document', async () => {
+      await documentsPage.clickAddDocumentIntoDocument(parentDocument.title)
+      await documentContentPage.updateDocumentTitle(childDocument.title)
+      const content = await documentContentPage.addContentToTheNewLine(contentFirst)
+      await documentContentPage.checkContent(content)
+    })
+    
+    await test.step('Check nesting of documents', async () => {
+      await expect(documentsPage.breadcrumbsByDocumentParent(parentDocument.title)).toBeVisible()
+    })
   })
 
   test('Collaborative edit document content', async ({ page, browser }) => {
