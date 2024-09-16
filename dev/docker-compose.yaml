@@ -217,6 +217,8 @@ services:
           memory: 1024M
   print:
     image: hardcoreeng/print
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4005:4005
