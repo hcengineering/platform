@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe.only('Documents tests', () => {
+test.describe('Documents tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let documentsPage: DocumentsPage
   let documentContentPage: DocumentContentPage
