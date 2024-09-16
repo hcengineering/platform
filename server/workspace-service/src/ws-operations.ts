@@ -200,8 +200,23 @@ export async function createWorkspace (
       ctx.info('Starting init script if any')
       await initializeWorkspace(ctx, branding, wsUrl, storageAdapter, client, ctxModellogger, async (value) => {
         ctx.info('Init script progress', { value })
-        await handleWsEvent?.('progress', version, 30 + Math.round((Math.min(value, 100) / 100) * 70))
+        await handleWsEvent?.('progress', version, 30 + Math.round((Math.min(value, 100) / 100) * 60))
       })
+
+      await upgradeWorkspace(
+        ctx,
+        version,
+        txes,
+        migrationOperation,
+        workspaceInfo,
+        ctxModellogger,
+        async (event, version, value) => {
+          ctx.info('Init script progress', { event, value })
+          await handleWsEvent?.('progress', version, 90 + Math.round((Math.min(value, 100) / 100) * 10))
+        },
+        false,
+        false
+      )
 
       await pipeline.close()
 
