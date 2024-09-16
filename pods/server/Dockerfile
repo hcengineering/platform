@@ -15,5 +15,4 @@ COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./
 
 EXPOSE 8080
-ENV UWS_HTTP_MAX_HEADERS_SIZE 32768
 CMD node bundle.js
