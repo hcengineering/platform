@@ -14,14 +14,9 @@
 //
 
 import activity, { type ActivityMessageControl } from '@hcengineering/activity'
-import {
-  chunterId,
-  type ChunterSpace,
-} from '@hcengineering/chunter'
+import { chunterId, type ChunterSpace } from '@hcengineering/chunter'
 import presentation from '@hcengineering/model-presentation'
-import {
-  type Builder,
-} from '@hcengineering/model'
+import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
@@ -34,7 +29,8 @@ import {
   DOMAIN_CHUNTER,
   TChannel,
   TChatMessage,
-  TChatMessageViewlet, TChatSyncInfo,
+  TChatMessageViewlet,
+  TChatSyncInfo,
   TChunterSpace,
   TDirectMessage,
   TInlineButton,
