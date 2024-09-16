@@ -87,7 +87,7 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(moveDocument.title)
   })
 
-  test.only('Create a document inside another document', async () => {
+  test('Create a document inside another document', async () => {
     const contentFirst = 'Text first line'
     const parentTeamspace: NewTeamspace = {
       title: `Parent Teamspace-${generateId()}`,
@@ -96,11 +96,11 @@ test.describe('Documents tests', () => {
     }
     const parentDocument: NewDocument = {
       title: `Parent Document Title-${generateId()}`,
-      space: 'Default'
+      space: parentTeamspace.title
     }
     const childDocument: NewDocument = {
       title: `Child Document Title-${generateId()}`,
-      space: 'Default'
+      space: parentTeamspace.title
     }
 
     await test.step('Create a parent document by button "+" in left menu documents list', async () => {
@@ -109,7 +109,7 @@ test.describe('Documents tests', () => {
       await documentsPage.createNewTeamspace(parentTeamspace)
       await documentsPage.checkTeamspaceExist(parentTeamspace.title)
       await documentsPage.clickOnButtonCreateDocument()
-      await documentsPage.createDocument({ space: parentTeamspace.title, title: parentDocument.title })
+      await documentsPage.createDocument(parentDocument)
     })
 
     await test.step('Create a child document', async () => {
