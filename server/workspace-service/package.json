@@ -54,6 +54,7 @@
     "@hcengineering/server-pipeline": "^0.6.0",
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/analytics": "^0.6.0"
   }
 }
