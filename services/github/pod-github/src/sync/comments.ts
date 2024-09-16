@@ -248,7 +248,7 @@ export class CommentSyncManager implements DocSyncManager {
   ): Promise<DocumentUpdate<DocSyncInfo> | undefined> {
     const container = await this.provider.getContainer(info.space)
     if (container?.container === undefined) {
-      return {}
+      return { needSync: githubSyncVersion }
     }
     if (info.external === undefined) {
       // TODO: Use selected repository

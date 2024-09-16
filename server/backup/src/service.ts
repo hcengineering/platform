@@ -106,7 +106,7 @@ class BackupWorker {
       })
       const childLogger = rootCtx.logger.childLogger?.(ws.workspace, {
         workspace: ws.workspace,
-        enableConsole: 'false'
+        enableConsole: 'true'
       })
       const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace }, {}, childLogger)
       try {
@@ -124,7 +124,7 @@ class BackupWorker {
         const pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
 
         await ctx.with('backup', { workspace: ws.workspace }, async (ctx) => {
-          await backup(ctx, ws.endpoint, getWorkspaceId(ws.workspace), storage, {
+          await backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
             skipDomains: [],
             force: false,
             recheck: false,

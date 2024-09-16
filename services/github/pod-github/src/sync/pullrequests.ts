@@ -957,13 +957,15 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     derivedClient: TxOperations
   ): Promise<DocumentUpdate<DocSyncInfo> | undefined> {
     const container = await this.provider.getContainer(info.space)
+    if (container?.container === undefined) {
+      return { needSync: githubSyncVersion }
+    }
     if (
-      container?.container === undefined ||
-      ((container.project.projectNodeId === undefined ||
+      (container.project.projectNodeId === undefined ||
         !container.container.projectStructure.has(container.project._id)) &&
-        syncConfig.MainProject)
+      syncConfig.MainProject
     ) {
-      return { needSync: '' }
+      return { needSync: githubSyncVersion }
     }
 
     const pullRequestExternal = info.external as unknown as PullRequestExternalData

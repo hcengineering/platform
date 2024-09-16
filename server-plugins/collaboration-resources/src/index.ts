@@ -33,6 +33,9 @@ export async function OnDelete (
 
   // Obtain document being deleted
   const doc = removedMap.get(rmTx.objectId)
+  if (doc === undefined) {
+    return []
+  }
 
   // Ids of files to delete from storage
   const toDelete: CollaborativeDoc[] = []

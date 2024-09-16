@@ -83,6 +83,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly changeSpaceButton: Locator
   readonly createNewTemplateFromSpace: Locator
   readonly okButton: Locator
+  readonly documentThreeDots: Locator
 
   constructor (page: Page) {
     super(page)
@@ -176,6 +177,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.changeSpaceButton = page.locator('[id="space\\.selector"]')
     this.createNewTemplateFromSpace = page.getByRole('button', { name: 'Create new template' })
     this.okButton = page.getByRole('button', { name: 'Ok', exact: true })
+    this.documentThreeDots = page.locator("div[class='no-print ml-1'] button[type='button']")
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -196,6 +198,10 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async clickNewTemplate (): Promise<void> {
     await this.newTemplate.click()
+  }
+
+  async clickDocumentThreeDots (): Promise<void> {
+    await this.documentThreeDots.click()
   }
 
   async selectControlDocumentSubcategory (

@@ -10,6 +10,7 @@
 .text-editor-view {
   // overflow-y: auto;
   color: var(--theme-text-primary-color);
+  margin: 0.25rem 0;
 
   .suggestion {
     padding-left: 0.25rem;
@@ -63,6 +64,7 @@
 
   p {
     margin-block-start: 0.5rem;
+    margin-block-end: 0.5rem;
   }
 
   >*+* {
@@ -72,6 +74,8 @@
 
   ul,
   ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
     margin-right: .25rem;
     margin-left: .75rem;
     padding: 0;
@@ -88,8 +92,7 @@
 
   ul[data-type="todoList"] {
     list-style: none;
-    margin: 0;
-    padding: 0;
+    margin-left: 0;
 
     li {
       margin: 0;

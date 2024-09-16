@@ -1,6 +1,6 @@
 import type { WorkSlot, ToDo } from '@hcengineering/time'
 import type { DefSeparators } from '@hcengineering/ui'
-import core, { type Class, type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
+import core, { type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
 import time from '@hcengineering/time'
 import { type TextEditorMode, type AnyExtension } from '@hcengineering/text-editor'
 import { SvelteNodeViewRenderer } from '@hcengineering/text-editor-resources'
@@ -56,23 +56,12 @@ function isTodoableClass (objectClass: Ref<Class<Doc>>): boolean {
   }
 }
 
-function isTodoable (
-  mode: TextEditorMode,
-  objectId?: Ref<Doc>,
-  objectClass?: Ref<Class<Doc>>,
-  objectSpace?: Ref<Space>
-): boolean {
-  return (
-    mode === 'full' &&
-    objectId !== undefined &&
-    objectClass !== undefined &&
-    objectSpace !== undefined &&
-    isTodoableClass(objectClass)
-  )
+function isTodoable (mode: TextEditorMode, objectClass?: Ref<Class<Doc>>): boolean {
+  return mode === 'full' && objectClass !== undefined && isTodoableClass(objectClass)
 }
 
 export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode, ctx.objectId, ctx.objectClass, ctx.objectSpace)) {
+  if (!isTodoable(mode, ctx.objectClass)) {
     return
   }
 
@@ -95,7 +84,7 @@ export function createTodoItemExtension (mode: TextEditorMode, ctx: any): AnyExt
 }
 
 export function createTodoListExtension (mode: TextEditorMode, ctx: any): AnyExtension | undefined {
-  if (!isTodoable(mode, ctx.objectId, ctx.objectClass, ctx.objectSpace)) {
+  if (!isTodoable(mode, ctx.objectClass)) {
     return
   }
 
