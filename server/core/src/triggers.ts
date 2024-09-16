@@ -99,7 +99,9 @@ export class Triggers {
       ctx,
       txFactory: null as any, // Will be set later
       apply: async (ctx, tx, needResult) => {
-        apply.push(...tx)
+        if (needResult !== true) {
+          apply.push(...tx)
+        }
         ctrl.txes.push(...tx) // We need to put them so other triggers could check if similar operation is already performed.
         return await ctrl.apply(ctx, tx, needResult)
       }

@@ -2,6 +2,8 @@ version: "3"
 services:
   mongodb:
     image: 'mongo:7-jammy'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: mongod --port 27018
     environment:
       - PUID=1000
@@ -38,6 +40,8 @@ services:
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
   account:
     image: hardcoreeng/account
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     pull_policy: never
     links:
       - mongodb
@@ -56,6 +60,8 @@ services:
       - BRANDING_PATH=/var/cfg/branding-test.json
   workspace:
     image: hardcoreeng/workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -73,6 +79,8 @@ services:
     restart: unless-stopped
   front:
     image: hardcoreeng/front
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     pull_policy: never
     links:
       - account
@@ -103,6 +111,8 @@ services:
       - SIGN_URL=http://host.docker.internal:4006
   transactor:
     image: hardcoreeng/transactor
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     pull_policy: never
     links:
       - mongodb
@@ -132,6 +142,8 @@ services:
       - BRANDING_PATH=/var/cfg/branding-test.json
   collaborator:
     image: hardcoreeng/collaborator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     links:
       - mongodb
       - minio
@@ -151,6 +163,8 @@ services:
     restart: on-failure
   print:
     image: hardcoreeng/print
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4005:4005
@@ -165,6 +179,8 @@ services:
           memory: 300M
   sign:
     image: hardcoreeng/sign
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -177,7 +193,7 @@ services:
       - MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
-      - ACCOUNTS_URL=http://host.docker.internal:3000
+      - ACCOUNTS_URL=http://account:3003
       - MINIO_SECRET_KEY=minioadmin
       - CERTIFICATE_PATH=/var/cfg/certificate.p12
       - SERVICE_ID=sign-service      

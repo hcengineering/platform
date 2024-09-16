@@ -135,7 +135,12 @@ async function getFileRange (
           })
         })
       } catch (err: any) {
-        if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
+        if (
+          err?.code === 'NoSuchKey' ||
+          err?.code === 'NotFound' ||
+          err?.message === 'No such key' ||
+          err?.Code === 'NoSuchKey'
+        ) {
           ctx.info('No such key', { workspace: workspace.name, uuid })
           res.status(404).send()
           return
@@ -459,7 +464,12 @@ export function start (
             )
           }
         } catch (error: any) {
-          if (error?.code === 'NoSuchKey' || error?.code === 'NotFound' || error?.message === 'No such key') {
+          if (
+            error?.code === 'NoSuchKey' ||
+            error?.code === 'NotFound' ||
+            error?.message === 'No such key' ||
+            error?.Code === 'NoSuchKey'
+          ) {
             ctx.error('No such storage key', {
               file: req.query.file,
               workspace: payload?.workspace,

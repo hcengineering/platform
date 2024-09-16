@@ -15,11 +15,12 @@
 //
 -->
 <script lang="ts">
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { MarkupNode, ReferenceNode, jsonToPmNode } from '@hcengineering/text'
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
   import { onDestroy, onMount } from 'svelte'
-  import { MarkupNode, ReferenceNode, jsonToPmNode } from '@hcengineering/text'
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
@@ -27,6 +28,7 @@
 
   export let content: MarkupNode
   export let comparedVersion: MarkupNode | undefined = undefined
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -79,7 +81,13 @@
       element,
       content,
       editable: false,
-      extensions: [await getEditorKit(), ReferenceNode, DecorationExtension],
+      extensions: [
+        (await getEditorKit()).configure({
+          objectClass
+        }),
+        ReferenceNode,
+        DecorationExtension
+      ],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor

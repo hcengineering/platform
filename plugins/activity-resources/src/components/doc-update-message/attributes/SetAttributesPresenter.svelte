@@ -64,7 +64,13 @@
       <Label label={isDiffShown ? ui.string.ShowLess : ui.string.ShowMore} />
     </div>
     {#if isDiffShown}
-      <svelte:component this={attributeModel.presenter} value={values[0]} {prevValue} showOnlyDiff />
+      <svelte:component
+        this={attributeModel.presenter}
+        attribute={attributeModel.attribute}
+        value={values[0]}
+        {prevValue}
+        showOnlyDiff
+      />
     {/if}
   {/if}
 {:else}
