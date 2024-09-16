@@ -17,12 +17,11 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { ActivityMessage } from '@hcengineering/activity'
   import { Widget } from '@hcengineering/workbench'
   import { ChatWidgetTab } from '@hcengineering/chunter'
 
   import Channel from './Channel.svelte'
-  import { closeThreadInSidebarChannel, openThreadInSidebarChannel } from '../navigation'
+  import { closeThreadInSidebarChannel } from '../navigation'
   import { ThreadView } from '../index'
   import ChannelHeader from './ChannelHeader.svelte'
 
@@ -59,10 +58,6 @@
       { limit: 1 }
     )
   }
-
-  async function handleThreadOpen (message: ActivityMessage): Promise<void> {
-    await openThreadInSidebarChannel(widget, tab, message)
-  }
 </script>
 
 {#if object}
@@ -78,7 +73,7 @@
         allowClose={true}
         on:close
       />
-      <Channel {object} {context} syncLocation={false} onReply={handleThreadOpen} />
+      <Channel {object} {context} syncLocation={false} />
     </div>
   {/key}
 {/if}
