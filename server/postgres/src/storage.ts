@@ -18,7 +18,6 @@ import core, {
   type AttachedDoc,
   type Class,
   type Doc,
-  type DocInfo,
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
@@ -942,12 +941,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
       )
     }
 
-    const next = async (limit: number): Promise<Doc[]> => {
-      const result = await client.query(`FETCH ${limit} FROM ${cursorName}`)
+    const next = async (): Promise<Doc | null> => {
+      const result = await client.query(`FETCH 1 FROM ${cursorName}`)
       if (result.rows.length === 0) {
-        return []
+        return null
       }
-      return result.rows.filter((it) => it != null).map((it) => parseDoc(it))
+      return result.rows[0] !== undefined ? parseDoc(result.rows[0]) : null
     }
 
     const flush = async (flush = false): Promise<void> => {
@@ -976,51 +975,47 @@ abstract class PostgresAdapterBase implements DbAdapter {
           await init('_id, data', "data ->> '%hash%' IS NOT NULL AND data ->> '%hash%' <> ''")
           initialized = true
         }
-        let docs = await ctx.with('next', { mode }, async () => await next(50))
-        if (docs.length === 0 && mode === 'hashed') {
+        let d = await ctx.with('next', { mode }, async () => await next())
+        if (d == null && mode === 'hashed') {
           await close(cursorName)
           mode = 'non_hashed'
           await init('*', "data ->> '%hash%' IS NULL OR data ->> '%hash%' = ''")
-          docs = await ctx.with('next', { mode }, async () => await next(50))
+          d = await ctx.with('next', { mode }, async () => await next())
         }
-        if (docs.length === 0) {
-          return []
+        if (d == null) {
+          return undefined
         }
-        const result: DocInfo[] = []
-        for (const d of docs) {
-          let digest: string | null = (d as any)['%hash%']
-          if ('%hash%' in d) {
-            delete d['%hash%']
+        let digest: string | null = (d as any)['%hash%']
+        if ('%hash%' in d) {
+          delete d['%hash%']
+        }
+        const pos = (digest ?? '').indexOf('|')
+        if (digest == null || digest === '') {
+          const cs = ctx.newChild('calc-size', {})
+          const size = estimateDocSize(d)
+          cs.end()
+
+          const hash = createHash('sha256')
+          updateHashForDoc(hash, d)
+          digest = hash.digest('base64')
+
+          bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+
+          await ctx.with('flush', {}, async () => {
+            await flush()
+          })
+          return {
+            id: d._id,
+            hash: digest,
+            size
           }
-          const pos = (digest ?? '').indexOf('|')
-          if (digest == null || digest === '') {
-            const cs = ctx.newChild('calc-size', {})
-            const size = estimateDocSize(d)
-            cs.end()
-
-            const hash = createHash('sha256')
-            updateHashForDoc(hash, d)
-            digest = hash.digest('base64')
-
-            bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
-
-            await ctx.with('flush', {}, async () => {
-              await flush()
-            })
-            result.push({
-              id: d._id,
-              hash: digest,
-              size
-            })
-          } else {
-            result.push({
-              id: d._id,
-              hash: digest.slice(0, pos),
-              size: parseInt(digest.slice(pos + 1), 16)
-            })
+        } else {
+          return {
+            id: d._id,
+            hash: digest.slice(0, pos),
+            size: parseInt(digest.slice(pos + 1), 16)
           }
         }
-        return result
       },
       close: async () => {
         await ctx.with('flush', {}, async () => {

@@ -192,7 +192,7 @@ export class MinioService implements StorageAdapter {
 
     const rootPrefix = this.rootPrefix(workspaceId)
     return {
-      next: async (): Promise<ListBlobResult[]> => {
+      next: async (): Promise<ListBlobResult | undefined> => {
         try {
           if (stream === undefined && !done) {
             const rprefix = rootPrefix ?? ''
@@ -227,7 +227,7 @@ export class MinioService implements StorageAdapter {
                 })
               }
               onNext()
-              if (buffer.length > 100) {
+              if (buffer.length > 5) {
                 stream?.pause()
               }
             })
@@ -236,24 +236,24 @@ export class MinioService implements StorageAdapter {
           const msg = (err?.message as string) ?? ''
           if (msg.includes('Invalid bucket name') || msg.includes('The specified bucket does not exist')) {
             hasMore = false
-            return []
+            return
           }
           error = err
         }
 
         if (buffer.length > 0) {
-          return buffer.splice(0, 50)
+          return buffer.shift()
         }
         if (!hasMore) {
-          return []
+          return undefined
         }
-        return await new Promise<ListBlobResult[]>((resolve, reject) => {
+        return await new Promise<ListBlobResult | undefined>((resolve, reject) => {
           onNext = () => {
             if (error != null) {
               reject(error)
             }
             onNext = () => {}
-            resolve(buffer.splice(0, 50))
+            resolve(buffer.shift())
           }
           stream?.resume()
         })

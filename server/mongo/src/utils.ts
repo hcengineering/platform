@@ -23,7 +23,7 @@ import {
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import { MongoClient, type Collection, type Db, type Document } from 'mongodb'
+import { MongoClient, type Collection, type Db, type Document, type MongoClientOptions } from 'mongodb'
 
 const connections = new Map<string, MongoClientReferenceImpl>()
 
@@ -121,20 +121,31 @@ export class ClientRef implements MongoClientReference {
  * Initialize a workspace connection to DB
  * @public
  */
-export function getMongoClient (uri: string): MongoClientReference {
+export function getMongoClient (uri: string, options?: MongoClientOptions): MongoClientReference {
   const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
-  const key = `${uri}${process.env.MONGO_OPTIONS ?? '{}'}`
+  const key = `${uri}${process.env.MONGO_OPTIONS ?? '{}'}_${JSON.stringify(options ?? {})}`
   let existing = connections.get(key)
+
+  const allOptions: MongoClientOptions = {
+    ...options,
+    ...extraOptions
+  }
+
+  // Make poll size stable
+  if (allOptions.maxPoolSize !== undefined) {
+    allOptions.minPoolSize = allOptions.maxPoolSize
+  }
+  allOptions.monitorCommands = false
+  allOptions.noDelay = true
 
   // If not created or closed
   if (existing === undefined) {
     existing = new MongoClientReferenceImpl(
       MongoClient.connect(uri, {
-        retryReads: true,
         appName: 'transactor',
         enableUtf8Validation: false,
 
-        ...extraOptions
+        ...allOptions
       }),
       () => {
         connections.delete(key)

@@ -9,7 +9,6 @@ import {
   type StorageIterator,
   type WorkspaceId
 } from '@hcengineering/core'
-import { estimateDocSize } from './utils'
 
 export * from '@hcengineering/storage'
 
@@ -20,7 +19,7 @@ export function getBucketId (workspaceId: WorkspaceId): string {
   return toWorkspaceString(workspaceId)
 }
 
-const chunkSize = 512 * 1024
+const chunkSize = 2 * 1024 * 1024
 
 /**
  * @public
@@ -71,15 +70,14 @@ export class BackupClientOps {
       const docs: DocInfo[] = []
 
       while (size < chunkSize) {
-        const _docs = await chunk.iterator.next(ctx)
-        if (_docs.length === 0) {
+        const doc = await chunk.iterator.next(ctx)
+        if (doc === undefined) {
           chunk.finished = true
           break
         }
-        for (const doc of _docs) {
-          size += estimateDocSize(doc)
-          docs.push(doc)
-        }
+
+        size += doc.size
+        docs.push(doc)
       }
 
       return {

@@ -24,7 +24,7 @@ export interface UploadedObjectInfo {
 }
 
 export interface BlobStorageIterator {
-  next: () => Promise<ListBlobResult[]>
+  next: () => Promise<ListBlobResult | undefined>
   close: () => Promise<void>
 }
 
@@ -99,7 +99,7 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
 
   find (ctx: MeasureContext, workspaceId: WorkspaceId): StorageIterator {
     return {
-      next: async (ctx) => [],
+      next: async (ctx) => undefined,
       close: async (ctx) => {}
     }
   }
@@ -120,8 +120,8 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
 
   async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
     return {
-      next: async (): Promise<ListBlobResult[]> => {
-        return []
+      next: async (): Promise<ListBlobResult | undefined> => {
+        return undefined
       },
       close: async () => {}
     }
@@ -179,16 +179,14 @@ export async function removeAllObjects (
   const iterator = await storage.listStream(ctx, workspaceId)
   let bulk: string[] = []
   while (true) {
-    const objs = await iterator.next()
-    if (objs.length === 0) {
+    const obj = await iterator.next()
+    if (obj === undefined) {
       break
     }
-    for (const obj of objs) {
-      bulk.push(obj.storageId)
-      if (bulk.length > 50) {
-        await storage.remove(ctx, workspaceId, bulk)
-        bulk = []
-      }
+    bulk.push(obj.storageId)
+    if (bulk.length > 50) {
+      await storage.remove(ctx, workspaceId, bulk)
+      bulk = []
     }
   }
   if (bulk.length > 0) {
@@ -208,10 +206,10 @@ export async function objectsToArray (
   const bulk: ListBlobResult[] = []
   while (true) {
     const obj = await iterator.next()
-    if (obj.length === 0) {
+    if (obj === undefined) {
       break
     }
-    bulk.push(...obj)
+    bulk.push(obj)
   }
   await iterator.close()
   return bulk

@@ -56,7 +56,7 @@ export class MemStorageAdapter implements StorageAdapter {
     const files = Array.from(this.files.values()).filter((it) => it.workspace === workspaceId.name)
     return {
       next: async () => {
-        return files.splice(0, 100)
+        return files.shift()
       },
       close: async () => {}
     }
@@ -189,7 +189,8 @@ export class MemRawDBAdapter implements RawDBAdapter {
     }
     return {
       next: async () => {
-        return result.splice(0, 50)
+        const doc = result.shift()
+        return doc
       },
       close: async () => {}
     }

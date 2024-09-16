@@ -41,6 +41,7 @@ import { BlobClient, createClient } from '@hcengineering/server-client'
 import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
+import { mkdtemp, writeFile } from 'node:fs/promises'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
@@ -487,16 +488,6 @@ async function cleanDomain (ctx: MeasureContext, connection: CoreClient & Backup
   }
 }
 
-function doTrimHash (s: string | undefined): string {
-  if (s == null) {
-    return ''
-  }
-  if (s.startsWith('"') && s.endsWith('"')) {
-    return s.slice(1, s.length - 1)
-  }
-  return s
-}
-
 /**
  * @public
  */
@@ -535,15 +526,11 @@ export async function backup (
 
   let canceled = false
   let timer: any
-  let ops = 0
 
   if (options.timeout > 0) {
-    timer = setInterval(() => {
-      if (ops === 0) {
-        ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: options.timeout / 1000 })
-        ops = 0
-        canceled = true
-      }
+    timer = setTimeout(() => {
+      ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: options.timeout / 1000 })
+      canceled = true
     }, options.timeout)
   }
 
@@ -557,6 +544,8 @@ export async function backup (
 
   const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
   ctx.info('starting backup', { workspace: workspaceId.name })
+
+  let tmpDir: string | undefined
 
   try {
     const domains = [
@@ -624,7 +613,6 @@ export async function backup (
       if (size == null || Number.isNaN(size)) {
         return
       }
-      ops++
       downloaded += size
       const newDownloadedMb = Math.round(downloaded / (1024 * 1024))
       const newId = Math.round(newDownloadedMb / 10)
@@ -653,7 +641,6 @@ export async function backup (
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx, options.recheck))
           idx = currentChunk.idx
-          ops++
 
           let needRetrieve: Ref<Doc>[] = []
           let currentNeedRetrieveSize = 0
@@ -669,18 +656,17 @@ export async function backup (
               })
               st = Date.now()
             }
-            const _hash = doTrimHash(hash)
-            const kHash = doTrimHash(digest.get(id as Ref<Doc>))
+            const kHash = digest.get(id as Ref<Doc>)
             if (kHash !== undefined) {
               digest.delete(id as Ref<Doc>)
-              if (kHash !== _hash) {
-                changes.updated.set(id as Ref<Doc>, _hash)
+              if (kHash !== hash) {
+                changes.updated.set(id as Ref<Doc>, hash)
                 needRetrieve.push(id as Ref<Doc>)
                 currentNeedRetrieveSize += size
                 changed++
               }
             } else {
-              changes.added.set(id as Ref<Doc>, _hash)
+              changes.added.set(id as Ref<Doc>, hash)
               needRetrieve.push(id as Ref<Doc>)
               changed++
               currentNeedRetrieveSize += size
@@ -742,13 +728,19 @@ export async function backup (
       }
 
       // Cumulative digest
-      const digest = await ctx.with('load-digest', {}, (ctx) => loadDigest(ctx, storage, backupInfo.snapshots, domain))
+      const digest = await ctx.with(
+        'load-digest',
+        {},
+        async (ctx) => await loadDigest(ctx, storage, backupInfo.snapshots, domain)
+      )
 
       let _pack: Pack | undefined
       let addedDocuments = 0
 
-      let { changed, needRetrieveChunks } = await ctx.with('load-chunks', { domain }, (ctx) =>
-        loadChangesFromServer(ctx, domain, digest, changes)
+      let { changed, needRetrieveChunks } = await ctx.with(
+        'load-chunks',
+        { domain },
+        async (ctx) => await loadChangesFromServer(ctx, domain, digest, changes)
       )
 
       if (needRetrieveChunks.length > 0) {
@@ -769,7 +761,6 @@ export async function backup (
         let docs: Doc[] = []
         try {
           docs = await ctx.with('load-docs', {}, async (ctx) => await connection.loadDocs(domain, needRetrieve))
-          ops++
         } catch (err: any) {
           ctx.error('error loading docs', { domain, err, workspace: workspaceId.name })
           // Put back.
@@ -885,12 +876,16 @@ export async function backup (
 
               const finalBuffer = Buffer.concat(buffers)
               if (finalBuffer.length !== blob.size) {
+                tmpDir = tmpDir ?? (await mkdtemp('backup', {}))
+                const tmpFile = join(tmpDir, blob._id)
+                await writeFile(tmpFile, finalBuffer)
+                await writeFile(tmpFile + '.json', JSON.stringify(blob, undefined, 2))
                 ctx.error('download blob size mismatch', {
                   _id: blob._id,
                   contentType: blob.contentType,
                   size: blob.size,
-                  bufferSize: finalBuffer.length,
-                  provider: blob.provider
+                  provider: blob.provider,
+                  tempDir: tmpDir
                 })
               }
               _pack.entry({ name: d._id + '.json' }, descrJson, (err) => {
@@ -980,7 +975,7 @@ export async function backup (
     }
     ctx.end()
     if (options.timeout !== -1) {
-      clearInterval(timer)
+      clearTimeout(timer)
     }
   }
 }
@@ -1205,12 +1200,22 @@ export async function restore (
       workspace: workspaceId.name
     })
 
+    const doTrim = (s: string | undefined): string | undefined => {
+      if (s == null) {
+        return s
+      }
+      if (s.startsWith('"') && s.endsWith('"')) {
+        return s.slice(1, s.length - 1)
+      }
+      return s
+    }
+
     // Let's find difference
     const docsToAdd = new Map(
       Array.from(changeset.entries()).filter(
         ([it]) =>
           !serverChangeset.has(it) ||
-          (serverChangeset.has(it) && doTrimHash(serverChangeset.get(it)) !== doTrimHash(changeset.get(it)))
+          (serverChangeset.has(it) && doTrim(serverChangeset.get(it)) !== doTrim(changeset.get(it)))
       )
     )
     const docsToRemove = Array.from(serverChangeset.keys()).filter((it) => !changeset.has(it))

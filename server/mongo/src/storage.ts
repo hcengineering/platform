@@ -16,6 +16,7 @@
 import core, {
   DOMAIN_MODEL,
   DOMAIN_TX,
+  type Iterator,
   SortingOrder,
   TxProcessor,
   addOperation,
@@ -29,7 +30,6 @@ import core, {
   type AttachedDoc,
   type Class,
   type Doc,
-  type DocInfo,
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
@@ -38,7 +38,6 @@ import core, {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type Iterator,
   type Lookup,
   type MeasureContext,
   type Mixin,
@@ -136,7 +135,7 @@ export async function toArray<T> (cursor: AbstractCursor<T>): Promise<T[]> {
 }
 
 export interface DbAdapterOptions {
-  calculateHash?: (doc: Doc) => { digest: string, size: number }
+  calculateHash?: (doc: Doc) => string
 }
 
 abstract class MongoAdapterBase implements DbAdapter {
@@ -1035,17 +1034,44 @@ abstract class MongoAdapterBase implements DbAdapter {
           iterator = coll.find({ '%hash%': { $in: ['', null] } })
           d = await ctx.with('next', { mode }, async () => await iterator.next())
         }
-        const result: DocInfo[] = []
-        if (d != null) {
-          result.push(this.toDocInfo(d, bulkUpdate))
+        if (d == null) {
+          return undefined
         }
-        if (iterator.bufferedCount() > 0) {
-          result.push(...iterator.readBufferedDocuments().map((it) => this.toDocInfo(it, bulkUpdate)))
+        let digest: string | null = (d as any)['%hash%']
+        if ('%hash%' in d) {
+          delete d['%hash%']
         }
-        await ctx.with('flush', {}, async () => {
-          await flush()
-        })
-        return result
+        const pos = (digest ?? '').indexOf('|')
+        if (digest == null || digest === '') {
+          const cs = ctx.newChild('calc-size', {})
+          const size = estimateDocSize(d)
+          cs.end()
+
+          if (this.options?.calculateHash !== undefined) {
+            digest = this.options.calculateHash(d)
+          } else {
+            const hash = createHash('sha256')
+            updateHashForDoc(hash, d)
+            digest = hash.digest('base64')
+          }
+
+          bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
+
+          await ctx.with('flush', {}, async () => {
+            await flush()
+          })
+          return {
+            id: d._id,
+            hash: digest,
+            size
+          }
+        } else {
+          return {
+            id: d._id,
+            hash: digest.slice(0, pos),
+            size: parseInt(digest.slice(pos + 1), 16)
+          }
+        }
       },
       close: async () => {
         await ctx.with('flush', {}, async () => {
@@ -1055,38 +1081,6 @@ abstract class MongoAdapterBase implements DbAdapter {
           await iterator.close()
         })
         ctx.end()
-      }
-    }
-  }
-
-  private toDocInfo (d: Doc, bulkUpdate: Map<Ref<Doc>, string>): DocInfo {
-    let digest: string | null = (d as any)['%hash%']
-    if ('%hash%' in d) {
-      delete d['%hash%']
-    }
-    const pos = (digest ?? '').indexOf('|')
-    if (digest == null || digest === '') {
-      let size = estimateDocSize(d)
-
-      if (this.options?.calculateHash !== undefined) {
-        ;({ digest, size } = this.options.calculateHash(d))
-      } else {
-        const hash = createHash('sha256')
-        updateHashForDoc(hash, d)
-        digest = hash.digest('base64')
-      }
-
-      bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
-      return {
-        id: d._id,
-        hash: digest,
-        size
-      }
-    } else {
-      return {
-        id: d._id,
-        hash: digest.slice(0, pos),
-        size: parseInt(digest.slice(pos + 1), 16)
       }
     }
   }

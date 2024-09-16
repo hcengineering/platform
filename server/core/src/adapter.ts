@@ -57,7 +57,7 @@ export interface DomainHelper {
 }
 
 export interface RawDBAdapterStream<T extends Doc> {
-  next: () => Promise<T[]>
+  next: () => Promise<T | undefined>
   close: () => Promise<void>
 }
 
