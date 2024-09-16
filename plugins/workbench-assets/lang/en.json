@@ -29,6 +29,11 @@
     "LogInAnyway": "Log in anyway",
     "WorkspaceCreating": "Creation in progress...",
     "AccessDenied": "Object doesn't exist or you are not permitted to access it.",
-    "UpgradeDownloadProgress": "Downloading upgrade: {percent}%"
+    "UpgradeDownloadProgress": "Downloading upgrade: {percent}%",
+    "Widget": "Widget",
+    "WidgetPreferences": "Widget preferences",
+    "OpenInSidebar": "Open in sidebar",
+    "OpenInSidebarNewTab": "Open in sidebar new tab",
+    "ConfigureWidgets": "Configure widgets"
   }
 }

@@ -32,7 +32,6 @@ import ChatMessagePresenter from './components/chat-message/ChatMessagePresenter
 import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
 import ChatMessagesPresenter from './components/chat-message/ChatMessagesPresenter.svelte'
 import Chat from './components/chat/Chat.svelte'
-import ChatAside from './components/chat/ChatAside.svelte'
 import CreateChannel from './components/chat/create/CreateChannel.svelte'
 import CreateDirectChat from './components/chat/create/CreateDirectChat.svelte'
 import ChunterBrowser from './components/chat/specials/ChunterBrowser.svelte'
@@ -51,12 +50,18 @@ import ThreadParentPresenter from './components/threads/ThreadParentPresenter.sv
 import Threads from './components/threads/Threads.svelte'
 import ThreadView from './components/threads/ThreadView.svelte'
 import ThreadViewPanel from './components/threads/ThreadViewPanel.svelte'
+import ChatWidget from './components/ChatWidget.svelte'
+import ChatWidgetTab from './components/ChatWidgetTab.svelte'
 
 import {
   chunterSpaceLinkFragmentProvider,
+  closeChatWidgetTab,
   getMessageLink,
   getMessageLocation,
   getThreadLink,
+  openChannelInSidebar,
+  openChannelInSidebarAction,
+  openChannelInSidebarTabAction,
   replyToThread
 } from './navigation'
 import {
@@ -164,10 +169,11 @@ export default async (): Promise<Resources> => ({
     ChannelIcon,
     ChatMessageNotificationLabel,
     ThreadNotificationPresenter,
-    ChatAside,
     ThreadMessagePreview,
     ChatMessagePreview,
-    JoinChannelNotificationPresenter
+    JoinChannelNotificationPresenter,
+    ChatWidget,
+    ChatWidgetTab
   },
   activity: {
     ChannelCreatedMessage,
@@ -188,7 +194,9 @@ export default async (): Promise<Resources> => ({
     GetThreadLink: getThreadLink,
     ReplyToThread: replyToThread,
     CanReplyToThread: canReplyToThread,
-    GetMessageLink: getMessageLocation
+    GetMessageLink: getMessageLocation,
+    CloseChatWidgetTab: closeChatWidgetTab,
+    OpenChannelInSidebar: openChannelInSidebar
   },
   actionImpl: {
     ArchiveChannel,
@@ -197,6 +205,8 @@ export default async (): Promise<Resources> => ({
     DeleteChatMessage: deleteChatMessage,
     LeaveChannel: leaveChannelAction,
     RemoveChannel: removeChannelAction,
-    ReplyToThread: replyToThread
+    ReplyToThread: replyToThread,
+    OpenInSidebar: openChannelInSidebarAction,
+    OpenInSidebarTab: openChannelInSidebarTabAction
   }
 })

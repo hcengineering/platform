@@ -18,7 +18,13 @@ import { DocNotifyContext, InboxNotification } from '@hcengineering/notification
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
+import {
+  AnyComponent,
+  type AnySvelteComponent,
+  ComponentExtensionId,
+  Location,
+  ResolvedLocation
+} from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
 
 /**
@@ -43,6 +49,43 @@ export interface Application extends Doc {
   navHeaderComponent?: AnyComponent
   accessLevel?: AccountRole
   navFooterComponent?: AnyComponent
+}
+
+export enum WidgetType {
+  Fixed = 'fixed', // Fixed sidebar are always visible
+  Flexible = 'flexible', // Flexible sidebar are visible only in special cases (during the meeting, etc.)
+  Configurable = 'configurable ' // Configurable might be fixed in sidebar by user in preferences
+}
+
+export interface Widget extends Doc {
+  label: IntlString
+  icon: Asset
+  type: WidgetType
+  size?: 'small' | 'medium'
+
+  component: AnyComponent
+  tabComponent?: AnyComponent
+  headerLabel?: IntlString
+
+  closeIfNoTabs?: boolean
+  onTabClose?: Resource<(tab: WidgetTab) => Promise<void>>
+}
+
+export interface WidgetPreference extends Preference {
+  enabled: boolean
+}
+
+export interface WidgetTab {
+  id: string
+  name?: string
+  nameIntl?: IntlString
+  icon?: Asset | AnySvelteComponent
+  iconComponent?: AnyComponent
+  iconProps?: Record<string, any>
+  widget?: Ref<Widget>
+  isPinned?: boolean
+  allowedPath?: string
+  data?: Record<string, any>
 }
 
 /**
@@ -141,7 +184,9 @@ export default plugin(workbenchId, {
   class: {
     Application: '' as Ref<Class<Application>>,
     ApplicationNavModel: '' as Ref<Class<ApplicationNavModel>>,
-    HiddenApplication: '' as Ref<Class<HiddenApplication>>
+    HiddenApplication: '' as Ref<Class<HiddenApplication>>,
+    Widget: '' as Ref<Class<Widget>>,
+    WidgetPreference: '' as Ref<Class<WidgetPreference>>
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>
@@ -156,7 +201,10 @@ export default plugin(workbenchId, {
     Archive: '' as IntlString,
     View: '' as IntlString,
     ServerUnderMaintenance: '' as IntlString,
-    UpgradeDownloadProgress: '' as IntlString
+    UpgradeDownloadProgress: '' as IntlString,
+    OpenInSidebar: '' as IntlString,
+    OpenInSidebarNewTab: '' as IntlString,
+    ConfigureWidgets: '' as IntlString
   },
   icon: {
     Search: '' as Asset

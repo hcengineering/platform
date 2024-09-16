@@ -7,6 +7,7 @@ import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/plat
 import { Preference } from '@hcengineering/preference'
 import { AnyComponent } from '@hcengineering/ui/src/types'
 import { Action } from '@hcengineering/view'
+import { Widget } from '@hcengineering/workbench'
 
 export const loveId = 'love' as Plugin
 export type { ScreenSource } from './utils'
@@ -128,7 +129,9 @@ const love = plugin(loveId, {
     MainFloor: '' as Ref<Floor>,
     Reception: '' as Ref<Room>,
     InviteNotification: '' as Ref<NotificationType>,
-    KnockNotification: '' as Ref<NotificationType>
+    KnockNotification: '' as Ref<NotificationType>,
+    LoveWidget: '' as Ref<Widget>,
+    VideoWidget: '' as Ref<Widget>
   },
   icon: {
     Love: '' as Asset,

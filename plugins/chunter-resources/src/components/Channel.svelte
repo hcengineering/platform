@@ -29,6 +29,7 @@
   export let context: DocNotifyContext | undefined
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let isAsideOpened = false
+  export let syncLocation = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -45,6 +46,9 @@
   })
 
   const unsubscribeLocation = locationStore.subscribe((newLocation) => {
+    if (!syncLocation) {
+      return
+    }
     const id = getMessageFromLoc(newLocation)
     selectedMessageId = id
     messageInFocus.set(id)

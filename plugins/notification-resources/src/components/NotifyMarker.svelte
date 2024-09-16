@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   export let count: number = 0
-  export let kind: 'primary' | 'secondary' = 'primary'
-  export let size: 'x-small' | 'small' | 'medium' = 'small'
+  export let kind: 'primary' | 'secondary' | 'simple' = 'primary'
+  export let size: 'xx-small' | 'x-small' | 'small' | 'medium' = 'small'
 
   const maxNumber = 9
 </script>
 
-{#if count > 0}
+{#if kind === 'primary' && count > 0}
   <div class="notifyMarker {size} {kind}">
     {#if count > maxNumber}
       {maxNumber}+
@@ -30,7 +30,11 @@
   </div>
 {/if}
 
-{#if count === 0 && kind === 'secondary'}
+{#if kind === 'secondary'}
+  <div class="notifyMarker {size} {kind}" />
+{/if}
+
+{#if kind === 'simple'}
   <div class="notifyMarker {size} {kind}" />
 {/if}
 
@@ -43,6 +47,7 @@
     border-radius: 50%;
     font-weight: 700;
 
+    &.simple,
     &.primary {
       background-color: var(--global-higlight-Color);
       color: var(--global-on-accent-TextColor);
@@ -50,6 +55,11 @@
 
     &.secondary {
       background-color: var(--global-subtle-BackgroundColor);
+    }
+
+    &.xx-small {
+      width: 0.5rem;
+      height: 0.5rem;
     }
 
     &.x-small {

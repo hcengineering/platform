@@ -21,6 +21,7 @@ import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
 import { Person, ChannelProvider as SocialChannelProvider } from '@hcengineering/contact'
+import { Widget, WidgetTab } from '@hcengineering/workbench'
 
 /**
  * @public
@@ -103,6 +104,11 @@ export interface InlineButton extends AttachedDoc {
   action: Resource<InlineButtonAction>
 }
 
+export interface ChatWidgetTab extends WidgetTab {
+  type: 'channel' | 'thread'
+  data: { _id?: Ref<Doc>, _class?: Ref<Class<Doc>>, thread?: Ref<ActivityMessage> }
+}
+
 /**
  * @public
  */
@@ -132,7 +138,6 @@ export default plugin(chunterId, {
     ChatMessagesPresenter: '' as AnyComponent,
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
-    ChatAside: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
     ThreadMessagePreview: '' as AnyComponent
   },
@@ -205,14 +210,16 @@ export default plugin(chunterId, {
     CreatedChannelOn: '' as IntlString,
     YouJoinedChannel: '' as IntlString,
     AndMore: '' as IntlString,
-    IsTyping: '' as IntlString
+    IsTyping: '' as IntlString,
+    ThreadIn: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
     ChannelNotification: '' as Ref<NotificationType>,
     JoinChannelNotification: '' as Ref<NotificationType>,
-    ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>
+    ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>,
+    ChatWidget: '' as Ref<Widget>
   },
   app: {
     Chunter: '' as Ref<Doc>
@@ -222,5 +229,10 @@ export default plugin(chunterId, {
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>
+  },
+  function: {
+    OpenChannelInSidebar: '' as Resource<
+    (_id: Ref<Doc>, _class: Ref<Doc>, doc?: Doc, thread?: Ref<ActivityMessage>) => Promise<void>
+    >
   }
 })

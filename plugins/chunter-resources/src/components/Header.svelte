@@ -49,6 +49,7 @@
   export let isAsideShown: boolean = false
   export let titleKind: 'default' | 'breadcrumbs' = 'default'
   export let withFilters: boolean = false
+  export let withSearch: boolean = true
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
@@ -110,21 +111,23 @@
   </svelte:fragment>
 
   <svelte:fragment slot="search" let:doubleRow>
-    <SearchInput
-      collapsed
-      bind:value={searchValue}
-      on:change={(ev) => {
-        userSearch.set(ev.detail)
+    {#if withSearch}
+      <SearchInput
+        collapsed
+        bind:value={searchValue}
+        on:change={(ev) => {
+          userSearch.set(ev.detail)
 
-        if (ev.detail !== '') {
-          navigateToSpecial('chunterBrowser')
-        }
-      }}
-    />
-    {#if withFilters}
-      <ChannelMessagesFilter bind:selectedFilters={filters} />
+          if (ev.detail !== '') {
+            navigateToSpecial('chunterBrowser')
+          }
+        }}
+      />
+      {#if withFilters}
+        <ChannelMessagesFilter bind:selectedFilters={filters} />
+      {/if}
+      <slot name="search" {doubleRow} />
     {/if}
-    <slot name="search" {doubleRow} />
   </svelte:fragment>
   <svelte:fragment slot="actions" let:doubleRow>
     <slot name="actions" {doubleRow} />

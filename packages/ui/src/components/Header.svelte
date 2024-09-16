@@ -38,6 +38,7 @@
   export let overflowExtra: boolean = false
   export let noPrint: boolean = false
   export let freezeBefore: boolean = false
+  export let doubleRowWidth = 768
 
   const dispatch = createEventDispatcher()
 
@@ -76,8 +77,8 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   use:resizeObserver={(element) => {
-    if (!doubleRow && element.clientWidth <= 768) doubleRow = true
-    else if (doubleRow && element.clientWidth > 768) doubleRow = false
+    if (!doubleRow && element.clientWidth <= doubleRowWidth) doubleRow = true
+    else if (doubleRow && element.clientWidth > doubleRowWidth) doubleRow = false
   }}
   class="hulyHeader-container"
   class:doubleRow={_doubleRow}

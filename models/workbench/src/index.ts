@@ -17,17 +17,22 @@ import { type Class, DOMAIN_MODEL, type Ref, type Space, type AccountRole } from
 import { type Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
-import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import view, { type KeyBinding } from '@hcengineering/view'
 import type {
   Application,
   ApplicationNavModel,
   HiddenApplication,
   SpaceView,
-  ViewConfiguration
+  ViewConfiguration,
+  Widget,
+  WidgetPreference,
+  WidgetTab,
+  WidgetType
 } from '@hcengineering/workbench'
-
+import { type AnyComponent } from '@hcengineering/ui'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
+
 import workbench from './plugin'
 
 export { workbenchId } from '@hcengineering/workbench'
@@ -61,8 +66,33 @@ export class TSpaceView extends TClass implements SpaceView {
   view!: ViewConfiguration
 }
 
+@Model(workbench.class.Widget, core.class.Doc, DOMAIN_MODEL)
+@UX(workbench.string.Widget)
+export class TWidget extends TDoc implements Widget {
+  label!: IntlString
+  icon!: Asset
+  type!: WidgetType
+
+  component!: AnyComponent
+  tabComponent?: AnyComponent
+  headerLabel?: IntlString
+
+  closeIfNoTabs?: boolean
+  onTabClose?: Resource<(tab: WidgetTab) => Promise<void>>
+}
+
+@Model(workbench.class.WidgetPreference, preference.class.Preference)
+@UX(workbench.string.WidgetPreference)
+export class TWidgetPreference extends TPreference implements WidgetPreference {
+  @Prop(TypeRef(workbench.class.Widget), workbench.string.WidgetPreference)
+  declare attachedTo: Ref<Widget>
+
+  enabled!: boolean
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TApplication, TSpaceView, THiddenApplication, TApplicationNavModel)
+  builder.createModel(TApplication, TSpaceView, THiddenApplication, TApplicationNavModel, TWidget, TWidgetPreference)
+
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter
   })

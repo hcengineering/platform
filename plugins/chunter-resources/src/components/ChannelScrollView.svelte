@@ -61,6 +61,8 @@
   export let skipLabels = false
   export let loadMoreAllowed = true
   export let isAsideOpened = false
+  export let initialScrollBottom = true
+  export let fullHeight = true
 
   const doc = object
 
@@ -450,14 +452,22 @@
       isInitialScrolling = false
     } else if (separatorIndex === -1) {
       await wait()
-      isScrollInitialized = true
-      shouldWaitAndRead = true
-      autoscroll = true
-      shouldScrollToNew = true
-      isInitialScrolling = false
-      waitLastMessageRenderAndRead(() => {
+      if (initialScrollBottom) {
+        isScrollInitialized = true
+        shouldWaitAndRead = true
+        autoscroll = true
+        shouldScrollToNew = true
+        isInitialScrolling = false
+        waitLastMessageRenderAndRead(() => {
+          autoscroll = false
+        })
+      } else {
+        isScrollInitialized = true
         autoscroll = false
-      })
+        updateShouldScrollToNew()
+        isInitialScrolling = false
+        readViewportMessages()
+      }
     } else if (separatorElement) {
       await wait()
       scrollToSeparator()
@@ -552,7 +562,7 @@
     } else if (dateToJump !== undefined) {
       await wait()
       scrollToDate(dateToJump)
-    } else if (newCount > messagesCount) {
+    } else if (messagesCount > 0 && newCount > messagesCount) {
       await wait()
       scrollToNewMessages()
     }
@@ -566,7 +576,7 @@
       return
     }
 
-    if (shouldScrollToNew) {
+    if (shouldScrollToNew && initialScrollBottom) {
       scrollToBottom()
     }
 
@@ -703,7 +713,7 @@
 {#if isLoading}
   <Loading />
 {:else}
-  <div class="flex-col h-full relative">
+  <div class="flex-col relative" class:h-full={fullHeight}>
     {#if startFromBottom}
       <div class="grower" />
     {/if}

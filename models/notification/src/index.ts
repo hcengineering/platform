@@ -15,7 +15,6 @@
 //
 
 import activity, { type ActivityMessage } from '@hcengineering/activity'
-import chunter from '@hcengineering/chunter'
 import { type PersonSpace } from '@hcengineering/contact'
 import {
   AccountRole,
@@ -390,8 +389,7 @@ export function createModel (builder: Builder): void {
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,
-      component: notification.component.Inbox,
-      aside: chunter.component.ThreadView
+      component: notification.component.Inbox
     },
     notification.app.Inbox
   )

@@ -37,6 +37,7 @@ export { default as TreeSeparator } from './components/navigator/TreeSeparator.s
 export { SpecialView }
 
 export * from './utils'
+export * from './sidebar'
 export default async (): Promise<Resources> => ({
   component: {
     WorkbenchApp,
