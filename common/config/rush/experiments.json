@@ -37,12 +37,6 @@
   "buildCacheWithAllowWarningsInSuccessfulBuild": true,
 
   /**
-   * If true, the phased commands feature is enabled. To use this feature, create a "phased" command
-   * in common/config/rush/command-line.json.
-   */
-  "phasedCommands": true,
-
-  /**
    * If true, perform a clean install after when running `rush install` or `rush update` if the
    * `.npmrc` file has changed since the last install.
    */

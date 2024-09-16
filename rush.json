@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.121.0",
+  "rushVersion": "5.134.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "8.8.0",
+  "pnpmVersion": "8.15.9",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -331,37 +331,6 @@
      */
     "postRushBuild": []
   },
-
-  /**
-   * Installation variants allow you to maintain a parallel set of configuration files that can be
-   * used to build the entire monorepo with an alternate set of dependencies.  For example, suppose
-   * you upgrade all your projects to use a new release of an important framework, but during a transition period
-   * you intend to maintain compatibility with the old release.  In this situation, you probably want your
-   * CI validation to build the entire repo twice: once with the old release, and once with the new release.
-   *
-   * Rush "installation variants" correspond to sets of config files located under this folder:
-   *
-   *   common/config/rush/variants/<variant_name>
-   *
-   * The variant folder can contain an alternate common-versions.json file.  Its "preferredVersions" field can be used
-   * to select older versions of dependencies (within a loose SemVer range specified in your package.json files).
-   * To install a variant, run "rush install --variant <variant_name>".
-   *
-   * For more details and instructions, see this article:  https://rushjs.io/pages/advanced/installation_variants/
-   */
-  "variants": [
-    // {
-    //   /**
-    //    * The folder name for this variant.
-    //    */
-    //   "variantName": "old-sdk",
-    //
-    //   /**
-    //    * An informative description
-    //    */
-    //   "description": "Build this repo using the previous release of the SDK"
-    // }
-  ],
 
   /**
    * Rush can collect anonymous telemetry about everyday developer activity such as
