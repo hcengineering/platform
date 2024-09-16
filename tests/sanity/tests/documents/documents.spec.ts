@@ -102,7 +102,7 @@ test.describe('Documents tests', () => {
       title: `Child Document Title-${generateId()}`,
       space: 'Default'
     }
-    
+
     await test.step('Create a parent document by button "+" in left menu documents list', async () => {
       await leftSideMenuPage.clickDocuments()
       await documentsPage.checkTeamspaceNotExist(parentTeamspace.title)
@@ -111,14 +111,14 @@ test.describe('Documents tests', () => {
       await documentsPage.clickOnButtonCreateDocument()
       await documentsPage.createDocument({ space: parentTeamspace.title, title: parentDocument.title })
     })
-    
+
     await test.step('Create a child document', async () => {
       await documentsPage.clickAddDocumentIntoDocument(parentDocument.title)
       await documentContentPage.updateDocumentTitle(childDocument.title)
       const content = await documentContentPage.addContentToTheNewLine(contentFirst)
       await documentContentPage.checkContent(content)
     })
-    
+
     await test.step('Check nesting of documents', async () => {
       await expect(documentsPage.breadcrumbsByDocumentParent(parentDocument.title)).toBeVisible()
     })
