@@ -45,10 +45,12 @@ function posAtLeftMenuElement (view: EditorView, leftMenuElement: HTMLElement, o
   })
 
   if (position === null) {
-    return -1
+    return 0
   }
 
-  return position.inside >= 0 ? position.inside : position.pos
+  const pos = position.inside >= 0 ? position.inside : position.pos
+  const $pos = view.state.doc.resolve(pos)
+  return $pos.depth === 0 ? $pos.pos : $pos.before($pos.depth)
 }
 
 function LeftMenu (options: LeftMenuOptions): Plugin {
@@ -106,7 +108,6 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
           (val) => {
             if (leftMenuElement === null) return
             const pos = posAtLeftMenuElement(view, leftMenuElement, offsetX)
-
             void options.handleSelect(val, pos, e)
           }
         )
