@@ -259,7 +259,7 @@ test.describe('Content in the Documents tests', () => {
     })
   })
 
-  test.only('Check slash handling', async ({ page }) => {
+  test('Check slash handling', async ({ page }) => {
     await test.step('User can open the popup if types "/" in empty document', async () => {
       await documentContentPage.inputContentParapraph().click()
       await documentContentPage.page.keyboard.type('/')
