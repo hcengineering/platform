@@ -99,31 +99,20 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
   find (ctx: MeasureContext, workspaceId: WorkspaceId): StorageIterator {
     const storageIterator = this.makeStorageIterator(ctx, workspaceId)
 
-    let buffer: ListBlobResult[] = []
-
     return {
-      next: async (ctx) => {
-        const docInfo = await storageIterator.next()
-        if (docInfo !== undefined) {
-          buffer.push(docInfo)
+      next: async () => {
+        const docInfos = await storageIterator.next()
+        if (docInfos.length > 0) {
+          await this.doSyncDocs(ctx, workspaceId, docInfos)
         }
-        if (buffer.length > 50) {
-          await this.doSyncDocs(ctx, workspaceId, buffer)
 
-          buffer = []
-        }
-        if (docInfo !== undefined) {
-          return {
-            hash: docInfo.etag,
-            id: docInfo._id,
-            size: docInfo.size
-          }
-        }
+        return docInfos.map((it) => ({
+          hash: it.etag,
+          id: it._id,
+          size: it.size
+        }))
       },
       close: async (ctx) => {
-        if (buffer.length > 0) {
-          await this.doSyncDocs(ctx, workspaceId, buffer)
-        }
         await storageIterator.close()
       }
     }
@@ -134,22 +123,21 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     let iterator: BlobStorageIterator | undefined
     return {
       next: async () => {
-        while (true) {
-          if (iterator === undefined && adapters.length > 0) {
-            iterator = await (adapters.shift() as StorageAdapter).listStream(ctx, workspaceId)
-          }
-          if (iterator === undefined) {
-            return undefined
-          }
-          const docInfo = await iterator.next()
-          if (docInfo !== undefined) {
-            // We need to check if our stored version is fine
-            return docInfo
-          } else {
-            // We need to take next adapter
-            await iterator.close()
-            iterator = undefined
-          }
+        if (iterator === undefined && adapters.length > 0) {
+          iterator = await (adapters.shift() as StorageAdapter).listStream(ctx, workspaceId)
+        }
+        if (iterator === undefined) {
+          return []
+        }
+        const docInfos = await iterator.next()
+        if (docInfos.length > 0) {
+          // We need to check if our stored version is fine
+          return docInfos
+        } else {
+          // We need to take next adapter
+          await iterator.close()
+          iterator = undefined
+          return []
         }
       },
       close: async () => {
@@ -227,7 +215,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
   async listStream (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<BlobStorageIterator> {
     const data = await this.dbAdapter.findStream<Blob>(ctx, workspaceId, DOMAIN_BLOB, {})
     return {
-      next: async (): Promise<ListBlobResult | undefined> => {
+      next: async (): Promise<ListBlobResult[]> => {
         return await data.next()
       },
       close: async () => {

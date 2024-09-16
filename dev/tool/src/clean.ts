@@ -104,12 +104,15 @@ export async function cleanWorkspace (
     const minioList = await storageAdapter.listStream(ctx, workspaceId)
     const toClean: string[] = []
     while (true) {
-      const mv = await minioList.next()
-      if (mv === undefined) {
+      const mvFiles = await minioList.next()
+      if (mvFiles.length === 0) {
         break
       }
-      if (!files.has(mv._id)) {
-        toClean.push(mv._id)
+
+      for (const mv of mvFiles) {
+        if (!files.has(mv._id)) {
+          toClean.push(mv._id)
+        }
       }
     }
     await storageAdapter.remove(ctx, workspaceId, toClean)
@@ -192,16 +195,18 @@ export async function fixMinioBW (
   const list = await storageService.listStream(ctx, workspaceId)
   let removed = 0
   while (true) {
-    const obj = await list.next()
-    if (obj === undefined) {
+    const objs = await list.next()
+    if (objs.length === 0) {
       break
     }
-    if (obj.modifiedOn < from) continue
-    if ((obj._id as string).includes('%preview%')) {
-      await storageService.remove(ctx, workspaceId, [obj._id])
-      removed++
-      if (removed % 100 === 0) {
-        console.log('removed: ', removed)
+    for (const obj of objs) {
+      if (obj.modifiedOn < from) continue
+      if ((obj._id as string).includes('%preview%')) {
+        await storageService.remove(ctx, workspaceId, [obj._id])
+        removed++
+        if (removed % 100 === 0) {
+          console.log('removed: ', removed)
+        }
       }
     }
   }

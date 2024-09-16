@@ -86,7 +86,7 @@ export class DummyDbAdapter implements DbAdapter {
 
   find (ctx: MeasureContext, domain: Domain): StorageIterator {
     return {
-      next: async () => undefined,
+      next: async () => [],
       close: async () => {}
     }
   }
