@@ -86,9 +86,13 @@ export class DocumentCommentsPage extends DocumentCommonPage {
     // check author
     await expect(comment.locator('div.root div.header > a span[class*="label"]').first()).toHaveText(author)
     // check message
-    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').first()).toHaveText(message)
+    await expect(
+      comment.locator('div.activityMessage div.flex-col div.clear-mins div.text-markup-view > p').first()
+    ).toHaveText(message)
     // check comment
-    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').last()).toHaveText(reply)
+    await expect(
+      comment.locator('div.activityMessage div.flex-col div.clear-mins div.text-markup-view > p').last()
+    ).toHaveText(reply)
   }
 
   async checkCommentInPanelById (
@@ -109,8 +113,12 @@ export class DocumentCommentsPage extends DocumentCommonPage {
     // check author
     await expect(comment.locator('div.root div.header > a span[class*="label"]').first()).toHaveText(author)
     // check message
-    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').first()).toHaveText(message)
+    await expect(
+      comment.locator('div.activityMessage div.flex-col div.clear-mins div.text-markup-view > p').first()
+    ).toHaveText(message)
     // check comment
-    await expect(comment.locator('div.activityMessage div.flex-col div.clear-mins > p').last()).toHaveText(reply)
+    await expect(
+      comment.locator('div.activityMessage div.flex-col div.clear-mins div.text-markup-view > p').last()
+    ).toHaveText(reply)
   }
 }
