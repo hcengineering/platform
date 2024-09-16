@@ -173,7 +173,12 @@ export class BlobClient {
           }
           break
         } catch (err: any) {
-          if (err?.code === 'NoSuchKey') {
+          if (
+            err?.code === 'NoSuchKey' ||
+            err?.code === 'NotFound' ||
+            err?.message === 'No such key' ||
+            err?.Code === 'NoSuchKey'
+          ) {
             ctx.info('No such key', { name })
             return
           }

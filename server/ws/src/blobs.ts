@@ -167,7 +167,12 @@ export async function getFileRange (
           })
         })
       } catch (err: any) {
-        if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
+        if (
+          err?.code === 'NoSuchKey' ||
+          err?.code === 'NotFound' ||
+          err?.message === 'No such key' ||
+          err?.Code === 'NoSuchKey'
+        ) {
           ctx.info('No such key', { workspace: workspace.name, uuid })
           res.cork(() => {
             res.status(404)
