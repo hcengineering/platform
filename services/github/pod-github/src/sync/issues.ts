@@ -325,11 +325,13 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     derivedClient: TxOperations
   ): Promise<DocumentUpdate<DocSyncInfo> | undefined> {
     const container = await this.provider.getContainer(info.space)
+    if (container?.container === undefined) {
+      return { needSync: githubSyncVersion }
+    }
     if (
-      container?.container === undefined ||
-      ((container.project.projectNodeId === undefined ||
+      (container.project.projectNodeId === undefined ||
         !container.container.projectStructure.has(container.project._id)) &&
-        syncConfig.MainProject)
+      syncConfig.MainProject
     ) {
       this.ctx.error('Not syncing no structure', { url: info.url })
       return { needSync: '' }
