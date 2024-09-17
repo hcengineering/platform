@@ -123,6 +123,9 @@
     "AndMore": "e mais {count}",
     "IsTyping": "está a escrever...",
     "ThreadIn": "Conversa em cadeia em {name}",
-    "TranslateMessage": "Traduzir mensagem"
+    "TranslateMessage": "Traduzir mensagem",
+    "Translate": "Traduzir",
+    "ShowOriginal": "Mostrar original",
+    "Translating": "A traduzir..."
   }
 }

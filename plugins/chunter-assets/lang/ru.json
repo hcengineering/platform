@@ -123,6 +123,9 @@
     "AndMore": "и еще {count}",
     "IsTyping": "{count, plural, =1 {печатает} other {печатают}}...",
     "ThreadIn": "Обсуждение в {name}",
-    "TranslateMessage": "Перевести сообщение"
+    "TranslateMessage": "Перевести сообщение",
+    "Translate": "Перевести",
+    "ShowOriginal": "Показать оригинал",
+    "Translating": "Перевод..."
   }
 }

@@ -21,6 +21,7 @@ import { generateToken } from '@hcengineering/server-token'
 import { WorkspaceLoginInfo } from '@hcengineering/account'
 import OpenAI from 'openai'
 import { encoding_for_model } from 'tiktoken'
+import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
 
 import { WorkspaceClient } from './workspaceClient'
 import { assignBotToWorkspace, getWorkspaceInfo } from './account'
@@ -215,25 +216,28 @@ export class AIBotController {
   }
 
   async translate (req: TranslateRequest): Promise<TranslateResponse> {
-    // const response = await openai.chat.completions.create({
-    //   model: "gpt-4o",
-    //   messages: [
-    //     {
-    //       "role": "system",
-    //       "content": "You will be provided with a sentence in English, and your task is to translate it into French."
-    //     },
-    //     {
-    //       "role": "user",
-    //       "content": "My name is Jane. What is yours?"
-    //     }
-    //   ],
-    //   temperature: 0.7,
-    //   max_tokens: 64,
-    //   top_p: 1,
-    // });
+    const html = markupToHTML(req.text)
+    const start = Date.now()
+    const response = await this.aiClient.chat.completions.create({
+      model: config.OpenAIModel,
+      messages: [
+        {
+          role: 'system',
+          content: `Your task is to translate the text into ${req.lang} while preserving the html structure and metadata`
+        },
+        {
+          role: 'user',
+          content: html
+        }
+      ]
+    })
+    const end = Date.now()
+    this.ctx.info('Translation time: ', { time: end - start })
+    const result = response.choices[0].message.content
+    const text = result !== null ? htmlToMarkup(result) : req.text
     return {
-      text: 'translated text',
-      lang: 'en'
+      text,
+      lang: req.lang
     }
   }
 }

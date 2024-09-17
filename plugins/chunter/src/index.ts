@@ -206,7 +206,10 @@ export default plugin(chunterId, {
     AndMore: '' as IntlString,
     IsTyping: '' as IntlString,
     ThreadIn: '' as IntlString,
-    TranslateMessage: '' as IntlString
+    TranslateMessage: '' as IntlString,
+    Translate: '' as IntlString,
+    ShowOriginal: '' as IntlString,
+    Translating: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
@@ -224,6 +227,7 @@ export default plugin(chunterId, {
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
     TranslateMessage: '' as Ref<Action>,
+    ShowOriginalMessage: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>
   },
   function: {

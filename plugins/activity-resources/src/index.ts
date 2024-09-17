@@ -41,6 +41,7 @@ import {
   shouldScrollToActivity
 } from './utils'
 
+export * from './types'
 export * from './activity'
 export * from './utils'
 export * from './activityMessagesUtils'

@@ -12,15 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { type IntlString } from '@hcengineering/platform'
 
-import { Markup } from '@hcengineering/core'
-
-export interface TranslateRequest {
-  text: Markup
-  lang: string
-}
-
-export interface TranslateResponse {
-  text: Markup
-  lang: string
+export interface MessageInlineAction {
+  label: IntlString
+  onClick?: () => Promise<void>
 }

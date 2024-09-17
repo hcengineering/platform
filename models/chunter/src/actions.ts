@@ -109,7 +109,7 @@ function defineMessageActions (builder: Builder): void {
     builder,
     {
       action: chunter.actionImpl.TranslateMessage,
-      label: chunter.string.TranslateMessage,
+      label: chunter.string.Translate,
       icon: view.icon.Translate,
       input: 'focus',
       category: chunter.category.Chunter,
@@ -121,6 +121,23 @@ function defineMessageActions (builder: Builder): void {
       }
     },
     chunter.action.TranslateMessage
+  )
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.ShowOriginalMessage,
+      label: chunter.string.ShowOriginal,
+      icon: view.icon.Undo,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.ChatMessage,
+      inline: true,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    chunter.action.ShowOriginalMessage
   )
 }
 

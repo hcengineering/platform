@@ -123,6 +123,9 @@
     "AndMore": "and {count} more",
     "IsTyping": "{count, plural, =1 {is} other {are}} typing...",
     "ThreadIn": "thread in {name}",
-    "TranslateMessage": "Translate message"
+    "TranslateMessage": "Translate message",
+    "Translate": "Translate",
+    "ShowOriginal": "Show original",
+    "Translating": "Translating..."
   }
 }

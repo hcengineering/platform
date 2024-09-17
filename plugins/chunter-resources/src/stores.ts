@@ -13,14 +13,16 @@
 // limitations under the License.
 //
 
-import { Markup } from '@hcengineering/core'
+import { writable } from 'svelte/store'
+import { type ChatMessage } from '@hcengineering/chunter'
+import { type Markup, type Ref } from '@hcengineering/core'
+import { languageStore } from '@hcengineering/ui'
 
-export interface TranslateRequest {
-  text: Markup
-  lang: string
-}
+export const translatingMessagesStore = writable<Set<Ref<ChatMessage>>>(new Set())
+export const translatedMessagesStore = writable<Map<Ref<ChatMessage>, Markup>>(new Map())
+export const shownTranslatedMessagesStore = writable<Set<Ref<ChatMessage>>>(new Set())
 
-export interface TranslateResponse {
-  text: Markup
-  lang: string
-}
+languageStore.subscribe(() => {
+  translatedMessagesStore.set(new Map())
+  shownTranslatedMessagesStore.set(new Set())
+})

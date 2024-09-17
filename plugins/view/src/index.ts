@@ -253,7 +253,8 @@ const view = plugin(viewId, {
     Copy: '' as Asset,
     TodoList: '' as Asset,
     DetailsFilled: '' as Asset,
-    Translate: '' as Asset
+    Translate: '' as Asset,
+    Undo: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

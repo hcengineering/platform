@@ -53,7 +53,8 @@ export default mergeIds(chunterId, chunter, {
     ReplyToThread: '' as ViewAction,
     OpenInSidebar: '' as ViewAction,
     OpenInSidebarTab: '' as ViewAction,
-    TranslateMessage: '' as ViewAction
+    TranslateMessage: '' as ViewAction,
+    ShowOriginalMessage: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>

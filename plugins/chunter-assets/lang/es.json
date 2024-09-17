@@ -123,6 +123,9 @@
     "AndMore": "y {count} más",
     "IsTyping": "está escribiendo...",
     "ThreadIn": "hilo en {name}",
-    "TranslateMessage": "Traducir mensaje"
+    "TranslateMessage": "Traducir mensaje",
+    "Translate": "Traducir",
+    "ShowOriginal": "Mostrar original",
+    "Translating": "Traduciendo..."
   }
 }

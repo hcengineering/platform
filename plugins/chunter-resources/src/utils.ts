@@ -43,7 +43,7 @@ import {
 } from '@hcengineering/notification-resources'
 import { translate, type Asset } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnySvelteComponent, languageStore } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
 import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
@@ -52,6 +52,7 @@ import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import { resetChunterLocIfEqual } from './navigation'
 import chunter from './plugin'
+import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from './stores'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -531,6 +532,32 @@ export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: 
 }
 
 export async function translateMessage (message: ChatMessage): Promise<void> {
-  const response = await aiTranslate(message.message, 'en')
-  console.log(response)
+  if (get(translatingMessagesStore).has(message._id)) {
+    return
+  }
+
+  if (get(translatedMessagesStore).has(message._id)) {
+    shownTranslatedMessagesStore.update((store) => store.add(message._id))
+    return
+  }
+
+  translatingMessagesStore.update((store) => store.add(message._id))
+  const response = await aiTranslate(message.message, get(languageStore))
+
+  if (response !== undefined) {
+    translatedMessagesStore.update((store) => store.set(message._id, response.text))
+  }
+
+  translatingMessagesStore.update((store) => {
+    store.delete(message._id)
+    return store
+  })
+  shownTranslatedMessagesStore.update((store) => store.add(message._id))
+}
+
+export async function showOriginalMessage (message: ChatMessage): Promise<void> {
+  shownTranslatedMessagesStore.update((store) => {
+    store.delete(message._id)
+    return store
+  })
 }
