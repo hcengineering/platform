@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import {
-  type Branding,
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
-  type WorkspaceIdWithUrl,
   Hierarchy,
   ModelDb,
-  type MeasureContext
+  type Branding,
+  type MeasureContext,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
@@ -35,8 +35,8 @@ import {
   TriggersMiddleware,
   TxMiddleware
 } from '@hcengineering/middleware'
-import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
+import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import {
   buildStorageFromConfig,
   createNullAdapter,
@@ -49,18 +49,18 @@ import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
   createPipeline,
-  type Middleware,
-  type DbAdapterFactory,
+  DummyFullTextAdapter,
   FullTextMiddleware,
+  type AggregatorStorageAdapter,
+  type DbAdapterFactory,
   type DbConfiguration,
+  type Middleware,
   type MiddlewareCreator,
+  type Pipeline,
   type PipelineContext,
   type PipelineFactory,
   type StorageAdapter,
-  type Pipeline,
-  type StorageConfiguration,
-  DummyFullTextAdapter,
-  type AggregatorStorageAdapter
+  type StorageConfiguration
 } from '@hcengineering/server-core'
 import { createIndexStages } from './indexing'
 
@@ -200,9 +200,14 @@ export async function getServerPipeline (
     }
   )
 
-  return {
-    pipeline: await pipelineFactory(ctx, wsUrl, true, () => {}, null),
-    storageAdapter
+  try {
+    return {
+      pipeline: await pipelineFactory(ctx, wsUrl, true, () => {}, null),
+      storageAdapter
+    }
+  } catch (err: any) {
+    await storageAdapter.close()
+    throw err
   }
 }
 

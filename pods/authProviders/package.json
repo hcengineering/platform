@@ -46,7 +46,7 @@
     "@types/querystringify": "^2.0.2"
   },
   "dependencies": {
-    "mongodb": "^6.8.0",
+    "mongodb": "^6.9.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/account": "^0.6.0",
     "passport-custom": "~1.1.1",

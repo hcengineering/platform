@@ -72,7 +72,9 @@ export class FullTextIndex implements WithFind {
   }
 
   async close (): Promise<void> {
-    await this.indexer.cancel()
+    if (!this.upgrade) {
+      await this.indexer.cancel()
+    }
   }
 
   async tx (ctx: MeasureContext, txes: Tx[]): Promise<TxResult> {

@@ -81,7 +81,10 @@ class MongoClientReferenceImpl {
       }
       this.onclose()
       void (async () => {
-        const cl = await this.client
+        let cl = this.client
+        if (cl instanceof Promise) {
+          cl = await cl
+        }
         await cl.close()
       })()
     }
