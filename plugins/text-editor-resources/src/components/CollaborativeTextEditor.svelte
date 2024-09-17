@@ -320,7 +320,9 @@
   }
 
   async function handleLeftMenuClick (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
-    editor.commands.focus(pos, { scrollIntoView: false })
+    if (id !== 'table') {
+      editor.commands.focus(pos, { scrollIntoView: false })
+    }
 
     switch (id) {
       case 'image':
