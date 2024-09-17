@@ -4,35 +4,38 @@ import { join } from 'path'
 export class VisualCheck {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     this.page = page
   }
 
-  async compareScreenshot(selector: string | null, screenshotName: string): Promise<void> {
-    let screenshot;
+  async compareScreenshot (selector: string | null, screenshotName: string): Promise<void> {
+    let screenshot
 
     if (selector) {
-      const element = await this.page.locator(selector);
-      await expect(element).toBeVisible();
-      screenshot = await element.screenshot();
+      const element = await this.page.locator(selector)
+      await expect(element).toBeVisible()
+      screenshot = await element.screenshot()
     } else {
-      screenshot = await this.page.screenshot();
+      screenshot = await this.page.screenshot()
     }
 
     // Compare the screenshot with the stored snapshot
-    expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`));
+    expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`))
   }
 
-  async comparePDFPreview(screenshotName: string): Promise<void> {
+  async comparePDFPreview (screenshotName: string): Promise<void> {
     // Wait for the iframe to be present in the DOM
     const iframe = this.page.locator('iframe.pdfviewer-content')
     await iframe.waitFor({ state: 'attached', timeout: 10000 })
 
     // Wait for the iframe to finish loading
-    await this.page.waitForFunction(() => {
-      const iframe = document.querySelector('iframe.pdfviewer-content') as HTMLIFrameElement
-      return iframe && iframe.contentDocument && iframe.contentDocument.readyState === 'complete'
-    }, { timeout: 30000 })
+    await this.page.waitForFunction(
+      () => {
+        const iframe = document.querySelector('iframe.pdfviewer-content') as HTMLIFrameElement
+        return iframe && iframe.contentDocument && iframe.contentDocument.readyState === 'complete'
+      },
+      { timeout: 30000 }
+    )
 
     await this.page.waitForTimeout(15000)
 
@@ -40,7 +43,7 @@ export class VisualCheck {
     await expect(pdfPreviewModal).toBeVisible()
 
     const screenshot = await this.page.screenshot()
-    
+
     expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`))
   }
 }
