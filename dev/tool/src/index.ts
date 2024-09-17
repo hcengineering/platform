@@ -524,7 +524,8 @@ export function devTool (
         await updateWorkspace(db, info, {
           mode: 'active',
           progress: 100,
-          version
+          version,
+          attempts: 0
         })
 
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
@@ -572,7 +573,8 @@ export function devTool (
             await updateWorkspace(db, ws, {
               mode: 'active',
               progress: 100,
-              version
+              version,
+              attempts: 0
             })
           } catch (err: any) {
             console.error(err)
@@ -1586,6 +1588,25 @@ export function devTool (
         await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
         await testFindAll(endpoint, ws, email)
         await dropWorkspace(toolCtx, db, null, ws)
+      })
+    })
+
+  program
+    .command('reset-ws-attempts <name>')
+    .description('Reset workspace creation/upgrade attempts counter')
+    .action(async (workspace) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const info = await getWorkspaceById(db, workspace)
+        if (info === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+
+        await updateWorkspace(db, info, {
+          attempts: 0
+        })
+
+        console.log('Attempts counter for workspace', workspace, 'has been reset')
       })
     })
 
