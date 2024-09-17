@@ -239,9 +239,9 @@ export class S3Service implements StorageAdapter {
 
     const rootPrefix = this.rootPrefix(workspaceId)
     return {
-      next: async (): Promise<ListBlobResult | undefined> => {
+      next: async (): Promise<ListBlobResult[]> => {
         try {
-          if (hasMore && buffer.length === 0) {
+          while (hasMore && buffer.length < 50) {
             const res = await this.client.listObjectsV2({
               Bucket: this.getBucketId(workspaceId),
               Prefix: rootPrefix ?? '',
@@ -271,12 +271,7 @@ export class S3Service implements StorageAdapter {
         } catch (err: any) {
           ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name })
         }
-        if (buffer.length > 0) {
-          return buffer.shift()
-        }
-        if (!hasMore) {
-          return undefined
-        }
+        return buffer.splice(0, 50)
       },
       close: async () => {}
     }

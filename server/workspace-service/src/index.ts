@@ -25,6 +25,7 @@ import {
 import { type MigrateOperation } from '@hcengineering/model'
 import { setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
+import serverNotification from '@hcengineering/server-notification'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import { WorkspaceWorker } from './service'
@@ -99,6 +100,8 @@ export function serveWorkspaceAccount (
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
   }
   setMetadata(serverClientPlugin.metadata.UserAgent, 'WorkspaceService')
+
+  setMetadata(serverNotification.metadata.InboxOnlyNotifications, true)
 
   const worker = new WorkspaceWorker(
     version,

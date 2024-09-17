@@ -151,7 +151,8 @@ export default plugin(serverNotificationId, {
   metadata: {
     SesUrl: '' as Metadata<string>,
     PushPrivateKey: '' as Metadata<string>,
-    PushSubject: '' as Metadata<string>
+    PushSubject: '' as Metadata<string>,
+    InboxOnlyNotifications: '' as Metadata<boolean>
   },
   class: {
     NotificationProviderResources: '' as Ref<Class<NotificationProviderResources>>

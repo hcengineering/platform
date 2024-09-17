@@ -110,7 +110,6 @@ services:
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
-      - NOTIFY_INBOX_ONLY=true
       # - PARALLEL=2
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding

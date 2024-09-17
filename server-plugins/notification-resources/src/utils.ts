@@ -200,7 +200,7 @@ export async function isShouldNotifyTx (
   const result = new Map<Ref<NotificationProvider>, BaseNotificationType[]>()
   let providers: NotificationProvider[] = control.modelDb.findAllSync(notification.class.NotificationProvider, {})
 
-  if (process.env.NOTIFY_INBOX_ONLY === 'true') {
+  if (getMetadata(serverNotification.metadata.InboxOnlyNotifications) === true) {
     providers = providers.filter((it) => it._id === notification.providers.InboxNotificationProvider)
   }
 
