@@ -28,4 +28,6 @@
   }
 </script>
 
-<Node {node} {preview} />
+<div class="text-markup-view">
+  <Node {node} {preview} />
+</div>

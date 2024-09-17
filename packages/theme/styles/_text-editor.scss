@@ -7,7 +7,8 @@
   }
 }
 
-.text-editor-view {
+.text-editor-view,
+.text-markup-view {
   // overflow-y: auto;
   color: var(--theme-text-primary-color);
   margin: 0.25rem 0;
