@@ -111,7 +111,7 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { moveFromMongoToPG } from './db'
+import { moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { importNotion } from './notion'
@@ -1521,15 +1521,32 @@ export function devTool (
       })
     })
 
-  program.command('move-to-pg').action(async () => {
+  program.command('move-to-pg <region>').action(async (region: string) => {
     const { mongodbUri, dbUrl } = prepareTools()
     await withDatabase(mongodbUri, async (db) => {
       const workspaces = await listWorkspacesRaw(db)
+      workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
       await moveFromMongoToPG(
+        db,
         mongodbUri,
         dbUrl,
-        workspaces.map((it) => getWorkspaceId(it.workspace))
+        workspaces.filter((p) => p.region !== region),
+        region
       )
+    })
+  })
+
+  program.command('move-workspace-to-pg <workspace> <region>').action(async (workspace: string, region: string) => {
+    const { mongodbUri, dbUrl } = prepareTools()
+    await withDatabase(mongodbUri, async (db) => {
+      const workspaceInfo = await getWorkspaceById(db, workspace)
+      if (workspaceInfo === null) {
+        throw new Error(`workspace ${workspace} not found`)
+      }
+      if (workspaceInfo.region === region) {
+        throw new Error(`workspace ${workspace} is already migrated`)
+      }
+      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
     })
   })
 
