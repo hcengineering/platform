@@ -128,10 +128,9 @@
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
-        "MODEL_VERSION": "v0.6.286",
+        "MODEL_VERSION": "v0.6.286"
         // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
         // "INIT_WORKSPACE": "onboarding",
-        "NOTIFY_INBOX_ONLY": "true"
       },
       "runtimeVersion": "20",
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],

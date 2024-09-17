@@ -70,7 +70,6 @@ services:
       - MODEL_ENABLED=*
       - ACCOUNTS_URL=http://account:3003
       - BRANDING_PATH=/var/cfg/branding.json
-      - NOTIFY_INBOX_ONLY=true
     restart: unless-stopped
   front:
     image: hardcoreeng/front
