@@ -86,7 +86,7 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceDB, shutdown } from '@hcengineering/mongo'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -205,6 +205,7 @@ export function devTool (
     }
     client.close()
     console.log(`closing database connection to '${uri}'...`)
+    await shutdown()
   }
 
   async function withStorage (mongodbUri: string, f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
@@ -550,13 +551,18 @@ export function devTool (
         const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         const measureCtx = new MeasureMetricsContext('upgrade', {})
+        const pos = workspaces.findIndex((it) => it.workspace === 'dummyws5')
+        if (pos !== -1) {
+          workspaces.splice(0, pos - 1)
+        }
 
         for (const ws of workspaces) {
-          try {
-            const logger = cmd.console
-              ? consoleModelLogger
-              : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
+          console.warn('UPGRADING', ws.workspaceName)
+          const logger = cmd.console
+            ? consoleModelLogger
+            : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
 
+          try {
             await upgradeWorkspace(
               measureCtx,
               version,
@@ -577,10 +583,10 @@ export function devTool (
               attempts: 0
             })
           } catch (err: any) {
-            console.error(err)
+            toolCtx.error('failed to upgrade', { err, workspace: ws.workspace, workspaceName: ws.workspaceName })
+            continue
           }
         }
-
         console.log('upgrade done')
       })
     })

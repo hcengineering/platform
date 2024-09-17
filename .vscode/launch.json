@@ -242,7 +242,7 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "create-workspace", "sanity-ws", "-w sanity-ws"],
+      "args": ["src/__start.ts", "upgrade", "--force"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",

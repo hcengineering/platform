@@ -141,10 +141,9 @@ export class MeasureMetricsContext implements MeasureContext {
       const value = op(c)
       if (value != null && value instanceof Promise) {
         needFinally = false
-        void value.finally(() => {
+        return value.finally(() => {
           c.end()
         })
-        return value
       } else {
         return Promise.resolve(value)
       }
