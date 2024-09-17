@@ -41,6 +41,6 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/server-core": "^0.6.1",
     "base64-js": "^1.5.1",
-    "yjs": "^13.5.52"
+    "yjs": "^13.6.19"
   }
 }

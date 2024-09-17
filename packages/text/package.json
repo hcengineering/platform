@@ -64,8 +64,8 @@
     "prosemirror-codemark": "^0.4.2",
     "markdown-it": "^14.0.0",
     "fast-equals": "^5.0.1",
-    "yjs": "^13.5.52",
-    "y-prosemirror": "^1.2.1"
+    "yjs": "^13.6.19",
+    "y-prosemirror": "^1.2.12"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
