@@ -18,6 +18,8 @@ import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ChatMessage } from '@hcengineering/chunter'
 
+export * from './types'
+
 export const aiBotId = 'ai-bot' as Plugin
 
 export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'

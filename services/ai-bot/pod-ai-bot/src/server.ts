@@ -17,10 +17,10 @@ import { Token, decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { IncomingHttpHeaders, type Server } from 'http'
+import { TranslateRequest } from '@hcengineering/ai-bot'
 
 import { ApiError } from './error'
 import { AIBotController } from './controller'
-import { TranslateRequest } from './types'
 
 const extractCookieToken = (cookie?: string): Token | null => {
   if (cookie === undefined || cookie === null) {

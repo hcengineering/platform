@@ -59,7 +59,7 @@ import { documentsId } from '@hcengineering/controlled-documents'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics-collector'
 import { uploaderId } from '@hcengineering/uploader'
-import aiBot from '@hcengineering/ai-bot'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
@@ -368,6 +368,7 @@ export async function configurePlatform() {
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
   addLocation(desktopPreferencesId, () => import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources'))
   addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
+  addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
 
   addLocation(trackerId, () => import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
   addLocation(boardId, () => import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))

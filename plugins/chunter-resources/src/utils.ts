@@ -46,6 +46,7 @@ import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
+import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
@@ -529,4 +530,7 @@ export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: 
   return getClient().getHierarchy().isDerived(_class, core.class.Space) ? (_id as Ref<Space>) : space
 }
 
-export async function translateMessage (message: ChatMessage): Promise<void> {}
+export async function translateMessage (message: ChatMessage): Promise<void> {
+  const response = await aiTranslate(message.message, 'en')
+  console.log(response)
+}

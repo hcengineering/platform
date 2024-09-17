@@ -14,7 +14,7 @@
 //
 
 import { MeasureContext, systemAccountEmail, isWorkspaceCreating } from '@hcengineering/core'
-import { aiBotAccountEmail, AIBotTransferEvent } from '@hcengineering/ai-bot'
+import { aiBotAccountEmail, AIBotTransferEvent, TranslateResponse, TranslateRequest } from '@hcengineering/ai-bot'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
@@ -26,7 +26,6 @@ import { WorkspaceClient } from './workspaceClient'
 import { assignBotToWorkspace, getWorkspaceInfo } from './account'
 import config from './config'
 import { DbStorage } from './storage'
-import { TranslateRequest, TranslateResponse } from './types'
 
 const POLLING_INTERVAL_MS = 5 * 1000 // 5 seconds
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
@@ -216,6 +215,22 @@ export class AIBotController {
   }
 
   async translate (req: TranslateRequest): Promise<TranslateResponse> {
+    // const response = await openai.chat.completions.create({
+    //   model: "gpt-4o",
+    //   messages: [
+    //     {
+    //       "role": "system",
+    //       "content": "You will be provided with a sentence in English, and your task is to translate it into French."
+    //     },
+    //     {
+    //       "role": "user",
+    //       "content": "My name is Jane. What is yours?"
+    //     }
+    //   ],
+    //   temperature: 0.7,
+    //   max_tokens: 64,
+    //   top_p: 1,
+    // });
     return {
       text: 'translated text',
       lang: 'en'

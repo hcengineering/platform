@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2024 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,17 +13,7 @@
 // limitations under the License.
 //
 
-import { ObjectId } from 'mongodb'
-import { Account, Class, Doc, Ref } from '@hcengineering/core'
+import { mergeIds } from '@hcengineering/platform'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 
-export interface HistoryRecord {
-  _id?: ObjectId
-  workspace: string
-  message: string
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  role: string
-  user: Ref<Account>
-  tokens: number
-  timestamp: number
-}
+export default mergeIds(aiBotId, aiBot, {})

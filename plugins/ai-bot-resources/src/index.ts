@@ -13,17 +13,8 @@
 // limitations under the License.
 //
 
-import { ObjectId } from 'mongodb'
-import { Account, Class, Doc, Ref } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 
-export interface HistoryRecord {
-  _id?: ObjectId
-  workspace: string
-  message: string
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  role: string
-  user: Ref<Account>
-  tokens: number
-  timestamp: number
-}
+export * from './utils'
+
+export default async (): Promise<Resources> => ({})

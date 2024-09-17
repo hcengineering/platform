@@ -52,7 +52,7 @@ import { productsId } from '@hcengineering/products'
 import { questionsId } from '@hcengineering/questions'
 import { trainingId } from '@hcengineering/training'
 import { documentsId } from '@hcengineering/controlled-documents'
-import aiBot from '@hcengineering/ai-bot'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -277,6 +277,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(tagsId, async () => await import('@hcengineering/tags-resources'))
   addLocation(calendarId, async () => await import('@hcengineering/calendar-resources'))
   addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
+  addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
 
   addLocation(trackerId, async () => await import('@hcengineering/tracker-resources'))
   addLocation(boardId, async () => await import('@hcengineering/board-resources'))
