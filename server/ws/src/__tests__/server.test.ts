@@ -130,7 +130,7 @@ describe('server', () => {
     })
     conn.on('message', (msg: string) => {
       const resp: Response<any> = handler.readResponse(msg, false)
-      expect(resp.result?.msg === 'hello')
+      expect(resp.result === 'hello')
       expect(resp.error?.code).toBe(UNAUTHORIZED.code)
       conn.close(1000)
     })
@@ -242,7 +242,7 @@ describe('server', () => {
               console.log('resp:', msg.toString())
               const parsedMsg: Response<any> = handler.readResponse(msg.toString(), false) // Hello
               if (!helloReceived) {
-                expect(parsedMsg.result.msg === 'hello')
+                expect(parsedMsg.result === 'hello')
                 helloReceived = true
                 return
               }

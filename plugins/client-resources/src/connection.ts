@@ -255,8 +255,9 @@ class Connection implements ClientConnection {
         this.delay = 3
         return
       }
-      if (resp.result?.msg === 'hello') {
-        if ((resp as HelloResponse).binary) {
+      if (resp.result === 'hello') {
+        const helloResp = resp as HelloResponse
+        if (helloResp.binary) {
           this.binaryMode = true
         }
 
@@ -264,7 +265,7 @@ class Connection implements ClientConnection {
         clearTimeout(this.dialTimer)
         this.dialTimer = null
 
-        const serverVersion = resp.result.serverVersion
+        const serverVersion = helloResp.serverVersion
         console.log('Connected to server:', serverVersion)
 
         if (this.opt?.onHello !== undefined && !this.opt.onHello(serverVersion)) {

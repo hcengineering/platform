@@ -913,12 +913,10 @@ class TSessionManager implements SessionManager {
           }
           const helloResponse: HelloResponse = {
             id: -1,
-            result: {
-              msg: 'hello',
-              serverVersion: this.serverVersion
-            },
+            result: 'hello',
             binary: service.binaryMode,
-            reconnect
+            reconnect,
+            serverVersion: this.serverVersion
           }
           ws.send(requestCtx, helloResponse, false, false)
           return

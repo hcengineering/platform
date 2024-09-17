@@ -56,7 +56,7 @@ export enum ClientSocketReadyState {
 }
 
 export interface ClientFactoryOptions {
-  onHello?: (serverVersion: string) => boolean
+  onHello?: (serverVersion?: string) => boolean
   onUpgrade?: () => void
   onUnauthorized?: () => void
   onConnect?: (event: ClientConnectEvent, data: any) => void

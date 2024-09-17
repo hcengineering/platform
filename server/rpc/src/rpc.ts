@@ -45,6 +45,7 @@ export interface HelloRequest extends Request<any[]> {
 export interface HelloResponse extends Response<any> {
   binary: boolean
   reconnect?: boolean
+  serverVersion: string
 }
 
 function replacer (key: string, value: any): any {

@@ -153,9 +153,14 @@ export async function connect (title: string): Promise<Client | undefined> {
     {},
     async (ctx) =>
       await clientFactory(token, endpoint, {
-        onHello: (serverVersion: string) => {
+        onHello: (serverVersion?: string) => {
           const frontVersion = getMetadata(presentation.metadata.FrontVersion)
-          if (serverVersion !== '' && frontVersion !== undefined && frontVersion !== serverVersion) {
+          if (
+            serverVersion !== undefined &&
+            serverVersion !== '' &&
+            frontVersion !== undefined &&
+            frontVersion !== serverVersion
+          ) {
             const reloaded = localStorage.getItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`)
 
             if (reloaded === null) {
