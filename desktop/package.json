@@ -201,6 +201,7 @@
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",
     "@hcengineering/analytics-collector-resources": "^0.6.0",
+    "@hcengineering/ai-bot": "^0.6.0",
     "electron-squirrel-startup": "~1.0.0",
     "dotenv": "~16.0.0",
     "electron-context-menu": "^4.0.1",

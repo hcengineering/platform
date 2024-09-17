@@ -26,6 +26,7 @@ import { WorkspaceClient } from './workspaceClient'
 import { assignBotToWorkspace, getWorkspaceInfo } from './account'
 import config from './config'
 import { DbStorage } from './storage'
+import { TranslateRequest, TranslateResponse } from './types'
 
 const POLLING_INTERVAL_MS = 5 * 1000 // 5 seconds
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
@@ -212,6 +213,13 @@ export class AIBotController {
 
   async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
     await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
+  }
+
+  async translate (req: TranslateRequest): Promise<TranslateResponse> {
+    return {
+      text: 'translated text',
+      lang: 'en'
+    }
   }
 }
 

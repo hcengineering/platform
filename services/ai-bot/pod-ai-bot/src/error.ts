@@ -13,27 +13,27 @@
 // limitations under the License.
 //
 
-import { ObjectId } from 'mongodb'
-import { Account, Class, Doc, Ref } from '@hcengineering/core'
+const generateMessage = (code: number): string => {
+  if (code === 401) {
+    return 'Unauthorized'
+  }
 
-export interface HistoryRecord {
-  _id?: ObjectId
-  workspace: string
-  message: string
-  objectId: Ref<Doc>
-  objectClass: Ref<Class<Doc>>
-  role: string
-  user: Ref<Account>
-  tokens: number
-  timestamp: number
+  if (code === 404) {
+    return 'Not Found'
+  }
+
+  if (code === 400) {
+    return 'Bad Request'
+  }
+
+  return 'Error'
 }
 
-export interface TranslateRequest {
-  text: string
-  lang: string
-}
+export class ApiError extends Error {
+  readonly code: number
 
-export interface TranslateResponse {
-  text: string
-  lang: string
+  constructor (code: number, message?: string) {
+    super(message ?? generateMessage(code))
+    this.code = code
+  }
 }

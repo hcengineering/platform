@@ -231,6 +231,7 @@
     "@hcengineering/products": "^0.1.0",
     "@hcengineering/products-assets": "^0.1.0",
     "@hcengineering/products-resources": "^0.1.0",
+    "@hcengineering/ai-bot": "^0.6.0",
     "@sentry/svelte": "~7.101.0",
     "posthog-js": "~1.122.0"
   }

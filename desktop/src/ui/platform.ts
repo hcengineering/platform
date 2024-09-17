@@ -52,6 +52,7 @@ import { productsId } from '@hcengineering/products'
 import { questionsId } from '@hcengineering/questions'
 import { trainingId } from '@hcengineering/training'
 import { documentsId } from '@hcengineering/controlled-documents'
+import aiBot from '@hcengineering/ai-bot'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -234,6 +235,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
+  setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
 
   const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
 

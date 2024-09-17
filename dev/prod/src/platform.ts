@@ -59,6 +59,7 @@ import { documentsId } from '@hcengineering/controlled-documents'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import analyticsCollector, {analyticsCollectorId} from '@hcengineering/analytics-collector'
 import { uploaderId } from '@hcengineering/uploader'
+import aiBot from '@hcengineering/ai-bot'
 
 import { bitrixId } from '@hcengineering/bitrix'
 
@@ -144,6 +145,7 @@ export interface Config {
   ANALYTICS_COLLECTOR_URL?:string
   BRANDING_URL?: string
   TELEGRAM_BOT_URL?: string
+  AI_URL?:string
 
   // Could be defined for dev environment
   FRONT_URL?: string
@@ -307,6 +309,7 @@ export async function configurePlatform() {
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
+  setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
 
   setMetadata(github.metadata.GithubApplication, config.GITHUB_APP ?? '')
   setMetadata(github.metadata.GithubClientID, config.GITHUB_CLIENTID ?? '')
