@@ -1521,7 +1521,7 @@ export function devTool (
       })
     })
 
-  program.command('move-to-pg').action(async () => {
+  program.command('move-to-pg <region>').action(async (region: string) => {
     const { mongodbUri, dbUrl } = prepareTools()
     await withDatabase(mongodbUri, async (db) => {
       const workspaces = await listWorkspacesRaw(db)
@@ -1530,22 +1530,23 @@ export function devTool (
         db,
         mongodbUri,
         dbUrl,
-        workspaces.filter((p) => p.region !== 'new')
+        workspaces.filter((p) => p.region !== region),
+        region
       )
     })
   })
 
-  program.command('move-workspace-to-pg <workspace>').action(async (workspace: string) => {
+  program.command('move-workspace-to-pg <workspace> <region>').action(async (workspace: string, region: string) => {
     const { mongodbUri, dbUrl } = prepareTools()
     await withDatabase(mongodbUri, async (db) => {
       const workspaceInfo = await getWorkspaceById(db, workspace)
       if (workspaceInfo === null) {
         throw new Error(`workspace ${workspace} not found`)
       }
-      if (workspaceInfo.region === 'new') {
+      if (workspaceInfo.region === region) {
         throw new Error(`workspace ${workspace} is already migrated`)
       }
-      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo)
+      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
     })
   })
 

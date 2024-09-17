@@ -12,7 +12,8 @@ export async function moveFromMongoToPG (
   accountDb: Db,
   mongoUrl: string,
   dbUrl: string | undefined,
-  workspaces: Workspace[]
+  workspaces: Workspace[],
+  region: string
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
@@ -25,7 +26,7 @@ export async function moveFromMongoToPG (
   for (let index = 0; index < workspaces.length; index++) {
     const ws = workspaces[index]
     try {
-      await moveWorkspace(accountDb, mongo, pgClient, ws)
+      await moveWorkspace(accountDb, mongo, pgClient, ws, region)
       console.log('Move workspace', index, workspaces.length)
     } catch (err) {
       console.log('Error when move workspace', ws.workspaceName ?? ws.workspace, err)
@@ -36,7 +37,13 @@ export async function moveFromMongoToPG (
   client.close()
 }
 
-async function moveWorkspace (accountDb: Db, mongo: MongoClient, pgClient: Pool, ws: Workspace): Promise<void> {
+async function moveWorkspace (
+  accountDb: Db,
+  mongo: MongoClient,
+  pgClient: Pool,
+  ws: Workspace,
+  region: string
+): Promise<void> {
   try {
     const wsId = getWorkspaceId(ws.workspace)
     const mongoDB = getWorkspaceDB(mongo, wsId)
@@ -82,7 +89,7 @@ async function moveWorkspace (accountDb: Db, mongo: MongoClient, pgClient: Pool,
         }
       }
     }
-    await updateWorkspace(accountDb, ws, { region: 'new' })
+    await updateWorkspace(accountDb, ws, { region })
     await connection.sendForceClose()
     await connection.close()
   } catch (err) {
@@ -95,7 +102,8 @@ export async function moveWorkspaceFromMongoToPG (
   accountDb: Db,
   mongoUrl: string,
   dbUrl: string | undefined,
-  ws: Workspace
+  ws: Workspace,
+  region: string
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
@@ -105,7 +113,7 @@ export async function moveWorkspaceFromMongoToPG (
   const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
-  await moveWorkspace(accountDb, mongo, pgClient, ws)
+  await moveWorkspace(accountDb, mongo, pgClient, ws, region)
   pg.close()
   client.close()
 }
