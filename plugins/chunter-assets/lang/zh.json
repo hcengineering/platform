@@ -122,6 +122,7 @@
     "YouJoinedChannel": "你已加入频道",
     "AndMore": "和 {count} 人",
     "IsTyping": "正在输入...",
-    "ThreadIn": "线程在 {name}"
+    "ThreadIn": "线程在 {name}",
+    "TranslateMessage": "翻译消息"
   }
 }

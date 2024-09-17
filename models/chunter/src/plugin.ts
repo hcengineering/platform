@@ -52,7 +52,8 @@ export default mergeIds(chunterId, chunter, {
     DeleteChatMessage: '' as ViewAction,
     ReplyToThread: '' as ViewAction,
     OpenInSidebar: '' as ViewAction,
-    OpenInSidebarTab: '' as ViewAction
+    OpenInSidebarTab: '' as ViewAction,
+    TranslateMessage: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>

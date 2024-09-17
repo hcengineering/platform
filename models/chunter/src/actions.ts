@@ -43,6 +43,11 @@ export function defineActions (builder: Builder): void {
     chunter.category.Chunter
   )
 
+  defineMessageActions(builder)
+  defineChannelActions(builder)
+}
+
+function defineMessageActions (builder: Builder): void {
   createAction(
     builder,
     {
@@ -84,6 +89,42 @@ export function defineActions (builder: Builder): void {
     chunter.action.CopyChatMessageLink
   )
 
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.DeleteChatMessage,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      input: 'focus',
+      keyBinding: ['Backspace'],
+      category: chunter.category.Chunter,
+      target: chunter.class.ChatMessage,
+      visibilityTester: chunter.function.CanDeleteMessage,
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    chunter.action.DeleteChatMessage
+  )
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.TranslateMessage,
+      label: chunter.string.TranslateMessage,
+      icon: view.icon.Translate,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: chunter.class.ChatMessage,
+      inline: true,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    chunter.action.TranslateMessage
+  )
+}
+
+function defineChannelActions (builder: Builder): void {
   createAction(
     builder,
     {
@@ -153,22 +194,6 @@ export function defineActions (builder: Builder): void {
       mode: 'space'
     }
   })
-
-  createAction(
-    builder,
-    {
-      action: chunter.actionImpl.DeleteChatMessage,
-      label: view.string.Delete,
-      icon: view.icon.Delete,
-      input: 'focus',
-      keyBinding: ['Backspace'],
-      category: chunter.category.Chunter,
-      target: chunter.class.ChatMessage,
-      visibilityTester: chunter.function.CanDeleteMessage,
-      context: { mode: ['context', 'browser'], group: 'remove' }
-    },
-    chunter.action.DeleteChatMessage
-  )
 
   createAction(
     builder,

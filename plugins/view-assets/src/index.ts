@@ -56,5 +56,6 @@ loadMetadata(view.icon, {
   Join: `${icons}#join`,
   Leave: `${icons}#leave`,
   Copy: `${icons}#copy`,
-  DetailsFilled: `${icons}#details-filled`
+  DetailsFilled: `${icons}#details-filled`,
+  Translate: `${icons}#translate`
 })

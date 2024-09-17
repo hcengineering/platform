@@ -528,3 +528,5 @@ export function isThreadMessage (message: ActivityMessage): message is ThreadMes
 export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: Ref<Space>): Ref<Space> {
   return getClient().getHierarchy().isDerived(_class, core.class.Space) ? (_id as Ref<Space>) : space
 }
+
+export async function translateMessage (message: ChatMessage): Promise<void> {}

@@ -75,7 +75,8 @@ import {
   getTitle,
   getUnreadThreadsCount,
   leaveChannelAction,
-  removeChannelAction
+  removeChannelAction,
+  translateMessage
 } from './utils'
 
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
@@ -207,6 +208,7 @@ export default async (): Promise<Resources> => ({
     RemoveChannel: removeChannelAction,
     ReplyToThread: replyToThread,
     OpenInSidebar: openChannelInSidebarAction,
-    OpenInSidebarTab: openChannelInSidebarTabAction
+    OpenInSidebarTab: openChannelInSidebarTabAction,
+    TranslateMessage: translateMessage
   }
 })

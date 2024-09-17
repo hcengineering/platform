@@ -122,6 +122,7 @@
     "YouJoinedChannel": "Entrou no canal",
     "AndMore": "e mais {count}",
     "IsTyping": "está a escrever...",
-    "ThreadIn": "Conversa em cadeia em {name}"
+    "ThreadIn": "Conversa em cadeia em {name}",
+    "TranslateMessage": "Traduzir mensagem"
   }
 }

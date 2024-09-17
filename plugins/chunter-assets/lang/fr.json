@@ -122,6 +122,7 @@
     "YouJoinedChannel": "Vous avez rejoint le canal",
     "AndMore": "et {count} de plus",
     "IsTyping": "est en train d'écrire...",
-    "ThreadIn": "fil de discussion dans {name}"
+    "ThreadIn": "fil de discussion dans {name}",
+    "TranslateMessage": "Traduire le message"
   }
 }
