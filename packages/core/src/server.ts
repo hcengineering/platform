@@ -31,7 +31,7 @@ export interface DocInfo {
  * @public
  */
 export interface StorageIterator {
-  next: (ctx: MeasureContext) => Promise<DocInfo | undefined>
+  next: (ctx: MeasureContext) => Promise<DocInfo[]>
   close: (ctx: MeasureContext) => Promise<void>
 }
 

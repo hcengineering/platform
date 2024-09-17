@@ -105,7 +105,17 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       const { cursor } = await getCursor(workspace, domain, query, options)
 
       return {
-        next: async () => (await cursor.next()) ?? undefined,
+        next: async () => {
+          const result: T[] = []
+          const doc = await cursor.next()
+          if (doc != null) {
+            result.push(doc)
+          }
+          if (cursor.bufferedCount() > 0) {
+            result.push(...cursor.readBufferedDocuments())
+          }
+          return result
+        },
         close: async () => {
           await cursor.close()
         }
