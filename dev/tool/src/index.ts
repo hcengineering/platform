@@ -551,10 +551,6 @@ export function devTool (
         const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         const measureCtx = new MeasureMetricsContext('upgrade', {})
-        const pos = workspaces.findIndex((it) => it.workspace === 'dummyws5')
-        if (pos !== -1) {
-          workspaces.splice(0, pos - 1)
-        }
 
         for (const ws of workspaces) {
           console.warn('UPGRADING', ws.workspaceName)
