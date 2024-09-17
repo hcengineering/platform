@@ -320,9 +320,7 @@
   }
 
   async function handleLeftMenuClick (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
-    if (id !== 'table') {
-      editor.commands.focus(pos, { scrollIntoView: false })
-    }
+    editor.commands.focus(pos, { scrollIntoView: false })
 
     switch (id) {
       case 'image':
@@ -335,11 +333,14 @@
             targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
         }
 
-        // addTableHandler opens popup so the editor loses focus
-        // so in the callback we need to refocus again
-        void addTableHandler((options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
-          editor.chain().insertTable(options).focus(pos).run()
-        }, position)
+        // We need to trigger it asynchronously in order for the editor to finish its focus event
+        // Otherwise, it hoggs the focus from the popup and keyboard navigation doesn't work
+        setTimeout(() => {
+          // addTableHandler opens popup so the editor loses focus so in the callback we need to refocus again
+          void addTableHandler((options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
+            editor.chain().focus(pos).insertTable(options).run()
+          }, position)
+        }, 0)
         break
       }
       case 'code-block':
