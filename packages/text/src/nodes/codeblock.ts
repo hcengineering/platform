@@ -17,6 +17,7 @@ import { isActive, textblockTypeInputRule } from '@tiptap/core'
 import CodeBlock, { CodeBlockOptions } from '@tiptap/extension-code-block'
 
 export const codeBlockOptions: CodeBlockOptions = {
+  defaultLanguage: null,
   languageClassPrefix: 'language-',
   exitOnArrowDown: true,
   exitOnTripleEnter: true,
