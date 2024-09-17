@@ -232,6 +232,10 @@ class Connection implements ClientConnection {
   }
 
   handleMsg (socketId: number, resp: Response<any>): void {
+    if (this.closed) {
+      return
+    }
+
     if (resp.error !== undefined) {
       if (resp.error?.code === UNAUTHORIZED.code || resp.terminate === true) {
         Analytics.handleError(new PlatformError(resp.error))
@@ -251,10 +255,24 @@ class Connection implements ClientConnection {
         this.delay = 3
         return
       }
-      if (resp.result === 'hello') {
+      if (resp.result?.msg === 'hello') {
+        if ((resp as HelloResponse).binary) {
+          this.binaryMode = true
+        }
+
         // We need to clear dial timer, since we recieve hello response.
         clearTimeout(this.dialTimer)
         this.dialTimer = null
+
+        const serverVersion = resp.result.serverVersion
+        console.log('Connected to server:', serverVersion)
+
+        if (this.opt?.onHello !== undefined && !this.opt.onHello(serverVersion)) {
+          this.closed = true
+          this.websocket?.close()
+          return
+        }
+
         this.helloRecieved = true
         if (this.upgrading) {
           // We need to call upgrade since connection is upgraded
@@ -262,9 +280,6 @@ class Connection implements ClientConnection {
         }
 
         this.upgrading = false
-        if ((resp as HelloResponse).binary) {
-          this.binaryMode = true
-        }
         // Notify all waiting connection listeners
         const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
         for (const h of handlers) {

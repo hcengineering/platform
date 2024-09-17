@@ -428,7 +428,9 @@ export function startHttpServer (
         const resp: Response<any> = {
           id: -1,
           error: UNAUTHORIZED,
-          result: 'hello'
+          result: {
+            msg: 'hello'
+          }
         }
         ws.send(rpcHandler.serialize(resp, false), { binary: false })
         ws.onmessage = (msg) => {

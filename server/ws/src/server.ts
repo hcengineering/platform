@@ -91,6 +91,7 @@ class TSessionManager implements SessionManager {
   timeMinutes = 0
 
   modelVersion = process.env.MODEL_VERSION ?? ''
+  serverVersion = process.env.VERSION ?? ''
 
   oldClientErrors: number = 0
   clientErrors: number = 0
@@ -912,7 +913,10 @@ class TSessionManager implements SessionManager {
           }
           const helloResponse: HelloResponse = {
             id: -1,
-            result: 'hello',
+            result: {
+              msg: 'hello',
+              serverVersion: this.serverVersion
+            },
             binary: service.binaryMode,
             reconnect
           }
