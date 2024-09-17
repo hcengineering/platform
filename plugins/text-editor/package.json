@@ -45,7 +45,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/ui": "^0.6.15",
-    "@tiptap/core": "^2.2.4",
-    "@tiptap/pm": "^2.2.4"
+    "@tiptap/core": "^2.6.6",
+    "@tiptap/pm": "^2.6.6"
   }
 }
