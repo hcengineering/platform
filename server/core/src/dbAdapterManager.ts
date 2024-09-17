@@ -87,7 +87,8 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
   }
 
   private async updateInfo (d: Domain, adapterDomains: Map<DbAdapter, Set<Domain>>, info: DomainInfo): Promise<void> {
-    const adapter = this.adapters.get(d) ?? this.defaultAdapter
+    const name = this._domains[d] ?? '#default'
+    const adapter = this.adapters.get(name) ?? this.defaultAdapter
     if (adapter !== undefined) {
       const h = adapter.helper?.()
       if (h !== undefined) {
