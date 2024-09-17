@@ -219,7 +219,7 @@ export class AIBotController {
     const html = markupToHTML(req.text)
     const start = Date.now()
     const response = await this.aiClient.chat.completions.create({
-      model: config.OpenAIModel,
+      model: config.OpenAITranslateModel,
       messages: [
         {
           role: 'system',

@@ -546,13 +546,13 @@ export async function translateMessage (message: ChatMessage): Promise<void> {
 
   if (response !== undefined) {
     translatedMessagesStore.update((store) => store.set(message._id, response.text))
+    shownTranslatedMessagesStore.update((store) => store.add(message._id))
   }
 
   translatingMessagesStore.update((store) => {
     store.delete(message._id)
     return store
   })
-  shownTranslatedMessagesStore.update((store) => store.add(message._id))
 }
 
 export async function showOriginalMessage (message: ChatMessage): Promise<void> {
