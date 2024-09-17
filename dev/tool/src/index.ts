@@ -111,7 +111,7 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { moveFromMongoToPG } from './db'
+import { moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { importNotion } from './notion'
@@ -524,7 +524,8 @@ export function devTool (
         await updateWorkspace(db, info, {
           mode: 'active',
           progress: 100,
-          version
+          version,
+          attempts: 0
         })
 
         console.log(metricsToString(measureCtx.metrics, 'upgrade', 60))
@@ -572,7 +573,8 @@ export function devTool (
             await updateWorkspace(db, ws, {
               mode: 'active',
               progress: 100,
-              version
+              version,
+              attempts: 0
             })
           } catch (err: any) {
             console.error(err)
@@ -1521,15 +1523,32 @@ export function devTool (
       })
     })
 
-  program.command('move-to-pg').action(async () => {
+  program.command('move-to-pg <region>').action(async (region: string) => {
     const { mongodbUri, dbUrl } = prepareTools()
     await withDatabase(mongodbUri, async (db) => {
       const workspaces = await listWorkspacesRaw(db)
+      workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
       await moveFromMongoToPG(
+        db,
         mongodbUri,
         dbUrl,
-        workspaces.map((it) => getWorkspaceId(it.workspace))
+        workspaces.filter((p) => p.region !== region),
+        region
       )
+    })
+  })
+
+  program.command('move-workspace-to-pg <workspace> <region>').action(async (workspace: string, region: string) => {
+    const { mongodbUri, dbUrl } = prepareTools()
+    await withDatabase(mongodbUri, async (db) => {
+      const workspaceInfo = await getWorkspaceById(db, workspace)
+      if (workspaceInfo === null) {
+        throw new Error(`workspace ${workspace} not found`)
+      }
+      if (workspaceInfo.region === region) {
+        throw new Error(`workspace ${workspace} is already migrated`)
+      }
+      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
     })
   })
 
@@ -1569,6 +1588,25 @@ export function devTool (
         await generateWorkspaceData(endpoint, ws, cmd.parallel, email)
         await testFindAll(endpoint, ws, email)
         await dropWorkspace(toolCtx, db, null, ws)
+      })
+    })
+
+  program
+    .command('reset-ws-attempts <name>')
+    .description('Reset workspace creation/upgrade attempts counter')
+    .action(async (workspace) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const info = await getWorkspaceById(db, workspace)
+        if (info === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+
+        await updateWorkspace(db, info, {
+          attempts: 0
+        })
+
+        console.log('Attempts counter for workspace', workspace, 'has been reset')
       })
     })
 
