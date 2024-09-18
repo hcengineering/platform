@@ -379,7 +379,7 @@
 
 <style lang="scss">
   .error {
-    font-size: 500;
+    font-weight: 500;
     font-size: 1.5rem;
     align-items: center;
   }

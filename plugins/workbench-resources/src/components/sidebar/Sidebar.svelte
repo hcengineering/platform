@@ -18,8 +18,8 @@
 
   import workbench from '../../plugin'
   import { sidebarStore, SidebarVariant } from '../../sidebar'
-  import WidgetsBarMini from './SidebarMini.svelte'
-  import WidgetsBarExpanded from './SidebarExpanded.svelte'
+  import SidebarMini from './SidebarMini.svelte'
+  import SidebarExpanded from './SidebarExpanded.svelte'
 
   const client = getClient()
 
@@ -38,9 +38,9 @@
 
 <div class="antiPanel-component antiComponent root size-{size}" id="sidebar">
   {#if $sidebarStore.variant === SidebarVariant.MINI}
-    <WidgetsBarMini {widgets} {preferences} />
+    <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
-    <WidgetsBarExpanded {widgets} {preferences} />
+    <SidebarExpanded {widgets} {preferences} />
   {/if}
 </div>
 
@@ -62,9 +62,9 @@
     }
 
     &.size-medium {
-      width: 25rem !important;
-      min-width: 25rem !important;
-      max-width: 25rem !important;
+      width: 20rem !important;
+      min-width: 20rem !important;
+      max-width: 20rem !important;
     }
   }
 </style>

@@ -79,7 +79,7 @@
       </Scroller>
     {/if}
     {#if $floors.length > 1}
-      <div class="flex-row-center flex-reverse flex-no-shrink w-full mt-4">
+      <div class="flex-row-center flex-reverse flex-no-shrink w-full mt-4 mr-2">
         <ModernButton on:click={changeMode} icon={IconLayers} label={love.string.ChangeFloor} />
       </div>
     {/if}
@@ -92,7 +92,6 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    padding-right: 0.5rem;
     padding-bottom: 1rem;
   }
 </style>
