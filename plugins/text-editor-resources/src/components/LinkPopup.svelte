@@ -27,13 +27,15 @@
   function save (): void {
     dispatch('update', link)
   }
+
+  $: canSave = link === '' || URL.canParse(link)
 </script>
 
 <Card
   label={textEditor.string.Link}
   okLabel={textEditor.string.Save}
   okAction={save}
-  canSave
+  {canSave}
   on:close={() => {
     dispatch('close')
   }}
