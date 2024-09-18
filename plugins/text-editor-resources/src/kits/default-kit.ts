@@ -73,11 +73,14 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
 export async function formatLink (editor: Editor): Promise<void> {
   const link = editor.getAttributes('link').href
 
-  showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
-    if (newLink === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run()
-    } else {
-      editor.chain().focus().extendMarkRange('link').setLink({ href: newLink }).run()
-    }
+  // give editor some time to handle blur event
+  setTimeout(() => {
+    showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
+      if (newLink === '') {
+        editor.chain().focus().extendMarkRange('link').unsetLink().run()
+      } else {
+        editor.chain().focus().extendMarkRange('link').setLink({ href: newLink }).run()
+      }
+    })
   })
 }
