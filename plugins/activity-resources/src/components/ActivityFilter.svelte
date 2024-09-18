@@ -29,6 +29,7 @@
   export let messages: ActivityMessage[]
   export let object: Doc
   export let isNewestFirst = false
+  export let showFilter = true
 
   const allId = activity.ids.AllFilter
   const client = getClient()
@@ -117,30 +118,32 @@
   )
 </script>
 
-<div class="w-4 min-w-4 max-w-4" />
-{#if selectedFiltersRefs === 'All'}
-  <div class="antiSection-header__tag highlight">
-    <Label label={activity.string.All} />
-  </div>
-{:else}
-  {#each selectedFilters as filter}
-    <div class="antiSection-header__tag overflow-label">
-      <Label label={filter.label} />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="tag-icon"
-        on:click={() => {
-          if (selectedFiltersRefs !== allId && Array.isArray(selectedFiltersRefs)) {
-            const ids = selectedFiltersRefs.filter((it) => it !== filter._id)
-            selectedFiltersRefs = ids.length > 0 ? ids : allId
-          }
-        }}
-      >
-        <Icon icon={IconClose} size={'small'} />
-      </div>
+{#if showFilter}
+  <div class="w-4 min-w-4 max-w-4" />
+  {#if selectedFiltersRefs === allId}
+    <div class="antiSection-header__tag highlight">
+      <Label label={activity.string.All} />
     </div>
-  {/each}
+  {:else}
+    {#each selectedFilters as filter}
+      <div class="antiSection-header__tag overflow-label">
+        <Label label={filter.label} />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="tag-icon"
+          on:click={() => {
+            if (selectedFiltersRefs !== allId && Array.isArray(selectedFiltersRefs)) {
+              const ids = selectedFiltersRefs.filter((it) => it !== filter._id)
+              selectedFiltersRefs = ids.length > 0 ? ids : allId
+            }
+          }}
+        >
+          <Icon icon={IconClose} size={'small'} />
+        </div>
+      </div>
+    {/each}
+  {/if}
 {/if}
 <div class="w-4 min-w-4 max-w-4" />
 <ActionIcon icon={IconFilter} size={'medium'} action={handleOptions} />

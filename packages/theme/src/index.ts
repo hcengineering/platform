@@ -67,10 +67,14 @@ export class ThemeOptions {
     readonly language: string
   ) {}
 }
-export const themeStore = writable<ThemeOptions>(
-  new ThemeOptions(
-    getCurrentFontSize() === 'normal-font' ? 16 : 14,
-    isThemeDark(getCurrentTheme()),
-    getCurrentLanguage()
+export const themeStore = writable<ThemeOptions>()
+
+export function initThemeStore (): void {
+  themeStore.set(
+    new ThemeOptions(
+      getCurrentFontSize() === 'normal-font' ? 16 : 14,
+      isThemeDark(getCurrentTheme()),
+      getCurrentLanguage()
+    )
   )
-)
+}

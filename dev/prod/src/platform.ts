@@ -110,7 +110,7 @@ import { coreId } from '@hcengineering/core'
 import presentation, { loadServerConfig, parsePreviewConfig, presentationId } from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
-import { setDefaultLanguage } from '@hcengineering/theme'
+import { setDefaultLanguage, initThemeStore } from '@hcengineering/theme'
 
 import { preferenceId } from '@hcengineering/preference'
 import { uiId } from '@hcengineering/ui/src/plugin'
@@ -400,4 +400,6 @@ export async function configurePlatform() {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
+
+  initThemeStore()
 }
