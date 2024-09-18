@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI, generateTestData, getTimeForPlanner } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, generateTestData, getTimeForPlanner, getSecondPageByInvite } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
@@ -223,12 +223,11 @@ test.describe('Planning ToDo tests', () => {
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
     await page.keyboard.press('Escape')
-    const page2 = await browser.newPage()
-    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
-    await page2.goto(linkText ?? '')
-    const joinPage = new SignInJoinPage(page2)
-    await joinPage.join(newUser2)
+    const page2 = _page2.page
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
 
     await leftSideMenuPageSecond.clickTeam()
     const teamPage = new TeamPage(page2)
@@ -239,7 +238,6 @@ test.describe('Planning ToDo tests', () => {
       .locator('div.hulyComponent div.item', { hasText: 'Tomorrow' })
       .locator('div.item', { hasText: 'Busy 30m' })
       .isVisible()
-    await page2.close()
 
     await test.step('Go to another page to check work in Sidebar', async () => {
       await leftMenuPage.clickChunter()
