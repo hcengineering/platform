@@ -536,13 +536,13 @@ test.describe('Channel tests', () => {
       await sidebarPage.checkIfSidebarPageButtonIsExist(true, 'chat')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfSidebarIsOpen(true)
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', data.channelName)
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, data.channelName)
     })
 
     await test.step('Go to another page and check if sidebar will be keeping', async () => {
       await leftSideMenuPage.clickTracker()
       await sidebarPage.checkIfSidebarIsOpen(true)
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', data.channelName)
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, data.channelName)
       await leftSideMenuPage.clickChunter()
     })
 
@@ -555,14 +555,14 @@ test.describe('Channel tests', () => {
     await test.step('Reopen channel in sidebar', async () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Open in sidebar new tab')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', data.channelName)
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, data.channelName)
     })
 
     await test.step('Open general in sidebar too', async () => {
       await channelPage.makeActionWithChannelInMenu('general', 'Open in sidebar new tab')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfSidebarHasVerticalTab(true, 'general')
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', 'general')
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'general')
     })
 
     await test.step('Pin and unpin channel tab', async () => {
@@ -577,14 +577,14 @@ test.describe('Channel tests', () => {
       await sidebarPage.clickVerticalTab(data.channelName)
       await sidebarPage.closeVerticalTabByCloseButton(data.channelName)
       await sidebarPage.checkIfSidebarHasVerticalTab(false, data.channelName)
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', 'general')
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'general')
     })
 
     await test.step('Close sidebar tab by context menu', async () => {
       await channelPage.makeActionWithChannelInMenu('random', 'Open in sidebar new tab')
       await sidebarPage.closeVerticalTabByRightClick('random')
       await sidebarPage.checkIfSidebarHasVerticalTab(false, 'random')
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', 'general')
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'general')
     })
 
     await test.step('Close the last channel tab in Sidebar', async () => {
@@ -612,8 +612,8 @@ test.describe('Channel tests', () => {
 
       await sidebarPage.checkIfSidebarIsOpen(true)
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', data.channelName)
-      await sidebarPage.checkIfSidebarTabIsOpen('chat', 'Thread')
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'Thread')
+      await sidebarPage.checkIfChatSidebarTabIsOpen(true, data.channelName)
     })
 
     await test.step('User go to another chat and Sidebar with tread disappears', async () => {

@@ -27,7 +27,7 @@ export class SidebarPage extends CommonPage {
     this.sidebar().locator('.tabs').locator(`.container:has-text("${name}")`)
 
   verticalTabCloseButton = (name: string): Locator => this.verticalTabByName(name).locator('.close-button button')
-  currentYear = new Date().getFullYear()
+  currentYear = new Date().getFullYear().toString()
 
   // buttonOpenChannelInSidebar =
 
@@ -75,18 +75,16 @@ export class SidebarPage extends CommonPage {
     await expect(this.verticalTabs()).toHaveCount(count)
   }
 
-  async checkIfSidebarTabIsOpen (type: SidebarTabTypes, tabName: string): Promise<void> {
-    switch (type) {
-      case 'chat':
-        await expect(this.contentHeaderByTitle(tabName)).toBeVisible()
-        break
-      case 'office':
-        await expect(this.contentHeaderByTitle('Office')).toBeVisible()
-        break
-      case 'calendar':
-        await expect(this.contentHeaderByTitle(tabName)).toBeVisible()
-        break
-    }
+  async checkIfPlanerSidebarTabIsOpen (isExist: boolean): Promise<void> {
+    await expect(this.contentHeaderByTitle(this.currentYear)).toBeVisible({ visible: isExist })
+  }
+
+  async checkIfChatSidebarTabIsOpen (isExist: boolean, channelName: string): Promise<void> {
+    await expect(this.contentHeaderByTitle(channelName)).toBeVisible({ visible: isExist })
+  }
+
+  async checkIfOfficeSidebarTabIsOpen (isExist: boolean, channelName: string): Promise<void> {
+    await expect(this.contentHeaderByTitle('Office')).toBeVisible({ visible: isExist })
   }
 
   async checkIfSidebarPageButtonIsExist (isExist: boolean, type: SidebarTabTypes): Promise<void> {
@@ -99,6 +97,20 @@ export class SidebarPage extends CommonPage {
         break
       case 'calendar':
         await expect(this.calendarSidebarButton()).toBeVisible({ visible: isExist })
+        break
+    }
+  }
+
+  async clickSidebarPageButton (type: SidebarTabTypes): Promise<void> {
+    switch (type) {
+      case 'chat':
+        await this.chatSidebarButton().click()
+        break
+      case 'office':
+        await this.officeSidebarButton().click()
+        break
+      case 'calendar':
+        await this.calendarSidebarButton().click()
         break
     }
   }

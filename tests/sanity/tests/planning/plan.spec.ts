@@ -9,9 +9,11 @@ import { faker } from '@faker-js/faker'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ApiEndpoint } from '../API/Api'
 import { LoginPage } from '../model/login-page'
+import { SidebarPage } from '../model/sidebar-page'
 import { SignInJoinPage } from '../model/signin-page'
 import { TeamPage } from '../model/team-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
+import { ChannelPage } from '../model/channel-page'
 
 test.use({
   storageState: PlatformSetting
@@ -235,5 +237,21 @@ test.describe('Planning ToDo tests', () => {
       .isVisible()
 
     await page2.close()
+  })
+
+  test('User is able to open Planner in Sidebar', async ({ browser, page, request }) => {
+    const leftMenuPage = new LeftSideMenuPage(page)
+    const channelPage = new ChannelPage(page)
+
+    await test.step('Go to any another page', async () => {
+      await leftMenuPage.clickChunter()
+      await channelPage.clickChannel('general')
+    })
+
+    await test.step('Open planner via sidebar icon button', async () => {
+      const sidebarPage = new SidebarPage(page)
+      await sidebarPage.clickSidebarPageButton('calendar')
+      await sidebarPage.checkIfPlanerSidebarTabIsOpen(true)
+    })
   })
 })
