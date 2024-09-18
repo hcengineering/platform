@@ -173,6 +173,9 @@ test.describe('Planning ToDo tests', () => {
 
   test('Adding ToDo by dragging and checking visibility in the Team Planner', async ({ browser, page, request }) => {
     const data: TestData = generateTestData()
+    const leftMenuPage = new LeftSideMenuPage(page)
+    const channelPage = new ChannelPage(page)
+
     const newUser2: SignUpData = {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
@@ -219,6 +222,7 @@ test.describe('Planning ToDo tests', () => {
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
     const linkText = await page.locator('.antiPopup .link').textContent()
+    await page.keyboard.press('Escape')
     const page2 = await browser.newPage()
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
@@ -235,8 +239,27 @@ test.describe('Planning ToDo tests', () => {
       .locator('div.hulyComponent div.item', { hasText: 'Tomorrow' })
       .locator('div.item', { hasText: 'Busy 30m' })
       .isVisible()
-
     await page2.close()
+
+    await test.step('Go to another page to check work in Sidebar', async () => {
+      await leftMenuPage.clickChunter()
+      await channelPage.clickChannel('general')
+    })
+
+    const sidebarPage = new SidebarPage(page)
+
+    await test.step('Check visibility of task in sidebar planner', async () => {
+      await sidebarPage.clickSidebarPageButton('calendar')
+      await sidebarPage.checkIfPlanerSidebarTabIsOpen(true)
+    })
+
+    await test.step('Change event title from sidebar calendar', async () => {
+      await sidebarPage.plannerSidebarNextDayButton().click()
+      await planningPage.eventInSidebarSchedule(titleV).click()
+      await planningPage.buttonPopupCreateVisible().click()
+      await planningPage.buttonPopupOnlyVisibleToYou().click()
+      await planningPage.buttonPopupSave().click()
+    })
   })
 
   test('User is able to open Planner in Sidebar', async ({ browser, page, request }) => {

@@ -29,6 +29,9 @@ export class SidebarPage extends CommonPage {
   verticalTabCloseButton = (name: string): Locator => this.verticalTabByName(name).locator('.close-button button')
   currentYear = new Date().getFullYear().toString()
 
+  plannerSidebarNextDayButton = (): Locator =>
+    this.sidebar().locator('.hulyHeader-buttonsGroup').getByRole('button').last()
+
   // buttonOpenChannelInSidebar =
 
   // Actions

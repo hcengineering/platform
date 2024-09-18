@@ -16,6 +16,7 @@ export class PlanningPage extends CalendarPage {
   private readonly panel = (): Locator => this.page.locator('div.hulyModal-container')
   private readonly toDosContainer = (): Locator => this.page.locator('div.toDos-container')
   private readonly schedule = (): Locator => this.page.locator('div.hulyComponent.modal')
+  private readonly sidebarSchedule = (): Locator => this.page.locator('#sidebar .calendar-container')
   readonly pageHeader = (): Locator =>
     this.page.locator('div[class*="navigator"] div[class*="header"]', { hasText: 'Planning' })
 
@@ -80,6 +81,9 @@ export class PlanningPage extends CalendarPage {
 
   readonly eventInSchedule = (title: string): Locator =>
     this.schedule().locator('div.event-container', { hasText: title })
+
+  readonly eventInSidebarSchedule = (title: string): Locator =>
+    this.sidebarSchedule().locator('div.event-container', { hasText: title })
 
   readonly toDoInToDos = (hasText: string): Locator =>
     this.toDosContainer().locator('button.hulyToDoLine-container', { hasText })
