@@ -19,7 +19,7 @@
 
   import WidgetPresenter from './/WidgetPresenter.svelte'
   import AddWidgetsPopup from './AddWidgetsPopup.svelte'
-  import { openWidget, sidebarStore, SidebarVariant } from '../../../sidebar'
+  import { minimizeSidebar, openWidget, sidebarStore } from '../../../sidebar'
 
   export let widgets: Widget[] = []
   export let preferences: WidgetPreference[] = []
@@ -31,9 +31,9 @@
 
   function handleSelectWidget (widget: Widget): void {
     if (selected === widget._id) {
-      sidebarStore.update((state) => ({ ...state, widget: undefined, variant: SidebarVariant.MINI }))
+      minimizeSidebar(true)
     } else {
-      openWidget(widget)
+      openWidget(widget, $sidebarStore.widgetsState.get(widget._id)?.data, true)
     }
   }
 
