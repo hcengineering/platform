@@ -15,6 +15,7 @@
 //
 -->
 <script lang="ts">
+  import activity from '@hcengineering/activity'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
   import { Document, DocumentEvents } from '@hcengineering/document'
@@ -58,8 +59,9 @@
   import DocumentEditor from './DocumentEditor.svelte'
   import DocumentPresenter from './DocumentPresenter.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
-  import References from './sidebar/References.svelte'
+  import Activity from './sidebar/Activity.svelte'
   import History from './sidebar/History.svelte'
+  import References from './sidebar/References.svelte'
 
   export let _id: Ref<Document>
   export let readonly: boolean = false
@@ -185,11 +187,11 @@
     {
       id: 'references',
       icon: document.icon.References
+    },
+    {
+      id: 'activity',
+      icon: activity.icon.Activity
     }
-    // {
-    //   id: 'history',
-    //   icon: document.icon.History
-    // }
   ]
   let selectedAside: string | boolean = false
 
@@ -372,6 +374,8 @@
     <svelte:fragment slot="aside">
       {#if selectedAside === 'references'}
         <References doc={doc._id} />
+      {:else if selectedAside === 'activity'}
+        <Activity value={doc} />
       {:else if selectedAside === 'history'}
         <History value={doc} {readonly} />
       {/if}

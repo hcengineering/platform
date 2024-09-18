@@ -102,7 +102,7 @@ import print, { printId } from '@hcengineering/print'
 import sign from '@hcengineering/sign'
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 
-import { setDefaultLanguage } from '@hcengineering/theme'
+import { setDefaultLanguage, initThemeStore } from '@hcengineering/theme'
 import { configureNotifications } from './notifications'
 import { Config, IPCMainExposed, Branding } from './types'
 
@@ -315,6 +315,8 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
   setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
   setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
+
+  initThemeStore()
 
   addEventListener(workbench.event.NotifyConnection, async (evt) => {
     await ipcMain.setFrontCookie(

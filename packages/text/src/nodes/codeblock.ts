@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import { isActive, textblockTypeInputRule } from '@tiptap/core'
+import { textblockTypeInputRule } from '@tiptap/core'
 import CodeBlock, { CodeBlockOptions } from '@tiptap/extension-code-block'
 
 export const codeBlockOptions: CodeBlockOptions = {
+  defaultLanguage: null,
   languageClassPrefix: 'language-',
   exitOnArrowDown: true,
   exitOnTripleEnter: true,
@@ -36,57 +37,6 @@ export const backtickInputRegex = /^```$/
 export const tildeInputRegex = /^~~~$/
 
 export const CodeBlockExtension = CodeBlock.extend({
-  addCommands () {
-    return {
-      setCodeBlock:
-        (attributes) =>
-          ({ commands }) => {
-            return commands.setNode(this.name, attributes)
-          },
-      toggleCodeBlock:
-        (attributes) =>
-          ({ chain, commands, state }) => {
-            const { from, to } = state.selection
-
-            // merge multiple paragraphs into codeblock
-            if (!isActive(state, this.name) && !state.selection.empty) {
-              let hasParagraphsOnlySelected = true
-              const textArr: string[] = []
-              state.doc.nodesBetween(from, to, (node, pos) => {
-                if (node.isInline) {
-                  return false
-                }
-                if (node.type.name !== 'paragraph') {
-                  if (pos + 1 <= from && pos + node.nodeSize - 1 >= to) {
-                  // skip nodes outside of the selected range
-                    return false
-                  } else {
-                  // cannot merge non-paragraph nodes inside selection
-                    hasParagraphsOnlySelected = false
-                    return false
-                  }
-                } else {
-                  const selectedText = (node.textContent ?? '').slice(
-                    pos + 1 > from ? 0 : from - pos - 1,
-                    pos + node.nodeSize - 1 < to ? node.nodeSize - 1 : to - pos - 1
-                  )
-                  textArr.push(selectedText ?? '')
-                }
-              })
-              if (hasParagraphsOnlySelected && textArr.length > 1) {
-                return chain()
-                  .command(({ state, tr }) => {
-                    tr.replaceRangeWith(from, to, this.type.create(attributes, state.schema.text(textArr.join('\n'))))
-                    return true
-                  })
-                  .setTextSelection({ from: from + 2, to: from + 2 })
-                  .run()
-              }
-            }
-            return commands.toggleNode(this.name, 'paragraph', attributes)
-          }
-    }
-  },
   addAttributes () {
     return {
       language: {

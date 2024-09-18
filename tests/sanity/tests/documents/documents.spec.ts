@@ -147,8 +147,8 @@ test.describe('Documents tests', () => {
     await documentContentPage.addRandomLines(5)
     await documentContentPage.addContentToTheNewLine(contentLink)
     await documentContentPage.addRandomLines(5)
-    await documentContentPage.addLinkToText(contentLink, 'test/link/123456')
-    await documentContentPage.checkLinkInTheText(contentLink, 'test/link/123456')
+    await documentContentPage.addLinkToText(contentLink, 'http://test/link/123456')
+    await documentContentPage.checkLinkInTheText(contentLink, 'http://test/link/123456')
   })
 
   test('Locked document and checking URL', async ({ page, context }) => {
