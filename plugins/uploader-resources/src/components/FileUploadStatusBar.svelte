@@ -65,7 +65,7 @@
   class="container flex-row-center flex-gap-2 active"
   class:error={state.error}
   on:click={handleClick}
-  use:tooltip={state.error !== undefined ? { label: getEmbeddedLabel(state.error) } : undefined}
+  use:tooltip={state.error != null ? { label: getEmbeddedLabel(state.error) } : undefined}
 >
   {#if state.error}
     <IconError size={'small'} fill={'var(--negative-button-default)'} />

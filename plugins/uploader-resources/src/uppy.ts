@@ -76,14 +76,18 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
+    },
+    getResponseError: (_, response) => {
+      return new Error((response as Response).statusText)
     }
-    // getResponseData: (body: string): UppyBody => {
-    //   const data = JSON.parse(body)
-    //   return {
-    //     uuid: data[0].id
-    //   }
-    // }
   })
+
+  // Hack to setup shouldRetry callback on xhrUpload that is not exposed in options
+  const xhrUpload = uppy.getState().xhrUpload ?? {}
+  uppy.getState().xhrUpload = {
+    ...xhrUpload,
+    shouldRetry: (response: Response) => response.status !== 413
+  }
 
   uppy.addPreProcessor(async (fileIds: string[]) => {
     for (const fileId of fileIds) {
@@ -98,8 +102,12 @@ export function getUppy (options: FileUploadOptions, onFileUploaded?: FileUpload
 
   if (onFileUploaded != null) {
     uppy.addPostProcessor(async (fileIds: string[]) => {
-      for (const fileId of fileIds) {
-        const file = uppy.getFile(fileId)
+      // post-process only files without errors
+      const files = fileIds
+        .map((fileId) => uppy.getFile(fileId))
+        .filter((file) => !('error' in file && file.error != null))
+
+      for (const file of files) {
         const uuid = file.meta.uuid as Ref<Blob>
         if (uuid !== undefined) {
           const metadata = await getFileMetadata(file.data, uuid)
