@@ -100,6 +100,9 @@ export function createServer (controller: AIBotController): Express {
         throw new ApiError(400)
       }
       const response = await controller.translate(req.body as TranslateRequest)
+      if (response === undefined) {
+        throw new ApiError(500)
+      }
 
       res.status(200)
       res.json(response)

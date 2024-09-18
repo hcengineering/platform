@@ -52,7 +52,7 @@ const config: Config = (() => {
     AvatarName: process.env.AVATAR_NAME ?? 'huly_ai_bot_avatar',
     AvatarContentType: process.env.AVATAR_CONTENT_TYPE ?? '.png',
     Password: process.env.PASSWORD ?? 'password',
-    OpenAIKey: process.env.OPENAI_API_KEY,
+    OpenAIKey: process.env.OPENAI_API_KEY ?? '',
     OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
     OpenAITranslateModel: (process.env.OPENAI_TRANSLATE_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
     MaxContentTokens: parseNumber(process.env.MAX_CONTENT_TOKENS) ?? 128 * 100,

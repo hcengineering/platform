@@ -40,7 +40,7 @@ export class AIBotController {
 
   private readonly intervalId: NodeJS.Timeout
 
-  readonly aiClient: OpenAI
+  readonly aiClient?: OpenAI
   readonly encoding = encoding_for_model(config.OpenAIModel)
 
   assignTimeout: NodeJS.Timeout | undefined
@@ -50,7 +50,7 @@ export class AIBotController {
     readonly storage: DbStorage,
     private readonly ctx: MeasureContext
   ) {
-    this.aiClient = new OpenAI({ apiKey: config.OpenAIKey })
+    this.aiClient = config.OpenAIKey === '' ? undefined : new OpenAI({ apiKey: config.OpenAIKey })
 
     this.intervalId = setInterval(() => {
       void this.updateWorkspaceClients()
@@ -215,7 +215,10 @@ export class AIBotController {
     await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
   }
 
-  async translate (req: TranslateRequest): Promise<TranslateResponse> {
+  async translate (req: TranslateRequest): Promise<TranslateResponse | undefined> {
+    if (this.aiClient === undefined) {
+      return undefined
+    }
     const html = markupToHTML(req.text)
     const start = Date.now()
     const response = await this.aiClient.chat.completions.create({
