@@ -1,5 +1,13 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI, generateTestData, getTimeForPlanner, getSecondPageByInvite } from '../utils'
+import {
+  generateId,
+  PlatformSetting,
+  PlatformURI,
+  generateTestData,
+  getTimeForPlanner,
+  getSecondPageByInvite,
+  getInviteLink
+} from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
@@ -10,7 +18,6 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ApiEndpoint } from '../API/Api'
 import { LoginPage } from '../model/login-page'
 import { SidebarPage } from '../model/sidebar-page'
-import { SignInJoinPage } from '../model/signin-page'
 import { TeamPage } from '../model/team-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { ChannelPage } from '../model/channel-page'
@@ -218,14 +225,10 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.buttonPopupOnlyVisibleToYou().click()
     await planningPage.buttonPopupSave().click()
 
-    await leftSideMenuPage.openProfileMenu()
-    await leftSideMenuPage.inviteToWorkspace()
-    await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
-    await page.keyboard.press('Escape')
-    
-    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
+    const linkText = await getInviteLink(page)
     await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
+
+    using _page2 = await getSecondPageByInvite(browser, linkText, newUser2)
     const page2 = _page2.page
     const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
 
