@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount, formatName } from '@hcengineering/contact'
+  import { formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
-  import { IdMap, Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
+  import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import {
     Floor,
     Invite,
@@ -31,8 +31,6 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import {
-    ActionIcon,
-    Label,
     Location,
     PopupResult,
     closePopup,
@@ -43,6 +41,9 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
+  import workbench from '@hcengineering/workbench'
+  import { closeWidget, openWidget, sidebarStore } from '@hcengineering/workbench-resources'
+
   import love from '../plugin'
   import {
     activeFloor,
@@ -79,7 +80,6 @@
   import RequestPopup from './RequestPopup.svelte'
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
-  import VideoPopup from './VideoPopup.svelte'
 
   let allowCam: boolean = false
   let allowLeave: boolean = false
@@ -111,8 +111,6 @@
       }
     })
   }
-
-  const me = (getCurrentAccount() as PersonAccount).person
 
   interface ActiveRoom extends Room {
     participants: ParticipantInfo[]
@@ -285,31 +283,24 @@
     showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
   }
 
-  const videoPopupCategory = 'videoPopup'
-  let videoPopup: PopupResult | undefined = undefined
-
   function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
-    if (room === undefined) return
+    const isOpened = $sidebarStore.widgetsState.get(love.ids.VideoWidget)
+    if (room === undefined) {
+      if (isOpened) {
+        closeWidget(love.ids.VideoWidget)
+      }
+      return
+    }
+
     if (loc.path[2] !== loveId && video) {
-      if (videoPopup !== undefined) return
-      videoPopup = showPopup(
-        VideoPopup,
-        {
-          room
-        },
-        'movable',
-        undefined,
-        undefined,
-        {
-          category: videoPopupCategory,
-          overlay: false,
-          fixed: true,
-          refId: videoPopupCategory
-        }
-      )
-    } else if (videoPopup) {
-      videoPopup.close()
-      videoPopup = undefined
+      if (isOpened) return
+      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.VideoWidget })[0]
+      if (widget === undefined) return
+      openWidget(widget, {
+        room
+      })
+    } else {
+      closeWidget(love.ids.VideoWidget)
     }
   }
 
@@ -326,7 +317,7 @@
     closePopup(inviteCategory)
     closePopup(joinRequestCategory)
     closePopup(myJoinRequestCategory)
-    closePopup(videoPopupCategory)
+    closeWidget(love.ids.VideoWidget)
   })
 
   const client = getClient()
@@ -362,56 +353,56 @@
 <div class="flex-row-center flex-gap-2">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="container main flex-row-center flex-gap-2" bind:this={myOfficeElement} on:click={selectFloor}>
-    {#if selectedFloor}
-      <Label label={love.string.Floor} />
-      <span class="label overflow-label">
-        {selectedFloor?.name}
-      </span>
-    {/if}
-    <ActionIcon
-      icon={!$isConnected ? love.icon.Mic : $isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-      label={$isMicEnabled ? love.string.Mute : love.string.UnMute}
-      size={'small'}
-      action={changeMute}
-      on:contextmenu={micSettings}
-      disabled={!$isConnected}
-      keys={micKeys}
-    />
-    <ActionIcon
-      icon={!$isConnected || !allowCam
-        ? love.icon.Cam
-        : $isCameraEnabled
-          ? love.icon.CamEnabled
-          : love.icon.CamDisabled}
-      label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}
-      size={'small'}
-      action={changeCam}
-      on:contextmenu={camSettings}
-      disabled={!$isConnected || !allowCam}
-      keys={camKeys}
-    />
-    {#if $isConnected}
-      <ActionIcon
-        icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
-        label={$isSharingEnabled ? love.string.StopShare : love.string.Share}
-        disabled={$screenSharing && !$isSharingEnabled}
-        size={'small'}
-        action={changeShare}
-      />
-    {/if}
-    {#if allowLeave}
-      <ActionIcon
-        icon={love.icon.LeaveRoom}
-        iconProps={{ color: '#FF6711' }}
-        label={love.string.LeaveRoom}
-        size={'small'}
-        action={leave}
-      />
-    {/if}
-  </div>
+  <!--  <div class="container main flex-row-center flex-gap-2" bind:this={myOfficeElement} on:click={selectFloor}>-->
+  <!--    {#if selectedFloor}-->
+  <!--      <Label label={love.string.Floor} />-->
+  <!--      <span class="label overflow-label">-->
+  <!--        {selectedFloor?.name}-->
+  <!--      </span>-->
+  <!--    {/if}-->
+  <!--    <ActionIcon-->
+  <!--      icon={!$isConnected ? love.icon.Mic : $isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}-->
+  <!--      label={$isMicEnabled ? love.string.Mute : love.string.UnMute}-->
+  <!--      size={'small'}-->
+  <!--      action={changeMute}-->
+  <!--      on:contextmenu={micSettings}-->
+  <!--      disabled={!$isConnected}-->
+  <!--      keys={micKeys}-->
+  <!--    />-->
+  <!--    <ActionIcon-->
+  <!--      icon={!$isConnected || !allowCam-->
+  <!--        ? love.icon.Cam-->
+  <!--        : $isCameraEnabled-->
+  <!--          ? love.icon.CamEnabled-->
+  <!--          : love.icon.CamDisabled}-->
+  <!--      label={$isCameraEnabled ? love.string.StopVideo : love.string.StartVideo}-->
+  <!--      size={'small'}-->
+  <!--      action={changeCam}-->
+  <!--      on:contextmenu={camSettings}-->
+  <!--      disabled={!$isConnected || !allowCam}-->
+  <!--      keys={camKeys}-->
+  <!--    />-->
+  <!--    {#if $isConnected}-->
+  <!--      <ActionIcon-->
+  <!--        icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}-->
+  <!--        label={$isSharingEnabled ? love.string.StopShare : love.string.Share}-->
+  <!--        disabled={$screenSharing && !$isSharingEnabled}-->
+  <!--        size={'small'}-->
+  <!--        action={changeShare}-->
+  <!--      />-->
+  <!--    {/if}-->
+  <!--    {#if allowLeave}-->
+  <!--      <ActionIcon-->
+  <!--        icon={love.icon.LeaveRoom}-->
+  <!--        iconProps={{ color: '#FF6711' }}-->
+  <!--        label={love.string.LeaveRoom}-->
+  <!--        size={'small'}-->
+  <!--        action={leave}-->
+  <!--      />-->
+  <!--    {/if}-->
+  <!--  </div>-->
   {#if activeRooms.length > 0}
-    <div class="divider" />
+    <!--    <div class="divider" />-->
     {#each activeRooms as active}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -434,7 +425,9 @@
     {/each}
   {/if}
   {#if reception && receptionParticipants.length > 0}
-    <div class="divider" />
+    {#if activeRooms.length > 0}
+      <div class="divider" />
+    {/if}
     <div class="container flex-row-center flex-gap-2">
       <div>{getRoomName(reception, $personByIdStore)}</div>
       <div class="flex-row-center avatars">

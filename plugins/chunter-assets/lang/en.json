@@ -121,6 +121,7 @@
     "JoinChannel": "Join channel",
     "YouJoinedChannel": "You have been joined to channel",
     "AndMore": "and {count} more",
-    "IsTyping": "{count, plural, =1 {is} other {are}} typing..."
+    "IsTyping": "{count, plural, =1 {is} other {are}} typing...",
+    "ThreadIn": "thread in {name}"
   }
 }

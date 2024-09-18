@@ -6,6 +6,8 @@ import MeetingData from './components/MeetingData.svelte'
 import SelectScreenSourcePopup from './components/SelectScreenSourcePopup.svelte'
 import Settings from './components/Settings.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+import LoveWidget from './components/LoveWidget.svelte'
+import VideoWidget from './components/VideoWidget.svelte'
 import { createMeeting, toggleMic, toggleVideo } from './utils'
 
 export { setCustomCreateScreenTracks } from './utils'
@@ -18,7 +20,9 @@ export default async (): Promise<Resources> => ({
     WorkbenchExtension,
     SelectScreenSourcePopup,
     MeetingData,
-    EditMeetingData
+    EditMeetingData,
+    LoveWidget,
+    VideoWidget
   },
   function: {
     CreateMeeting: createMeeting

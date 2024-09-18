@@ -21,6 +21,7 @@ import {
   SessionDataImpl,
   type Pipeline,
   type PipelineFactory,
+  type StorageAdapter,
   type StorageConfiguration
 } from '@hcengineering/server-core'
 import {
@@ -284,22 +285,23 @@ export async function upgradeWorkspace (
     workspaceName: ws.workspaceName ?? '',
     workspaceUrl: ws.workspaceUrl ?? ''
   }
-
-  const { pipeline, storageAdapter } = await getServerPipeline(ctx, mongodbUri, dbUrl, wsUrl)
-  const contextData = new SessionDataImpl(
-    systemAccountEmail,
-    'backup',
-    true,
-    { targets: {}, txes: [] },
-    wsUrl,
-    null,
-    false,
-    new Map(),
-    new Map(),
-    pipeline.context.modelDb
-  )
-  ctx.contextData = contextData
+  let pipeline: Pipeline | undefined
+  let storageAdapter: StorageAdapter | undefined
   try {
+    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, mongodbUri, dbUrl, wsUrl))
+    const contextData = new SessionDataImpl(
+      systemAccountEmail,
+      'backup',
+      true,
+      { targets: {}, txes: [] },
+      wsUrl,
+      null,
+      false,
+      new Map(),
+      new Map(),
+      pipeline.context.modelDb
+    )
+    ctx.contextData = contextData
     await handleWsEvent?.('upgrade-started', version, 0)
 
     await upgradeModel(
@@ -322,9 +324,10 @@ export async function upgradeWorkspace (
   } catch (err: any) {
     ctx.error('upgrade-failed', { message: err.message })
     await handleWsEvent?.('ping', version, 0, `Upgrade failed: ${err.message}`)
+    throw err
   } finally {
-    await pipeline.close()
-    await storageAdapter.close()
+    await pipeline?.close()
+    await storageAdapter?.close()
     clearInterval(updateProgressHandle)
   }
 }

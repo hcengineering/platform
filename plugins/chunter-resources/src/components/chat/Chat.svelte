@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref, Class, Space } from '@hcengineering/core'
+  import { Doc, Ref, Class } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Component,
@@ -24,8 +24,7 @@
     Separator,
     Location,
     restoreLocation,
-    deviceOptionsStore as deviceInfo,
-    type AnyComponent
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -33,16 +32,13 @@
   import { chunterId } from '@hcengineering/chunter'
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
+  import { ActivityMessage } from '@hcengineering/activity'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
   import { chatSpecials, loadSavedAttachments } from './utils'
   import { SelectChannelEvent } from './types'
-  import { openChannel } from '../../navigation'
-
-  export let currentSpace: Ref<Space> | undefined = undefined
-  export let asideComponent: AnyComponent | undefined = undefined
-  export let asideId: string | undefined = undefined
+  import { openChannel, openThreadInSidebar } from '../../navigation'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
@@ -63,8 +59,11 @@
   let object: Doc | undefined = undefined
   let replacedPanel: HTMLElement
 
-  location.subscribe((loc) => {
+  const unsubcribe = location.subscribe((loc) => {
     syncLocation(loc)
+  })
+  onDestroy(() => {
+    unsubcribe()
   })
 
   $: void loadObject(selectedData?.id, selectedData?._class)
@@ -117,6 +116,12 @@
     } else {
       const [id, _class] = decodeObjectURI(loc.path[3])
       selectedData = { id, _class }
+    }
+
+    const thread = loc.path[4] as Ref<ActivityMessage> | undefined
+
+    if (thread !== undefined) {
+      void openThreadInSidebar(thread)
     }
   }
 
@@ -175,8 +180,7 @@
       short
     />
   {/if}
-
-  <div bind:this={replacedPanel} class="hulyComponent" class:beforeAside={asideComponent !== undefined && asideId}>
+  <div bind:this={replacedPanel} class="hulyComponent">
     {#if currentSpecial}
       <Component
         is={currentSpecial.component}
@@ -197,10 +201,4 @@
       <ChannelView {object} {context} />
     {/if}
   </div>
-  {#if asideComponent !== undefined && asideId}
-    <Separator name={'chat'} index={1} color={'var(--theme-divider-color)'} separatorSize={1} />
-    <div class="hulyComponent aside">
-      <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close />
-    </div>
-  {/if}
 </div>

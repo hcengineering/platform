@@ -45,7 +45,9 @@ export default mergeIds(workbenchId, workbench, {
     MobileNotSupported: '' as IntlString,
     LogInAnyway: '' as IntlString,
     WorkspaceCreating: '' as IntlString,
-    AccessDenied: '' as IntlString
+    AccessDenied: '' as IntlString,
+    Widget: '' as IntlString,
+    WidgetPreference: '' as IntlString
   },
   metadata: {
     MobileAllowed: '' as Metadata<boolean>

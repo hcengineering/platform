@@ -80,6 +80,7 @@
     result.push({
       icon: view.icon.Open,
       label: view.string.Open,
+      group: 'edit',
       action: async () => {
         const id = await getObjectLinkId(linkProviders, object._id, object._class, object)
         openChannel(id, object._class)
@@ -107,9 +108,10 @@
       result.push({
         icon: action.icon ?? IconEdit,
         label: action.label,
+        group: action.context.group,
         action: async (_: any, evt: Event) => {
           const impl = await getResource(action.action)
-          await impl(context, evt, action.actionProps)
+          await impl(context, evt, { ...action.actionProps, object })
         }
       })
     }

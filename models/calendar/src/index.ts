@@ -58,6 +58,9 @@ import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import workbench from '@hcengineering/model-workbench'
+import { WidgetType } from '@hcengineering/workbench'
+
 import calendar from './plugin'
 
 export * from '@hcengineering/calendar'
@@ -164,6 +167,18 @@ export function createModel (builder: Builder): void {
     TReccuringInstance,
     TEvent,
     TCalendarEventPresenter
+  )
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: calendar.string.Calendar,
+      type: WidgetType.Fixed,
+      icon: calendar.icon.Calendar,
+      component: calendar.component.CalendarWidget
+    },
+    calendar.ids.CalendarWidget
   )
 
   builder.mixin(calendar.class.Event, core.class.Class, calendar.mixin.CalendarEventPresenter, {

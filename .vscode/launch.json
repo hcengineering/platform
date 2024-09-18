@@ -73,6 +73,7 @@
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
         "MODEL_VERSION": "0.6.287",
+        // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         
@@ -242,7 +243,7 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "create-workspace", "sanity-ws", "-w sanity-ws"],
+      "args": ["src/__start.ts", "upgrade", "--force"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",

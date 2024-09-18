@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import { Doc, getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -46,10 +46,6 @@
   import InboxMenuButton from './InboxMenuButton.svelte'
   import { onDestroy } from 'svelte'
   import SettingsButton from './SettingsButton.svelte'
-
-  export let currentSpace: Ref<Space> | undefined = undefined
-  export let asideComponent: AnyComponent | undefined = undefined
-  export let asideId: string | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -145,7 +141,7 @@
   $: filteredData = filterData(filter, selectedTabId, inboxData, $contextByIdStore)
 
   const unsubscribeLoc = locationStore.subscribe((newLocation) => {
-    void syncLocation(newLocation, $contextByDocStore)
+    void syncLocation(newLocation)
   })
 
   let isContextsLoaded = false
@@ -156,11 +152,11 @@
     }
 
     const loc = getCurrentLocation()
-    void syncLocation(loc, docs)
+    void syncLocation(loc)
     isContextsLoaded = true
   })
 
-  async function syncLocation (newLocation: Location, contextByDoc: Map<Ref<Doc>, DocNotifyContext>): Promise<void> {
+  async function syncLocation (newLocation: Location): Promise<void> {
     const loc = await resolveLocation(newLocation)
     if (loc?.loc.path[2] !== notificationId) {
       return
@@ -174,7 +170,7 @@
 
     const [id, _class] = decodeObjectURI(loc?.loc.path[3] ?? '')
     const _id = await parseLinkId(linkProviders, id, _class)
-    const context = _id ? contextByDoc.get(_id) : undefined
+    const context = _id ? $contextByDocStore.get(_id) : undefined
 
     selectedContextId = context?._id
 
@@ -423,7 +419,7 @@
       short
     />
   {/if}
-  <div bind:this={replacedPanel} class="hulyComponent" class:beforeAside={asideComponent !== undefined && asideId}>
+  <div bind:this={replacedPanel} class="hulyComponent">
     {#if selectedContext && selectedComponent}
       <Component
         is={selectedComponent}
@@ -438,12 +434,6 @@
       />
     {/if}
   </div>
-  {#if asideComponent !== undefined && asideId}
-    <Separator name={'inbox'} index={1} color={'var(--theme-divider-color)'} separatorSize={1} />
-    <div class="hulyComponent aside">
-      <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close />
-    </div>
-  {/if}
 </div>
 
 <style lang="scss">

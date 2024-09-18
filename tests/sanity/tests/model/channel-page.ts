@@ -15,6 +15,9 @@ export class ChannelPage extends CommonPage {
   readonly textMessage = (messageText: string): Locator =>
     this.page.locator('.hulyComponent .activityMessage', { hasText: messageText })
 
+  readonly textMessageInSidebar = (messageText: string): Locator =>
+    this.page.locator('#sidebar .activityMessage', { hasText: messageText })
+
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.getByRole('table')
@@ -277,6 +280,14 @@ export class ChannelPage extends CommonPage {
       await expect(this.textMessage(messageText)).toBeVisible()
     } else {
       await expect(this.textMessage(messageText)).toBeHidden()
+    }
+  }
+
+  async checkIfMessageExistInSidebar (messageExists: boolean, messageText: string): Promise<void> {
+    if (messageExists) {
+      await expect(this.textMessageInSidebar(messageText)).toBeVisible()
+    } else {
+      await expect(this.textMessageInSidebar(messageText)).toBeHidden()
     }
   }
 

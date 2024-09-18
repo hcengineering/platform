@@ -79,7 +79,7 @@
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
     "htmlparser2": "^9.0.0",
-    "mongodb": "^6.8.0",
+    "mongodb": "^6.9.0",
     "node-fetch": "^2.6.6",
     "otp-generator": "^4.0.1",
     "telegraf": "^4.16.3",

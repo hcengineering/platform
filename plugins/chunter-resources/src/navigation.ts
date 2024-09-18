@@ -7,16 +7,27 @@ import {
   navigate
 } from '@hcengineering/ui'
 import { type Ref, type Doc, type Class } from '@hcengineering/core'
-import type { ActivityMessage } from '@hcengineering/activity'
-import { chunterId, type ChunterSpace, type ThreadMessage } from '@hcengineering/chunter'
-import { notificationId } from '@hcengineering/notification'
-import { workbenchId } from '@hcengineering/workbench'
-import { getObjectLinkId } from '@hcengineering/view-resources'
+import activity, { type ActivityMessage } from '@hcengineering/activity'
+import {
+  type Channel,
+  type ChatWidgetTab,
+  chunterId,
+  type ChunterSpace,
+  type ThreadMessage
+} from '@hcengineering/chunter'
+import { type DocNotifyContext, notificationId } from '@hcengineering/notification'
+import workbench, { type Widget, workbenchId } from '@hcengineering/workbench'
+import { classIcon, getObjectLinkId } from '@hcengineering/view-resources'
 import { getClient } from '@hcengineering/presentation'
 import view, { encodeObjectURI, decodeObjectURI } from '@hcengineering/view'
+import { createWidgetTab, isElementFromSidebar, sidebarStore } from '@hcengineering/workbench-resources'
+import { type Asset, translate } from '@hcengineering/platform'
+import contact from '@hcengineering/contact'
+import { get } from 'svelte/store'
 
 import { chatSpecials } from './components/chat/utils'
-import { isThreadMessage } from './utils'
+import { getChannelName, isThreadMessage } from './utils'
+import chunter from './plugin'
 
 export function openChannel (_id: string, _class: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>): void {
   const loc = getCurrentLocation()
@@ -152,11 +163,23 @@ export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
   return await buildThreadLink(loc, doc.objectId, doc.objectClass, doc.attachedTo, doc)
 }
 
-export async function replyToThread (message: ActivityMessage): Promise<void> {
+export async function replyToThread (message: ActivityMessage, e: Event): Promise<void> {
+  const fromSidebar = isElementFromSidebar(e.target as HTMLElement)
   const loc = getCurrentLocation()
 
-  if (loc.path[2] !== notificationId) {
-    loc.path[2] = chunterId
+  if (fromSidebar) {
+    const widget = getClient().getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]
+    const widgetState = get(sidebarStore).widgetsState.get(widget._id)
+    const tab = widgetState?.tabs.find((it) => it?.data?._id === message.attachedTo)
+    if (tab !== undefined) {
+      void openThreadInSidebarChannel(widget, tab as ChatWidgetTab, message)
+      return
+    }
+  }
+
+  void openThreadInSidebar(message._id, message)
+  if (loc.path[2] !== chunterId && loc.path[2] !== notificationId) {
+    return
   }
 
   const newLoc = await buildThreadLink(loc, message.attachedTo, message.attachedToClass, message._id)
@@ -193,4 +216,142 @@ export async function resetChunterLocIfEqual (_id: Ref<Doc>, _class: Ref<Class<D
   loc.path.length = 3
   closePanel()
   navigate(loc)
+}
+
+function getChannelClassIcon (object: Doc): Asset | undefined {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  if (hierarchy.isDerived(object._class, chunter.class.Channel)) {
+    return (object as Channel).private ? chunter.icon.Lock : chunter.icon.Hashtag
+  }
+
+  return classIcon(client, object._class)
+}
+
+export async function openChannelInSidebar (
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  doc?: Doc,
+  thread?: Ref<ActivityMessage>,
+  newTab = true
+): Promise<void> {
+  const client = getClient()
+
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]
+  if (widget === undefined) return
+
+  const object = doc ?? (await client.findOne(_class, { _id }))
+  if (object === undefined) return
+
+  const titleIntl = client.getHierarchy().getClass(object._class).label
+  const hierarchy = client.getHierarchy()
+  const iconMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIcon)
+  const isPerson = hierarchy.isDerived(_class, contact.class.Person)
+  const isDirect = hierarchy.isDerived(_class, chunter.class.DirectMessage)
+  const isChannel = hierarchy.isDerived(_class, chunter.class.Channel)
+  const name = (await getChannelName(_id, _class, object)) ?? (await translate(titleIntl, {}))
+
+  const tab: ChatWidgetTab = {
+    id: `chunter_${_id}`,
+    name,
+    icon: getChannelClassIcon(object),
+    iconComponent: isChannel ? undefined : iconMixin?.component,
+    iconProps: {
+      _id: object._id,
+      size: isDirect || isPerson ? 'tiny' : 'x-small',
+      compact: true
+    },
+    type: 'channel',
+    data: {
+      _id,
+      _class,
+      thread
+    }
+  }
+
+  createWidgetTab(widget, tab, newTab)
+}
+
+export async function openChannelInSidebarAction (
+  context: DocNotifyContext,
+  _: Event,
+  props?: { object?: Doc, newTab?: boolean }
+): Promise<void> {
+  await openChannelInSidebar(context.objectId, context.objectClass, props?.object, undefined, props?.newTab ?? false)
+}
+
+export async function openChannelInSidebarTabAction (
+  context: DocNotifyContext,
+  event: Event,
+  props?: { object?: Doc }
+): Promise<void> {
+  await openChannelInSidebarAction(context, event, { newTab: true, object: props?.object })
+}
+
+export async function openThreadInSidebarChannel (
+  widget: Widget,
+  tab: ChatWidgetTab,
+  message: ActivityMessage
+): Promise<void> {
+  const newTab: ChatWidgetTab = {
+    ...tab,
+    data: { ...tab.data, thread: message._id }
+  }
+  createWidgetTab(widget, newTab)
+}
+
+export async function closeThreadInSidebarChannel (widget: Widget, tab: ChatWidgetTab): Promise<void> {
+  const newTab: ChatWidgetTab = {
+    ...tab,
+    data: { ...tab.data, thread: undefined }
+  }
+
+  createWidgetTab(widget, newTab)
+}
+
+export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc): Promise<void> {
+  const client = getClient()
+
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]
+  if (widget === undefined) return
+
+  const message = msg ?? (await client.findOne(activity.class.ActivityMessage, { _id }))
+  if (message === undefined) return
+
+  const object = doc ?? (await client.findOne(message.attachedToClass, { _id: message.attachedTo }))
+  if (object === undefined) return
+
+  const titleIntl = client.getHierarchy().getClass(object._class).label
+  const name = (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {}))
+  const tabName = await translate(chunter.string.ThreadIn, { name })
+  const loc = getCurrentLocation()
+
+  const tab: ChatWidgetTab = {
+    id: 'thread_' + _id,
+    name: tabName,
+    icon: chunter.icon.Thread,
+    allowedPath: loc.path.join('/'),
+    type: 'thread',
+    data: {
+      _id: object?._id,
+      _class: object?._class,
+      thread: message._id
+    }
+  }
+  createWidgetTab(widget, tab, true)
+}
+
+export function closeChatWidgetTab (tab?: ChatWidgetTab): void {
+  if (tab?.type === 'thread') {
+    const loc = getCurrentLocation()
+
+    if (loc.path[2] === chunterId || loc.path[2] === notificationId) {
+      if (loc.path[4] === tab.data.thread) {
+        loc.path[4] = ''
+        loc.path.length = 4
+        navigate(loc)
+      }
+    }
+  }
 }

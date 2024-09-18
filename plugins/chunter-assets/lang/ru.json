@@ -121,6 +121,7 @@
     "JoinChannel": "Приссоединение к каналу",
     "YouJoinedChannel": "Вы присоединились к каналу",
     "AndMore": "и еще {count}",
-    "IsTyping": "{count, plural, =1 {печатает} other {печатают}}..."
+    "IsTyping": "{count, plural, =1 {печатает} other {печатают}}...",
+    "ThreadIn": "Обсуждение в {name}"
   }
 }

@@ -253,7 +253,7 @@ export async function upgradeModel (
   workspaceId: WorkspaceIdWithUrl,
   txes: Tx[],
   pipeline: Pipeline,
-  storageAdapter: AggregatorStorageAdapter,
+  storageAdapter: StorageAdapter,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   skipTxUpdate: boolean = false,
@@ -413,9 +413,7 @@ export async function upgradeModel (
       let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
-        await ctx.with(op[0], {}, async () => {
-          await op[1].upgrade(migrateState, getUpgradeClient, logger)
-        })
+        await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, getUpgradeClient, logger))
         logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
         await progress(60 + ((100 / migrateOperations.length) * i * 30) / 100)
         i++
@@ -474,11 +472,11 @@ export async function fetchModel (
   const modelDb = new ModelDb(hierarchy)
 
   if (model === undefined) {
-    const res = await ctx.with('get-model', {}, async (ctx) => await pipeline.loadModel(ctx, 0))
+    const res = await ctx.with('load-model', {}, (ctx) => pipeline.loadModel(ctx, 0))
     model = Array.isArray(res) ? res : res.transactions
   }
 
-  await ctx.with('build local model', {}, async () => {
+  ctx.withSync('build local model', {}, () => {
     for (const tx of model ?? []) {
       try {
         hierarchy.tx(tx)

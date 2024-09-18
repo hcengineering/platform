@@ -74,11 +74,18 @@ class PipelineImpl implements Pipeline {
     let current: Middleware | undefined
     for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
-      const newCur = await element(ctx, context, current)
-      if (newCur != null) {
-        this.middlewares.push(newCur)
+      try {
+        const newCur = await element(ctx, context, current)
+        if (newCur != null) {
+          this.middlewares.push(newCur)
+        }
+        current = newCur ?? current
+      } catch (err: any) {
+        ctx.error('failed to initialize pipeline', { err, workspace: context.workspace.name })
+        // We need to call close for all items.
+        await this.close()
+        throw err
       }
-      current = newCur ?? current
     }
     this.middlewares.reverse()
 

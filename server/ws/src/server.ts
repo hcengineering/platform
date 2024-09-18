@@ -91,6 +91,7 @@ class TSessionManager implements SessionManager {
   timeMinutes = 0
 
   modelVersion = process.env.MODEL_VERSION ?? ''
+  serverVersion = process.env.VERSION ?? ''
 
   oldClientErrors: number = 0
   clientErrors: number = 0
@@ -914,7 +915,8 @@ class TSessionManager implements SessionManager {
             id: -1,
             result: 'hello',
             binary: service.binaryMode,
-            reconnect
+            reconnect,
+            serverVersion: this.serverVersion
           }
           ws.send(requestCtx, helloResponse, false, false)
           return

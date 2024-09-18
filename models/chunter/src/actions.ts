@@ -18,6 +18,7 @@ import view, { actionTemplates as viewTemplates, createAction, template } from '
 import notification, { notificationActionTemplates } from '@hcengineering/model-notification'
 import activity from '@hcengineering/activity'
 import workbench from '@hcengineering/model-workbench'
+import core from '@hcengineering/model-core'
 
 import chunter from './plugin'
 
@@ -35,6 +36,13 @@ const actionTemplates = template({
 })
 
 export function defineActions (builder: Builder): void {
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: chunter.string.Chat, visible: true },
+    chunter.category.Chunter
+  )
+
   createAction(
     builder,
     {
@@ -127,7 +135,7 @@ export function defineActions (builder: Builder): void {
       },
       context: {
         mode: 'context',
-        group: 'tools'
+        group: 'remove'
       }
     },
     chunter.action.ArchiveChannel
@@ -138,7 +146,7 @@ export function defineActions (builder: Builder): void {
     target: chunter.class.Channel,
     context: {
       mode: ['browser', 'context'],
-      group: 'create'
+      group: 'edit'
     },
     action: workbench.actionImpl.Navigate,
     actionProps: {
@@ -245,5 +253,25 @@ export function defineActions (builder: Builder): void {
     query: {
       objectClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
     }
+  })
+
+  createAction(builder, {
+    action: chunter.actionImpl.OpenInSidebar,
+    label: workbench.string.OpenInSidebar,
+    icon: view.icon.DetailsFilled,
+    input: 'focus',
+    category: chunter.category.Chunter,
+    target: notification.class.DocNotifyContext,
+    context: { mode: ['context', 'browser'], group: 'tools' }
+  })
+
+  createAction(builder, {
+    action: chunter.actionImpl.OpenInSidebarTab,
+    label: workbench.string.OpenInSidebarNewTab,
+    icon: view.icon.DetailsFilled,
+    input: 'focus',
+    category: chunter.category.Chunter,
+    target: notification.class.DocNotifyContext,
+    context: { mode: ['context', 'browser'], group: 'tools' }
   })
 }

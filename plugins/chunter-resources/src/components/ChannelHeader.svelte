@@ -19,6 +19,7 @@
   import { Channel } from '@hcengineering/chunter'
   import { ActivityMessagesFilter, WithReferences } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
+  import view from '@hcengineering/view'
 
   import Header from './Header.svelte'
   import chunter from '../plugin'
@@ -31,6 +32,7 @@
   export let allowClose: boolean = false
   export let canOpen: boolean = false
   export let withAside: boolean = false
+  export let withSearch: boolean = true
   export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
 
@@ -47,12 +49,13 @@
   })
 
   async function updateDescription (_id: Ref<Doc>, _class: Ref<Class<Doc>>, object?: Doc): Promise<void> {
-    if (hierarchy.isDerived(_class, chunter.class.DirectMessage)) {
+    if (hierarchy.isDerived(_class, chunter.class.DirectMessage) || hierarchy.isDerived(_class, contact.class.Person)) {
       description = undefined
     } else if (hierarchy.isDerived(_class, chunter.class.Channel)) {
       description = (object as Channel)?.topic
     } else {
-      description = await getDocTitle(client, _id, _class, object)
+      const hasId = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIdentifier) !== undefined
+      description = hasId ? await getDocTitle(client, _id, _class, object) : undefined
     }
   }
 
@@ -74,6 +77,7 @@
   {canOpen}
   {withAside}
   {isAsideShown}
+  {withSearch}
   on:aside-toggled
   on:close
 >

@@ -46,8 +46,8 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
     }
     const txAdapter = this.context.adapterManager.getAdapter(DOMAIN_TX, true) as TxAdapter
 
-    this.model = await ctx.with('get model', {}, async (ctx) => {
-      const model = await ctx.with('fetch-model', {}, async (ctx) => await txAdapter.getModel(ctx))
+    this.model = await ctx.with('get-model', {}, async (ctx) => {
+      const model = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
       for (const tx of model) {
         try {
           this.context.hierarchy.tx(tx)

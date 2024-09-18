@@ -29,6 +29,11 @@
     "LogInAnyway": "仍然登录",
     "WorkspaceCreating": "创建进行中...",
     "AccessDenied": "对象不存在或您无权访问",
-    "UpgradeDownloadProgress": "正在下载更新：{percent}%"
+    "UpgradeDownloadProgress": "正在下载更新：{percent}%",
+    "Widget": "小部件",
+    "WidgetPreferences": "小部件首选项",
+    "OpenInSidebar": "在侧边栏中打开",
+    "OpenInSidebarNewTab": "在侧边栏新标签页中打开",
+    "ConfigureWidgets": "配置小部件"
   }
 }

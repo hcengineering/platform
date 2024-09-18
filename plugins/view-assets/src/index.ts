@@ -55,5 +55,6 @@ loadMetadata(view.icon, {
   Circle: `${icons}#circle`,
   Join: `${icons}#join`,
   Leave: `${icons}#leave`,
-  Copy: `${icons}#copy`
+  Copy: `${icons}#copy`,
+  DetailsFilled: `${icons}#details-filled`
 })

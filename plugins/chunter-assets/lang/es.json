@@ -121,6 +121,7 @@
     "JoinChannel": "Unirse",
     "YouJoinedChannel": "Te has unido al canal",
     "AndMore": "y {count} más",
-    "IsTyping": "está escribiendo..."
+    "IsTyping": "está escribiendo...",
+    "ThreadIn": "hilo en {name}"
   }
 }

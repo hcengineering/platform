@@ -44,6 +44,7 @@
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
+    "@hcengineering/workbench": "^0.6.16",
     "fast-equals": "^5.0.1"
   },
   "repository": "https://github.com/hcengineering/platform",
