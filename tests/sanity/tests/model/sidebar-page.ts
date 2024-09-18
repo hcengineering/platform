@@ -20,7 +20,7 @@ export class SidebarPage extends CommonPage {
 
   calendarSidebarButton = (): Locator => this.sidebar().locator('button[id$="Calendar"]')
   officeSidebarButton = (): Locator => this.sidebar().locator('button[id$="Office"]')
-  chatSidebutButton = (): Locator => this.sidebar().locator('button[id$="Chat"]')
+  chatSidebarButton = (): Locator => this.sidebar().locator('button[id$="Chat"]')
 
   verticalTabs = (): Locator => this.sidebar().locator('.tabs').locator('.container')
   verticalTabByName = (name: string): Locator =>
@@ -32,20 +32,12 @@ export class SidebarPage extends CommonPage {
   // buttonOpenChannelInSidebar =
 
   // Actions
-  async checkIfSidebarIsOpen (needBeOpened: boolean): Promise<void> {
-    if (needBeOpened) {
-      await expect(this.content()).toBeVisible()
-    } else {
-      await expect(this.content()).toBeHidden()
-    }
+  async checkIfSidebarIsOpen (isOpen: boolean): Promise<void> {
+    await expect(this.content()).toBeVisible({ visible: isOpen })
   }
 
-  async checkIfSidebarHasVerticalTab (needBeExist: boolean, tabName: string): Promise<void> {
-    if (needBeExist) {
-      await expect(this.verticalTabByName(tabName)).toBeVisible()
-    } else {
-      await expect(this.verticalTabByName(tabName)).toBeHidden()
-    }
+  async checkIfSidebarHasVerticalTab (isExist: boolean, tabName: string): Promise<void> {
+    await expect(this.verticalTabByName(tabName)).toBeVisible({ visible: isExist })
   }
 
   async clickVerticalTab (tabName: string): Promise<void> {
@@ -76,11 +68,7 @@ export class SidebarPage extends CommonPage {
   }
 
   async checkIfVerticalTabIsPinned (needBePinned: boolean, tabName: string): Promise<void> {
-    if (needBePinned) {
-      await expect(this.verticalTabCloseButton(tabName)).toBeHidden()
-    } else {
-      await expect(this.verticalTabCloseButton(tabName)).toBeVisible()
-    }
+    await expect(this.verticalTabCloseButton(tabName)).toBeVisible({ visible: !needBePinned })
   }
 
   async checkNumberOfVerticalTabs (count: number): Promise<void> {
@@ -97,6 +85,20 @@ export class SidebarPage extends CommonPage {
         break
       case 'calendar':
         await expect(this.contentHeaderByTitle(tabName)).toBeVisible()
+        break
+    }
+  }
+
+  async checkIfSidebarPageButtonIsExist (isExist: boolean, type: SidebarTabTypes): Promise<void> {
+    switch (type) {
+      case 'chat':
+        await expect(this.chatSidebarButton()).toBeVisible({ visible: isExist })
+        break
+      case 'office':
+        await expect(this.officeSidebarButton()).toBeVisible({ visible: isExist })
+        break
+      case 'calendar':
+        await expect(this.calendarSidebarButton()).toBeVisible({ visible: isExist })
         break
     }
   }

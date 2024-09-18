@@ -398,7 +398,7 @@ test.describe('Channel tests', () => {
     await channelPageSecond.checkMessageExist(`@${mentionName}`, true, `@${mentionName}`)
   })
 
-  test('User can star and unstar a channel', async () => {
+  test('User is able to star and unstar a channel', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -422,7 +422,7 @@ test.describe('Channel tests', () => {
     })
   })
 
-  test('User can leave and join a channel', async () => {
+  test('User is able to leave and join a channel', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -464,7 +464,7 @@ test.describe('Channel tests', () => {
     })
   })
 
-  test('User can filter channels in table', async () => {
+  test('User is able to filter channels in table', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -489,7 +489,7 @@ test.describe('Channel tests', () => {
     })
   })
 
-  test('User can search channel in table', async () => {
+  test('User is able to search channel in table', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -530,7 +530,10 @@ test.describe('Channel tests', () => {
     })
 
     await test.step('Open channel in sidebar', async () => {
+      await sidebarPage.checkIfSidebarPageButtonIsExist(false, 'chat')
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Open in sidebar new tab')
+
+      await sidebarPage.checkIfSidebarPageButtonIsExist(true, 'chat')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfSidebarIsOpen(true)
       await sidebarPage.checkIfSidebarTabIsOpen('chat', data.channelName)
@@ -584,13 +587,14 @@ test.describe('Channel tests', () => {
       await sidebarPage.checkIfSidebarTabIsOpen('chat', 'general')
     })
 
-    await test.step('Close the last channel tab in sidebar', async () => {
+    await test.step('Close the last channel tab in Sidebar', async () => {
       await sidebarPage.closeVerticalTabByCloseButton('general')
       await sidebarPage.checkIfSidebarIsOpen(false)
+      await sidebarPage.checkIfSidebarPageButtonIsExist(false, 'chat')
     })
   })
 
-  test.only('User is able to create sidebar thread automatically in a sidebar', async () => {
+  test('User is able to create thread automatically in Sidebar', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -603,7 +607,7 @@ test.describe('Channel tests', () => {
       await channelPage.sendMessage('Test message')
     })
 
-    await test.step('Open channel in sidebar', async () => {
+    await test.step('Open channel in Sidebar', async () => {
       await channelPage.replyToMessage('Test message', 'Reply message')
 
       await sidebarPage.checkIfSidebarIsOpen(true)
@@ -612,7 +616,7 @@ test.describe('Channel tests', () => {
       await sidebarPage.checkIfSidebarTabIsOpen('chat', 'Thread')
     })
 
-    await test.step('User go to another chat and sidebar with tread disappears', async () => {
+    await test.step('User go to another chat and Sidebar with tread disappears', async () => {
       await channelPage.clickChannel('random')
       await sidebarPage.checkIfSidebarIsOpen(false)
     })
