@@ -232,19 +232,15 @@ export class PlanningPage extends CalendarPage {
   }
 
   async openToDoByName (toDoName: string): Promise<void> {
-    await this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName }).click()
+    await this.page.locator(`button.hulyToDoLine-container:has-text("${toDoName}")`).click()
   }
 
   async checkToDoNotExist (toDoName: string): Promise<void> {
-    await expect(
-      this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
-    ).toHaveCount(0)
+    await expect(this.page.locator(`button.hulyToDoLine-container:has-text("${toDoName}")`)).toHaveCount(0)
   }
 
   async checkToDoExist (toDoName: string): Promise<void> {
-    await expect(
-      this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
-    ).toHaveCount(1)
+    await expect(this.page.locator(`button.hulyToDoLine-container:has-text("${toDoName}")`)).toHaveCount(1)
   }
 
   async checkToDo (data: NewToDo): Promise<void> {

@@ -29,6 +29,11 @@
     "LogInAnyway": "Iniciar sesión de todas formas",
     "WorkspaceCreating": "Creation in progress...",
     "AccessDenied": "El objeto no existe o no tienes permiso para acceder a él.",
-    "UpgradeDownloadProgress": "Descargando actualización: {percent}%"
+    "UpgradeDownloadProgress": "Descargando actualización: {percent}%",
+    "Widget": "Widget",
+    "WidgetPreferences": "Preferencias del widget",
+    "OpenInSidebar": "Abrir en la barra lateral",
+    "OpenInSidebarNewTab": "Abrir en una nueva pestaña de la barra lateral",
+    "ConfigureWidgets": "Configurar widgets"
   }
 }

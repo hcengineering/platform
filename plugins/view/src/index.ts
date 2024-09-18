@@ -251,7 +251,8 @@ const view = plugin(viewId, {
     Join: '' as Asset,
     Leave: '' as Asset,
     Copy: '' as Asset,
-    TodoList: '' as Asset
+    TodoList: '' as Asset,
+    DetailsFilled: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

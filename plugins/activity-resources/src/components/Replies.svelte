@@ -84,7 +84,7 @@
 
     if (replyProvider) {
       const fn = await getResource(replyProvider.function)
-      await fn(object)
+      await fn(object, e)
     }
   }
 </script>

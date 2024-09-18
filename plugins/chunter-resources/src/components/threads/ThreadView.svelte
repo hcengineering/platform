@@ -16,10 +16,11 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumbs, Label, location as locationStore, Header } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
+  import attachment from '@hcengineering/attachment'
 
   import chunter from '../../plugin'
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
@@ -33,6 +34,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const dispatch = createEventDispatcher()
 
   const messageQuery = createQuery()
   const channelQuery = createQuery()
@@ -62,9 +64,24 @@
     unsubscribeLocation()
   })
 
-  $: messageQuery.query(activity.class.ActivityMessage, { _id }, (result: ActivityMessage[]) => {
-    message = result[0] as DisplayActivityMessage
-  })
+  $: messageQuery.query(
+    activity.class.ActivityMessage,
+    { _id },
+    (result: ActivityMessage[]) => {
+      message = result[0] as DisplayActivityMessage
+
+      if (message === undefined) {
+        dispatch('close')
+      }
+    },
+    {
+      lookup: {
+        _id: {
+          attachments: attachment.class.Attachment
+        }
+      }
+    }
+  )
 
   $: message &&
     channelQuery.query(message.attachedToClass, { _id: message.attachedTo }, (res) => {
@@ -118,19 +135,28 @@
 
 <div class="hulyComponent-content hulyComponent-content__container noShrink">
   {#if message && dataProvider !== undefined}
-    <ChannelScrollView bind:selectedMessageId embedded skipLabels object={message} provider={dataProvider}>
+    <ChannelScrollView
+      bind:selectedMessageId
+      embedded
+      skipLabels
+      object={message}
+      provider={dataProvider}
+      initialScrollBottom={false}
+      fullHeight={false}
+    >
       <svelte:fragment slot="header">
         <div class="mt-3">
           <ThreadParentMessage {message} />
         </div>
-        <div class="separator">
-          {#if message.replies && message.replies > 0}
+
+        {#if message.replies && message.replies > 0}
+          <div class="separator">
             <div class="label lower">
               <Label label={activity.string.RepliesCount} params={{ replies: message.replies }} />
             </div>
-          {/if}
-          <div class="line" />
-        </div>
+            <div class="line" />
+          </div>
+        {/if}
       </svelte:fragment>
     </ChannelScrollView>
   {/if}

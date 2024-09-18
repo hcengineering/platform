@@ -49,6 +49,7 @@
 
   export let isDock: boolean = false
   export let room: Ref<TypeRoom>
+  export let canUnpin: boolean = true
 
   interface ParticipantData {
     _id: string
@@ -320,14 +321,16 @@
       {/if}
     </div>
     <div class="flex-row-center flex-gap-2">
-      <ActionIcon
-        icon={view.icon.Pin}
-        label={isDock ? view.string.Unpin : view.string.Pin}
-        size={'small'}
-        action={() => {
-          dispatch('dock')
-        }}
-      />
+      {#if canUnpin}
+        <ActionIcon
+          icon={view.icon.Pin}
+          label={isDock ? view.string.Unpin : view.string.Pin}
+          size={'small'}
+          action={() => {
+            dispatch('dock')
+          }}
+        />
+      {/if}
       {#if allowLeave}
         <ActionIcon
           icon={love.icon.LeaveRoom}

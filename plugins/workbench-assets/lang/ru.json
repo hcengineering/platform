@@ -29,6 +29,11 @@
     "LogInAnyway": "Все равно войти",
     "WorkspaceCreating": "Пространство создается...",
     "AccessDenied": "Объект не существует или у вас нет прав доступа.",
-    "UpgradeDownloadProgress": "Загрузка обновления: {percent}%"
+    "UpgradeDownloadProgress": "Загрузка обновления: {percent}%",
+    "Widget": "Виджет",
+    "WidgetPreferences": "Настройки виджета",
+    "OpenInSidebar": "Открыть в боковой панели",
+    "OpenInSidebarNewTab": "Открыть в новой вкладке боковой панели",
+    "ConfigureWidgets": "Настроить виджеты"
   }
 }

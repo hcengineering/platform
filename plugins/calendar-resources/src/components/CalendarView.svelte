@@ -29,19 +29,18 @@
   import { createQuery } from '@hcengineering/presentation'
   import {
     AnyComponent,
-    Button,
-    DropdownLabelsIntl,
-    IconBack,
-    IconForward,
     MonthCalendar,
     YearCalendar,
     areDatesEqual,
     getMonday,
-    showPopup
+    showPopup,
+    AnySvelteComponent
   } from '@hcengineering/ui'
+
   import { CalendarMode, DayCalendar, calendarByIdStore, hidePrivateEvents } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
+  import CalendarHeader from './CalendarHeader.svelte'
 
   export let _class: Ref<Class<Doc>> = calendar.class.Event
   export let query: DocumentQuery<Event> | undefined = undefined
@@ -55,6 +54,7 @@
     CalendarMode.Month,
     CalendarMode.Year
   ]
+  export let headerComponent: AnySvelteComponent | undefined = undefined
 
   const me = getCurrentAccount() as PersonAccount
 
@@ -236,7 +236,7 @@
 
   const dragItemId = 'drag_item' as Ref<Event>
 
-  function dragEnter (e: CustomEvent<any>) {
+  function dragEnter (e: CustomEvent<any>): void {
     if (dragItem !== undefined) {
       const current = raw.find((p) => p._id === dragItemId)
       if (current !== undefined) {
@@ -295,47 +295,43 @@
     { id: 'month', label: calendar.string.ModeMonth, mode: CalendarMode.Month },
     { id: 'year', label: calendar.string.ModeYear, mode: CalendarMode.Year }
   ]
+
+  function handleToday (): void {
+    inc(0)
+  }
+
+  function handleBack (): void {
+    inc(-1)
+  }
+
+  function handleForward (): void {
+    inc(1)
+  }
 </script>
 
-<div class="calendar-header">
-  <div class="title">
-    {getMonthName(currentDate)}
-    <span>{currentDate.getFullYear()}</span>
-  </div>
-  <div class="flex-row-center gap-2">
-    {#if ddItems.length > 1}
-      <DropdownLabelsIntl
-        items={ddItems.map((it) => {
-          return { id: it.id, label: it.label, params: it.params }
-        })}
-        size={'medium'}
-        selected={ddItems.find((it) => it.mode === mode)?.id}
-        on:selected={(e) => (mode = ddItems.find((it) => it.id === e.detail)?.mode ?? ddItems[0].mode)}
-      />
-    {/if}
-    <Button
-      label={calendar.string.Today}
-      on:click={() => {
-        inc(0)
-      }}
-    />
-    <Button
-      icon={IconBack}
-      kind={'ghost'}
-      on:click={() => {
-        inc(-1)
-      }}
-    />
-    <Button
-      icon={IconForward}
-      kind={'ghost'}
-      on:click={() => {
-        inc(1)
-      }}
-    />
-  </div>
-</div>
-
+{#if headerComponent}
+  <svelte:component
+    this={headerComponent}
+    {mode}
+    {currentDate}
+    {ddItems}
+    monthName={getMonthName(currentDate)}
+    onToday={handleToday}
+    onBack={handleBack}
+    onForward={handleForward}
+    on:close
+  />
+{:else}
+  <CalendarHeader
+    {mode}
+    {currentDate}
+    {ddItems}
+    monthName={getMonthName(currentDate)}
+    onToday={handleToday}
+    onBack={handleBack}
+    onForward={handleForward}
+  />
+{/if}
 {#if mode === CalendarMode.Year}
   <YearCalendar
     {mondayStart}
@@ -412,27 +408,3 @@
     />
   {/key}
 {/if}
-
-<!-- <div class="min-h-4 max-h-4 h-4 flex-no-shrink" /> -->
-<style lang="scss">
-  .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1.75rem 0.75rem 2.25rem;
-    min-width: 0;
-    min-height: 0;
-
-    .title {
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-
-      &::first-letter {
-        text-transform: uppercase;
-      }
-      span {
-        opacity: 0.4;
-      }
-    }
-  }
-</style>

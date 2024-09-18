@@ -69,7 +69,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
   private readonly tailQuery = createQuery(true)
   private readonly refsQuery = createQuery(true)
 
-  private chatId: Ref<Doc> | undefined = undefined
+  chatId: Ref<Doc> | undefined = undefined
   private readonly msgClass: Ref<Class<ActivityMessage>>
   private selectedMsgId: Ref<ActivityMessage> | undefined = undefined
   private tailStart: Timestamp | undefined = undefined

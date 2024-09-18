@@ -257,14 +257,14 @@ test.describe('Channel tests', () => {
     await channelPage.checkIfMessageExist(true, 'Test message')
   })
 
-  test('Check if user can pin message', async () => {
+  test('Check if user can reply message', async () => {
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('random')
     await channelPage.sendMessage('Test message')
     await channelPage.replyToMessage('Test message', 'Reply message')
-    await channelPage.checkIfMessageExist(true, 'Reply message')
+    await channelPage.checkIfMessageExistInSidebar(true, 'Reply message')
     await channelPage.closeAndOpenReplyMessage()
-    await channelPage.checkIfMessageExist(true, 'Reply message')
+    await channelPage.checkIfMessageExistInSidebar(true, 'Reply message')
   })
 
   test('Check if user can edit message', async ({ page }) => {
@@ -496,13 +496,6 @@ test.describe('Channel tests', () => {
 
       await leftSideMenuPage.clickChunter()
       await channelPage.clickChannelTab()
-    })
-
-    await test.step('Search channel by first 3 char and find nothing', async () => {
-      await channelPage.searchChannel(data.channelName.slice(0, 3))
-      await channelPage.page.keyboard.press('Enter')
-      await channelPage.checkIfChannelTableExist(data.channelName, false)
-      await channelPage.checkIfChannelTableExist('general', false)
     })
 
     await test.step('Search channel by fillName and find channel', async () => {

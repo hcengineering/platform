@@ -228,7 +228,7 @@ export interface SavedMessage extends Preference {
 }
 
 export interface ReplyProvider extends Doc {
-  function: Resource<(message: ActivityMessage) => Promise<void>>
+  function: Resource<(message: ActivityMessage, event: MouseEvent) => Promise<void>>
 }
 
 export interface UserMentionInfo extends AttachedDoc {

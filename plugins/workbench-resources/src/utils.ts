@@ -25,12 +25,14 @@ import {
   closePanel,
   fetchMetadataLocalStorage,
   getCurrentLocation,
+  type Location,
   navigate,
-  setMetadataLocalStorage
+  setMetadataLocalStorage,
+  location
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import workbench, { type Application, type NavigatorModel } from '@hcengineering/workbench'
-import { writable } from 'svelte/store'
+import { derived, writable } from 'svelte/store'
 
 export const workspaceCreating = writable<number | undefined>(undefined)
 
@@ -155,6 +157,7 @@ export async function showApplication (app: Application): Promise<void> {
 }
 
 export const workspacesStore = writable<Workspace[]>([])
+export const workspaceStore = derived(location, (loc: Location) => loc.path[1])
 
 /**
  * @public

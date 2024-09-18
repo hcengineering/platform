@@ -46,6 +46,7 @@
     "@hcengineering/calendar": "^0.6.24",
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
-    "@hcengineering/view": "^0.6.13"
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

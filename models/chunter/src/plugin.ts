@@ -22,6 +22,7 @@ import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
 import type { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import { type WidgetTab } from '@hcengineering/workbench'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -29,6 +30,8 @@ export default mergeIds(chunterId, chunter, {
     DmPresenter: '' as AnyComponent,
     ChannelsPanel: '' as AnyComponent,
     Chat: '' as AnyComponent,
+    ChatWidget: '' as AnyComponent,
+    ChatWidgetTab: '' as AnyComponent,
     ChatMessageNotificationLabel: '' as AnyComponent,
     ThreadNotificationPresenter: '' as AnyComponent,
     JoinChannelNotificationPresenter: '' as AnyComponent
@@ -47,7 +50,9 @@ export default mergeIds(chunterId, chunter, {
     UnarchiveChannel: '' as ViewAction,
     ConvertDmToPrivateChannel: '' as ViewAction,
     DeleteChatMessage: '' as ViewAction,
-    ReplyToThread: '' as ViewAction
+    ReplyToThread: '' as ViewAction,
+    OpenInSidebar: '' as ViewAction,
+    OpenInSidebarTab: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>
@@ -98,9 +103,10 @@ export default mergeIds(chunterId, chunter, {
     CanCopyMessageLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetThreadLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    ReplyToThread: '' as Resource<(doc: ActivityMessage) => Promise<void>>,
+    ReplyToThread: '' as Resource<(doc: ActivityMessage, event: MouseEvent) => Promise<void>>,
     CanReplyToThread: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    GetMessageLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+    GetMessageLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    CloseChatWidgetTab: '' as Resource<(tab: WidgetTab) => Promise<void>>
   },
   filter: {
     ChatMessagesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>

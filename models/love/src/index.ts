@@ -14,13 +14,13 @@
 //
 
 import contact, { type Employee, type Person } from '@hcengineering/contact'
-import { AccountRole, DOMAIN_TRANSIENT, IndexKind, type Domain, type Ref } from '@hcengineering/core'
+import { AccountRole, type Domain, DOMAIN_TRANSIENT, IndexKind, type Ref } from '@hcengineering/core'
 import {
-  loveId,
   type DevicesPreference,
   type Floor,
   type Invite,
   type JoinRequest,
+  loveId,
   type Meeting,
   type Office,
   type ParticipantInfo,
@@ -30,7 +30,7 @@ import {
   type RoomInfo,
   type RoomType
 } from '@hcengineering/love'
-import { Index, Mixin, Model, Prop, TypeRef, type Builder } from '@hcengineering/model'
+import { type Builder, Index, Mixin, Model, Prop, TypeRef } from '@hcengineering/model'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import core, { TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -39,7 +39,7 @@ import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import workbench from '@hcengineering/workbench'
+import workbench, { WidgetType } from '@hcengineering/workbench'
 import love from './plugin'
 
 export { loveId } from '@hcengineering/love'
@@ -163,6 +163,32 @@ export function createModel (builder: Builder): void {
       component: love.component.Main
     },
     love.app.Love
+  )
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: love.string.Office,
+      type: WidgetType.Fixed,
+      icon: love.icon.Love,
+      component: love.component.LoveWidget,
+      headerLabel: love.string.Office
+    },
+    love.ids.LoveWidget
+  )
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: love.string.MeetingRoom,
+      type: WidgetType.Flexible,
+      icon: love.icon.Cam,
+      component: love.component.VideoWidget,
+      size: 'medium'
+    },
+    love.ids.VideoWidget
   )
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {

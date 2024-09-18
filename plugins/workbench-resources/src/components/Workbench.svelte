@@ -65,7 +65,8 @@
     rootBarExtensions,
     setResolvedLocation,
     showPopup,
-    workbenchSeparators
+    workbenchSeparators,
+    mainSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -93,6 +94,8 @@
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
   import TopMenu from './icons/TopMenu.svelte'
+  import WidgetsBar from './sidebar/Sidebar.svelte'
+  import { sidebarStore, SidebarVariant, syncSidebarState } from '../sidebar'
 
   let contentPanel: HTMLElement
 
@@ -150,6 +153,7 @@
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())
     })
+    syncSidebarState()
   })
 
   const account = getCurrentAccount() as PersonAccount
@@ -607,6 +611,7 @@
   let lastLoc: Location | undefined = undefined
 
   defineSeparators('workbench', workbenchSeparators)
+  defineSeparators('main', mainSeparators)
 
   $: mainNavigator = currentApplication && navigatorModel && navigator && $deviceInfo.navigator.visible
   $: elementPanel = $deviceInfo.replacedPanel ?? contentPanel
@@ -615,6 +620,14 @@
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
       ? !client.getHierarchy().as(person, contact.mixin.Employee).active
       : false
+
+  let asideComponent: AnyComponent | undefined
+
+  $: if (asideId !== undefined && navigatorModel !== undefined) {
+    asideComponent = navigatorModel?.aside ?? currentApplication?.aside
+  } else {
+    asideComponent = undefined
+  }
 </script>
 
 {#if person && deactivated && !isAdminUser()}
@@ -852,17 +865,18 @@
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
-      {#if asideId && navigatorModel !== undefined}
-        {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
-        {#if asideComponent !== undefined}
-          <Separator name={'workbench'} index={1} color={'transparent'} separatorSize={0} short />
-          <div class="antiPanel-component antiComponent aside" bind:this={aside}>
-            <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
-          </div>
-        {/if}
+      {#if asideComponent !== undefined}
+        <Separator name={'workbench'} index={1} color={'transparent'} separatorSize={0} short />
+        <div class="antiPanel-component antiComponent aside" bind:this={aside}>
+          <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
+        </div>
       {/if}
     </div>
   </div>
+  {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
+    <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
+  {/if}
+  <WidgetsBar />
   <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />

@@ -25,7 +25,9 @@ export default mergeIds(loveId, love, {
   component: {
     Main: '' as AnyComponent,
     WorkbenchExtension: '' as AnyComponent,
-    Settings: '' as AnyComponent
+    Settings: '' as AnyComponent,
+    LoveWidget: '' as AnyComponent,
+    VideoWidget: '' as AnyComponent
   },
   app: {
     Love: '' as Ref<Doc>
