@@ -201,7 +201,9 @@
         {#if !isShort}
           <div class="header clear-mins">
             {#if person}
-              <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+              <div class="username">
+                <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+              </div>
             {:else}
               <div class="strong">
                 <Label label={core.string.System} />
@@ -419,5 +421,10 @@
     bottom: -0.375rem;
     right: -0.375rem;
     color: var(--content-color);
+  }
+
+  .username {
+    font-weight: 500;
+    margin-right: 0.25rem;
   }
 </style>
