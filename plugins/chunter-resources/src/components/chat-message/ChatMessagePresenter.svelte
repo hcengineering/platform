@@ -195,6 +195,9 @@
           <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
               <MessageViewer message={value.message} />
+              {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
+                <div class="mt-2" />
+              {/if}
               <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
               <InlineButtons {value} {inlineButtons} />
             </div>
@@ -202,6 +205,9 @@
         {:else}
           <div class="clear-mins">
             <MessageViewer message={value.message} />
+            {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
+              <div class="mt-2" />
+            {/if}
             <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
             <InlineButtons {value} {inlineButtons} />
           </div>
