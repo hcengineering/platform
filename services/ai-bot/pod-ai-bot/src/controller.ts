@@ -20,7 +20,7 @@ import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { WorkspaceLoginInfo } from '@hcengineering/account'
 import OpenAI from 'openai'
-import { encoding_for_model } from 'tiktoken'
+import { encodingForModel } from 'js-tiktoken'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
 
 import { WorkspaceClient } from './workspaceClient'
@@ -41,7 +41,7 @@ export class AIBotController {
   private readonly intervalId: NodeJS.Timeout
 
   readonly aiClient?: OpenAI
-  readonly encoding = encoding_for_model(config.OpenAIModel)
+  readonly encoding = encodingForModel(config.OpenAIModel)
 
   assignTimeout: NodeJS.Timeout | undefined
   assignAttempts = 0
@@ -199,8 +199,6 @@ export class AIBotController {
 
   async close (): Promise<void> {
     clearInterval(this.intervalId)
-
-    this.encoding.free()
 
     for (const workspace of this.workspaces.values()) {
       await workspace.close()

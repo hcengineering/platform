@@ -41,11 +41,12 @@ import {
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import { translate, type Asset } from '@hcengineering/platform'
+import { translate, type Asset, getMetadata } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent, languageStore } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
+import aiBot from '@hcengineering/ai-bot'
 import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
@@ -560,4 +561,9 @@ export async function showOriginalMessage (message: ChatMessage): Promise<void> 
     store.delete(message._id)
     return store
   })
+}
+
+export async function canTranslateMessage (): Promise<boolean> {
+  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+  return url !== ''
 }

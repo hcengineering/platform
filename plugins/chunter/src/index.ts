@@ -231,6 +231,7 @@ export default plugin(chunterId, {
     CloseConversation: '' as Ref<Action>
   },
   function: {
+    CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     OpenChannelInSidebar: '' as Resource<
     (_id: Ref<Doc>, _class: Ref<Doc>, doc?: Doc, thread?: Ref<ActivityMessage>) => Promise<void>
     >

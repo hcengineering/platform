@@ -1823,9 +1823,6 @@ dependencies:
   telegram:
     specifier: 2.22.2
     version: 2.22.2
-  tiktoken:
-    specifier: ^1.0.16
-    version: 1.0.16
   toposort:
     specifier: ^2.0.2
     version: 2.0.2
@@ -17080,6 +17077,12 @@ packages:
     resolution: {integrity: sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==}
     dev: false
 
+  /js-tiktoken@1.0.14:
+    resolution: {integrity: sha512-Pk3l3WOgM9joguZY2k52+jH82RtABRgB5RdGFZNUGbOKGMVlNmafcPA3b0ITcCZPu1L9UclP1tne6aw7ZI4Myg==}
+    dependencies:
+      base64-js: 1.5.1
+    dev: false
+
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
     dev: false
@@ -24576,7 +24579,7 @@ packages:
     dev: false
 
   file:projects/ai-bot.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-PKgF2J+h9GL25m+5DXcEUaUwsmEeoL8U3hLK58vv8d5F/6j0tZysdSjQ4ejAqbELA5UL33dnL5qgsRdv4WH6xA==, tarball: file:projects/ai-bot.tgz}
+    resolution: {integrity: sha512-TH/kDh1LKw+pJRxLZZIjR7da6BQslR9S9Uy9HHXDtvtu5es55OmjRZEWPUnkBjKRmY6hTPBmaO4veq7RiaNz7g==, tarball: file:projects/ai-bot.tgz}
     id: file:projects/ai-bot.tgz
     name: '@rush-temp/ai-bot'
     version: 0.0.0
@@ -25376,7 +25379,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-ZZlGLKQpYP1ZAE7LypVzII5KAIKlYvnd5hfxK6bCFqdSVwupATY7Y0Pz4FrpLxu7JxkiKWrSOmnVv+KzXHsm7w==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-qC9oDROK1wvmwya82IbB9HAj4bYw3oBPa23nMIW8phhnkSp+6fCVboz3D8G1EIw5eZmDbPCSgtnZZh+mH/VqLw==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -25424,7 +25427,7 @@ packages:
     dev: false
 
   file:projects/chunter.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-7CCSMrDbX8Mb8drPtpIVbQbvx1fsXW6YAqceu/rhsE7b9+i3LRaNGlyggJ1V1Kg32FTEHK2Q4jkKrn34aLL+3A==, tarball: file:projects/chunter.tgz}
+    resolution: {integrity: sha512-30IiBYbNohYn7c6fiy/QTHMy6qkpRv3ZvghD595O/is4lFkDfaBLP18Zd90fgyQNg/G/2HtGMGXunlWEr/OAoQ==, tarball: file:projects/chunter.tgz}
     id: file:projects/chunter.tgz
     name: '@rush-temp/chunter'
     version: 0.0.0
@@ -25583,7 +25586,7 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.6.6)(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-ILQCgoJM6kiRT3YNphnywB42nFA5VZJkRXae0PiKrm+RJwm9/Qf0Berkrj+SDy32iC9fw6PI/+yES11MeqFeSA==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-ljGlQulKneGos0pwJDjmKkgFZVizNJ4CMyGUp14orVTc40IKNK4szU09WskcwoZ6MGbBnUJttMVuGf3tb0/0iA==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
@@ -27543,7 +27546,7 @@ packages:
     dev: false
 
   file:projects/love-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-e49VrhVkk6U8nj/ZyKfYVj/gK/3rTSrVCicDM5Luxw/f/8pPEVf9uEzmdAV11uiXuXxmj5t0BmHdG5eeVhiK6A==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-6dbzkDxFSSCZr7b3Cm7AFvESRax8JpNYiIvI/ScUNPN+M7L2a3PKWKlfdcD/ZvWOAKmQW1l0j5GPH/ucHHu8sQ==, tarball: file:projects/love-resources.tgz}
     id: file:projects/love-resources.tgz
     name: '@rush-temp/love-resources'
     version: 0.0.0
@@ -27591,7 +27594,7 @@ packages:
     dev: false
 
   file:projects/love.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.12)(ts-node@10.9.2):
-    resolution: {integrity: sha512-IA1DOwfYE00ACQ47zgXq3yOcNghk1oU1nPcq15bqdjOxJeKaE5sa4w/yJ7WoGn1Dm5F0TmxKc67GGDxcTT6kDQ==, tarball: file:projects/love.tgz}
+    resolution: {integrity: sha512-D9QBf+/PREVaj/zqju1EnET+45ImzmEpqYThK+I2fbGxZ2t128DbfspBi3Lf2pUure8yF2PSTlTJSzKmUtgvpA==, tarball: file:projects/love.tgz}
     id: file:projects/love.tgz
     name: '@rush-temp/love'
     version: 0.0.0
@@ -29388,7 +29391,7 @@ packages:
     dev: false
 
   file:projects/openai.tgz(esbuild@0.20.1)(svelte@4.2.12)(ts-node@10.9.2)(zod@3.23.8):
-    resolution: {integrity: sha512-jWsGOjlco80/7CIZ2Ogs7lCWr23lHUDQIB2hkPgYu2rbvM7iwSz5jhPjTPmR2y9gkVTSyyd9ozTo9LuxPpI6Kg==, tarball: file:projects/openai.tgz}
+    resolution: {integrity: sha512-ZFMlTpj1sADO+BtsNC9SGLFtId5nF8RpYNJhDyz1Q/Mt+c/pBk/ayUKOioOCjc4XTP+82rjue+kojBfDeFQuLw==, tarball: file:projects/openai.tgz}
     id: file:projects/openai.tgz
     name: '@rush-temp/openai'
     version: 0.0.0
@@ -29403,6 +29406,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      js-tiktoken: 1.0.14
       openai: 4.56.0(zod@3.23.8)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
@@ -29573,7 +29577,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-aMlSGJ89IhINflYpenenAXdbK+Vw6eAHu3R9rO1nsd7pmsOWxRLG6Hp5f+sN1q6S1cmPVQeD/q/tuvp6byFK8g==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-hQkngAuFcwYMmIcVKDLMD0UnbZf3JuuXVVoWGG1w/7quPWksjcce8LX6hNrShCzN/+5LkpZVzNz8PAEHdX1M8A==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -29600,10 +29604,12 @@ packages:
       fast-equals: 5.0.1
       form-data: 4.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      js-tiktoken: 1.0.14
       mongodb: 6.9.0
       node-fetch: 2.7.0
       openai: 4.56.0(zod@3.23.8)
       prettier: 3.2.5
+      puppeteer: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
       tiktoken: 1.0.16
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -29861,7 +29867,7 @@ packages:
     dev: false
 
   file:projects/pod-github.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-prosemirror@1.2.12):
-    resolution: {integrity: sha512-WPkKYn8Uz2hTqWrzT7vjrfyFyOZctsvFVeixkSDH2RPydyXaB6tE2qIm0UFa5VgCnuBu9Rsc7nN62m2Ac7mL1w==, tarball: file:projects/pod-github.tgz}
+    resolution: {integrity: sha512-eyMBtVIlmdGMh+T89SuihlOHLsLA6czYiSY5SiZ06YL+VOb/TrBiluqvbWyMWUThZ1gFQCpUH/jm+0nkDUZg+Q==, tarball: file:projects/pod-github.tgz}
     id: file:projects/pod-github.tgz
     name: '@rush-temp/pod-github'
     version: 0.0.0

@@ -114,6 +114,7 @@ function defineMessageActions (builder: Builder): void {
       input: 'focus',
       category: chunter.category.Chunter,
       target: chunter.class.ChatMessage,
+      visibilityTester: chunter.function.CanTranslateMessage,
       inline: true,
       context: {
         mode: 'context',
@@ -131,6 +132,7 @@ function defineMessageActions (builder: Builder): void {
       input: 'focus',
       category: chunter.category.Chunter,
       target: chunter.class.ChatMessage,
+      visibilityTester: chunter.function.CanTranslateMessage,
       inline: true,
       context: {
         mode: 'context',

@@ -42,6 +42,6 @@
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "openai": "^4.56.0",
-    "tiktoken": "^1.0.16"
+    "js-tiktoken": "^1.0.14"
   }
 }
