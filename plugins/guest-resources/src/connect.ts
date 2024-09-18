@@ -67,6 +67,32 @@ export async function connect (title: string): Promise<Client | undefined> {
   let version: Version | undefined
   const clientFactory = await getResource(client.function.GetClient)
   _client = await clientFactory(token, workspaceLoginInfo.endpoint, {
+    onHello: (serverVersion?: string) => {
+      const frontVersion = getMetadata(presentation.metadata.FrontVersion)
+      if (
+        serverVersion !== undefined &&
+        serverVersion !== '' &&
+        frontVersion !== undefined &&
+        frontVersion !== serverVersion
+      ) {
+        const reloaded = localStorage.getItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`)
+
+        if (reloaded === null) {
+          localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
+          location.reload()
+          return false
+        } else {
+          versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
+
+          setTimeout(() => {
+            location.reload()
+          }, 5000)
+          return false
+        }
+      }
+
+      return true
+    },
     onUpgrade: () => {
       location.reload()
     },

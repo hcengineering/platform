@@ -15,7 +15,7 @@
 //
 
 import { UNAUTHORIZED } from '@hcengineering/platform'
-import { RPCHandler } from '@hcengineering/rpc'
+import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
 import { start } from '../server'
@@ -129,7 +129,7 @@ describe('server', () => {
       conn.close(1000)
     })
     conn.on('message', (msg: string) => {
-      const resp = handler.readResponse(msg, false)
+      const resp: Response<any> = handler.readResponse(msg, false)
       expect(resp.result === 'hello')
       expect(resp.error?.code).toBe(UNAUTHORIZED.code)
       conn.close(1000)
@@ -240,7 +240,7 @@ describe('server', () => {
           newConn.on('message', (msg: Buffer) => {
             try {
               console.log('resp:', msg.toString())
-              const parsedMsg = handler.readResponse(msg.toString(), false) // Hello
+              const parsedMsg: Response<any> = handler.readResponse(msg.toString(), false) // Hello
               if (!helloReceived) {
                 expect(parsedMsg.result === 'hello')
                 helloReceived = true
