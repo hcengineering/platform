@@ -93,12 +93,15 @@ export async function createChatCompletion (
     opt.headers = { 'cf-skip-cache': 'true' }
   }
   try {
-    return await client.chat.completions.create({
-      messages: [...history, message],
-      model: config.OpenAIModel,
-      user,
-      stream: false
-    }, opt)
+    return await client.chat.completions.create(
+      {
+        messages: [...history, message],
+        model: config.OpenAIModel,
+        user,
+        stream: false
+      },
+      opt
+    )
   } catch (e) {
     console.error(e)
   }
