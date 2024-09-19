@@ -88,7 +88,8 @@ export default mergeIds(viewId, view, {
     AudioViewer: '' as AnyComponent,
     ImageViewer: '' as AnyComponent,
     VideoViewer: '' as AnyComponent,
-    PDFViewer: '' as AnyComponent
+    PDFViewer: '' as AnyComponent,
+    TextViewer: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -150,6 +151,7 @@ export default mergeIds(viewId, view, {
     Audio: '' as Ref<FilePreviewExtension>,
     Image: '' as Ref<FilePreviewExtension>,
     Video: '' as Ref<FilePreviewExtension>,
-    PDF: '' as Ref<FilePreviewExtension>
+    PDF: '' as Ref<FilePreviewExtension>,
+    Text: '' as Ref<FilePreviewExtension>
   }
 })

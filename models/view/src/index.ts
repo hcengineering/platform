@@ -647,12 +647,24 @@ export function createModel (builder: Builder): void {
     presentation.class.FilePreviewExtension,
     core.space.Model,
     {
-      contentType: ['application/pdf', 'application/json', 'text/*'],
+      contentType: ['application/pdf'],
       alignment: 'float',
       component: view.component.PDFViewer,
       extension: presentation.extension.FilePreviewExtension
     },
     view.extension.PDF
+  )
+
+  builder.createDoc(
+    presentation.class.FilePreviewExtension,
+    core.space.Model,
+    {
+      contentType: ['application/json', 'text/*'],
+      alignment: 'float',
+      component: view.component.TextViewer,
+      extension: presentation.extension.FilePreviewExtension
+    },
+    view.extension.Text
   )
 
   createAction(
