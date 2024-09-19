@@ -17,6 +17,7 @@ import { PlanningNavigationMenuPage } from '../model/planning/planning-navigatio
 import { PlanningPage } from '../model/planning/planning-page'
 import { SignUpData } from '../model/common-types'
 import { TestData } from '../chat/types'
+import { faker } from '@faker-js/faker'
 
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
@@ -147,5 +148,151 @@ test.describe('Content in the Documents tests', () => {
     await documentContentSecondPage.proseTableCell(1, 1).dblclick()
     await documentContentSecondPage.proseTableCell(1, 1).fill('Center')
     await expect(documentContentPage.proseTableCell(1, 1)).toContainText('Center', { timeout: 5000 })
+  })
+
+  test.describe('Image in the document', () => {
+    test('Check Image alignment setting', async ({ page }) => {
+      await documentContentPage.addImageToDocument(page)
+
+      await test.step('Align image to right', async () => {
+        await documentContentPage.clickImageAlignButton('right')
+        await documentContentPage.checkImageAlign('right')
+      })
+
+      await test.step('Align image to left', async () => {
+        await documentContentPage.clickImageAlignButton('left')
+        await documentContentPage.checkImageAlign('left')
+      })
+
+      await test.step('Align image to center', async () => {
+        await documentContentPage.clickImageAlignButton('center')
+        await documentContentPage.checkImageAlign('center')
+      })
+    })
+
+    test('Check Image view and size actions', async ({ page }) => {
+      await documentContentPage.addImageToDocument(page)
+      const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
+
+      await test.step('Set size of image to the 25%', async () => {
+        await documentContentPage.clickImageSizeButton('25%')
+        await documentContentPage.checkImageSize('25%')
+      })
+
+      await test.step('Set size of image to the 50%', async () => {
+        await documentContentPage.clickImageSizeButton('50%')
+        await documentContentPage.checkImageSize('50%')
+      })
+
+      await test.step('Set size of image to the 100%', async () => {
+        await documentContentPage.clickImageSizeButton('100%')
+        await documentContentPage.checkImageSize('100%')
+      })
+
+      await test.step('Set size of image to the unset', async () => {
+        const IMAGE_ORIGINAL_SIZE = 199
+        await documentContentPage.clickImageSizeButton('Unset')
+        await documentContentPage.checkImageSize(IMAGE_ORIGINAL_SIZE)
+      })
+
+      await test.step('User can open image in fullscreen on current page', async () => {
+        await documentContentPage.clickImageFullscreenButton()
+        await expect(documentContentPage.fullscreenImage()).toBeVisible()
+        await documentContentPage.page.keyboard.press('Escape')
+        await expect(documentContentPage.fullscreenImage()).toBeHidden()
+      })
+
+      await test.step('User can open image original in the new tab', async () => {
+        const [newPage] = await Promise.all([
+          page.waitForEvent('popup'),
+          documentContentPage.clickImageOriginalButton()
+        ])
+
+        await newPage.waitForLoadState('domcontentloaded')
+        expect(newPage.url()).toBe(imageSrc)
+        await newPage.close()
+      })
+    })
+
+    test('Remove image with Backspace', async ({ page }) => {
+      await documentContentPage.addImageToDocument(page)
+      await documentContentPage.selectedFirstImageInDocument()
+      await documentContentPage.page.keyboard.press('Backspace')
+      await expect(documentContentPage.firstImageInDocument()).toBeHidden()
+    })
+
+    test('Check Table of Content', async ({ page }) => {
+      const HEADER_1_CONTENT = 'Header 1'
+      const HEADER_2_CONTENT = 'Header 2'
+      const HEADER_3_CONTENT = 'Header 3'
+      const contentParts = [
+        `# ${HEADER_1_CONTENT}\n\n${faker.lorem.paragraph(20)}\n`,
+        `## ${HEADER_2_CONTENT}\n\n${faker.lorem.paragraph(20)}\n`,
+        `### ${HEADER_3_CONTENT}\n\n${faker.lorem.paragraph(20)}`
+      ]
+
+      await test.step('Fill in the document and check the appearance of the ToC items', async () => {
+        await documentContentPage.inputContentParapraph().click()
+
+        let partIndex = 0
+        for (const contentPart of contentParts) {
+          await documentContentPage.page.keyboard.type(contentPart)
+          await expect(documentContentPage.tocItems()).toHaveCount(++partIndex)
+        }
+      })
+
+      await test.step('Check if ToC element is visible', async () => {
+        await expect(documentContentPage.page.locator('.toc-container .toc-item')).toHaveCount(3)
+      })
+
+      await test.step('User go to first header by ToC', async () => {
+        await documentContentPage.tocItems().first().click()
+        await documentContentPage.buttonTocPopupHeader(HEADER_1_CONTENT).click()
+        await expect(documentContentPage.headerElementInDocument('h1', HEADER_1_CONTENT)).toBeInViewport()
+      })
+
+      await test.step('User go to last header by ToC', async () => {
+        await documentContentPage.tocItems().first().click()
+        await documentContentPage.buttonTocPopupHeader(HEADER_3_CONTENT).click()
+        await expect(documentContentPage.headerElementInDocument('h3', HEADER_3_CONTENT)).toBeInViewport()
+      })
+    })
+  })
+
+  test('Check a slash typing handling', async ({ page }) => {
+    await test.step('User can open the popup if types "/" in empty document', async () => {
+      await documentContentPage.inputContentParapraph().click()
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
+      await documentContentPage.page.keyboard.press('Escape')
+    })
+
+    await test.step('User can open the popup if types "/" after some content', async () => {
+      await documentContentPage.inputContentParapraph().click()
+      await documentContentPage.page.keyboard.type('First paragraph\n\n')
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
+      await documentContentPage.page.keyboard.press('Escape')
+    })
+
+    await test.step('User cannot open a popup if he types "/" inside code block', async () => {
+      await documentContentPage.page.keyboard.press('Enter')
+      await documentContentPage.page.keyboard.type('/')
+      await documentContentPage.menuPopupItemButton('Code block').click()
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeHidden()
+      await documentContentPage.page.keyboard.press('ArrowDown')
+      await documentContentPage.page.keyboard.press('ArrowDown')
+    })
+
+    await test.step('User can create table by slash and open a popup if he types "/" inside a table', async () => {
+      await documentContentPage.page.keyboard.type('/')
+      await documentContentPage.menuPopupItemButton('Table').click()
+      await documentContentPage.menuPopupItemButton('1x2').first().click()
+      await documentContentPage.proseTableCell(0, 1).click()
+      await documentContentPage.page.keyboard.type('/')
+      await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
+      await documentContentPage.page.keyboard.press('Escape')
+    })
   })
 })

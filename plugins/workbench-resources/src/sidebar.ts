@@ -30,6 +30,7 @@ export interface WidgetState {
   data?: Record<string, any>
   tabs: WidgetTab[]
   tab?: string
+  closedByUser?: boolean
 }
 
 export interface SidebarState {
@@ -95,7 +96,7 @@ function setSidebarStateToLocalStorage (state: SidebarState): void {
   )
 }
 
-export function openWidget (widget: Widget, data?: Record<string, any>): void {
+export function openWidget (widget: Widget, data?: Record<string, any>, active = true): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
   const widgetState = widgetsState.get(widget._id)
@@ -106,13 +107,17 @@ export function openWidget (widget: Widget, data?: Record<string, any>): void {
     ...state,
     widgetsState,
     variant: SidebarVariant.EXPANDED,
-    widget: widget._id
+    widget: active ? widget._id : state.widget
   })
 }
 
 export function closeWidget (widget: Ref<Widget>): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
+
+  if (!widgetsState.has(widget) && state.widget !== widget && state.variant === SidebarVariant.MINI) {
+    return
+  }
 
   widgetsState.delete(widget)
 
@@ -291,4 +296,16 @@ export function isElementFromSidebar (element: HTMLElement): boolean {
   }
 
   return isDescendant(sidebarElement, element)
+}
+
+export function minimizeSidebar (closedByUser = false): void {
+  const state = get(sidebarStore)
+  const { widget, widgetsState } = state
+  const widgetState = widget == null ? undefined : widgetsState.get(widget)
+
+  if (widget !== undefined && widgetState !== undefined && closedByUser) {
+    widgetsState.set(widget, { ...widgetState, closedByUser })
+  }
+
+  sidebarStore.set({ ...state, ...widgetsState, widget: undefined, variant: SidebarVariant.MINI })
 }

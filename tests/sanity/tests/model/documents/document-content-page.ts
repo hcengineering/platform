@@ -1,5 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { CommonPage } from '../common-page'
+import { uploadFile } from '../../utils'
 
 export class DocumentContentPage extends CommonPage {
   readonly page: Page
@@ -11,10 +12,16 @@ export class DocumentContentPage extends CommonPage {
 
   readonly buttonDocumentTitle = (): Locator => this.page.locator('div[class*="main-content"] div.title input')
   readonly inputContent = (): Locator => this.page.locator('div.textInput div.tiptap')
+  readonly selectContent = (): Locator => this.page.locator('div.textInput .select-text')
   readonly inputContentParapraph = (): Locator => this.page.locator('div.textInput div.tiptap > p')
   readonly leftMenu = (): Locator => this.page.locator('div.tiptap-left-menu')
   readonly proseTableCell = (row: number, col: number): Locator =>
     this.page.locator('table.proseTable').locator('tr').nth(row).locator('td').nth(col).locator('p')
+
+  readonly firstImageInDocument = (): Locator => this.page.locator('.textInput .text-editor-image-container img')
+  readonly tooltipImageTools = (): Locator => this.page.locator('.tippy-box')
+
+  readonly fullscreenImage = (): Locator => this.page.locator('.popup.fullsize img')
 
   readonly proseTableColumnHandle = (col: number): Locator =>
     this.page.locator('table.proseTable').locator('tr').first().locator('td').nth(col).locator('div.table-col-handle')
@@ -45,6 +52,15 @@ export class DocumentContentPage extends CommonPage {
   readonly assigneeToDo = (hasText: string): Locator => this.rowToDo(hasText).locator('div.assignee')
   readonly checkboxToDo = (hasText: string): Locator => this.rowToDo(hasText).locator('input.chBox')
 
+  readonly tocItems = (): Locator => this.page.locator('.toc-container .toc-item')
+  readonly buttonTocPopupHeader = (headerText: string): Locator =>
+    this.page.locator(`.popup button:has-text("${headerText}")`)
+
+  readonly headerElementInDocument = (headerType: 'h1' | 'h2' | 'h3' = 'h1', text: string): Locator =>
+    this.page.locator(`.textInput ${headerType}:has-text("${text}")`)
+
+  readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
+
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle()).toHaveValue(title)
   }
@@ -63,6 +79,113 @@ export class DocumentContentPage extends CommonPage {
 
   async checkContent (content: string): Promise<void> {
     await expect(this.inputContent()).toHaveText(content)
+  }
+
+  async checkUserAddedImage (): Promise<void> {
+    await expect(this.firstImageInDocument()).toBeVisible()
+  }
+
+  async checkIfImageToolsIsVisible (): Promise<void> {
+    await expect(this.tooltipImageTools()).toBeVisible()
+  }
+
+  async clickImageToolsButton (dataId: string): Promise<void> {
+    await this.tooltipImageTools().locator(`[data-id$="${dataId}"]`).click()
+  }
+
+  async selectedFirstImageInDocument (): Promise<void> {
+    await this.firstImageInDocument().click()
+  }
+
+  async checkIfImageHasAttribute (attribute: string, value: string): Promise<void> {
+    await expect(this.firstImageInDocument()).toHaveAttribute(attribute, value)
+  }
+
+  async clickImageAlignButton (align: 'left' | 'center' | 'right'): Promise<void> {
+    await this.selectedFirstImageInDocument()
+    await this.checkIfImageToolsIsVisible()
+
+    switch (align) {
+      case 'left':
+        await this.clickImageToolsButton('btnAlignLeft')
+        break
+      case 'right':
+        await this.clickImageToolsButton('btnAlignRight')
+        break
+      case 'center':
+        await this.clickImageToolsButton('btnAlignCenter')
+        break
+    }
+  }
+
+  async clickImageSizeButton (size: string | number): Promise<void> {
+    await this.selectedFirstImageInDocument()
+    await this.checkIfImageToolsIsVisible()
+    await this.clickImageToolsButton('btnMoreActions')
+    await this.page.locator(`.popup button:has-text("${size}")`).click()
+  }
+
+  async clickImageFullscreenButton (): Promise<void> {
+    await this.selectedFirstImageInDocument()
+    await this.checkIfImageToolsIsVisible()
+    await this.clickImageToolsButton('btnViewImage')
+  }
+
+  async clickImageOriginalButton (): Promise<void> {
+    await this.selectedFirstImageInDocument()
+    await this.checkIfImageToolsIsVisible()
+    await this.clickImageToolsButton('btnViewOriginal')
+  }
+
+  async checkImageAlign (side: 'left' | 'right' | 'center' = 'left'): Promise<void> {
+    const imageBox = await this.firstImageInDocument().boundingBox()
+    const parentBox = await this.selectContent().boundingBox()
+
+    if (!(imageBox !== null && parentBox !== null)) {
+      throw new Error('Image or parent box is not found')
+    }
+
+    const elementLeftEdge = imageBox.x
+    const parentLeftEdge = parentBox.x
+    const elementRightEdge = imageBox.x + imageBox.width
+    const parentRightEdge = parentBox.x + parentBox.width
+
+    switch (side) {
+      case 'right':
+        expect(elementRightEdge).toEqual(parentRightEdge)
+        break
+      case 'left':
+        expect(elementLeftEdge).toEqual(parentLeftEdge)
+        break
+      case 'center':
+        expect(elementLeftEdge - parentLeftEdge).toBeGreaterThan(0)
+        expect(elementLeftEdge - parentLeftEdge).toEqual(parentRightEdge - elementRightEdge)
+        break
+    }
+  }
+
+  async checkImageSize (size: '25%' | '50%' | '100%' | number): Promise<void> {
+    const imageBox = await this.firstImageInDocument().boundingBox()
+    const parentBox = await this.selectContent().boundingBox()
+
+    if (!(imageBox !== null && parentBox !== null)) {
+      throw new Error('Image or parent box is not found')
+    }
+
+    switch (size) {
+      case '25%':
+        expect(imageBox.width).toEqual(parentBox.width / 4)
+        break
+      case '50%':
+        expect(imageBox.width).toEqual(parentBox.width / 2)
+        break
+      case '100%':
+        expect(imageBox.width).toEqual(parentBox.width)
+        break
+      default:
+        expect(imageBox.width).toEqual(size)
+        break
+    }
   }
 
   async updateDocumentTitle (title: string): Promise<void> {
@@ -109,5 +232,12 @@ export class DocumentContentPage extends CommonPage {
   async checkToDo (text: string, checked: boolean): Promise<void> {
     await this.rowToDo(text).hover()
     await expect(this.checkboxToDo(text)).toBeChecked({ checked, timeout: 5000 })
+  }
+
+  async addImageToDocument (page: Page): Promise<void> {
+    await this.inputContentParapraph().click()
+    await this.leftMenu().click()
+    await uploadFile(page, 'cat3.jpeg', 'Image')
+    await this.checkUserAddedImage()
   }
 }
