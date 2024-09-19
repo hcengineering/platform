@@ -141,7 +141,7 @@
         iconProps={{ size: 'small' }}
         kind={'icon'}
         showTooltip={{ label: workbench.string.OpenInSidebar }}
-        dataId='open-in-sidebar'
+        dataId="open-in-sidebar"
         on:click={() => {
           if (object !== undefined) {
             void openChannelInSidebar(object._id, object._class, object, undefined, true)
@@ -167,7 +167,7 @@
         icon={IconSettings}
         iconProps={{ size: 'medium' }}
         kind={'icon'}
-        dataId='aside-toggle'
+        dataId="aside-toggle"
         showTooltip={{ label: chunter.string.Settings }}
         selected={isAsideShown}
         on:click={() => dispatch('aside-toggled')}
