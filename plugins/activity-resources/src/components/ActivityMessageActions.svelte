@@ -19,12 +19,14 @@
   import { getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
   import view, { Action as ViewAction } from '@hcengineering/view'
+  import { Ref } from '@hcengineering/core'
 
   import ActivityMessageAction from './ActivityMessageAction.svelte'
   import { savedMessagesStore } from '../activity'
 
   export let message: ActivityMessage | undefined
   export let actions: Action[] = []
+  export let excludedActions: Ref<ViewAction>[] = []
   export let withActionMenu = true
   export let onOpen: () => void
   export let onClose: () => void
@@ -34,7 +36,7 @@
   let inlineActions: ViewAction[] = []
   let isActionMenuOpened = false
 
-  $: void updateInlineActions(message)
+  $: void updateInlineActions(message, excludedActions)
 
   savedMessagesStore.subscribe(() => {
     void updateInlineActions(message)
@@ -51,15 +53,13 @@
   }
 
   function showMenu (ev: MouseEvent): void {
-    const excludedActions = inlineActions.map(({ _id }) => _id)
-
     showPopup(
       Menu,
       {
         object: message,
         actions,
         baseMenuClass: activity.class.ActivityMessage,
-        excludedActions
+        excludedActions: inlineActions.map(({ _id }) => _id).concat(excludedActions)
       },
       ev.target as HTMLElement,
       handleActionMenuClosed
@@ -67,14 +67,14 @@
     handleActionMenuOpened()
   }
 
-  async function updateInlineActions (message?: ActivityMessage): Promise<void> {
+  async function updateInlineActions (message?: ActivityMessage, excludedAction: Ref<ViewAction>[] = []): Promise<void> {
     if (message === undefined) {
       inlineActions = []
       return
     }
-    inlineActions = (await getActions(client, message, activity.class.ActivityMessage)).filter(
-      (action) => action.inline
-    )
+    inlineActions = (await getActions(client, message, activity.class.ActivityMessage))
+      .filter((action) => action.inline)
+      .filter((action) => !excludedAction.includes(action._id))
   }
 </script>
 

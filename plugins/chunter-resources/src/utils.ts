@@ -41,16 +41,19 @@ import {
   isActivityNotification,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import { translate, type Asset } from '@hcengineering/platform'
+import { translate, type Asset, getMetadata } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnySvelteComponent, languageStore } from '@hcengineering/ui'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import { get, writable, type Unsubscriber } from 'svelte/store'
+import aiBot from '@hcengineering/ai-bot'
+import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
 import { resetChunterLocIfEqual } from './navigation'
 import chunter from './plugin'
+import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from './stores'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -527,4 +530,40 @@ export function isThreadMessage (message: ActivityMessage): message is ThreadMes
 
 export function getChannelSpace (_class: Ref<Class<Doc>>, _id: Ref<Doc>, space: Ref<Space>): Ref<Space> {
   return getClient().getHierarchy().isDerived(_class, core.class.Space) ? (_id as Ref<Space>) : space
+}
+
+export async function translateMessage (message: ChatMessage): Promise<void> {
+  if (get(translatingMessagesStore).has(message._id)) {
+    return
+  }
+
+  if (get(translatedMessagesStore).has(message._id)) {
+    shownTranslatedMessagesStore.update((store) => store.add(message._id))
+    return
+  }
+
+  translatingMessagesStore.update((store) => store.add(message._id))
+  const response = await aiTranslate(message.message, get(languageStore))
+
+  if (response !== undefined) {
+    translatedMessagesStore.update((store) => store.set(message._id, response.text))
+    shownTranslatedMessagesStore.update((store) => store.add(message._id))
+  }
+
+  translatingMessagesStore.update((store) => {
+    store.delete(message._id)
+    return store
+  })
+}
+
+export async function showOriginalMessage (message: ChatMessage): Promise<void> {
+  shownTranslatedMessagesStore.update((store) => {
+    store.delete(message._id)
+    return store
+  })
+}
+
+export async function canTranslateMessage (): Promise<boolean> {
+  const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
+  return url !== ''
 }

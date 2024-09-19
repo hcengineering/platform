@@ -205,7 +205,11 @@ export default plugin(chunterId, {
     YouJoinedChannel: '' as IntlString,
     AndMore: '' as IntlString,
     IsTyping: '' as IntlString,
-    ThreadIn: '' as IntlString
+    ThreadIn: '' as IntlString,
+    TranslateMessage: '' as IntlString,
+    Translate: '' as IntlString,
+    ShowOriginal: '' as IntlString,
+    Translating: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
@@ -222,9 +226,12 @@ export default plugin(chunterId, {
     DeleteChatMessage: '' as Ref<Action>,
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
+    TranslateMessage: '' as Ref<Action>,
+    ShowOriginalMessage: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>
   },
   function: {
+    CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     OpenChannelInSidebar: '' as Resource<
     (_id: Ref<Doc>, _class: Ref<Doc>, doc?: Doc, thread?: Ref<ActivityMessage>) => Promise<void>
     >

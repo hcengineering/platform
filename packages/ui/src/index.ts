@@ -47,7 +47,7 @@ export type {
   MouseTargetEvent
 } from './types'
 
-export { themeStore } from '@hcengineering/theme'
+export { themeStore, languageStore } from '@hcengineering/theme'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location, setLocationStorageKey } from './location'
 

@@ -14,7 +14,7 @@
 //
 
 import OpenAI from 'openai'
-import { Tiktoken } from 'tiktoken'
+import { Tiktoken } from 'js-tiktoken'
 
 // Based on https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 export function countTokens (messages: OpenAI.ChatCompletionMessageParam[], encoding: Tiktoken): number {

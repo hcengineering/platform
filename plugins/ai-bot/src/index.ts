@@ -14,9 +14,11 @@
 //
 
 import { Account, Class, Doc, type Mixin, Ref, Space } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
+import type { Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ChatMessage } from '@hcengineering/chunter'
+
+export * from './types'
 
 export const aiBotId = 'ai-bot' as Plugin
 
@@ -51,6 +53,9 @@ export interface TransferredMessage extends ChatMessage {
 }
 
 const aiBot = plugin(aiBotId, {
+  metadata: {
+    EndpointURL: '' as Metadata<string>
+  },
   class: {
     AIBotEvent: '' as Ref<Class<AIBotEvent>>,
     AIBotTransferEvent: '' as Ref<Class<AIBotTransferEvent>>,

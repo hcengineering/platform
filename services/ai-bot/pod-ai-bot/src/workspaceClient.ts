@@ -366,6 +366,7 @@ export class WorkspaceClient {
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>
   ): Promise<void> {
+    if (this.controller.aiClient === undefined) return
     if (this.summarizing.has(objectId)) {
       return
     }
@@ -422,6 +423,7 @@ export class WorkspaceClient {
   }
 
   async processResponseEvent (event: AIBotResponseEvent): Promise<void> {
+    if (this.controller.aiClient === undefined) return
     const client = await this.opClient
     const hierarchy = client.getHierarchy()
 
