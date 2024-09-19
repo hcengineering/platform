@@ -22,7 +22,7 @@ import { deepEqual } from 'fast-equals'
 import notification from '@hcengineering/notification'
 import OpenAI from 'openai'
 import { countTokens } from '@hcengineering/openai'
-import { Tiktoken } from 'tiktoken'
+import { Tiktoken } from 'js-tiktoken'
 
 import { HistoryRecord } from './types'
 import config from './config'

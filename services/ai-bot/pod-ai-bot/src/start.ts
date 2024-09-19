@@ -24,6 +24,7 @@ import { closeDB, DbStorage, getDB } from './storage'
 import { AIBotController } from './controller'
 import { createBotAccount } from './account'
 import { registerLoaders } from './loaders'
+import { createServer, listen } from './server'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -49,10 +50,13 @@ export const start = async (): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, 3000))
   }
   const aiController = new AIBotController(storage, ctx)
+  const app = createServer(aiController)
+  const server = listen(app, config.Port)
 
   const onClose = (): void => {
     void aiController.close()
     void closeDB()
+    server.close(() => process.exit())
   }
 
   process.on('SIGINT', onClose)

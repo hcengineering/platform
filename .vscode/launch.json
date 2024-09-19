@@ -458,7 +458,7 @@
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
         "MONGO_URL": "mongodb://localhost:27017",
-        "PORT": "4008",
+        "PORT": "4010",
         "SERVER_SECRET": "secret",
         "SUPPORT_WORKSPACE": "support",
         "FIRST_NAME": "Jolie",

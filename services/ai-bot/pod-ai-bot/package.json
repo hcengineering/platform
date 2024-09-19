@@ -82,7 +82,7 @@
     "mongodb": "^6.9.0",
     "node-fetch": "^2.6.6",
     "openai": "^4.56.0",
-    "tiktoken": "^1.0.16",
+    "js-tiktoken": "^1.0.14",
     "ws": "^8.18.0"
   }
 }

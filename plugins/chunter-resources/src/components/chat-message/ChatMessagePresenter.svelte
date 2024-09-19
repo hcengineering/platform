@@ -15,21 +15,22 @@
 <script lang="ts">
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Class, Doc, getCurrentAccount, Ref, Space, WithLookup } from '@hcengineering/core'
-  import presentation, { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
+  import { Class, Doc, getCurrentAccount, Markup, Ref, Space, WithLookup } from '@hcengineering/core'
+  import { getClient, MessageViewer } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
-  import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
+  import { ActivityDocLink, ActivityMessageTemplate, MessageInlineAction } from '@hcengineering/activity-resources'
   import chunter, { ChatMessage, ChatMessageViewlet, InlineButton } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
-  import { getMetadata } from '@hcengineering/platform'
+  import { EmptyMarkup } from '@hcengineering/text'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
   import InlineButtons from '../InlineButtons.svelte'
+  import { translatedMessagesStore, translatingMessagesStore, shownTranslatedMessagesStore } from '../../stores'
 
   export let value: WithLookup<ChatMessage> | undefined
   export let doc: Doc | undefined = undefined
@@ -80,6 +81,26 @@
   $: accountId = value?.createdBy
   $: account = accountId !== undefined ? $personAccountByIdStore.get(accountId as Ref<PersonAccount>) : undefined
   $: person = account?.person !== undefined ? $personByIdStore.get(account.person) : undefined
+
+  let originalText = value?.message
+
+  $: if (value && originalText && originalText !== value?.message) {
+    originalText = value.message
+    translatedMessagesStore.update((map) => {
+      if (value) {
+        map.delete(value._id)
+      }
+      return map
+    })
+    shownTranslatedMessagesStore.update((map) => {
+      if (value) {
+        map.delete(value._id)
+      }
+      return map
+    })
+  } else {
+    originalText = value?.message
+  }
 
   $: value !== undefined &&
     getParentMessage(value.attachedToClass, value.attachedTo, value.space).then((res) => {
@@ -147,9 +168,52 @@
   let inlineButtons: InlineButton[] = []
   $: inlineButtons = (value?.$lookup?.inlineButtons ?? []) as InlineButton[]
 
+  let inlineActions: MessageInlineAction[] = []
+
+  $: updateInlineActions($translatingMessagesStore, $shownTranslatedMessagesStore)
+  function updateInlineActions (
+    translatingMessages: Set<Ref<ChatMessage>>,
+    shownTranslated: Set<Ref<ChatMessage>>
+  ): void {
+    if (value === undefined) {
+      inlineActions = []
+      return
+    }
+
+    const result: MessageInlineAction[] = []
+
+    if (translatingMessages.has(value._id)) {
+      result.push({
+        label: chunter.string.Translating
+      })
+    } else if (shownTranslated.has(value._id)) {
+      result.push({
+        label: chunter.string.ShowOriginal,
+        onClick: async () => {
+          shownTranslatedMessagesStore.update((map) => {
+            if (value) {
+              map.delete(value._id)
+            }
+            return map
+          })
+        }
+      })
+    }
+
+    inlineActions = result
+  }
+
   $: socialProvider = value?.provider
     ? client.getModel().findAllSync(contact.class.ChannelProvider, { _id: value.provider })[0]
     : undefined
+
+  let displayText: Markup = value?.message ?? EmptyMarkup
+
+  $: if (value && $shownTranslatedMessagesStore.has(value._id)) {
+    displayText = $translatedMessagesStore.get(value._id) ?? value?.message ?? EmptyMarkup
+  } else {
+    displayText = value?.message ?? EmptyMarkup
+  }
 </script>
 
 {#if inline && object}
@@ -181,8 +245,12 @@
     {skipLabel}
     {pending}
     {stale}
+    excludedActions={$shownTranslatedMessagesStore.has(value._id)
+      ? [chunter.action.TranslateMessage]
+      : [chunter.action.ShowOriginalMessage]}
     socialIcon={socialProvider?.icon}
     showDatePreposition={hideLink}
+    {inlineActions}
     {type}
     {onClick}
   >
@@ -194,7 +262,7 @@
         {#if withShowMore}
           <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
-              <MessageViewer message={value.message} />
+              <MessageViewer message={displayText} />
               {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
                 <div class="mt-2" />
               {/if}
@@ -204,7 +272,7 @@
           </ShowMore>
         {:else}
           <div class="clear-mins">
-            <MessageViewer message={value.message} />
+            <MessageViewer message={displayText} />
             {#if (value.attachments ?? 0) > 0 || (value.inlineButtons ?? 0) > 0}
               <div class="mt-2" />
             {/if}
