@@ -1,6 +1,5 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { DocumentCommonPage } from './document-common-page'
-import { waitForDebugger } from 'inspector'
 
 export class DocumentCommentsPage extends DocumentCommonPage {
   readonly page: Page
