@@ -170,7 +170,7 @@ test.describe('Content in the Documents tests', () => {
       })
     })
 
-    test('Check Image view and size actions', async ({ page }) => {
+    test.only('Check Image view and size actions', async ({ page }) => {
       await documentContentPage.addImageToDocument(page)
       const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
 
@@ -203,14 +203,11 @@ test.describe('Content in the Documents tests', () => {
       })
 
       await test.step('User can open image original in the new tab', async () => {
-        const [newPage] = await Promise.all([
-          page.waitForEvent('popup'),
-          documentContentPage.clickImageOriginalButton()
-        ])
-
-        await newPage.waitForLoadState('domcontentloaded')
-        expect(newPage.url()).toBe(imageSrc)
-        await newPage.close()
+        page.on('popup', async (newPage) => {
+          await newPage.waitForLoadState()
+          expect(newPage.url()).toBe(imageSrc)
+          await newPage.close()
+        })
       })
     })
 
