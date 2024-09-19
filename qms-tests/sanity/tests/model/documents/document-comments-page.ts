@@ -78,8 +78,6 @@ export class DocumentCommentsPage extends DocumentCommonPage {
     const comment = this.page
       .locator('div.text-editor-popup span[data-id="commentId"]', { hasText: `#${String(commentId)}` })
       .locator('xpath=../../../..')
-    // await comment.highlight()
-    // await this.page.waitForTimeout(1000)
     // check header
     await expect(comment.locator('div.root > div.header > span.overflow-label')).toContainText(header)
     // can be resolved
