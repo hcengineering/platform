@@ -206,6 +206,10 @@ export class CommonPage {
     await expect(this.menuPopupItemButton(itemText)).toBeVisible()
   }
 
+  async clickPopupItem (itemText: string): Promise<void> {
+    await this.menuPopupItemButton(itemText).first().click()
+  }
+
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
     await this.buttonFilter().click()
     await this.selectPopupMenu(filter).click()
