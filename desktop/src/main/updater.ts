@@ -24,7 +24,7 @@ autoUpdater.on('update-available', (info) => {
 autoUpdater.on('update-not-available', (info) => {
   log.info('Update not available.')
 })
-autoUpdater.on('error', (err) => {
+autoUpdater.on('error', (err: any) => {
   log.info('Error in auto-updater. ' + err)
 })
 autoUpdater.on('download-progress', (progressObj) => {

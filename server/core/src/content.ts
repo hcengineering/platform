@@ -25,7 +25,7 @@ class ContentAdapter implements ContentTextAdapter {
     private readonly context: MeasureContext
   ) {}
 
-  async content (name: string, type: string, doc: string | Readable | Buffer): Promise<string> {
+  async content (name: string, type: string, doc: Readable): Promise<string> {
     const adapter = this.adapters.get(type) ?? this.defaultAdapter
     return await adapter.content(name, type, doc)
   }

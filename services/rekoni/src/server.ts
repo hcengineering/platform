@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import express from 'express'
 import formData from 'express-form-data'
 import { type IncomingHttpHeaders, type Server } from 'http'
+import morgan from 'morgan'
 import os from 'os'
 import { type Readable } from 'stream'
 import config from './config'
@@ -40,11 +42,23 @@ const extractToken = (header: IncomingHttpHeaders): any => {
 export const startServer = async (): Promise<void> => {
   const app = express()
 
+  const ctx = new MeasureMetricsContext('rekini', {}, {}, newMetrics())
+
+  class MyStream {
+    write (text: string): void {
+      ctx.info(text)
+    }
+  }
+
+  const myStream = new MyStream()
+
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
   app.use(express.text({ limit: '50mb' }))
   app.use(express.raw({ limit: '50mb' }))
   app.use(bodyParser.json())
+
+  app.use(morgan('short', { stream: myStream }))
   app.use(
     bodyParser.text({
       type: 'text/plain'

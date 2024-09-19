@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { rootBarExtensions } from '@hcengineering/ui'
+  import { pushRootBarComponent, rootBarExtensions } from '@hcengineering/ui'
   import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, Track } from 'livekit-client'
   import { onDestroy, onMount } from 'svelte'
   import love from '../plugin'
   import { disconnect, isCurrentInstanceConnected, lk } from '../utils'
+  import { generateId } from '@hcengineering/core'
 
   let parentElement: HTMLDivElement
 
@@ -33,12 +34,7 @@
   }
 
   onMount(() => {
-    rootBarExtensions.update((cur) => {
-      if (cur.find((p) => p[1] === love.component.ControlExt) === undefined) {
-        cur.push(['left', love.component.ControlExt])
-      }
-      return cur
-    })
+    pushRootBarComponent('left', love.component.ControlExt)
     lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
   })

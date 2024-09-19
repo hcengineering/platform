@@ -18,7 +18,6 @@ import { UNAUTHORIZED } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import { generateToken } from '@hcengineering/server-token'
 import WebSocket from 'ws'
-import { start } from '../server'
 
 import {
   getWorkspaceId,
@@ -41,7 +40,7 @@ import {
   type TxResult
 } from '@hcengineering/core'
 import { createDummyStorageAdapter } from '@hcengineering/server-core'
-import { ClientSession } from '../client'
+import { ClientSession, startSessionManager } from '@hcengineering/server'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
 
@@ -60,7 +59,7 @@ describe('server', () => {
     return { modelDb, hierarchy }
   }
 
-  const cancelOp = start(new MeasureMetricsContext('test', {}), {
+  const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
     pipelineFactory: async () => {
       const { modelDb, hierarchy } = await getModelDb()
       return {
@@ -96,7 +95,7 @@ describe('server', () => {
       }
     },
     sessionFactory: (token, pipeline, workspaceId, branding) =>
-      new ClientSession(token, pipeline, workspaceId, branding),
+      new ClientSession(token, pipeline, workspaceId, branding, true),
     port: 3335,
     brandingMap: {},
     serverFactory: startHttpServer,
@@ -162,7 +161,7 @@ describe('server', () => {
   })
 
   it('reconnect', async () => {
-    const cancelOp = start(new MeasureMetricsContext('test', {}), {
+    const cancelOp = startSessionManager(new MeasureMetricsContext('test', {}), {
       pipelineFactory: async () => {
         const { modelDb, hierarchy } = await getModelDb()
         return {
@@ -208,7 +207,7 @@ describe('server', () => {
         }
       },
       sessionFactory: (token, pipeline, workspaceId, branding) =>
-        new ClientSession(token, pipeline, workspaceId, branding),
+        new ClientSession(token, pipeline, workspaceId, branding, true),
       port: 3336,
       brandingMap: {},
       serverFactory: startHttpServer,

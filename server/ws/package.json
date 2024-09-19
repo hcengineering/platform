@@ -45,6 +45,7 @@
     "@hcengineering/rpc": "^0.6.5",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/server": "^0.6.4",
     "bufferutil": "^4.0.8",
     "cors": "^2.8.5",
     "express": "^4.19.2",

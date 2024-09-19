@@ -16,21 +16,21 @@
   import { getResource } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
   import { SvelteComponent } from 'svelte'
-  import type { AnyComponent } from '../types'
+  import type { AnyComponent, AnySvelteComponent } from '../types'
   import ErrorPresenter from './ErrorPresenter.svelte'
   import Loading from './Loading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
 
   // Reference to rendered component instance
   export let innerRef: SvelteComponent | undefined = undefined
-  export let is: AnyComponent
+  export let is: AnyComponent | AnySvelteComponent
   export let props = {}
   export let shrink: boolean = false
   export let showLoading = true
   export let inline: boolean = false
   export let disabled: boolean = false
 
-  let _is: any = is
+  let _is: AnyComponent | AnySvelteComponent = is
   let _props: any = props
 
   $: if (!deepEqual(_is, is)) {
@@ -40,7 +40,12 @@
     _props = props
   }
 
-  $: component = _is != null ? getResource<any>(_is) : Promise.reject(new Error('is not defined'))
+  $: component =
+    _is != null && typeof _is === 'string'
+      ? getResource<any>(_is)
+      : _is == null
+        ? Promise.reject(new Error('is not defined'))
+        : Promise.resolve(_is)
 </script>
 
 {#if _is}
