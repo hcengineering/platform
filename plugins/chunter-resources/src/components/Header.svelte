@@ -35,6 +35,7 @@
   import workbench from '@hcengineering/workbench'
 
   import { userSearch } from '../index'
+  import chunter from '../plugin'
   import { navigateToSpecial, openChannelInSidebar } from '../navigation'
   import ChannelMessagesFilter from './ChannelMessagesFilter.svelte'
 
@@ -152,6 +153,7 @@
         icon={view.icon.Open}
         iconProps={{ size: 'small' }}
         kind={'icon'}
+        showTooltip={{ label: view.string.Open }}
         on:click={() => {
           if (object !== undefined) {
             void openDoc(client.getHierarchy(), object)
@@ -164,6 +166,7 @@
         icon={IconSettings}
         iconProps={{ size: 'medium' }}
         kind={'icon'}
+        showTooltip={{ label: chunter.string.Settings }}
         selected={isAsideShown}
         on:click={() => dispatch('aside-toggled')}
       />
