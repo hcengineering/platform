@@ -50,7 +50,13 @@ export class AIBotController {
     readonly storage: DbStorage,
     private readonly ctx: MeasureContext
   ) {
-    this.aiClient = config.OpenAIKey === '' ? undefined : new OpenAI({ apiKey: config.OpenAIKey })
+    this.aiClient =
+      config.OpenAIKey !== ''
+        ? new OpenAI({
+          apiKey: config.OpenAIKey,
+          baseURL: config.OpenAIBaseUrl === '' ? undefined : config.OpenAIBaseUrl
+        })
+        : undefined
 
     this.intervalId = setInterval(() => {
       void this.updateWorkspaceClients()
