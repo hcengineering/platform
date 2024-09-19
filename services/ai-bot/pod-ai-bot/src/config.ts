@@ -30,54 +30,39 @@ interface Config {
   Password: string
   OpenAIKey: string
   OpenAIModel: OpenAI.ChatModel
+  OpenAIBaseUrl: string
+  OpenAITranslateModel: OpenAI.ChatModel
   MaxContentTokens: number
   MaxHistoryRecords: number
-}
-
-const envMap: { [key in keyof Config]: string } = {
-  AccountsURL: 'ACCOUNTS_URL',
-  ConfigurationDB: 'CONFIGURATION_DB',
-  MongoURL: 'MONGO_URL',
-  ServerSecret: 'SERVER_SECRET',
-  ServiceID: 'SERVICE_ID',
-  SupportWorkspace: 'SUPPORT_WORKSPACE',
-  FirstName: 'FIRST_NAME',
-  LastName: 'LAST_NAME',
-  AvatarPath: 'AVATAR_PATH',
-  AvatarName: 'AVATAR_NAME',
-  AvatarContentType: 'AVATAR_CONTENT_TYPE',
-  Password: 'PASSWORD',
-  OpenAIKey: 'OPENAI_API_KEY',
-  OpenAIModel: 'OPENAI_MODEL',
-  MaxContentTokens: 'MAX_CONTENT_TOKENS',
-  MaxHistoryRecords: 'MAX_HISTORY_RECORDS'
+  Port: number
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
   const params: Partial<Config> = {
-    AccountsURL: process.env[envMap.AccountsURL],
-    ConfigurationDB: process.env[envMap.ConfigurationDB] ?? '%ai-bot',
-    MongoURL: process.env[envMap.MongoURL],
-    ServerSecret: process.env[envMap.ServerSecret],
-    ServiceID: process.env[envMap.ServiceID] ?? 'ai-bot-service',
-    SupportWorkspace: process.env[envMap.SupportWorkspace],
-    FirstName: process.env[envMap.FirstName],
-    LastName: process.env[envMap.LastName],
-    AvatarPath: process.env[envMap.AvatarPath] ?? './assets/avatar.png',
-    AvatarName: process.env[envMap.AvatarName] ?? 'huly_ai_bot_avatar',
-    AvatarContentType: process.env[envMap.AvatarContentType] ?? '.png',
-    Password: process.env[envMap.Password] ?? 'password',
-    OpenAIKey: process.env[envMap.OpenAIKey],
-    OpenAIModel: (process.env[envMap.OpenAIModel] ?? 'gpt-4o-mini') as OpenAI.ChatModel,
-    MaxContentTokens: parseNumber(process.env[envMap.MaxContentTokens]) ?? 128 * 100,
-    MaxHistoryRecords: parseNumber(process.env[envMap.MaxHistoryRecords]) ?? 500
+    AccountsURL: process.env.ACCOUNTS_URL,
+    ConfigurationDB: process.env.CONFIGURATION_DB ?? '%ai-bot',
+    MongoURL: process.env.MONGO_URL,
+    ServerSecret: process.env.SERVER_SECRET,
+    ServiceID: process.env.SERVICE_ID ?? 'ai-bot-service',
+    SupportWorkspace: process.env.SUPPORT_WORKSPACE,
+    FirstName: process.env.FIRST_NAME,
+    LastName: process.env.LAST_NAME,
+    AvatarPath: process.env.AVATAR_PATH ?? './assets/avatar.png',
+    AvatarName: process.env.AVATAR_NAME ?? 'huly_ai_bot_avatar',
+    AvatarContentType: process.env.AVATAR_CONTENT_TYPE ?? '.png',
+    Password: process.env.PASSWORD ?? 'password',
+    OpenAIKey: process.env.OPENAI_API_KEY ?? '',
+    OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
+    OpenAITranslateModel: (process.env.OPENAI_TRANSLATE_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
+    OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? '',
+    MaxContentTokens: parseNumber(process.env.MAX_CONTENT_TOKENS) ?? 128 * 100,
+    MaxHistoryRecords: parseNumber(process.env.MAX_HISTORY_RECORDS) ?? 500,
+    Port: parseNumber(process.env.PORT) ?? 4010
   }
 
-  const missingEnv = (Object.keys(params) as Array<keyof Config>)
-    .filter((key) => params[key] === undefined)
-    .map((key) => envMap[key])
+  const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
 
   if (missingEnv.length > 0) {
     throw Error(`Missing env variables: ${missingEnv.join(', ')}`)

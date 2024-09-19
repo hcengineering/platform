@@ -20,11 +20,12 @@
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
-  import core from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
   import { Asset } from '@hcengineering/platform'
+  import { Action as ViewAction } from '@hcengineering/view'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -33,6 +34,8 @@
   import { savedMessagesStore } from '../../activity'
   import MessageTimestamp from '../MessageTimestamp.svelte'
   import Replies from '../Replies.svelte'
+  import { MessageInlineAction } from '../../types'
+  import InlineAction from './InlineAction.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -55,6 +58,8 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let showDatePreposition = false
   export let type: ActivityMessageViewType = 'default'
+  export let inlineActions: MessageInlineAction[] = []
+  export let excludedActions: Ref<ViewAction>[] = []
   export let onClick: (() => void) | undefined = undefined
 
   export let socialIcon: Asset | undefined = undefined
@@ -201,7 +206,9 @@
         {#if !isShort}
           <div class="header clear-mins">
             {#if person}
-              <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+              <div class="username">
+                <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+              </div>
             {:else}
               <div class="strong">
                 <Label label={core.string.System} />
@@ -221,6 +228,14 @@
             <span class="text-sm lower">
               <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
             </span>
+
+            {#if withActions && inlineActions.length > 0 && !readonly}
+              <div class="flex-presenter flex-gap-2 ml-2">
+                {#each inlineActions as item}
+                  <InlineAction {item} />
+                {/each}
+              </div>
+            {/if}
           </div>
         {/if}
 
@@ -242,6 +257,7 @@
             message={isReactionMessage(message) ? parentMessage : message}
             {actions}
             {withActionMenu}
+            {excludedActions}
             onOpen={handleActionsOpened}
             onClose={handleActionsClosed}
           />
@@ -419,5 +435,10 @@
     bottom: -0.375rem;
     right: -0.375rem;
     color: var(--content-color);
+  }
+
+  .username {
+    font-weight: 500;
+    margin-right: 0.25rem;
   }
 </style>

@@ -276,6 +276,8 @@ services:
           memory: 300M
   aiBot:
     image: hardcoreeng/ai-bot
+    ports:
+      - 4010:4010
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped

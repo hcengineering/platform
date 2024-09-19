@@ -87,6 +87,43 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(moveDocument.title)
   })
 
+  test('Create a document inside another document', async () => {
+    const contentFirst = 'Text first line'
+    const parentTeamspace: NewTeamspace = {
+      title: `Parent Teamspace-${generateId()}`,
+      description: 'Parent Teamspace description',
+      private: false
+    }
+    const parentDocument: NewDocument = {
+      title: `Parent Document Title-${generateId()}`,
+      space: parentTeamspace.title
+    }
+    const childDocument: NewDocument = {
+      title: `Child Document Title-${generateId()}`,
+      space: parentTeamspace.title
+    }
+
+    await test.step('Create a parent document by button "+" in left menu documents list', async () => {
+      await leftSideMenuPage.clickDocuments()
+      await documentsPage.checkTeamspaceNotExist(parentTeamspace.title)
+      await documentsPage.createNewTeamspace(parentTeamspace)
+      await documentsPage.checkTeamspaceExist(parentTeamspace.title)
+      await documentsPage.clickOnButtonCreateDocument()
+      await documentsPage.createDocument(parentDocument)
+    })
+
+    await test.step('Create a child document', async () => {
+      await documentsPage.clickAddDocumentIntoDocument(parentDocument.title)
+      await documentContentPage.updateDocumentTitle(childDocument.title)
+      const content = await documentContentPage.addContentToTheNewLine(contentFirst)
+      await documentContentPage.checkContent(content)
+    })
+
+    await test.step('Check nesting of documents', async () => {
+      await documentsPage.checkIfParentDocumentIsExistInBreadcrumbs(parentDocument.title)
+    })
+  })
+
   test('Collaborative edit document content', async ({ page, browser }) => {
     let content = ''
     const contentFirstUser = 'First first!!! This string comes from the first user'

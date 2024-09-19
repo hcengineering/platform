@@ -22,7 +22,7 @@ import { deepEqual } from 'fast-equals'
 import notification from '@hcengineering/notification'
 import OpenAI from 'openai'
 import { countTokens } from '@hcengineering/openai'
-import { Tiktoken } from 'tiktoken'
+import { Tiktoken } from 'js-tiktoken'
 
 import { HistoryRecord } from './types'
 import config from './config'
@@ -85,15 +85,23 @@ export async function createChatCompletion (
   client: OpenAI,
   message: OpenAI.ChatCompletionMessageParam,
   user?: string,
-  history: OpenAI.ChatCompletionMessageParam[] = []
+  history: OpenAI.ChatCompletionMessageParam[] = [],
+  skipCache = true
 ): Promise<OpenAI.ChatCompletion | undefined> {
+  const opt: OpenAI.RequestOptions = {}
+  if (skipCache) {
+    opt.headers = { 'cf-skip-cache': 'true' }
+  }
   try {
-    return await client.chat.completions.create({
-      messages: [...history, message],
-      model: config.OpenAIModel,
-      user,
-      stream: false
-    })
+    return await client.chat.completions.create(
+      {
+        messages: [...history, message],
+        model: config.OpenAIModel,
+        user,
+        stream: false
+      },
+      opt
+    )
   } catch (e) {
     console.error(e)
   }

@@ -39,9 +39,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
+    "@hcengineering/ai-bot": "^0.6.0",
+    "@hcengineering/ai-bot-resources": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
@@ -61,7 +63,6 @@
     "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/workbench-resources": "^0.6.1",
     "fast-equals": "^5.0.1",
-    "svelte": "^4.2.12",
-    "html-to-text": "^9.0.3"
+    "svelte": "^4.2.12"
   }
 }

@@ -19,30 +19,36 @@
   import {
     Floor,
     Invite,
+    isOffice,
     JoinRequest,
+    loveId,
     Office,
     ParticipantInfo,
     RequestStatus,
     Room,
-    RoomType,
-    isOffice,
-    loveId
+    RoomType
   } from '@hcengineering/love'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import {
-    Location,
-    PopupResult,
     closePopup,
     eventToHTMLElement,
+    Location,
     location,
+    PopupResult,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import workbench from '@hcengineering/workbench'
-  import { closeWidget, openWidget, sidebarStore } from '@hcengineering/workbench-resources'
+  import {
+    closeWidget,
+    minimizeSidebar,
+    openWidget,
+    sidebarStore,
+    SidebarVariant
+  } from '@hcengineering/workbench-resources'
 
   import love from '../plugin'
   import {
@@ -283,8 +289,20 @@
     showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
   }
 
+  $: isVideoWidgetOpened = $sidebarStore.widgetsState.has(love.ids.VideoWidget)
+
+  $: if (
+    isVideoWidgetOpened &&
+    $sidebarStore.widget === undefined &&
+    $location.path[2] !== loveId &&
+    $sidebarStore.widgetsState.get(love.ids.VideoWidget)?.closedByUser !== true
+  ) {
+    sidebarStore.update((s) => ({ ...s, widget: love.ids.VideoWidget, variant: SidebarVariant.EXPANDED }))
+  }
+
   function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
-    const isOpened = $sidebarStore.widgetsState.get(love.ids.VideoWidget)
+    const isOpened = $sidebarStore.widgetsState.has(love.ids.VideoWidget)
+
     if (room === undefined) {
       if (isOpened) {
         closeWidget(love.ids.VideoWidget)
@@ -292,13 +310,22 @@
       return
     }
 
-    if (loc.path[2] !== loveId && video) {
-      if (isOpened) return
-      const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.VideoWidget })[0]
-      if (widget === undefined) return
-      openWidget(widget, {
-        room
-      })
+    if (video) {
+      if (!isOpened) {
+        const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: love.ids.VideoWidget })[0]
+        if (widget === undefined) return
+        openWidget(
+          widget,
+          {
+            room
+          },
+          loc.path[2] !== loveId
+        )
+      }
+
+      if (loc.path[2] === loveId && $sidebarStore.widget === love.ids.VideoWidget) {
+        minimizeSidebar()
+      }
     } else {
       closeWidget(love.ids.VideoWidget)
     }

@@ -14,13 +14,14 @@
 //
 
 import { MeasureContext, systemAccountEmail, isWorkspaceCreating } from '@hcengineering/core'
-import { aiBotAccountEmail, AIBotTransferEvent } from '@hcengineering/ai-bot'
+import { aiBotAccountEmail, AIBotTransferEvent, TranslateResponse, TranslateRequest } from '@hcengineering/ai-bot'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { WorkspaceLoginInfo } from '@hcengineering/account'
 import OpenAI from 'openai'
-import { encoding_for_model } from 'tiktoken'
+import { encodingForModel } from 'js-tiktoken'
+import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
 
 import { WorkspaceClient } from './workspaceClient'
 import { assignBotToWorkspace, getWorkspaceInfo } from './account'
@@ -39,8 +40,8 @@ export class AIBotController {
 
   private readonly intervalId: NodeJS.Timeout
 
-  readonly aiClient: OpenAI
-  readonly encoding = encoding_for_model(config.OpenAIModel)
+  readonly aiClient?: OpenAI
+  readonly encoding = encodingForModel(config.OpenAIModel)
 
   assignTimeout: NodeJS.Timeout | undefined
   assignAttempts = 0
@@ -49,7 +50,13 @@ export class AIBotController {
     readonly storage: DbStorage,
     private readonly ctx: MeasureContext
   ) {
-    this.aiClient = new OpenAI({ apiKey: config.OpenAIKey })
+    this.aiClient =
+      config.OpenAIKey !== ''
+        ? new OpenAI({
+          apiKey: config.OpenAIKey,
+          baseURL: config.OpenAIBaseUrl === '' ? undefined : config.OpenAIBaseUrl
+        })
+        : undefined
 
     this.intervalId = setInterval(() => {
       void this.updateWorkspaceClients()
@@ -199,8 +206,6 @@ export class AIBotController {
   async close (): Promise<void> {
     clearInterval(this.intervalId)
 
-    this.encoding.free()
-
     for (const workspace of this.workspaces.values()) {
       await workspace.close()
     }
@@ -212,6 +217,35 @@ export class AIBotController {
 
   async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
     await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
+  }
+
+  async translate (req: TranslateRequest): Promise<TranslateResponse | undefined> {
+    if (this.aiClient === undefined) {
+      return undefined
+    }
+    const html = markupToHTML(req.text)
+    const start = Date.now()
+    const response = await this.aiClient.chat.completions.create({
+      model: config.OpenAITranslateModel,
+      messages: [
+        {
+          role: 'system',
+          content: `Your task is to translate the text into ${req.lang} while preserving the html structure and metadata`
+        },
+        {
+          role: 'user',
+          content: html
+        }
+      ]
+    })
+    const end = Date.now()
+    this.ctx.info('Translation time: ', { time: end - start })
+    const result = response.choices[0].message.content
+    const text = result !== null ? htmlToMarkup(result) : req.text
+    return {
+      text,
+      lang: req.lang
+    }
   }
 }
 

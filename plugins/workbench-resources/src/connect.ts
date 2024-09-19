@@ -27,6 +27,7 @@ import presentation, {
   uiContext
 } from '@hcengineering/presentation'
 import {
+  embeddedPlatform,
   fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
@@ -170,9 +171,13 @@ export async function connect (title: string): Promise<Client | undefined> {
             } else {
               versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
-              setTimeout(() => {
-                location.reload()
-              }, 5000)
+              if (!embeddedPlatform) {
+                setTimeout(() => {
+                  location.reload()
+                }, 5000)
+              }
+              // For embedded it should download the upgrade and restart the app
+
               return false
             }
           }

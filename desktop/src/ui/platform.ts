@@ -52,6 +52,7 @@ import { productsId } from '@hcengineering/products'
 import { questionsId } from '@hcengineering/questions'
 import { trainingId } from '@hcengineering/training'
 import { documentsId } from '@hcengineering/controlled-documents'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -234,6 +235,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
   setMetadata(analyticsCollector.metadata.EndpointURL, config.ANALYTICS_COLLECTOR_URL)
+  setMetadata(aiBot.metadata.EndpointURL, config.AI_URL)
 
   const languages = myBranding.languages !== undefined && myBranding.languages !== '' ? myBranding.languages.split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
 
@@ -275,6 +277,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(tagsId, async () => await import('@hcengineering/tags-resources'))
   addLocation(calendarId, async () => await import('@hcengineering/calendar-resources'))
   addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
+  addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
 
   addLocation(trackerId, async () => await import('@hcengineering/tracker-resources'))
   addLocation(boardId, async () => await import('@hcengineering/board-resources'))
