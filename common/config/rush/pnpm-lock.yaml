@@ -25376,7 +25376,7 @@ packages:
     dev: false
 
   file:projects/chunter.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-7CCSMrDbX8Mb8drPtpIVbQbvx1fsXW6YAqceu/rhsE7b9+i3LRaNGlyggJ1V1Kg32FTEHK2Q4jkKrn34aLL+3A==, tarball: file:projects/chunter.tgz}
+    resolution: {integrity: sha512-30IiBYbNohYn7c6fiy/QTHMy6qkpRv3ZvghD595O/is4lFkDfaBLP18Zd90fgyQNg/G/2HtGMGXunlWEr/OAoQ==, tarball: file:projects/chunter.tgz}
     id: file:projects/chunter.tgz
     name: '@rush-temp/chunter'
     version: 0.0.0
@@ -25535,7 +25535,7 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.6.6)(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-ILQCgoJM6kiRT3YNphnywB42nFA5VZJkRXae0PiKrm+RJwm9/Qf0Berkrj+SDy32iC9fw6PI/+yES11MeqFeSA==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-ljGlQulKneGos0pwJDjmKkgFZVizNJ4CMyGUp14orVTc40IKNK4szU09WskcwoZ6MGbBnUJttMVuGf3tb0/0iA==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
@@ -27495,7 +27495,7 @@ packages:
     dev: false
 
   file:projects/love-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-e49VrhVkk6U8nj/ZyKfYVj/gK/3rTSrVCicDM5Luxw/f/8pPEVf9uEzmdAV11uiXuXxmj5t0BmHdG5eeVhiK6A==, tarball: file:projects/love-resources.tgz}
+    resolution: {integrity: sha512-6dbzkDxFSSCZr7b3Cm7AFvESRax8JpNYiIvI/ScUNPN+M7L2a3PKWKlfdcD/ZvWOAKmQW1l0j5GPH/ucHHu8sQ==, tarball: file:projects/love-resources.tgz}
     id: file:projects/love-resources.tgz
     name: '@rush-temp/love-resources'
     version: 0.0.0
@@ -27543,7 +27543,7 @@ packages:
     dev: false
 
   file:projects/love.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.12)(ts-node@10.9.2):
-    resolution: {integrity: sha512-IA1DOwfYE00ACQ47zgXq3yOcNghk1oU1nPcq15bqdjOxJeKaE5sa4w/yJ7WoGn1Dm5F0TmxKc67GGDxcTT6kDQ==, tarball: file:projects/love.tgz}
+    resolution: {integrity: sha512-D9QBf+/PREVaj/zqju1EnET+45ImzmEpqYThK+I2fbGxZ2t128DbfspBi3Lf2pUure8yF2PSTlTJSzKmUtgvpA==, tarball: file:projects/love.tgz}
     id: file:projects/love.tgz
     name: '@rush-temp/love'
     version: 0.0.0
@@ -29813,7 +29813,7 @@ packages:
     dev: false
 
   file:projects/pod-github.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-prosemirror@1.2.12):
-    resolution: {integrity: sha512-WPkKYn8Uz2hTqWrzT7vjrfyFyOZctsvFVeixkSDH2RPydyXaB6tE2qIm0UFa5VgCnuBu9Rsc7nN62m2Ac7mL1w==, tarball: file:projects/pod-github.tgz}
+    resolution: {integrity: sha512-eyMBtVIlmdGMh+T89SuihlOHLsLA6czYiSY5SiZ06YL+VOb/TrBiluqvbWyMWUThZ1gFQCpUH/jm+0nkDUZg+Q==, tarball: file:projects/pod-github.tgz}
     id: file:projects/pod-github.tgz
     name: '@rush-temp/pod-github'
     version: 0.0.0
@@ -33304,13 +33304,15 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-laY4rfz2M3gZw+L9hEHz3Ew3kVSUXEbiQNawxzPvnWXd1QfazHMNBqf0odz6OfqKlRDBCqtb+qx/F7c45wDP5Q==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-1q+NoWPMYF3GDh8hYG9HpkAiKqNqIFcubqeCe3tWtfr5tmVDdEkAOTb4fFqREmPR/WtF8DCO14quDLZ4ZywpxQ==, tarball: file:projects/server-tool.tgz}
     id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
       '@types/js-yaml': 4.0.9
+      '@types/mime-types': 2.1.4
+      '@types/node-fetch': 2.6.11
       '@types/uuid': 8.3.4
       '@types/ws': 8.5.11
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
@@ -33323,7 +33325,9 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-yaml: 4.1.0
+      mime-types: 2.1.35
       mongodb: 6.9.0
+      node-fetch: 2.7.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -33338,6 +33342,7 @@ packages:
       - babel-jest
       - babel-plugin-macros
       - bufferutil
+      - encoding
       - esbuild
       - gcp-metadata
       - kerberos

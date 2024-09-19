@@ -115,19 +115,24 @@ export async function updateWorkspaceInfo (
   progress: number,
   message?: string
 ): Promise<void> {
-  const accountsUrl = getAccoutsUrlOrFail()
-  await (
-    await fetch(accountsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        method: 'updateWorkspaceInfo',
-        params: [token, workspaceId, event, version, progress, message]
+  try {
+    const accountsUrl = getAccoutsUrlOrFail()
+    console.log('accountsUrl', accountsUrl)
+    await (
+      await fetch(accountsUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          method: 'updateWorkspaceInfo',
+          params: [token, workspaceId, event, version, progress, message]
+        })
       })
-    })
-  ).json()
+    ).json()
+  } catch (err) {
+    console.log('error', err)
+  }
 }
 
 export async function workerHandshake (

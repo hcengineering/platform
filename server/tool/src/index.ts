@@ -236,7 +236,8 @@ export async function initializeWorkspace (
       return
     }
 
-    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client)
+    const baseUrl = scriptUrl.substring(0, scriptUrl.lastIndexOf('/'))
+    const initializer = new WorkspaceInitializer(ctx, storageAdapter, wsUrl, client, baseUrl)
     await initializer.processScript(script, logger, progress)
   } catch (err: any) {
     ctx.error('Failed to initialize workspace', { error: err })
