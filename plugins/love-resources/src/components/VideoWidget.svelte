@@ -43,5 +43,6 @@
     flex: 1;
     align-items: center;
     background-color: var(--theme-statusbar-color);
+    overflow: hidden;
   }
 </style>
