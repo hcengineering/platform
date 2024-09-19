@@ -276,17 +276,9 @@ export async function openChannelInSidebar (
 export async function openChannelInSidebarAction (
   context: DocNotifyContext,
   _: Event,
-  props?: { object?: Doc, newTab?: boolean }
-): Promise<void> {
-  await openChannelInSidebar(context.objectId, context.objectClass, props?.object, undefined, props?.newTab ?? false)
-}
-
-export async function openChannelInSidebarTabAction (
-  context: DocNotifyContext,
-  event: Event,
   props?: { object?: Doc }
 ): Promise<void> {
-  await openChannelInSidebarAction(context, event, { newTab: true, object: props?.object })
+  await openChannelInSidebar(context.objectId, context.objectClass, props?.object, undefined, true)
 }
 
 export async function openThreadInSidebarChannel (

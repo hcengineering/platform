@@ -264,14 +264,4 @@ export function defineActions (builder: Builder): void {
     target: notification.class.DocNotifyContext,
     context: { mode: ['context', 'browser'], group: 'tools' }
   })
-
-  createAction(builder, {
-    action: chunter.actionImpl.OpenInSidebarTab,
-    label: workbench.string.OpenInSidebarNewTab,
-    icon: view.icon.DetailsFilled,
-    input: 'focus',
-    category: chunter.category.Chunter,
-    target: notification.class.DocNotifyContext,
-    context: { mode: ['context', 'browser'], group: 'tools' }
-  })
 }

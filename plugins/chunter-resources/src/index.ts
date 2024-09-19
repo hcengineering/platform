@@ -61,7 +61,6 @@ import {
   getThreadLink,
   openChannelInSidebar,
   openChannelInSidebarAction,
-  openChannelInSidebarTabAction,
   replyToThread
 } from './navigation'
 import {
@@ -206,7 +205,6 @@ export default async (): Promise<Resources> => ({
     LeaveChannel: leaveChannelAction,
     RemoveChannel: removeChannelAction,
     ReplyToThread: replyToThread,
-    OpenInSidebar: openChannelInSidebarAction,
-    OpenInSidebarTab: openChannelInSidebarTabAction
+    OpenInSidebar: openChannelInSidebarAction
   }
 })

@@ -35,6 +35,7 @@
   export let withSearch: boolean = true
   export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
+  export let canOpenInSidebar: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -78,6 +79,7 @@
   {withAside}
   {isAsideShown}
   {withSearch}
+  {canOpenInSidebar}
   on:aside-toggled
   on:close
 >

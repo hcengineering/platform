@@ -51,8 +51,7 @@ export default mergeIds(chunterId, chunter, {
     ConvertDmToPrivateChannel: '' as ViewAction,
     DeleteChatMessage: '' as ViewAction,
     ReplyToThread: '' as ViewAction,
-    OpenInSidebar: '' as ViewAction,
-    OpenInSidebarTab: '' as ViewAction
+    OpenInSidebar: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>

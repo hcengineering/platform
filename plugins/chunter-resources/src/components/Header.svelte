@@ -19,11 +19,12 @@
     Breadcrumbs,
     Button,
     Icon,
-    IconDetails,
     Label,
     SearchInput,
     Header,
-    HeaderAdaptive
+    HeaderAdaptive,
+    IconSettings,
+    IconDetailsFilled
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -31,9 +32,10 @@
   import { getClient } from '@hcengineering/presentation'
   import { Doc, Ref } from '@hcengineering/core'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import workbench from '@hcengineering/workbench'
 
   import { userSearch } from '../index'
-  import { navigateToSpecial } from '../navigation'
+  import { navigateToSpecial, openChannelInSidebar } from '../navigation'
   import ChannelMessagesFilter from './ChannelMessagesFilter.svelte'
 
   export let object: Doc | undefined = undefined
@@ -53,6 +55,7 @@
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
+  export let canOpenInSidebar: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -131,22 +134,35 @@
   </svelte:fragment>
   <svelte:fragment slot="actions" let:doubleRow>
     <slot name="actions" {doubleRow} />
+    {#if canOpenInSidebar}
+      <Button
+        icon={IconDetailsFilled}
+        iconProps={{ size: 'small' }}
+        kind={'icon'}
+        showTooltip={{ label: workbench.string.OpenInSidebar }}
+        on:click={() => {
+          if (object !== undefined) {
+            void openChannelInSidebar(object._id, object._class, object, undefined, true)
+          }
+        }}
+      />
+    {/if}
     {#if canOpen && object}
       <Button
         icon={view.icon.Open}
         iconProps={{ size: 'small' }}
         kind={'icon'}
         on:click={() => {
-          if (object) {
-            openDoc(client.getHierarchy(), object)
+          if (object !== undefined) {
+            void openDoc(client.getHierarchy(), object)
           }
         }}
       />
     {/if}
     {#if withAside}
       <Button
-        icon={IconDetails}
-        iconProps={{ size: 'medium', filled: isAsideShown }}
+        icon={IconSettings}
+        iconProps={{ size: 'medium' }}
         kind={'icon'}
         selected={isAsideShown}
         on:click={() => dispatch('aside-toggled')}
