@@ -14,7 +14,14 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { Button, Component, Label, resizeObserver, deviceOptionsStore as deviceInfo, Loading } from '@hcengineering/ui'
+  import {
+    Button,
+    Component,
+    Label,
+    resizeObserver,
+    deviceOptionsStore as deviceInfo,
+    Loading
+  } from '@hcengineering/ui'
 
   import presentation from '../plugin'
 
@@ -37,7 +44,6 @@
   let loading = true
   let previewType: FilePreviewExtension | undefined = undefined
   $: void getPreviewType(contentType, $previewTypes).then((res) => {
-    loading = true
     previewType = res
     loading = false
   })

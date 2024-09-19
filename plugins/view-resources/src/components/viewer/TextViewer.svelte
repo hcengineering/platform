@@ -31,7 +31,7 @@
 
     const src = getFileUrl(value, name)
     const res = await fetch(src)
-    text = (await res.text())
+    text = await res.text()
 
     loading = false
   }
@@ -55,7 +55,7 @@
 
     overflow: hidden;
     border: 1px solid var(--theme-button-border);
-    border-radius: .25rem;
+    border-radius: 0.25rem;
 
     &.fit {
       min-height: 100%;
