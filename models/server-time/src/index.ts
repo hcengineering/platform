@@ -37,7 +37,8 @@ export function createModel (builder: Builder): void {
   builder.createModel(TToDoFactory, TOnToDo)
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverTime.trigger.OnTask
+    trigger: serverTime.trigger.OnTask,
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
