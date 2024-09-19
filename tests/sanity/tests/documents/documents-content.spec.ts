@@ -170,7 +170,7 @@ test.describe('Content in the Documents tests', () => {
       })
     })
 
-    test('Check Image view and size actions', async ({ page }) => {
+    test.only('Check Image size manipulations', async ({ page, context }) => {
       await documentContentPage.addImageToDocument(page)
       const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
 
@@ -202,13 +202,19 @@ test.describe('Content in the Documents tests', () => {
         await expect(documentContentPage.fullscreenImage()).toBeHidden()
       })
 
-      await test.step('User can open image original in the new tab', async () => {
-        const [newPage] = await Promise.all([
-          page.waitForEvent('popup'),
-          documentContentPage.clickImageOriginalButton()
-        ])
+      await test.step('User can open image in fullscreen on current page', async () => {
+        await documentContentPage.clickImageFullscreenButton()
+        await expect(documentContentPage.fullscreenImage()).toBeVisible()
+        await documentContentPage.page.keyboard.press('Escape')
+        await expect(documentContentPage.fullscreenImage()).toBeHidden()
+      })
 
-        await newPage.waitForLoadState('domcontentloaded')
+      await test.step('User can open image original in the new tab', async () => {
+        const pagePromise = context.waitForEvent('page')
+        await documentContentPage.clickImageOriginalButton()
+        const newPage = await pagePromise
+
+        await newPage.waitForLoadState()
         expect(newPage.url()).toBe(imageSrc)
         await newPage.close()
       })
