@@ -170,7 +170,7 @@ test.describe('Content in the Documents tests', () => {
       })
     })
 
-    test.only('Check Image size manipulations', async ({ page, context }) => {
+    test('Check Image size manipulations', async ({ page, context }) => {
       await documentContentPage.addImageToDocument(page)
       const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
 
