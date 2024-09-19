@@ -151,7 +151,7 @@ test.describe('Content in the Documents tests', () => {
   })
 
   test.describe('Image in the document', () => {
-    test('Check Image alignment setting', async ({ page }) => {
+    test('Check image alignment setting', async ({ page }) => {
       await documentContentPage.addImageToDocument(page)
 
       await test.step('Align image to right', async () => {
@@ -170,9 +170,8 @@ test.describe('Content in the Documents tests', () => {
       })
     })
 
-    test('Check Image size manipulations', async ({ page, context }) => {
+    test('Check Image size manipulations', async ({ page }) => {
       await documentContentPage.addImageToDocument(page)
-      const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
 
       await test.step('Set size of image to the 25%', async () => {
         await documentContentPage.clickImageSizeButton('25%')
@@ -194,13 +193,11 @@ test.describe('Content in the Documents tests', () => {
         await documentContentPage.clickImageSizeButton('Unset')
         await documentContentPage.checkImageSize(IMAGE_ORIGINAL_SIZE)
       })
+    })
 
-      await test.step('User can open image in fullscreen on current page', async () => {
-        await documentContentPage.clickImageFullscreenButton()
-        await expect(documentContentPage.fullscreenImage()).toBeVisible()
-        await documentContentPage.page.keyboard.press('Escape')
-        await expect(documentContentPage.fullscreenImage()).toBeHidden()
-      })
+    test('Check Image views', async ({ page, context }) => {
+      await documentContentPage.addImageToDocument(page)
+      const imageSrc = await documentContentPage.firstImageInDocument().getAttribute('src')
 
       await test.step('User can open image in fullscreen on current page', async () => {
         await documentContentPage.clickImageFullscreenButton()
