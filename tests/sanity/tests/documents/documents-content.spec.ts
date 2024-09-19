@@ -203,11 +203,14 @@ test.describe('Content in the Documents tests', () => {
       })
 
       await test.step('User can open image original in the new tab', async () => {
-        page.on('popup', async (newPage) => {
-          await newPage.waitForLoadState()
-          expect(newPage.url()).toBe(imageSrc)
-          await newPage.close()
-        })
+        const [newPage] = await Promise.all([
+          page.waitForEvent('popup'),
+          documentContentPage.clickImageOriginalButton()
+        ])
+
+        await newPage.waitForLoadState('domcontentloaded')
+        expect(newPage.url()).toBe(imageSrc)
+        await newPage.close()
       })
     })
 
