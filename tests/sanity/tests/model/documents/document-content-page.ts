@@ -36,7 +36,9 @@ export class DocumentContentPage extends CommonPage {
   readonly buttonInsertInnerRow = (row: number = 0): Locator =>
     this.page.locator('table.proseTable').locator('tr').nth(row).locator('div.table-row-insert button')
 
-  readonly buttonOnToolbar = (id: string): Locator => this.page.locator(`div.text-editor-toolbar button[data-id="${id}"]`)
+  readonly buttonOnToolbar = (id: string): Locator =>
+    this.page.locator(`div.text-editor-toolbar button[data-id="${id}"]`)
+
   readonly inputFormLink = (): Locator => this.page.locator('form[id="text-editor:string:Link"] input')
   readonly buttonFormLinkSave = (): Locator =>
     this.page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
@@ -62,11 +64,14 @@ export class DocumentContentPage extends CommonPage {
 
   readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
 
-  readonly toc = (): Locator => this.page.locator('div.toc-container > div.toc')
   readonly codeBlock = (hasText: string): Locator => this.page.locator('pre.proseCodeBlock > code', { hasText })
   readonly inputFormNote = (): Locator => this.page.locator('form[id="text-editor:string:ConfigureNote"] textarea')
-  readonly colorFormNote = (color: string): Locator => this.page.locator(`form[id="text-editor:string:ConfigureNote"] div.colorBox.${color}`)
-  readonly setFormNote = (): Locator => this.page.locator('form[id="text-editor:string:ConfigureNote"] div.antiCard-footer button[type="submit"]')
+  readonly colorFormNote = (color: string): Locator =>
+    this.page.locator(`form[id="text-editor:string:ConfigureNote"] div.colorBox.${color}`)
+
+  readonly setFormNote = (): Locator =>
+    this.page.locator('form[id="text-editor:string:ConfigureNote"] div.antiCard-footer button[type="submit"]')
+
   readonly inputImageFile = (): Locator => this.page.locator('input[id="imageInput"]')
   readonly imageInContent = (): Locator => this.page.locator('p img[data-type="image"]')
   readonly noteInContent = (hasText: string): Locator => this.page.locator('p span[data-mark="note"]', { hasText })
