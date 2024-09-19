@@ -1,5 +1,6 @@
 import { type Locator, type Page, expect } from '@playwright/test'
 import { DocumentCommonPage } from './document-common-page'
+import { waitForDebugger } from 'inspector'
 
 export class DocumentCommentsPage extends DocumentCommonPage {
   readonly page: Page
@@ -76,15 +77,17 @@ export class DocumentCommentsPage extends DocumentCommonPage {
     reply: string
   ): Promise<void> {
     const comment = this.page
-      .locator('div.popup div.root div.header > div > span:first-child', { hasText: String(commentId) })
+      .locator('div.text-editor-popup span[data-id="commentId"]', { hasText: `#${String(commentId)}` })
       .locator('xpath=../../../..')
+    // await comment.highlight()
+    // await this.page.waitForTimeout(1000)
     // check header
-    await expect(comment.locator('div.root > div.header > div:first-child')).toContainText(header)
+    await expect(comment.locator('div.root > div.header > span.overflow-label')).toContainText(header)
     // can be resolved
     await comment.locator('div.header div.tools button').hover()
     await expect(comment.locator('div.header div.tools button')).toBeEnabled()
     // check author
-    await expect(comment.locator('div.root div.header > div.username span.ap-label').first()).toHaveText(author)
+    await expect(comment.locator('div.activityMessage div.header a span[class*="label"]').first()).toHaveText(author)
     // check message
     await expect(
       comment.locator('div.activityMessage div.flex-col div.clear-mins div.text-markup-view > p').first()
@@ -103,15 +106,15 @@ export class DocumentCommentsPage extends DocumentCommonPage {
     reply: string
   ): Promise<void> {
     const comment = this.page
-      .locator('div.box div.root div.header > div > span:first-child', { hasText: String(commentId) })
+      .locator('div[data-testid="comment"] span[data-id="commentId"]', { hasText: `#${String(commentId)}` })
       .locator('xpath=../../../..')
     // check header
-    await expect(comment.locator('div.root > div.header > div:first-child')).toContainText(header)
+    await expect(comment.locator('div.root > div.header > span.overflow-label')).toContainText(header)
     // can be resolved
-    await comment.locator('div.header > div > span:last-child').hover()
+    await comment.locator('div.root > div.header > span.overflow-label').first().hover()
     await expect(comment.locator('div.header div.tools button')).toBeEnabled()
     // check author
-    await expect(comment.locator('div.root div.header > div.username span.ap-label').first()).toHaveText(author)
+    await expect(comment.locator('div.activityMessage div.header a span[class*="label"]').first()).toHaveText(author)
     // check message
     await expect(
       comment.locator('div.activityMessage div.flex-col div.clear-mins div.text-markup-view > p').first()
