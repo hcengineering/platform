@@ -85,15 +85,20 @@ export async function createChatCompletion (
   client: OpenAI,
   message: OpenAI.ChatCompletionMessageParam,
   user?: string,
-  history: OpenAI.ChatCompletionMessageParam[] = []
+  history: OpenAI.ChatCompletionMessageParam[] = [],
+  skipCache = true
 ): Promise<OpenAI.ChatCompletion | undefined> {
+  const opt: OpenAI.RequestOptions = {}
+  if (skipCache) {
+    opt.headers = { 'cf-skip-cache': 'true' }
+  }
   try {
     return await client.chat.completions.create({
       messages: [...history, message],
       model: config.OpenAIModel,
       user,
       stream: false
-    })
+    }, opt)
   } catch (e) {
     console.error(e)
   }
