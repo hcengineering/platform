@@ -12,6 +12,7 @@ const config: PlaywrightTestConfig = {
     {
       name: 'Platform',
       use: {
+        testIdAttribute: 'data-id',
         permissions: ['clipboard-read', 'clipboard-write'],
         ...devices['Desktop Chrome'],
         screenshot: 'only-on-failure',

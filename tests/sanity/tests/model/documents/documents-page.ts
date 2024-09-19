@@ -20,8 +20,16 @@ export class DocumentsPage extends CommonPage {
   readonly buttonCreateDocument = (): Locator =>
     this.page.locator('div[data-float="navigator"] button[id="new-document"]')
 
-  readonly buttonDocument = (name: string): Locator =>
-    this.page.locator('button.hulyNavItem-container > span[class*="label"]', { hasText: name })
+  readonly buttonDocumentWrapper = (name: string): Locator =>
+    this.page.locator(`button.hulyNavItem-container:has-text("${name}")`)
+
+  readonly buttonDocument = (name: string): Locator => this.buttonDocumentWrapper(name).locator('span[class*="label"]')
+
+  readonly buttonAddDocumentToDocument = (name: string): Locator =>
+    this.buttonDocumentWrapper(name).getByTestId('document:string:CreateDocument')
+
+  readonly breadcrumbsByDocumentParent = (parentDocumentTitle: string): Locator =>
+    this.page.locator(`.hulyHeader-titleGroup:has-text("${parentDocumentTitle}")`)
 
   readonly buttonDocumentsApp = (): Locator => this.page.locator('button[id$="document:string:DocumentApplication"]')
   readonly divTeamspacesParent = (): Locator =>
@@ -123,6 +131,11 @@ export class DocumentsPage extends CommonPage {
     await this.selectFromDropdown(this.page, popupItem)
   }
 
+  async clickAddDocumentIntoDocument (documentTitle: string): Promise<void> {
+    await this.buttonDocumentWrapper(documentTitle).hover()
+    await this.buttonAddDocumentToDocument(documentTitle).click()
+  }
+
   async openDocumentForTeamspace (spaceName: string, documentName: string): Promise<void> {
     await this.page
       .locator('button.hulyNavGroup-header span[class*="label"]', { hasText: spaceName })
@@ -175,5 +188,9 @@ export class DocumentsPage extends CommonPage {
   async joinTeamspace (name: string): Promise<void> {
     await expect(this.rowTeamspace(name)).toBeVisible()
     await this.buttonJoinTeamspace(name).click()
+  }
+
+  async checkIfParentDocumentIsExistInBreadcrumbs (parentDocumentTitle: string): Promise<void> {
+    await expect(this.breadcrumbsByDocumentParent(parentDocumentTitle)).toBeVisible()
   }
 }
