@@ -519,6 +519,7 @@
 
   function scrollToNewMessages (): void {
     if (!scrollElement || !shouldScrollToNew) {
+      readViewportMessages()
       return
     }
 
@@ -562,9 +563,12 @@
     } else if (dateToJump !== undefined) {
       await wait()
       scrollToDate(dateToJump)
-    } else if (messagesCount > 0 && newCount > messagesCount) {
+    } else if (shouldScrollToNew && messagesCount > 0 && newCount > messagesCount) {
       await wait()
       scrollToNewMessages()
+    } else {
+      await wait()
+      readViewportMessages()
     }
 
     messagesCount = newCount
