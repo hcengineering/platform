@@ -2,6 +2,22 @@
 
 Changelog.
 
+## [0.6.301] - 2024-09-20
+
+* PLANNER: · Fixed sticking to events when resizing ([#6648](https://github.com/hcengineering/platform/issues/6648)) 
+* UBERF-8163: · Split ws into server + desktop backup support ([#6630](https://github.com/hcengineering/platform/issues/6630)) 
+
+## [0.6.300] - 2024-09-19
+
+* UBERF-6593: · Add document content tests ([#6594](https://github.com/hcengineering/platform/issues/6594)) 
+
+## [0.6.299] - 2024-09-18
+
+* 🚀 FEATURES: · Improve links behavior in the editor ([#6612](https://github.com/hcengineering/platform/issues/6612)) 
+* 🐛 BUG FIXES: · Add codeblock commands to highlighted extension ([#6613](https://github.com/hcengineering/platform/issues/6613)) 
+* ⚙️ MISCELLANEOUS TASKS: · Update tiptap to v2.6.6 ([#6596](https://github.com/hcengineering/platform/issues/6596)) 
+* UBEFR-8162: · Fix default language ([#6621](https://github.com/hcengineering/platform/issues/6621)) 
+
 ## [0.6.298] - 2024-09-18
 
 * UBERF-8139: · Check server version when connecting from client ([#6608](https://github.com/hcengineering/platform/issues/6608)) 
