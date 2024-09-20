@@ -516,7 +516,7 @@ test.describe('Channel tests', () => {
     })
   })
 
-  test('User is able to work with a channel in a sidebar', async () => {
+  test.only('User is able to work with a channel in a sidebar', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
@@ -531,7 +531,7 @@ test.describe('Channel tests', () => {
 
     await test.step('Open channel in sidebar', async () => {
       await sidebarPage.checkIfSidebarPageButtonIsExist(false, 'chat')
-      await channelPage.makeActionWithChannelInMenu(data.channelName, 'Open in sidebar new tab')
+      await channelPage.makeActionWithChannelInMenu(data.channelName, 'Open in sidebar')
 
       await sidebarPage.checkIfSidebarPageButtonIsExist(true, 'chat')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
@@ -553,13 +553,13 @@ test.describe('Channel tests', () => {
     })
 
     await test.step('Reopen channel in sidebar', async () => {
-      await channelPage.makeActionWithChannelInMenu(data.channelName, 'Open in sidebar new tab')
+      await channelPage.makeActionWithChannelInMenu(data.channelName, 'Open in sidebar')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfChatSidebarTabIsOpen(true, data.channelName)
     })
 
     await test.step('Open general in sidebar too', async () => {
-      await channelPage.makeActionWithChannelInMenu('general', 'Open in sidebar new tab')
+      await channelPage.makeActionWithChannelInMenu('general', 'Open in sidebar')
       await sidebarPage.checkIfSidebarHasVerticalTab(true, data.channelName)
       await sidebarPage.checkIfSidebarHasVerticalTab(true, 'general')
       await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'general')
@@ -581,7 +581,7 @@ test.describe('Channel tests', () => {
     })
 
     await test.step('Close sidebar tab by context menu', async () => {
-      await channelPage.makeActionWithChannelInMenu('random', 'Open in sidebar new tab')
+      await channelPage.makeActionWithChannelInMenu('random', 'Open in sidebar')
       await sidebarPage.closeVerticalTabByRightClick('random')
       await sidebarPage.checkIfSidebarHasVerticalTab(false, 'random')
       await sidebarPage.checkIfChatSidebarTabIsOpen(true, 'general')
