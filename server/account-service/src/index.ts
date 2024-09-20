@@ -103,10 +103,11 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   )
   app.use(bodyParser())
 
-  void client.getClient().then(async (p: MongoClient) => {
-    const db = p.db(ACCOUNT_DB)
-    registerProviders(measureCtx, app, router, db, serverSecret, frontURL, brandings)
+  const mongoClientPromise = client.getClient()
+  const dbPromise = mongoClientPromise.then((c) => c.db(ACCOUNT_DB))
+  registerProviders(measureCtx, app, router, dbPromise, serverSecret, frontURL, brandings)
 
+  void dbPromise.then((db) => {
     setInterval(
       () => {
         void cleanExpiredOtp(db)

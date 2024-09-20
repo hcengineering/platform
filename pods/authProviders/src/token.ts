@@ -12,7 +12,7 @@ export function registerToken (
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
-  db: Db,
+  dbPromise: Promise<Db>,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {
@@ -21,9 +21,11 @@ export function registerToken (
     new CustomStrategy(function (req: any, done: any) {
       const token = req.body.token ?? req.query.token
 
-      getAccountInfoByToken(measureCtx, db, null, token)
-        .then((user: any) => done(null, user))
-        .catch((err: any) => done(err))
+      void dbPromise.then((db) => {
+        getAccountInfoByToken(measureCtx, db, null, token)
+          .then((user: any) => done(null, user))
+          .catch((err: any) => done(err))
+      })
     })
   )
 

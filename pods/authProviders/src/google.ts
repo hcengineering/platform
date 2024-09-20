@@ -12,7 +12,7 @@ export function registerGoogle (
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
-  db: Db,
+  dbPromise: Promise<Db>,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {
@@ -74,6 +74,7 @@ export function registerGoogle (
           let loginInfo: LoginInfo
           const state = safeParseAuthState(ctx.query?.state)
           const branding = getBranding(brandings, state?.branding)
+          const db = await dbPromise
           if (state.inviteId != null && state.inviteId !== '') {
             loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any)
           } else {
