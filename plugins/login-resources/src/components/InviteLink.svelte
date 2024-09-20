@@ -40,6 +40,7 @@
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
+  const isSecureContext = window.isSecureContext
 
   interface InviteParams {
     expirationTime: number
@@ -87,6 +88,7 @@
     }
   }
   function copy (): void {
+    if (!isSecureContext) return
     if (link === undefined) return
     copyTextToClipboard(link)
     copied = true
@@ -109,7 +111,7 @@
   let loading = false
 </script>
 
-<div class="antiPopup popup">
+<div class="antiPopup popup" class:secure={isSecureContext}>
   <div class="flex-between fs-title mb-9">
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size={'large'} />
@@ -154,7 +156,9 @@
     <Loading />
   {:else if link !== undefined}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="over-underline link" on:click={copy}>{link}</div>
+    <div class="link" class:notSecure={!isSecureContext} class:over-underline={isSecureContext} on:click={copy}>
+      {link}
+    </div>
     <div class="buttons">
       <Button
         label={login.string.Close}
@@ -164,7 +168,9 @@
           dispatch('close')
         }}
       />
-      <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
+      {#if isSecureContext}
+        <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
+      {/if}
     </div>
   {:else}
     <div class="buttons">
@@ -195,6 +201,10 @@
     .link {
       margin: 1.75rem 0 0;
       overflow-wrap: break-word;
+
+      &.notSecure {
+        user-select: text;
+      }
     }
 
     .buttons {

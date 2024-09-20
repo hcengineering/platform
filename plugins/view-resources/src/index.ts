@@ -135,7 +135,8 @@ import {
   canDeleteSpace,
   canEditSpace,
   canJoinSpace,
-  canLeaveSpace
+  canLeaveSpace,
+  isClipboardAvailable
 } from './visibilityTester'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
@@ -334,6 +335,7 @@ export default async (): Promise<Resources> => ({
     CanDeleteSpace: canDeleteSpace,
     CanJoinSpace: canJoinSpace,
     CanLeaveSpace: canLeaveSpace,
+    IsClipboardAvailable: isClipboardAvailable,
     BlobImageMetadata: blobImageMetadata,
     BlobVideoMetadata: blobVideoMetadata
   }
