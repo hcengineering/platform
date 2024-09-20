@@ -71,6 +71,7 @@
       canOpen={true}
       allowClose={true}
       canOpenInSidebar={false}
+      closeOnEscape={false}
       on:close
     />
     {#key object._id}
@@ -80,7 +81,7 @@
 {/if}
 {#if threadId}
   <div class="thread" style:height style:width>
-    <ThreadView _id={threadId} on:close={() => closeThreadInSidebarChannel(widget, tab)} />
+    <ThreadView _id={threadId} on:channel={() => closeThreadInSidebarChannel(widget, tab)} on:close />
   </div>
 {/if}
 

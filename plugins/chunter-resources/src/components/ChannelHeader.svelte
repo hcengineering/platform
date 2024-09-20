@@ -36,6 +36,7 @@
   export let isAsideShown: boolean = false
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let canOpenInSidebar: boolean = false
+  export let closeOnEscape: boolean = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -80,6 +81,7 @@
   {isAsideShown}
   {withSearch}
   {canOpenInSidebar}
+  {closeOnEscape}
   on:aside-toggled
   on:close
 >

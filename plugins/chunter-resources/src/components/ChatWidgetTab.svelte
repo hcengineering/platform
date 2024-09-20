@@ -50,7 +50,7 @@
 
   let count: number = 0
 
-  $: objectId = tab.type === 'thread' ? tab.data.thread : tab.data._id
+  $: objectId = tab.data.thread ?? tab.data._id
   $: context = objectId ? $contextByDocStore.get(objectId) : undefined
 
   const unsubscribe = notificationClient.inboxNotificationsByContext.subscribe((res) => {

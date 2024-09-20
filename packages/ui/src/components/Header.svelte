@@ -39,6 +39,7 @@
   export let noPrint: boolean = false
   export let freezeBefore: boolean = false
   export let doubleRowWidth = 768
+  export let closeOnEscape: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -61,7 +62,7 @@
   })
 
   function _close (ev: KeyboardEvent): void {
-    if (closeButton && ev.key === 'Escape') {
+    if (closeButton && ev.key === 'Escape' && closeOnEscape) {
       ev.preventDefault()
       ev.stopPropagation()
 
@@ -233,7 +234,9 @@
     {/if}
     {#if closeButton}
       {#if type !== 'type-popup'}<div class="hulyHeader-divider no-print" />{/if}
-      <div class="hulyHotKey-item no-print">Esc</div>
+      {#if closeOnEscape}
+        <div class="hulyHotKey-item no-print">Esc</div>
+      {/if}
       <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} noPrint on:click={() => dispatch('close')} />
     {/if}
   {/if}

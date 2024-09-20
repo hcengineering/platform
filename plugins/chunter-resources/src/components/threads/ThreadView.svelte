@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Breadcrumbs, Label, location as locationStore, Header } from '@hcengineering/ui'
+  import { Breadcrumbs, Label, location as locationStore, Header, BreadcrumbItem } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
@@ -104,7 +104,14 @@
       channelName = res
     })
 
-  function getBreadcrumbsItems (channel?: Doc, message?: DisplayActivityMessage, channelName?: string) {
+  let breadcrumbs: BreadcrumbItem[] = []
+  $: breadcrumbs = showHeader ? getBreadcrumbsItems(channel, message, channelName) : []
+
+  function getBreadcrumbsItems (
+    channel?: Doc,
+    message?: DisplayActivityMessage,
+    channelName?: string
+  ): BreadcrumbItem[] {
     if (message === undefined) {
       return []
     }
@@ -115,6 +122,7 @@
 
     return [
       {
+        id: 'channel',
         icon: getObjectIcon(message.attachedToClass),
         iconProps: { value: channel },
         iconWidth: isPersonAvatar ? 'auto' : undefined,
@@ -122,14 +130,24 @@
         title: channelName,
         label: channelName ? undefined : chunter.string.Channel
       },
-      { label: chunter.string.Thread }
+      { id: 'thread', label: chunter.string.Thread }
     ]
+  }
+
+  function handleBreadcrumbSelect (event: CustomEvent<number>): void {
+    const index = event.detail
+    const breadcrumb = breadcrumbs[index]
+
+    if (breadcrumb === undefined) return
+    if (breadcrumb.id !== 'channel') return
+
+    dispatch('channel')
   }
 </script>
 
 {#if showHeader}
-  <Header type={'type-aside'} adaptive={'disabled'} on:close>
-    <Breadcrumbs items={getBreadcrumbsItems(channel, message, channelName)} currentOnly />
+  <Header type={'type-aside'} adaptive={'disabled'} closeOnEscape={false} on:close>
+    <Breadcrumbs items={breadcrumbs} on:select={handleBreadcrumbSelect} selected={1} />
   </Header>
 {/if}
 

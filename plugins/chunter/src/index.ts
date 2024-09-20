@@ -100,8 +100,7 @@ export interface InlineButton extends AttachedDoc {
 }
 
 export interface ChatWidgetTab extends WidgetTab {
-  type: 'channel' | 'thread'
-  data: { _id?: Ref<Doc>, _class?: Ref<Class<Doc>>, thread?: Ref<ActivityMessage> }
+  data: { _id?: Ref<Doc>, _class?: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>, channelName: string }
 }
 
 /**
