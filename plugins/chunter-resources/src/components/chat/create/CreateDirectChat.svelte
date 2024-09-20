@@ -75,7 +75,9 @@
     const missingAccounts = existingMembers !== undefined ? accIds.filter((id) => !existingMembers.includes(id)) : []
 
     if (direct !== undefined && missingAccounts.length > 0) {
-      await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, { $push: { members: { $each: missingAccounts, $position: 0 } } })
+      await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, {
+        $push: { members: { $each: missingAccounts, $position: 0 } }
+      })
     }
 
     const dmId =
