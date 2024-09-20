@@ -42,6 +42,7 @@
   hideExtra={false}
   adaptive="autoExtra"
   doubleRowWidth={350}
+  closeOnEscape={false}
   on:close
 >
   <div class="title">

@@ -100,6 +100,7 @@
             hideActions={false}
             hideDescription={true}
             adaptive="disabled"
+            closeOnEscape={false}
             on:close={() => {
               if (widget !== undefined) {
                 closeWidget(widget._id)

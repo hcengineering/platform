@@ -139,7 +139,9 @@
       {/if}
       {#if closeButton}
         {#if type !== 'type-popup'}<div class="hulyHeader-divider no-print" />{/if}
+        {#if closeOnEscape}
         <div class="hulyHotKey-item no-print">Esc</div>
+          {/if}
         <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} noPrint on:click={() => dispatch('close')} />
       {/if}
     </div>

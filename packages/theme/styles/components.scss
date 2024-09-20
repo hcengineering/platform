@@ -321,6 +321,7 @@
   width: 100%;
   min-width: 0;
   min-height: var(--spacing-6_5);
+  overflow: hidden;
   
   &.clearPadding > .hulyHeader-row {
     padding: 0;
