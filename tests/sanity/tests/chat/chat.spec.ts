@@ -516,7 +516,7 @@ test.describe('Channel tests', () => {
     })
   })
 
-  test.only('User is able to work with a channel in a sidebar', async () => {
+  test('User is able to work with a channel in a sidebar', async () => {
     await test.step('Prepare channel', async () => {
       await leftSideMenuPage.clickChunter()
       await chunterPage.clickChannelBrowser()
