@@ -13,8 +13,18 @@
   })
 </script>
 
-{#each $rootBarExtensions as ext}
+{#each $rootBarExtensions as ext (ext[1].id)}
   {#if ext[0] === position}
-    <Component is={ext[1]} />
+    <div id={ext[1].id} style:margin-right={'1px'}>
+      <Component
+        is={ext[1].component}
+        props={ext[1].props}
+        on:close={() => {
+          rootBarExtensions.update((cur) => {
+            return cur.filter((it) => it[1].id !== ext[1].id)
+          })
+        }}
+      />
+    </div>
   {/if}
 {/each}

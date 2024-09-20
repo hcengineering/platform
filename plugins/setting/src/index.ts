@@ -202,7 +202,8 @@ export default plugin(settingId, {
     Automations: '' as IntlString,
     Collections: '' as IntlString,
     SpaceTypes: '' as IntlString,
-    Roles: '' as IntlString
+    Roles: '' as IntlString,
+    OwnerOrMainteinerRequired: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

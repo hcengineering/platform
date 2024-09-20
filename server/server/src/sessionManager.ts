@@ -214,8 +214,7 @@ class TSessionManager implements SessionManager {
           this.ctx.warn('closing workspace, no users', {
             workspace: workspace.workspaceId.name,
             wsId,
-            upgrade: workspace.upgrade,
-            backup: workspace.backup
+            upgrade: workspace.upgrade
           })
           workspace.closing = this.performWorkspaceCloseCheck(workspace, workspace.workspaceId, wsId)
         }
@@ -473,7 +472,6 @@ class TSessionManager implements SessionManager {
 
     // Mark as upgrade, to prevent any new clients to connect during close
     workspace.upgrade = true
-    workspace.backup = token.extra?.mode === 'backup'
     // If upgrade client is used.
     // Drop all existing clients
     workspace.closing = this.closeAll(wsString, workspace, 0, 'upgrade')
@@ -580,7 +578,6 @@ class TSessionManager implements SessionManager {
     branding: Branding | null
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
-    const backup = token.extra?.mode === 'backup'
     const context = ctx.newChild('🧲 session', {})
     const pipelineCtx = context.newChild('🧲 pipeline-factory', {})
     const workspace: Workspace = {
@@ -598,7 +595,6 @@ class TSessionManager implements SessionManager {
       sessions: new Map(),
       softShutdown: 3,
       upgrade,
-      backup,
       workspaceId: token.workspace,
       workspaceName,
       branding
@@ -986,7 +982,7 @@ class TSessionManager implements SessionManager {
 /**
  * @public
  */
-export function start (
+export function startSessionManager (
   ctx: MeasureContext,
   opt: {
     port: number

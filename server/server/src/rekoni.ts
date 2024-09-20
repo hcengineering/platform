@@ -1,7 +1,6 @@
 import { MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { ContentTextAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
-import got, { HTTPError } from 'got'
 
 /**
  * @public
@@ -15,28 +14,45 @@ export async function createRekoniAdapter (
   return {
     content: async (name: string, type: string, doc): Promise<string> => {
       try {
-        const resContent = await got.post(
-          `${url}/toText?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}`,
-          {
-            body: doc,
+        // Node doesn't support Readable with fetch.
+        const chunks: Buffer[] = []
+        let len = 0
+        await new Promise<void>((resolve, reject) => {
+          doc.on('data', (chunk) => {
+            len += (chunk as Buffer).length
+            chunks.push(chunk)
+            if (len > 10 * 1024 * 1024) {
+              reject(new Error('file to big for content processing'))
+            }
+          })
+          doc.on('end', () => {
+            resolve()
+          })
+          doc.on('error', (err) => {
+            reject(err)
+          })
+        })
+
+        const body = Buffer.concat(chunks)
+        const r = await (
+          await fetch(`${url}/toText?name=${encodeURIComponent(name)}&type=${encodeURIComponent(type)}`, {
+            method: 'POST',
+            body,
             // timeout: 15000,
             headers: {
               Authorization: 'Bearer ' + token,
               'Content-type': typeof doc === 'string' ? 'text/plain' : 'application/octet-stream'
             }
-          }
-        )
-        const r = JSON.parse(resContent.body ?? '')
+          } as any)
+        ).json()
         if (r.error !== undefined) {
           throw new Error(r.error)
         }
         return r.content
       } catch (err: any) {
         console.info('Content Processing error', name, type, doc, err.response.body)
-        if (err instanceof HTTPError) {
-          if (err.message === 'Response code 400 (Bad Request)') {
-            return ''
-          }
+        if (err.message === 'Response code 400 (Bad Request)' || err.code === 400) {
+          return ''
         }
         throw err
       }

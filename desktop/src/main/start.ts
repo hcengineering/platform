@@ -13,20 +13,21 @@
 // limitations under the License.
 //
 
-import { BrowserWindow, CookiesSetDetails, Notification, app, ipcMain, nativeImage, shell, dialog, systemPreferences, desktopCapturer } from 'electron'
-import contextMenu from 'electron-context-menu'
-import WinBadge from 'electron-windows-badge'
-import Store from 'electron-store'
-import * as path from 'path'
 import { config as dotenvConfig } from 'dotenv'
+import { BrowserWindow, CookiesSetDetails, Notification, app, desktopCapturer, dialog, ipcMain, nativeImage, shell, systemPreferences } from 'electron'
+import contextMenu from 'electron-context-menu'
 import log from 'electron-log'
+import Store from 'electron-store'
 import { ProgressInfo, UpdateInfo } from 'electron-updater'
+import WinBadge from 'electron-windows-badge'
+import * as path from 'path'
 
-import autoUpdater from './updater'
-import { NotificationParams, Config } from '../ui/types'
-import { addMenus } from './menu'
+import { Config, NotificationParams } from '../ui/types'
 import { getOptions } from './args'
+import { cancelBackup, startBackup } from './backup'
+import { addMenus } from './menu'
 import { addPermissionHandlers } from './permissions'
+import autoUpdater from './updater'
 
 let mainWindow: BrowserWindow | undefined
 let winBadge: any
@@ -115,7 +116,6 @@ function hookOpenWindow (window: BrowserWindow): void {
             ]
           }
         })
-        // await childWindow.webContents.openDevTools()
         await childWindow.loadFile(path.join('dist', 'ui', 'index.html'))
         hookOpenWindow(childWindow)
       })()
@@ -165,8 +165,8 @@ const createWindow = async (): Promise<void> => {
   }
 }
 
-addMenus((cmd: string, ...args: any[]) => {
-  mainWindow?.webContents.send(cmd, args)
+addMenus(() => mainWindow as BrowserWindow, (cmd: string, ...args: any[]) => {
+  mainWindow?.webContents.send(cmd, ...args)
 })
 
 contextMenu({
@@ -227,7 +227,7 @@ ipcMain.handle('get-main-config', (event, path) => {
     FRONT_URL,
     INITIAL_URL: process.env.INITIAL_URL ?? '',
     MODEL_VERSION: process.env.MODEL_VERSION ?? '',
-    VERSION: process.env.VERSION ?? '',
+    VERSION: process.env.VERSION ?? ''
   }
   return cfg
 })
@@ -395,4 +395,17 @@ autoUpdater.on('update-downloaded', (info) => {
   mainWindow?.removeAllListeners('close')
 
   autoUpdater.quitAndInstall()
+})
+
+ipcMain.on('start-backup', (event, token, endpoint, workspace) => {
+  console.log('start backup', token, endpoint, workspace)
+  if (mainWindow != null) {
+    startBackup(mainWindow, token, endpoint, workspace  , (cmd: string, ...args: any[]) => {
+      mainWindow?.webContents.send(cmd, ...args)
+    })
+  }
+})
+
+ipcMain.on('cancel-backup', (event) => {
+  cancelBackup()
 })

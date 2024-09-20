@@ -80,4 +80,7 @@ export interface IPCMainExposed {
   sendNotification: (notififationParams: NotificationParams) => void
   getScreenAccess: () => Promise<boolean>
   getScreenSources: () => Promise<ScreenSource[]>
+
+  cancelBackup: () => void
+  startBackup: (token: string, endpoint: string, workspace: string) => void
 }
