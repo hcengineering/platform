@@ -39,6 +39,7 @@
   export let duration: number | boolean = false
   export let fixHeader: boolean = false
   export let categoryHeader: boolean = false
+  export let hiddenHeader: boolean = false
   export let background: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -74,6 +75,7 @@
     class:selectable
     class:scroller-header={fixHeader}
     class:categoryHeader
+    class:hiddenHeader
     style:background-color={background ?? 'transparent'}
     on:click|stopPropagation={handleClick}
   >

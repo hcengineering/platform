@@ -237,9 +237,9 @@
     active: WithLookup<ToDo>[]
   ): [IntlString, WithLookup<ToDo>[]][] {
     const groups = new Map<IntlString, WithLookup<ToDo>[]>([
+      [time.string.Scheduled, []],
       [time.string.Unplanned, unplanned],
       [time.string.ToDos, []],
-      [time.string.Scheduled, []],
       [time.string.Done, done]
     ])
     const now = Date.now()
