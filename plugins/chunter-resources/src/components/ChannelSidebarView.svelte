@@ -58,9 +58,14 @@
       { limit: 1 }
     )
   }
+  let renderChannel = tab.data.thread === undefined
+
+  $: if (tab.data.thread === undefined) {
+    renderChannel = true
+  }
 </script>
 
-{#if object}
+{#if object && renderChannel}
   <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
     <ChannelHeader
       _id={object._id}
@@ -75,7 +80,7 @@
       on:close
     />
     {#key object._id}
-      <Channel {object} {context} syncLocation={false} />
+      <Channel {object} {context} syncLocation={false} freeze={threadId !== undefined} />
     {/key}
   </div>
 {/if}

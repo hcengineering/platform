@@ -434,9 +434,13 @@ export async function readChannelMessages (
     return
   }
 
-  const inboxClient = InboxNotificationsClientImpl.getClient()
+  if (context === undefined) {
+    return
+  }
 
+  const inboxClient = InboxNotificationsClientImpl.getClient()
   const client = getClient().apply(undefined, 'readViewportMessages')
+
   try {
     const readMessages = get(chatReadMessagesStore)
     const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
@@ -460,12 +464,6 @@ export async function readChannelMessages (
 
     chatReadMessagesStore.update((store) => new Set([...store, ...allIds]))
 
-    await inboxClient.readNotifications(client, [...notifications, ...relatedMentions])
-
-    if (context === undefined) {
-      return
-    }
-
     const storedTimestampUpdates = get(contextsTimestampStore).get(context._id)
     const newTimestamp = messages[messages.length - 1].createdOn ?? 0
     const prevTimestamp = Math.max(storedTimestampUpdates ?? 0, context.lastViewedTimestamp ?? 0)
@@ -478,6 +476,7 @@ export async function readChannelMessages (
       })
       await client.update(context, { lastViewedTimestamp: newTimestamp })
     }
+    await inboxClient.readNotifications(client, [...notifications, ...relatedMentions])
   } finally {
     await client.commit()
   }

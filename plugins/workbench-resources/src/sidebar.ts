@@ -103,7 +103,7 @@ export function openWidget (widget: Widget, data?: Record<string, any>, active =
 
   widgetsState.set(widget._id, {
     _id: widget._id,
-    data: data ?? widgetState?.data ,
+    data: data ?? widgetState?.data,
     tab: widgetState?.tab,
     tabs: widgetState?.tabs ?? []
   })

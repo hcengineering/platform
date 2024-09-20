@@ -63,6 +63,7 @@
   export let isAsideOpened = false
   export let fullHeight = true
   export let fixedInput = true
+  export let freeze = false
 
   const doc = object
 
@@ -130,17 +131,21 @@
       }
     })
 
+  function isFreeze (): boolean {
+    return freeze
+  }
+
   $: displayMessages = filterChatMessages(messages, filters, filterResources, doc._class, selectedFilters)
 
   const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
-    if (notifyContext !== undefined) {
+    if (notifyContext !== undefined && !isFreeze()) {
       recheckNotifications(notifyContext)
       readViewportMessages()
     }
   })
 
   function scrollToBottom (afterScrollFn?: () => void): void {
-    if (scroller != null && scrollElement != null) {
+    if (scroller != null && scrollElement != null && !isFreeze()) {
       scroller.scrollBy(scrollElement.scrollHeight)
       updateSelectedDate()
       afterScrollFn?.()
@@ -338,7 +343,7 @@
   let messagesToReadAccumulatorTimer: any
 
   function readViewportMessages (): void {
-    if (!scrollElement || !scrollContentBox) {
+    if (!scrollElement || !scrollContentBox || isFreeze()) {
       return
     }
 
@@ -550,6 +555,11 @@
       return
     }
 
+    if (isFreeze()) {
+      messagesCount = newCount
+      return
+    }
+
     if (scrollToRestore > 0) {
       void restoreScroll()
     } else if (dateToJump !== undefined) {
@@ -656,7 +666,7 @@
     } else if (element != null) {
       const { scrollHeight, scrollTop, offsetHeight } = element
 
-      showScrollDownButton = scrollHeight > offsetHeight + scrollTop + 300
+      showScrollDownButton = scrollHeight > offsetHeight + scrollTop + 50
     } else {
       showScrollDownButton = false
     }
@@ -687,7 +697,7 @@
   $: void forceReadContext(isScrollAtBottom, notifyContext)
 
   async function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): Promise<void> {
-    if (context === undefined || !isScrollAtBottom || forceRead) return
+    if (context === undefined || !isScrollAtBottom || forceRead || isFreeze()) return
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastViewedTimestamp >= lastUpdateTimestamp) return
@@ -704,6 +714,10 @@
   }
 
   const canLoadNextForwardStore = provider.canLoadNextForwardStore
+
+  $: if (!freeze) {
+    readViewportMessages()
+  }
 </script>
 
 {#if isLoading}
@@ -847,7 +861,7 @@
     display: flex;
     justify-content: center;
     bottom: -0.75rem;
-    animation: 1s fadeIn;
+    animation: 0.5s fadeIn;
     animation-fill-mode: forwards;
     visibility: hidden;
   }
