@@ -23,11 +23,9 @@
 </script>
 
 {#if tab.data.thread}
-  {#key tab.data.thread}
-    <div class="root" style:height style:width>
-      <ThreadView _id={tab.data.thread} on:close />
-    </div>
-  {/key}
+  <div class="root" style:height style:width>
+    <ThreadView _id={tab.data.thread} on:close />
+  </div>
 {/if}
 
 <style lang="scss">

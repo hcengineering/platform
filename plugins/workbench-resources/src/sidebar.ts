@@ -239,7 +239,7 @@ export function pinWidgetTab (widget: Widget, tabId: string): void {
   if (widgetState === undefined) return
 
   const tabs = widgetState.tabs
-    .map((it) => (it.id === tabId ? { ...it, isPinned: true } : it))
+    .map((it) => (it.id === tabId ? { ...it, isPinned: true, allowedPath: undefined } : it))
     .sort((a, b) => (a.isPinned === b.isPinned ? 0 : a.isPinned === true ? -1 : 1))
 
   widgetsState.set(widget._id, { ...widgetState, tabs })

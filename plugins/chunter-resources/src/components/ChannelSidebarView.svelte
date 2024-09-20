@@ -61,21 +61,22 @@
 </script>
 
 {#if object}
-  {#key object._id}
-    <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
-      <ChannelHeader
-        _id={object._id}
-        _class={object._class}
-        {object}
-        withAside={false}
-        withSearch={false}
-        canOpen={true}
-        allowClose={true}
-        on:close
-      />
+  <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
+    <ChannelHeader
+      _id={object._id}
+      _class={object._class}
+      {object}
+      withAside={false}
+      withSearch={false}
+      canOpen={true}
+      allowClose={true}
+      canOpenInSidebar={false}
+      on:close
+    />
+    {#key object._id}
       <Channel {object} {context} syncLocation={false} />
-    </div>
-  {/key}
+    {/key}
+  </div>
 {/if}
 {#if threadId}
   <div class="thread" style:height style:width>

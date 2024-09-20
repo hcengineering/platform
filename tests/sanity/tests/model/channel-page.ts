@@ -62,7 +62,7 @@ export class ChannelPage extends CommonPage {
   readonly copyLinkButton = (): Locator => this.page.getByRole('button', { name: 'Copy link' })
   readonly deleteMessageButton = (): Locator => this.page.getByRole('button', { name: 'Delete' })
   readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
-  readonly openChannelDetails = (): Locator => this.page.locator('.hulyHeader-buttonsGroup > .antiButton')
+  readonly openChannelDetails = (): Locator => this.page.getByTestId('aside-toggle')
   readonly changeChannelNameConfirm = (): Locator => this.page.locator('.selectPopup button')
   readonly privateOrPublicChangeButton = (change: string, autoJoin: boolean): Locator =>
     this.page

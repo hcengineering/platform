@@ -103,6 +103,7 @@
     canOpen={isDocChat}
     allowClose={embedded}
     {isAsideShown}
+    canOpenInSidebar={true}
     on:close
     on:select={handleMessageSelect}
     on:aside-toggled={() => {
