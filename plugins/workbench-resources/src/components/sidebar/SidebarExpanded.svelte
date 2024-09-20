@@ -168,5 +168,6 @@
     flex-direction: column;
     flex: 1;
     overflow: hidden;
+    border-bottom: 1px solid transparent;
   }
 </style>
