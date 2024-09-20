@@ -93,7 +93,7 @@
   }
 </script>
 
-<div class="popupPanel panel">
+<div class="popupPanel">
   <ChannelHeader
     _id={object._id}
     _class={object._class}

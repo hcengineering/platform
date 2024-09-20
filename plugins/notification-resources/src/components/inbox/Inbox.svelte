@@ -37,6 +37,7 @@
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId } from '@hcengineering/view-resources'
   import { get } from 'svelte/store'
+  import { getResource } from '@hcengineering/platform'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import notification from '../../plugin'
@@ -179,6 +180,12 @@
     }
 
     const selectedMessageId = loc?.loc.query?.message as Ref<ActivityMessage> | undefined
+    const thread = loc?.loc.path[4] as Ref<ActivityMessage> | undefined
+
+    if (thread !== undefined) {
+      const fn = await getResource(chunter.function.OpenThreadInSidebar)
+      void fn(thread)
+    }
 
     if (selectedMessageId !== undefined) {
       selectedMessage = get(inboxClient.activityInboxNotifications).find(

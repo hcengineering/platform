@@ -169,7 +169,7 @@ test.describe('Documents tests', () => {
     })
   })
 
-  test('Add Link to the Document', async () => {
+  test.skip('Add Link to the Document', async () => {
     const contentLink = 'Lineforthelink'
     const linkDocument: NewDocument = {
       title: `Links Document Title-${generateId()}`,

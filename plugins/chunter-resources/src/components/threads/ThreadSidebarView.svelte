@@ -24,7 +24,7 @@
 
 {#if tab.data.thread}
   <div class="root" style:height style:width>
-    <ThreadView _id={tab.data.thread} on:close />
+    <ThreadView _id={tab.data.thread} on:close on:channel />
   </div>
 {/if}
 

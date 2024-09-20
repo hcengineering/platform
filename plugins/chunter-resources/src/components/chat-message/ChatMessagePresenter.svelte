@@ -255,7 +255,7 @@
     {onClick}
   >
     <svelte:fragment slot="header">
-      <ChatMessageHeader editedOn={value.editedOn} label={skipLabel ? undefined : viewlet?.label} />
+      <ChatMessageHeader label={viewlet?.label} />
     </svelte:fragment>
     <svelte:fragment slot="content">
       {#if !isEditing}

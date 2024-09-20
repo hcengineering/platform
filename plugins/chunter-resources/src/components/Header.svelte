@@ -57,6 +57,7 @@
   export let adaptive: HeaderAdaptive = 'default'
   export let hideActions: boolean = false
   export let canOpenInSidebar: boolean = false
+  export let closeOnEscape: boolean = true
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -72,6 +73,7 @@
   hideActions={!((canOpen && object) || withAside || $$slots.actions) || hideActions}
   hideDescription={!description}
   adaptive={adaptive !== 'default' ? adaptive : withFilters ? 'freezeActions' : 'disabled'}
+  {closeOnEscape}
   on:click
   on:close
 >

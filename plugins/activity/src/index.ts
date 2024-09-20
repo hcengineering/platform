@@ -46,6 +46,7 @@ export interface ActivityMessage extends AttachedDoc {
 
   replies?: number
   reactions?: number
+  editedOn?: Timestamp
 }
 
 export type DisplayActivityMessage = DisplayDocUpdateMessage | ActivityMessage
@@ -81,6 +82,7 @@ export interface ActivityInfoMessage extends ActivityMessage {
   props?: Record<string, any>
   icon?: Asset
   iconProps?: Record<string, any>
+  editedOn?: Timestamp
 
   // A possible set of links to some platform resources.
   links?: { _class: Ref<Class<Doc>>, _id: Ref<Doc> }[]

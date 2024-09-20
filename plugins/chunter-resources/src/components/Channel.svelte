@@ -30,6 +30,7 @@
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let isAsideOpened = false
   export let syncLocation = true
+  export let freeze = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -111,5 +112,6 @@
     provider={dataProvider}
     {isAsideOpened}
     loadMoreAllowed={!isDocChannel}
+    {freeze}
   />
 {/if}

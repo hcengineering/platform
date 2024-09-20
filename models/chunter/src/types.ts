@@ -22,7 +22,6 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
-  TypeTimestamp,
   UX
 } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
@@ -59,6 +58,7 @@ import type { DocNotifyContext } from '@hcengineering/notification'
 import chunter from './plugin'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
+
 @Model(chunter.class.ChunterSpace, core.class.Space)
 export class TChunterSpace extends TSpace implements ChunterSpace {
   @Prop(PropCollection(activity.class.ActivityMessage), chunter.string.Messages)
@@ -83,9 +83,6 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
     message!: string
-
-  @Prop(TypeTimestamp(), chunter.string.Edit)
-    editedOn?: Timestamp
 
   @Prop(PropCollection(attachment.class.Attachment), attachment.string.Attachments, {
     shortLabel: attachment.string.Files

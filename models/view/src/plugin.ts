@@ -140,6 +140,7 @@ export default mergeIds(viewId, view, {
     CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanJoinSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    IsClipboardAvailable: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     BlobImageMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
     BlobVideoMetadata: '' as Resource<(file: FileOrBlob, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   },

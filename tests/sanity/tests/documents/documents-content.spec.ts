@@ -36,7 +36,7 @@ test.describe('Content in the Documents tests', () => {
   let documentsSecondPage: DocumentsPage
   let documentContentSecondPage: DocumentContentPage
 
-  test.beforeEach(async ({ browser, page, request }) => {
+  test.beforeEach(async ({ page, request }) => {
     leftSideMenuPage = new LeftSideMenuPage(page)
     documentsPage = new DocumentsPage(page)
     documentContentPage = new DocumentContentPage(page)
@@ -116,8 +116,8 @@ test.describe('Content in the Documents tests', () => {
 
     await documentContentPage.inputContentParapraph().click()
     await documentContentPage.leftMenu().click()
-    await documentContentPage.menuPopupItemButton('Table').click()
-    await documentContentPage.menuPopupItemButton('1x2').first().click()
+    await documentContentPage.clickPopupItem('Table')
+    await documentContentPage.clickPopupItem('1x2')
     await documentContentPage.proseTableCell(0, 0).fill('One')
     await documentContentPage.proseTableCell(0, 1).fill('Two')
     await documentContentPage.buttonInsertColumn().click()
@@ -294,5 +294,65 @@ test.describe('Content in the Documents tests', () => {
       await expect(documentContentPage.slashActionItemsPopup()).toBeVisible()
       await documentContentPage.page.keyboard.press('Escape')
     })
+  })
+
+  test('Checking styles in a Document', async ({ page, browser, request }) => {
+    const content: string = [...new Array(20).keys()].map((index) => `Line ${index + 1}`).join('\n')
+    const testLink: string = 'http://test/link/123456'
+    const testNote: string = 'Test Note'
+
+    await documentContentPage.addContentToTheNewLine(content, false)
+    await documentContentPage.applyToolbarCommand('Line 1', 'btnH1')
+    await documentContentPage.applyToolbarCommand('Line 2', 'btnH2')
+    await documentContentPage.applyToolbarCommand('Line 3', 'btnH3')
+    await documentContentPage.goToByTOC('Line 3')
+    await documentContentPage.goToByTOC('Line 1')
+
+    await documentContentPage.applyToolbarCommand('Line 4', 'btnBold')
+    await documentContentPage.applyToolbarCommand('Line 5', 'btnItalic')
+    await documentContentPage.applyToolbarCommand('Line 6', 'btnStrikethrough')
+    await documentContentPage.applyToolbarCommand('Line 7', 'btnUnderlined')
+
+    await documentContentPage.applyToolbarCommand('Line 8', 'btnLink')
+    await documentContentPage.inputFormLink().fill(testLink)
+    await documentContentPage.buttonFormLinkSave().click()
+
+    await documentContentPage.addSeparator('Line 9')
+    for (let i = 9; i <= 11; i++) {
+      await documentContentPage.applyToolbarCommand(`Line ${i}`, 'btnOrderedList')
+    }
+    await documentContentPage.addSeparator('Line 12')
+    for (let i = 12; i <= 14; i++) {
+      await documentContentPage.applyToolbarCommand(`Line ${i}`, 'btnBulletedList')
+    }
+    await documentContentPage.addSeparator('Line 15')
+    await documentContentPage.applyToolbarCommand('Line 15', 'btnH3')
+    await documentContentPage.goToByTOC('Line 15')
+
+    await documentContentPage.applyToolbarCommand('Line 16', 'btnBlockquote')
+    await documentContentPage.applyToolbarCommand('Line 17', 'btnCode')
+    await documentContentPage.applyToolbarCommand('Line 18', 'btnCodeBlock')
+    await documentContentPage.changeCodeBlockLanguage('Line 18', 'auto', 'css')
+    await documentContentPage.applyNote('Line 19', 'warning', testNote)
+    await documentContentPage.addImage('Line 20')
+    await page.keyboard.type('Cat')
+
+    newUser2 = generateUser()
+    await createAccount(request, newUser2)
+    const linkText = await getInviteLink(page)
+    using _secondPage = await getSecondPageByInvite(browser, linkText, newUser2)
+    secondPage = _secondPage.page
+    leftSideMenuSecondPage = new LeftSideMenuPage(secondPage)
+    documentsSecondPage = new DocumentsPage(secondPage)
+    documentContentSecondPage = new DocumentContentPage(secondPage)
+
+    await leftSideMenuSecondPage.clickDocuments()
+    await documentsSecondPage.openTeamspace(testDocument.space)
+    await documentsSecondPage.openDocument(testDocument.title)
+    await documentContentSecondPage.checkDocumentTitle(testDocument.title)
+    await documentContentSecondPage.checkLinkInTheText('Line 8', testLink)
+    await documentContentSecondPage.goToByTOC('Line 15')
+    await documentContentSecondPage.checkImage()
+    await documentContentSecondPage.checkNote('Line 19', 'warning', testNote)
   })
 })

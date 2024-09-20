@@ -61,6 +61,7 @@ import {
   getThreadLink,
   openChannelInSidebar,
   openChannelInSidebarAction,
+  openThreadInSidebar,
   replyToThread
 } from './navigation'
 import {
@@ -199,7 +200,8 @@ export default async (): Promise<Resources> => ({
     GetMessageLink: getMessageLocation,
     CloseChatWidgetTab: closeChatWidgetTab,
     OpenChannelInSidebar: openChannelInSidebar,
-    CanTranslateMessage: canTranslateMessage
+    CanTranslateMessage: canTranslateMessage,
+    OpenThreadInSidebar: openThreadInSidebar
   },
   actionImpl: {
     ArchiveChannel,

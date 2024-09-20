@@ -36,18 +36,9 @@
   }
 </script>
 
-{#if widget && tab && tab.type === 'channel'}
+{#if widget && tab}
   <ChannelSidebarView
     {widget}
-    {tab}
-    {height}
-    {width}
-    on:close={() => {
-      handleClose(tab?.id)
-    }}
-  />
-{:else if widget && tab && tab.type === 'thread'}
-  <ThreadSidebarView
     {tab}
     {height}
     {width}

@@ -32,13 +32,13 @@
 {#if value !== undefined}
   <div class:highlighted class="root">
     <div class="header pt-2 pb-2 pl-4 pr-4 flex-between">
-      <div>
+      <span class="overflow-label">
         {#if value?.index}
-          <span>#{value.index}</span>
+          <span data-id="commentId">#{value.index}</span>
           <span>•</span>
         {/if}
         <Label label={resolved ? documents.string.Resolved : documents.string.Pending} />
-      </div>
+      </span>
       {#if $canAddDocumentCommentsFeedback}
         <div class="tools">
           <Button

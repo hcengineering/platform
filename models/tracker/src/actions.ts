@@ -562,6 +562,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
+      visibilityTester: view.function.IsClipboardAvailable,
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
@@ -582,6 +583,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
+      visibilityTester: view.function.IsClipboardAvailable,
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,
@@ -602,6 +604,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Issue,
+      visibilityTester: view.function.IsClipboardAvailable,
       context: {
         mode: ['context', 'browser'],
         application: tracker.app.Tracker,

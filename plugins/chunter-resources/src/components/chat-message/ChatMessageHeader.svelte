@@ -14,19 +14,14 @@
 -->
 <script lang="ts">
   import { Label } from '@hcengineering/ui'
-  import notification from '@hcengineering/notification'
   import { IntlString } from '@hcengineering/platform'
   import { Timestamp } from '@hcengineering/core'
 
-  export let editedOn: Timestamp | undefined
   export let label: IntlString | undefined
 </script>
 
 {#if label}
   <span class="text-sm lower"> <Label {label} /></span>
-{/if}
-{#if editedOn}
-  <span class="text-sm lower"><Label label={notification.string.Edited} /></span>
 {/if}
 
 <style lang="scss">

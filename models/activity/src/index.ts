@@ -152,6 +152,9 @@ export class TActivityReference extends TActivityMessage implements ActivityRefe
   @Prop(TypeMarkup(), activity.string.Message)
   @Index(IndexKind.FullText)
     message!: string
+
+  @Prop(TypeTimestamp(), activity.string.Edit)
+    editedOn?: Timestamp
 }
 
 @Model(activity.class.ActivityInfoMessage, activity.class.ActivityMessage)
