@@ -85,6 +85,7 @@
     border-radius: 0.25rem;
     cursor: pointer;
     overflow: hidden;
+    color: var(--theme-content-color);
 
     &.primary {
       background-color: var(--theme-button-pressed);
