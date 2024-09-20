@@ -588,6 +588,7 @@ export async function selectInboxContext (
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const { objectId, objectClass } = context
+  const loc = getCurrentLocation()
 
   if (isMentionNotification(notification) && isActivityMessageClass(notification.mentionedInClass)) {
     const selectedMsg = notification.mentionedIn as Ref<ActivityMessage>
@@ -619,17 +620,25 @@ export async function selectInboxContext (
     }
 
     if (isReactionMessage(message)) {
-      void navigateToInboxDoc(linkProviders, objectId, objectClass, undefined, objectId as Ref<ActivityMessage>)
+      const thread = loc.path[4] === objectId ? objectId : undefined
+      void navigateToInboxDoc(
+        linkProviders,
+        objectId,
+        objectClass,
+        thread as Ref<ActivityMessage>,
+        objectId as Ref<ActivityMessage>
+      )
       return
     }
 
     const selectedMsg = (notification as ActivityInboxNotification)?.attachedTo
+    const thread = selectedMsg !== objectId ? objectId : loc.path[4] === objectId ? objectId : undefined
 
     void navigateToInboxDoc(
       linkProviders,
       objectId,
       objectClass,
-      selectedMsg !== undefined ? (objectId as Ref<ActivityMessage>) : undefined,
+      thread as Ref<ActivityMessage>,
       selectedMsg ?? (objectId as Ref<ActivityMessage>)
     )
     return

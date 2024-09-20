@@ -33,7 +33,7 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={div}
-    class="border-radius-4 over-underline dateSelectorButton clear-mins"
+    class="border-radius-4 dateSelectorButton clear-mins"
     on:click={() => {
       showPopup(DateRangePopup, {}, div, (v) => {
         if (v) {
@@ -68,13 +68,17 @@
       left: 0;
       width: 100%;
       height: 1px;
-      background-color: var(--theme-divider-color);
+      background-color: var(--highlight-select-border);
     }
+
     .dateSelectorButton {
+      cursor: pointer;
       padding: 0.25rem 0.5rem;
       height: max-content;
-      background-color: var(--theme-list-row-color);
-      border: 1px solid var(--theme-divider-color);
+      color: var(--theme-content-color);
+      background-color: var(--highlight-select);
+      border: 1px solid var(--highlight-select-border);
+      font-weight: 500;
       z-index: 10;
     }
   }

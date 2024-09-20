@@ -126,6 +126,7 @@ export interface TabItem {
 }
 
 export interface BreadcrumbItem {
+  id?: string
   icon?: Asset | AnySvelteComponent | ComponentType
   iconProps?: any
   iconWidth?: string

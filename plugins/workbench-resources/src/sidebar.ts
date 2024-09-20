@@ -101,7 +101,12 @@ export function openWidget (widget: Widget, data?: Record<string, any>, active =
   const { widgetsState } = state
   const widgetState = widgetsState.get(widget._id)
 
-  widgetsState.set(widget._id, { _id: widget._id, data, tab: widgetState?.tab, tabs: widgetState?.tabs ?? [] })
+  widgetsState.set(widget._id, {
+    _id: widget._id,
+    data: data ?? widgetState?.data,
+    tab: widgetState?.tab,
+    tabs: widgetState?.tabs ?? []
+  })
 
   sidebarStore.set({
     ...state,

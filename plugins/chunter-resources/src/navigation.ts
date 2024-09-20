@@ -6,7 +6,7 @@ import {
   type Location,
   navigate
 } from '@hcengineering/ui'
-import { type Ref, type Doc, type Class } from '@hcengineering/core'
+import { type Ref, type Doc, type Class, generateId } from '@hcengineering/core'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import {
   type Channel,
@@ -262,11 +262,11 @@ export async function openChannelInSidebar (
       size: isDirect || isPerson ? 'tiny' : 'x-small',
       compact: true
     },
-    type: 'channel',
     data: {
       _id,
       _class,
-      thread
+      thread,
+      channelName: name
     }
   }
 
@@ -288,18 +288,26 @@ export async function openThreadInSidebarChannel (
 ): Promise<void> {
   const newTab: ChatWidgetTab = {
     ...tab,
+    name: await translate(chunter.string.ThreadIn, { name: tab.data.channelName }),
     data: { ...tab.data, thread: message._id }
   }
   createWidgetTab(widget, newTab)
 }
 
 export async function closeThreadInSidebarChannel (widget: Widget, tab: ChatWidgetTab): Promise<void> {
+  const thread = tab.allowedPath !== undefined ? tab.data.thread : undefined
   const newTab: ChatWidgetTab = {
     ...tab,
+    id: tab.id.startsWith('thread_') ? generateId() : tab.id,
+    name: tab.data.channelName,
+    allowedPath: undefined,
     data: { ...tab.data, thread: undefined }
   }
 
   createWidgetTab(widget, newTab)
+  setTimeout(() => {
+    removeThreadFromLoc(thread)
+  }, 100)
 }
 
 export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc): Promise<void> {
@@ -321,9 +329,7 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
   const allowedPath = loc.path.join('/')
 
   const currentTAbs = get(sidebarStore).widgetsState.get(widget._id)?.tabs ?? []
-  const tabsToClose = currentTAbs
-    .filter((t) => t.isPinned !== true && t.allowedPath === allowedPath && (t as ChatWidgetTab).type === 'thread')
-    .map((t) => t.id)
+  const tabsToClose = currentTAbs.filter((t) => t.isPinned !== true && t.allowedPath === allowedPath).map((t) => t.id)
 
   if (tabsToClose.length > 0) {
     sidebarStore.update((s) => {
@@ -341,26 +347,31 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
     name: tabName,
     icon: chunter.icon.Thread,
     allowedPath,
-    type: 'thread',
     data: {
       _id: object?._id,
       _class: object?._class,
-      thread: message._id
+      thread: message._id,
+      channelName: name
     }
   }
   createWidgetTab(widget, tab, true)
 }
 
-export function closeChatWidgetTab (tab?: ChatWidgetTab): void {
-  if (tab?.type === 'thread') {
-    const loc = getCurrentLocation()
+export function removeThreadFromLoc (thread?: Ref<ActivityMessage>): void {
+  if (thread === undefined) return
+  const loc = getCurrentLocation()
 
-    if (loc.path[2] === chunterId || loc.path[2] === notificationId) {
-      if (loc.path[4] === tab.data.thread) {
-        loc.path[4] = ''
-        loc.path.length = 4
-        navigate(loc)
-      }
+  if (loc.path[2] === chunterId || loc.path[2] === notificationId) {
+    if (loc.path[4] === thread) {
+      loc.path[4] = ''
+      loc.path.length = 4
+      navigate(loc)
     }
+  }
+}
+
+export function closeChatWidgetTab (tab?: ChatWidgetTab): void {
+  if (tab?.allowedPath !== undefined) {
+    removeThreadFromLoc(tab.data.thread)
   }
 }

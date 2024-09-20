@@ -76,7 +76,7 @@
 
     if (direct !== undefined && missingAccounts.length > 0) {
       await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, {
-        members: [...direct.members, ...missingAccounts]
+        $push: { members: { $each: missingAccounts, $position: 0 } }
       })
     }
 

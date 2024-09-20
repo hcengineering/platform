@@ -61,8 +61,9 @@
   export let skipLabels = false
   export let loadMoreAllowed = true
   export let isAsideOpened = false
-  export let initialScrollBottom = true
   export let fullHeight = true
+  export let fixedInput = true
+  export let freeze = false
 
   const doc = object
 
@@ -130,17 +131,21 @@
       }
     })
 
+  function isFreeze (): boolean {
+    return freeze
+  }
+
   $: displayMessages = filterChatMessages(messages, filters, filterResources, doc._class, selectedFilters)
 
   const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
-    if (notifyContext !== undefined) {
+    if (notifyContext !== undefined && !isFreeze()) {
       recheckNotifications(notifyContext)
       readViewportMessages()
     }
   })
 
   function scrollToBottom (afterScrollFn?: () => void): void {
-    if (scroller != null && scrollElement != null) {
+    if (scroller != null && scrollElement != null && !isFreeze()) {
       scroller.scrollBy(scrollElement.scrollHeight)
       updateSelectedDate()
       afterScrollFn?.()
@@ -338,7 +343,7 @@
   let messagesToReadAccumulatorTimer: any
 
   function readViewportMessages (): void {
-    if (!scrollElement || !scrollContentBox) {
+    if (!scrollElement || !scrollContentBox || isFreeze()) {
       return
     }
 
@@ -452,22 +457,14 @@
       isInitialScrolling = false
     } else if (separatorIndex === -1) {
       await wait()
-      if (initialScrollBottom) {
-        isScrollInitialized = true
-        shouldWaitAndRead = true
-        autoscroll = true
-        shouldScrollToNew = true
-        isInitialScrolling = false
-        waitLastMessageRenderAndRead(() => {
-          autoscroll = false
-        })
-      } else {
-        isScrollInitialized = true
+      isScrollInitialized = true
+      shouldWaitAndRead = true
+      autoscroll = true
+      shouldScrollToNew = true
+      isInitialScrolling = false
+      waitLastMessageRenderAndRead(() => {
         autoscroll = false
-        updateShouldScrollToNew()
-        isInitialScrolling = false
-        readViewportMessages()
-      }
+      })
     } else if (separatorElement) {
       await wait()
       scrollToSeparator()
@@ -519,6 +516,7 @@
 
   function scrollToNewMessages (): void {
     if (!scrollElement || !shouldScrollToNew) {
+      readViewportMessages()
       return
     }
 
@@ -557,14 +555,22 @@
       return
     }
 
+    if (isFreeze()) {
+      messagesCount = newCount
+      return
+    }
+
     if (scrollToRestore > 0) {
       void restoreScroll()
     } else if (dateToJump !== undefined) {
       await wait()
       scrollToDate(dateToJump)
-    } else if (messagesCount > 0 && newCount > messagesCount) {
+    } else if (shouldScrollToNew && messagesCount > 0 && newCount > messagesCount) {
       await wait()
       scrollToNewMessages()
+    } else {
+      await wait()
+      readViewportMessages()
     }
 
     messagesCount = newCount
@@ -576,7 +582,7 @@
       return
     }
 
-    if (shouldScrollToNew && initialScrollBottom) {
+    if (shouldScrollToNew) {
       scrollToBottom()
     }
 
@@ -660,7 +666,7 @@
     } else if (element != null) {
       const { scrollHeight, scrollTop, offsetHeight } = element
 
-      showScrollDownButton = scrollHeight > offsetHeight + scrollTop + 300
+      showScrollDownButton = scrollHeight > offsetHeight + scrollTop + 50
     } else {
       showScrollDownButton = false
     }
@@ -691,7 +697,7 @@
   $: void forceReadContext(isScrollAtBottom, notifyContext)
 
   async function forceReadContext (isScrollAtBottom: boolean, context?: DocNotifyContext): Promise<void> {
-    if (context === undefined || !isScrollAtBottom || forceRead) return
+    if (context === undefined || !isScrollAtBottom || forceRead || isFreeze()) return
     const { lastUpdateTimestamp = 0, lastViewedTimestamp = 0 } = context
 
     if (lastViewedTimestamp >= lastUpdateTimestamp) return
@@ -708,6 +714,10 @@
   }
 
   const canLoadNextForwardStore = provider.canLoadNextForwardStore
+
+  $: if (!freeze) {
+    readViewportMessages()
+  }
 </script>
 
 {#if isLoading}
@@ -777,6 +787,16 @@
         />
       {/each}
 
+      {#if !fixedInput}
+        <div class="ref-input flex-col">
+          <ActivityExtensionComponent
+            kind="input"
+            {extensions}
+            props={{ object, boundary: scrollElement, collection, autofocus: true, withTypingInfo: true }}
+          />
+        </div>
+      {/if}
+
       {#if loadMoreAllowed && $canLoadNextForwardStore}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
@@ -794,7 +814,7 @@
       </div>
     {/if}
   </div>
-  {#if object}
+  {#if fixedInput && object}
     <div class="ref-input flex-col">
       <ActivityExtensionComponent
         kind="input"
@@ -841,7 +861,7 @@
     display: flex;
     justify-content: center;
     bottom: -0.75rem;
-    animation: 1s fadeIn;
+    animation: 0.5s fadeIn;
     animation-fill-mode: forwards;
     visibility: hidden;
   }
