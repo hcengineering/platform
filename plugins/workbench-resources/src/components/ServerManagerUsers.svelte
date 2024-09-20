@@ -80,8 +80,11 @@
 <div class="flex-column p-3 h-full" style:overflow="auto">
   {#each Object.entries(activeSessions) as act}
     {@const wsInstance = $workspacesStore.find((it) => it.workspaceId === act[0])}
-    {@const totalFind = act[1].sessions.reduce((it, itm) => itm.current.find + it, 0)}
-    {@const totalTx = act[1].sessions.reduce((it, itm) => itm.current.tx + it, 0)}
+    {@const totalFind = act[1].sessions.reduce((it, itm) => itm.total.find + it, 0)}
+    {@const totalTx = act[1].sessions.reduce((it, itm) => itm.total.tx + it, 0)}
+
+    {@const currentFind = act[1].sessions.reduce((it, itm) => itm.current.find + it, 0)}
+    {@const currentTx = act[1].sessions.reduce((it, itm) => itm.current.tx + it, 0)}
     {@const employeeGroups = Array.from(new Set(act[1].sessions.map((it) => it.userId))).filter(
       (it) => systemAccountEmail !== it || !realUsers
     )}
@@ -94,7 +97,8 @@
           <svelte:fragment slot="title">
             <div class="flex flex-row-center flex-between flex-grow p-1">
               <div class="fs-title" class:greyed={realGroup.length === 0}>
-                Workspace: {wsInstance?.workspaceName ?? act[0]}: {employeeGroups.length} current 5 mins => {totalFind}/{totalTx}
+                Workspace: {wsInstance?.workspaceName ?? act[0]}: {employeeGroups.length} current 5 mins => {currentFind}/{currentTx},
+                total => {totalFind}/{totalTx}
                 {#if act[1].upgrading}
                   (Upgrading)
                 {/if}
@@ -138,7 +142,7 @@
                       {/if}
                       : {connections.length}
                       <div class="ml-4">
-                        <div class="ml-1">{find}/{txes}</div>
+                        <div class="ml-1">{find} rx/{txes} tx</div>
                       </div>
                     </div>
                   </svelte:fragment>
@@ -147,13 +151,13 @@
                       #{i}
                       {user.userId}
                       <div class="p-1">
-                        Total: {user.total.find}/{user.total.tx}
+                        Total: {user.total.find} rx/{user.total.tx} tx
                       </div>
                       <div class="p-1">
-                        Previous 5 mins: {user.mins5.find}/{user.mins5.tx}
+                        Previous 5 mins: {user.mins5.find} rx/{user.mins5.tx} tx
                       </div>
                       <div class="p-1">
-                        Current 5 mins: {user.current.find}/{user.current.tx}
+                        Current 5 mins: {user.current.find} tx/{user.current.tx} tx
                       </div>
                     </div>
                     <div class="p-1 flex-col ml-10">

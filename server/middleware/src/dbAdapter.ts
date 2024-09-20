@@ -77,15 +77,6 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
       }
     }
     await txAdapter.init?.(txAdapterDomains)
-    const model = await txAdapter.getModel(ctx)
-
-    for (const tx of model) {
-      try {
-        this.context.hierarchy.tx(tx)
-      } catch (err: any) {
-        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
-      }
-    }
 
     await ctx.with('init-adapters', {}, async (ctx) => {
       for (const [key, adapter] of adapters) {

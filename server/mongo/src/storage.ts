@@ -312,7 +312,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     const baseClass = this.hierarchy.getBaseClass(clazz)
     if (baseClass !== core.class.Doc) {
-      const classes = this.hierarchy.getDescendants(baseClass).filter((it) => !this.hierarchy.isMixin(it))
+      const classes = Array.from(
+        new Set(this.hierarchy.getDescendants(baseClass).filter((it) => !this.hierarchy.isMixin(it)))
+      )
 
       // Only replace if not specified
       if (translatedBase._class === undefined) {
@@ -334,7 +336,9 @@ abstract class MongoAdapterBase implements DbAdapter {
           descendants = descendants.filter((c) => !excludedClassesIds.has(c))
         }
 
-        const desc = descendants.filter((it: any) => !this.hierarchy.isMixin(it as Ref<Class<Doc>>))
+        const desc = Array.from(
+          new Set(descendants.filter((it: any) => !this.hierarchy.isMixin(it as Ref<Class<Doc>>)))
+        )
         translatedBase._class = desc.length === 1 ? desc[0] : { $in: desc }
       }
 
@@ -347,6 +351,9 @@ abstract class MongoAdapterBase implements DbAdapter {
       if ('_class' in translatedBase) {
         delete translatedBase._class
       }
+    }
+    if (translatedBase._class?.$in != null && Array.isArray(translatedBase._class.$in)) {
+      translatedBase._class.$in = Array.from(new Set(translatedBase._class.$in))
     }
     if (translatedBase._class?.$in?.length === 1 && translatedBase._class?.$nin === undefined) {
       translatedBase._class = translatedBase._class.$in[0]
