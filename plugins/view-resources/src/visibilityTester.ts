@@ -143,3 +143,7 @@ export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   return space.members?.includes(getCurrentAccount()._id)
 }
+
+export function isClipboardAvailable (doc?: Doc | Doc[]): boolean {
+  return isSecureContext && navigator.clipboard !== undefined
+}
