@@ -61,8 +61,8 @@
   export let skipLabels = false
   export let loadMoreAllowed = true
   export let isAsideOpened = false
-  export let initialScrollBottom = true
   export let fullHeight = true
+  export let fixedInput = true
 
   const doc = object
 
@@ -452,22 +452,14 @@
       isInitialScrolling = false
     } else if (separatorIndex === -1) {
       await wait()
-      if (initialScrollBottom) {
-        isScrollInitialized = true
-        shouldWaitAndRead = true
-        autoscroll = true
-        shouldScrollToNew = true
-        isInitialScrolling = false
-        waitLastMessageRenderAndRead(() => {
-          autoscroll = false
-        })
-      } else {
-        isScrollInitialized = true
+      isScrollInitialized = true
+      shouldWaitAndRead = true
+      autoscroll = true
+      shouldScrollToNew = true
+      isInitialScrolling = false
+      waitLastMessageRenderAndRead(() => {
         autoscroll = false
-        updateShouldScrollToNew()
-        isInitialScrolling = false
-        readViewportMessages()
-      }
+      })
     } else if (separatorElement) {
       await wait()
       scrollToSeparator()
@@ -580,7 +572,7 @@
       return
     }
 
-    if (shouldScrollToNew && initialScrollBottom) {
+    if (shouldScrollToNew) {
       scrollToBottom()
     }
 
@@ -781,6 +773,16 @@
         />
       {/each}
 
+      {#if !fixedInput}
+        <div class="ref-input flex-col">
+          <ActivityExtensionComponent
+            kind="input"
+            {extensions}
+            props={{ object, boundary: scrollElement, collection, autofocus: true, withTypingInfo: true }}
+          />
+        </div>
+      {/if}
+
       {#if loadMoreAllowed && $canLoadNextForwardStore}
         <HistoryLoading isLoading={$isLoadingMoreStore} />
       {/if}
@@ -798,7 +800,7 @@
       </div>
     {/if}
   </div>
-  {#if object}
+  {#if fixedInput && object}
     <div class="ref-input flex-col">
       <ActivityExtensionComponent
         kind="input"

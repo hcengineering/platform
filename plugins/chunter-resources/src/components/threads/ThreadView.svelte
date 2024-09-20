@@ -159,8 +159,8 @@
       skipLabels
       object={message}
       provider={dataProvider}
-      initialScrollBottom={false}
       fullHeight={false}
+      fixedInput={false}
     >
       <svelte:fragment slot="header">
         <div class="mt-3">
