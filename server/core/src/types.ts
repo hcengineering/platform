@@ -392,7 +392,7 @@ export type FullTextAdapterFactory = (
  * @public
  */
 export interface ContentTextAdapter {
-  content: (name: string, type: string, doc: Readable | Buffer | string) => Promise<string>
+  content: (name: string, type: string, doc: Readable) => Promise<string>
   metrics: () => MeasureContext
 }
 

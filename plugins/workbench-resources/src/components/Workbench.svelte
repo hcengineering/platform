@@ -61,8 +61,8 @@
     navigate,
     openPanel,
     popupstore,
+    pushRootBarComponent,
     resolvedLocationStore,
-    rootBarExtensions,
     setResolvedLocation,
     showPopup,
     workbenchSeparators,
@@ -75,8 +75,8 @@
     NavLink,
     accessDeniedStore,
     migrateViewOpttions,
-    updateFocus,
-    parseLinkId
+    parseLinkId,
+    updateFocus
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
@@ -143,12 +143,7 @@
   }
 
   onMount(() => {
-    rootBarExtensions.update((cur) => {
-      if (!cur.find((p) => p[1] === view.component.SearchSelector)) {
-        cur.push(['right', view.component.SearchSelector])
-      }
-      return cur
-    })
+    pushRootBarComponent('right', view.component.SearchSelector)
     void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())

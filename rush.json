@@ -1452,11 +1452,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/apm",
-      "projectFolder": "tools/apm",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/minio",
       "projectFolder": "server/minio",
       "shouldPublish": false
@@ -2079,6 +2074,11 @@
     {
       "packageName": "@hcengineering/ai-bot",
       "projectFolder": "plugins/ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-bot-resources",
+      "projectFolder": "plugins/ai-bot-resources",
       "shouldPublish": false
     },
     {

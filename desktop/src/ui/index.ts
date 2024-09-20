@@ -1,6 +1,6 @@
 import login, { loginId } from '@hcengineering/login'
-import { setMetadata, getMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, setDownloadProgress } from '@hcengineering/presentation'
+import { getEmbeddedLabel, getMetadata, setMetadata } from '@hcengineering/platform'
+import presentation, { closeClient, MessageBox, setDownloadProgress } from '@hcengineering/presentation'
 import { settingId } from '@hcengineering/setting'
 import {
   closePanel,
@@ -11,15 +11,20 @@ import {
   getCurrentResolvedLocation,
   navigate,
   parseLocation,
-  setMetadataLocalStorage
+  pushRootBarProgressComponent,
+  removeRootBarComponent,
+  setMetadataLocalStorage,
+  showPopup
 } from '@hcengineering/ui'
 
-import { workbenchId } from '@hcengineering/workbench'
 import { notificationId } from '@hcengineering/notification'
+import { workbenchId } from '@hcengineering/workbench'
 
+import { isOwnerOrMaintainer } from '@hcengineering/core'
 import { configurePlatform } from './platform'
-import { IPCMainExposed } from './types'
 import { defineScreenShare } from './screenShare'
+import { IPCMainExposed } from './types'
+import settings from '@hcengineering/setting'
 
 defineScreenShare()
 
@@ -38,6 +43,18 @@ window.addEventListener('DOMContentLoaded', () => {
     loc.query = undefined
     loc.path[2] = settingId
     loc.path.length = 3
+    navigate(loc)
+  })
+
+  ipcMain.on('select-workspace', () => {
+    closePopup()
+    closePanel()
+    const loc = getCurrentResolvedLocation()
+    loc.fragment = undefined
+    loc.query = undefined
+    loc.path[0] = loginId
+    loc.path[1] = 'selectWorkspace'
+    loc.path.length = 2
     navigate(loc)
   })
 
@@ -73,5 +90,37 @@ window.addEventListener('DOMContentLoaded', () => {
 
   ipcMain.handleUpdateDownloadProgress((progress) => {
     setDownloadProgress(progress)
+  })
+
+  ipcMain.on('start-backup', () => {
+    // We need to obtain current token and endpoint and trigger backup
+    const token = getMetadata(presentation.metadata.Token)
+    const endpoint = getMetadata(presentation.metadata.Endpoint)
+    const workspace = getMetadata(presentation.metadata.WorkspaceId)
+    if (isOwnerOrMaintainer()) {
+      if (token != null && endpoint != null && workspace != null) {
+        ipcMain.startBackup(token, endpoint, workspace)
+      }
+    } else {
+      showPopup(MessageBox, {
+        label: settings.string.OwnerOrMainteinerRequired
+      })
+    }
+  })
+
+  ipcMain.on('backup', (evt: any, ...args: any) => {
+    pushRootBarProgressComponent('backup',
+      getEmbeddedLabel('Backup'),
+      () => { return args[0] },
+      () => {
+        ipcMain.cancelBackup()
+      },
+      undefined,
+      undefined,
+      50
+    )
+  })
+  ipcMain.on('backup-cancel', () => {
+    removeRootBarComponent('backup')
   })
 })

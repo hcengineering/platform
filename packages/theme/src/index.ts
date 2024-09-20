@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import '@hcengineering/platform-rig/profiles/ui/svelte'
-import { writable } from 'svelte/store'
+import { derived, writable } from 'svelte/store'
 
 export { default as Theme } from './Theme.svelte'
 
@@ -78,3 +78,5 @@ export function initThemeStore (): void {
     )
   )
 }
+
+export const languageStore = derived(themeStore, ($theme) => $theme.language)

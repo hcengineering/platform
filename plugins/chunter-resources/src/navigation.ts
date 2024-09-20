@@ -276,17 +276,9 @@ export async function openChannelInSidebar (
 export async function openChannelInSidebarAction (
   context: DocNotifyContext,
   _: Event,
-  props?: { object?: Doc, newTab?: boolean }
-): Promise<void> {
-  await openChannelInSidebar(context.objectId, context.objectClass, props?.object, undefined, props?.newTab ?? false)
-}
-
-export async function openChannelInSidebarTabAction (
-  context: DocNotifyContext,
-  event: Event,
   props?: { object?: Doc }
 ): Promise<void> {
-  await openChannelInSidebarAction(context, event, { newTab: true, object: props?.object })
+  await openChannelInSidebar(context.objectId, context.objectClass, props?.object, undefined, true)
 }
 
 export async function openThreadInSidebarChannel (
@@ -326,12 +318,29 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
   const name = (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {}))
   const tabName = await translate(chunter.string.ThreadIn, { name })
   const loc = getCurrentLocation()
+  const allowedPath = loc.path.join('/')
+
+  const currentTAbs = get(sidebarStore).widgetsState.get(widget._id)?.tabs ?? []
+  const tabsToClose = currentTAbs
+    .filter((t) => t.isPinned !== true && t.allowedPath === allowedPath && (t as ChatWidgetTab).type === 'thread')
+    .map((t) => t.id)
+
+  if (tabsToClose.length > 0) {
+    sidebarStore.update((s) => {
+      const widgetState = s.widgetsState.get(widget._id)
+      if (widgetState === undefined) return s
+
+      const tabs = widgetState.tabs.filter((it) => !tabsToClose.includes(it.id))
+      s.widgetsState.set(widget._id, { ...widgetState, tabs })
+      return { ...s }
+    })
+  }
 
   const tab: ChatWidgetTab = {
     id: 'thread_' + _id,
     name: tabName,
     icon: chunter.icon.Thread,
-    allowedPath: loc.path.join('/'),
+    allowedPath,
     type: 'thread',
     data: {
       _id: object?._id,

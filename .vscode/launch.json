@@ -67,7 +67,7 @@
         "SERVER_SECRET": "secret",
         "ENABLE_CONSOLE": "true",
         "COLLABORATOR_URL": "ws://localhost:3078",
-        "REKONI_URL": "http://localhost:4000",
+        "REKONI_URL": "http://localhost:4004",
         "FRONT_URL": "http://localhost:8080",
         "ACCOUNTS_URL": "http://localhost:3000",
         // "SERVER_PROVIDER":"uweb"
@@ -221,13 +221,14 @@
       "name": "Debug backup tool",
       "type": "node",
       "request": "launch",
-      "args": ["src/index.ts", "backup", "../../../dump/platform2", "platform"],
+      "args": ["src/__start.ts", "backup", "../temp/backup-test", "platform", "--force"],
       "env": {
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
+        "SERVER_SECRET": "secret",
         "MONGO_URL": "mongodb://localhost:27017",
-        "ACCOUNTS_URL": "localhost:3000",
+        "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200"
       },
@@ -254,7 +255,7 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200",
-        "REKONI_URL": "http://localhost:4000"
+        "REKONI_URL": "http://localhost:4004"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,
@@ -458,7 +459,7 @@
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
         "MONGO_URL": "mongodb://localhost:27017",
-        "PORT": "4008",
+        "PORT": "4010",
         "SERVER_SECRET": "secret",
         "SUPPORT_WORKSPACE": "support",
         "FIRST_NAME": "Jolie",

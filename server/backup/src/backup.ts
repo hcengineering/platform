@@ -54,7 +54,7 @@ const dataBlobSize = 50 * 1024 * 1024
 const dataUploadSize = 2 * 1024 * 1024
 const retrieveChunkSize = 2 * 1024 * 1024
 
-const defaultLevel = 1
+const defaultLevel = 9
 
 /**
  * Blob data from s3 storage
@@ -516,6 +516,10 @@ export async function backup (
     blobDownloadLimit: number
     connection?: CoreClient & BackupClient
     storageAdapter?: StorageAdapter
+    // Return true in case
+    isCanceled?: () => boolean
+    progress?: (progress: number) => void
+    token?: string
   } = {
     force: false,
     recheck: false,
@@ -533,7 +537,11 @@ export async function backup (
     timeout: options.timeout
   })
 
-  let canceled = false
+  let _canceled = false
+  const canceled = (): boolean => {
+    return _canceled || (options.isCanceled?.() ?? false)
+  }
+
   let timer: any
   let ops = 0
 
@@ -542,18 +550,21 @@ export async function backup (
       if (ops === 0) {
         ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: options.timeout / 1000 })
         ops = 0
-        canceled = true
+        _canceled = true
       }
     }, options.timeout)
   }
 
-  const token = generateToken(systemAccountEmail, workspaceId, {
-    mode: 'backup'
-  })
+  const token =
+    options.token ??
+    generateToken(systemAccountEmail, workspaceId, {
+      mode: 'backup'
+    })
 
   const connection =
     options.connection ??
-    ((await createClient(transactorUrl, token, undefined, options.connectTimeout)) as CoreClient & BackupClient)
+    ((await createClient(transactorUrl, options.token ?? token, undefined, options.connectTimeout)) as CoreClient &
+    BackupClient)
 
   const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
   ctx.info('starting backup', { workspace: workspaceId.name })
@@ -611,8 +622,10 @@ export async function backup (
       domains: {}
     }
 
+    // Increment snapshot index
+    backupInfo.snapshotsIndex = (backupInfo.snapshotsIndex ?? backupInfo.snapshots.length) + 1
+    let backupIndex = `${backupInfo.snapshotsIndex}`
     backupInfo.snapshots.push(snapshot)
-    let backupIndex = `${backupInfo.snapshotsIndex ?? backupInfo.snapshots.length}`
     while (backupIndex.length < 6) {
       backupIndex = '0' + backupIndex
     }
@@ -717,7 +730,11 @@ export async function backup (
       return { changed, needRetrieveChunks }
     }
 
-    async function processDomain (ctx: MeasureContext, domain: Domain): Promise<void> {
+    async function processDomain (
+      ctx: MeasureContext,
+      domain: Domain,
+      progress: (value: number) => void
+    ): Promise<void> {
       const changes: Snapshot = {
         added: new Map(),
         updated: new Map(),
@@ -745,18 +762,22 @@ export async function backup (
       const digest = await ctx.with('load-digest', {}, (ctx) => loadDigest(ctx, storage, backupInfo.snapshots, domain))
 
       let _pack: Pack | undefined
-      let addedDocuments = 0
+      let addedDocuments = (): number => 0
 
+      progress(0)
       let { changed, needRetrieveChunks } = await ctx.with('load-chunks', { domain }, (ctx) =>
         loadChangesFromServer(ctx, domain, digest, changes)
       )
+      progress(10)
 
       if (needRetrieveChunks.length > 0) {
         ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
       }
 
+      const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
+      let processed = 0
       while (needRetrieveChunks.length > 0) {
-        if (canceled) {
+        if (canceled()) {
           return
         }
         const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
@@ -779,10 +800,9 @@ export async function backup (
 
         while (docs.length > 0) {
           // Chunk data into small pieces
-          if (addedDocuments > dataBlobSize && _pack !== undefined) {
+          if (addedDocuments() > dataBlobSize && _pack !== undefined) {
             _pack.finalize()
             _pack = undefined
-            addedDocuments = 0
 
             if (changed > 0) {
               snapshot.domains[domain] = domainInfo
@@ -800,7 +820,7 @@ export async function backup (
               processedChanges.updated.clear()
               await storage.writeFile(
                 infoFile,
-                gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel })
+                gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel, memLevel: 9 })
               )
             }
           }
@@ -811,12 +831,24 @@ export async function backup (
             ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
             domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
             const dataStream = await storage.write(storageFile)
-            const storageZip = createGzip({ level: defaultLevel, memLevel: 9 })
 
+            const sizePass = new PassThrough()
+            let sz = 0
+            sizePass._transform = (chunk, encoding, cb) => {
+              // No transformation, just pass through data
+              sizePass.push(chunk)
+              sz += chunk.length
+              cb()
+            }
+
+            sizePass.pipe(dataStream)
+
+            const storageZip = createGzip({ level: defaultLevel, memLevel: 9 })
+            addedDocuments = () => sz
             _pack.pipe(storageZip)
-            storageZip.pipe(dataStream)
+            storageZip.pipe(sizePass)
           }
-          if (canceled) {
+          if (canceled()) {
             return
           }
           const d = docs.shift()
@@ -825,6 +857,8 @@ export async function backup (
           }
 
           function processChanges (d: Doc, error: boolean = false): void {
+            processed++
+            progress(10 + (processed / totalChunks) * 90)
             // Move processed document to processedChanges
             if (changes.added.has(d._id)) {
               if (!error) {
@@ -867,8 +901,6 @@ export async function backup (
             }
 
             let blobFiled = false
-            addedDocuments += descrJson.length
-            addedDocuments += blob.size
 
             printDownloaded('', descrJson.length)
             try {
@@ -924,7 +956,6 @@ export async function backup (
             processChanges(d, blobFiled)
           } else {
             const data = JSON.stringify(d)
-            addedDocuments += data.length
             _pack.entry({ name: d._id + '.json' }, data, function (err) {
               if (err != null) throw err
             })
@@ -958,16 +989,20 @@ export async function backup (
       }
     }
 
+    let domainProgress = 0
     for (const domain of domains) {
-      if (canceled) {
+      if (canceled()) {
         break
       }
       await ctx.with('process-domain', { domain }, async (ctx) => {
-        await processDomain(ctx, domain)
+        await processDomain(ctx, domain, (value) => {
+          options.progress?.(Math.round(((domainProgress + value / 100) / domains.length) * 100))
+        })
       })
+      domainProgress++
+      options.progress?.(Math.round((domainProgress / domains.length) * 10000) / 100)
     }
-    if (!canceled) {
-      backupInfo.snapshotsIndex = backupInfo.snapshots.length
+    if (!canceled()) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
@@ -1514,20 +1549,18 @@ export async function compactBackup (
       const rsnapshots = Array.from(oldSnapshots).reverse()
 
       let _pack: Pack | undefined
-      let addedDocuments = 0
+      let addedDocuments: () => number = () => 0
 
       let processed = 0
 
       const blobs = new Map<string, { doc: Doc | undefined, buffer: Buffer | undefined }>()
 
       async function pushDocs (docs: Doc[], size: number, blobData: Record<Ref<Doc>, Buffer>): Promise<void> {
-        addedDocuments += size
         changed += docs.length
         // Chunk data into small pieces
-        if (addedDocuments > dataBlobSize && _pack !== undefined) {
+        if (addedDocuments() > dataBlobSize && _pack !== undefined) {
           _pack.finalize()
           _pack = undefined
-          addedDocuments = 0
 
           if (changed > 0) {
             snapshot.domains[domain] = domainInfo
@@ -1556,10 +1589,22 @@ export async function compactBackup (
           console.log('storing from domain', domain, storageFile)
           domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
           const dataStream = await storage.write(storageFile)
-          const storageZip = createGzip({ level: defaultLevel })
+          const storageZip = createGzip({ level: defaultLevel, memLevel: 9 })
+
+          const sizePass = new PassThrough()
+          let sz = 0
+          sizePass._transform = (chunk, encoding, cb) => {
+            // No transformation, just pass through data
+            sizePass.push(chunk)
+            sz += chunk.length
+            cb()
+          }
+
+          sizePass.pipe(dataStream)
+          addedDocuments = () => sz
 
           _pack.pipe(storageZip)
-          storageZip.pipe(dataStream)
+          storageZip.pipe(sizePass)
         }
 
         while (docs.length > 0) {
@@ -1576,8 +1621,6 @@ export async function compactBackup (
 
             const data = blobData[blob._id]
             const descrJson = JSON.stringify(d)
-            addedDocuments += descrJson.length
-            addedDocuments += data.length
             _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
               if (err != null) throw err
             })
@@ -1586,7 +1629,6 @@ export async function compactBackup (
             })
           } else {
             const data = JSON.stringify(d)
-            addedDocuments += data.length
             _pack.entry({ name: d._id + '.json' }, data, function (err) {
               if (err != null) throw err
             })
@@ -1738,8 +1780,6 @@ export async function compactBackup (
         }
       }
     }
-
-    backupInfo.snapshotsIndex = backupInfo.snapshots.length
     await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
   } catch (err: any) {
     console.error(err)

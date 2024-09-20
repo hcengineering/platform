@@ -109,6 +109,7 @@
     "DeleteSpaceType": "Eliminar tipo de espaço",
     "DeleteSpaceTypeConfirm": "Tem certeza de que deseja excluir este tipo de espaço?",
     "WorkspaceName": "Nome do espaço de trabalho",
-    "Workspace": "Espaço de trabalho"
+    "Workspace": "Espaço de trabalho",
+    "OwnerOrMainteinerRequired": "Precisa de ser proprietário ou mantenedor do espaço de trabalho"
   }
 }

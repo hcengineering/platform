@@ -82,7 +82,6 @@
     "mongodb": "^6.9.0",
     "node-fetch": "^2.6.6",
     "otp-generator": "^4.0.1",
-    "telegraf": "^4.16.3",
-    "ws": "^8.18.0"
+    "telegraf": "^4.16.3"
   }
 }

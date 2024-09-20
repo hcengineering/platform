@@ -31,13 +31,13 @@
   const client = getClient()
 
   async function accept (): Promise<void> {
+    await client.update(request, { status: RequestStatus.Approved })
     if (request.room === $myOffice?._id && !$isConnected) {
       const me = (getCurrentAccount() as PersonAccount).person
       const person = $personByIdStore.get(me)
       if (person === undefined) return
       await connectRoom(0, 0, $myInfo, person, $myOffice)
     }
-    await client.update(request, { status: RequestStatus.Approved })
   }
 
   async function decline (): Promise<void> {

@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { Menu, MenuItemConstructorOptions } from 'electron'
+import { Menu, MenuItemConstructorOptions, type BrowserWindow } from 'electron'
 
 const isMac = process.platform === 'darwin'
 
-export const addMenus = (sendCommand: (cmd: string, ...args: any[]) => void): void => {
+export const addMenus = (getWindow: () => BrowserWindow, sendCommand: (cmd: string, ...args: any[]) => void): void => {
   const template: MenuItemConstructorOptions[] = [
     {
       label: 'File',
@@ -25,11 +25,19 @@ export const addMenus = (sendCommand: (cmd: string, ...args: any[]) => void): vo
         {
           label: 'Settings',
           accelerator: 'Meta+,',
-          click: () => sendCommand('open-settings')
+          click: () => { sendCommand('open-settings') }
+        },
+        {
+          label: 'Select workspace',
+          click: () => { sendCommand('select-workspace') }
+        },
+        {
+          label: 'Backup...',
+          click: () => { sendCommand('start-backup') }
         },
         {
           label: 'Logout',
-          click: () => sendCommand('logout')
+          click: () => { sendCommand('logout') }
         },
         { role: isMac ? 'close' : 'quit' }
       ]

@@ -27,6 +27,7 @@ import presentation, {
   uiContext
 } from '@hcengineering/presentation'
 import {
+  desktopPlatform,
   fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
@@ -82,6 +83,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
     setMetadata(presentation.metadata.Workspace, workspaceLoginInfo.workspace)
     setMetadata(presentation.metadata.WorkspaceId, workspaceLoginInfo.workspaceId)
+    setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
   }
 
   setMetadata(presentation.metadata.Token, token)
@@ -170,9 +172,13 @@ export async function connect (title: string): Promise<Client | undefined> {
             } else {
               versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
-              setTimeout(() => {
-                location.reload()
-              }, 5000)
+              if (!desktopPlatform) {
+                setTimeout(() => {
+                  location.reload()
+                }, 5000)
+              }
+              // For embedded it should download the upgrade and restart the app
+
               return false
             }
           }

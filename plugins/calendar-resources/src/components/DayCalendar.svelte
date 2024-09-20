@@ -546,7 +546,8 @@
   }
 
   const getExactly = (e: MouseEvent, correction: boolean = false): number => {
-    return Math.round((e.offsetY * 60) / cellHeight) - (correction ? 15 : 0)
+    const exactly = Math.round((e.offsetY * 60) / cellHeight) - (correction ? 15 : 0)
+    return exactly <= 0 ? 0 : exactly
   }
 
   const getStickyMinutes = (
@@ -566,22 +567,22 @@
       const target = new Date(day).setHours(hour, exactly, 0, 0)
       const events = newEvents.filter((ev) => ev._id !== skipId && !ev.allDay)
       if (events.length > 0) {
-        const minutes: number[] = []
+        const dates: Array<{ date: number, hours: number, mins: number }> = []
         for (const ev of events) {
           if (ev.date >= min && ev.date <= max) {
-            minutes.push(convertToTime(ev.date).mins)
+            dates.push({ date: ev.date, ...convertToTime(ev.date) })
           }
           if (ev.dueDate >= min && ev.dueDate <= max) {
-            minutes.push(convertToTime(ev.dueDate).mins)
+            dates.push({ date: ev.date, ...convertToTime(ev.dueDate) })
           }
         }
-        if (minutes.length > 0) {
-          let nearest = minutes[0]
-          for (let index = 1; index < minutes.length; index++) {
-            const minute = minutes[index]
-            if (Math.abs(minute - target) < Math.abs(nearest - target)) nearest = minute
+        if (dates.length > 0) {
+          let nearest = dates[0]
+          for (let index = 1; index < dates.length; index++) {
+            const date = dates[index]
+            if (Math.abs(date.date - target) < Math.abs(nearest.date - target)) nearest = date
           }
-          return nearest
+          return nearest.hours > hour && nearest.mins === 0 ? 60 : nearest.mins
         }
       }
     }
@@ -1014,9 +1015,11 @@
         {@const rect = getRect(event)}
         {@const ev = events.find((p) => p._id === event._id)}
         {#if ev}
+          {@const pointerEventsNone = !!resizeId && resizeId !== ev._id}
           <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
           <div
             class="calendar-element"
+            class:pointer-events-none={!!resizeId}
             class:past={rect.visibility === 0}
             style:top={`${rect.top}px`}
             style:bottom={`${rect.bottom}px`}
@@ -1032,6 +1035,7 @@
           >
             <div
               class="calendar-element-start"
+              class:pointer-events-none={pointerEventsNone}
               class:allowed={!resizeId && !dragId && !clearCells}
               class:hovered={resizeId === ev._id && directionResize === 'top'}
               on:mousedown={(e) => {
@@ -1043,6 +1047,7 @@
             />
             <div
               class="calendar-element-end"
+              class:pointer-events-none={pointerEventsNone}
               class:allowed={!resizeId && !dragId && !clearCells}
               class:hovered={resizeId === ev._id && directionResize === 'bottom'}
               on:mousedown={(e) => {

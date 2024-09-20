@@ -19,8 +19,9 @@ import { setMetadata, translate } from '@hcengineering/platform'
 import autolinker from 'autolinker'
 import { writable } from 'svelte/store'
 import { NotificationPosition, NotificationSeverity, notificationsStore, type Notification } from '.'
-import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
 import ui, { DAY, HOUR, MINUTE } from '..'
+import RootStatusComponent from './components/RootStatusComponent.svelte'
+import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType } from './types'
 
 /**
  * @public
@@ -297,7 +298,18 @@ export class ThrottledCaller {
 
 export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'
 
-export const rootBarExtensions = writable<Array<['left' | 'right', AnyComponent]>>([])
+export const rootBarExtensions = writable<
+Array<
+[
+  'left' | 'right',
+  {
+    id: string
+    component: AnyComponent | AnySvelteComponent
+    props?: Record<string, any>
+  }
+]
+>
+>([])
 
 export async function formatDuration (duration: number, language: string): Promise<string> {
   let text = ''
@@ -317,4 +329,66 @@ export async function formatDuration (duration: number, language: string): Promi
   }
   text = text.trim()
   return text
+}
+
+export function pushRootBarComponent (pos: 'left' | 'right', component: AnyComponent): void {
+  rootBarExtensions.update((cur) => {
+    if (cur.find((p) => p[1].component === component) === undefined) {
+      cur.push([
+        pos,
+        {
+          id: component,
+          component
+        }
+      ])
+    }
+    return cur
+  })
+}
+export function removeRootBarComponent (id: string): void {
+  rootBarExtensions.update((cur) => {
+    return cur.filter((p) => p[1].id !== id)
+  })
+}
+
+export function pushRootBarProgressComponent (
+  id: string,
+  label: IntlString,
+  // In case onProgress return value >=100, it will be closed
+  onProgress: (props?: Record<string, any>) => number,
+  onCancel?: (props?: Record<string, any>) => void,
+  props?: Record<string, any>,
+  labelProps?: Record<string, any>,
+  interval?: number
+): void {
+  rootBarExtensions.update((cur) => {
+    const p = cur.find((p) => p[1].id === id)
+    if (p === undefined) {
+      cur.push([
+        'left',
+        {
+          id,
+          component: RootStatusComponent,
+          props: {
+            label,
+            onProgress,
+            onCancel,
+            props,
+            labelProps,
+            interval: interval ?? 100
+          }
+        }
+      ])
+    } else {
+      p[1].props = {
+        label,
+        onProgress,
+        onCancel,
+        props,
+        labelProps,
+        interval: interval ?? 100
+      }
+    }
+    return cur
+  })
 }
