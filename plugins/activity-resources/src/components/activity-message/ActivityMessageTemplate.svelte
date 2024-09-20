@@ -26,6 +26,7 @@
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
   import { Asset } from '@hcengineering/platform'
   import { Action as ViewAction } from '@hcengineering/view'
+  import notification from '@hcengineering/notification'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -228,6 +229,9 @@
             <span class="text-sm lower">
               <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
             </span>
+            {#if message.editedOn}
+              <span class="text-sm lower">(<Label label={notification.string.Edited} />)</span>
+            {/if}
 
             {#if withActions && inlineActions.length > 0 && !readonly}
               <div class="flex-presenter flex-gap-2 ml-2">
