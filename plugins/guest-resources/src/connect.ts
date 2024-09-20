@@ -19,7 +19,7 @@ import presentation, {
   setPresentationCookie
 } from '@hcengineering/presentation'
 import {
-  embeddedPlatform,
+  desktopPlatform,
   fetchMetadataLocalStorage,
   getCurrentLocation,
   navigate,
@@ -90,7 +90,7 @@ export async function connect (title: string): Promise<Client | undefined> {
         } else {
           versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
-          if (!embeddedPlatform) {
+          if (!desktopPlatform) {
             setTimeout(() => {
               location.reload()
             }, 5000)

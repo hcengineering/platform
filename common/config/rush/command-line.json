@@ -303,7 +303,15 @@
       "description": "Format and autofix linting issues in changed projects",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "./common/scripts/each-diff.sh rushx format --force"
-    }
+    },
+    {
+      "commandKind": "global",
+      "name": "desktop",
+      "summary": "Build desktop build",
+      "description": "use to build all docker containers required for platform",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
+    },        
   ],
 
   /**

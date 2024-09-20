@@ -47,7 +47,6 @@
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/client": "^0.6.18",
     "otp-generator": "^4.0.1",
-    "ws": "^8.18.0",
     "@hcengineering/model": "^0.6.11",
     "@hcengineering/server-backup": "^0.6.0",
     "@hcengineering/server-tool": "^0.6.0",

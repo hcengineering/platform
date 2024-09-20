@@ -6,7 +6,7 @@
   // import { applicationShortcutKey } from '../../utils'
   import { Theme } from '@hcengineering/theme'
   import { IconArrowLeft, IconArrowRight, checkMobile, deviceOptionsStore as deviceInfo } from '../../'
-  import { embeddedPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
+  import { desktopPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
   import uiPlugin from '../../plugin'
   import Component from '../Component.svelte'
   import Label from '../Label.svelte'
@@ -137,7 +137,7 @@
   <div id="ui-root">
     <div class="antiStatusBar">
       <div class="flex-row-center h-full content-color gap-3 pl-4">
-        {#if embeddedPlatform}
+        {#if desktopPlatform}
           <div class="history-box flex-row-center gap-3">
             <button
               id="statusbar-back"

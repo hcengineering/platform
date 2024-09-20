@@ -22,6 +22,7 @@ import core, {
   type Class,
   type Doc,
   type DocumentQuery,
+  type Domain,
   type FindOptions,
   type FindResult,
   type MeasureContext,
@@ -33,7 +34,8 @@ import core, {
   type TxCUD,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { SessionDataImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
+import { PlatformError, unknownError } from '@hcengineering/platform'
+import { BackupClientOps, SessionDataImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import {
   type ClientSessionCtx,
@@ -43,6 +45,7 @@ import {
   type StatisticsElement
 } from './types'
 import { handleSend } from './utils'
+
 /**
  * @public
  */
@@ -59,11 +62,14 @@ export class ClientSession implements Session {
   mins5: StatisticsElement = { find: 0, tx: 0 }
   measures: { id: string, message: string, time: 0 }[] = []
 
+  ops: BackupClientOps | undefined
+
   constructor (
     protected readonly token: Token,
     protected readonly _pipeline: Pipeline,
     readonly workspaceId: WorkspaceIdWithUrl,
-    readonly branding: Branding | null
+    readonly branding: Branding | null,
+    readonly allowUpload: boolean
   ) {}
 
   getUser (): string {
@@ -211,4 +217,77 @@ export class ClientSession implements Session {
       void handleSend(ctx, socket, { result: tx }, 1024 * 1024, this.binaryMode, this.useCompression)
     }
   }
+
+  getOps (): BackupClientOps {
+    if (this.ops === undefined) {
+      if (this._pipeline.context.lowLevelStorage === undefined) {
+        throw new PlatformError(unknownError('Low level storage is not available'))
+      }
+      this.ops = new BackupClientOps(this._pipeline.context.lowLevelStorage)
+    }
+    return this.ops
+  }
+
+  async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
+    this.lastRequest = Date.now()
+    try {
+      const result = await this.getOps().loadChunk(_ctx.ctx, domain, idx, recheck)
+      await _ctx.sendResponse(result)
+    } catch (err: any) {
+      await _ctx.sendResponse({ error: err.message })
+    }
+  }
+
+  async closeChunk (ctx: ClientSessionCtx, idx: number): Promise<void> {
+    this.lastRequest = Date.now()
+    await this.getOps().closeChunk(ctx.ctx, idx)
+    await ctx.sendResponse({})
+  }
+
+  async loadDocs (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    this.lastRequest = Date.now()
+    try {
+      const result = await this.getOps().loadDocs(ctx.ctx, domain, docs)
+      await ctx.sendResponse(result)
+    } catch (err: any) {
+      await ctx.sendResponse({ error: err.message })
+    }
+  }
+
+  async upload (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]): Promise<void> {
+    if (!this.allowUpload) {
+      await ctx.sendResponse({ error: 'Upload not allowed' })
+    }
+    this.lastRequest = Date.now()
+    try {
+      await this.getOps().upload(ctx.ctx, domain, docs)
+    } catch (err: any) {
+      await ctx.sendResponse({ error: err.message })
+      return
+    }
+    await ctx.sendResponse({})
+  }
+
+  async clean (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    if (!this.allowUpload) {
+      await ctx.sendResponse({ error: 'Clean not allowed' })
+    }
+    this.lastRequest = Date.now()
+    try {
+      await this.getOps().clean(ctx.ctx, domain, docs)
+    } catch (err: any) {
+      await ctx.sendResponse({ error: err.message })
+      return
+    }
+    await ctx.sendResponse({})
+  }
+}
+
+/**
+ * @public
+ */
+export interface BackupSession extends Session {
+  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean) => Promise<void>
+  closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
+  loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }

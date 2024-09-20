@@ -15,8 +15,8 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { clone, type Ref, type Space } from '@hcengineering/core'
-import { derived, get, writable } from 'svelte/store'
 import { type Plugin } from '@hcengineering/platform'
+import { derived, get, writable } from 'svelte/store'
 
 import { closePopup } from './popups'
 import { type Location as PlatformLocation } from './types'
@@ -113,15 +113,38 @@ export function getCurrentResolvedLocation (): PlatformLocation {
 
 declare global {
   interface Window {
-    embeddedPlatform?: boolean
+    desktopPlatform?: boolean
   }
 }
-export const embeddedPlatform = window.embeddedPlatform ?? false
+
+function isRunningInElectron (): boolean {
+  // Renderer process
+  if (
+    typeof window !== 'undefined' &&
+    typeof (window as any).process === 'object' &&
+    (window as any).process.type === 'renderer'
+  ) {
+    return true
+  }
+
+  // Detect the user agent when the `nodeIntegration` option is set to true
+  if (
+    typeof navigator === 'object' &&
+    typeof navigator.userAgent === 'string' &&
+    navigator.userAgent.includes('Electron')
+  ) {
+    return true
+  }
+
+  return false
+}
+
+export const desktopPlatform = window.desktopPlatform ?? isRunningInElectron()
 const locationWritable = writable(getRawCurrentLocation())
 
-console.log('embeddedPlatform', window.embeddedPlatform)
+console.log('desktopPlatform', window.desktopPlatform)
 
-if (!embeddedPlatform) {
+if (!desktopPlatform) {
   window.addEventListener('popstate', () => {
     locationWritable.set(getRawCurrentLocation())
   })
@@ -158,7 +181,7 @@ export function setResolvedLocation (location: PlatformLocation): void {
 }
 
 export function getCurrentLocation (): PlatformLocation {
-  if (embeddedPlatform) {
+  if (desktopPlatform) {
     return clone(get(locationWritable))
   }
   return getRawCurrentLocation()
@@ -178,8 +201,8 @@ export function navigate (location: PlatformLocation, replace = false): boolean 
   const cur = locationToUrl(getCurrentLocation())
   const url = locationToUrl(location)
   if (cur !== url) {
-    const data = !embeddedPlatform ? null : { location }
-    const _url = !embeddedPlatform ? url : undefined
+    const data = !desktopPlatform ? null : { location }
+    const _url = !desktopPlatform ? url : undefined
     Analytics.navigate(url)
     if (replace) {
       history.replaceState(data, '', _url)

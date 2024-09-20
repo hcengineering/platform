@@ -37,15 +37,15 @@ module.exports = [
             options: {
               target: 'es2021',
               keepNames: true,
-              minify: !prod,
-              sourcemap: !prod
+              minify: prod,
+              sourcemap: true
             }
           }
         }
       ]
     },
     output: {
-      path: __dirname + '/dist',
+      path: path.join(__dirname, 'dist'),
       filename: '[name].js',
       chunkFilename: '[name].js',
       publicPath: '/',
@@ -64,7 +64,6 @@ module.exports = [
     },
     target: 'electron-main',
     plugins: [
-      ...(doValidate ? [new ForkTsCheckerWebpackPlugin()] : []),
       new Dotenv({ path: prod ? '.env' : '.env-dev' }),
       new DefinePlugin({
         'process.env.MODEL_VERSION': JSON.stringify(process.env.MODEL_VERSION),
@@ -98,8 +97,8 @@ module.exports = [
             options: {
               target: 'es2021',
               keepNames: true,
-              minify: !prod,
-              sourcemap: !prod
+              minify: prod,
+              sourcemap: true
             }
           }
         }
@@ -113,7 +112,10 @@ module.exports = [
     },
     resolve: {
       extensions: ['.ts', '.js'],
-      conditionNames: ['svelte', 'browser', 'import']
+      conditionNames: ['svelte', 'browser', 'import'],
+      alias: {
+        ws: path.resolve('node_modules', 'ws/index.js')
+      }
     }
   },
 
@@ -154,15 +156,14 @@ module.exports = [
       ? {
           minimize: true,
           minimizer: [
-            new EsbuildPlugin({
-              target: 'es2021',
-              keepNames: true,
-              minify: !prod,
-              sourcemap: !prod
-            })
+            new EsbuildPlugin({ target: 'es2021' })
           ]
         }
-      : {},
+      : {
+          minimize: false,
+          mangleExports: false,
+          usedExports: false
+        },
     module: {
       rules: [
         {
@@ -171,8 +172,8 @@ module.exports = [
           options: {
             target: 'es2021',
             keepNames: true,
-            minify: !prod,
-            sourcemap: !prod
+            minify: prod,
+            sourcemap: true
           },
           exclude: /node_modules/
         },
@@ -182,13 +183,13 @@ module.exports = [
             loader: 'svelte-loader',
             options: {
               compilerOptions: {
-                dev
+                dev: !prod
               },
               emitCss: true,
-              hotReload: dev,
+              hotReload: !prod,
               preprocess: require('svelte-preprocess')({
                 postcss: true,
-                sourceMap: dev
+                sourceMap: true
               }),
               hotOptions: {
                 // Prevent preserving local component state
@@ -260,21 +261,21 @@ module.exports = [
           }
         },
         {
-          test: /\.(wav|ogg)$/,
+          test: /\.(jpg|png|webp|heic|avif)$/,
           use: {
             loader: 'file-loader',
             options: {
-              'name': 'snd/[contenthash].[ext]',
+              name: 'img/[contenthash].[ext]',
               esModule: false
             }
           }
         },
         {
-          test: /\.(jpg|png|webp|heic|avif)$/,
+          test: /\.(wav|ogg)$/,
           use: {
             loader: 'file-loader',
             options: {
-              name: 'img/[hash:base64:8].[ext]',
+              name: 'snd/[contenthash].[ext]',
               esModule: false
             }
           }
@@ -285,7 +286,7 @@ module.exports = [
             {
               loader: 'file-loader',
               options: {
-                name: 'img/[hash:base64:8].[ext]',
+                name: 'img/[contenthash].[ext]',
                 esModule: false
               }
             },
@@ -304,7 +305,7 @@ module.exports = [
         }
       ]
     },
-    mode: dev ? 'development' : mode,
+    mode,
     plugins: [
       new CopyPlugin({
         patterns: [{ from: 'public', to: 'public' }]
@@ -335,9 +336,9 @@ module.exports = [
       // https://webpack.js.org/configuration/watch/#watchoptionsignored
       // don't use this pattern, if you have a monorepo with linked packages
       ignored: /node_modules/,
-      aggregateTimeout: 500,
-      poll: 1000
+      aggregateTimeout: 100,
+      poll: 250
     },
-    devtool: !dev ? false : 'eval-source-map'
+    devtool: prod ? 'source-map' : 'eval-source-map' // 'inline-source-map',
   }
 ]

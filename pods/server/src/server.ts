@@ -15,11 +15,11 @@
 //
 
 import { type Branding, type BrandingMap, type WorkspaceIdWithUrl } from '@hcengineering/core'
-import { BackupClientSession, buildStorageFromConfig, getMetricsContext } from '@hcengineering/server'
+import { buildStorageFromConfig, getMetricsContext } from '@hcengineering/server'
 
+import { ClientSession, startSessionManager, type ServerFactory, type Session } from '@hcengineering/server'
 import { type Pipeline, type StorageConfiguration } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
-import { ClientSession, start as startJsonRpc, type ServerFactory, type Session } from '@hcengineering/server-ws'
 
 import { serverAiBotId } from '@hcengineering/server-ai-bot'
 import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
@@ -81,13 +81,10 @@ export function start (
     workspaceId: WorkspaceIdWithUrl,
     branding: Branding | null
   ): Session => {
-    if (token.extra?.mode === 'backup') {
-      return new BackupClientSession(token, pipeline, workspaceId, branding)
-    }
-    return new ClientSession(token, pipeline, workspaceId, branding)
+    return new ClientSession(token, pipeline, workspaceId, branding, token.extra?.mode === 'backup')
   }
 
-  const onClose = startJsonRpc(getMetricsContext(), {
+  const onClose = startSessionManager(getMetricsContext(), {
     pipelineFactory,
     sessionFactory,
     port: opt.port,

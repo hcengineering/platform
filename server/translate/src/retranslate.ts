@@ -35,7 +35,6 @@ import {
   IndexedDoc
 } from '@hcengineering/server-core'
 
-import got from 'got'
 import { translateStateId, TranslationStage } from './types'
 
 /**
@@ -95,15 +94,17 @@ export class LibRetranslateStage implements TranslationStage {
     let english = false
     try {
       if (text.length > 0) {
-        const langResponse = await got.post(this.endpoint + '/detect', {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          json: {
-            q: text,
-            api_key: this.token
-          }
-        })
+        const langResponse = await (
+          await fetch(this.endpoint + '/detect', {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              q: text,
+              api_key: this.token
+            })
+          })
+        ).json()
         english = JSON.parse(langResponse.body).some((it: any) => it.language === 'en' && it.confidence * 100 > 90)
       }
     } catch (err: any) {
@@ -163,18 +164,20 @@ export class LibRetranslateStage implements TranslationStage {
               try {
                 const st = Date.now()
                 console.log('retranslate:begin: ', doc._id, attr)
-                const translation = await got.post(this.endpoint + '/translate', {
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  json: {
-                    q: toTranslate,
-                    source: 'auto',
-                    target: 'en',
-                    format: 'text',
-                    api_key: this.token
-                  }
-                })
+                const translation = await (
+                  await fetch(this.endpoint + '/translate', {
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      q: toTranslate,
+                      source: 'auto',
+                      target: 'en',
+                      format: 'text',
+                      api_key: this.token
+                    })
+                  })
+                ).json()
 
                 const response: any = JSON.parse(translation.body)
                 console.log('retranslate:', doc._id, attr, Date.now() - st, response.translatedText.length)
