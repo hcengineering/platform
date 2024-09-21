@@ -84,7 +84,7 @@ test.describe('candidate/talents tests', () => {
     )
 
     if (!templatesResponse.ok()) {
-      throw new Error('Templates aren\'t loaded')
+      throw new Error('Templates need be loaded')
     }
 
     const documentsResponse = await talentDetailsPage.page.waitForResponse(
@@ -92,7 +92,7 @@ test.describe('candidate/talents tests', () => {
     )
 
     if (!documentsResponse.ok()) {
-      throw new Error('Documents aren\'t loaded')
+      throw new Error('Documents need be loaded')
     }
 
     await talentDetailsPage.inputLocation().fill('Awesome Location Merge1')
