@@ -78,6 +78,23 @@ test.describe('candidate/talents tests', () => {
     // talent1
     const talentNameFirst = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameFirst)
+
+    const templatesResponse = await talentDetailsPage.page.waitForResponse(
+      (res) => res.url().includes('templates') && res.status() === 200
+    )
+
+    if (!templatesResponse.ok()) {
+      throw new Error('Templates aren\'t loaded')
+    }
+
+    const documentsResponse = await talentDetailsPage.page.waitForResponse(
+      (res) => res.url().includes('documents') && res.status() === 200
+    )
+
+    if (!documentsResponse.ok()) {
+      throw new Error('Documents aren\'t loaded')
+    }
+
     await talentDetailsPage.inputLocation().fill('Awesome Location Merge1')
     const titleTalent1 = 'TitleMerge1'
     await talentDetailsPage.addTitle(titleTalent1)
