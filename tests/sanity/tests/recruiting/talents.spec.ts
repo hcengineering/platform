@@ -74,14 +74,15 @@ test.describe('candidate/talents tests', () => {
   })
 
   test('Merge contacts', async () => {
+    const firstLocation = 'Location 1'
+    const secondLocation = 'Location 2'
+
     await navigationMenuPage.clickButtonTalents()
     // talent1
     const talentNameFirst = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameFirst)
 
-    // Workaround: click() is nesesarry, editbox reset the field without it
-    await talentDetailsPage.inputLocation().click()
-    await talentDetailsPage.inputLocation().fill('Awesome Location Merge1')
+    await talentDetailsPage.enterLocation(firstLocation)
     const titleTalent1 = 'TitleMerge1'
     await talentDetailsPage.addTitle(titleTalent1)
     const sourceTalent1 = 'SourceTalent1'
@@ -93,9 +94,7 @@ test.describe('candidate/talents tests', () => {
     const talentNameSecond = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameSecond)
 
-    // Workaround: click() is nesesarry, editbox reset the field without it
-    await talentDetailsPage.inputLocation().click()
-    await talentDetailsPage.inputLocation().fill('Awesome Location Merge2')
+    await talentDetailsPage.enterLocation(secondLocation)
     const titleTalent2 = 'TitleMerge2'
     await talentDetailsPage.addTitle(titleTalent2)
     const sourceTalent2 = 'SourceTalent2'
@@ -110,7 +109,7 @@ test.describe('candidate/talents tests', () => {
       finalContactName: talentNameSecond.lastName,
       name: `${talentNameFirst.lastName} ${talentNameFirst.firstName}`,
       mergeLocation: true,
-      location: 'Awesome Location Merge1',
+      location: firstLocation,
       mergeTitle: true,
       title: titleTalent1,
       mergeSource: true,
@@ -122,7 +121,7 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentNameFirst)
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
-    await talentDetailsPage.checkMergeContacts('Awesome Location Merge1', titleTalent2, sourceTalent2)
+    await talentDetailsPage.checkMergeContacts(firstLocation, titleTalent2, sourceTalent2)
   })
 
   test('Match to vacancy', async () => {

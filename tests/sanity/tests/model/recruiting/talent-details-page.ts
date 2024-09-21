@@ -43,6 +43,12 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await expect(this.textTagItem().first()).toContainText(skillTag)
   }
 
+  async enterLocation (location: string): Promise<void> {
+    const input = this.inputLocation()
+    await input.click()
+    await input.fill(location)
+  }
+
   async addTitle (title: string): Promise<void> {
     await this.buttonInputTitle().click()
     await this.fillToSelectPopup(this.page, title)
