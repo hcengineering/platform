@@ -79,22 +79,8 @@ test.describe('candidate/talents tests', () => {
     const talentNameFirst = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameFirst)
 
-    const templatesResponse = await talentDetailsPage.page.waitForResponse(
-      (res) => res.url().includes('templates') && res.status() === 200
-    )
-
-    if (!templatesResponse.ok()) {
-      throw new Error('Templates need be loaded')
-    }
-
-    const documentsResponse = await talentDetailsPage.page.waitForResponse(
-      (res) => res.url().includes('documents') && res.status() === 200
-    )
-
-    if (!documentsResponse.ok()) {
-      throw new Error('Documents need be loaded')
-    }
-
+    // Workaround: click() is nesesarry, editbox reset the field without it
+    await talentDetailsPage.inputLocation().click()
     await talentDetailsPage.inputLocation().fill('Awesome Location Merge1')
     const titleTalent1 = 'TitleMerge1'
     await talentDetailsPage.addTitle(titleTalent1)
@@ -106,6 +92,9 @@ test.describe('candidate/talents tests', () => {
     await navigationMenuPage.clickButtonTalents()
     const talentNameSecond = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameSecond)
+
+    // Workaround: click() is nesesarry, editbox reset the field without it
+    await talentDetailsPage.inputLocation().click()
     await talentDetailsPage.inputLocation().fill('Awesome Location Merge2')
     const titleTalent2 = 'TitleMerge2'
     await talentDetailsPage.addTitle(titleTalent2)

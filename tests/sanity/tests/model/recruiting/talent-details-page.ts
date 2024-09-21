@@ -98,8 +98,8 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     }
   }
 
-  async checkMergeContacts (talentName: string, title: string, source: string): Promise<void> {
-    await expect(this.page.locator('div.location input')).toHaveValue(talentName)
+  async checkMergeContacts (location: string, title: string, source: string): Promise<void> {
+    await expect(this.page.locator('div.location input')).toHaveValue(location)
     await expect(this.titleAndSourceTalent(title)).toBeVisible()
     await expect(this.titleAndSourceTalent(source)).toBeVisible()
   }
