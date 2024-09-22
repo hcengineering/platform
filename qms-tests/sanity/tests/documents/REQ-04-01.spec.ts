@@ -1,5 +1,5 @@
-import { Page, test } from '@playwright/test'
-import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { devices, test } from '@playwright/test'
+import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
@@ -9,10 +9,12 @@ import { PdfPages } from '../model/documents/pdf-pages'
 import { VisualCheck } from '../model/visual-check'
 
 test.use({
-  storageState: PlatformSetting
+  storageState: PlatformSetting,
+  ...devices['Desktop Edge'],
+  channel: 'msedge'
 })
 
-test.describe('QMS. PDF Download and Preview', () => {
+test.describe('@PDF. QMS. PDF Download and Preview', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
@@ -29,8 +31,8 @@ test.describe('QMS. PDF Download and Preview', () => {
     await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-271')
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
-      title: `Approve document-${generateId()}`,
-      description: `Approve document description-${generateId()}`
+      title: 'Approve document-Test}',
+      description: 'Approve document description-Test}'
     }
     const documentDetails: DocumentDetails = {
       type: 'HR',
@@ -81,13 +83,13 @@ test.describe('QMS. PDF Download and Preview', () => {
     await attachScreenshot('TESTS-271_ddownloaded_document.png', page)
   })
 
-  test.skip('TESTS-272. Check PDF Preview', async ({ page }) => {
+  test('TESTS-272. Check PDF Preview', async ({ page }) => {
     await allure.description('Requirement\nUsers need to approve the document and check PDF preview')
-    await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-271')
+    await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-272')
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
-      title: `Approve document-${generateId()}`,
-      description: `Approve document description-${generateId()}`
+      title: 'Approve document-Test 2}',
+      description: 'Approve document description-Test 2}'
     }
     const documentDetails: DocumentDetails = {
       type: 'HR',
@@ -127,33 +129,34 @@ test.describe('QMS. PDF Download and Preview', () => {
       await documentContentPage.openApprovals()
       const documentApprovalsPage = new DocumentApprovalsPage(page)
       await documentApprovalsPage.checkSuccessApproval(documentDetails.owner)
-      await attachScreenshot('TESTS-271_approve_document.png', page)
+      await attachScreenshot('TESTS-272_approve_document.png', page)
     })
 
-    await test.step('5. Download PDF', async () => {
+    await test.step('5. Show Full screen preview', async () => {
       await documentContentPage.clickDocumentThreeDots()
       const pdfPages = new PdfPages(page)
       await pdfPages.printToPdfClick()
-      await page.waitForTimeout(5000)
+      await page.waitForTimeout(2000)
       await pdfPages.showFullScreenPdfClick()
+      await page.waitForTimeout(2000)
     })
 
     await test.step('6. Check PDF Preview', async () => {
       const visualCheck = new VisualCheck(page)
-      await visualCheck.comparePDFPreview('TESTS-271_pdf_preview')
+      await visualCheck.comparePDFPreview('TESTS-272_pdf_preview')
     })
 
-    await attachScreenshot('TESTS-271_downloaded_document.png', page)
+    await attachScreenshot('TESTS-272_pdf_preview.png', page)
   })
 
-  test.skip('TESTS-273. Check PDF Preview', async ({ page, browser }) => {
+  test('TESTS-273. Check PDF Preview', async ({ page, context }) => {
     await allure.description('Requirement\nUsers need to approve the document and check PDF preview')
-    await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-271')
+    await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-273')
 
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
-      title: `Approve document-${generateId()}`,
-      description: `Approve document description-${generateId()}`
+      title: 'Approve document-Test 3}',
+      description: 'Approve document description-Test 3}'
     }
     const documentDetails: DocumentDetails = {
       type: 'HR',
@@ -200,44 +203,31 @@ test.describe('QMS. PDF Download and Preview', () => {
         .waitForSelector('iframe[src*="PDF%20print%20preview"]', { timeout: 30000 })
         .catch(() => null)
 
-      if (!iframe) {
-        console.error('iframe not found')
+      if (iframe === null || iframe === undefined) {
         await attachScreenshot('TESTS-273_iframe_not_found.png', page)
         throw new Error('iframe not found')
       }
 
-      console.log('iframe found')
-
       // Extract the URL from the iframe
       const iframeURL = await iframe.getAttribute('src')
-      console.log('iframe URL:', iframeURL)
 
-      if (iframeURL) {
-        const newTab: Page = await browser.newPage()
-
+      if (iframeURL !== null && iframeURL !== undefined) {
+        const newTab = await context.newPage()
         try {
-          // Navigate to the URL with a longer timeout
           await newTab.goto(iframeURL, { timeout: 60000, waitUntil: 'domcontentloaded' })
-          console.log('Navigation to iframe URL successful')
 
-          await newTab.waitForTimeout(10000)
+          await newTab.waitForTimeout(1000)
 
-          // Use the new tab for the visual check
           const visualCheck = new VisualCheck(newTab)
           await visualCheck.compareScreenshot(null, 'TESTS-273_pdf_preview')
 
-          await newTab.waitForTimeout(10000)
-
-          // Close the new tab
           await newTab.close()
         } catch (error) {
-          console.error('Error navigating to iframe URL:', error)
           await attachScreenshot('TESTS-273_navigation_error.png', newTab)
           await newTab.close()
           throw error
         }
       } else {
-        console.error('URL not found in iframe')
         throw new Error('URL not found in iframe')
       }
     })

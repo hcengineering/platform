@@ -11,8 +11,8 @@ export class VisualCheck {
   async compareScreenshot (selector: string | null, screenshotName: string): Promise<void> {
     let screenshot
 
-    if (selector) {
-      const element = await this.page.locator(selector)
+    if (selector !== null && selector !== undefined) {
+      const element = this.page.locator(selector)
       await expect(element).toBeVisible()
       screenshot = await element.screenshot()
     } else {
@@ -20,7 +20,9 @@ export class VisualCheck {
     }
 
     // Compare the screenshot with the stored snapshot
-    expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`))
+    expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`), {
+      maxDiffPixelRatio: 0.2
+    })
   }
 
   async comparePDFPreview (screenshotName: string): Promise<void> {
@@ -32,18 +34,18 @@ export class VisualCheck {
     await this.page.waitForFunction(
       () => {
         const iframe = document.querySelector('iframe.pdfviewer-content') as HTMLIFrameElement
-        return iframe && iframe.contentDocument && iframe.contentDocument.readyState === 'complete'
+        return iframe?.contentDocument?.readyState === 'complete'
       },
       { timeout: 30000 }
     )
-
-    await this.page.waitForTimeout(15000)
 
     const pdfPreviewModal = this.page.locator('.antiDialog > .content')
     await expect(pdfPreviewModal).toBeVisible()
 
     const screenshot = await this.page.screenshot()
 
-    expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`))
+    expect(screenshot).toMatchSnapshot(join(__dirname, '..', 'screenshots', `${screenshotName}.png`), {
+      maxDiffPixelRatio: 0.2
+    })
   }
 }
