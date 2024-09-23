@@ -19,6 +19,8 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { PersonAccount } from '@hcengineering/contact'
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
+  import notification from '@hcengineering/notification'
+  import attachment from '@hcengineering/attachment'
 
   import chunter from '../../plugin'
   import Header from '../Header.svelte'
@@ -32,15 +34,21 @@
   $: threadsQuery.query(
     activity.class.ActivityMessage,
     {
-      replies: { $exists: true }
+      replies: { $exists: true },
+      [`${notification.mixin.Collaborators}.collaborators`]: me._id
     },
     (res) => {
-      threads = res.filter(
-        ({ createdBy, repliedPersons, replies }) =>
-          (replies !== undefined && replies > 0 && createdBy === me._id) || repliedPersons?.includes(me.person)
-      )
+      threads = res.filter(({ replies }) => (replies ?? 0) > 0)
     },
-    { sort: { modifiedOn: SortingOrder.Descending } }
+    {
+      sort: { modifiedOn: SortingOrder.Descending },
+      lookup: {
+        _id: {
+          attachments: attachment.class.Attachment,
+          reactions: activity.class.Reaction
+        }
+      }
+    }
   )
 </script>
 
