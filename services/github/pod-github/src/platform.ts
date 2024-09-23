@@ -698,16 +698,16 @@ export class PlatformWorker {
           errors++
           return
         }
+        if (workspaceInfo?.workspace === undefined) {
+          this.ctx.error('No workspace exists for workspaceId', { workspace })
+          errors++
+          return
+        }
+        if (workspaceInfo?.disabled === true) {
+          this.ctx.error('Workspace is disabled workspaceId', { workspace })
+          return
+        }
         try {
-          if (workspaceInfo?.workspace === undefined) {
-            this.ctx.error('No workspace exists for workspaceId', { workspace })
-            errors++
-            return
-          }
-          if (workspaceInfo?.disabled === true) {
-            this.ctx.error('Workspace is disabled workspaceId', { workspace })
-            return
-          }
           const branding = Object.values(this.brandingMap).find((b) => b.key === workspaceInfo?.branding) ?? null
           const workerCtx = this.ctx.newChild('worker', { workspace: workspaceInfo.workspace }, {})
 
