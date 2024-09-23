@@ -365,7 +365,12 @@ if (isMac) {
   })
 }
 
+// Note: it is reset when the app is relaunched after update
+let isUpdating = false
+
 autoUpdater.on('update-available', (info: UpdateInfo) => {
+  if (isUpdating) return
+
   void dialog
     .showMessageBox({
       type: 'info',
@@ -379,6 +384,7 @@ autoUpdater.on('update-available', (info: UpdateInfo) => {
       if (response !== 0) {
         app.quit()
       }
+      isUpdating = true
     })
 })
 
@@ -400,7 +406,7 @@ autoUpdater.on('update-downloaded', (info) => {
 ipcMain.on('start-backup', (event, token, endpoint, workspace) => {
   console.log('start backup', token, endpoint, workspace)
   if (mainWindow != null) {
-    startBackup(mainWindow, token, endpoint, workspace  , (cmd: string, ...args: any[]) => {
+    startBackup(mainWindow, token, endpoint, workspace, (cmd: string, ...args: any[]) => {
       mainWindow?.webContents.send(cmd, ...args)
     })
   }
