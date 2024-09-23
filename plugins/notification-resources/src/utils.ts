@@ -619,16 +619,31 @@ export async function selectInboxContext (
             { projection: { _id: 1, attachedTo: 1 } }
           )
 
-      void navigateToInboxDoc(linkProviders, objectId, objectClass, thread?.attachedTo, thread?._id)
+      void navigateToInboxDoc(
+        linkProviders,
+        thread?.objectId ?? objectId,
+        thread?.objectClass ?? objectClass,
+        thread?.attachedTo,
+        thread?._id
+      )
       return
     }
 
     if (isReactionMessage(message)) {
       const thread = loc.path[4] === objectId ? objectId : undefined
+      const reactedTo =
+        (object as ActivityMessage) ??
+        (await client.findOne(activity.class.ActivityMessage, { _id: message.attachedTo as Ref<ActivityMessage> }))
+      const isThread = hierarchy.isDerived(reactedTo._class, chunter.class.ThreadMessage)
+      const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : reactedTo?.attachedTo ?? objectId
+      const channelClass = isThread
+        ? (reactedTo as ThreadMessage)?.objectClass
+        : reactedTo?.attachedToClass ?? objectClass
+
       void navigateToInboxDoc(
         linkProviders,
-        objectId,
-        objectClass,
+        channelId,
+        channelClass,
         thread as Ref<ActivityMessage>,
         objectId as Ref<ActivityMessage>
       )
@@ -637,11 +652,13 @@ export async function selectInboxContext (
 
     const selectedMsg = (notification as ActivityInboxNotification)?.attachedTo
     const thread = selectedMsg !== objectId ? objectId : loc.path[4] === objectId ? objectId : undefined
+    const channelId = (object as ActivityMessage)?.attachedTo ?? message?.attachedTo ?? objectId
+    const channelClass = (object as ActivityMessage)?.attachedToClass ?? message?.attachedToClass ?? objectClass
 
     void navigateToInboxDoc(
       linkProviders,
-      message?.attachedTo ?? (object as ActivityMessage)?.attachedTo ?? objectId,
-      message?.attachedToClass ?? (object as ActivityMessage)?.attachedToClass ?? objectClass,
+      channelId,
+      channelClass,
       thread as Ref<ActivityMessage>,
       selectedMsg ?? (objectId as Ref<ActivityMessage>)
     )
