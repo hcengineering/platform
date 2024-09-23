@@ -133,7 +133,7 @@ function createDecorations (doc: ProseMirrorNode, options: CodeBlockLowlightOpti
   doc.descendants((node, pos) => {
     if (node.type.name === CodeBlockLowlight.name) {
       decorations.push(
-        Decoration.widget(pos + node.nodeSize - 1, (view) => {
+        Decoration.widget(pos + 1, (view) => {
           const button = createLangButton(node.attrs.language)
 
           if (view.editable) {
