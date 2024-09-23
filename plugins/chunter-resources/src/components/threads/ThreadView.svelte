@@ -144,7 +144,7 @@
     dispatch('channel')
   }
 
-  $:messagesStore = dataProvider?.messagesStore
+  $: messagesStore = dataProvider?.messagesStore
 </script>
 
 {#if showHeader}
@@ -172,7 +172,10 @@
         {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}
           <div class="separator">
             <div class="label lower">
-              <Label label={activity.string.RepliesCount} params={{ replies: message.replies ?? $messagesStore?.length ?? 1 }} />
+              <Label
+                label={activity.string.RepliesCount}
+                params={{ replies: message.replies ?? $messagesStore?.length ?? 1 }}
+              />
             </div>
             <div class="line" />
           </div>

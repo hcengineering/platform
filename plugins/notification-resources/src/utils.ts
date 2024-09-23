@@ -608,15 +608,16 @@ export async function selectInboxContext (
     const message = (notification as WithLookup<ActivityInboxNotification>)?.$lookup?.attachedTo
 
     if (objectClass === chunter.class.ThreadMessage) {
-      const thread = object?._id === objectId
-        ? object as ThreadMessage
-        : await client.findOne(
-          chunter.class.ThreadMessage,
-          {
-            _id: objectId as Ref<ThreadMessage>
-          },
-          { projection: { _id: 1, attachedTo: 1 } }
-        )
+      const thread =
+        object?._id === objectId
+          ? (object as ThreadMessage)
+          : await client.findOne(
+            chunter.class.ThreadMessage,
+            {
+              _id: objectId as Ref<ThreadMessage>
+            },
+            { projection: { _id: 1, attachedTo: 1 } }
+          )
 
       void navigateToInboxDoc(linkProviders, objectId, objectClass, thread?.attachedTo, thread?._id)
       return
