@@ -339,7 +339,7 @@
     return messageRect.top >= containerRect.top && messageRect.bottom - messageRect.height / 2 <= containerRect.bottom
   }
 
-  const messagesToReadAccumulator: DisplayActivityMessage[] = []
+  const messagesToReadAccumulator: Set<DisplayActivityMessage> = new Set<DisplayActivityMessage>()
   let messagesToReadAccumulatorTimer: any
 
   function readViewportMessages (): void {
@@ -359,13 +359,14 @@
       }
 
       if (messageInView(msgElement, containerRect)) {
-        messagesToReadAccumulator.push(message)
+        messagesToReadAccumulator.add(message)
       }
     }
 
     clearTimeout(messagesToReadAccumulatorTimer)
     messagesToReadAccumulatorTimer = setTimeout(() => {
       const messagesToRead = [...messagesToReadAccumulator]
+      messagesToReadAccumulator.clear()
       void readChannelMessages(sortActivityMessages(messagesToRead), notifyContext)
     }, 500)
   }

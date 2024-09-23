@@ -430,11 +430,7 @@ export async function readChannelMessages (
   messages: DisplayActivityMessage[],
   context: DocNotifyContext | undefined
 ): Promise<void> {
-  if (messages.length === 0) {
-    return
-  }
-
-  if (context === undefined) {
+  if (messages.length === 0 || context === undefined) {
     return
   }
 
@@ -442,9 +438,7 @@ export async function readChannelMessages (
   const client = getClient().apply(undefined, 'readViewportMessages')
 
   try {
-    const readMessages = get(chatReadMessagesStore)
-    const allIds = getAllIds(messages).filter((id) => !readMessages.has(id))
-
+    const allIds = getAllIds(messages)
     const notifications = get(inboxClient.activityInboxNotifications)
       .filter(({ attachedTo, $lookup, isViewed }) => {
         if (isViewed) return false
