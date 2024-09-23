@@ -23,6 +23,7 @@
   } from '@hcengineering/text-editor'
   import { createQuery } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
+  import { onDestroy, onMount } from 'svelte'
 
   import { inlineToolbarKey } from './extension/inlineToolbar'
   import TextActionButton from './TextActionButton.svelte'
@@ -93,11 +94,40 @@
   $: categories.forEach((category) => {
     category.sort((a, b) => a[0] - b[0])
   })
+
+  let selecting = false
+
+  function handleMouseDown (): void {
+    function handleMouseMove (): void {
+      if (!editor.state.selection.empty) {
+        selecting = true
+        document.removeEventListener('mousemove', handleMouseMove)
+      }
+    }
+
+    function handleMouseUp (): void {
+      selecting = false
+
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  onMount(() => {
+    document.addEventListener('mousedown', handleMouseDown)
+  })
+
+  onDestroy(() => {
+    document.removeEventListener('mousedown', handleMouseDown)
+  })
 </script>
 
-<div bind:this={toolbar} style="visibility: hidden;">
-  {#if editor && visible && visibleActions.length > 0}
-    <div class="text-editor-toolbar buttons-group xsmall-gap mb-4">
+<div bind:this={toolbar} class="p-2" style="visibility: hidden;">
+  {#if editor && visible && !selecting && visibleActions.length > 0}
+    <div class="text-editor-toolbar buttons-group xsmall-gap">
       {#each Object.values(categories) as category, index}
         {#if index > 0}
           <div class="buttons-divider" />
@@ -113,8 +143,7 @@
 
 <style lang="scss">
   .text-editor-toolbar {
-    margin: -0.5rem -0.25rem 0.5rem;
-    padding: 0.375rem;
+    padding: 0.25rem;
     background-color: var(--theme-comp-header-color);
     border-radius: 0.5rem;
     box-shadow: var(--button-shadow);
