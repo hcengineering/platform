@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import presentation, { MessageViewer, getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import presentation, { MessageViewer, getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { RefAction } from '@hcengineering/text-editor'
   import {
@@ -257,7 +257,7 @@
         type: 'image',
         attrs: {
           'file-id': attached.file,
-          width: Math.round(size.width / size.pixelRatio)
+          width: imageSizeToRatio(size.width, size.pixelRatio)
         }
       },
       {
