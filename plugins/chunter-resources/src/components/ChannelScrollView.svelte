@@ -135,7 +135,7 @@
   let isPageHidden = false
   let lastMsgBeforeFreeze: Ref<ActivityMessage> | undefined = undefined
 
-  document.addEventListener('visibilitychange', () => {
+  function handleVisibilityChange (): void {
     if (document.hidden) {
       isPageHidden = true
       lastMsgBeforeFreeze = shouldScrollToNew ? displayMessages[displayMessages.length - 1]?._id : undefined
@@ -145,7 +145,7 @@
         void provider.updateNewTimestamp(notifyContext)
       }
     }
-  })
+  }
 
   function isFreeze (): boolean {
     return freeze || isPageHidden
@@ -693,10 +693,12 @@
 
   onMount(() => {
     chatReadMessagesStore.update(() => new Set())
+    document.addEventListener('visibilitychange', handleVisibilityChange)
   })
 
   onDestroy(() => {
     unsubscribe()
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
   })
 
   let showScrollDownButton = false
