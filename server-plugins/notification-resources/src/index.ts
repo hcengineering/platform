@@ -78,7 +78,7 @@ import serverNotification, {
   SenderInfo
 } from '@hcengineering/server-notification'
 import serverView from '@hcengineering/server-view'
-import { markupToHTML, markupToText, stripTags } from '@hcengineering/text'
+import { markupToText, stripTags } from '@hcengineering/text'
 import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'

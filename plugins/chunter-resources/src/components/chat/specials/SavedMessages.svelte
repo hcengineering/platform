@@ -37,14 +37,14 @@
   $: savedMessages = $savedMessagesStore
   $: savedAttachments = $savedAttachmentsStore
 
-  async function openAttachment (attach?: Attachment) {
+  async function openAttachment (attach?: Attachment): Promise<void> {
     if (attach === undefined) {
       return
     }
     const messageId: Ref<ActivityMessage> = attach.attachedTo as Ref<ActivityMessage>
     await client.findOne(activity.class.ActivityMessage, { _id: messageId }).then((res) => {
       if (res !== undefined) {
-        openMessageFromSpecial(res)
+        void openMessageFromSpecial(res)
       }
     })
   }
@@ -62,8 +62,8 @@
       }
     }
   }
-  function handleMessageClicked (message?: ActivityMessage) {
-    openMessageFromSpecial(message)
+  function handleMessageClicked (message?: ActivityMessage): void {
+    void openMessageFromSpecial(message)
   }
 </script>
 

@@ -21,7 +21,8 @@
     location as locationStore,
     Location,
     Header,
-    Breadcrumbs, getCurrentLocation
+    Breadcrumbs,
+    getCurrentLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
 
