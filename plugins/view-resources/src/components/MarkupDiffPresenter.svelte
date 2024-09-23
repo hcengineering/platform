@@ -23,6 +23,7 @@
   export let value: Markup | undefined
   export let prevValue: Markup | undefined = undefined
   export let attribute: AnyAttribute | undefined = undefined
+  export let withShowMore = true
 
   export let showOnlyDiff: boolean = false
 
@@ -85,8 +86,14 @@
   }
 </script>
 
-<ShowMore>
+{#if withShowMore}
+  <ShowMore>
+    {#key [value, prevValue]}
+      <MarkupDiffViewer objectClass={attribute?.attributeOf} {content} {comparedVersion} />
+    {/key}
+  </ShowMore>
+{:else}
   {#key [value, prevValue]}
     <MarkupDiffViewer objectClass={attribute?.attributeOf} {content} {comparedVersion} />
   {/key}
-</ShowMore>
+{/if}

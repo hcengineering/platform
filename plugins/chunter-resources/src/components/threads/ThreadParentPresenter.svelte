@@ -19,4 +19,11 @@
   export let message: ActivityMessage
 </script>
 
-<ActivityMessagePresenter value={message} hideFooter hoverStyles="filledHover" withShowMore={false} skipLabel />
+<ActivityMessagePresenter
+  value={message}
+  hideFooter
+  hoverStyles="filledHover"
+  withShowMore={false}
+  attachmentImageSize="x-large"
+  skipLabel
+/>

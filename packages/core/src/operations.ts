@@ -98,7 +98,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       throw new Error('createDoc cannot be called for DOMAIN_MODEL classes with non-model space')
     }
     const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id, modifiedOn, modifiedBy)
-    await this.client.tx(tx)
+    await this.tx(tx)
     return tx.objectId
   }
 
@@ -122,7 +122,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedOn,
       modifiedBy
     )
-    await this.client.tx(tx)
+    await this.tx(tx)
     return tx.tx.objectId as unknown as Ref<P>
   }
 
@@ -147,7 +147,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedOn,
       modifiedBy
     )
-    await this.client.tx(tx)
+    await this.tx(tx)
     return tx.objectId
   }
 
@@ -170,7 +170,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedOn,
       modifiedBy
     )
-    await this.client.tx(tx)
+    await this.tx(tx)
     return tx.objectId
   }
 
@@ -184,7 +184,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     modifiedBy?: Ref<Account>
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxUpdateDoc(_class, space, objectId, operations, retrieve, modifiedOn, modifiedBy)
-    return this.client.tx(tx)
+    return this.tx(tx)
   }
 
   removeDoc<T extends Doc>(
@@ -195,7 +195,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
     modifiedBy?: Ref<Account>
   ): Promise<TxResult> {
     const tx = this.txFactory.createTxRemoveDoc(_class, space, objectId, modifiedOn, modifiedBy)
-    return this.client.tx(tx)
+    return this.tx(tx)
   }
 
   createMixin<D extends Doc, M extends D>(
@@ -216,7 +216,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedOn,
       modifiedBy
     )
-    return this.client.tx(tx)
+    return this.tx(tx)
   }
 
   updateMixin<D extends Doc, M extends D>(
@@ -237,7 +237,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
       modifiedOn,
       modifiedBy
     )
-    return this.client.tx(tx)
+    return this.tx(tx)
   }
 
   async update<T extends Doc>(

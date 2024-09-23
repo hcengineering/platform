@@ -111,7 +111,7 @@ export function addNotification (
     title,
     subTitle,
     severity,
-    position: NotificationPosition.TopRight,
+    position: NotificationPosition.BottomLeft,
     component,
     closeTimeout,
     params

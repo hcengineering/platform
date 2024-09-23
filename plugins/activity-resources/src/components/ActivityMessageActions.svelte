@@ -39,7 +39,7 @@
   $: void updateInlineActions(message, excludedActions)
 
   savedMessagesStore.subscribe(() => {
-    void updateInlineActions(message)
+    void updateInlineActions(message, excludedActions)
   })
 
   function handleActionMenuOpened (): void {

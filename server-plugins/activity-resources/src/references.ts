@@ -248,7 +248,7 @@ export async function getPersonNotificationTxes (
         ...content,
         docNotifyContext: context._id,
         _id: generateId(),
-        _class: notification.class.CommonInboxNotification,
+        _class: notification.class.MentionInboxNotification,
         space: receiverSpace._id,
         modifiedOn: originTx.modifiedOn,
         modifiedBy: sender._id

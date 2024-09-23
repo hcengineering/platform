@@ -20,6 +20,7 @@ import {
   type DocumentQuery,
   getCurrentAccount,
   isOtherDay,
+  type Lookup,
   type Ref,
   SortingOrder,
   type Space,
@@ -119,7 +120,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
   })
 
   constructor (
-    readonly context: DocNotifyContext | undefined,
+    private context: DocNotifyContext | undefined,
     readonly space: Ref<Space>,
     chatId: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
@@ -209,6 +210,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
     )
   }
 
+  async updateNewTimestamp (context?: DocNotifyContext): Promise<void> {
+    this.context = context ?? this.context
+    const firstNewMsgIndex = await this.getFirstNewMsgIndex()
+    const metadata = get(this.metadataStore)
+    this.newTimestampStore.set(firstNewMsgIndex !== undefined ? metadata[firstNewMsgIndex]?.createdOn : undefined)
+  }
+
   private async loadInitialMessages (
     selectedMsg?: Ref<ActivityMessage>,
     loadAll = false,
@@ -285,11 +293,19 @@ export class ChannelDataProvider implements IChannelDataProvider {
       },
       {
         sort: { createdOn: SortingOrder.Descending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
-        }
+        lookup: this.getLookup()
       }
     )
+  }
+
+  getLookup (): Lookup<ActivityMessage> {
+    return {
+      _id: {
+        attachments: attachment.class.Attachment,
+        inlineButtons: chunter.class.InlineButton,
+        reactions: activity.class.Reaction
+      }
+    }
   }
 
   isNextLoading (mode: LoadMode): boolean {
@@ -331,9 +347,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         limit: limit ?? this.limit,
         sort: { createdOn: isBackward ? SortingOrder.Descending : SortingOrder.Ascending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
-        }
+        lookup: this.getLookup()
       }
     )
 

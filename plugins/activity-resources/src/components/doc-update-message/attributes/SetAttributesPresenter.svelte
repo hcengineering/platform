@@ -69,6 +69,7 @@
         attribute={attributeModel.attribute}
         value={values[0]}
         {prevValue}
+        withShowMore={false}
         showOnlyDiff
       />
     {/if}
