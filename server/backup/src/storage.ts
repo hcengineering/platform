@@ -82,7 +82,7 @@ class AdapterStorage implements BackupStorage {
   async exists (name: string): Promise<boolean> {
     try {
       return (await this.client.stat(this.ctx, this.workspaceId, join(this.root, name))) !== undefined
-    } catch (err) {
+    } catch (err: any) {
       return false
     }
   }

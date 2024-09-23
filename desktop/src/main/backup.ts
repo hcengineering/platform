@@ -55,7 +55,7 @@ async function doBackup (dirName: string, token: string, endpoint: string, works
       progress: (value: number): void => {
         notify('backup', value)
       },
-      connection: client
+      getConnection: async () => client
     })
   } finally {
     await client.close()

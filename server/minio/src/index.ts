@@ -286,6 +286,15 @@ export class MinioService implements StorageAdapter {
         version: result.versionId ?? null
       }
     } catch (err: any) {
+      if (
+        err?.code === 'NoSuchKey' ||
+        err?.code === 'NotFound' ||
+        err?.message === 'No such key' ||
+        err?.Code === 'NoSuchKey'
+      ) {
+        // Do not print error in this case
+        return
+      }
       ctx.error('no object found', { error: err, objectName, workspaceId: workspaceId.name })
     }
   }
