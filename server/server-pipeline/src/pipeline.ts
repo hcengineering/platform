@@ -49,6 +49,7 @@ import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
   createPipeline,
+  DummyDbAdapter,
   DummyFullTextAdapter,
   FullTextMiddleware,
   type AggregatorStorageAdapter,
@@ -154,6 +155,74 @@ export function createServerPipeline (
   }
 }
 
+/**
+ * @public
+ */
+
+export function createBackupPipeline (
+  metrics: MeasureContext,
+  dbUrls: string,
+  opt: {
+    usePassedCtx?: boolean
+    adapterSecurity?: boolean
+
+    externalStorage: StorageAdapter
+  }
+): PipelineFactory {
+  return (ctx, workspace, upgrade, broadcast, branding) => {
+    const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
+    const wsMetrics = metricsCtx.newChild('🧲 backup', {})
+    const conf = getConfig(
+      metrics,
+      dbUrls,
+      workspace,
+      branding,
+      wsMetrics,
+      {
+        ...opt,
+        fullTextUrl: '',
+        indexParallel: 0,
+        indexProcessing: 0,
+        rekoniUrl: '',
+        disableTriggers: true
+      },
+      {
+        adapters: {
+          FullTextBlob: {
+            factory: async () => new DummyDbAdapter(),
+            url: ''
+          }
+        },
+        fulltextAdapter: {
+          factory: async () => new DummyFullTextAdapter(),
+          stages: () => [],
+          url: ''
+        }
+      }
+    )
+
+    const middlewares: MiddlewareCreator[] = [
+      LowLevelMiddleware.create,
+      ContextNameMiddleware.create,
+      DomainFindMiddleware.create,
+      DBAdapterInitMiddleware.create,
+      ModelMiddleware.create,
+      DBAdapterMiddleware.create(conf)
+    ]
+
+    const hierarchy = new Hierarchy()
+    const modelDb = new ModelDb(hierarchy)
+    const context: PipelineContext = {
+      workspace,
+      branding,
+      modelDb,
+      hierarchy,
+      storageAdapter: opt.externalStorage
+    }
+    return createPipeline(ctx, middlewares, context)
+  }
+}
+
 export async function getServerPipeline (
   ctx: MeasureContext,
   mongodbUri: string,
@@ -211,7 +280,7 @@ export async function getServerPipeline (
   }
 }
 
-function getConfig (
+export function getConfig (
   metrics: MeasureContext,
   dbUrls: string,
   workspace: WorkspaceIdWithUrl,

@@ -865,16 +865,22 @@ class TSessionManager implements SessionManager {
     request: Request<any>,
     workspace: string // wsId, toWorkspaceString()
   ): void {
-    const userCtx = requestCtx.newChild('📞 client', {
-      workspace: '🧲 ' + workspace
-    })
+    const backupMode = service.getMode() === 'backup'
+
+    const userCtx = requestCtx.newChild(
+      '📞 client',
+      !backupMode
+        ? {
+            workspace: '🧲 ' + workspace
+          }
+        : {}
+    )
 
     // Calculate total number of clients
     const reqId = generateId()
 
     const st = Date.now()
     try {
-      const backupMode = 'loadChunk' in service
       void userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time

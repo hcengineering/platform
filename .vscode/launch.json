@@ -293,16 +293,17 @@
       "args": ["src/index.ts"],
       "env": {
         "ACCOUNTS_URL": "http://localhost:3000",
-        "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin",
+        "STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "WORKSPACE_STORAGE": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin",
+        "MONGO_URL": "mongodb://localhost:27017",
         "SECRET": "secret",
-        "BUCKET_NAME":"test_backups",
-        "INTERVAL":"30"
+        "BUCKET_NAME":"backups",
+        "INTERVAL":"30",
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "showAsyncStacks": true,
       "sourceMaps": true,
+      "outputCapture": "std",
       "cwd": "${workspaceRoot}/pods/backup",
       "protocol": "inspector"
     },
