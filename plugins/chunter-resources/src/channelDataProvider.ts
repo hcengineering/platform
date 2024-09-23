@@ -529,7 +529,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
       },
       { sort: { createdOn: SortingOrder.Ascending } }
     )
-    console.log({ firstNotification, lastViewedTimestamp })
 
     if (lastViewedTimestamp === undefined && firstNotification === undefined) {
       return -1
