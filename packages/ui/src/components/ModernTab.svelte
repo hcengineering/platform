@@ -148,6 +148,8 @@
     }
 
     .icon {
+      writing-mode: initial;
+      text-orientation: initial;
       &.vertical {
         transform: rotate(90deg);
         text-orientation: upright;

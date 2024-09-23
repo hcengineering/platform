@@ -126,6 +126,7 @@
     "TranslateMessage": "Перевести сообщение",
     "Translate": "Перевести",
     "ShowOriginal": "Показать оригинал",
-    "Translating": "Перевод..."
+    "Translating": "Перевод...",
+    "StartConversation": "Начать диалог"
   }
 }
