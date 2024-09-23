@@ -26,7 +26,7 @@
     messageInFocus,
     sortActivityMessages
   } from '@hcengineering/activity-resources'
-  import { Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Doc, getCurrentAccount, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -72,6 +72,7 @@
   const minMsgHeightRem = 2
   const loadMoreThreshold = 40
 
+  const me = getCurrentAccount()
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
@@ -131,8 +132,23 @@
       }
     })
 
+  let isPageHidden = false
+  let lastMsgBeforeFreeze: Ref<ActivityMessage> | undefined = undefined
+
+  function handleVisibilityChange (): void {
+    if (document.hidden) {
+      isPageHidden = true
+      lastMsgBeforeFreeze = shouldScrollToNew ? displayMessages[displayMessages.length - 1]?._id : undefined
+    } else {
+      if (isPageHidden) {
+        isPageHidden = false
+        void provider.updateNewTimestamp(notifyContext)
+      }
+    }
+  }
+
   function isFreeze (): boolean {
-    return freeze
+    return freeze || isPageHidden
   }
 
   $: displayMessages = filterChatMessages(messages, filters, filterResources, doc._class, selectedFilters)
@@ -292,6 +308,38 @@
       shouldScrollToNew = false
       isScrollAtBottom = false
       provider.addNextChunk('forward', messages[messages.length - 1]?.createdOn, limit)
+    }
+  }
+
+  function scrollToStartOfNew (): void {
+    if (!scrollElement || !lastMsgBeforeFreeze) {
+      return
+    }
+
+    const lastIndex = displayMessages.findIndex(({ _id }) => _id === lastMsgBeforeFreeze)
+    if (lastIndex === -1) return
+    const firstNewMessage = displayMessages.find(({ createdBy }, index) => index > lastIndex && createdBy !== me._id)
+
+    if (firstNewMessage === undefined) {
+      scrollToBottom()
+      return
+    }
+
+    const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
+    const msgElement = messagesElements?.[firstNewMessage._id as any]
+
+    if (!msgElement) {
+      return
+    }
+
+    const messageRect = msgElement.getBoundingClientRect()
+
+    const topOffset = messageRect.top - 150
+
+    if (topOffset < 0) {
+      scroller?.scrollBy(topOffset)
+    } else if (topOffset > 0) {
+      scroller?.scrollBy(topOffset)
     }
   }
 
@@ -555,8 +603,12 @@
       return
     }
 
+    const prevCount = messagesCount
+    messagesCount = newCount
+
     if (isFreeze()) {
-      messagesCount = newCount
+      await wait()
+      scrollToStartOfNew()
       return
     }
 
@@ -565,15 +617,13 @@
     } else if (dateToJump !== undefined) {
       await wait()
       scrollToDate(dateToJump)
-    } else if (shouldScrollToNew && messagesCount > 0 && newCount > messagesCount) {
+    } else if (shouldScrollToNew && prevCount > 0 && newCount > prevCount) {
       await wait()
       scrollToNewMessages()
     } else {
       await wait()
       readViewportMessages()
     }
-
-    messagesCount = newCount
   }
 
   $: void handleMessagesUpdated(displayMessages.length)
@@ -610,10 +660,12 @@
 
   afterUpdate(() => {
     if (!scrollElement) return
-    const { scrollHeight } = scrollElement
+    const { offsetHeight, scrollHeight, scrollTop } = scrollElement
 
-    if (!isInitialScrolling && prevScrollHeight < scrollHeight && isScrollAtBottom) {
+    if (!isInitialScrolling && !isFreeze() && prevScrollHeight < scrollHeight && isScrollAtBottom) {
       scrollToBottom()
+    } else if (isFreeze()) {
+      isScrollAtBottom = scrollHeight <= Math.ceil(scrollTop + offsetHeight)
     }
   })
 
@@ -641,10 +693,12 @@
 
   onMount(() => {
     chatReadMessagesStore.update(() => new Set())
+    document.addEventListener('visibilitychange', handleVisibilityChange)
   })
 
   onDestroy(() => {
     unsubscribe()
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
   })
 
   let showScrollDownButton = false
@@ -715,7 +769,7 @@
 
   const canLoadNextForwardStore = provider.canLoadNextForwardStore
 
-  $: if (!freeze) {
+  $: if (!freeze && !isPageHidden && isScrollInitialized) {
     readViewportMessages()
   }
 </script>
