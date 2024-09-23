@@ -48,6 +48,9 @@ import {
 } from './types'
 import { sendResponse } from './utils'
 
+const ticksPerSecond = 20
+const workspaceSoftShutdownTicks = 3 * ticksPerSecond
+
 interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
   upgrade?: {
     toProcess: number
@@ -75,7 +78,7 @@ function timeoutPromise (time: number): { promise: Promise<void>, cancelHandle: 
  */
 export interface Timeouts {
   // Timeout preferences
-  pingTimeout: number // Default 1 second
+  pingTimeout: number // Default 10 second
   reconnectTimeout: number // Default 3 seconds
 }
 
@@ -113,8 +116,8 @@ class TSessionManager implements SessionManager {
     }
   ) {
     this.checkInterval = setInterval(() => {
-      this.handleInterval()
-    }, timeouts.pingTimeout)
+      this.handleTick()
+    }, 1000 / ticksPerSecond)
   }
 
   scheduleMaintenance (timeMinutes: number): void {
@@ -168,47 +171,58 @@ class TSessionManager implements SessionManager {
 
   ticks = 0
 
-  handleInterval (): void {
+  handleTick (): void {
     for (const [wsId, workspace] of this.workspaces.entries()) {
       for (const s of workspace.sessions) {
-        if (this.ticks % (5 * 60) === 0) {
+        if (this.ticks % (5 * 60 * ticksPerSecond) === 0) {
           s[1].session.mins5.find = s[1].session.current.find
           s[1].session.mins5.tx = s[1].session.current.tx
 
           s[1].session.current = { find: 0, tx: 0 }
         }
         const now = Date.now()
-        const diff = now - s[1].session.lastRequest
+        const lastRequestDiff = now - s[1].session.lastRequest
 
         let timeout = 60000
         if (s[1].session.getUser() === systemAccountEmail) {
           timeout = timeout * 10
         }
 
-        if (diff > timeout && this.ticks % 10 === 0) {
-          this.ctx.warn('session hang, closing...', { wsId, user: s[1].session.getUser() })
+        const isCurrentUserTick = this.ticks % ticksPerSecond === s[1].tickHash
 
-          // Force close workspace if only one client and it hang.
-          void this.close(this.ctx, s[1].socket, wsId)
-          continue
-        }
-        if (diff > 20000 && diff < 60000 && this.ticks % 10 === 0) {
-          s[1].socket.send(workspace.context, { result: 'ping' }, s[1].session.binaryMode, s[1].session.useCompression)
-        }
+        if (isCurrentUserTick) {
+          if (lastRequestDiff > timeout) {
+            this.ctx.warn('session hang, closing...', { wsId, user: s[1].session.getUser() })
 
-        for (const r of s[1].session.requests.values()) {
-          if (now - r.start > 30000) {
-            this.ctx.warn('request hang found, 30sec', {
-              wsId,
-              user: s[1].session.getUser(),
-              ...r.params
-            })
+            // Force close workspace if only one client and it hang.
+            void this.close(this.ctx, s[1].socket, wsId)
+            continue
+          }
+          if (lastRequestDiff + (1 / 10) * lastRequestDiff > this.timeouts.pingTimeout) {
+            // We need to check state and close socket if it broken
+            if (s[1].socket.checkState()) {
+              s[1].socket.send(
+                workspace.context,
+                { result: 'ping' },
+                s[1].session.binaryMode,
+                s[1].session.useCompression
+              )
+            }
+          }
+          for (const r of s[1].session.requests.values()) {
+            if (now - r.start > 30000) {
+              this.ctx.warn('request hang found, 30sec', {
+                wsId,
+                user: s[1].session.getUser(),
+                ...r.params
+              })
+            }
           }
         }
       }
 
       // Wait some time for new client to appear before closing workspace.
-      if (workspace.sessions.size === 0 && workspace.closing === undefined) {
+      if (workspace.sessions.size === 0 && workspace.closing === undefined && workspace.workspaceInitCompleted) {
         workspace.softShutdown--
         if (workspace.softShutdown <= 0) {
           this.ctx.warn('closing workspace, no users', {
@@ -219,7 +233,7 @@ class TSessionManager implements SessionManager {
           workspace.closing = this.performWorkspaceCloseCheck(workspace, workspace.workspaceId, wsId)
         }
       } else {
-        workspace.softShutdown = 3
+        workspace.softShutdown = workspaceSoftShutdownTicks
       }
 
       if (this.clientErrors !== this.oldClientErrors) {
@@ -269,6 +283,8 @@ class TSessionManager implements SessionManager {
       throw err
     }
   }
+
+  sessionCounter = 0
 
   @withContext('📲 add-session')
   async addSession (
@@ -423,7 +439,13 @@ class TSessionManager implements SessionManager {
     session.sessionInstanceId = generateId()
     this.sessions.set(ws.id, { session, socket: ws })
     // We need to delete previous session with Id if found.
-    workspace.sessions.set(session.sessionId, { session, socket: ws })
+    this.sessionCounter++
+    workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash: this.sessionCounter % ticksPerSecond })
+
+    // Mark workspace as init completed and we had at least one client.
+    if (!workspace.workspaceInitCompleted) {
+      workspace.workspaceInitCompleted = true
+    }
 
     // We do not need to wait for set-status, just return session to client
     const _workspace = workspace
@@ -593,11 +615,12 @@ class TSessionManager implements SessionManager {
         branding
       ),
       sessions: new Map(),
-      softShutdown: 3,
+      softShutdown: workspaceSoftShutdownTicks,
       upgrade,
       workspaceId: token.workspace,
       workspaceName,
-      branding
+      branding,
+      workspaceInitCompleted: false
     }
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     return workspace

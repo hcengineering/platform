@@ -77,41 +77,6 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
       }
     }
     await txAdapter.init?.(txAdapterDomains)
-    const model = await txAdapter.getModel(ctx)
-
-    for (const tx of model) {
-      try {
-        this.context.hierarchy.tx(tx)
-      } catch (err: any) {
-        ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
-      }
-    }
-
-    await ctx.with('init-adapters', {}, async (ctx) => {
-      for (const [key, adapter] of adapters) {
-        // already initialized
-        if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
-          let excludeDomains: string[] | undefined
-          let domains: string[] | undefined
-          if (this.conf.defaultAdapter === key) {
-            excludeDomains = []
-            for (const domain in this.conf.domains) {
-              if (this.conf.domains[domain] !== key) {
-                excludeDomains.push(domain)
-              }
-            }
-          } else {
-            domains = []
-            for (const domain in this.conf.domains) {
-              if (this.conf.domains[domain] === key) {
-                domains.push(domain)
-              }
-            }
-          }
-          await adapter.init(domains, excludeDomains)
-        }
-      }
-    })
 
     const metrics = this.conf.metrics.newChild('📔 server-storage', {})
 
@@ -127,7 +92,7 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
 
     // We need to init all next, since we will use model
 
-    const adapterManager = new DbAdapterManagerImpl(metrics, this.conf.domains, this.context, defaultAdapter, adapters)
+    const adapterManager = new DbAdapterManagerImpl(metrics, this.conf, this.context, defaultAdapter, adapters)
     this.context.adapterManager = adapterManager
   }
 

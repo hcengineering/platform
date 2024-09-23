@@ -18,7 +18,7 @@ import {
   BroadcastMiddleware,
   ConfigurationMiddleware,
   ContextNameMiddleware,
-  DBAdapterHelperMiddleware,
+  DBAdapterInitMiddleware,
   DBAdapterMiddleware,
   DomainFindMiddleware,
   DomainTxMiddleware,
@@ -135,7 +135,7 @@ export function createServerPipeline (
       LiveQueryMiddleware.create,
       DomainFindMiddleware.create,
       DomainTxMiddleware.create,
-      DBAdapterHelperMiddleware.create,
+      DBAdapterInitMiddleware.create,
       ModelMiddleware.create,
       DBAdapterMiddleware.create(conf), // Configure DB adapters
       BroadcastMiddleware.create(broadcast)

@@ -16,7 +16,7 @@ export class CommonPage {
   selectPopupButton = (): Locator => this.page.locator('div.selectPopup button')
   selectPopupExpandButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnExpand"]')
   popupSpanLabel = (point: string): Locator =>
-    this.page.locator('div[class$="opup"] span[class*="label"]', { hasText: point })
+    this.page.locator(`div[class$="opup"] span[class*="label"]:has-text("${point}")`)
 
   readonly inputSearchIcon = (): Locator => this.page.locator('.searchInput-icon')
 

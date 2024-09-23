@@ -1812,7 +1812,7 @@ export async function setRole (
       })
     }
   } finally {
-    if (client === undefined) {
+    if (client == null) {
       await connection.close()
     }
   }
@@ -2049,7 +2049,7 @@ async function createPersonAccount (
       }
     }
   } finally {
-    if (client === undefined) {
+    if (client == null) {
       await connection.close()
     }
   }

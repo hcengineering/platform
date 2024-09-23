@@ -14,11 +14,12 @@
 // limitations under the License.
 //
 
-import { type Domain, type MeasureContext } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { DOMAIN_TX, type Domain, type MeasureContext } from '@hcengineering/core'
 import { type DbAdapter, type DomainHelper } from './adapter'
+import type { DbConfiguration } from './configuration'
 import { DummyDbAdapter } from './mem'
 import type { DBAdapterManager, PipelineContext } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 interface DomainInfo {
   exists: boolean
@@ -35,7 +36,7 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
   constructor (
     private readonly metrics: MeasureContext,
 
-    private readonly _domains: Record<string, string>,
+    readonly conf: DbConfiguration,
     private readonly context: PipelineContext,
     private readonly defaultAdapter: DbAdapter,
     private readonly adapters: Map<string, DbAdapter>
@@ -86,8 +87,36 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     }
   }
 
+  async initAdapters (ctx: MeasureContext): Promise<void> {
+    await ctx.with('init-adapters', {}, async (ctx) => {
+      for (const [key, adapter] of this.adapters) {
+        // already initialized
+        if (key !== this.conf.domains[DOMAIN_TX] && adapter.init !== undefined) {
+          let excludeDomains: string[] | undefined
+          let domains: string[] | undefined
+          if (this.conf.defaultAdapter === key) {
+            excludeDomains = []
+            for (const domain in this.conf.domains) {
+              if (this.conf.domains[domain] !== key) {
+                excludeDomains.push(domain)
+              }
+            }
+          } else {
+            domains = []
+            for (const domain in this.conf.domains) {
+              if (this.conf.domains[domain] === key) {
+                domains.push(domain)
+              }
+            }
+          }
+          await adapter.init(domains, excludeDomains)
+        }
+      }
+    })
+  }
+
   private async updateInfo (d: Domain, adapterDomains: Map<DbAdapter, Set<Domain>>, info: DomainInfo): Promise<void> {
-    const name = this._domains[d] ?? '#default'
+    const name = this.conf.domains[d] ?? '#default'
     const adapter = this.adapters.get(name) ?? this.defaultAdapter
     if (adapter !== undefined) {
       const h = adapter.helper?.()
@@ -129,7 +158,7 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
   }
 
   public getAdapter (domain: Domain, requireExists: boolean): DbAdapter {
-    const name = this._domains[domain] ?? '#default'
+    const name = this.conf.domains[domain] ?? '#default'
     const adapter = this.adapters.get(name) ?? this.defaultAdapter
     if (adapter === undefined) {
       throw new Error('adapter not provided: ' + name)

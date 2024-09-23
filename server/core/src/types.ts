@@ -134,6 +134,8 @@ export interface DBAdapterManager {
   close: () => Promise<void>
 
   registerHelper: (helper: DomainHelper) => Promise<void>
+
+  initAdapters: (ctx: MeasureContext) => Promise<void>
 }
 
 export interface PipelineContext {
