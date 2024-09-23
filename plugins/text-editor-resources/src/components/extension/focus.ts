@@ -22,6 +22,7 @@ export interface FocusStorage {
 }
 
 export const FocusExtension = Extension.create<FocusOptions, FocusStorage>({
+  name: 'focus',
   addStorage () {
     return { canBlur: true }
   },

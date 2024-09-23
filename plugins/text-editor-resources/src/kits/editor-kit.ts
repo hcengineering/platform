@@ -23,6 +23,7 @@ import ListKeymap from '@tiptap/extension-list-keymap'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 
+import { EditableExtension } from '../components/extension/editable'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeblock'
 import { NoteExtension, type NoteOptions } from '../components/extension/note'
 import { FileExtension, type FileOptions } from '../components/extension/fileExt'
@@ -172,6 +173,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
                     }
                   })
                 ],
+                [110, EditableExtension],
                 [200, CodeBlockHighlighExtension.configure(codeBlockHighlightOptions)],
                 [210, CodeExtension.configure(codeOptions)],
                 [220, HardBreakExtension.configure({ shortcuts: mode })]
