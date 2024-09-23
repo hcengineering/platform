@@ -240,8 +240,10 @@ export async function getContentByTemplate (
     notificationData !== undefined &&
     control.hierarchy.isDerived(notificationData._class, notification.class.MentionInboxNotification)
   ) {
-    const text = (notificationData as MentionInboxNotification).messageHtml
-    params.body = text !== undefined ? markupToHTML(text) : params.body
+    const messageContent = (notificationData as MentionInboxNotification).messageHtml
+    const text = messageContent !== undefined ? markupToText(messageContent) : undefined
+    params.body = text ?? params.body
+    params.message = text ?? params.message
   }
 
   if (message !== undefined) {
