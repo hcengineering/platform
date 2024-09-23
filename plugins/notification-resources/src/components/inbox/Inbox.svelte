@@ -256,7 +256,7 @@
 
     const selectedNotification: InboxNotification | undefined = event?.detail?.notification
 
-    void selectInboxContext(linkProviders, selectedContext, selectedNotification, event.detail.object)
+    void selectInboxContext(linkProviders, selectedContext, selectedNotification, event?.detail.object)
   }
 
   async function updateSelectedPanel (selectedContext?: DocNotifyContext): Promise<void> {
