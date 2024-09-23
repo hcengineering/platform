@@ -55,7 +55,7 @@
     ev.preventDefault()
     ev.stopPropagation()
     showPopup(EmojiPopup, {}, ev.target as HTMLElement, async (emoji: string) => {
-      await updateDocReactions(client, reactions, object, emoji)
+      await updateDocReactions(reactions, object, emoji)
     })
   }
 </script>

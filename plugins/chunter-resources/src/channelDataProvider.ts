@@ -20,6 +20,7 @@ import {
   type DocumentQuery,
   getCurrentAccount,
   isOtherDay,
+  type Lookup,
   type Ref,
   SortingOrder,
   type Space,
@@ -285,11 +286,19 @@ export class ChannelDataProvider implements IChannelDataProvider {
       },
       {
         sort: { createdOn: SortingOrder.Descending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
-        }
+        lookup: this.getLookup()
       }
     )
+  }
+
+  getLookup (): Lookup<ActivityMessage> {
+    return {
+      _id: {
+        attachments: attachment.class.Attachment,
+        inlineButtons: chunter.class.InlineButton,
+        reactions: activity.class.Reaction
+      }
+    }
   }
 
   isNextLoading (mode: LoadMode): boolean {
@@ -331,9 +340,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         limit: limit ?? this.limit,
         sort: { createdOn: isBackward ? SortingOrder.Descending : SortingOrder.Ascending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment, inlineButtons: chunter.class.InlineButton }
-        }
+        lookup: this.getLookup()
       }
     )
 

@@ -70,6 +70,7 @@ import preference, { TPreference } from '@hcengineering/model-preference'
 import view from '@hcengineering/model-view'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import presentation from '@hcengineering/model-presentation'
 
 import activity from './plugin'
 import { buildActions } from './actions'
@@ -373,6 +374,10 @@ export function createModel (builder: Builder): void {
       { createdBy: 1 },
       { attachedToClass: 1 }
     ]
+  })
+
+  builder.mixin(activity.class.Reaction, core.class.Class, presentation.mixin.InstantTransactions, {
+    txClasses: [core.class.TxCreateDoc]
   })
 
   buildActions(builder)
