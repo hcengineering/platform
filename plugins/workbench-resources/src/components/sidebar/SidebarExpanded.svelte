@@ -24,7 +24,7 @@
     Breadcrumbs,
     getCurrentLocation
   } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   import { closeWidgetTab, sidebarStore, SidebarVariant, WidgetState, openWidgetTab, closeWidget } from '../../sidebar'
   import WidgetsBar from './widgets/WidgetsBar.svelte'
@@ -46,36 +46,15 @@
   $: widgetState = widget !== undefined ? $sidebarStore.widgetsState.get(widget._id) : undefined
 
   $: tabId = widgetState?.tab
-  $: tabs = getTabs(widget, widgetState)
+  $: tabs = widgetState?.tabs ?? []
   $: tab = tabId !== undefined ? tabs.find((it) => it.id === tabId) ?? tabs[0] : tabs[0]
 
   $: if ($sidebarStore.widget === undefined) {
     sidebarStore.update((s) => ({ ...s, variant: SidebarVariant.MINI }))
   }
 
-  function getTabs (widget?: Widget, state?: WidgetState): WidgetTab[] {
-    if (widget === undefined || !state?.tabs) return []
-    const loc = getCurrentLocation()
-
-    const result: WidgetTab[] = []
-    for (const tab of state.tabs) {
-      if (tab.allowedPath !== undefined && !tab.isPinned) {
-        const path = loc.path.join('/')
-        if (!path.startsWith(tab.allowedPath)) {
-          void handleTabClose(tab.id, widget)
-          continue
-        }
-      }
-
-      result.push(tab)
-    }
-
-    return result
-  }
-
-  const unsubscribe = locationStore.subscribe((loc: Location) => {
+  function closeWrongTabs (loc: Location): void {
     if (widget === undefined) return
-
     for (const tab of tabs) {
       if (tab.allowedPath !== undefined && !tab.isPinned) {
         const path = loc.path.join('/')
@@ -84,6 +63,14 @@
         }
       }
     }
+  }
+
+  const unsubscribe = locationStore.subscribe((loc: Location) => {
+    closeWrongTabs(loc)
+  })
+
+  onMount(() => {
+    closeWrongTabs(getCurrentLocation())
   })
 
   onDestroy(() => {

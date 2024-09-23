@@ -500,9 +500,9 @@
     updateSelectedDate()
 
     if (selectedMessageId !== undefined && messages.some(({ _id }) => _id === selectedMessageId)) {
-      isScrollInitialized = true
       await wait()
       scrollToMessage()
+      isScrollInitialized = true
       isInitialScrolling = false
     } else if (separatorIndex === -1) {
       await wait()
@@ -800,6 +800,7 @@
       bind:divBox={scrollContentBox}
       noStretch={false}
       disableOverscroll
+      horizontal={false}
       onScroll={handleScroll}
       onResize={handleResize}
     >

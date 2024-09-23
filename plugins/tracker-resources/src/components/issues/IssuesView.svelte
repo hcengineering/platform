@@ -28,7 +28,7 @@
   $: if (query) updateSearchQuery(search)
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
-  $: if (!label && title) {
+  $: if (title) {
     void translate(title, {}, $themeStore.language).then((res) => {
       label = res
     })

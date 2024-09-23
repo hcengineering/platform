@@ -203,7 +203,6 @@ export function openWidgetTab (widget: Ref<Widget>, tab: string): void {
 }
 
 export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false): void {
-  openWidget(widget)
   const state = get(sidebarStore)
   const { widgetsState } = state
   const widgetState = widgetsState.get(widget._id)
@@ -225,6 +224,7 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
   }
 
   widgetsState.set(widget._id, {
+    ...widgetState,
     _id: widget._id,
     tabs: newTabs,
     tab: tab.id
@@ -232,7 +232,9 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
 
   sidebarStore.set({
     ...state,
-    widgetsState
+    widget: widget._id,
+    widgetsState,
+    variant: SidebarVariant.EXPANDED
   })
 }
 
