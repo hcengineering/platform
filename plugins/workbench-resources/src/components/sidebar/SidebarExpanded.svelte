@@ -21,7 +21,7 @@
     location as locationStore,
     Location,
     Header,
-    Breadcrumbs
+    Breadcrumbs, getCurrentLocation
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
 
@@ -45,11 +45,31 @@
   $: widgetState = widget !== undefined ? $sidebarStore.widgetsState.get(widget._id) : undefined
 
   $: tabId = widgetState?.tab
-  $: tabs = widgetState?.tabs ?? []
+  $: tabs = getTabs(widget, widgetState)
   $: tab = tabId !== undefined ? tabs.find((it) => it.id === tabId) ?? tabs[0] : tabs[0]
 
   $: if ($sidebarStore.widget === undefined) {
     sidebarStore.update((s) => ({ ...s, variant: SidebarVariant.MINI }))
+  }
+
+  function getTabs (widget?: Widget, state?: WidgetState): WidgetTab[] {
+    if (widget === undefined || !state?.tabs) return []
+    const loc = getCurrentLocation()
+
+    const result: WidgetTab[] = []
+    for (const tab of state.tabs) {
+      if (tab.allowedPath !== undefined && !tab.isPinned) {
+        const path = loc.path.join('/')
+        if (!path.startsWith(tab.allowedPath)) {
+          void handleTabClose(tab.id, widget)
+          continue
+        }
+      }
+
+      result.push(tab)
+    }
+
+    return result
   }
 
   const unsubscribe = locationStore.subscribe((loc: Location) => {
