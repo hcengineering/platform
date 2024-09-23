@@ -20,12 +20,13 @@ import { BaseMiddleware, DomainIndexHelperImpl } from '@hcengineering/server-cor
 /**
  * @public
  */
-export class DBAdapterHelperMiddleware extends BaseMiddleware implements Middleware {
+export class DBAdapterInitMiddleware extends BaseMiddleware implements Middleware {
   static async create (
     ctx: MeasureContext,
     context: PipelineContext,
     next?: Middleware
   ): Promise<Middleware | undefined> {
+    await context.adapterManager?.initAdapters?.(ctx)
     const domainHelper = new DomainIndexHelperImpl(ctx, context.hierarchy, context.modelDb, context.workspace)
     await context.adapterManager?.registerHelper?.(domainHelper)
     return undefined

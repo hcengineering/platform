@@ -93,6 +93,8 @@ export interface ConnectionSocket {
   data: () => Record<string, any>
 
   readRequest: (buffer: Buffer, binary: boolean) => Request<any>
+
+  checkState: () => boolean
 }
 
 /**
@@ -114,11 +116,12 @@ export interface Workspace {
   context: MeasureContext
   id: string
   pipeline: Promise<Pipeline>
-  sessions: Map<string, { session: Session, socket: ConnectionSocket }>
+  sessions: Map<string, { session: Session, socket: ConnectionSocket, tickHash: number }>
   upgrade: boolean
 
   closing?: Promise<void>
   softShutdown: number
+  workspaceInitCompleted: boolean
 
   workspaceId: WorkspaceId
   workspaceName: string
