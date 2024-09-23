@@ -35,7 +35,8 @@ import core, {
   TxCollectionCUD,
   WorkspaceId,
   type Blob,
-  type DocIndexState
+  type DocIndexState,
+  type Tx
 } from '@hcengineering/core'
 import { BlobClient, createClient } from '@hcengineering/server-client'
 import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
@@ -514,7 +515,8 @@ export async function backup (
     connectTimeout: number
     skipBlobContentTypes: string[]
     blobDownloadLimit: number
-    connection?: CoreClient & BackupClient
+    getLastTx?: () => Promise<Tx | undefined>
+    getConnection?: () => Promise<CoreClient & BackupClient>
     storageAdapter?: StorageAdapter
     // Return true in case
     isCanceled?: () => boolean
@@ -529,7 +531,7 @@ export async function backup (
     skipBlobContentTypes: [],
     blobDownloadLimit: 15
   }
-): Promise<void> {
+): Promise<boolean> {
   ctx = ctx.newChild('backup', {
     workspaceId: workspaceId.name,
     force: options.force,
@@ -555,36 +557,11 @@ export async function backup (
     }, options.timeout)
   }
 
-  const token =
-    options.token ??
-    generateToken(systemAccountEmail, workspaceId, {
-      mode: 'backup'
-    })
-
-  const connection =
-    options.connection ??
-    ((await createClient(transactorUrl, options.token ?? token, undefined, options.connectTimeout)) as CoreClient &
-    BackupClient)
-
-  const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
-  ctx.info('starting backup', { workspace: workspaceId.name })
+  const st = Date.now()
+  let connection!: CoreClient & BackupClient
+  let printEnd = true
 
   try {
-    const domains = [
-      ...connection
-        .getHierarchy()
-        .domains()
-        .filter(
-          (it) =>
-            it !== DOMAIN_TRANSIENT &&
-            it !== DOMAIN_MODEL &&
-            it !== ('fulltext-blob' as Domain) &&
-            !options.skipDomains.includes(it) &&
-            (options.include === undefined || options.include.has(it))
-        )
-    ]
-    ctx.info('domains for dump', { domains: domains.length })
-
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
       version: '0.6.2',
@@ -602,18 +579,69 @@ export async function backup (
 
     backupInfo.workspace = workspaceId.name
 
+    let lastTx: Tx | undefined
+
+    let lastTxChecked = false
     // Skip backup if there is no transaction changes.
-    const lastTx = await connection.findOne(
-      core.class.Tx,
-      {},
-      { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-    )
-    if (lastTx !== undefined) {
-      if (lastTx._id === backupInfo.lastTxId && !options.force) {
-        ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
-        return
+    if (options.getLastTx !== undefined) {
+      lastTx = await options.getLastTx()
+      if (lastTx !== undefined) {
+        if (lastTx._id === backupInfo.lastTxId && !options.force) {
+          printEnd = false
+          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
+          return false
+        }
+      }
+      lastTxChecked = true
+    }
+    const token =
+      options.token ??
+      generateToken(systemAccountEmail, workspaceId, {
+        mode: 'backup'
+      })
+
+    ctx.warn('starting backup', { workspace: workspaceId.name })
+
+    connection =
+      options.getConnection !== undefined
+        ? await options.getConnection()
+        : ((await createClient(
+            transactorUrl,
+            options.token ?? token,
+            undefined,
+            options.connectTimeout
+          )) as CoreClient & BackupClient)
+
+    if (!lastTxChecked) {
+      lastTx = await connection.findOne(core.class.Tx, {}, { limit: 1, sort: { modifiedOn: SortingOrder.Descending } })
+      if (lastTx !== undefined) {
+        if (lastTx._id === backupInfo.lastTxId && !options.force) {
+          ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
+          if (options.getConnection === undefined) {
+            await connection.close()
+          }
+          return false
+        }
       }
     }
+
+    const blobClient = new BlobClient(transactorUrl, token, workspaceId, { storageAdapter: options.storageAdapter })
+
+    const domains = [
+      ...connection
+        .getHierarchy()
+        .domains()
+        .filter(
+          (it) =>
+            it !== DOMAIN_TRANSIENT &&
+            it !== DOMAIN_MODEL &&
+            it !== ('fulltext-blob' as Domain) &&
+            !options.skipDomains.includes(it) &&
+            (options.include === undefined || options.include.has(it))
+        )
+    ]
+
+    ctx.info('domains for dump', { domains: domains.length })
 
     backupInfo.lastTxId = '' // Clear until full backup will be complete
 
@@ -1006,11 +1034,15 @@ export async function backup (
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
+    return true
   } catch (err: any) {
     ctx.error('backup error', { err, workspace: workspaceId.name })
+    return false
   } finally {
-    ctx.info('end backup', { workspace: workspaceId.name })
-    if (options.connection === undefined) {
+    if (printEnd) {
+      ctx.info('end backup', { workspace: workspaceId.name, totalTime: Date.now() - st })
+    }
+    if (options.getConnection === undefined && connection !== undefined) {
       await connection.close()
     }
     ctx.end()

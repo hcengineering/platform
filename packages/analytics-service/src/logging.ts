@@ -71,8 +71,6 @@ export class SplitLogger implements MeasureLogger {
           )
         })
       )
-    } else {
-      console.log('Logging only in files')
     }
     this.logger.info(
       '####################################################################################################################'
