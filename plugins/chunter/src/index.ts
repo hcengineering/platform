@@ -208,7 +208,8 @@ export default plugin(chunterId, {
     TranslateMessage: '' as IntlString,
     Translate: '' as IntlString,
     ShowOriginal: '' as IntlString,
-    Translating: '' as IntlString
+    Translating: '' as IntlString,
+    StartConversation: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

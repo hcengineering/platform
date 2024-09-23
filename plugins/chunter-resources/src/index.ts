@@ -78,7 +78,8 @@ import {
   removeChannelAction,
   translateMessage,
   showOriginalMessage,
-  canTranslateMessage
+  canTranslateMessage,
+  startConversationAction
 } from './utils'
 
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
@@ -213,6 +214,7 @@ export default async (): Promise<Resources> => ({
     ReplyToThread: replyToThread,
     OpenInSidebar: openChannelInSidebarAction,
     TranslateMessage: translateMessage,
-    ShowOriginalMessage: showOriginalMessage
+    ShowOriginalMessage: showOriginalMessage,
+    StartConversation: startConversationAction
   }
 })
