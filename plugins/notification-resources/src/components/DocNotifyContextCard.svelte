@@ -198,7 +198,7 @@
 <div
   class="card"
   on:click={() => {
-    dispatch('click', { context: value })
+    dispatch('click', { context: value, object })
   }}
 >
   {#if isLoading}
