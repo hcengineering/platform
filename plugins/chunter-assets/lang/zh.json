@@ -126,6 +126,7 @@
     "TranslateMessage": "翻译消息",
     "Translate": "翻译",
     "ShowOriginal": "显示原文",
-    "Translating": "翻译中..."
+    "Translating": "翻译中...",
+    "StartConversation": "开始对话"
   }
 }

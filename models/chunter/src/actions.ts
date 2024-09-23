@@ -19,6 +19,7 @@ import notification, { notificationActionTemplates } from '@hcengineering/model-
 import activity from '@hcengineering/activity'
 import workbench from '@hcengineering/model-workbench'
 import core from '@hcengineering/model-core'
+import contact from '@hcengineering/contact'
 
 import chunter from './plugin'
 
@@ -43,6 +44,18 @@ export function defineActions (builder: Builder): void {
     chunter.category.Chunter
   )
 
+  createAction(builder, {
+    action: chunter.actionImpl.StartConversation,
+    label: chunter.string.StartConversation,
+    icon: chunter.icon.Thread,
+    input: 'focus',
+    category: chunter.category.Chunter,
+    target: contact.mixin.Employee,
+    context: {
+      mode: 'context',
+      group: 'associate'
+    }
+  })
   defineMessageActions(builder)
   defineChannelActions(builder)
 }

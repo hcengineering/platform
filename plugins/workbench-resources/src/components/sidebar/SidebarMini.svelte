@@ -23,4 +23,4 @@
   export let selected: Ref<Widget> | undefined = undefined
 </script>
 
-<WidgetsBar {widgets} {preferences} {selected} />
+<WidgetsBar {widgets} {preferences} {selected} roundBorder />

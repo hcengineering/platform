@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getImageSize } from '@hcengineering/presentation'
+import { imageSizeToRatio, getImageSize } from '@hcengineering/presentation'
 import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
@@ -41,6 +41,8 @@ function getType (type: string): 'image' | 'other' {
  * @public
  */
 export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
+  name: 'image-upload',
+
   addOptions () {
     return {
       getFileUrl: () => ''
@@ -157,7 +159,7 @@ async function handleImageUpload (
       src: url,
       alt: file.name,
       title: file.name,
-      width: Math.round(size.width / size.pixelRatio)
+      width: imageSizeToRatio(size.width, size.pixelRatio)
     })
 
     const transaction = view.state.tr.insert(pos?.pos ?? 0, node)

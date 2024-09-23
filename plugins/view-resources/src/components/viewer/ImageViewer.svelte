@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobRef, type BlobMetadata } from '@hcengineering/presentation'
+  import { getBlobRef, imageSizeToRatio, type BlobMetadata } from '@hcengineering/presentation'
   import { Loading } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
@@ -22,15 +22,20 @@
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
 
-  $: p = getBlobRef(value, name)
-  $: width = metadata?.originalWidth ? `min(${metadata.originalWidth / metadata?.pixelRatio ?? 1}px, 100%)` : '100%'
-  $: height = metadata?.originalHeight
-    ? `min(${metadata.originalHeight / metadata?.pixelRatio ?? 1}px, ${fit ? '100%' : '80vh'})`
-    : '100%'
+  $: originalWidth = metadata?.originalWidth
+  $: originalHeight = metadata?.originalHeight
+  $: pixelRatio = metadata?.pixelRatio ?? 1
+
+  $: imageWidth = originalWidth != null ? imageSizeToRatio(originalWidth, pixelRatio) : undefined
+  $: imageHeight = originalHeight != null ? imageSizeToRatio(originalHeight, pixelRatio) : undefined
+
+  $: width = imageWidth != null ? `min(${imageWidth}px, 100%)` : '100%'
+  $: height = imageHeight != null ? `min(${imageHeight}px, ${fit ? '100%' : '80vh'})` : '100%'
+
   let loading = true
 </script>
 
-{#await p then blobRef}
+{#await getBlobRef(value, name) then blobRef}
   {#if loading}
     <div class="flex-center w-full h-full clear-mins">
       <Loading />

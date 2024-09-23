@@ -17,7 +17,7 @@
 <script lang="ts">
   import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
-  import { getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
@@ -297,7 +297,7 @@
         type: 'image',
         attrs: {
           'file-id': attached.file,
-          width: Math.round(size.width / size.pixelRatio)
+          width: imageSizeToRatio(size.width, size.pixelRatio)
         }
       },
       {

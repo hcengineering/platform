@@ -126,6 +126,7 @@
     "TranslateMessage": "Traduzir mensagem",
     "Translate": "Traduzir",
     "ShowOriginal": "Mostrar original",
-    "Translating": "A traduzir..."
+    "Translating": "A traduzir...",
+    "StartConversation": "Iniciar conversa"
   }
 }

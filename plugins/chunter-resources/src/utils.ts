@@ -22,7 +22,7 @@ import activity, {
 import { isReactionMessage } from '@hcengineering/activity-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { getName, type Employee, type Person, type PersonAccount } from '@hcengineering/contact'
-import { PersonIcon, employeeByIdStore } from '@hcengineering/contact-resources'
+import { PersonIcon, employeeByIdStore, personIdByAccountId } from '@hcengineering/contact-resources'
 import core, {
   getCurrentAccount,
   type Account,
@@ -35,7 +35,7 @@ import core, {
   type Timestamp,
   type WithLookup
 } from '@hcengineering/core'
-import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import {
   InboxNotificationsClientImpl,
   isActivityNotification,
@@ -48,10 +48,11 @@ import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-res
 import { get, writable, type Unsubscriber } from 'svelte/store'
 import aiBot from '@hcengineering/ai-bot'
 import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
+import { deepEqual } from 'fast-equals'
 
 import ChannelIcon from './components/ChannelIcon.svelte'
 import DirectIcon from './components/DirectIcon.svelte'
-import { resetChunterLocIfEqual } from './navigation'
+import { openChannelInSidebar, resetChunterLocIfEqual } from './navigation'
 import chunter from './plugin'
 import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from './stores'
 
@@ -559,4 +560,91 @@ export async function showOriginalMessage (message: ChatMessage): Promise<void> 
 export async function canTranslateMessage (): Promise<boolean> {
   const url = getMetadata(aiBot.metadata.EndpointURL) ?? ''
   return url !== ''
+}
+
+export async function startConversationAction (docs?: Employee | Employee[]): Promise<void> {
+  if (docs === undefined) return
+  const employees = Array.isArray(docs) ? docs : [docs]
+  const employeeIds = employees.map(({ _id }) => _id)
+
+  const dm = await createDirect(employeeIds)
+
+  if (dm !== undefined) {
+    await openChannelInSidebar(dm, chunter.class.DirectMessage, undefined, undefined, true)
+  }
+}
+
+export async function createDirect (employeeIds: Array<Ref<Employee>>): Promise<Ref<DirectMessage>> {
+  const client = getClient()
+  const me = getCurrentAccount()
+
+  const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
+  const accIds = [me._id, ...employeeAccounts.filter(({ _id }) => _id !== me._id).map(({ _id }) => _id)].sort()
+
+  const existingDms = await client.findAll(chunter.class.DirectMessage, {})
+  const newDirectPersons = Array.from(new Set([...employeeIds, me.person] as Array<Ref<Person>>)).sort()
+
+  let direct: DirectMessage | undefined
+
+  for (const dm of existingDms) {
+    const existDirectPersons = Array.from(
+      new Set(dm.members.map((id) => get(personIdByAccountId).get(id as Ref<PersonAccount>)))
+    )
+      .filter((person): person is Ref<Person> => person !== undefined)
+      .sort()
+    if (deepEqual(existDirectPersons, newDirectPersons)) {
+      direct = dm
+      break
+    }
+  }
+
+  const existingMembers = direct?.members
+  const missingAccounts = existingMembers !== undefined ? accIds.filter((id) => !existingMembers.includes(id)) : []
+
+  if (direct !== undefined && missingAccounts.length > 0) {
+    await client.updateDoc(chunter.class.DirectMessage, direct.space, direct._id, {
+      $push: { members: { $each: missingAccounts, $position: 0 } }
+    })
+  }
+
+  const dmId =
+    direct?._id ??
+    (await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
+      name: '',
+      description: '',
+      private: true,
+      archived: false,
+      members: accIds
+    }))
+
+  const context = await client.findOne(notification.class.DocNotifyContext, {
+    user: me._id,
+    objectId: dmId,
+    objectClass: chunter.class.DirectMessage
+  })
+
+  if (context !== undefined) {
+    if (context.hidden) {
+      await client.updateDoc(context._class, context.space, context._id, { hidden: false })
+    }
+
+    return dmId
+  }
+
+  const space = await client.findOne(
+    contact.class.PersonSpace,
+    { person: me.person as Ref<Person> },
+    { projection: { _id: 1 } }
+  )
+  if (space == null) return dmId
+  await client.createDoc(notification.class.DocNotifyContext, space._id, {
+    user: me._id,
+    objectId: dmId,
+    objectClass: chunter.class.DirectMessage,
+    objectSpace: core.space.Space,
+    hidden: false,
+    isPinned: false
+  })
+
+  return dmId
 }
