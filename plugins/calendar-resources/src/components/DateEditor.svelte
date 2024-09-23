@@ -31,7 +31,7 @@
 
   export let date: number
   export let difference: number = 0
-  export let direction: 'vertical' | 'horizontal' = 'vertical'
+  export let direction: 'vertical' | 'horizontal' | 'auto' = 'vertical'
   export let showDate: boolean = true
   export let withoutTime: boolean
   export let kind: ButtonBaseKind = 'tertiary'
@@ -44,8 +44,9 @@
   const dispatch = createEventDispatcher()
 
   $: currentDate = new Date(date)
+  let tib: TimeInputBox
 
-  function timeClick (e: MouseEvent) {
+  function timeClick (e: MouseEvent & { currentTarget: EventTarget & HTMLElement }) {
     if (!showDate) {
       showPopup(
         DatePopup,
@@ -58,7 +59,7 @@
           }
         }
       )
-    }
+    } else if (!disabled) tib.focused(e.offsetX <= e.currentTarget.clientWidth / 2 ? 'hour' : 'min')
   }
 
   function dateClick (e: MouseEvent) {
@@ -85,13 +86,17 @@
     {#if fixed === undefined}
       <div class="min-w-28">
         <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
-          <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
+          <span class="overflow-label tertiary-textColor">
+            <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
+          </span>
         </ButtonBase>
       </div>
     {:else}
       <FixedColumn key={fixed + '-date'} addClass={'min-w-28'}>
         <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
-          <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
+          <span class="overflow-label tertiary-textColor">
+            <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
+          </span>
         </ButtonBase>
       </FixedColumn>
     {/if}
@@ -103,15 +108,17 @@
 
   {#if !withoutTime}
     {#if fixed === undefined}
-      <ButtonBase
-        type="type-button"
-        {kind}
-        {size}
-        {disabled}
-        focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <div
+        class="hulyButton type-button tertiary small rectangle font-medium-14"
+        class:disabled
+        tabindex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
         on:click={timeClick}
       >
         <TimeInputBox
+          bind:this={tib}
           bind:currentDate
           {timeZone}
           noBorder
@@ -120,18 +127,20 @@
             updateTime(date.detail)
           }}
         />
-      </ButtonBase>
+      </div>
     {:else}
       <FixedColumn key={fixed + '-time'} addClass={'min-w-28'}>
-        <ButtonBase
-          type="type-button"
-          {kind}
-          {size}
-          {disabled}
-          focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="hulyButton type-button tertiary small rectangle font-medium-14"
+          class:disabled
+          tabindex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
           on:click={timeClick}
         >
           <TimeInputBox
+            bind:this={tib}
             bind:currentDate
             {timeZone}
             noBorder
@@ -140,7 +149,7 @@
               updateTime(date.detail)
             }}
           />
-        </ButtonBase>
+        </div>
       </FixedColumn>
     {/if}
   {/if}
@@ -162,9 +171,15 @@
 <style lang="scss">
   .dateEditor-container {
     display: flex;
-    flex-wrap: nowrap;
 
-    &.horizontal {
+    &:not(.auto) {
+      flex-wrap: nowrap;
+    }
+    &.auto {
+      flex-wrap: wrap;
+    }
+    &.horizontal,
+    &.auto {
       align-items: center;
     }
     &.vertical {

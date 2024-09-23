@@ -74,16 +74,14 @@
         on:change={(e) => change(e, slot)}
         on:dueChange={(e) => dueChange(e, slot)}
       />
-      <div class="tool flex-no-shrink">
-        <ButtonIcon
-          kind="tertiary"
-          size="small"
-          icon={IconDelete}
-          on:click={() => {
-            dispatch('remove', { _id: slot._id })
-          }}
-        />
-      </div>
+      <ButtonIcon
+        kind="tertiary"
+        size="small"
+        icon={IconDelete}
+        on:click={() => {
+          dispatch('remove', { _id: slot._id })
+        }}
+      />
     </div>
   {/each}
 </Scroller>
