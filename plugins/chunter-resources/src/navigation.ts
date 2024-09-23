@@ -327,9 +327,12 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
   const name = (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {}))
   const tabName = await translate(chunter.string.ThreadIn, { name })
   const loc = getCurrentLocation()
-  loc.path[4] = message._id
-  const allowedPath = loc.path.join('/')
 
+  if (loc.path[2] === chunterId || loc.path[2] === notificationId) {
+    loc.path[4] = message._id
+  }
+
+  const allowedPath = loc.path.join('/')
   const currentTabs = get(sidebarStore).widgetsState.get(widget._id)?.tabs ?? []
   const tabsToClose = currentTabs.filter((t) => t.isPinned !== true && t.allowedPath === allowedPath).map((t) => t.id)
 
