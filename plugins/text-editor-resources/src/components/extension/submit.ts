@@ -6,6 +6,7 @@ export interface SubmitOptions {
 }
 
 export const SubmitExtension = Extension.create<SubmitOptions>({
+  name: 'submit',
   addKeyboardShortcuts () {
     const shortcuts: Record<string, KeyboardShortcutCommand> = {
       Space: () => {

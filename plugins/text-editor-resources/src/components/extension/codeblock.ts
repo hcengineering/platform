@@ -21,6 +21,7 @@ import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { common, createLowlight } from 'lowlight'
+import { isChangeEditable } from './editable'
 
 type Lowlight = ReturnType<typeof createLowlight>
 
@@ -117,7 +118,7 @@ export function LanguageSelector (options: CodeBlockLowlightOptions): Plugin {
         return createDecorations(state.doc, options)
       },
       apply (tr, prev) {
-        if (tr.docChanged) {
+        if (tr.docChanged || isChangeEditable(tr)) {
           return createDecorations(tr.doc, options)
         }
 
