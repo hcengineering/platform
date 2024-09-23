@@ -153,12 +153,15 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
             const fileName = node.attrs.alt ?? ''
             const fileType = node.attrs['data-file-type'] ?? 'image/*'
 
+            const metadata = node.attrs.width !== undefined ? { originalWidth: node.attrs.width } : {}
+
             showPopup(
               FilePreviewPopup,
               {
                 file: fileId,
                 name: fileName,
                 contentType: fileType,
+                metadata,
                 fullSize: true,
                 showIcon: false
               },

@@ -27,6 +27,7 @@
 
   import { getFileUrl } from '../file'
   import { getPreviewType, previewTypes } from '../filetypes'
+  import { imageSizeToRatio } from '../image'
   import { BlobMetadata, FilePreviewExtension } from '../types'
 
   export let file: Ref<Blob>
@@ -68,8 +69,8 @@
       return
     }
     const pR: number = mD?.pixelRatio ?? 1
-    const fWidth: number = mD.originalWidth / pR
-    const fHeight: number = mD.originalHeight / pR
+    const fWidth: number = imageSizeToRatio(mD.originalWidth, pR)
+    const fHeight: number = imageSizeToRatio(mD.originalHeight, pR)
     let mHeight: number = 0
     let scale: number = 1
     if (fWidth > pWidth) {
