@@ -119,7 +119,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
   })
 
   constructor (
-    readonly context: DocNotifyContext | undefined,
+    private context: DocNotifyContext | undefined,
     readonly space: Ref<Space>,
     chatId: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
@@ -207,6 +207,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
         sort: { createdOn: SortingOrder.Ascending }
       }
     )
+  }
+
+  async updateNewTimestamp (context?: DocNotifyContext): Promise<void> {
+    this.context = context ?? this.context
+    const firstNewMsgIndex = await this.getFirstNewMsgIndex()
+    const metadata = get(this.metadataStore)
+    this.newTimestampStore.set(firstNewMsgIndex !== undefined ? metadata[firstNewMsgIndex]?.createdOn : undefined)
   }
 
   private async loadInitialMessages (
@@ -522,6 +529,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       },
       { sort: { createdOn: SortingOrder.Ascending } }
     )
+    console.log({ firstNotification, lastViewedTimestamp })
 
     if (lastViewedTimestamp === undefined && firstNotification === undefined) {
       return -1
