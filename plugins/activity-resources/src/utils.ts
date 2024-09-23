@@ -1,12 +1,5 @@
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, {
-  getCurrentAccount,
-  isOtherHour,
-  type Doc,
-  type Ref,
-  type TxOperations,
-  type Space
-} from '@hcengineering/core'
+import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getClient, isSpace } from '@hcengineering/presentation'
 import {
   EmojiPopup,
@@ -22,18 +15,13 @@ import { get } from 'svelte/store'
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
 
-export async function updateDocReactions (
-  client: TxOperations,
-  reactions: Reaction[],
-  object?: Doc,
-  emoji?: string
-): Promise<void> {
+export async function updateDocReactions (reactions: Reaction[], object?: Doc, emoji?: string): Promise<void> {
   if (emoji === undefined || object === undefined) {
     return
   }
 
+  const client = getClient()
   const currentAccount = getCurrentAccount()
-
   const reaction = reactions.find((r) => r.emoji === emoji && r.createBy === currentAccount._id)
 
   if (reaction == null) {
@@ -72,7 +60,7 @@ export async function addReactionAction (
   closePopup()
 
   showPopup(EmojiPopup, {}, element, (emoji: string) => {
-    void updateDocReactions(client, reactions, message, emoji)
+    void updateDocReactions(reactions, message, emoji)
     params?.onClose?.()
   })
   params?.onOpen?.()

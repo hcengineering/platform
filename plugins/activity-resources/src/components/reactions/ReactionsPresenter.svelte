@@ -14,40 +14,48 @@
 -->
 <script lang="ts">
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery } from '@hcengineering/presentation'
+  import { WithLookup } from '@hcengineering/core'
 
   import { getSpace, updateDocReactions } from '../../utils'
   import Reactions from './Reactions.svelte'
 
-  export let object: ActivityMessage | undefined
+  export let object: WithLookup<ActivityMessage> | undefined
   export let readonly = false
 
-  const client = getClient()
   const reactionsQuery = createQuery()
 
   let reactions: Reaction[] = []
 
-  $: hasReactions = object?.reactions && object.reactions > 0
+  $: hasReactions = (object?.reactions ?? 0) > 0
+  $: lookupReactions = object?.$lookup?.reactions as Reaction[] | undefined
 
-  $: if (object && hasReactions) {
-    reactionsQuery.query(
-      activity.class.Reaction,
-      { attachedTo: object._id, space: getSpace(object) },
-      (res: Reaction[]) => {
-        reactions = res
-      }
-    )
-  } else {
-    reactionsQuery.unsubscribe()
+  $: updateReactions(hasReactions, object, lookupReactions)
+
+  function updateReactions (hasReactions: boolean, object?: ActivityMessage, lookupReaction?: Reaction[]): void {
+    if (lookupReaction !== undefined) {
+      reactions = lookupReaction
+    } else if (object && hasReactions) {
+      reactionsQuery.query(
+        activity.class.Reaction,
+        { attachedTo: object._id, space: getSpace(object) },
+        (res: Reaction[]) => {
+          reactions = res
+        }
+      )
+    } else {
+      reactionsQuery.unsubscribe()
+      reactions = []
+    }
   }
 
   const handleClick = (ev: CustomEvent) => {
     if (readonly) return
-    void updateDocReactions(client, reactions, object, ev.detail)
+    void updateDocReactions(reactions, object, ev.detail)
   }
 </script>
 
-{#if object && hasReactions}
+{#if object && reactions.length > 0}
   <div class="footer flex-col p-inline contrast mt-2 min-h-6">
     <Reactions {reactions} {object} {readonly} on:click={handleClick} />
   </div>

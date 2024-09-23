@@ -211,6 +211,11 @@
       {
         sort: {
           createdOn: SortingOrder.Ascending
+        },
+        lookup: {
+          _id: {
+            reactions: activity.class.Reaction
+          }
         }
       }
     )
