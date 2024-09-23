@@ -16,7 +16,12 @@
 -->
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { ActivityFilter, ActivityMessagePresenter, canGroupMessages } from '@hcengineering/activity-resources'
+  import {
+    ActivityFilter,
+    ActivityMessagePresenter,
+    canGroupMessages,
+    combineActivityMessages
+  } from '@hcengineering/activity-resources'
   import { SortingOrder } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
   import { createQuery } from '@hcengineering/presentation'
@@ -33,7 +38,9 @@
     activity.class.ActivityMessage,
     { attachedTo: value._id, space: value.space },
     (res) => {
-      messages = res
+      void combineActivityMessages(res).then((res) => {
+        messages = res
+      })
     },
     {
       sort: {
