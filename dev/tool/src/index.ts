@@ -1139,7 +1139,8 @@ export function devTool (
     .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
-    .action(async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string }) => {
+    .option('--disabled', 'Include disabled workspaces', false)
+    .action(async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string, disabled: boolean }) => {
       const params = {
         blobSizeLimitMb: parseInt(cmd.blobLimit),
         concurrency: parseInt(cmd.concurrency),
@@ -1165,6 +1166,10 @@ export function devTool (
               if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                 continue
               }
+              if (workspace.disabled === true && !cmd.disabled) {
+                console.log('ignore disabled workspace', workspace.workspace)
+                continue
+              }
 
               console.log('start', workspace.workspace, index, '/', workspaces.length)
               await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
@@ -1182,7 +1187,8 @@ export function devTool (
   program
     .command('sync-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
-    .action(async (cmd: { workspace: string }) => {
+    .option('--disabled', 'Include disabled workspaces', false)
+    .action(async (cmd: { workspace: string, disabled: boolean }) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
@@ -1196,13 +1202,22 @@ export function devTool (
             workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
 
             for (const workspace of workspaces) {
+              if (workspace.disabled === true && !cmd.disabled) {
+                console.log('ignore disabled workspace', workspace.workspace)
+                continue
+              }
+
               if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                 continue
               }
 
-              console.log('start', workspace.workspace, index, '/', workspaces.length)
-              await syncFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter)
-              console.log('done', workspace.workspace)
+              try {
+                console.log('start', workspace.workspace, index, '/', workspaces.length)
+                await syncFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter)
+                console.log('done', workspace.workspace)
+              } catch (err) {
+                console.warn('failed to sync files', err)
+              }
 
               index += 1
             }
