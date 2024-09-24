@@ -84,6 +84,8 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly createNewTemplateFromSpace: Locator
   readonly okButton: Locator
   readonly documentThreeDots: Locator
+  readonly buttonSubmitReview: Locator
+  readonly completeReviewButton: Locator
 
   constructor (page: Page) {
     super(page)
@@ -178,6 +180,9 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.createNewTemplateFromSpace = page.getByRole('button', { name: 'Create new template' })
     this.okButton = page.getByRole('button', { name: 'Ok', exact: true })
     this.documentThreeDots = page.locator("div[class='no-print ml-1'] button[type='button']")
+    this.buttonSubmitReview = page.getByRole('button', { name: 'Submit' })
+    this.completeReviewButton = page.getByRole('button', { name: 'Complete review' })
+
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -285,6 +290,19 @@ export class DocumentContentPage extends DocumentCommonPage {
     if (version === 'Minor') {
       await this.page.getByText('Minor').click()
     }
+  }
+
+  async addReviewersFromTeam (): Promise<void> {
+    await this.page.waitForTimeout(500)
+    await this.page.getByText('Team').click()
+    await this.page.getByText('Add member').nth(1).click()
+    await this.selectRoleMemberAJ.click()
+    await this.page.keyboard.press('Escape')
+  }
+
+  async sendForReview (): Promise<void> {
+    await this.buttonSendForReview.click()
+    await this.buttonSubmitReview.click()
   }
 
   async addContent (content: string, append: boolean = false, newParagraph: boolean = false): Promise<void> {

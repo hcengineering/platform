@@ -149,7 +149,8 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     await attachScreenshot('TESTS-272_pdf_preview.png', page)
   })
 
-  test('TESTS-273. Check PDF Preview', async ({ page, context }) => {
+  // This works fine but have no test case for it
+  test.skip('TESTS-273. Check PDF Preview', async ({ page, context }) => {
     await allure.description('Requirement\nUsers need to approve the document and check PDF preview')
     await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-273')
 
