@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -58,28 +58,28 @@
     }}
   >
     <AttachmentImagePreview {value} size={imageSize} />
-    <div class="actions conner">
+    <div class="actions">
       <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'audio'}
   <div class="buttonContainer">
     <AudioPlayer {value} />
-    <div class="actions conner" style:padding={'0.125rem 0.25rem'}>
+    <div class="actions" style:padding={'0.125rem 0.25rem'}>
       <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'video'}
   <div class="content buttonContainer flex-center">
     <AttachmentVideoPreview {value} preload={videoPreload} />
-    <div class="actions conner">
+    <div class="actions">
       <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else}
   <div class="flex buttonContainer extraWidth">
     <AttachmentPresenter {value} />
-    <div class="actions conner">
+    <div class="actions">
       <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
@@ -100,17 +100,10 @@
       position: absolute;
       top: 0.25rem;
       right: 0.25rem;
-      padding: 0.25rem;
+      padding: 0.125rem;
       background-color: var(--theme-comp-header-color);
       border: 1px solid var(--theme-divider-color);
-      border-radius: 0.75rem;
-
-      &.conner {
-        top: 0;
-        right: 0;
-        padding: 0.25rem;
-        border-radius: 0 0.4rem 0 0.25rem;
-      }
+      border-radius: 0.375rem;
     }
   }
 
