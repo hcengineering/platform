@@ -509,7 +509,6 @@ export async function createPushFromInbox (
   message?: ActivityMessage
 ): Promise<Tx | undefined> {
   let { title, body } = await getTranslatedNotificationContent(data, _class, control)
-  console.log({ title, body })
   if (title === '' || body === '') {
     return
   }

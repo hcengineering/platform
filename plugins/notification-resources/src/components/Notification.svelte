@@ -48,7 +48,6 @@
       }
     }
 
-    console.log({ _id, _class, thread, selectedMessageId })
     onRemove()
 
     if (!_id || !_class || _id === '' || _class === '' || selectedMessageId === undefined) {
