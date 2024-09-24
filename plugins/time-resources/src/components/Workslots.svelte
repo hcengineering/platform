@@ -78,6 +78,7 @@
         kind="tertiary"
         size="small"
         icon={IconDelete}
+        dataId={'btnDelete'}
         on:click={() => {
           dispatch('remove', { _id: slot._id })
         }}

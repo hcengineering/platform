@@ -59,7 +59,7 @@ export class PlanningPage extends CalendarPage {
   readonly textPanelToDoDescription = (): Locator => this.panel().locator('div.top-content div.tiptap > p')
   readonly textPanelDueDate = (): Locator =>
     this.panel().locator(
-      'div.slots-content div.flex-row-top.justify-between div.flex-row-center button:first-child span'
+      'div.slots-content div.flex-row-top.justify-between div.flex-row-center .hulyButton:first-child span'
     )
 
   readonly textPanelPriority = (): Locator => this.panel().locator('button#priorityButton svg')
@@ -189,7 +189,7 @@ export class PlanningPage extends CalendarPage {
     const row = this.page.locator(p).nth(rowNumber)
 
     // dateStart
-    await row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child button').click()
+    await row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child .hulyButton').click()
     if (slot.dateStart === 'today') {
       await this.buttonCalendarToday().click()
     } else {
@@ -205,20 +205,20 @@ export class PlanningPage extends CalendarPage {
     const hours = slot.timeStart.substring(0, 2)
     const minutes = slot.timeStart.substring(2, slot.timeStart.length)
     await row
-      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:first-child')
+      .locator('div.dateEditor-container:nth-child(1) .hulyButton:last-child span.digit:first-child')
       .click({ delay: 200 })
     await row
-      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:first-child')
+      .locator('div.dateEditor-container:nth-child(1) .hulyButton:last-child span.digit:first-child')
       .pressSequentially(hours, { delay: 100 })
     await row
-      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:last-child')
+      .locator('div.dateEditor-container:nth-child(1) .hulyButton:last-child span.digit:last-child')
       .click({ delay: 200 })
     await row
-      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:last-child')
+      .locator('div.dateEditor-container:nth-child(1) .hulyButton:last-child span.digit:last-child')
       .pressSequentially(minutes, { delay: 100 })
 
     // dateEnd + timeEnd
-    await row.locator('div.dateEditor-container.difference button').click()
+    await row.locator('div.dateEditor-container.difference .hulyButton').click()
     await this.fillSelectDatePopup(slot.dateEnd.day, slot.dateEnd.month, slot.dateEnd.year, slot.timeEnd)
   }
 
@@ -228,11 +228,11 @@ export class PlanningPage extends CalendarPage {
       : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full'
     const row = this.page.locator(p).nth(rowNumber)
     // timeStart
-    await expect(row.locator('div.dateEditor-container:nth-child(1) button:last-child div.datetime-input')).toHaveText(
+    await expect(row.locator('div.dateEditor-container:nth-child(1) .hulyButton:last-child div.datetime-input')).toHaveText(
       slot.timeStart
     )
     // timeEnd
-    await expect(row.locator('div.dateEditor-container.difference button > div:first-child')).toHaveText(slot.timeEnd)
+    await expect(row.locator('div.dateEditor-container.difference .hulyButton > div:first-child')).toHaveText(slot.timeEnd)
   }
 
   async openToDoByName (toDoName: string): Promise<void> {
@@ -304,7 +304,7 @@ export class PlanningPage extends CalendarPage {
   public async deleteTimeSlot (rowNumber: number): Promise<void> {
     const row = this.page
       .locator(
-        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full div.tool'
+        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full button[data-id="btnDelete"]'
       )
       .nth(rowNumber)
     await row.locator('xpath=..').hover()
@@ -317,7 +317,7 @@ export class PlanningPage extends CalendarPage {
       .locator('div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full')
       .nth(rowNumber)
     // dateEnd
-    await expect(row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child button')).toContainText(
+    await expect(row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child .hulyButton')).toContainText(
       dateEnd
     )
   }
