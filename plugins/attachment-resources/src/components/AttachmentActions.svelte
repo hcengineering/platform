@@ -23,7 +23,7 @@
     getPreviewAlignment,
     previewTypes
   } from '@hcengineering/presentation'
-  import { IconMoreH, IconOpen, Menu, Action as UIAction, closeTooltip, showPopup, tooltip } from '@hcengineering/ui'
+  import { IconMoreH, Menu, Action as UIAction, closeTooltip, showPopup, tooltip } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
 
   import AttachmentAction from './AttachmentAction.svelte'
@@ -84,7 +84,7 @@
 
   const openAction: UIAction = {
     label: view.string.Open,
-    icon: IconOpen,
+    icon: view.icon.Open,
     action: async (props: any, evt: Event) => {
       showPreview(evt as MouseEvent)
     }
@@ -126,7 +126,7 @@
   {#if canPreview}
     <AttachmentAction
       label={view.string.Open}
-      icon={IconOpen}
+      icon={view.icon.Open}
       size="small"
       dataId="open-in-sidebar"
       action={showPreview}
