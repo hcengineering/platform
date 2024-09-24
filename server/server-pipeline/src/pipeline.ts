@@ -10,6 +10,7 @@ import {
   ModelDb,
   type Branding,
   type MeasureContext,
+  type Tx,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
@@ -99,6 +100,7 @@ export function getTxAdapterFactory (
 export function createServerPipeline (
   metrics: MeasureContext,
   dbUrls: string,
+  model: Tx[],
   opt: {
     fullTextUrl: string
     rekoniUrl: string
@@ -137,7 +139,7 @@ export function createServerPipeline (
       DomainFindMiddleware.create,
       DomainTxMiddleware.create,
       DBAdapterInitMiddleware.create,
-      ModelMiddleware.create,
+      ModelMiddleware.create(model),
       DBAdapterMiddleware.create(conf), // Configure DB adapters
       BroadcastMiddleware.create(broadcast)
     ]
@@ -162,6 +164,7 @@ export function createServerPipeline (
 export function createBackupPipeline (
   metrics: MeasureContext,
   dbUrls: string,
+  systemTx: Tx[],
   opt: {
     usePassedCtx?: boolean
     adapterSecurity?: boolean
@@ -206,7 +209,7 @@ export function createBackupPipeline (
       ContextNameMiddleware.create,
       DomainFindMiddleware.create,
       DBAdapterInitMiddleware.create,
-      ModelMiddleware.create,
+      ModelMiddleware.create(systemTx),
       DBAdapterMiddleware.create(conf)
     ]
 
@@ -225,6 +228,7 @@ export function createBackupPipeline (
 
 export async function getServerPipeline (
   ctx: MeasureContext,
+  model: Tx[],
   mongodbUri: string,
   dbUrl: string | undefined,
   wsUrl: WorkspaceIdWithUrl
@@ -240,6 +244,7 @@ export async function getServerPipeline (
   const pipelineFactory = createServerPipeline(
     ctx,
     dbUrls,
+    model,
     {
       externalStorage: storageAdapter,
       fullTextUrl: 'http://localhost:9200',

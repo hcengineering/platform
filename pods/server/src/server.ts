@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Branding, type BrandingMap, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import { type Branding, type BrandingMap, type Tx, type WorkspaceIdWithUrl } from '@hcengineering/core'
 import { buildStorageFromConfig, getMetricsContext } from '@hcengineering/server'
 
 import { ClientSession, startSessionManager, type ServerFactory, type Session } from '@hcengineering/server'
@@ -24,6 +24,13 @@ import { type Token } from '@hcengineering/server-token'
 import { serverAiBotId } from '@hcengineering/server-ai-bot'
 import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
 import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
+
+import builder from '@hcengineering/model-all'
+
+const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
+const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
+
+const model = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as Tx[]
 
 registerStringLoaders()
 
@@ -64,6 +71,7 @@ export function start (
   const pipelineFactory = createServerPipeline(
     metrics,
     dbUrls,
+    model,
     { ...opt, externalStorage, adapterSecurity: rawDbUrl !== undefined },
     {
       serviceAdapters: {

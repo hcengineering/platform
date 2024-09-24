@@ -169,6 +169,7 @@ export class DBCollectionHelper implements DomainHelperOperations {
   }
 
   async init (domain?: Domain): Promise<void> {
+    // Check and create DB if missin
     if (domain === undefined) {
       // Init existing collecfions
       for (const c of (await this.db.listCollections({}, { nameOnly: true }).toArray()).map((it) => it.name)) {

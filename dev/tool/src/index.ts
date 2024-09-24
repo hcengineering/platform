@@ -1503,7 +1503,7 @@ export function devTool (
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
     .action(async (cmd: { workspace: string, concurrency: string }) => {
-      const { mongodbUri, dbUrl } = prepareTools()
+      const { mongodbUri, dbUrl, txes } = prepareTools()
       await withDatabase(mongodbUri, async (db, client) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
@@ -1521,7 +1521,7 @@ export function devTool (
               workspaceUrl: workspace.workspaceUrl ?? ''
             }
 
-            const { pipeline } = await getServerPipeline(toolCtx, mongodbUri, dbUrl, wsUrl)
+            const { pipeline } = await getServerPipeline(toolCtx, txes, mongodbUri, dbUrl, wsUrl)
 
             await migrateMarkup(toolCtx, adapter, wsId, client, pipeline, parseInt(cmd.concurrency))
 

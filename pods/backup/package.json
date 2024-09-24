@@ -57,6 +57,7 @@
     "dotenv": "~16.0.0",
     "@hcengineering/backup-service": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/analytics-service": "^0.6.0",
+    "@hcengineering/model-all": "^0.6.0"
   }
 }
