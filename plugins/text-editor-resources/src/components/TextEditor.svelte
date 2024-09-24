@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
@@ -150,6 +151,7 @@
   onMount(() => {
     void ph.then(async () => {
       editor = new Editor({
+        enableContentCheck: true,
         element,
         editorProps: {
           attributes: mergeAttributes(defaultEditorAttributes, editorAttributes),
@@ -197,6 +199,9 @@
           content = getContent()
           dispatch('value', content)
           dispatch('update', content)
+        },
+        onContentError: ({ error }) => {
+          Analytics.handleError(error)
         }
       })
     })
