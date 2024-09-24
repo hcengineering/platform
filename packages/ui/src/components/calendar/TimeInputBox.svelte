@@ -153,7 +153,7 @@
       }
     }
   }
-  const focused = (ed: TEdits): void => {
+  export const focused = (ed: TEdits): void => {
     selected = ed
     startTyping = true
   }
