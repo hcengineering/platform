@@ -17,10 +17,13 @@ import { writable } from 'svelte/store'
 import { type ChatMessage } from '@hcengineering/chunter'
 import { type Markup, type Ref } from '@hcengineering/core'
 import { languageStore } from '@hcengineering/ui'
+import { type ActivityMessage } from '@hcengineering/activity'
 
 export const translatingMessagesStore = writable<Set<Ref<ChatMessage>>>(new Set())
 export const translatedMessagesStore = writable<Map<Ref<ChatMessage>, Markup>>(new Map())
 export const shownTranslatedMessagesStore = writable<Set<Ref<ChatMessage>>>(new Set())
+
+export const threadMessagesStore = writable<ActivityMessage | undefined>(undefined)
 
 languageStore.subscribe(() => {
   translatedMessagesStore.set(new Map())

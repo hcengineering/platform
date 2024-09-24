@@ -175,7 +175,8 @@ export async function getCommonNotificationTxes (
       doc,
       receiver,
       sender,
-      subscriptions
+      subscriptions,
+      _class
     )
   }
 
@@ -487,6 +488,14 @@ export async function getTranslatedNotificationContent (
   return { title: '', body: '' }
 }
 
+function isReactionMessage (message?: ActivityMessage): boolean {
+  return (
+    message !== undefined &&
+    message._class === activity.class.DocUpdateMessage &&
+    (message as DocUpdateMessage).objectClass === activity.class.Reaction
+  )
+}
+
 export async function createPushFromInbox (
   control: TriggerControl,
   receiver: ReceiverInfo,
@@ -497,10 +506,9 @@ export async function createPushFromInbox (
   sender: SenderInfo,
   _id: Ref<Doc>,
   subscriptions: PushSubscription[],
-  cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
+  message?: ActivityMessage
 ): Promise<Tx | undefined> {
   let { title, body } = await getTranslatedNotificationContent(data, _class, control)
-
   if (title === '' || body === '') {
     return
   }
@@ -515,13 +523,12 @@ export async function createPushFromInbox (
 
   if (provider !== undefined) {
     const encodeFn = await getResource(provider.encode)
-    const doc = cache.get(attachedTo) ?? (await control.findAll(control.ctx, attachedToClass, { _id: attachedTo }))[0]
+    const doc = (await control.findAll(control.ctx, attachedToClass, { _id: attachedTo }))[0]
 
     if (doc === undefined) {
       return
     }
 
-    cache.set(doc._id, doc)
     id = await encodeFn(doc, control)
   }
 
@@ -543,6 +550,12 @@ export async function createPushFromInbox (
     body,
     senderId: sender._id,
     tag: _id,
+    objectId: attachedTo,
+    objectClass: attachedToClass,
+    messageId: isReactionMessage(message) ? (message?.attachedTo as Ref<ActivityMessage>) : message?._id,
+    messageClass: isReactionMessage(message)
+      ? (message?.attachedToClass as Ref<Class<ActivityMessage>>)
+      : message?._class,
     onClickLocation: {
       path
     }
@@ -664,6 +677,7 @@ export async function applyNotificationProviders (
   receiver: ReceiverInfo,
   sender: SenderInfo,
   subscriptions: PushSubscription[],
+  _class = notification.class.ActivityInboxNotification,
   message?: ActivityMessage
 ): Promise<void> {
   const resources = control.modelDb.findAllSync(serverNotification.class.NotificationProviderResources, {})
@@ -676,10 +690,11 @@ export async function applyNotificationProviders (
         attachedTo,
         attachedToClass,
         data,
-        notification.class.ActivityInboxNotification,
+        _class,
         sender,
         data._id,
-        subscriptions
+        subscriptions,
+        message
       )
       if (pushTx !== undefined) {
         res.push(pushTx)
@@ -796,6 +811,7 @@ export async function getNotificationTxes (
           receiver,
           sender,
           subscriptions,
+          notificationData._class,
           message
         )
       }

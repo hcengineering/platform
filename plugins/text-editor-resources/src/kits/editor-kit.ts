@@ -19,7 +19,6 @@ import { CodeExtension, codeOptions } from '@hcengineering/text'
 import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, type Editor, Extension } from '@tiptap/core'
 import { type Level } from '@tiptap/extension-heading'
-import ListKeymap from '@tiptap/extension-list-keymap'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 
@@ -30,6 +29,7 @@ import { FileExtension, type FileOptions } from '../components/extension/fileExt
 import { HardBreakExtension } from '../components/extension/hardBreak'
 import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
 import { InlineToolbarExtension } from '../components/extension/inlineToolbar'
+import { ListKeymapExtension } from '../components/extension/listkeymap'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
 import { ParagraphExtension } from '../components/extension/paragraph'
 import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
@@ -195,7 +195,7 @@ async function buildEditorKit (): Promise<Extension<EditorKitOptions, any>> {
 
               staticKitExtensions.push([
                 500,
-                ListKeymap.configure({
+                ListKeymapExtension.configure({
                   listTypes: [
                     {
                       itemName: 'listItem',

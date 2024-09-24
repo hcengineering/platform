@@ -100,7 +100,13 @@ export interface InlineButton extends AttachedDoc {
 }
 
 export interface ChatWidgetTab extends WidgetTab {
-  data: { _id?: Ref<Doc>, _class?: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>, channelName: string }
+  data: {
+    _id?: Ref<Doc>
+    _class?: Ref<Class<Doc>>
+    thread?: Ref<ActivityMessage>
+    channelName: string
+    selectedMessageId?: Ref<ActivityMessage>
+  }
 }
 
 /**
@@ -234,7 +240,14 @@ export default plugin(chunterId, {
     CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     OpenThreadInSidebar: '' as Resource<(_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc) => Promise<void>>,
     OpenChannelInSidebar: '' as Resource<
-    (_id: Ref<Doc>, _class: Ref<Doc>, doc?: Doc, thread?: Ref<ActivityMessage>) => Promise<void>
+    (
+      _id: Ref<Doc>,
+      _class: Ref<Class<Doc>>,
+      doc?: Doc,
+      thread?: Ref<ActivityMessage>,
+      newTab?: boolean,
+      selectedMessageId?: Ref<ActivityMessage>
+    ) => Promise<void>
     >
   }
 })

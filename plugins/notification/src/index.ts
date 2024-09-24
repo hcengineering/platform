@@ -53,6 +53,10 @@ export interface BrowserNotification extends Doc {
   onClickLocation?: Location
   senderId?: Ref<Account>
   tag: Ref<Doc>
+  messageId?: Ref<ActivityMessage>
+  messageClass?: Ref<Class<ActivityMessage>>
+  objectId: Ref<Doc>
+  objectClass: Ref<Class<Doc>>
 }
 
 export interface PushData {
