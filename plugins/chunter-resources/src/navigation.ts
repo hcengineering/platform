@@ -28,6 +28,7 @@ import { get } from 'svelte/store'
 import { chatSpecials } from './components/chat/utils'
 import { getChannelName, isThreadMessage } from './utils'
 import chunter from './plugin'
+import { threadMessagesStore } from './stores'
 
 export function openChannel (_id: string, _class: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>): void {
   const loc = getCurrentLocation()
@@ -167,6 +168,8 @@ export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
 export async function replyToThread (message: ActivityMessage, e: Event): Promise<void> {
   const fromSidebar = isElementFromSidebar(e.target as HTMLElement)
   const loc = getCurrentLocation()
+
+  threadMessagesStore.set(message)
 
   if (fromSidebar) {
     const widget = getClient().getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]

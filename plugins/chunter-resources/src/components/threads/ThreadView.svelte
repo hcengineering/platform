@@ -24,6 +24,7 @@
 
   import chunter from '../../plugin'
   import { getObjectIcon, getChannelName } from '../../utils'
+  import { threadMessagesStore } from '../../stores'
   import ThreadContent from './ThreadContent.svelte'
 
   export let _id: Ref<ActivityMessage>
@@ -38,7 +39,7 @@
   const channelQuery = createQuery()
 
   let channel: Doc | undefined = undefined
-  let message: DisplayActivityMessage | undefined = undefined
+  let message: DisplayActivityMessage | undefined = $threadMessagesStore?._id === _id ? $threadMessagesStore : undefined
   let isLoading = true
   let channelName: string | undefined = undefined
 
@@ -62,8 +63,8 @@
   })
 
   $:if (message && message._id !== _id) {
-    message = undefined
-    isLoading = true
+    message = $threadMessagesStore?._id === _id ? $threadMessagesStore : undefined
+    isLoading = message === undefined
   }
 
   $: messageQuery.query(
