@@ -14,29 +14,21 @@
 -->
 <script lang="ts">
   import { type Attachment } from '@hcengineering/attachment'
-  import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
-  import {
+  import type { WithLookup } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import presentation, {
     FilePreviewPopup,
     canPreviewFile,
     getFileUrl,
     getPreviewAlignment,
     previewTypes
   } from '@hcengineering/presentation'
-  import {
-    ActionIcon,
-    IconMoreH,
-    IconOpen,
-    Menu,
-    Action as UIAction,
-    closeTooltip,
-    showPopup,
-    tooltip
-  } from '@hcengineering/ui'
+  import { IconMoreH, IconOpen, Menu, Action as UIAction, closeTooltip, showPopup, tooltip } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
 
-  import type { WithLookup } from '@hcengineering/core'
-  import attachmentPlugin from '../plugin'
+  import AttachmentAction from './AttachmentAction.svelte'
   import FileDownload from './icons/FileDownload.svelte'
+  import attachmentPlugin from '../plugin'
 
   export let attachment: WithLookup<Attachment>
   export let isSaved = false
@@ -131,30 +123,37 @@
 </script>
 
 <div class="flex">
+  {#if canPreview}
+    <AttachmentAction
+      label={view.string.Open}
+      icon={IconOpen}
+      size="small"
+      dataId="open-in-sidebar"
+      action={showPreview}
+    />
+  {/if}
   <a
-    class="mr-1 flex-row-center gap-2 p-1"
     href={getFileUrl(attachment.file, attachment.name)}
     download={attachment.name}
     bind:this={download}
-    use:tooltip={{ label: getEmbeddedLabel(attachment.name) }}
+    use:tooltip={{ label: presentation.string.Download }}
     on:click|stopPropagation
   >
-    {#if canPreview}
-      <ActionIcon
-        icon={IconOpen}
-        size={'medium'}
-        action={(evt) => {
-          showPreview(evt)
-        }}
-      />
-    {/if}
-    <ActionIcon
+    <AttachmentAction
+      label={presentation.string.Download}
       icon={FileDownload}
-      size={'medium'}
+      size="small"
+      dataId="open-in-sidebar"
       action={() => {
         download.click()
       }}
     />
   </a>
-  <ActionIcon icon={IconMoreH} size={'medium'} action={showMenu} />
+  <AttachmentAction
+    label={view.string.MoreActions}
+    icon={IconMoreH}
+    size="small"
+    dataId="open-in-sidebar"
+    action={showMenu}
+  />
 </div>

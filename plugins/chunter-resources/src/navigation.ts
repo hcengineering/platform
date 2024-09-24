@@ -150,6 +150,7 @@ export async function buildThreadLink (
     loc.path[2] = chunterId
   }
 
+  loc.query = { message: '' }
   loc.path[3] = objectURI
   loc.path[4] = threadParent
   loc.fragment = undefined
@@ -177,7 +178,7 @@ export async function replyToThread (message: ActivityMessage, e: Event): Promis
     }
   }
 
-  void openThreadInSidebar(message._id, message)
+  await openThreadInSidebar(message._id, message)
   if (loc.path[2] !== chunterId && loc.path[2] !== notificationId) {
     return
   }
@@ -326,10 +327,14 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
   const name = (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {}))
   const tabName = await translate(chunter.string.ThreadIn, { name })
   const loc = getCurrentLocation()
-  const allowedPath = loc.path.join('/')
 
-  const currentTAbs = get(sidebarStore).widgetsState.get(widget._id)?.tabs ?? []
-  const tabsToClose = currentTAbs.filter((t) => t.isPinned !== true && t.allowedPath === allowedPath).map((t) => t.id)
+  if (loc.path[2] === chunterId || loc.path[2] === notificationId) {
+    loc.path[4] = message._id
+  }
+
+  const allowedPath = loc.path.join('/')
+  const currentTabs = get(sidebarStore).widgetsState.get(widget._id)?.tabs ?? []
+  const tabsToClose = currentTabs.filter((t) => t.isPinned !== true && t.allowedPath === allowedPath).map((t) => t.id)
 
   if (tabsToClose.length > 0) {
     sidebarStore.update((s) => {

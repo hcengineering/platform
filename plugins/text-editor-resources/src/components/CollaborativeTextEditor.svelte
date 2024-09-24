@@ -15,6 +15,7 @@
 //
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
@@ -116,11 +117,12 @@
       objectAttr
     })
 
+  let contentError = false
   let localSynced = false
   let remoteSynced = false
 
   $: loading = !localSynced && !remoteSynced
-  $: editable = !readonly && remoteSynced
+  $: editable = !readonly && !contentError && remoteSynced
 
   void localProvider.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
@@ -218,7 +220,10 @@
   }
 
   $: if (editor !== undefined) {
-    editor.setEditable(editable, true)
+    // When the content is invalid, we don't want to emit an update
+    // Preventing synchronization of the invalid content
+    const emitUpdate = !contentError
+    editor.setEditable(editable, emitUpdate)
   }
 
   // TODO: should be inside the editor
@@ -364,6 +369,7 @@
     await ph
 
     editor = new Editor({
+      enableContentCheck: true,
       element,
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
       extensions: [
@@ -432,6 +438,11 @@
 
         throttle.call(updateLastUpdateTime)
         dispatch('update')
+      },
+      onContentError: ({ error, disableCollaboration }) => {
+        disableCollaboration()
+        contentError = true
+        Analytics.handleError(error)
       }
     })
   })

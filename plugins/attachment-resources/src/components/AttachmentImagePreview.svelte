@@ -26,6 +26,7 @@
   interface Dimensions {
     width: 'auto' | number
     height: 'auto' | number
+    fit: 'cover' | 'contain'
   }
 
   const minSizeRem = 4
@@ -45,7 +46,8 @@
     if (size === 'auto') {
       return {
         width: 'auto',
-        height: 'auto'
+        height: 'auto',
+        fit: 'contain'
       }
     }
 
@@ -55,42 +57,41 @@
     if (!metadata) {
       return {
         width: preferredWidth,
-        height: preferredWidth
+        height: preferredWidth,
+        fit: 'contain'
       }
     }
 
     const { originalWidth, originalHeight } = metadata
-    const maxSize = maxSizeRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const maxSize = maxSizeRem * fontSize
+    const minSize = minSizeRem * fontSize
 
     const width = Math.min(originalWidth, preferredWidth)
     const ratio = originalHeight / originalWidth
     const height = width * ratio
 
+    const fit = width < minSize || height < minSize ? 'cover' : 'contain'
+
     if (height > maxSize) {
       return {
         width: maxSize / ratio,
-        height: maxSize
+        height: maxSize,
+        fit
+      }
+    } else if (height < minSize) {
+      return {
+        width,
+        height: minSize,
+        fit
+      }
+    } else {
+      return {
+        width,
+        height,
+        fit
       }
     }
-
-    return {
-      width,
-      height
-    }
-  }
-
-  function getObjectFit (size: Dimensions): 'contain' | 'cover' {
-    if (size.width === 'auto' || size.height === 'auto') {
-      return 'contain'
-    }
-
-    const minSize = minSizeRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
-
-    if (size.width < minSize || size.height < minSize) {
-      return 'cover'
-    }
-
-    return 'contain'
   }
 
   function getUrlSize (size: AttachmentImageSize): IconSize {
@@ -110,9 +111,9 @@
   {#await getBlobRef(value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
     <img
       src={blobSrc.src}
-      style:object-fit={getObjectFit(dimensions)}
-      width={dimensions.width}
-      height={dimensions.height}
+      style:object-fit={dimensions.fit}
+      width="100%"
+      height="100%"
       srcset={blobSrc.srcset}
       alt={value.name}
     />
@@ -124,7 +125,6 @@
     max-width: 20rem;
     max-height: 20rem;
     border-radius: 0.75rem;
-    object-fit: contain;
     min-height: 4rem;
     min-width: 4rem;
   }

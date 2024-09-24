@@ -198,7 +198,7 @@
 <div
   class="card"
   on:click={() => {
-    dispatch('click', { context: value })
+    dispatch('click', { context: value, object })
   }}
 >
   {#if isLoading}
@@ -266,7 +266,7 @@
               on:click={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                dispatch('click', { context: value, notification: group[0] })
+                dispatch('click', { context: value, notification: group[0], object })
               }}
             />
           </div>
