@@ -24,10 +24,10 @@ export async function onAuthorize (login?: string): Promise<void> {
   )
   const client = getClient()
 
-  const config = await client.findOne(github.class.GithubAuthentication, {})
-
-  if (config !== undefined) {
-    await client.remove(config)
+  // Remove old authorizations.
+  const config = await client.findAll(github.class.GithubAuthentication, {})
+  for (const c of config) {
+    await client.remove(c)
   }
   await client.createDoc<GithubAuthentication>(github.class.GithubAuthentication, core.space.Workspace, {
     attachedTo: meId,
