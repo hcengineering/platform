@@ -582,12 +582,12 @@
   }
 
   async function restoreScroll () {
-    if (!scrollElement || !scroller) {
+    await wait()
+
+    if (!scrollElement || !scroller || scrollToRestore === 0) {
       scrollToRestore = 0
       return
     }
-
-    await wait()
 
     const delta = scrollElement.scrollHeight - scrollToRestore
 

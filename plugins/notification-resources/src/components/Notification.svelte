@@ -1,19 +1,23 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { Avatar, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { BrowserNotification } from '@hcengineering/notification'
   import { Button, navigate, Notification as PlatformNotification, NotificationToast } from '@hcengineering/ui'
-  import view, { decodeObjectURI } from '@hcengineering/view'
-  import chunter from '@hcengineering/chunter'
+  import view from '@hcengineering/view'
+  import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { getResource } from '@hcengineering/platform'
-  import { ActivityMessage } from '@hcengineering/activity'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { getClient } from '@hcengineering/presentation'
 
   import { pushAvailable, subscribePush } from '../utils'
   import plugin from '../plugin'
 
   export let notification: PlatformNotification
   export let onRemove: () => void
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   $: value = notification.params?.value as BrowserNotification
 
@@ -24,18 +28,35 @@
   async function openChannelInSidebar (): Promise<void> {
     if (!value.onClickLocation) return
     const { onClickLocation } = value
-    const [_id, _class] = decodeObjectURI(onClickLocation.path[3] ?? '')
+    let _id: Ref<Doc> | undefined = value.objectId
+    let _class: Ref<Class<Doc>> | undefined = value.objectClass
+    let thread = onClickLocation.path[4] as Ref<ActivityMessage> | undefined
+    const selectedMessageId: Ref<ActivityMessage> | undefined = value.messageId
+
+    if (_class && _id && hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
+      const message = await client.findOne<ActivityMessage>(_class, { _id: _id as Ref<ActivityMessage> })
+
+      if (hierarchy.isDerived(_class, chunter.class.ThreadMessage)) {
+        const threadMessage = message as ThreadMessage
+        _id = threadMessage?.objectId
+        _class = threadMessage?.objectClass
+        thread = threadMessage?.attachedTo
+      } else {
+        _id = message?.attachedTo
+        _class = message?.attachedToClass
+        thread = (message?.replies ?? 0) > 0 ? message?._id : undefined
+      }
+    }
 
     onRemove()
 
-    if (!_id || !_class || _id === '' || _class === '') {
+    if (!_id || !_class || _id === '' || _class === '' || selectedMessageId === undefined) {
       navigate(onClickLocation)
       return
     }
 
-    const thread = onClickLocation.path[4] as Ref<ActivityMessage> | undefined
     const fn = await getResource(chunter.function.OpenChannelInSidebar)
-    await fn(_id, _class, undefined, thread)
+    await fn(_id, _class, undefined, thread, true, selectedMessageId)
   }
 </script>
 
@@ -56,7 +77,7 @@
       <Button
         label={view.string.Open}
         on:click={() => {
-          openChannelInSidebar()
+          void openChannelInSidebar()
         }}
       />
     {/if}

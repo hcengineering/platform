@@ -160,6 +160,7 @@ export default plugin(timeId, {
     CreatedToDo: '' as IntlString,
     AddToDo: '' as IntlString,
     NewToDoDetails: '' as IntlString,
-    ToDo: '' as IntlString
+    ToDo: '' as IntlString,
+    NewToDo: '' as IntlString
   }
 })

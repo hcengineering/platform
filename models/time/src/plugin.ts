@@ -34,7 +34,6 @@ export default mergeIds(timeId, time, {
     EditToDo: '' as IntlString,
     GotoTimePlaning: '' as IntlString,
     GotoTimeTeamPlaning: '' as IntlString,
-    NewToDo: '' as IntlString,
     Priority: '' as IntlString,
     MarkedAsDone: '' as IntlString
   },

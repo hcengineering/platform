@@ -105,6 +105,10 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
   onClickLocation?: Location | undefined
   user!: Ref<Account>
   status!: NotificationStatus
+  messageId?: Ref<ActivityMessage>
+  messageClass?: Ref<Class<ActivityMessage>>
+  objectId!: Ref<Doc>
+  objectClass!: Ref<Class<Doc>>
 }
 
 @Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_USER_NOTIFY)

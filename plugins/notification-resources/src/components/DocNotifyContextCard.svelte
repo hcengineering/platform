@@ -64,6 +64,7 @@
 
   $: if (object !== undefined && object?._id !== value.objectId) {
     object = undefined
+    isLoading = true
   }
 
   let isActionMenuOpened = false
