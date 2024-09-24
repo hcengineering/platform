@@ -30,6 +30,7 @@
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let showHeader: boolean = true
+  export let syncLocation = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -44,6 +45,7 @@
   let channelName: string | undefined = undefined
 
   const unsubscribe = messageInFocus.subscribe((id) => {
+    if (!syncLocation) return
     if (id !== undefined && id !== selectedMessageId) {
       selectedMessageId = id
     }
@@ -52,6 +54,7 @@
   })
 
   const unsubscribeLocation = locationStore.subscribe((newLocation) => {
+    if (!syncLocation) return
     const id = getMessageFromLoc(newLocation)
     selectedMessageId = id
     messageInFocus.set(id)
@@ -62,7 +65,7 @@
     unsubscribeLocation()
   })
 
-  $:if (message && message._id !== _id) {
+  $: if (message && message._id !== _id) {
     message = $threadMessagesStore?._id === _id ? $threadMessagesStore : undefined
     isLoading = message === undefined
   }
@@ -99,17 +102,13 @@
   let breadcrumbs: BreadcrumbItem[] = []
   $: breadcrumbs = showHeader ? getBreadcrumbsItems(channel, channelName) : []
 
-  function getBreadcrumbsItems (
-    channel?: Doc,
-    channelName?: string
-  ): BreadcrumbItem[] {
+  function getBreadcrumbsItems (channel?: Doc, channelName?: string): BreadcrumbItem[] {
     if (channel === undefined) {
       return []
     }
 
     const isPersonAvatar =
-      channel._class === chunter.class.DirectMessage ||
-      hierarchy.isDerived(channel._class, contact.class.Person)
+      channel._class === chunter.class.DirectMessage || hierarchy.isDerived(channel._class, contact.class.Person)
 
     return [
       {
@@ -134,7 +133,6 @@
 
     dispatch('channel')
   }
-
 </script>
 
 {#if showHeader}
@@ -144,9 +142,9 @@
 {/if}
 
 {#if message}
-{#key _id}
-<ThreadContent bind:selectedMessageId {message}/>
+  {#key _id}
+    <ThreadContent bind:selectedMessageId {message} />
   {/key}
-  {:else if isLoading}
-  <Loading/>
-{/if }
+{:else if isLoading}
+  <Loading />
+{/if}

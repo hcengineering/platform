@@ -31,14 +31,15 @@
   export let isAsideOpened = false
   export let syncLocation = true
   export let freeze = false
+  export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let dataProvider: ChannelDataProvider | undefined
-  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
   const unsubscribe = messageInFocus.subscribe((id) => {
+    if (!syncLocation) return
     if (id !== undefined && id !== selectedMessageId) {
       selectedMessageId = id
     }
@@ -47,9 +48,7 @@
   })
 
   const unsubscribeLocation = locationStore.subscribe((newLocation) => {
-    if (!syncLocation) {
-      return
-    }
+    if (!syncLocation) return
     const id = getMessageFromLoc(newLocation)
     selectedMessageId = id
     messageInFocus.set(id)

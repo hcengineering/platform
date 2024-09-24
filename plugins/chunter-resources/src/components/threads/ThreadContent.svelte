@@ -1,13 +1,13 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
-import ThreadParentMessage from './ThreadParentPresenter.svelte'
-import { Label } from '@hcengineering/ui'
-import ChannelScrollView from '../ChannelScrollView.svelte'
+  import ThreadParentMessage from './ThreadParentPresenter.svelte'
+  import { Label } from '@hcengineering/ui'
+  import ChannelScrollView from '../ChannelScrollView.svelte'
   import { Ref } from '@hcengineering/core'
   import { ChannelDataProvider } from '../../channelDataProvider'
   import chunter from '../../plugin'
 
-export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+  export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let message: ActivityMessage
 
   let dataProvider: ChannelDataProvider | undefined = undefined
@@ -28,33 +28,33 @@ export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
 <div class="hulyComponent-content hulyComponent-content__container noShrink">
   {#if dataProvider !== undefined}
-      <ChannelScrollView
-        bind:selectedMessageId
-        embedded
-        skipLabels
-        object={message}
-        provider={dataProvider}
-        fullHeight={false}
-        fixedInput={false}
-      >
-        <svelte:fragment slot="header">
-          <div class="mt-3">
-            <ThreadParentMessage {message} />
-          </div>
+    <ChannelScrollView
+      bind:selectedMessageId
+      embedded
+      skipLabels
+      object={message}
+      provider={dataProvider}
+      fullHeight={false}
+      fixedInput={false}
+    >
+      <svelte:fragment slot="header">
+        <div class="mt-3">
+          <ThreadParentMessage {message} />
+        </div>
 
-          {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}
-            <div class="separator">
-              <div class="label lower">
-                <Label
-                  label={activity.string.RepliesCount}
-                  params={{ replies: message.replies ?? $messagesStore?.length ?? 1 }}
-                />
-              </div>
-              <div class="line" />
+        {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}
+          <div class="separator">
+            <div class="label lower">
+              <Label
+                label={activity.string.RepliesCount}
+                params={{ replies: message.replies ?? $messagesStore?.length ?? 1 }}
+              />
             </div>
-          {/if}
-        </svelte:fragment>
-      </ChannelScrollView>
+            <div class="line" />
+          </div>
+        {/if}
+      </svelte:fragment>
+    </ChannelScrollView>
   {/if}
 </div>
 

@@ -238,7 +238,8 @@ export async function openChannelInSidebar (
   _class: Ref<Class<Doc>>,
   doc?: Doc,
   thread?: Ref<ActivityMessage>,
-  newTab = true
+  newTab = true,
+  selectedMessageId?: Ref<ActivityMessage>
 ): Promise<void> {
   const client = getClient()
 
@@ -270,6 +271,7 @@ export async function openChannelInSidebar (
       _id,
       _class,
       thread,
+      selectedMessageId,
       channelName: name
     }
   }

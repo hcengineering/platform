@@ -18,7 +18,9 @@
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { Widget } from '@hcengineering/workbench'
+  import { ActivityMessage } from '@hcengineering/activity'
   import { ChatWidgetTab } from '@hcengineering/chunter'
+  import { updateTabData } from '@hcengineering/workbench-resources'
 
   import Channel from './Channel.svelte'
   import { closeThreadInSidebarChannel } from '../navigation'
@@ -36,11 +38,17 @@
 
   let object: Doc | undefined = undefined
   let context: DocNotifyContext | undefined = undefined
+  let selectedMessageId: Ref<ActivityMessage> | undefined = tab.data.selectedMessageId
 
   $: context = object ? $contextByDocStore.get(object._id) : undefined
   $: void loadObject(tab.data._id, tab.data._class)
 
   $: threadId = tab.data.thread
+
+  $: if (tab.data.selectedMessageId !== undefined && tab.data.selectedMessageId !== '') {
+    selectedMessageId = tab.data.selectedMessageId
+    updateTabData(widget._id, tab.id, { selectedMessageId: '' })
+  }
 
   async function loadObject (_id?: Ref<Doc>, _class?: Ref<Class<Doc>>): Promise<void> {
     if (_id === undefined || _class === undefined) {
@@ -80,13 +88,19 @@
       on:close
     />
     {#key object._id}
-      <Channel {object} {context} syncLocation={false} freeze={threadId !== undefined} />
+      <Channel {object} {context} syncLocation={false} freeze={threadId !== undefined} {selectedMessageId} />
     {/key}
   </div>
 {/if}
 {#if threadId}
   <div class="thread" style:height style:width>
-    <ThreadView _id={threadId} on:channel={() => closeThreadInSidebarChannel(widget, tab)} on:close />
+    <ThreadView
+      _id={threadId}
+      {selectedMessageId}
+      syncLocation={false}
+      on:channel={() => closeThreadInSidebarChannel(widget, tab)}
+      on:close
+    />
   </div>
 {/if}
 

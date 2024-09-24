@@ -316,3 +316,20 @@ export function minimizeSidebar (closedByUser = false): void {
 
   sidebarStore.set({ ...state, ...widgetsState, widget: undefined, variant: SidebarVariant.MINI })
 }
+
+export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<string, any>): void {
+  const state = get(sidebarStore)
+  const { widgetsState } = state
+  const widgetState = widgetsState.get(widget)
+
+  if (widgetState === undefined) return
+
+  const tabs = widgetState.tabs.map((it) => (it.id === tabId ? { ...it, data: { ...it.data, ...data } } : it))
+
+  widgetsState.set(widget, { ...widgetState, tabs })
+
+  sidebarStore.set({
+    ...state,
+    widgetsState
+  })
+}
