@@ -33,7 +33,8 @@ import {
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware,
   TriggersMiddleware,
-  TxMiddleware
+  TxMiddleware,
+  NotificationsMiddleware
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -121,6 +122,7 @@ export function createServerPipeline (
       LookupMiddleware.create,
       ModifiedMiddleware.create,
       PrivateMiddleware.create,
+      NotificationsMiddleware.create,
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
       SpacePermissionsMiddleware.create,
