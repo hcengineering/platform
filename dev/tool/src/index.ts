@@ -1140,49 +1140,51 @@ export function devTool (
     .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
     .option('--disabled', 'Include disabled workspaces', false)
-    .action(async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string, disabled: boolean }) => {
-      const params = {
-        blobSizeLimitMb: parseInt(cmd.blobLimit),
-        concurrency: parseInt(cmd.concurrency),
-        move: cmd.move === 'true'
-      }
+    .action(
+      async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string, disabled: boolean }) => {
+        const params = {
+          blobSizeLimitMb: parseInt(cmd.blobLimit),
+          concurrency: parseInt(cmd.concurrency),
+          move: cmd.move === 'true'
+        }
 
-      const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
-        await withStorage(mongodbUri, async (adapter) => {
-          try {
-            const exAdapter = adapter as StorageAdapterEx
-            if (exAdapter.adapters === undefined || exAdapter.adapters.size < 2) {
-              throw new Error('bad storage config, at least two storage providers are required')
-            }
-
-            console.log('moving files to storage provider', exAdapter.defaultAdapter)
-
-            let index = 1
-            const workspaces = await listWorkspacesPure(db)
-            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-
-            for (const workspace of workspaces) {
-              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-                continue
-              }
-              if (workspace.disabled === true && !cmd.disabled) {
-                console.log('ignore disabled workspace', workspace.workspace)
-                continue
+        const { mongodbUri } = prepareTools()
+        await withDatabase(mongodbUri, async (db) => {
+          await withStorage(mongodbUri, async (adapter) => {
+            try {
+              const exAdapter = adapter as StorageAdapterEx
+              if (exAdapter.adapters === undefined || exAdapter.adapters.size < 2) {
+                throw new Error('bad storage config, at least two storage providers are required')
               }
 
-              console.log('start', workspace.workspace, index, '/', workspaces.length)
-              await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
-              console.log('done', workspace.workspace)
+              console.log('moving files to storage provider', exAdapter.defaultAdapter)
 
-              index += 1
+              let index = 1
+              const workspaces = await listWorkspacesPure(db)
+              workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+              for (const workspace of workspaces) {
+                if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+                  continue
+                }
+                if (workspace.disabled === true && !cmd.disabled) {
+                  console.log('ignore disabled workspace', workspace.workspace)
+                  continue
+                }
+
+                console.log('start', workspace.workspace, index, '/', workspaces.length)
+                await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
+                console.log('done', workspace.workspace)
+
+                index += 1
+              }
+            } catch (err: any) {
+              console.error(err)
             }
-          } catch (err: any) {
-            console.error(err)
-          }
+          })
         })
-      })
-    })
+      }
+    )
 
   program
     .command('sync-files')
