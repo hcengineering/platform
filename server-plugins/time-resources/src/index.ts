@@ -596,9 +596,6 @@ async function changeIssueDataHandler (control: TriggerControl, issueId: Ref<Iss
       if (data.title !== todo.title) {
         update.title = data.title
       }
-      if (data.description !== todo.description) {
-        update.description = data.description
-      }
       if (data.attachedSpace !== todo.attachedSpace) {
         update.attachedSpace = data.attachedSpace
       }
@@ -633,8 +630,8 @@ async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerContr
     res.push(...(await changeIssueStatusHandler(control, newStatus, tx.objectId)))
   }
   const name = tx.operations.title
-  const number = tx.operations.number
-  if (number !== undefined || name !== undefined) {
+  const space = tx.operations.space
+  if (space !== undefined || name !== undefined) {
     res.push(...(await changeIssueDataHandler(control, tx.objectId)))
   }
   return res
