@@ -175,7 +175,8 @@ export async function getCommonNotificationTxes (
       doc,
       receiver,
       sender,
-      subscriptions
+      subscriptions,
+      _class
     )
   }
 
@@ -508,7 +509,7 @@ export async function createPushFromInbox (
   message?: ActivityMessage
 ): Promise<Tx | undefined> {
   let { title, body } = await getTranslatedNotificationContent(data, _class, control)
-
+  console.log({ title, body })
   if (title === '' || body === '') {
     return
   }
@@ -677,6 +678,7 @@ export async function applyNotificationProviders (
   receiver: ReceiverInfo,
   sender: SenderInfo,
   subscriptions: PushSubscription[],
+  _class = notification.class.ActivityInboxNotification,
   message?: ActivityMessage
 ): Promise<void> {
   const resources = control.modelDb.findAllSync(serverNotification.class.NotificationProviderResources, {})
@@ -689,7 +691,7 @@ export async function applyNotificationProviders (
         attachedTo,
         attachedToClass,
         data,
-        notification.class.ActivityInboxNotification,
+        _class,
         sender,
         data._id,
         subscriptions,
@@ -810,6 +812,7 @@ export async function getNotificationTxes (
           receiver,
           sender,
           subscriptions,
+          notificationData._class,
           message
         )
       }

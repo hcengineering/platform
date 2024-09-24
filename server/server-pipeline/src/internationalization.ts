@@ -33,6 +33,7 @@ import { trackerId } from '@hcengineering/tracker'
 import { trainingId } from '@hcengineering/training'
 import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
+import { timeId } from '@hcengineering/time'
 import coreEng from '@hcengineering/core/lang/en.json'
 import loginEng from '@hcengineering/login-assets/lang/en.json'
 import platformEng from '@hcengineering/platform/lang/en.json'
@@ -68,6 +69,7 @@ import trackerEn from '@hcengineering/tracker-assets/lang/en.json'
 import trainingEn from '@hcengineering/training-assets/lang/en.json'
 import viewEn from '@hcengineering/view-assets/lang/en.json'
 import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
+import timeEn from '@hcengineering/time-assets/lang/en.json'
 
 export function registerStringLoaders (): void {
   addStringsLoader(coreId, async (lang: string) => coreEng)
@@ -106,4 +108,5 @@ export function registerStringLoaders (): void {
   addStringsLoader(productsId, async (lang: string) => productsEn)
   addStringsLoader(trainingId, async (lang: string) => trainingEn)
   addStringsLoader(githubId, async (lang: string) => githubEn)
+  addStringsLoader(timeId, async (lang: string) => timeEn)
 }
