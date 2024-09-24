@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
 
 import { type Doc as YDoc } from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
@@ -26,11 +24,7 @@ export class IndexeddbProvider extends IndexeddbPersistence implements Provider 
   readonly awareness: Awareness | null = null
 
   constructor (documentId: string, doc: YDoc) {
-    const workspaceId: string = getMetadata(presentation.metadata.WorkspaceId) ?? ''
-
-    const name = `${workspaceId}/${documentId}`
-
-    super(name, doc)
+    super(documentId, doc)
 
     this.loaded = new Promise((resolve) => {
       this.on('synced', resolve)
