@@ -171,7 +171,8 @@
 
     const [id, _class] = decodeObjectURI(loc?.loc.path[3] ?? '')
     const _id = await parseLinkId(linkProviders, id, _class)
-    const context = _id ? $contextByDocStore.get(_id) : undefined
+    const thread = loc?.loc.path[4] as Ref<ActivityMessage>
+    const context = $contextByDocStore.get(thread) ?? $contextByDocStore.get(_id)
 
     selectedContextId = context?._id
 
@@ -180,7 +181,6 @@
     }
 
     const selectedMessageId = loc?.loc.query?.message as Ref<ActivityMessage> | undefined
-    const thread = loc?.loc.path[4] as Ref<ActivityMessage> | undefined
 
     if (thread !== undefined) {
       const fn = await getResource(chunter.function.OpenThreadInSidebar)

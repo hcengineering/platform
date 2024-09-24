@@ -28,7 +28,7 @@
   export let lazy = false
   export let minHeight: string | null = null
   export let highlightIndex: number | undefined = undefined
-  const getKey: (index: number) => string = (index) => index.toString()
+  export let getKey: (index: number) => string = (index) => index.toString()
 
   const refs: HTMLElement[] = []
 
