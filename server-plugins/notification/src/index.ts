@@ -31,6 +31,7 @@ import type { TriggerControl, TriggerFunc } from '@hcengineering/server-core'
  * @public
  */
 export const serverNotificationId = 'server-notification' as Plugin
+export { DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOTIFY } from '@hcengineering/notification'
 
 /**
  * @public

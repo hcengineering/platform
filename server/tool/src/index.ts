@@ -36,15 +36,16 @@ import core, {
   WorkspaceId,
   WorkspaceIdWithUrl,
   type Doc,
+  type Ref,
   type TxCUD
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import {
   AggregatorStorageAdapter,
-  DbAdapter,
   DomainIndexHelperImpl,
   Pipeline,
-  StorageAdapter
+  StorageAdapter,
+  type DbAdapter
 } from '@hcengineering/server-core'
 import { connect } from './connect'
 import { InitScript, WorkspaceInitializer } from './initializer'
@@ -141,9 +142,16 @@ export async function initModel (
       logger.log('transactions deleted.', { workspaceId: workspaceId.name })
     }
 
-    logger.log('creating model...', workspaceId)
-    await adapter.upload(ctx, DOMAIN_TX, txes)
-    logger.log('model transactions inserted.', { count: txes.length })
+    logger.log('creating database...', workspaceId)
+    await adapter.upload(ctx, DOMAIN_TX, [
+      {
+        _class: core.class.Tx,
+        _id: 'first-tx' as Ref<Doc>,
+        modifiedBy: core.account.System,
+        modifiedOn: Date.now(),
+        space: core.space.DerivedTx
+      }
+    ])
 
     await progress(30)
 
@@ -264,11 +272,14 @@ export async function upgradeModel (
     throw Error('Model txes must target only core.space.Model')
   }
 
-  const prevModel = await fetchModel(ctx, pipeline)
+  const newModelRes = await ctx.with('load-model', {}, (ctx) => pipeline.loadModel(ctx, 0))
+  const newModel = Array.isArray(newModelRes) ? newModelRes : newModelRes.transactions
+
+  const { hierarchy, modelDb, model } = await buildModel(ctx, newModel)
   const { migrateClient: preMigrateClient } = await prepareMigrationClient(
     pipeline,
-    prevModel.hierarchy,
-    prevModel.modelDb,
+    hierarchy,
+    modelDb,
     logger,
     storageAdapter,
     workspaceId
@@ -305,36 +316,9 @@ export async function upgradeModel (
     }
     logger.log('removing model...', { workspaceId: workspaceId.name })
     await progress(10)
-    const toRemove = await pipeline.findAll(ctx, core.class.Tx, {
-      objectSpace: core.space.Model,
-      modifiedBy: core.account.System,
-      objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
-    })
-    await pipeline.context.lowLevelStorage.clean(
-      ctx,
-      DOMAIN_TX,
-      toRemove.map((p) => p._id)
-    )
-    logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: toRemove.length })
-    logger.log('creating model...', { workspaceId: workspaceId.name })
-    await pipeline.context.lowLevelStorage.upload(ctx, DOMAIN_TX, txes)
-
     logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: txes.length })
     await progress(20)
   }
-  const newModel = [
-    ...txes,
-    ...Array.from(
-      prevModel.model.filter(
-        (it) =>
-          it.modifiedBy !== core.account.System ||
-          (it as TxCUD<Doc>).objectClass === contact.class.Person ||
-          (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
-      )
-    )
-  ]
-
-  const { hierarchy, modelDb, model } = await fetchModel(ctx, pipeline, newModel)
   const { migrateClient, migrateState } = await prepareMigrationClient(
     pipeline,
     hierarchy,
@@ -383,6 +367,21 @@ export async function upgradeModel (
       {
         state: 'indexes-v4',
         func: upgradeIndexes
+      },
+      {
+        state: 'delete-model',
+        func: async (client) => {
+          const model = await client.find<Tx>(DOMAIN_TX, { objectSpace: core.space.Model })
+
+          // Ignore Employee accounts.
+          const isUserTx = (it: Tx): boolean =>
+            it.modifiedBy !== core.account.System ||
+            (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
+            (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
+
+          const toDelete = model.filter((it) => !isUserTx(it)).map((it) => it._id)
+          await client.deleteMany(DOMAIN_TX, { _id: { $in: toDelete } })
+        }
       }
     ])
   })
@@ -463,18 +462,12 @@ async function prepareMigrationClient (
   return { migrateClient, migrateState }
 }
 
-export async function fetchModel (
+export async function buildModel (
   ctx: MeasureContext,
-  pipeline: Pipeline,
-  model?: Tx[]
+  model: Tx[]
 ): Promise<{ hierarchy: Hierarchy, modelDb: ModelDb, model: Tx[] }> {
   const hierarchy = new Hierarchy()
   const modelDb = new ModelDb(hierarchy)
-
-  if (model === undefined) {
-    const res = await ctx.with('load-model', {}, (ctx) => pipeline.loadModel(ctx, 0))
-    model = Array.isArray(res) ? res : res.transactions
-  }
 
   ctx.withSync('build local model', {}, () => {
     for (const tx of model ?? []) {
@@ -482,7 +475,7 @@ export async function fetchModel (
         hierarchy.tx(tx)
       } catch (err: any) {}
     }
-    modelDb.addTxes(ctx, model as Tx[], false)
+    modelDb.addTxes(ctx, model, false)
   })
   return { hierarchy, modelDb, model: model ?? [] }
 }

@@ -92,7 +92,7 @@
     if (item !== undefined) {
       showPopup(
         FilePreviewPopup,
-        { file: item.file, name: item.name, contentType: item.type },
+        { file: item.file, name: item.name, contentType: item.type, metadata: item.metadata },
         item.type.startsWith('image/') ? 'centered' : 'float'
       )
     } else {
