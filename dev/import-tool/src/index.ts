@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 import { concatLink, TxOperations } from '@hcengineering/core'
-import serverClientPlugin, { createClient, getUserWorkspaces, login, selectWorkspace } from '@hcengineering/server-client'
+import serverClientPlugin, {
+  createClient,
+  getUserWorkspaces,
+  login,
+  selectWorkspace
+} from '@hcengineering/server-client'
 import { program } from 'commander'
 import { importNotion } from './notion'
 import { setMetadata } from '@hcengineering/platform'
