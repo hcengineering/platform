@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole, Doc, Ref, Timestamp, WorkspaceMode } from '@hcengineering/core'
+import { AccountRole, Doc, Ref, Timestamp, WorkspaceMode, type BackupStatus } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -35,6 +35,8 @@ export interface Workspace {
   progress?: number
 
   lastVisit: number
+
+  backupInfo?: BackupStatus
 }
 
 /**

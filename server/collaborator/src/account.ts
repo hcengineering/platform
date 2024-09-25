@@ -27,7 +27,7 @@ export async function getWorkspaceInfo (token: string): Promise<ClientWorkspaceI
       },
       body: JSON.stringify({
         method: 'getWorkspaceInfo',
-        params: []
+        params: [true] // Collaborator should update last used time.
       })
     })
   ).json()

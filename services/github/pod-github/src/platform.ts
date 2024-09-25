@@ -692,7 +692,7 @@ export class PlatformWorker {
         )
         let workspaceInfo: ClientWorkspaceInfo | undefined
         try {
-          workspaceInfo = await getWorkspaceInfo(token)
+          workspaceInfo = await getWorkspaceInfo(token, true)
         } catch (err: any) {
           this.ctx.error('Workspace not found:', { workspace })
           errors++
