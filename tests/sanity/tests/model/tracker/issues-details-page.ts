@@ -72,6 +72,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly rowDecriptionToDo = (hasText: string): Locator => this.page.locator('div.tiptap div.todo-item', { hasText })
   readonly assigneeToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('div.assignee')
   readonly checkboxToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('input.chBox')
+  readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
 
   async clickCloseIssueButton (): Promise<void> {
     await this.buttonCloseIssue().click()

@@ -187,7 +187,7 @@ test.describe('Planning ToDo tests', () => {
       await issuesDetailsPage.editIssue({ assignee: 'Appleseed John', status: 'ToDo' })
 
       await issuesDetailsPage.addToDescription('/')
-      await issuesPage.page.locator('.selectPopup button:has-text("Action item")').click()
+      await issuesDetailsPage.slashActionItemsPopup().getByText('Action item').click()
       await issuesPage.page.keyboard.type(toDoName)
       await issuesPage.page.keyboard.press('Escape')
       await issuesDetailsPage.assignToDo('Appleseed John', toDoName)
@@ -220,7 +220,7 @@ test.describe('Planning ToDo tests', () => {
       await documentsPage.openDocument(newDocument.title)
       await documentContentPage.addContentToTheNewLine('/')
 
-      await documentContentPage.page.locator('.selectPopup button:has-text("Action item")').click()
+      await documentContentPage.slashActionItemsPopup().getByText('Action item').click()
       await documentContentPage.page.keyboard.type(toDoName)
       await documentContentPage.page.keyboard.press('Escape')
       await documentContentPage.assignToDo('Appleseed John', toDoName)
