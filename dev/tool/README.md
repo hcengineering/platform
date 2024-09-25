@@ -50,28 +50,33 @@ rushx run-local import-notion-to-teamspace /home/john/extracted-notion-docs \
 --teamspace imported
 ```
 
-#### For clouds:
+#### For cloud deployment:
 ##### Here is an example for those who's using huly.app cloud:
-To import Notion workspace with teamspaces
+1. Go to the root folder of the extracted archive with exported data.
+2. Run import command as follow:
+
+* To import Notion workspace with teamspaces
 ```
 docker run \
   -e SERVER_SECRET="" \
   -e ACCOUNTS_URL="https://account.huly.app" \
   -e FRONT_URL="https://huly.app" \
+  -v $(pwd):/data \
   hardcoreeng/tool:latest \
-  -- bundle.js import-notion-with-teamspaces /tmp/notion-docs \
+  -- bundle.js import-notion-with-teamspaces /data \
 --user jane.doe@gmail.com \
 --password 4321qwe \
 --workspace ws1
 ```
-To import Notion workspace without teamspaces or a page with subpages.
+* To import Notion workspace without teamspaces or a page with subpages.
 ```
 docker run \
   -e SERVER_SECRET="" \
   -e ACCOUNTS_URL="https://account.huly.app" \
   -e FRONT_URL="https://huly.app" \
+  -v $(pwd):/data \
   hardcoreeng/tool:latest \
-  -- bundle.js import-notion-to-teamspace /tmp/notion-docs \
+  -- bundle.js import-notion-to-teamspace /data \
 --user jane.doe@gmail.com \
 --password 4321qwe \
 --workspace ws1 \

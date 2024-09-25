@@ -55,7 +55,7 @@ import serverClientPlugin, {
 } from '@hcengineering/server-client'
 import { getServerPipeline } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -75,7 +75,6 @@ import core, {
   systemAccountEmail,
   TxOperations,
   versionToString,
-  type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
@@ -297,17 +296,13 @@ export function devTool (
       }
     }
 
-    const connection = (await connect(
-      selectedWs.endpoint,
-      {
-        name: selectedWs.workspaceId
-      },
-      undefined,
-      {
-        mode: 'backup'
-      }
-    )) as unknown as CoreClient
-    const client = new TxOperations(connection, core.account.System)
+    const connection = await createClient(selectedWs.endpoint, selectedWs.token)
+    const acc = connection.getModel().getAccountByEmail(user)
+    if (acc === undefined) {
+      console.log('Account not found for email: ', user)
+      return
+    }
+    const client = new TxOperations(connection, acc._id)
     await importNotion(client, uploader(selectedWs.token), dir, teamspace)
     await connection.close()
   }
