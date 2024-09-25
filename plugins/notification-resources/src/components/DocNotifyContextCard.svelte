@@ -230,7 +230,7 @@
       </div>
 
       <div class="actions clear-mins">
-        <div class="flex-center">
+        <div class="flex-center min-w-6">
           {#if archivingPromise !== undefined}
             <Spinner size="small" />
           {:else}
