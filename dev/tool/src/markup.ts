@@ -24,7 +24,7 @@ import core, {
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
-import { jsonToText, markupToYDoc } from '@hcengineering/text'
+import { isEmptyMarkup, jsonToText, markupToYDoc } from '@hcengineering/text'
 import { type Db, type FindCursor, type MongoClient } from 'mongodb'
 
 export async function fixJsonMarkup (
@@ -260,12 +260,10 @@ export async function restoreLostMarkup (
 
           const query = isAttachedDoc
             ? {
-                _class: core.class.TxCollectionCUD,
                 'tx.objectId': doc._id,
                 'tx._class': { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc] }
               }
             : {
-                _class: { $in: [core.class.TxCreateDoc, core.class.TxUpdateDoc] },
                 objectId: doc._id
               }
 
@@ -274,7 +272,9 @@ export async function restoreLostMarkup (
           // try to restore by txes
           // we need last tx that modified the attribute
 
-          const txes = await connection.findAll(core.class.Tx, query, { sort: { modifiedOn: SortingOrder.Descending } })
+          const txes = await connection.findAll(isAttachedDoc ? core.class.TxCollectionCUD : core.class.TxCUD, query, {
+            sort: { modifiedOn: SortingOrder.Descending }
+          })
           for (const tx of txes) {
             const innerTx = TxProcessor.extractTx(tx)
 
@@ -293,6 +293,7 @@ export async function restoreLostMarkup (
             }
 
             if (markup === undefined || !markup.startsWith('{')) continue
+            if (isEmptyMarkup(markup)) continue
 
             console.log(doc._class, doc._id, attr.name, markup)
             if (command === 'restore') {
