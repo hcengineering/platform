@@ -21,6 +21,8 @@ import { SidebarPage } from '../model/sidebar-page'
 import { TeamPage } from '../model/team-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { ChannelPage } from '../model/channel-page'
+import { IssuesPage } from '../model/tracker/issues-page'
+import { NewIssue } from '../model/tracker/types'
 
 test.use({
   storageState: PlatformSetting
@@ -31,7 +33,7 @@ test.describe('Planning ToDo tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
   })
 
-  test('Add several slots for the same day', async ({ browser, page }) => {
+  test('Add several slots for the same day', async ({ page }) => {
     const dateEnd = new Date()
     const toDoSeveralSlots: NewToDo = {
       title: 'Add several slots for the same day',
@@ -73,6 +75,27 @@ test.describe('Planning ToDo tests', () => {
       await planningPage.setTimeSlot(1, toDoSeveralSlots.slots[1])
     }
     await planningPage.clickButtonCardClose()
+
+    await test.step('User is able to create Related Issue for Action Item', async () => {
+      const issuesPage = new IssuesPage(page)
+      const leftMenuPage = new LeftSideMenuPage(page)
+      const relatedIssueData: NewIssue = {
+        title: `ToDo Related Issue ${generateId()}`,
+        description: 'Description',
+        projectName: 'Default'
+      }
+
+      await planningPage.eventInSchedule(toDoSeveralSlots.title).first().click({ button: 'right' })
+      await planningPage.buttonCreateRelatedIssue().click()
+
+      await issuesPage.fillNewIssueForm(relatedIssueData)
+      await issuesPage.clickButtonCreateIssue()
+      await leftMenuPage.clickTracker()
+      await issuesPage.clickLinkSidebarAll()
+      await issuesPage.searchIssueByName(relatedIssueData.title)
+
+      await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
+    })
 
     await planningPage.checkToDoExistInCalendar(toDoSeveralSlots.title, 2)
   })
@@ -178,11 +201,7 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkTimeSlotEndDate(1, dateEndTomorrow.getDate().toString())
   })
 
-  test.only('Adding ToDo by dragging and checking visibility in the Team Planner', async ({
-    browser,
-    page,
-    request
-  }) => {
+  test('Adding ToDo by dragging and checking visibility in the Team Planner', async ({ browser, page, request }) => {
     const data: TestData = generateTestData()
     const leftMenuPage = new LeftSideMenuPage(page)
     const channelPage = new ChannelPage(page)
@@ -272,7 +291,7 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test('User is able to open Planner in Sidebar', async ({ browser, page, request }) => {
+  test('User is able to open Planner in Sidebar', async ({ page }) => {
     const leftMenuPage = new LeftSideMenuPage(page)
     const channelPage = new ChannelPage(page)
 
