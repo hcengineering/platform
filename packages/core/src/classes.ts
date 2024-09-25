@@ -659,6 +659,16 @@ export interface DomainIndexConfiguration extends Doc {
 
 export type WorkspaceMode = 'pending-creation' | 'creating' | 'upgrading' | 'pending-deletion' | 'deleting' | 'active'
 
+export interface BackupStatus {
+  dataSize: number
+  blobsSize: number
+
+  backupSize: number
+
+  lastBackup: Timestamp
+  backups: number
+}
+
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
   disabled?: boolean
@@ -676,4 +686,6 @@ export interface BaseWorkspaceInfo {
   progress?: number // Some progress
 
   endpoint: string
+
+  backupInfo?: BackupStatus
 }
