@@ -3,6 +3,9 @@ import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
+import { IssuesPage } from '../model/tracker/issues-page'
+import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 test.use({
   storageState: PlatformSetting
@@ -11,6 +14,10 @@ test.use({
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
 test.describe('Planning ToDo tests', () => {
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+  let leftSideMenuPage: LeftSideMenuPage
+
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
   })
@@ -109,7 +116,7 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test('Delete ToDo', async ({ page }) => {
+  test('', async ({ page }) => {
     const deleteToDo: NewToDo = {
       title: 'ToDo For delete'
     }
@@ -150,5 +157,38 @@ test.describe('Planning ToDo tests', () => {
     await planningNavigationMenuPage.clickOnButtonToDoAll()
     await planningPage.checkToDoExist(newToDoPlanned.title)
     await planningPage.checkToDoExist(newToDoUnPlanned.title)
+  })
+
+  test.only('Show ActionItem in Planner from Issue description', async ({ page }) => {
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
+    const planningPage = new PlanningPage(page)
+
+    const newIssue = {
+      title: `Issue with ToDos ${generateId()}`,
+      description: '',
+      projectName: 'Default'
+    }
+
+    await test.step('Prepare Issue and add ActionItems to that', async () => {
+      await leftSideMenuPage.clickTracker()
+      await issuesPage.clickNewIssue()
+      await issuesPage.fillNewIssueForm(newIssue)
+      await issuesPage.clickButtonCreateIssue()
+      await issuesPage.clickLinkSidebarAll()
+      await issuesPage.openIssueByName(newIssue.title)
+      await issuesDetailsPage.editIssue({ assignee: 'Appleseed John', status: 'ToDo' })
+
+      await issuesDetailsPage.addToDescription('/')
+      await issuesPage.page.locator('.selectPopup button:has-text("Action item")').click()
+      await issuesPage.page.keyboard.type('ToDo 1')
+      await issuesPage.page.keyboard.type('Escape')
+    })
+
+    await leftSideMenuPage.clickPlanner()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
+    await planningPage.checkToDoExist(newIssue.title)
   })
 })
