@@ -49,10 +49,7 @@ import {
 import serverClientPlugin, {
   BlobClient,
   createClient,
-  getTransactorEndpoint,
-  getUserWorkspaces,
-  login,
-  selectWorkspace
+  getTransactorEndpoint
 } from '@hcengineering/server-client'
 import { getServerPipeline } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
@@ -68,13 +65,11 @@ import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
 import core, {
   AccountRole,
-  concatLink,
   generateId,
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
   systemAccountEmail,
-  TxOperations,
   versionToString,
   type Data,
   type Doc,
@@ -115,7 +110,6 @@ import { changeConfiguration } from './configuration'
 import { moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { importNotion } from './notion'
 import { fixAccountEmails, renameAccount } from './renameAccount'
 import { moveFiles, showLostFiles, syncFiles } from './storage'
 
@@ -170,15 +164,6 @@ export function devTool (
       process.exit(1)
     }
     return elasticUrl
-  }
-
-  function getFrontUrl (): string {
-    const frontUrl = process.env.FRONT_URL
-    if (frontUrl === undefined) {
-      console.error('please provide front url')
-      process.exit(1)
-    }
-    return frontUrl
   }
 
   const initWS = process.env.INIT_WORKSPACE
@@ -241,73 +226,6 @@ export function devTool (
         await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
       })
     })
-
-  // import-notion-with-teamspaces /home/anna/work/notion/pages/exported --workspace workspace
-  program
-    .command('import-notion-with-teamspaces <dir>')
-    .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
-    .action(async (dir: string, cmd) => {
-      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace)
-    })
-
-  // import-notion-to-teamspace /home/anna/work/notion/pages/exported --workspace workspace --teamspace notion
-  program
-    .command('import-notion-to-teamspace <dir>')
-    .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
-    .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
-    .action(async (dir: string, cmd) => {
-      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
-    })
-
-  async function importFromNotion (
-    dir: string,
-    user: string,
-    password: string,
-    workspace: string,
-    teamspace?: string
-  ): Promise<void> {
-    if (workspace === '' || user === '' || password === '' || teamspace === '') {
-      return
-    }
-
-    const userToken = await login(user, password, workspace)
-    const allWorkspaces = await getUserWorkspaces(userToken)
-    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
-    if (workspaces.length < 1) {
-      console.log('Workspace not found: ', workspace)
-      return
-    }
-    const selectedWs = await selectWorkspace(userToken, workspaces[0].workspace)
-    console.log(selectedWs)
-
-    function uploader (token: string) {
-      return (id: string, data: any) => {
-        return fetch(concatLink(getFrontUrl(), '/files'), {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer ' + token
-          },
-          body: data
-        })
-      }
-    }
-
-    const connection = await createClient(selectedWs.endpoint, selectedWs.token)
-    const acc = connection.getModel().getAccountByEmail(user)
-    if (acc === undefined) {
-      console.log('Account not found for email: ', user)
-      return
-    }
-    const client = new TxOperations(connection, acc._id)
-    await importNotion(client, uploader(selectedWs.token), dir, teamspace)
-    await connection.close()
-  }
 
   program
     .command('reset-account <email>')
