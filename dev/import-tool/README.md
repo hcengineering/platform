@@ -1,6 +1,6 @@
 ### Unified Huly Import Format
 
-Please check out the examples under [examples](./examples/) folder.
+Please check out the example under [example](./example/) folder.
 
 1. First level folders represents spaces in Huly. Space details are located in README.md inside the folder. Folders without README.md will be ignored.
 2. Huly document will be created for every MD file inside the space folder.
