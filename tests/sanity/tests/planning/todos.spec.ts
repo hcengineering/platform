@@ -120,7 +120,7 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test('', async ({ page }) => {
+  test('Delete a ToDo', async ({ page }) => {
     const deleteToDo: NewToDo = {
       title: 'ToDo For delete'
     }
