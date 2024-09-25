@@ -37,9 +37,23 @@
   import { workspacesStore } from '../utils'
   // import Drag from './icons/Drag.svelte'
 
+  function getLastVisitDays (it: Workspace): number {
+    return Math.floor((Date.now() - it.lastVisit) / (1000 * 3600 * 24))
+  }
+
   onMount(() => {
     void getResource(login.function.GetWorkspaces).then(async (f) => {
       const workspaces = await f()
+
+      workspaces.sort((a, b) => {
+        const adays = getLastVisitDays(a)
+        const bdays = getLastVisitDays(a)
+        if (adays === bdays) {
+          return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+        }
+        return bdays - adays
+      })
+
       $workspacesStore = workspaces
     })
   })
@@ -181,6 +195,9 @@
                   {wsName}
                   {#if isAdmin && ws.lastVisit != null && ws.lastVisit !== 0}
                     <div class="text-sm">
+                      {#if ws.backupInfo != null}
+                        {ws.backupInfo.backupSize}Mb -
+                      {/if}
                       ({lastUsageDays} days)
                     </div>
                   {/if}

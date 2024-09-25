@@ -4,7 +4,7 @@ import config from './config'
 /**
  * @public
  */
-export async function getWorkspaceInfo (token: string): Promise<ClientWorkspaceInfo> {
+export async function getWorkspaceInfo (token: string, updateLastModified = false): Promise<ClientWorkspaceInfo> {
   const accountsUrl = config.AccountsURL
   const workspaceInfo = await (
     await fetch(accountsUrl, {
@@ -15,7 +15,7 @@ export async function getWorkspaceInfo (token: string): Promise<ClientWorkspaceI
       },
       body: JSON.stringify({
         method: 'getWorkspaceInfo',
-        params: []
+        params: updateLastModified ? [true] : []
       })
     })
   ).json()

@@ -21,6 +21,7 @@ import {
   type UploadedObjectInfo
 } from '@hcengineering/storage'
 
+import { Analytics } from '@hcengineering/analytics'
 import { type RawDBAdapter } from '../adapter'
 import serverCore from '../plugin'
 import { type StorageConfig, type StorageConfiguration } from '../types'
@@ -166,9 +167,19 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
   @withContext('aggregator-make', {})
   async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    for (const a of this.adapters.values()) {
-      if (!(await a.exists(ctx, workspaceId))) {
-        await a.make(ctx, workspaceId)
+    for (const [k, a] of this.adapters.entries()) {
+      try {
+        if (!(await a.exists(ctx, workspaceId))) {
+          await a.make(ctx, workspaceId)
+        }
+      } catch (err: any) {
+        ctx.error('failed to init adapter', { adapter: k, workspaceId, error: err })
+        // Do not throw error in case default adapter is ok
+        Analytics.handleError(err)
+        if (k === this.defaultAdapter) {
+          // We should throw in case default one is not valid
+          throw err
+        }
       }
     }
   }

@@ -44,6 +44,7 @@ import core, {
   Version,
   versionToString,
   WorkspaceId,
+  type BackupStatus,
   type Branding,
   type WorkspaceMode
 } from '@hcengineering/core'
@@ -1350,6 +1351,40 @@ export async function updateWorkspaceInfo (
     {
       $set: {
         ...update,
+        lastProcessingTime: Date.now()
+      }
+    }
+  )
+}
+
+/**
+ * @public
+ */
+export async function updateBackupInfo (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  backupInfo: BackupStatus
+): Promise<void> {
+  const decodedToken = decodeToken(ctx, token)
+  if (decodedToken.extra?.service !== 'backup') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const workspaceInfo = await getWorkspaceById(db, decodedToken.workspace.name)
+  if (workspaceInfo === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: decodedToken.workspace.name })
+    )
+  }
+
+  const wsCollection = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+
+  await wsCollection.updateOne(
+    { _id: workspaceInfo._id },
+    {
+      $set: {
+        backupInfo,
         lastProcessingTime: Date.now()
       }
     }
@@ -2747,6 +2782,7 @@ export function getMethods (): Record<string, AccountMethod> {
     // Workspace service methods
     getPendingWorkspace: wrap(getPendingWorkspace),
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),
+    updateBackupInfo: wrap(updateBackupInfo),
     workerHandshake: wrap(workerHandshake)
   }
 }

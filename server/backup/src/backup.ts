@@ -49,6 +49,7 @@ import { Writable } from 'stream'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
+import type { BackupStatus } from '@hcengineering/core/src/classes'
 export * from './storage'
 
 const dataBlobSize = 50 * 1024 * 1024
@@ -498,6 +499,10 @@ function doTrimHash (s: string | undefined): string {
   return s
 }
 
+export interface BackupResult extends Omit<BackupStatus, 'backups' | 'lastBackup'> {
+  result: boolean
+}
+
 /**
  * @public
  */
@@ -531,7 +536,13 @@ export async function backup (
     skipBlobContentTypes: [],
     blobDownloadLimit: 15
   }
-): Promise<boolean> {
+): Promise<BackupResult> {
+  const result: BackupResult = {
+    result: false,
+    dataSize: 0,
+    blobsSize: 0,
+    backupSize: 0
+  }
   ctx = ctx.newChild('backup', {
     workspaceId: workspaceId.name,
     force: options.force,
@@ -589,7 +600,8 @@ export async function backup (
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
           printEnd = false
           ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
-          return false
+          result.result = false
+          return result
         }
       }
       lastTxChecked = true
@@ -613,14 +625,19 @@ export async function backup (
           )) as CoreClient & BackupClient)
 
     if (!lastTxChecked) {
-      lastTx = await connection.findOne(core.class.Tx, {}, { limit: 1, sort: { modifiedOn: SortingOrder.Descending } })
+      lastTx = await connection.findOne(
+        core.class.Tx,
+        { objectSpace: { $ne: core.space.Model } },
+        { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+      )
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
           ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
           if (options.getConnection === undefined) {
             await connection.close()
           }
-          return false
+          result.result = false
+          return result
         }
       }
     }
@@ -700,6 +717,11 @@ export async function backup (
           let currentNeedRetrieveSize = 0
 
           for (const { id, hash, size } of currentChunk.docs) {
+            if (domain === DOMAIN_BLOB) {
+              result.blobsSize += size
+            } else {
+              result.dataSize += size
+            }
             processed++
             if (Date.now() - st > 2500) {
               ctx.info('processed', {
@@ -1034,10 +1056,33 @@ export async function backup (
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
-    return true
+    result.result = true
+
+    const addFileSize = async (file: string | undefined | null): Promise<void> => {
+      if (file != null && (await storage.exists(file))) {
+        const fileSize = await storage.stat(file)
+        result.backupSize += fileSize
+      }
+    }
+
+    // Let's calculate data size for backup
+    for (const sn of backupInfo.snapshots) {
+      for (const [, d] of Object.entries(sn.domains)) {
+        await addFileSize(d.snapshot)
+        for (const snp of d.snapshots ?? []) {
+          await addFileSize(snp)
+        }
+        for (const snp of d.storage ?? []) {
+          await addFileSize(snp)
+        }
+      }
+    }
+    await addFileSize(infoFile)
+
+    return result
   } catch (err: any) {
     ctx.error('backup error', { err, workspace: workspaceId.name })
-    return false
+    return result
   } finally {
     if (printEnd) {
       ctx.info('end backup', { workspace: workspaceId.name, totalTime: Date.now() - st })

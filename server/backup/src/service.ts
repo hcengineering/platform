@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   BaseWorkspaceInfo,
   DOMAIN_TX,
   getWorkspaceId,
@@ -22,6 +22,7 @@ import {
   SortingOrder,
   systemAccountEmail,
   type BackupClient,
+  type BackupStatus,
   type Branding,
   type Client,
   type MeasureContext,
@@ -29,7 +30,7 @@ import {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { listAccountWorkspaces } from '@hcengineering/server-client'
+import { listAccountWorkspaces, updateBackupInfo } from '@hcengineering/server-client'
 import {
   BackupClientOps,
   SessionDataImpl,
@@ -38,6 +39,7 @@ import {
   type PipelineFactory,
   type StorageAdapter
 } from '@hcengineering/server-core'
+import { generateToken } from '@hcengineering/server-token'
 import { backup } from '.'
 import { createStorageBackupStorage } from './storage'
 export interface BackupConfig {
@@ -114,6 +116,23 @@ class BackupWorker {
   ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     const workspaces = (await listAccountWorkspaces(this.config.Token)).filter((it) => {
+      const lastBackup = it.backupInfo?.lastBackup ?? 0
+      if ((Date.now() - lastBackup) / 1000 < this.config.Interval) {
+        // No backup required, interval not elapsed
+        ctx.info('Skip backup', { workspace: it.workspace, lastBackup: Math.round((Date.now() - lastBackup) / 1000) })
+        return false
+      }
+
+      const lastVisitSec = Math.floor((Date.now() - it.lastVisit) / 1000)
+      if (lastVisitSec > this.config.Interval) {
+        // No backup required, interval not elapsed
+        ctx.info('Skip backup, since not visited since last check', {
+          workspace: it.workspace,
+          days: Math.floor(lastVisitSec / 3600 / 24),
+          seconds: lastVisitSec
+        })
+        return false
+      }
       return !workspacesIgnore.has(it.workspace)
     })
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
@@ -133,6 +152,7 @@ class BackupWorker {
         return { failedWorkspaces, processed, skipped: workspaces.length - processed }
       }
       index++
+      const st = Date.now()
       rootCtx.warn('\n\nBACKUP WORKSPACE ', {
         workspace: ws.workspace,
         index,
@@ -156,56 +176,73 @@ class BackupWorker {
           workspaceName: ws.workspaceName ?? '',
           workspaceUrl: ws.workspaceUrl ?? ''
         }
-        processed += (await ctx.with(
-          'backup',
-          { workspace: ws.workspace },
-          async (ctx) =>
-            await backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
-              skipDomains: [],
-              force: false,
-              recheck: false,
-              timeout: this.config.Timeout * 1000,
-              connectTimeout: 5 * 60 * 1000, // 5 minutes to,
-              blobDownloadLimit: 100,
-              skipBlobContentTypes: [],
-              storageAdapter: this.workspaceStorageAdapter,
-              getLastTx: async (): Promise<Tx | undefined> => {
-                const config = this.getConfig(ctx, wsUrl, null, this.workspaceStorageAdapter)
-                const adapterConf = config.adapters[config.domains[DOMAIN_TX]]
-                const hierarchy = new Hierarchy()
-                const modelDb = new ModelDb(hierarchy)
-                const txAdapter = await adapterConf.factory(
-                  ctx,
-                  hierarchy,
-                  adapterConf.url,
-                  wsUrl,
-                  modelDb,
-                  this.workspaceStorageAdapter
-                )
-                try {
-                  await txAdapter.init?.()
+        const result = await ctx.with('backup', { workspace: ws.workspace }, (ctx) =>
+          backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
+            skipDomains: [],
+            force: true,
+            recheck: false,
+            timeout: this.config.Timeout * 1000,
+            connectTimeout: 5 * 60 * 1000, // 5 minutes to,
+            blobDownloadLimit: 100,
+            skipBlobContentTypes: [],
+            storageAdapter: this.workspaceStorageAdapter,
+            getLastTx: async (): Promise<Tx | undefined> => {
+              const config = this.getConfig(ctx, wsUrl, null, this.workspaceStorageAdapter)
+              const adapterConf = config.adapters[config.domains[DOMAIN_TX]]
+              const hierarchy = new Hierarchy()
+              const modelDb = new ModelDb(hierarchy)
+              const txAdapter = await adapterConf.factory(
+                ctx,
+                hierarchy,
+                adapterConf.url,
+                wsUrl,
+                modelDb,
+                this.workspaceStorageAdapter
+              )
+              try {
+                await txAdapter.init?.()
 
-                  return (
-                    await txAdapter.rawFindAll<Tx>(
-                      DOMAIN_TX,
-                      {},
-                      { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
-                    )
-                  ).shift()
-                } finally {
-                  await txAdapter.close()
-                }
-              },
-              getConnection: async () => {
-                if (pipeline === undefined) {
-                  pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
-                }
-                return this.wrapPipeline(ctx, pipeline, wsUrl)
+                return (
+                  await txAdapter.rawFindAll<Tx>(
+                    DOMAIN_TX,
+                    { objectSpace: { $ne: core.space.Model } },
+                    { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+                  )
+                ).shift()
+              } finally {
+                await txAdapter.close()
               }
-            })
-        ))
-          ? 1
-          : 0
+            },
+            getConnection: async () => {
+              if (pipeline === undefined) {
+                pipeline = await this.pipelineFactory(ctx, wsUrl, true, () => {}, null)
+              }
+              return this.wrapPipeline(ctx, pipeline, wsUrl)
+            }
+          })
+        )
+
+        if (result.result) {
+          const backupInfo: BackupStatus = {
+            backups: (ws.backupInfo?.backups ?? 0) + 1,
+            lastBackup: Date.now(),
+            backupSize: Math.round((result.backupSize * 100) / (1024 * 1024)) / 100,
+            dataSize: Math.round((result.dataSize * 100) / (1024 * 1024)) / 100,
+            blobsSize: Math.round((result.blobsSize * 100) / (1024 * 1024)) / 100
+          }
+          rootCtx.warn('\n\nBACKUP STATS ', {
+            workspace: ws.workspace,
+            index,
+            ...backupInfo,
+            time: Math.round((Date.now() - st) / 1000),
+            total: workspaces.length
+          })
+          // We need to report update for stats to account service
+          processed += 1
+
+          const token = generateToken(systemAccountEmail, { name: ws.workspace }, { service: 'backup' })
+          await updateBackupInfo(token, backupInfo)
+        }
       } catch (err: any) {
         rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
         failedWorkspaces.push(ws)

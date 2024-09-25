@@ -8,7 +8,7 @@ export const TodoItemExtension = TaskItem.extend({
 
   addOptions () {
     return {
-      nested: false,
+      nested: true,
       HTMLAttributes: {},
       taskListTypeName: 'todoList'
     }

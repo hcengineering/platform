@@ -55,7 +55,7 @@ import serverClientPlugin, {
 } from '@hcengineering/server-client'
 import { getServerPipeline } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
@@ -75,7 +75,6 @@ import core, {
   systemAccountEmail,
   TxOperations,
   versionToString,
-  type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
@@ -112,11 +111,11 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import { moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
-import { fixJsonMarkup, migrateMarkup } from './markup'
+import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { importNotion } from './notion'
 import { fixAccountEmails, renameAccount } from './renameAccount'
-import { moveFiles, syncFiles } from './storage'
+import { moveFiles, showLostFiles, syncFiles } from './storage'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -297,17 +296,13 @@ export function devTool (
       }
     }
 
-    const connection = (await connect(
-      selectedWs.endpoint,
-      {
-        name: selectedWs.workspaceId
-      },
-      undefined,
-      {
-        mode: 'backup'
-      }
-    )) as unknown as CoreClient
-    const client = new TxOperations(connection, core.account.System)
+    const connection = await createClient(selectedWs.endpoint, selectedWs.token)
+    const acc = connection.getModel().getAccountByEmail(user)
+    if (acc === undefined) {
+      console.log('Account not found for email: ', user)
+      return
+    }
+    const client = new TxOperations(connection, acc._id)
     await importNotion(client, uploader(selectedWs.token), dir, teamspace)
     await connection.close()
   }
@@ -1229,6 +1224,81 @@ export function devTool (
         })
       })
     })
+
+  program
+    .command('show-lost-files')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('--disabled', 'Include disabled workspaces', false)
+    .option('--all', 'Show all files', false)
+    .action(async (cmd: { workspace: string, disabled: boolean, all: boolean }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        await withStorage(mongodbUri, async (adapter) => {
+          try {
+            let index = 1
+            const workspaces = await listWorkspacesPure(db)
+            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+            for (const workspace of workspaces) {
+              if (workspace.disabled === true && !cmd.disabled) {
+                console.log('ignore disabled workspace', workspace.workspace)
+                continue
+              }
+
+              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+                continue
+              }
+
+              try {
+                console.log('start', workspace.workspace, index, '/', workspaces.length)
+                const workspaceId = getWorkspaceId(workspace.workspace)
+                const wsDb = getWorkspaceDB(client, { name: workspace.workspace })
+                await showLostFiles(toolCtx, workspaceId, wsDb, adapter, { showAll: cmd.all })
+                console.log('done', workspace.workspace)
+              } catch (err) {
+                console.error(err)
+              }
+
+              index += 1
+            }
+          } catch (err: any) {
+            console.error(err)
+          }
+        })
+      })
+    })
+
+  program.command('show-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
+    const { mongodbUri } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      await withStorage(mongodbUri, async (adapter) => {
+        try {
+          const workspaceId = getWorkspaceId(workspace)
+          const token = generateToken(systemAccountEmail, workspaceId)
+          const endpoint = await getTransactorEndpoint(token)
+          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'show' })
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+  })
+
+  program.command('restore-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
+    const { mongodbUri } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      await withStorage(mongodbUri, async (adapter) => {
+        try {
+          const workspaceId = getWorkspaceId(workspace)
+          const token = generateToken(systemAccountEmail, workspaceId)
+          const endpoint = await getTransactorEndpoint(token)
+          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'restore' })
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+  })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     const { mongodbUri } = prepareTools()
