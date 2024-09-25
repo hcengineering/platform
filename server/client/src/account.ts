@@ -203,8 +203,7 @@ export async function login (user: string, password: string, workspace: string):
   })
 
   const result = await response.json()
-  const { token } = result.result
-  return token
+  return result.result?.token
 }
 
 export async function getUserWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {

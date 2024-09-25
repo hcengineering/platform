@@ -27,7 +27,7 @@ rushx run-local import-notion-to-teamspace {dir} \
 * *dir* - path to the root of the extracted archive
 * *user* - your username or email
 * *password* - password
-* *workspace* - workspace name where the documents should be imported to
+* *workspace* - workspace url where the documents should be imported to
 * *teamspace* - teamspace to be created for newly imported docs
 
 
@@ -58,8 +58,6 @@ rushx run-local import-notion-to-teamspace /home/john/extracted-notion-docs \
 * To import Notion workspace with teamspaces
 ```
 docker run \
-  -e SERVER_SECRET="" \
-  -e ACCOUNTS_URL="https://account.huly.app" \
   -e FRONT_URL="https://huly.app" \
   -v $(pwd):/data \
   hardcoreeng/tool:latest \
@@ -71,8 +69,6 @@ docker run \
 * To import Notion workspace without teamspaces or a page with subpages.
 ```
 docker run \
-  -e SERVER_SECRET="" \
-  -e ACCOUNTS_URL="https://account.huly.app" \
   -e FRONT_URL="https://huly.app" \
   -v $(pwd):/data \
   hardcoreeng/tool:latest \

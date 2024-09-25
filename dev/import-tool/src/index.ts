@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 import { concatLink, TxOperations } from '@hcengineering/core'
-import { createClient, getUserWorkspaces, login, selectWorkspace } from '@hcengineering/server-client'
+import serverClientPlugin, { createClient, getUserWorkspaces, login, selectWorkspace } from '@hcengineering/server-client'
 import { program } from 'commander'
 import { importNotion } from './notion'
+import { setMetadata } from '@hcengineering/platform'
 
 /**
  * @public
@@ -38,7 +39,7 @@ export function importTool (): void {
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
     .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace)
     })
@@ -49,7 +50,7 @@ export function importTool (): void {
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
     .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
+    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
@@ -59,26 +60,37 @@ export function importTool (): void {
     dir: string,
     user: string,
     password: string,
-    workspace: string,
+    workspaceUrl: string,
     teamspace?: string
   ): Promise<void> {
-    if (workspace === '' || user === '' || password === '' || teamspace === '') {
+    if (workspaceUrl === '' || user === '' || password === '' || teamspace === '') {
       return
     }
 
-    const userToken = await login(user, password, workspace)
-    const allWorkspaces = await getUserWorkspaces(userToken)
-    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
-    if (workspaces.length < 1) {
-      console.log('Workspace not found: ', workspace)
+    const config = await (await fetch(concatLink(getFrontUrl(), '/config.json'))).json()
+    console.log('Setting up Accounts URL: ', config.ACCOUNTS_URL)
+    setMetadata(serverClientPlugin.metadata.Endpoint, config.ACCOUNTS_URL)
+    console.log('Trying to login user: ', user)
+    const userToken = await login(user, password, workspaceUrl)
+    if (userToken === undefined) {
+      console.log('Login failed for user: ', user)
       return
     }
+
+    console.log('Looking for workspace: ', workspaceUrl)
+    const allWorkspaces = await getUserWorkspaces(userToken)
+    const workspaces = allWorkspaces.filter((ws) => ws.workspaceUrl === workspaceUrl)
+    if (workspaces.length < 1) {
+      console.log('Workspace not found: ', workspaceUrl)
+      return
+    }
+    console.log('Workspace found')
     const selectedWs = await selectWorkspace(userToken, workspaces[0].workspace)
     console.log(selectedWs)
 
     function uploader (token: string) {
       return (id: string, data: any) => {
-        return fetch(concatLink(getFrontUrl(), '/files'), {
+        return fetch(concatLink(getFrontUrl(), config.UPLOAD_URL), {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + token
@@ -88,6 +100,7 @@ export function importTool (): void {
       }
     }
 
+    console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = await createClient(selectedWs.endpoint, selectedWs.token)
     const acc = connection.getModel().getAccountByEmail(user)
     if (acc === undefined) {
@@ -95,6 +108,7 @@ export function importTool (): void {
       return
     }
     const client = new TxOperations(connection, acc._id)
+    console.log('OK. Start the import directory: ', dir)
     await importNotion(client, uploader(selectedWs.token), dir, teamspace)
     await connection.close()
   }
