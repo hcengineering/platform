@@ -197,6 +197,7 @@ test.describe('Planning ToDo tests', () => {
       await leftSideMenuPage.clickPlanner()
       await planningNavigationMenuPage.clickOnButtonToDoAll()
       await planningPage.checkToDoExist(toDoName)
+      await planningPage.checkIfReferenceIsOpen(toDoName)
     })
   })
 
@@ -230,6 +231,7 @@ test.describe('Planning ToDo tests', () => {
       await leftSideMenuPage.clickPlanner()
       await planningNavigationMenuPage.clickOnButtonToDoAll()
       await planningPage.checkToDoExist(toDoName)
+      await planningPage.checkIfReferenceIsOpen(toDoName)
     })
   })
 })

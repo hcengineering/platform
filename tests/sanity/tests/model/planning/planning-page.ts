@@ -93,6 +93,12 @@ export class PlanningPage extends CalendarPage {
   readonly checkboxToDoInToDos = (hasText: string): Locator =>
     this.toDoInToDos(hasText).locator('div.hulyToDoLine-checkbox')
 
+  readonly labelToDoReference = (toDoName: string): Locator =>
+    this.page
+      .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
+      .locator('xpath=..')
+      .locator('button.reference')
+
   async dragToCalendar (title: string, column: number, time: string, addHalf: boolean = false): Promise<void> {
     await this.toDosContainer().getByRole('button', { name: title }).hover()
 
@@ -293,6 +299,20 @@ export class PlanningPage extends CalendarPage {
       .locator('xpath=..')
       .locator('div.hulyToDoLine-checkbox > label')
       .click()
+  }
+
+  async openReferenceToDoByName (toDoName: string): Promise<void> {
+    await this.labelToDoReference(toDoName).click()
+  }
+
+  async getReferenceNameToDoByName (toDoName: string): Promise<null | string> {
+    return await this.labelToDoReference(toDoName).textContent()
+  }
+
+  async checkIfReferenceIsOpen (toDoName: string): Promise<void> {
+    const referenceName = await this.getReferenceNameToDoByName(toDoName)
+    await this.openReferenceToDoByName(toDoName)
+    await expect(this.page.locator(`.popupPanel .hulyHeader-row:has-text("${referenceName}")`)).toBeVisible()
   }
 
   async checkToDoExistInCalendar (toDoName: string, count: number): Promise<void> {
