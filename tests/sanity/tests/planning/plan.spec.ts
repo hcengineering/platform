@@ -178,7 +178,11 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkTimeSlotEndDate(1, dateEndTomorrow.getDate().toString())
   })
 
-  test('Adding ToDo by dragging and checking visibility in the Team Planner', async ({ browser, page, request }) => {
+  test.only('Adding ToDo by dragging and checking visibility in the Team Planner', async ({
+    browser,
+    page,
+    request
+  }) => {
     const data: TestData = generateTestData()
     const leftMenuPage = new LeftSideMenuPage(page)
     const channelPage = new ChannelPage(page)
@@ -192,6 +196,7 @@ test.describe('Planning ToDo tests', () => {
     const titleV = `Visible ToDo ${generateId()}`
     const titleI = `Inisible ToDo ${generateId()}`
     const time = getTimeForPlanner()
+    const time2 = getTimeForPlanner(1)
 
     const leftSideMenuPage: LeftSideMenuPage = new LeftSideMenuPage(page)
     const loginPage: LoginPage = new LoginPage(page)
@@ -216,6 +221,11 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.buttonPopupCreateVisible().click()
     await planningPage.buttonPopupVisibleToEveryone().click()
     await planningPage.buttonPopupSave().click()
+
+    await test.step('User is able to create multiple by dragging slots to the same Action Item', async () => {
+      await planningPage.dragToCalendar(titleV, 3, time2)
+      await planningPage.checkToDoExistInCalendar(titleV, 2)
+    })
 
     await planningPage.selectInputToDo().fill(titleI)
     await planningPage.selectInputToDo().press('Enter')
