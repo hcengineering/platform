@@ -1,3 +1,4 @@
+---
 class: tracker.class.Project
 title: Huly Platform
 private: false

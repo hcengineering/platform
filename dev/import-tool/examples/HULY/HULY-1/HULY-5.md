@@ -1,3 +1,4 @@
+---
 class: tracker.class.Issue
 title: Explore all Huly has to offer 🚀
 assignee: John Doe

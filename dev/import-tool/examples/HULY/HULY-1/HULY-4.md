@@ -1,3 +1,4 @@
+---
 class: tracker.class.Issue
 title: Schedule your first Action Item 📆
 assignee: John Doe

@@ -1,3 +1,4 @@
+---
 class: tracker.class.Issue
 title: Welcome to Huly! 🌟
 assignee: John Doe

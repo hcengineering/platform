@@ -1,3 +1,4 @@
+---
 class: tracker.class.Issue
 title: Create your first project 📌
 assignee: Joe Shmoe

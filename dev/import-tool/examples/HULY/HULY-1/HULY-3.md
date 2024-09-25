@@ -1,3 +1,4 @@
+---
 class: tracker.class.Issue
 title: Create your first issue 📝
 assignee: John Doe

@@ -1,3 +1,4 @@
+---
 class: document.class.TeamSpace
 members: [Andrey Platov]
 ---

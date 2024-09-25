@@ -1,3 +1,4 @@
+---
 persons:
   - name: John Doe
     email: john@huly.io
@@ -26,3 +27,4 @@ projectTypes:
           description: The bug is currently in the “In Progress” status and is being worked on.
         - name: Fixed
           description: The bug is currently in the “Fixed” status and has been completed.
+---
