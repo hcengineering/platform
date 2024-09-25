@@ -6,6 +6,8 @@ import { PlanningNavigationMenuPage } from '../model/planning/planning-navigatio
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
+import { DocumentsPage } from '../model/documents/documents-page'
+import { DocumentContentPage } from '../model/documents/document-content-page'
 
 test.use({
   storageState: PlatformSetting
@@ -17,6 +19,8 @@ test.describe('Planning ToDo tests', () => {
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
   let leftSideMenuPage: LeftSideMenuPage
+  let documentsPage: DocumentsPage
+  let documentContentPage: DocumentContentPage
 
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
@@ -159,12 +163,13 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkToDoExist(newToDoUnPlanned.title)
   })
 
-  test.only('Show ActionItem in Planner from Issue description', async ({ page }) => {
+  test('Show ActionItem in Planner from Issue description', async ({ page }) => {
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
     leftSideMenuPage = new LeftSideMenuPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
     const planningPage = new PlanningPage(page)
+    const toDoName = `ToDo from issue ${generateId()}`
 
     const newIssue = {
       title: `Issue with ToDos ${generateId()}`,
@@ -183,12 +188,48 @@ test.describe('Planning ToDo tests', () => {
 
       await issuesDetailsPage.addToDescription('/')
       await issuesPage.page.locator('.selectPopup button:has-text("Action item")').click()
-      await issuesPage.page.keyboard.type('ToDo 1')
-      await issuesPage.page.keyboard.type('Escape')
+      await issuesPage.page.keyboard.type(toDoName)
+      await issuesPage.page.keyboard.press('Escape')
+      await issuesDetailsPage.assignToDo('Appleseed John', toDoName)
     })
 
-    await leftSideMenuPage.clickPlanner()
-    await planningNavigationMenuPage.clickOnButtonToDoAll()
-    await planningPage.checkToDoExist(newIssue.title)
+    await test.step('Check ToDo in Planner', async () => {
+      await leftSideMenuPage.clickPlanner()
+      await planningNavigationMenuPage.clickOnButtonToDoAll()
+      await planningPage.checkToDoExist(toDoName)
+    })
+  })
+
+  test('Show ActionItem in Planner from Document', async ({ page }) => {
+    documentsPage = new DocumentsPage(page)
+    documentContentPage = new DocumentContentPage(page)
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
+    const planningPage = new PlanningPage(page)
+    const toDoName = `ToDo from document ${generateId()}`
+
+    const newDocument = {
+      title: `Document with ToDos ${generateId()}`,
+      space: 'Default'
+    }
+
+    await test.step('Prepare Document and add ActionItems to that', async () => {
+      await leftSideMenuPage.clickDocuments()
+      await documentsPage.buttonCreateDocument().click()
+      await documentsPage.createDocument(newDocument)
+      await documentsPage.openDocument(newDocument.title)
+      await documentContentPage.addContentToTheNewLine('/')
+
+      await documentContentPage.page.locator('.selectPopup button:has-text("Action item")').click()
+      await documentContentPage.page.keyboard.type(toDoName)
+      await documentContentPage.page.keyboard.press('Escape')
+      await documentContentPage.assignToDo('Appleseed John', toDoName)
+    })
+
+    await test.step('Check ToDo in Planner', async () => {
+      await leftSideMenuPage.clickPlanner()
+      await planningNavigationMenuPage.clickOnButtonToDoAll()
+      await planningPage.checkToDoExist(toDoName)
+    })
   })
 })
