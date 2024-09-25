@@ -99,7 +99,7 @@
 
   function handleMouseDown (): void {
     function handleMouseMove (): void {
-      if (!editor.state.selection.empty) {
+      if (editor !== undefined && !editor.state.selection.empty) {
         selecting = true
         document.removeEventListener('mousemove', handleMouseMove)
       }
@@ -112,8 +112,10 @@
       document.removeEventListener('mouseup', handleMouseUp)
     }
 
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    if (editor !== undefined) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
   }
 
   onMount(() => {
