@@ -72,6 +72,7 @@
     "@hcengineering/server-telegram": "^0.6.0",
     "@hcengineering/pod-telegram-bot": "^0.6.0",
     "@hcengineering/server-ai-bot": "^0.6.0",
-    "@hcengineering/server-ai-bot-resources": "^0.6.0"
+    "@hcengineering/server-ai-bot-resources": "^0.6.0",
+    "@hcengineering/model-all": "^0.6.0"
   }
 }

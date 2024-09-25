@@ -163,6 +163,7 @@ export async function createWorkspace (
       const factory: PipelineFactory = createServerPipeline(
         ctx,
         dbUrls,
+        txes,
         {
           externalStorage: storageAdapter,
           fullTextUrl: 'http://localhost:9200',
@@ -288,7 +289,7 @@ export async function upgradeWorkspace (
   let pipeline: Pipeline | undefined
   let storageAdapter: StorageAdapter | undefined
   try {
-    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, mongodbUri, dbUrl, wsUrl))
+    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, mongodbUri, dbUrl, wsUrl))
     const contextData = new SessionDataImpl(
       systemAccountEmail,
       'backup',

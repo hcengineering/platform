@@ -1174,7 +1174,9 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await ctx.with('clean', {}, async () => {
-      await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
+      if (docs.length > 0) {
+        await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
+      }
     })
   }
 }
@@ -1693,7 +1695,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       )
     }
     model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
-    return systemTx.concat(userTx)
+    return this.stripHash(systemTx.concat(userTx)) as Tx[]
   }
 }
 

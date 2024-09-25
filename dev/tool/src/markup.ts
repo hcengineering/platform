@@ -15,7 +15,7 @@ import core, {
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
-import { connect, fetchModel } from '@hcengineering/server-tool'
+import { connect } from '@hcengineering/server-tool'
 import { jsonToText, markupToYDoc } from '@hcengineering/text'
 import { type Db, type FindCursor, type MongoClient } from 'mongodb'
 
@@ -123,7 +123,7 @@ export async function migrateMarkup (
   pipeline: Pipeline,
   concurrency: number
 ): Promise<void> {
-  const { hierarchy } = await fetchModel(ctx, pipeline)
+  const hierarchy = pipeline.context.hierarchy
 
   const workspaceDb = client.db(workspaceId.name)
 

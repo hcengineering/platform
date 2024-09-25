@@ -14,14 +14,22 @@
 //
 
 import core, {
+  type Doc,
   type LoadModelResponse,
   type MeasureContext,
   type Timestamp,
   type Tx,
+  type TxCUD,
   DOMAIN_TX
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import type { Middleware, PipelineContext, TxAdapter, TxMiddlewareResult } from '@hcengineering/server-core'
+import type {
+  Middleware,
+  MiddlewareCreator,
+  PipelineContext,
+  TxAdapter,
+  TxMiddlewareResult
+} from '@hcengineering/server-core'
 import { BaseMiddleware } from '@hcengineering/server-core'
 import crypto from 'node:crypto'
 
@@ -34,10 +42,29 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
   lastHashResponse!: Promise<LoadModelResponse>
   model!: Tx[]
 
-  static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
-    const middleware = new ModelMiddleware(context, next)
+  constructor (
+    context: PipelineContext,
+    next: Middleware | undefined,
+    readonly systemTx: Tx[]
+  ) {
+    super(context, next)
+  }
+
+  static async doCreate (
+    ctx: MeasureContext,
+    context: PipelineContext,
+    next: Middleware | undefined,
+    systemTx: Tx[]
+  ): Promise<Middleware> {
+    const middleware = new ModelMiddleware(context, next, systemTx)
     await middleware.init(ctx)
     return middleware
+  }
+
+  static create (tx: Tx[]): MiddlewareCreator {
+    return (ctx, context, next) => {
+      return this.doCreate(ctx, context, next, tx)
+    }
   }
 
   async init (ctx: MeasureContext): Promise<void> {
@@ -46,8 +73,15 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
     }
     const txAdapter = this.context.adapterManager.getAdapter(DOMAIN_TX, true) as TxAdapter
 
+    const isUserTx = (it: Tx): boolean =>
+      it.modifiedBy !== core.account.System ||
+      (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
+      (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
+
     this.model = await ctx.with('get-model', {}, async (ctx) => {
-      const model = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
+      const allUserTxes = await ctx.with('fetch-model', {}, (ctx) => txAdapter.getModel(ctx))
+      const userTxes = allUserTxes.filter((it) => isUserTx(it))
+      const model = this.systemTx.concat(userTxes)
       for (const tx of model) {
         try {
           this.context.hierarchy.tx(tx)
@@ -55,7 +89,7 @@ export class ModelMiddleware extends BaseMiddleware implements Middleware {
           ctx.warn('failed to apply model transaction, skipping', { tx: JSON.stringify(tx), err })
         }
       }
-      this.context.modelDb.addTxes(ctx, model, false)
+      this.context.modelDb.addTxes(ctx, model, true)
       return model
     })
 
