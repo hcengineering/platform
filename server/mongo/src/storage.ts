@@ -1664,9 +1664,8 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const txCollection = this.db.collection<Tx>(DOMAIN_TX)
-    const exists = await txCollection.indexExists('objectSpace_fi_1__id_fi_1_modifiedOn_fi_1')
     const cursor = await ctx.with('find', {}, async () => {
-      let c = txCollection.find(
+      const c = txCollection.find(
         { objectSpace: core.space.Model },
         {
           sort: {
@@ -1675,9 +1674,6 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
           }
         }
       )
-      if (exists) {
-        c = c.hint({ objectSpace: 1, _id: 1, modifiedOn: 1 })
-      }
       return c
     })
     const model = await ctx.with('to-array', {}, async () => await toArray<Tx>(cursor))

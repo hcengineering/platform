@@ -201,18 +201,12 @@ export function createModel (builder: Builder): void {
       { createdBy: 1 },
       { createdBy: -1 },
       { createdOn: -1 },
-      { modifiedBy: 1 },
-      { objectSpace: 1 }
+      { modifiedBy: 1 }
     ],
     indexes: [
       {
         keys: {
-          objectSpace: 1,
-          _id: 1,
-          modifiedOn: 1
-        },
-        filter: {
-          objectSpace: core.space.Model
+          objectSpace: 1
         }
       }
     ]
