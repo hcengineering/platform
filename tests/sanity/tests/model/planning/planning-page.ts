@@ -93,6 +93,9 @@ export class PlanningPage extends CalendarPage {
   readonly checkboxToDoInToDos = (hasText: string): Locator =>
     this.toDoInToDos(hasText).locator('div.hulyToDoLine-checkbox')
 
+  readonly buttonTagByName = (tagName: string): Locator =>
+    this.page.locator(`#navGroup-tags button:has-text("${tagName}")`)
+
   readonly labelToDoReference = (toDoName: string): Locator =>
     this.page
       .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
@@ -109,6 +112,27 @@ export class PlanningPage extends CalendarPage {
       if (boundingBox != null) {
         await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + 10)
         await this.page.mouse.move(boundingBox.x + 10, boundingBox.y + (addHalf ? 40 : 20))
+        await this.page.mouse.up()
+      }
+    }).toPass(retryOptions)
+  }
+
+  async moveToDoBorderByMouse (
+    title: string,
+    column: number,
+    targetTime: string,
+    size: 'top' | 'bottom'
+  ): Promise<void> {
+    await this.page
+      .locator(`.calendar-element:has-text("${title}") .calendar-element-${size === 'top' ? 'start' : 'end'}`)
+      .hover()
+
+    await expect(async () => {
+      await this.page.mouse.down()
+      const boundingBox = await this.selectTimeCell(targetTime, column).boundingBox()
+      expect(boundingBox).toBeTruthy()
+      if (boundingBox != null) {
+        await this.page.mouse.move(boundingBox.x + 10, size === 'bottom' ? boundingBox.y - 8 : boundingBox.y + 5)
         await this.page.mouse.up()
       }
     }).toPass(retryOptions)
@@ -253,6 +277,12 @@ export class PlanningPage extends CalendarPage {
     await expect(this.page.locator(`button.hulyToDoLine-container:has-text("${toDoName}")`)).toHaveCount(1)
   }
 
+  async checkToDoExistAndShowDuration (toDoName: string, duration: string): Promise<void> {
+    await expect(
+      this.page.locator(`button.hulyToDoLine-container:has-text("${toDoName}"):has-text("${duration}")`)
+    ).toHaveCount(1)
+  }
+
   async checkToDo (data: NewToDo): Promise<void> {
     await expect(this.textPanelToDoTitle()).toHaveValue(data.title)
     if (data.description != null) {
@@ -313,6 +343,10 @@ export class PlanningPage extends CalendarPage {
     const referenceName = await this.getReferenceNameToDoByName(toDoName)
     await this.openReferenceToDoByName(toDoName)
     await expect(this.page.locator(`.popupPanel .hulyHeader-row:has-text("${referenceName}")`)).toBeVisible()
+  }
+
+  async clickButtonTagByName (tagName: string): Promise<void> {
+    await this.buttonTagByName(tagName).click()
   }
 
   async checkToDoExistInCalendar (toDoName: string, count: number): Promise<void> {
