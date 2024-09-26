@@ -124,21 +124,23 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     let iterator: BlobStorageIterator | undefined
     return {
       next: async () => {
-        if (iterator === undefined && adapters.length > 0) {
-          iterator = await (adapters.shift() as StorageAdapter).listStream(ctx, workspaceId)
-        }
-        if (iterator === undefined) {
-          return []
-        }
-        const docInfos = await iterator.next()
-        if (docInfos.length > 0) {
-          // We need to check if our stored version is fine
-          return docInfos
-        } else {
-          // We need to take next adapter
-          await iterator.close()
-          iterator = undefined
-          return []
+        while (true) {
+          if (iterator === undefined && adapters.length > 0) {
+            iterator = await (adapters.shift() as StorageAdapter).listStream(ctx, workspaceId)
+          }
+          if (iterator === undefined) {
+            return []
+          }
+          const docInfos = await iterator.next()
+          if (docInfos.length > 0) {
+            // We need to check if our stored version is fine
+            return docInfos
+          } else {
+            // We need to take next adapter
+            await iterator.close()
+            iterator = undefined
+            continue
+          }
         }
       },
       close: async () => {

@@ -40,6 +40,7 @@ import {
   backup,
   backupFind,
   backupList,
+  backupSize,
   compactBackup,
   createFileBackupStorage,
   createStorageBackupStorage,
@@ -59,7 +60,7 @@ import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
 import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
@@ -86,6 +87,7 @@ import core, {
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceDB, shutdown } from '@hcengineering/mongo'
+import { backupDownload } from '@hcengineering/server-backup/src/backup'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -924,56 +926,79 @@ export function devTool (
     .command('backup-compact-s3 <bucketName> <dirName>')
     .description('Compact a given backup to just one snapshot')
     .option('-f, --force', 'Force compact.', false)
-    .action(async (bucketName: string, dirName: string, cmd: { force: boolean }) => {
-      const { mongodbUri } = prepareTools()
-      await withStorage(mongodbUri, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+    .action(async (bucketName: string, dirName: string, cmd: { force: boolean, print: boolean }) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         await compactBackup(toolCtx, storage, cmd.force)
-      })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
     })
 
-  program
-    .command('backup-compact-s3-all <bucketName>')
-    .description('Compact a given backup to just one snapshot')
-    .option('-f, --force', 'Force compact.', false)
-    .action(async (bucketName: string, dirName: string, cmd: { force: boolean }) => {
-      const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
-        const { mongodbUri } = prepareTools()
-        await withStorage(mongodbUri, async (adapter) => {
-          const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
-          const workspaces = await listWorkspacesPure(db)
-
-          for (const w of workspaces) {
-            console.log(`clearing ${w.workspace} history:`)
-            await compactBackup(toolCtx, storage, cmd.force)
-          }
-        })
-      })
-    })
   program
     .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
-      const { mongodbUri } = prepareTools()
-      await withStorage(mongodbUri, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         const wsid = getWorkspaceId(workspace)
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
         await restore(toolCtx, endpoint, wsid, storage, {
           date: parseInt(date ?? '-1')
         })
-      })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
     })
   program
     .command('backup-s3-list <bucketName> <dirName>')
     .description('list snaphost ids for backup')
     .action(async (bucketName: string, dirName: string, cmd) => {
-      const { mongodbUri } = prepareTools()
-      await withStorage(mongodbUri, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         await backupList(storage)
-      })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
+
+  program
+    .command('backup-s3-size <bucketName> <dirName>')
+    .description('list snaphost ids for backup')
+    .action(async (bucketName: string, dirName: string, cmd) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+        await backupSize(storage)
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
+
+  program
+    .command('backup-s3-download <bucketName> <dirName> <storeIn>')
+    .description('Download a full backup from s3 to local dir')
+    .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+        await backupDownload(storage, storeIn)
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
     })
 
   program
