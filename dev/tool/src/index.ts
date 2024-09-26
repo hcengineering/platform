@@ -15,7 +15,7 @@
 //
 
 import accountPlugin, {
-  ACCOUNT_DB,
+  type AccountDB,
   assignWorkspace,
   confirmEmail,
   createAcc,
@@ -24,6 +24,7 @@ import accountPlugin, {
   dropWorkspace,
   dropWorkspaceFull,
   getAccount,
+  getAccountDB,
   getWorkspaceById,
   listAccounts,
   listWorkspacesByAccount,
@@ -55,7 +56,6 @@ import path from 'path'
 
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
-import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
@@ -77,8 +77,9 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
-import { getMongoClient, getWorkspaceDB, shutdown } from '@hcengineering/mongo'
 import { backupDownload } from '@hcengineering/server-backup/src/backup'
+import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
+
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -175,17 +176,16 @@ export function devTool (
   setMetadata(serverClientPlugin.metadata.Endpoint, accountsUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  async function withDatabase (uri: string, f: (db: Db, client: MongoClient) => Promise<any>): Promise<void> {
+  async function withDatabase (uri: string, f: (db: AccountDB) => Promise<any>): Promise<void> {
     console.log(`connecting to database '${uri}'...`)
 
-    const client = getMongoClient(uri)
-    const _client = await client.getClient()
+    const [accountDb, closeAccountsDb] = await getAccountDB(uri)
     try {
-      await f(_client.db(ACCOUNT_DB), _client)
+      await f(accountDb)
     } catch (err: any) {
       console.error(err)
     }
-    client.close()
+    closeAccountsDb()
     console.log(`closing database connection to '${uri}'...`)
     await shutdown()
   }
@@ -263,7 +263,7 @@ export function devTool (
     .option('-w, --workspace <workspace>', 'A selected "workspace" only', '')
     .action(async (cmd: { workspace: string }) => {
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         console.log('compacting db ...')
         let gtotal: number = 0
         try {
@@ -273,7 +273,9 @@ export function devTool (
               continue
             }
             let total: number = 0
-            const wsDb = getWorkspaceDB(client, { name: workspace.workspace })
+            const client = getMongoClient(mongodbUri)
+            const _client = await client.getClient()
+            const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
             const collections = wsDb.listCollections()
             while (true) {
               const collInfo = await collections.next()
@@ -298,7 +300,7 @@ export function devTool (
     .description('assign workspace')
     .action(async (email: string, workspace: string, cmd) => {
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         console.log(`assigning user ${email} to ${workspace}...`)
         try {
           const workspaceInfo = await getWorkspaceById(db, workspace)
@@ -458,7 +460,7 @@ export function devTool (
     .option('-f|--force [force]', 'Force update', false)
     .action(async (cmd: { logs: string, force: boolean, console: boolean, ignore: string }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         const workspaces = (await listWorkspacesRaw(db)).filter((ws) => !cmd.ignore.includes(ws.workspace))
         workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
         const measureCtx = new MeasureMetricsContext('upgrade', {})
@@ -507,7 +509,7 @@ export function devTool (
     .option('-t|--timeout [timeout]', 'Timeout in days', '7')
     .action(async (cmd: { remove: boolean, disable: boolean, exclude: string, timeout: string }) => {
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         const workspaces = new Map((await listWorkspacesPure(db)).map((p) => [p._id.toString(), p]))
 
         const accounts = await listAccounts(db)
@@ -540,7 +542,9 @@ export function devTool (
                     lastVisitDays
                   })
                   if (cmd.remove) {
-                    await dropWorkspaceFull(toolCtx, db, client, null, ws.workspace, adapter)
+                    const client = getMongoClient(mongodbUri)
+                    const _client = await client.getClient()
+                    await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, adapter)
                   }
                 } else {
                   toolCtx.warn('  +++ used', {
@@ -565,14 +569,16 @@ export function devTool (
       const { mongodbUri } = prepareTools()
 
       await withStorage(mongodbUri, async (storageAdapter) => {
-        await withDatabase(mongodbUri, async (db, client) => {
+        await withDatabase(mongodbUri, async (db) => {
           const ws = await getWorkspaceById(db, workspace)
           if (ws === null) {
             console.log('no workspace exists')
             return
           }
           if (cmd.full) {
-            await dropWorkspaceFull(toolCtx, db, client, null, workspace, storageAdapter)
+            const client = getMongoClient(mongodbUri)
+            const _client = await client.getClient()
+            await dropWorkspaceFull(toolCtx, db, _client, null, workspace, storageAdapter)
           } else {
             await dropWorkspace(toolCtx, db, null, workspace)
           }
@@ -587,10 +593,12 @@ export function devTool (
     .action(async (email, cmd: { full: boolean }) => {
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (storageAdapter) => {
-        await withDatabase(mongodbUri, async (db, client) => {
+        await withDatabase(mongodbUri, async (db) => {
           for (const workspace of await listWorkspacesByAccount(db, email)) {
             if (cmd.full) {
-              await dropWorkspaceFull(toolCtx, db, client, null, workspace.workspace, storageAdapter)
+              const client = getMongoClient(mongodbUri)
+              const _client = await client.getClient()
+              await dropWorkspaceFull(toolCtx, db, _client, null, workspace.workspace, storageAdapter)
             } else {
               await dropWorkspace(toolCtx, db, null, workspace.workspace)
             }
@@ -604,7 +612,7 @@ export function devTool (
     .option('--full [full]', 'Force remove all data', false)
     .action(async (email, cmd: { full: boolean }) => {
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         for (const workspace of await listWorkspacesByAccount(db, email)) {
           console.log(workspace.workspace, workspace.workspaceUrl, workspace.workspaceName)
         }
@@ -618,12 +626,14 @@ export function devTool (
       const { mongodbUri } = prepareTools()
 
       await withStorage(mongodbUri, async (storageAdapter) => {
-        await withDatabase(mongodbUri, async (db, client) => {
+        await withDatabase(mongodbUri, async (db) => {
           const workspacesJSON = await listWorkspacesPure(db)
           for (const ws of workspacesJSON) {
             const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
             if (lastVisit > 30) {
-              await dropWorkspaceFull(toolCtx, db, client, null, ws.workspace, storageAdapter)
+              const client = getMongoClient(mongodbUri)
+              const _client = await client.getClient()
+              await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, storageAdapter)
             }
           }
         })
@@ -676,10 +686,12 @@ export function devTool (
 
   program.command('fix-person-accounts').action(async () => {
     const { mongodbUri, version } = prepareTools()
-    await withDatabase(mongodbUri, async (db, client) => {
+    await withDatabase(mongodbUri, async (db) => {
       const ws = await listWorkspacesPure(db)
       for (const w of ws) {
-        const wsDb = getWorkspaceDB(client, { name: w.workspace })
+        const client = getMongoClient(mongodbUri)
+        const _client = await client.getClient()
+        const wsDb = getWorkspaceMongoDB(_client, { name: w.workspace })
         await wsDb.collection('tx').updateMany(
           {
             objectClass: contact.class.PersonAccount,
@@ -1171,9 +1183,12 @@ export function devTool (
     .option('--all', 'Show all files', false)
     .action(async (cmd: { workspace: string, disabled: boolean, all: boolean }) => {
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
           try {
+            const client = getMongoClient(mongodbUri)
+            const _client = await client.getClient()
+
             let index = 1
             const workspaces = await listWorkspacesPure(db)
             workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
@@ -1191,7 +1206,7 @@ export function devTool (
               try {
                 console.log('start', workspace.workspace, index, '/', workspaces.length)
                 const workspaceId = getWorkspaceId(workspace.workspace)
-                const wsDb = getWorkspaceDB(client, { name: workspace.workspace })
+                const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
                 await showLostFiles(toolCtx, workspaceId, wsDb, adapter, { showAll: cmd.all })
                 console.log('done', workspace.workspace)
               } catch (err) {
@@ -1209,7 +1224,7 @@ export function devTool (
 
   program.command('show-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
     const { mongodbUri } = prepareTools()
-    await withDatabase(mongodbUri, async (db, client) => {
+    await withDatabase(mongodbUri, async (db) => {
       await withStorage(mongodbUri, async (adapter) => {
         try {
           const workspaceId = getWorkspaceId(workspace)
@@ -1225,7 +1240,7 @@ export function devTool (
 
   program.command('restore-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
     const { mongodbUri } = prepareTools()
-    await withDatabase(mongodbUri, async (db, client) => {
+    await withDatabase(mongodbUri, async (db) => {
       await withStorage(mongodbUri, async (adapter) => {
         try {
           const workspaceId = getWorkspaceId(workspace)
@@ -1371,7 +1386,7 @@ export function devTool (
         mode: 'find-all' | 'connect-only'
       }) => {
         const { mongodbUri } = prepareTools()
-        await withDatabase(mongodbUri, async (db, client) => {
+        await withDatabase(mongodbUri, async (db) => {
           console.log(JSON.stringify(cmd))
           if (!['find-all', 'connect-only'].includes(cmd.mode)) {
             console.log('wrong mode')
@@ -1513,7 +1528,7 @@ export function devTool (
     .option('-c, --concurrency <concurrency>', 'Number of documents being processed concurrently', '10')
     .action(async (cmd: { workspace: string, concurrency: string }) => {
       const { mongodbUri, dbUrl, txes } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
           let index = 0
@@ -1532,7 +1547,9 @@ export function devTool (
 
             const { pipeline } = await getServerPipeline(toolCtx, txes, mongodbUri, dbUrl, wsUrl)
 
-            await migrateMarkup(toolCtx, adapter, wsId, client, pipeline, parseInt(cmd.concurrency))
+            const client = getMongoClient(mongodbUri)
+            const _client = await client.getClient()
+            await migrateMarkup(toolCtx, adapter, wsId, _client, pipeline, parseInt(cmd.concurrency))
 
             console.log('...done', workspace.workspace)
             index++

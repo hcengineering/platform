@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { ACCOUNT_DB, listWorkspacesRaw } from '@hcengineering/account'
+import { getAccountDB, listWorkspacesRaw } from '@hcengineering/account'
 import attachment from '@hcengineering/attachment'
 import calendar from '@hcengineering/calendar'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
@@ -62,7 +62,7 @@ import core, {
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import recruit, { type Applicant, type Vacancy } from '@hcengineering/recruit'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -163,7 +163,7 @@ export async function cleanWorkspace (
     const client = getMongoClient(mongoUrl)
     try {
       const _client = await client.getClient()
-      const db = getWorkspaceDB(_client, workspaceId)
+      const db = getWorkspaceMongoDB(_client, workspaceId)
 
       if (opt.removedTx) {
         const txes = await db.collection(DOMAIN_TX).find({}).toArray()
@@ -428,7 +428,7 @@ export async function fixSkills (
   const client = getMongoClient(mongoUrl)
   try {
     const _client = await client.getClient()
-    const db = getWorkspaceDB(_client, workspaceId)
+    const db = getWorkspaceMongoDB(_client, workspaceId)
 
     async function fixCount (): Promise<void> {
       console.log('fixing ref-count...')
@@ -697,7 +697,7 @@ export async function restoreRecruitingTaskTypes (
   const client = getMongoClient(mongoUrl)
   try {
     const _client = await client.getClient()
-    const db = getWorkspaceDB(_client, workspaceId)
+    const db = getWorkspaceMongoDB(_client, workspaceId)
 
     // Query all vacancy project types creations (in Model)
     // We only update new project types in model here and not old ones in spaces
@@ -861,7 +861,7 @@ export async function restoreHrTaskTypesFromUpdates (
   const client = getMongoClient(mongoUrl)
   try {
     const _client = await client.getClient()
-    const db = getWorkspaceDB(_client, workspaceId)
+    const db = getWorkspaceMongoDB(_client, workspaceId)
     const hierarchy = connection.getHierarchy()
     const descr = connection.getModel().getObject(recruit.descriptors.VacancyType)
     const knownCategories = [
@@ -1065,19 +1065,20 @@ export async function removeDuplicateIds (
   initWorkspacesStr: string
 ): Promise<void> {
   const state = 'REMOVE_DUPLICATE_IDS'
+  const [accountsDb, closeAccountsDb] = await getAccountDB(mongodbUri)
   const mongoClient = getMongoClient(mongodbUri)
   const _client = await mongoClient.getClient()
   // disable spaces while change hardocded ids
   const skippedDomains: string[] = [DOMAIN_DOC_INDEX_STATE, DOMAIN_BENCHMARK, DOMAIN_TX, DOMAIN_SPACE]
   try {
-    const workspaces = await listWorkspacesRaw(_client.db(ACCOUNT_DB))
+    const workspaces = await listWorkspacesRaw(accountsDb)
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
     const initWorkspaces = initWorkspacesStr.split(';')
     const initWS = workspaces.filter((p) => initWorkspaces.includes(p.workspace))
     const ids = new Map<string, RelatedDocument[]>()
     for (const workspace of initWS) {
       const workspaceId = getWorkspaceId(workspace.workspace)
-      const db = getWorkspaceDB(_client, workspaceId)
+      const db = getWorkspaceMongoDB(_client, workspaceId)
 
       const txex = await db.collection(DOMAIN_TX).find<TxCUD<Doc>>({}).toArray()
       const txesArr = []
@@ -1130,7 +1131,7 @@ export async function removeDuplicateIds (
 
       ctx.info(`Processing workspace ${workspace.workspaceName ?? workspace.workspace}`)
       const workspaceId = getWorkspaceId(workspace.workspace)
-      const db = getWorkspaceDB(_client, workspaceId)
+      const db = getWorkspaceMongoDB(_client, workspaceId)
       const check = await db.collection(DOMAIN_MIGRATION).findOne({ state, plugin: workspace.workspace })
       if (check != null) continue
 
@@ -1161,6 +1162,7 @@ export async function removeDuplicateIds (
     console.trace(err)
   } finally {
     mongoClient.close()
+    closeAccountsDb()
   }
 }
 

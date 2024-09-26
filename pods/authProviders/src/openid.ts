@@ -10,12 +10,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
 // See the License for the specific language governing permissions and
-// limitations under the f.
+// limitations under the License.
 //
-import { joinWithProvider, loginWithProvider, type LoginInfo } from '@hcengineering/account'
+import { type AccountDB, joinWithProvider, loginWithProvider, type LoginInfo } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
 import Router from 'koa-router'
-import { Db } from 'mongodb'
 import { Issuer, Strategy } from 'openid-client'
 import qs from 'querystringify'
 
@@ -27,7 +26,7 @@ export function registerOpenid (
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
-  dbPromise: Promise<Db>,
+  dbPromise: Promise<AccountDB>,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {
