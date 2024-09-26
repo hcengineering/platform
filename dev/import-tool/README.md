@@ -60,7 +60,7 @@ rushx run-local import-notion-to-teamspace /home/john/extracted-notion-docs \
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v $(pwd):/data \
-  hardcoreeng/tool:latest \
+  hardcoreeng/import-tool:latest \
   -- bundle.js import-notion-with-teamspaces /data \
 --user jane.doe@gmail.com \
 --password 4321qwe \
@@ -71,7 +71,7 @@ docker run \
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v $(pwd):/data \
-  hardcoreeng/tool:latest \
+  hardcoreeng/import-tool:latest \
   -- bundle.js import-notion-to-teamspace /data \
 --user jane.doe@gmail.com \
 --password 4321qwe \
