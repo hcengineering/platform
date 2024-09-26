@@ -74,6 +74,7 @@ export interface Session {
   mins5: StatisticsElement
 
   lastRequest: number
+  lastPing: number
 
   isUpgradeClient: () => boolean
 

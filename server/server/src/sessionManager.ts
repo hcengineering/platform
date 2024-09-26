@@ -198,8 +198,13 @@ class TSessionManager implements SessionManager {
             void this.close(this.ctx, s[1].socket, wsId)
             continue
           }
-          if (lastRequestDiff + (1 / 10) * lastRequestDiff > this.timeouts.pingTimeout) {
+          if (
+            lastRequestDiff + (1 / 10) * lastRequestDiff > this.timeouts.pingTimeout &&
+            now - s[1].session.lastPing > this.timeouts.pingTimeout
+          ) {
             // We need to check state and close socket if it broken
+            // And ping other wize
+            s[1].session.lastPing = now
             if (s[1].socket.checkState()) {
               s[1].socket.send(
                 workspace.context,
