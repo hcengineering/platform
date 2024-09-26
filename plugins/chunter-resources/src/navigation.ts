@@ -317,7 +317,7 @@ export async function closeThreadInSidebarChannel (widget: Widget, tab: ChatWidg
   }, 100)
 }
 
-export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc): Promise<void> {
+export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc, selectedMessageId?: Ref<ActivityMessage>): Promise<void> {
   const client = getClient()
 
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]
@@ -362,6 +362,7 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
       _id: object?._id,
       _class: object?._class,
       thread: message._id,
+      selectedMessageId,
       channelName: name
     }
   }

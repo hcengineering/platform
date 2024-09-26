@@ -28,6 +28,7 @@
   export let lazy = false
   export let minHeight: string | null = null
   export let highlightIndex: number | undefined = undefined
+  export let items: any[] = []
   export let getKey: (index: number) => string = (index) => index.toString()
 
   const refs: HTMLElement[] = []
@@ -65,6 +66,8 @@
       r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
     }
   }
+
+  $: array = items.length > 0 ? items : Array(count)
 </script>
 
 {#if count}
@@ -75,7 +78,7 @@
       dispatch('changeContent')
     }}
   >
-    {#each Array(count) as _, row (getKey(row))}
+    {#each array as _, row (getKey(row))}
       {#if lazy}
         <div style="min-height: {minHeight}">
           <Lazy>
@@ -145,6 +148,6 @@
   .list-container {
     min-width: 0;
     // border-radius: 0.25rem;
-    user-select: none;
+    //user-select: none;
   }
 </style>
