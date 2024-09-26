@@ -57,6 +57,8 @@ export class ClientSession implements Session {
   sessionId = ''
   lastRequest = Date.now()
 
+  lastPing: number = Date.now()
+
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
   mins5: StatisticsElement = { find: 0, tx: 0 }

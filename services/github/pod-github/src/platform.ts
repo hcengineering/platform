@@ -275,31 +275,19 @@ export class PlatformWorker {
   async removeInstallation (ctx: MeasureContext, workspace: string, installationId: number): Promise<void> {
     const installation = this.installations.get(installationId)
     if (installation !== undefined) {
-      try {
-        await installation.octokit.rest.apps.deleteInstallation({
+      // Do not wait to github to process it
+      void installation.octokit.rest.apps
+        .deleteInstallation({
           installation_id: installationId
         })
-      } catch (err: any) {
-        if (err.status !== 404) {
-          // Already deleted.
-          ctx.error('error from github api', { error: err })
-        }
-        await this.handleInstallationEventDelete(installationId)
-      }
-      // Let's check if workspace somehow still have installation and remove it
-      const worker = this.clients.get(workspace) as GithubWorker
-      if (worker !== undefined) {
-        await GithubWorker.checkIntegrations(worker.client, this.installations)
-      } else {
-        let client: Client | undefined
-        try {
-          client = await createPlatformClient(workspace, 30000)
-          await GithubWorker.checkIntegrations(client, this.installations)
-          await client.close()
-        } catch (err: any) {
-          ctx.error('failed to clean installation from workspace', { workspace, installationId })
-        }
-      }
+        .catch((err) => {
+          if (err.status !== 404) {
+            // Already deleted.
+            ctx.error('error from github api', { error: err })
+          }
+        })
+
+      await this.handleInstallationEventDelete(installationId)
     }
     this.triggerCheckWorkspaces()
   }
