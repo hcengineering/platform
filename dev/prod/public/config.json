@@ -12,7 +12,7 @@
   "LAST_NAME_FIRST": "true",
   "PRINT_URL": "http://localhost:4005",
   "SIGN_URL": "http://localhost:4006",
-  "ANALYTICS_COLLECTOR_URL": "http://localhost:4007",
+  "ANALYTICS_COLLECTOR_URL": "http://localhost:4017",
   "AI_URL": "http://localhost:4010",
   "BRANDING_URL": "/branding.json",
   "VERSION": null,
