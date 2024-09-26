@@ -238,7 +238,9 @@ export default plugin(chunterId, {
   },
   function: {
     CanTranslateMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    OpenThreadInSidebar: '' as Resource<(_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc, selectedId?: Ref<ActivityMessage>) => Promise<void>>,
+    OpenThreadInSidebar: '' as Resource<
+    (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc, selectedId?: Ref<ActivityMessage>) => Promise<void>
+    >,
     OpenChannelInSidebar: '' as Resource<
     (
       _id: Ref<Doc>,

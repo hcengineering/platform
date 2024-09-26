@@ -265,7 +265,7 @@
     if (isLoading || isScrollInitialized) {
       return
     }
-    // console.log('init', provider.chatId, separatorIndex, $newTimestampStore)
+
     const selectedMessageExists =
       selectedMessageId !== undefined && messages.some(({ _id }) => _id === selectedMessageId)
     if (selectedMessageExists) {
@@ -273,12 +273,10 @@
       scrollToMessage()
       isScrollInitialized = true
     } else if (separatorIndex === -1) {
-      console.log('scroll to bottom', provider.chatId)
       isScrollInitialized = true
       shouldScrollToNew = true
       isScrollAtBottom = true
     } else if (separatorElement != null) {
-      console.log('scroll to separator', provider.chatId)
       await wait()
       scrollToSeparator()
       isScrollInitialized = true
@@ -376,7 +374,6 @@
     const lastMessage = messages[messages.length - 1]
 
     if (lastMetadata._id !== lastMessage._id) {
-      console.log('reinit')
       separatorIndex = -1
       provider.jumpToEnd(true)
       reinitializeScroll()
@@ -432,14 +429,12 @@
     const limit = Math.max(maxMsgPerScreen, provider.limit)
     const isLoadMoreUp = shouldLoadMoreUp()
     const isLoadMoreDown = shouldLoadMoreDown()
-    const { scrollHeight, scrollTop, clientHeight } = scrollDiv
+
     if (!isLoadMoreUp && backwardRequested) {
-      // console.log('reset', scrollHeight + Math.ceil(scrollTop - clientHeight))
       backwardRequested = false
     }
 
     if (isLoadMoreUp && !backwardRequested) {
-      // console.log('load more up', scrollHeight + Math.ceil(scrollTop - clientHeight))
       shouldScrollToNew = false
       restoreScrollTop = scrollDiv?.scrollTop ?? 0
       restoreScrollHeight = 0
