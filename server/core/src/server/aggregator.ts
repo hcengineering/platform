@@ -77,6 +77,16 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
+  doTrimHash (s: string | undefined): string {
+    if (s == null) {
+      return ''
+    }
+    if (s.startsWith('"') && s.endsWith('"')) {
+      return s.slice(1, s.length - 1)
+    }
+    return s
+  }
+
   async doSyncDocs (ctx: MeasureContext, workspaceId: WorkspaceId, docs: ListBlobResult[]): Promise<void> {
     const existingBlobs = toIdMap(
       await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: { $in: docs.map((it) => it._id) } })
@@ -84,10 +94,17 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     const toUpdate: Blob[] = []
     for (const d of docs) {
       const blobInfo = existingBlobs.get(d._id)
-      if (blobInfo === undefined || blobInfo.etag !== d.etag || blobInfo.size !== d.size) {
-        const stat = await this.stat(ctx, workspaceId, d._id)
+      if (
+        blobInfo === undefined ||
+        this.doTrimHash(blobInfo.etag) !== this.doTrimHash(d.etag) ||
+        blobInfo.size !== d.size
+      ) {
+        const stat = await this.adapters.get(d.provider)?.stat(ctx, workspaceId, d._id)
         if (stat !== undefined) {
+          stat.provider = d.provider
           toUpdate.push(stat)
+        } else {
+          ctx.error('blob not found for sync', { provider: d.provider, id: d._id, workspace: workspaceId.name })
         }
       }
     }
@@ -120,19 +137,24 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
   }
 
   private makeStorageIterator (ctx: MeasureContext, workspaceId: WorkspaceId): BlobStorageIterator {
-    const adapters = Array.from(this.adapters.values())
+    const adapters = Array.from(this.adapters.entries())
+    let provider: [string, StorageAdapter] | undefined
     let iterator: BlobStorageIterator | undefined
     return {
       next: async () => {
         while (true) {
           if (iterator === undefined && adapters.length > 0) {
-            iterator = await (adapters.shift() as StorageAdapter).listStream(ctx, workspaceId)
+            provider = adapters.shift() as [string, StorageAdapter]
+            iterator = await provider[1].listStream(ctx, workspaceId)
           }
           if (iterator === undefined) {
             return []
           }
           const docInfos = await iterator.next()
           if (docInfos.length > 0) {
+            for (const d of docInfos) {
+              d.provider = provider?.[0] as string
+            }
             // We need to check if our stored version is fine
             return docInfos
           } else {
@@ -323,7 +345,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
     const result = await adapter.put(ctx, workspaceId, objectName, stream, contentType, size)
 
-    if (size === undefined || size === 0) {
+    if (size === undefined || size === 0 || !Number.isInteger(size)) {
       const docStats = await adapter.stat(ctx, workspaceId, objectName)
       if (docStats !== undefined) {
         if (contentType !== docStats.contentType) {
