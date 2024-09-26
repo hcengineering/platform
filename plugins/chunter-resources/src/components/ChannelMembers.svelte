@@ -23,6 +23,7 @@
 
   export let ids: Ref<Person>[] = []
   export let disableRemoveFor: Ref<Person>[] = []
+  export let readonly = false
 
   const dispatch = createEventDispatcher()
 
@@ -36,22 +37,24 @@
 </script>
 
 <div class="root">
-  <div class="item" style:padding="var(--spacing-1_5)" class:withoutBorder={persons.length === 0}>
-    <ModernButton
-      label={chunter.string.AddMembers}
-      icon={IconAddMember}
-      iconSize="small"
-      kind="secondary"
-      size="small"
-      on:click={() => dispatch('add')}
-    />
-  </div>
+  {#if !readonly}
+    <div class="item" style:padding="var(--spacing-1_5)" class:withoutBorder={persons.length === 0}>
+      <ModernButton
+        label={chunter.string.AddMembers}
+        icon={IconAddMember}
+        iconSize="small"
+        kind="secondary"
+        size="small"
+        on:click={() => dispatch('add')}
+      />
+    </div>
+  {/if}
   <Scroller>
     {#each persons as person, index (person._id)}
       <div class="item" class:withoutBorder={index === persons.length - 1}>
-        <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
+        <div class="item__content" class:disabled={readonly || disableRemoveFor.includes(person._id)}>
           <UserDetails {person} showStatus />
-          {#if !disableRemoveFor.includes(person._id)}
+          {#if !readonly && !disableRemoveFor.includes(person._id)}
             <div class="item__action">
               <ButtonIcon
                 icon={IconDelete}

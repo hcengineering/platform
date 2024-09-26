@@ -13,20 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, {
-    ActivityExtension,
-    ActivityMessage,
-    ActivityMessagesFilter,
-    DisplayActivityMessage
-  } from '@hcengineering/activity'
+  import activity, { ActivityMessage, ActivityMessagesFilter, DisplayActivityMessage } from '@hcengineering/activity'
   import {
-    ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
     canGroupMessages,
     messageInFocus,
     sortActivityMessages
   } from '@hcengineering/activity-resources'
-  import { Doc, getCurrentAccount, getDay, Ref, Timestamp } from '@hcengineering/core'
+  import core, { Doc, getCurrentAccount, getDay, Ref, Space, Timestamp } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -48,9 +42,11 @@
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import HistoryLoading from './LoadingHistory.svelte'
+  import ChannelInput from './ChannelInput.svelte'
 
   export let provider: ChannelDataProvider
   export let object: Doc
+  export let channel: Doc
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let scrollElement: HTMLDivElement | undefined | null = undefined
   export let startFromBottom = false
@@ -74,6 +70,7 @@
 
   const me = getCurrentAccount()
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -94,7 +91,6 @@
 
   let messages: ActivityMessage[] = []
   let displayMessages: DisplayActivityMessage[] = []
-  let extensions: ActivityExtension[] = []
 
   let scroller: Scroller | undefined | null = undefined
   let separatorElement: HTMLDivElement | undefined = undefined
@@ -118,9 +114,8 @@
   $: messages = $messagesStore
   $: isLoading = $isLoadingStore
 
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: doc._class })
-
   $: notifyContext = $contextByDocStore.get(doc._id)
+  $: readonly = hierarchy.isDerived(channel._class, core.class.Space) ? (channel as Space).archived : false
 
   void client
     .getModel()
@@ -809,7 +804,7 @@
       {/if}
       <slot name="header" />
 
-      {#if displayMessages.length === 0 && !embedded}
+      {#if displayMessages.length === 0 && !embedded && !readonly}
         <BlankView
           icon={chunter.icon.Thread}
           header={chunter.string.NoMessagesInChannel}
@@ -840,17 +835,12 @@
           attachmentImageSize="x-large"
           type={canGroup ? 'short' : 'default'}
           hideLink
+          {readonly}
         />
       {/each}
 
       {#if !fixedInput}
-        <div class="ref-input flex-col">
-          <ActivityExtensionComponent
-            kind="input"
-            {extensions}
-            props={{ object, boundary: scrollElement, collection, autofocus: true, withTypingInfo: true }}
-          />
-        </div>
+        <ChannelInput {object} {readonly} boundary={scrollElement} {collection} isThread={embedded} />
       {/if}
 
       {#if loadMoreAllowed && $canLoadNextForwardStore}
@@ -859,7 +849,7 @@
     </Scroller>
 
     {#if !embedded && showScrollDownButton}
-      <div class="down-button absolute">
+      <div class="down-button absolute" class:readonly>
         <ModernButton
           label={chunter.string.LatestMessages}
           shape="round"
@@ -870,14 +860,8 @@
       </div>
     {/if}
   </div>
-  {#if fixedInput && object}
-    <div class="ref-input flex-col">
-      <ActivityExtensionComponent
-        kind="input"
-        {extensions}
-        props={{ object, boundary: scrollElement, collection, autofocus: true, withTypingInfo: true }}
-      />
-    </div>
+  {#if fixedInput}
+    <ChannelInput {object} {readonly} boundary={scrollElement} {collection} isThread={embedded} />
   {/if}
 {/if}
 
@@ -885,13 +869,6 @@
   .grower {
     flex-grow: 10;
     flex-shrink: 5;
-  }
-
-  .ref-input {
-    flex-shrink: 0;
-    margin: 1.25rem 1rem 1rem;
-    margin-bottom: 0;
-    max-height: 18.75rem;
   }
 
   .overlay {
@@ -920,6 +897,10 @@
     animation: 0.5s fadeIn;
     animation-fill-mode: forwards;
     visibility: hidden;
+
+    &.readonly {
+      bottom: 0.25rem;
+    }
   }
 
   @keyframes fadeIn {

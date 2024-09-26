@@ -55,6 +55,7 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
+  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
   $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: withAside =
@@ -114,7 +115,7 @@
   <div class="popupPanel-body" class:asideShown={withAside && isAsideShown}>
     <div class="popupPanel-body__main">
       {#key object._id}
-        {#if shouldShowJoinOverlay(object)}
+        {#if !readonly && shouldShowJoinOverlay(object)}
           <div class="body h-full w-full clear-mins flex-center">
             <div class="joinOverlay">
               <div class="an-element__label header">
