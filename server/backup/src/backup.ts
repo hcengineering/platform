@@ -682,7 +682,7 @@ export async function backup (
     let downloaded = 0
 
     const printDownloaded = (msg: string, size?: number | null): void => {
-      if (size == null || Number.isNaN(size)) {
+      if (size == null || Number.isNaN(size) || !Number.isInteger(size)) {
         return
       }
       ops++
@@ -710,6 +710,12 @@ export async function backup (
       let changed: number = 0
       const needRetrieveChunks: Ref<Doc>[][] = []
       // Load all digest from collection.
+      ctx.info('processed', {
+        processed,
+        digest: digest.size,
+        time: Date.now() - st,
+        workspace: workspaceId.name
+      })
       while (true) {
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx, options.recheck))
