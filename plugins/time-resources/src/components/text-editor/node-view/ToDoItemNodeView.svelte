@@ -7,12 +7,14 @@
   import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor-resources'
   import time, { ToDo, ToDoPriority } from '@hcengineering/time'
   import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
+  import { onDestroy, onMount } from 'svelte'
 
   import timeRes from '../../../plugin'
 
   export let node: NodeViewProps['node']
   export let editor: NodeViewProps['editor']
   export let updateAttributes: NodeViewProps['updateAttributes']
+  export let getPos: NodeViewProps['getPos']
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let objectClass: Ref<Class<Doc>> | undefined = undefined
@@ -20,6 +22,24 @@
 
   const client = getClient()
   const query = createQuery()
+
+  let focused = false
+
+  function handleSelectionUpdate (): void {
+    const selection = editor.state.selection
+    const pos = selection.$anchor.pos
+    const start = getPos()
+    const end = node.firstChild != null ? start + node.firstChild.nodeSize + 1 : start + node.nodeSize
+    focused = pos >= start && pos < end
+  }
+
+  onMount(() => {
+    editor.on('selectionUpdate', handleSelectionUpdate)
+  })
+
+  onDestroy(() => {
+    editor.off('selectionUpdate', handleSelectionUpdate)
+  })
 
   $: todoId = node.attrs.todoid as Ref<ToDo>
   $: userId = node.attrs.userid as Ref<Person>
@@ -186,10 +206,11 @@
 
 <NodeViewWrapper data-drag-handle="" data-type="todoItem">
   <div
-    class="todo-item flex-row-top flex-gap-3"
+    class="todo-item flex-row-top flex-gap-2"
     class:empty={node.textContent.length === 0}
     class:unassigned={userId == null}
     class:hovered
+    class:focused
   >
     <div class="flex-center assignee" contenteditable="false">
       <EmployeePresenter
@@ -222,21 +243,21 @@
     }
 
     &.unassigned {
-      .assignee {
+      & > .assignee {
         opacity: 0;
       }
     }
 
     &.empty {
-      .assignee {
+      & > .assignee {
         visibility: hidden;
       }
     }
 
     &.hovered,
-    &:hover,
-    &:focus-within {
-      .assignee {
+    &.focused,
+    &:hover {
+      & > .assignee {
         opacity: 1;
       }
     }

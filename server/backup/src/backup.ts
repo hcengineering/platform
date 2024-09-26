@@ -34,6 +34,7 @@ import core, {
   systemAccountEmail,
   TxCollectionCUD,
   WorkspaceId,
+  type BackupStatus,
   type Blob,
   type DocIndexState,
   type Tx
@@ -42,6 +43,8 @@ import { BlobClient, createClient } from '@hcengineering/server-client'
 import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
+import { createWriteStream, existsSync, mkdirSync, statSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
@@ -49,7 +52,6 @@ import { Writable } from 'stream'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
-import type { BackupStatus } from '@hcengineering/core/src/classes'
 export * from './storage'
 
 const dataBlobSize = 50 * 1024 * 1024
@@ -1111,6 +1113,100 @@ export async function backupList (storage: BackupStorage): Promise<void> {
   for (const s of backupInfo.snapshots) {
     console.log('snapshot: id:', s.date, ' date:', new Date(s.date))
   }
+}
+
+/**
+ * @public
+ */
+export async function backupSize (storage: BackupStorage): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  let size = 0
+
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+    if (file != null && (await storage.exists(file))) {
+      const fileSize = await storage.stat(file)
+      console.log(file, fileSize)
+      size += fileSize
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile)
+
+  console.log('Backup size', size / (1024 * 1024), 'Mb')
+}
+
+/**
+ * @public
+ */
+export async function backupDownload (storage: BackupStorage, storeIn: string): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  let size = 0
+
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+    if (file != null && (await storage.exists(file))) {
+      const fileSize = await storage.stat(file)
+      const target = join(storeIn, file)
+      const dir = dirname(target)
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
+      }
+      if (!existsSync(target) || fileSize !== statSync(target).size) {
+        console.log('downloading', file, fileSize)
+        const readStream = await storage.load(file)
+        const outp = createWriteStream(target)
+
+        readStream.pipe(outp)
+        await new Promise<void>((resolve) => {
+          readStream.on('end', () => {
+            readStream.destroy()
+            outp.close()
+            resolve()
+          })
+        })
+      }
+      size += fileSize
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile)
+
+  console.log('Backup size', size / (1024 * 1024), 'Mb')
 }
 
 /**
