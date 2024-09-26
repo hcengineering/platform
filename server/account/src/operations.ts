@@ -112,7 +112,6 @@ export async function setAccountAdmin (db: AccountDB, email: string, admin: bool
  * @returns
  */
 export async function getWorkspaceByUrl (db: AccountDB, workspaceUrl: string): Promise<Workspace | null> {
-  // const res = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspaceUrl })
   const res = await db.workspace.findOne({ workspaceUrl })
   if (res != null) {
     return res
@@ -954,7 +953,7 @@ async function generateWorkspaceRecord (
     }
     const sameUrl = await db.workspace.findOne({ workspaceUrl })
     const sameWorkspace = await db.workspace.findOne({ workspace })
-    // const ws = await wsCollection.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
+
     if (sameUrl === null && sameWorkspace === null) {
       const data: WorkspaceData = {
         workspace,
