@@ -17,6 +17,7 @@
   import { ActivityMessage } from '@hcengineering/activity'
 
   export let message: ActivityMessage
+  export let readonly = false
 </script>
 
 <ActivityMessagePresenter
@@ -26,4 +27,5 @@
   withShowMore={false}
   attachmentImageSize="x-large"
   skipLabel
+  {readonly}
 />

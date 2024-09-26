@@ -52,6 +52,7 @@
   export let videoPreload = true
   export let hideLink = false
   export let compact = false
+  export let readonly = false
   export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
 
@@ -245,6 +246,7 @@
     {skipLabel}
     {pending}
     {stale}
+    {readonly}
     excludedActions={$shownTranslatedMessagesStore.has(value._id)
       ? [chunter.action.TranslateMessage]
       : [chunter.action.ShowOriginalMessage]}

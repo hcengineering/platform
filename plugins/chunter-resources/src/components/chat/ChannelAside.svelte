@@ -115,6 +115,7 @@
       }
     )
   }
+  $: readonly = object?.archived ?? false
 </script>
 
 <DocAside {_class} {object}>
@@ -146,6 +147,7 @@
     <ChannelMembers
       ids={Array.from(members)}
       disableRemoveFor={disabledRemoveFor}
+      {readonly}
       on:add={openSelectUsersPopup}
       on:remove={removeMember}
     />

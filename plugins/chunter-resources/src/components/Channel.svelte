@@ -103,6 +103,7 @@
 {#if dataProvider}
   <ChannelScrollView
     {object}
+    channel={object}
     skipLabels={!isDocChannel}
     selectedFilters={filters}
     startFromBottom

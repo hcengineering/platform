@@ -54,6 +54,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
   export let type: ActivityMessageViewType = 'default'
+  export let readonly = false
   export let space: Ref<Space> | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
 
@@ -195,6 +196,7 @@
   {skipLabel}
   {hoverable}
   {hoverStyles}
+  {readonly}
   type={viewlet?.label || getIsTextType(attributeModel) ? 'default' : type}
   showDatePreposition={hideLink}
   {onClick}
