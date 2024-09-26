@@ -1,6 +1,6 @@
 ---
 class: tracker.class.Project
-title: Huly Platform
+identifier: HULY
 private: false
 autoJoin: false
 defaultAssignee: John Doe
@@ -27,4 +27,4 @@ milestones:
       description: |
         The most important milestone **ever**
 ---
-Open Source All-in-One Project Management Platform 🎉
+ This is my first teamspace in Huly! 🎉
