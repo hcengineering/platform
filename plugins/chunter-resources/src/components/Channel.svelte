@@ -21,9 +21,9 @@
   import { location as locationStore } from '@hcengineering/ui'
 
   import chunter from '../plugin'
-  import ChannelScrollView from './ChannelScrollView.svelte'
   import { ChannelDataProvider } from '../channelDataProvider'
   import { onDestroy } from 'svelte'
+  import ReverseChannelScrollView from './ReverseChannelScrollView.svelte'
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
@@ -101,16 +101,12 @@
 </script>
 
 {#if dataProvider}
-  <ChannelScrollView
-    {object}
-    skipLabels={!isDocChannel}
-    selectedFilters={filters}
-    startFromBottom
+  <ReverseChannelScrollView
     bind:selectedMessageId
+    {object}
     {collection}
     provider={dataProvider}
-    {isAsideOpened}
-    loadMoreAllowed={!isDocChannel}
     {freeze}
+    loadMoreAllowed={!isDocChannel}
   />
 {/if}

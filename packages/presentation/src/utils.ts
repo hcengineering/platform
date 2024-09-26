@@ -54,9 +54,12 @@ import view, { type AttributeCategory, type AttributeEditor } from '@hcengineeri
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { get, writable, type Writable } from 'svelte/store'
+import diffview from '@hcengineering/diffview'
+
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
+
 export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
@@ -721,3 +724,30 @@ export async function loadServerConfig (url: string): Promise<any> {
 
   return await res.json()
 }
+
+export const preloadedComponentsStore = writable<Map<AnyComponent, AnySvelteComponent>>(
+  new Map<AnyComponent, AnySvelteComponent>()
+)
+
+async function loadResources (): Promise<void> {
+  const client = getClient()
+  if (client === undefined) {
+    setTimeout(loadResources, 50)
+    return
+  }
+
+  // We need to preload diffview.component.Highlight to avoid CodeBlock component loading, it affects scroll position in chat
+  const components = [diffview.component.Highlight]
+
+  for (const component of components) {
+    const resource = await getResource(component)
+    if (resource !== undefined) {
+      preloadedComponentsStore.update((m) => {
+        m.set(component, resource)
+        return m
+      })
+    }
+  }
+}
+
+void loadResources()
