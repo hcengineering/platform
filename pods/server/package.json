@@ -73,6 +73,10 @@
     "@hcengineering/pod-telegram-bot": "^0.6.0",
     "@hcengineering/server-ai-bot": "^0.6.0",
     "@hcengineering/server-ai-bot-resources": "^0.6.0",
-    "@hcengineering/model-all": "^0.6.0"
+    "@hcengineering/model-all": "^0.6.0",
+    "ws": "^8.18.0",
+    "bufferutil": "^4.0.8",
+    "msgpackr": "^1.11.0",
+    "msgpackr-extract": "^3.0.3"
   }
 }

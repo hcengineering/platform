@@ -322,6 +322,7 @@ export async function cloneWorkspace (
                   needRetrieveChunks.push(needRetrieve)
                 }
                 if (it.finished) {
+                  ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId.name })
                   await ctx.with('close-chunk', {}, async () => {
                     await sourceConnection.closeChunk(idx as number)
                   })
@@ -761,6 +762,12 @@ export async function backup (
             needRetrieveChunks.push(needRetrieve)
           }
           if (currentChunk.finished) {
+            ctx.info('processed-end', {
+              processed,
+              digest: digest.size,
+              time: Date.now() - st,
+              workspace: workspaceId.name
+            })
             await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(idx as number)
             })
