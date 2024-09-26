@@ -291,26 +291,26 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test('ToDo labels are exist in Tag list', async ({ page }) => {
+  test.only('ToDo labels are exist in Tag list', async ({ page }) => {
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
 
     const toDoWithLabel: NewToDo = {
       title: `ToDo with label-${generateId()}`,
       description: 'Description for ToDo with label',
-      createLabel: true,
       duedate: 'today',
       priority: 'Medium',
       visible: 'FreeBusy',
-      labels: `TAG-${generateId()}`
+      labels: `TAG-${generateId()}`,
+      createLabel: true
     }
 
     const toDoWithoutLabel: NewToDo = {
+      title: `ToDo without label-${generateId()}`,
+      description: 'Description for ToDo without label',
       duedate: 'today',
       priority: 'Medium',
-      visible: 'FreeBusy',
-      title: `ToDo without label-${generateId()}`,
-      description: 'Description for ToDo without label'
+      visible: 'FreeBusy'
     }
 
     await test.step('Prepare ToDo with label', async () => {
@@ -323,11 +323,12 @@ test.describe('Planning ToDo tests', () => {
 
     await test.step('Prepare ToDo without label', async () => {
       await planningNavigationMenuPage.clickOnButtonToDoAll()
-      await planningPage.createNewToDo(toDoWithLabel)
+      await planningPage.createNewToDo(toDoWithoutLabel)
     })
 
     await test.step('Labels are added to tag list', async () => {
       await planningPage.checkToDoExist(toDoWithLabel.title)
+      await planningPage.checkToDoExist(toDoWithoutLabel.title)
 
       if (typeof toDoWithLabel.labels === 'string') {
         await expect(planningPage.buttonTagByName(toDoWithLabel.labels)).toBeVisible()
