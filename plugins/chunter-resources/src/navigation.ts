@@ -102,7 +102,7 @@ export async function getMessageLink (message: ActivityMessage): Promise<string>
     _class = message.attachedToClass
   }
 
-  const id = encodeObjectURI(_id, _class)
+  const id = encodeURIComponent(encodeObjectURI(_id, _class))
 
   return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}/${id}${threadParent}?message=${message._id}`
 }
