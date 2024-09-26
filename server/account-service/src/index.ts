@@ -237,7 +237,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const close = (): void => {
     onClose?.()
-    void accountsDb.then(([, closeAccountsDb]) => { closeAccountsDb() })
+    void accountsDb.then(([, closeAccountsDb]) => {
+      closeAccountsDb()
+    })
     server.close()
   }
 
