@@ -671,4 +671,8 @@ export class PostgresAccountDB implements AccountDB {
 
     await this.client.query(sql, [workspaceId, accountId])
   }
+
+  getObjectId (id: string): ObjectId {
+    return id
+  }
 }

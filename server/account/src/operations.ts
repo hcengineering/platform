@@ -484,7 +484,7 @@ export async function selectWorkspace (
  * @public
  */
 export async function getInvite (db: AccountDB, inviteId: ObjectId): Promise<Invite | null> {
-  return await db.invite.findOne({ _id: inviteId })
+  return await db.invite.findOne({ _id: db.getObjectId(inviteId) })
 }
 
 /**

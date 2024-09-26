@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { ObjectId as MongoObjectId } from 'mongodb'
 import type { Collection, Db, Filter, OptionalUnlessRequiredId, Sort } from 'mongodb'
 import type { Data, Version } from '@hcengineering/core'
 
@@ -292,5 +293,9 @@ export class MongoAccountDB implements AccountDB {
     await this.db.collection<Workspace>('workspace').updateOne({ _id: workspaceId }, { $pull: { accounts: accountId } })
 
     await this.db.collection<Account>('account').updateOne({ _id: accountId }, { $pull: { workspaces: workspaceId } })
+  }
+
+  getObjectId (id: string): ObjectId {
+    return new MongoObjectId(id)
   }
 }

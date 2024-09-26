@@ -182,6 +182,7 @@ export interface AccountDB {
   init: () => Promise<void>
   assignWorkspace: (accountId: any, workspaceId: any) => Promise<void>
   unassignWorkspace: (accountId: any, workspaceId: any) => Promise<void>
+  getObjectId: (id: string) => ObjectId
 }
 
 export interface WorkspaceDbCollection extends DbCollection<Workspace> {
