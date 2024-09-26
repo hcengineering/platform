@@ -61,7 +61,11 @@ export function registerGithub (
     },
     async (ctx, next) => {
       try {
-        const email = ctx.state.user.emails?.[0]?.value ?? `github:${ctx.state.user.username}`
+        let email = ctx.state.user.emails?.[0]?.value
+        if (email == null || email === '') {
+          email = `github:${ctx.state.user.username}`
+        }
+
         const [first, last] = ctx.state.user.displayName?.split(' ') ?? [ctx.state.user.username, '']
         measureCtx.info('Provider auth handler', { email, type: 'github' })
         if (email !== undefined) {

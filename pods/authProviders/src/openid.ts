@@ -82,7 +82,11 @@ export function registerOpenid (
     },
     async (ctx, next) => {
       try {
-        const email = ctx.state.user.email ?? `openid:${ctx.state.user.sub}`
+        let email = ctx.state.user.email
+        if (email == null || email === '') {
+          email = `openid:${ctx.state.user.sub}`
+        }
+
         const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
         measureCtx.info('Provider auth handler', { email, type: 'openid' })
         if (email !== undefined) {

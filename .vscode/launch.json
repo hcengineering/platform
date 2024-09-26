@@ -86,7 +86,7 @@
       "request": "launch",
       "args": ["src/__start.ts"],
       "env": {
-        "MONGO_URL": "postgresql://postgres:example@localhost:5432;mongodb://localhost:27017",
+        "MONGO_URL": "mongodb://localhost:27017",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",
@@ -113,7 +113,6 @@
       "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
-        "DB_URL": "postgresql://postgres:example@localhost:5432",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",
@@ -237,14 +236,14 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "create-account", "user1", "-p", "1234", "-f", "John", "-l", "Appleseed"],
+      "args": ["src/__start.ts", "upgrade", "--force"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost:9000",
         "TRANSACTOR_URL": "ws://localhost:3333",
-        "MONGO_URL": "postgresql://postgres:example@localhost:5432",
+        "MONGO_URL": "mongodb://localhost:27017",
         "ACCOUNTS_URL": "http://localhost:3000",
         "TELEGRAM_DATABASE": "telegram-service",
         "ELASTIC_URL": "http://localhost:9200",
