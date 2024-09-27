@@ -279,6 +279,7 @@
             hideLink={true}
             type={canGroup ? 'short' : 'default'}
             isHighlighted={selectedMessageId === message._id}
+            withShowMore
           />
         {:else}
           <Lazy>
@@ -288,6 +289,7 @@
               hideLink={true}
               type={canGroup ? 'short' : 'default'}
               isHighlighted={selectedMessageId === message._id}
+              withShowMore
             />
           </Lazy>
         {/if}
