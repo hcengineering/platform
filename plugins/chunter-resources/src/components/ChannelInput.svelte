@@ -90,17 +90,17 @@
 {/if}
 
 <style lang="scss">
-    .ref-input {
-      flex-shrink: 0;
-      margin: 0 1rem;
-      max-height: 18.75rem;
-    }
+  .ref-input {
+    flex-shrink: 0;
+    margin: 0 1rem;
+    max-height: 18.75rem;
+  }
 
   .message {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 1rem;
+    margin: 0 1rem 1rem;
     padding: 0.5rem 0;
     color: var(--global-primary-TextColor);
     background: var(--global-ui-BorderColor);

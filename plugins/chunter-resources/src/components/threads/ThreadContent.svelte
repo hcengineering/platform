@@ -1,7 +1,7 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Label } from '@hcengineering/ui'
-  import { Doc, Ref, Space } from '@hcengineering/core'
+  import core, { Doc, Ref, Space } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'

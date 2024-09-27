@@ -17,7 +17,8 @@
     Doc,
     generateId,
     getCurrentAccount,
-    Ref, Space,
+    Ref,
+    Space,
     Timestamp,
     Tx,
     TxCollectionCUD,
@@ -26,11 +27,7 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { ModernButton, Scroller } from '@hcengineering/ui'
   import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
-  import {
-    ActivityMessagePresenter,
-    canGroupMessages,
-    messageInFocus
-  } from '@hcengineering/activity-resources'
+  import { ActivityMessagePresenter, canGroupMessages, messageInFocus } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { afterUpdate, onDestroy, onMount, tick } from 'svelte'
   import { DocNotifyContext } from '@hcengineering/notification'

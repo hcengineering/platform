@@ -74,6 +74,7 @@
     {videoPreload}
     {hideLink}
     {type}
+    {readonly}
     {compact}
     {onClick}
   />
