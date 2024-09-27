@@ -142,14 +142,14 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.pressYesDeletePopup(this.page)
   }
 
-  async addSocialLinks (link: string, linkDescription: string): Promise<void> {
+  async openAddSocialLinksPopup (link: string, linkDescription: string): Promise<void> {
     await this.buttonAddSocialLinks().click()
     await this.selectFromDropdown(this.page, link)
     await this.fillToDropdown(this.page, linkDescription)
   }
 
   async addSocialLink (social: SocialLink): Promise<void> {
-    await this.addSocialLinks(social.type, social.value)
+    await this.openAddSocialLinksPopup(social.type, social.value)
   }
 
   async checkSocialLinks (link: string, value: string): Promise<void> {

@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('candidate/talents tests', () => {
+test.describe('Talents tests', () => {
   let talentsPage: TalentsPage
   let navigationMenuPage: NavigationMenuPage
   let talentDetailsPage: TalentDetailsPage
@@ -22,26 +22,46 @@ test.describe('candidate/talents tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-candidate', async () => {
-    const first = 'Elton-' + generateId(4)
-    const last = 'John-' + generateId(4)
-    const loc = 'Cupertino'
-    const email = `ej-${generateId(4)}@test.com`
+  test.only('Create a Talent', async () => {
+    const newTalent = {
+      firstName: 'Elton-' + generateId(4),
+      lastName: 'John-' + generateId(4),
+      location: 'Cupertino',
+      email: `ej-${generateId(4)}@test.com`,
+      socials: {
+        twitter: '@user_name',
+        linkedIn: 'https://www.linkedin.com/in/user_name/',
+        facebook: 'https://github.com/username',
+        whatsApp: '+7888888888',
+        skype: 'user_name',
+        profile: 'https://profile.com/username',
+        telegram: '@username'
+      }
+    }
 
     await talentsPage.clickRecruitApplication()
     await talentsPage.clickTalentsTab()
     await talentsPage.clickNewTalent()
-    await talentsPage.enterFirstName(first)
-    await talentsPage.enterLastName(last)
+    await talentsPage.enterFirstName(newTalent.firstName)
+    await talentsPage.enterLastName(newTalent.lastName)
     await talentsPage.enterTitle()
-    await talentsPage.enterLocation(loc)
-    await talentsPage.addSocialLinks()
+    await talentsPage.enterLocation(newTalent.location)
+
+    // Add contact information
+    for (const social in newTalent.socials) {
+      await talentsPage.enterSocialInfo(
+        social.toUpperCase(),
+        newTalent.socials[social as keyof typeof newTalent.socials]
+      )
+    }
+
+    await talentsPage.openAddSocialLinksPopup()
     await talentsPage.selectEmail()
-    await talentsPage.enterEmail(email)
+    await talentsPage.enterEmail(newTalent.email)
     await talentsPage.confirmEmail()
     await talentsPage.createTalent()
-    await talentsPage.verifyTalentDetails(first, last, loc)
-    await talentsPage.verifyEmailInPopup(email)
+    await talentsPage.verifyTalentDetails(newTalent.firstName, newTalent.lastName, newTalent.location)
+    await talentsPage.verifyEmailInPopup(newTalent.email)
   })
 
   test('Edit the Talent', async () => {
@@ -55,7 +75,7 @@ test.describe('candidate/talents tests', () => {
     const skillTag = `React-${generateId(4)}`
     await talentDetailsPage.addSkill(skillTag, 'Description Java from Talent Description page')
     await talentDetailsPage.checkSkill(skillTag)
-    await talentDetailsPage.addSocialLinks('Phone', '123123213213')
+    await talentDetailsPage.openAddSocialLinksPopup('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
     await talentDetailsPage.inputLocation().fill('Awesome Location')
     const title = `Title-${generateId(4)}`
@@ -87,7 +107,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.addTitle(titleTalent1)
     const sourceTalent1 = 'SourceTalent1'
     await talentDetailsPage.addSource(sourceTalent1)
-    await talentDetailsPage.addSocialLinks('Phone', '123123213213')
+    await talentDetailsPage.openAddSocialLinksPopup('Phone', '123123213213')
 
     // talent 2
     await navigationMenuPage.clickButtonTalents()
@@ -99,7 +119,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.addTitle(titleTalent2)
     const sourceTalent2 = 'SourceTalent2'
     await talentDetailsPage.addSource(sourceTalent2)
-    await talentDetailsPage.addSocialLinks('Email', 'test-merge-2@gmail.com')
+    await talentDetailsPage.openAddSocialLinksPopup('Email', 'test-merge-2@gmail.com')
 
     // merge
     await navigationMenuPage.clickButtonTalents()

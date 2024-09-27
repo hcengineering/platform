@@ -44,8 +44,22 @@ export class TalentsPage extends CommonRecruitingPage {
   talentsTab = (): Locator => this.page.locator('text=Talents')
   newTalentButton = (): Locator => this.page.locator('button:has-text("New Talent")')
   addSocialLinksButton = (): Locator => this.page.locator('[id="presentation\\:string\\:AddSocialLinks"]')
+
   emailSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Email')
-  confirmEmailButton = (): Locator => this.page.locator('#channel-ok.antiButton')
+  twitterSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Twitter')
+  linkedInSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=LinkedIn')
+  githubSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=GitHub')
+  facebookSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Facebook')
+  homePageSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text="Home page"')
+  whatsAppSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=WhatsApp')
+  skypeAppSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Skype')
+  profileAppSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Profile')
+  telegramAppSelectorButton = (): Locator => this.page.locator('.antiPopup').locator('text=Telegram')
+
+  buttonSocialLinkMenuItem = (title: string): Locator =>
+    this.page.locator('.antiPopup').locator(`button:has-text("${title}")`)
+
+  confirmSocialLinkButton = (): Locator => this.page.locator('#channel-ok.antiButton')
   createTalentButton = (): Locator => this.page.locator('.antiCard button:has-text("Create")')
   popupPanel = (): Locator => this.page.locator('.popupPanel')
   talentsLink = (): Locator => this.page.locator('text=Talents')
@@ -150,12 +164,20 @@ export class TalentsPage extends CommonRecruitingPage {
     await input.fill(location)
   }
 
-  async addSocialLinks (): Promise<void> {
+  async openAddSocialLinksPopup (): Promise<void> {
     await this.addSocialLinksButton().click()
   }
 
   async selectEmail (): Promise<void> {
     await this.emailSelectorButton().click()
+  }
+
+  async enterSocialInfo (name: string, value: string): Promise<void> {
+    await this.addSocialLinksButton().click()
+    await this.buttonSocialLinkMenuItem(name).click()
+    const input = this.page.locator('.popup .editor-container input')
+    await input.fill(value)
+    await this.confirmSocialLinkButton().click()
   }
 
   async enterEmail (email: string): Promise<void> {
@@ -164,7 +186,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   async confirmEmail (): Promise<void> {
-    await this.confirmEmailButton().click()
+    await this.confirmSocialLinkButton().click()
   }
 
   async createTalent (): Promise<void> {
