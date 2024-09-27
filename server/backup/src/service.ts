@@ -101,14 +101,17 @@ class BackupWorker {
 
   async schedule (ctx: MeasureContext): Promise<void> {
     console.log('schedule timeout for', this.config.Interval, ' seconds')
-    this.interval = setTimeout(() => {
-      if (this.backupPromise !== undefined) {
-        void this.backupPromise.then(() => {
-          void this.triggerBackup(ctx)
-        })
-      }
-      void this.triggerBackup(ctx)
-    }, this.config.Interval * 1000)
+    this.interval = setTimeout(
+      () => {
+        if (this.backupPromise !== undefined) {
+          void this.backupPromise.then(() => {
+            void this.triggerBackup(ctx)
+          })
+        }
+        void this.triggerBackup(ctx)
+      },
+      5 * 60 * 1000
+    ) // Re-check every 5 minutes.
   }
 
   async backup (

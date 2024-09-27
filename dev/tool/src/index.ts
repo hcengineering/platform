@@ -837,7 +837,7 @@ export function devTool (
     })
 
   program
-    .command('backup-compact-s3 <bucketName> <dirName>')
+    .command('backup-s3-compact <bucketName> <dirName>')
     .description('Compact a given backup to just one snapshot')
     .option('-f, --force', 'Force compact.', false)
     .action(async (bucketName: string, dirName: string, cmd: { force: boolean, print: boolean }) => {
