@@ -24,7 +24,12 @@ import {
   getWorkspaceId
 } from '@hcengineering/core'
 import { type MigrateOperation, type ModelLogger } from '@hcengineering/model'
-import { getPendingWorkspace, updateWorkspaceInfo, workerHandshake } from '@hcengineering/server-client'
+import {
+  getPendingWorkspace,
+  updateWorkspaceInfo,
+  workerHandshake,
+  withRetryUntilTimeout
+} from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger } from '@hcengineering/server-tool'
 import path from 'path'
@@ -145,15 +150,33 @@ export class WorkspaceWorker {
       const branding = getBranding(this.brandings, ws.branding)
       const wsId = getWorkspaceId(ws.workspace)
       const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
-      const handleWsEvent = updateWorkspaceInfo.bind(null, token, ws.workspace)
+      const handleWsEventWithRetry = (
+        event: 'ping' | 'create-started' | 'progress' | 'create-done',
+        version: Data<Version>,
+        progress: number,
+        message?: string
+      ): Promise<void> => {
+        return withRetryUntilTimeout(
+          () => updateWorkspaceInfo(token, ws.workspace, event, version, progress, message),
+          5000
+        )()
+      }
 
       if (ws.mode !== 'creating' || (ws.progress ?? 0) < 30) {
-        await createWorkspace(ctx, this.version, branding, ws, this.txes, this.migrationOperation, handleWsEvent)
+        await createWorkspace(
+          ctx,
+          this.version,
+          branding,
+          ws,
+          this.txes,
+          this.migrationOperation,
+          handleWsEventWithRetry
+        )
       } else {
         // The previous attempth failed during init script and we cannot really retry it.
         // But it should not be a blocker though. We can just warn user about that if we want.
         // So we don't clear the previous error message if any
-        await handleWsEvent?.('create-done', this.version, ws.progress ?? 0)
+        await handleWsEventWithRetry?.('create-done', this.version, ws.progress ?? 0)
       }
 
       ctx.info('---CREATE-DONE---------', {
@@ -171,7 +194,7 @@ export class WorkspaceWorker {
         ctx.error('error', { err })
       }
 
-      ctx.info('---CREATE-FAILED---------', {
+      ctx.error('---CREATE-FAILED---------', {
         workspace: ws.workspace,
         version: this.version,
         region: this.region,
@@ -210,7 +233,17 @@ export class WorkspaceWorker {
     try {
       const wsId = getWorkspaceId(ws.workspace)
       const token = generateToken(systemAccountEmail, wsId, { service: 'workspace' })
-      const handleWsEvent = updateWorkspaceInfo.bind(null, token, ws.workspace)
+      const handleWsEventWithRetry = (
+        event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
+        version: Data<Version>,
+        progress: number,
+        message?: string
+      ): Promise<void> => {
+        return withRetryUntilTimeout(
+          () => updateWorkspaceInfo(token, ws.workspace, event, version, progress, message),
+          5000
+        )()
+      }
 
       await upgradeWorkspace(
         ctx,
@@ -219,7 +252,7 @@ export class WorkspaceWorker {
         this.migrationOperation,
         ws,
         logger,
-        handleWsEvent,
+        handleWsEventWithRetry,
         opt.force
       )
       ctx.info('---UPGRADE-DONE---------', {
@@ -237,7 +270,7 @@ export class WorkspaceWorker {
         ctx.error('error', { err })
       }
 
-      ctx.info('---UPGRADE-FAILED---------', {
+      ctx.error('---UPGRADE-FAILED---------', {
         workspace: ws.workspace,
         version: this.version,
         region: this.region,
