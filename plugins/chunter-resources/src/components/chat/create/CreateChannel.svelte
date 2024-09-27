@@ -65,7 +65,8 @@
       private: selectedVisibilityId === 'private',
       archived: false,
       members: [account._id],
-      topic: description
+      topic: description,
+      owners: [account._id]
     })
 
     openChannel(channelId, chunter.class.Channel)

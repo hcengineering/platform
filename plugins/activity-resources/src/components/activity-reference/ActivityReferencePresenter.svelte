@@ -42,6 +42,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
   export let compact = false
+  export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -96,6 +97,7 @@
 
 <ActivityMessageTemplate
   message={value}
+  {readonly}
   {person}
   {showNotify}
   {isHighlighted}

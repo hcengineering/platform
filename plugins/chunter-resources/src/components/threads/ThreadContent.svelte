@@ -1,10 +1,10 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Label } from '@hcengineering/ui'
-  import { Ref } from '@hcengineering/core'
+  import { Doc, Ref, Space } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import notification from '@hcengineering/notification'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
 
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
   import ReverseChannelScrollView from '../ReverseChannelScrollView.svelte'
@@ -15,10 +15,22 @@
   export let message: ActivityMessage
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const query = createQuery()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
 
+  let channel: Doc | undefined = undefined
   let dataProvider: ChannelDataProvider | undefined = undefined
+
+  $: query.query(
+    message.attachedToClass,
+    { _id: message.attachedTo },
+    (res) => {
+      channel = res[0]
+    },
+    { limit: 1 }
+  )
 
   $: void updateProvider(message)
 
@@ -41,20 +53,24 @@
   }
 
   $: messagesStore = dataProvider?.messagesStore
+  $: readonly = hierarchy.isDerived(message.attachedToClass, core.class.Space)
+    ? (channel as Space)?.archived ?? false
+    : false
 </script>
 
 <div class="hulyComponent-content hulyComponent-content__container noShrink">
-  {#if dataProvider !== undefined}
+  {#if dataProvider !== undefined && channel !== undefined}
     <ReverseChannelScrollView
       bind:selectedMessageId
       object={message}
+      {channel}
       provider={dataProvider}
       fullHeight={false}
       fixedInput={false}
     >
       <svelte:fragment slot="header">
         <div class="mt-3">
-          <ThreadParentMessage {message} />
+          <ThreadParentMessage {message} {readonly} />
         </div>
 
         {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}

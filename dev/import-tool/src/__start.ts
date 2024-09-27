@@ -1,5 +1,5 @@
-<!--
-// Copyright © 2023 Hardcore Engineering Inc.
+//
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,21 +11,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
-  import { ActivityMessage } from '@hcengineering/activity'
+//
+import { importTool } from '.'
 
-  export let message: ActivityMessage
-  export let readonly = false
-</script>
-
-<ActivityMessagePresenter
-  value={message}
-  hideFooter
-  hoverStyles="filledHover"
-  withShowMore={false}
-  attachmentImageSize="x-large"
-  skipLabel
-  {readonly}
-/>
+importTool()

@@ -215,7 +215,9 @@ export default plugin(chunterId, {
     Translate: '' as IntlString,
     ShowOriginal: '' as IntlString,
     Translating: '' as IntlString,
-    StartConversation: '' as IntlString
+    StartConversation: '' as IntlString,
+    ViewingThreadFromArchivedChannel: '' as IntlString,
+    ViewingArchivedChannel: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

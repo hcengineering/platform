@@ -41,6 +41,7 @@
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
+  export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
   $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
@@ -74,6 +75,7 @@
   {hoverable}
   {hoverStyles}
   viewlet={undefined}
+  {readonly}
   {onClick}
 >
   <svelte:fragment slot="icon">

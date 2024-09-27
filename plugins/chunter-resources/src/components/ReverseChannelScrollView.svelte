@@ -17,7 +17,7 @@
     Doc,
     generateId,
     getCurrentAccount,
-    Ref,
+    Ref, Space,
     Timestamp,
     Tx,
     TxCollectionCUD,
@@ -27,7 +27,6 @@
   import { ModernButton, Scroller } from '@hcengineering/ui'
   import { addTxListener, getClient, removeTxListener } from '@hcengineering/presentation'
   import {
-    ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter,
     canGroupMessages,
     messageInFocus
@@ -45,9 +44,11 @@
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import BaseChatScroller from './BaseChatScroller.svelte'
   import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
+  import ChannelInput from './ChannelInput.svelte'
 
   export let provider: ChannelDataProvider
   export let object: Doc
+  export let channel: Doc
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let fixedInput = true
   export let collection: string = 'messages'
@@ -109,9 +110,9 @@
 
   $: messages = $messagesStore
   $: notifyContext = $contextByDocStore.get(doc._id)
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: doc._class })
   $: isThread = hierarchy.isDerived(doc._class, activity.class.ActivityMessage)
   $: isChunterSpace = hierarchy.isDerived(doc._class, chunter.class.ChunterSpace)
+  $: readonly = hierarchy.isDerived(channel._class, core.class.Space) ? (channel as Space).archived : false
 
   $: separatorIndex =
     $newTimestampStore !== undefined
@@ -568,7 +569,7 @@
     onScroll={handleScroll}
     onResize={handleResize}
   >
-    {#if !$isLoadingStore && messages.length === 0 && !isThread}
+    {#if !$isLoadingStore && messages.length === 0 && !isThread && !readonly}
       <BlankView
         icon={chunter.icon.Thread}
         header={chunter.string.NoMessagesInChannel}
@@ -607,6 +608,7 @@
         type={canGroup ? 'short' : 'default'}
         isHighlighted={isSelected}
         shouldScroll={isSelected}
+        {readonly}
       />
     {/each}
 
@@ -618,13 +620,7 @@
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
     {#if !fixedInput}
-      <div class="ref-input flex-col">
-        <ActivityExtensionComponent
-          kind="input"
-          {extensions}
-          props={{ object, boundary: scrollDiv, collection, autofocus: true, withTypingInfo: true }}
-        />
-      </div>
+      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} />
     {/if}
   </BaseChatScroller>
   {#if !isThread && isLatestMessageButtonVisible}
@@ -641,22 +637,10 @@
 </div>
 
 {#if fixedInput}
-  <div class="ref-input flex-col">
-    <ActivityExtensionComponent
-      kind="input"
-      {extensions}
-      props={{ object, boundary: scrollDiv, collection, autofocus: true, withTypingInfo: true }}
-    />
-  </div>
+  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} />
 {/if}
 
 <style lang="scss">
-  .ref-input {
-    flex-shrink: 0;
-    margin: 0 1rem;
-    max-height: 18.75rem;
-  }
-
   .selectedDate {
     position: absolute;
     top: 0;

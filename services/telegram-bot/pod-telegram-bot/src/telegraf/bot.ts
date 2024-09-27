@@ -20,7 +20,7 @@ import { htmlToMarkup, isEmptyMarkup, jsonToMarkup, MarkupNodeType } from '@hcen
 import { toHTML } from '@telegraf/entity'
 import { CallbackQuery, Message, Update } from 'telegraf/typings/core/types/typegram'
 import { translate } from '@hcengineering/platform'
-import { WithId } from 'mongodb'
+import { ObjectId, WithId } from 'mongodb'
 
 import config from '../config'
 import { PlatformWorker } from '../worker'
@@ -29,13 +29,13 @@ import { toTelegramFileInfo } from '../utils'
 import { Command, defineCommands } from './commands'
 import { ChannelRecord, MessageRecord, TelegramFileInfo, UserRecord, WorkspaceInfo } from '../types'
 
-function encodeChannelId (workspace: string, channelId: string): string {
-  return `${workspace}_${channelId}`
+function encodeChannelId (channelId: string): string {
+  return `@${channelId}`
 }
 
-function decodeChannelId (id: string): { workspace: string, channelId: string } {
-  const [workspace, channelId] = id.split('_')
-  return { workspace, channelId }
+function decodeChannelId (id: string): string | undefined {
+  const [, channelId] = id.split('@')
+  return channelId
 }
 
 const getNextActionId = (workspace: string, page: number): string => `next_${workspace}_${page}`
@@ -114,10 +114,9 @@ async function handleSelectChannel (
   const userRecord = await worker.getUserRecord(id)
   if (userRecord === undefined) return ['', false]
 
-  const { workspace, channelId } = decodeChannelId(match)
-
-  const channels = await worker.getChannels(userRecord.email, workspace)
-  const channel = channels.find((it) => it._id.toString() === channelId)
+  const channelId = decodeChannelId(match)
+  if (channelId === undefined || channelId === '') return ['', false]
+  const channel = await worker.getChannel(userRecord.email, new ObjectId(channelId))
 
   if (channel === undefined) return ['', false]
 
@@ -134,6 +133,14 @@ async function handleSelectChannel (
   return [channel.name, await worker.sendMessage(channel, userMessage.message_id, text, file)]
 }
 
+async function showNoChannelsMessage (ctx: Context, worker: PlatformWorker, workspace: string): Promise<void> {
+  const ws = await worker.getWorkspaceInfo(workspace)
+  await ctx.editMessageText(
+    `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo sync channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`,
+    { parse_mode: 'HTML' }
+  )
+}
+
 async function createSelectChannelKeyboard (
   ctx: NarrowedContext<TgContext, Update.MessageUpdate>,
   worker: PlatformWorker,
@@ -141,6 +148,12 @@ async function createSelectChannelKeyboard (
   workspace: string
 ): Promise<void> {
   const channels = await worker.getChannels(userRecord.email, workspace)
+
+  if (channels.length === 0) {
+    await showNoChannelsMessage(ctx, worker, workspace)
+    return
+  }
+
   const hasNext = channels.length > channelsPerPage
   const pageChannels = getPageChannels(channels, 0)
 
@@ -148,9 +161,7 @@ async function createSelectChannelKeyboard (
     reply_parameters: { message_id: ctx.message.message_id },
     ...Markup.inlineKeyboard(
       [
-        ...pageChannels.map((channel) =>
-          Markup.button.callback(channel.name, encodeChannelId(channel.workspace, channel._id.toString()))
-        ),
+        ...pageChannels.map((channel) => Markup.button.callback(channel.name, encodeChannelId(channel._id.toString()))),
         ...(hasNext ? [Markup.button.callback('Next>', getNextActionId(workspace, 0))] : [])
       ],
       { columns: 1 }
@@ -283,7 +294,7 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
     ctx.processingKeyboards.delete(messageId)
   })
 
-  bot.action(/.+_.+/, async (ctx) => {
+  bot.action(/@.+/, async (ctx) => {
     const messageId = ctx.callbackQuery.message?.message_id
     if (messageId === undefined) return
     if (ctx.processingKeyboards.has(messageId)) return
@@ -341,11 +352,7 @@ const editChannelKeyboard = async (
   const channels = await worker.getChannels(userRecord.email, workspace)
 
   if (channels.length === 0) {
-    const ws = await worker.getWorkspaceInfo(workspace)
-    await ctx.editMessageText(
-      `No channels found in workspace <b>${ws?.name ?? workspace}</b>.\nTo add channels call /${Command.SyncAllChannels} or /${Command.SyncStarredChannels}`,
-      { parse_mode: 'HTML' }
-    )
+    await showNoChannelsMessage(ctx, worker, workspace)
     return
   }
 
@@ -355,9 +362,7 @@ const editChannelKeyboard = async (
 
   await ctx.editMessageReplyMarkup({
     inline_keyboard: [
-      ...pageChannels.map((channel) => [
-        Markup.button.callback(channel.name, encodeChannelId(channel.workspace, channel._id.toString()))
-      ]),
+      ...pageChannels.map((channel) => [Markup.button.callback(channel.name, encodeChannelId(channel._id.toString()))]),
       [
         ...(hasPrev ? [Markup.button.callback('<Prev', getPrevActionId(workspace, page))] : []),
         ...(hasNext ? [Markup.button.callback('Next>', getNextActionId(workspace, page))] : [])

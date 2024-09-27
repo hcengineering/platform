@@ -311,7 +311,6 @@ export function startHttpServer (
       : false,
     skipUTF8Validation: true,
     maxPayload: 250 * 1024 * 1024,
-    backlog: 1000,
     clientTracking: false // We do not need to track clients inside clients.
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises

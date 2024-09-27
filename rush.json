@@ -856,6 +856,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/import-tool",
+      "projectFolder": "dev/import-tool",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-account",
       "projectFolder": "pods/account",
       "shouldPublish": false

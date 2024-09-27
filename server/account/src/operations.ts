@@ -44,6 +44,7 @@ import core, {
   Version,
   versionToString,
   WorkspaceId,
+  type BackupStatus,
   type Branding,
   type WorkspaceMode
 } from '@hcengineering/core'
@@ -1016,7 +1017,8 @@ export async function listWorkspacesByAccount (db: Db, email: string): Promise<W
 export async function countWorkspacesInRegion (
   db: Db,
   region: string = '',
-  upToVersion?: Data<Version>
+  upToVersion?: Data<Version>,
+  visitedSince?: number
 ): Promise<number> {
   const regionQuery = region === '' ? { $or: [{ region: { $exists: false } }, { region: '' }] } : { region }
   const query: Filter<Workspace>['$and'] = [
@@ -1036,6 +1038,10 @@ export async function countWorkspacesInRegion (
         }
       ]
     })
+  }
+
+  if (visitedSince !== undefined) {
+    query.push({ lastVisit: { $gt: visitedSince } })
   }
 
   return await db.collection<Workspace>(WORKSPACE_COLLECTION).countDocuments({
@@ -1255,7 +1261,7 @@ export async function workerHandshake (
   const workspacesCnt = await ctx.with(
     'count-workspaces-in-region',
     {},
-    async (ctx) => await countWorkspacesInRegion(db, region, version)
+    async (ctx) => await countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
   )
 
   await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).insertOne({
@@ -1350,6 +1356,40 @@ export async function updateWorkspaceInfo (
     {
       $set: {
         ...update,
+        lastProcessingTime: Date.now()
+      }
+    }
+  )
+}
+
+/**
+ * @public
+ */
+export async function updateBackupInfo (
+  ctx: MeasureContext,
+  db: Db,
+  branding: Branding | null,
+  token: string,
+  backupInfo: BackupStatus
+): Promise<void> {
+  const decodedToken = decodeToken(ctx, token)
+  if (decodedToken.extra?.service !== 'backup') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  const workspaceInfo = await getWorkspaceById(db, decodedToken.workspace.name)
+  if (workspaceInfo === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: decodedToken.workspace.name })
+    )
+  }
+
+  const wsCollection = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+
+  await wsCollection.updateOne(
+    { _id: workspaceInfo._id },
+    {
+      $set: {
+        backupInfo,
         lastProcessingTime: Date.now()
       }
     }
@@ -1459,7 +1499,10 @@ export async function getPendingWorkspace (
         {
           $or: [{ mode: 'active' }, { mode: { $exists: false } }]
         },
-        versionQuery
+        versionQuery,
+        {
+          lastVisit: { $gt: Date.now() - 24 * 60 * 60 * 1000 }
+        }
       ]
     },
     {
@@ -2747,6 +2790,7 @@ export function getMethods (): Record<string, AccountMethod> {
     // Workspace service methods
     getPendingWorkspace: wrap(getPendingWorkspace),
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),
+    updateBackupInfo: wrap(updateBackupInfo),
     workerHandshake: wrap(workerHandshake)
   }
 }

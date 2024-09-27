@@ -34,6 +34,7 @@ import core, {
   systemAccountEmail,
   TxCollectionCUD,
   WorkspaceId,
+  type BackupStatus,
   type Blob,
   type DocIndexState,
   type Tx
@@ -42,6 +43,8 @@ import { BlobClient, createClient } from '@hcengineering/server-client'
 import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
+import { createWriteStream, existsSync, mkdirSync, statSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
@@ -319,6 +322,7 @@ export async function cloneWorkspace (
                   needRetrieveChunks.push(needRetrieve)
                 }
                 if (it.finished) {
+                  ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId.name })
                   await ctx.with('close-chunk', {}, async () => {
                     await sourceConnection.closeChunk(idx as number)
                   })
@@ -498,6 +502,10 @@ function doTrimHash (s: string | undefined): string {
   return s
 }
 
+export interface BackupResult extends Omit<BackupStatus, 'backups' | 'lastBackup'> {
+  result: boolean
+}
+
 /**
  * @public
  */
@@ -531,7 +539,13 @@ export async function backup (
     skipBlobContentTypes: [],
     blobDownloadLimit: 15
   }
-): Promise<boolean> {
+): Promise<BackupResult> {
+  const result: BackupResult = {
+    result: false,
+    dataSize: 0,
+    blobsSize: 0,
+    backupSize: 0
+  }
   ctx = ctx.newChild('backup', {
     workspaceId: workspaceId.name,
     force: options.force,
@@ -589,7 +603,8 @@ export async function backup (
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
           printEnd = false
           ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
-          return false
+          result.result = false
+          return result
         }
       }
       lastTxChecked = true
@@ -613,14 +628,19 @@ export async function backup (
           )) as CoreClient & BackupClient)
 
     if (!lastTxChecked) {
-      lastTx = await connection.findOne(core.class.Tx, {}, { limit: 1, sort: { modifiedOn: SortingOrder.Descending } })
+      lastTx = await connection.findOne(
+        core.class.Tx,
+        { objectSpace: { $ne: core.space.Model } },
+        { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+      )
       if (lastTx !== undefined) {
         if (lastTx._id === backupInfo.lastTxId && !options.force) {
           ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
           if (options.getConnection === undefined) {
             await connection.close()
           }
-          return false
+          result.result = false
+          return result
         }
       }
     }
@@ -662,7 +682,7 @@ export async function backup (
     let downloaded = 0
 
     const printDownloaded = (msg: string, size?: number | null): void => {
-      if (size == null || Number.isNaN(size)) {
+      if (size == null || Number.isNaN(size) || !Number.isInteger(size)) {
         return
       }
       ops++
@@ -690,6 +710,12 @@ export async function backup (
       let changed: number = 0
       const needRetrieveChunks: Ref<Doc>[][] = []
       // Load all digest from collection.
+      ctx.info('processed', {
+        processed,
+        digest: digest.size,
+        time: Date.now() - st,
+        workspace: workspaceId.name
+      })
       while (true) {
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx, options.recheck))
@@ -700,6 +726,11 @@ export async function backup (
           let currentNeedRetrieveSize = 0
 
           for (const { id, hash, size } of currentChunk.docs) {
+            if (domain === DOMAIN_BLOB) {
+              result.blobsSize += size
+            } else {
+              result.dataSize += size
+            }
             processed++
             if (Date.now() - st > 2500) {
               ctx.info('processed', {
@@ -737,6 +768,12 @@ export async function backup (
             needRetrieveChunks.push(needRetrieve)
           }
           if (currentChunk.finished) {
+            ctx.info('processed-end', {
+              processed,
+              digest: digest.size,
+              time: Date.now() - st,
+              workspace: workspaceId.name
+            })
             await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(idx as number)
             })
@@ -1034,10 +1071,33 @@ export async function backup (
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
-    return true
+    result.result = true
+
+    const addFileSize = async (file: string | undefined | null): Promise<void> => {
+      if (file != null && (await storage.exists(file))) {
+        const fileSize = await storage.stat(file)
+        result.backupSize += fileSize
+      }
+    }
+
+    // Let's calculate data size for backup
+    for (const sn of backupInfo.snapshots) {
+      for (const [, d] of Object.entries(sn.domains)) {
+        await addFileSize(d.snapshot)
+        for (const snp of d.snapshots ?? []) {
+          await addFileSize(snp)
+        }
+        for (const snp of d.storage ?? []) {
+          await addFileSize(snp)
+        }
+      }
+    }
+    await addFileSize(infoFile)
+
+    return result
   } catch (err: any) {
     ctx.error('backup error', { err, workspace: workspaceId.name })
-    return false
+    return result
   } finally {
     if (printEnd) {
       ctx.info('end backup', { workspace: workspaceId.name, totalTime: Date.now() - st })
@@ -1066,6 +1126,100 @@ export async function backupList (storage: BackupStorage): Promise<void> {
   for (const s of backupInfo.snapshots) {
     console.log('snapshot: id:', s.date, ' date:', new Date(s.date))
   }
+}
+
+/**
+ * @public
+ */
+export async function backupSize (storage: BackupStorage): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  let size = 0
+
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+    if (file != null && (await storage.exists(file))) {
+      const fileSize = await storage.stat(file)
+      console.log(file, fileSize)
+      size += fileSize
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile)
+
+  console.log('Backup size', size / (1024 * 1024), 'Mb')
+}
+
+/**
+ * @public
+ */
+export async function backupDownload (storage: BackupStorage, storeIn: string): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  let size = 0
+
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+    if (file != null && (await storage.exists(file))) {
+      const fileSize = await storage.stat(file)
+      const target = join(storeIn, file)
+      const dir = dirname(target)
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
+      }
+      if (!existsSync(target) || fileSize !== statSync(target).size) {
+        console.log('downloading', file, fileSize)
+        const readStream = await storage.load(file)
+        const outp = createWriteStream(target)
+
+        readStream.pipe(outp)
+        await new Promise<void>((resolve) => {
+          readStream.on('end', () => {
+            readStream.destroy()
+            outp.close()
+            resolve()
+          })
+        })
+      }
+      size += fileSize
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile)
+
+  console.log('Backup size', size / (1024 * 1024), 'Mb')
 }
 
 /**

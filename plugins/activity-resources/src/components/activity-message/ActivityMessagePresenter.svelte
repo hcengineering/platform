@@ -41,6 +41,7 @@
   export let videoPreload = true
   export let hideLink = false
   export let compact = false
+  export let readonly = false
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -101,6 +102,7 @@
       hideLink,
       type,
       compact,
+      readonly,
       onClick
     }}
   />

@@ -206,6 +206,8 @@ function defineChannelActions (builder: Builder): void {
       query: {
         archived: false
       },
+      override: [view.action.Archive],
+      visibilityTester: view.function.CanArchiveSpace,
       context: {
         mode: 'context',
         group: 'remove'

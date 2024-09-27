@@ -19,10 +19,10 @@
   import { getClient, isSpace } from '@hcengineering/presentation'
   import { getMessageFromLoc, messageInFocus } from '@hcengineering/activity-resources'
   import { location as locationStore } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
 
   import chunter from '../plugin'
   import { ChannelDataProvider } from '../channelDataProvider'
-  import { onDestroy } from 'svelte'
   import ReverseChannelScrollView from './ReverseChannelScrollView.svelte'
 
   export let object: Doc
@@ -102,6 +102,7 @@
 
 {#if dataProvider}
   <ReverseChannelScrollView
+    channel={object}
     bind:selectedMessageId
     {object}
     {collection}

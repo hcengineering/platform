@@ -40,26 +40,20 @@ import {
   backup,
   backupFind,
   backupList,
+  backupSize,
   compactBackup,
   createFileBackupStorage,
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, {
-  BlobClient,
-  createClient,
-  getTransactorEndpoint,
-  getUserWorkspaces,
-  login,
-  selectWorkspace
-} from '@hcengineering/server-client'
+import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { getServerPipeline } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { connect, FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
 import path from 'path'
 
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
 import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
@@ -67,15 +61,12 @@ import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
 import core, {
   AccountRole,
-  concatLink,
   generateId,
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
   systemAccountEmail,
-  TxOperations,
   versionToString,
-  type Client as CoreClient,
   type Data,
   type Doc,
   type Ref,
@@ -87,6 +78,7 @@ import core, {
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceDB, shutdown } from '@hcengineering/mongo'
+import { backupDownload } from '@hcengineering/server-backup/src/backup'
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
 import { createWriteStream, readFileSync } from 'fs'
@@ -112,11 +104,10 @@ import {
 } from './clean'
 import { changeConfiguration } from './configuration'
 import { moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
-import { fixJsonMarkup, migrateMarkup } from './markup'
+import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
-import { importNotion } from './notion'
 import { fixAccountEmails, renameAccount } from './renameAccount'
-import { moveFiles, syncFiles } from './storage'
+import { moveFiles, showLostFiles, syncFiles } from './storage'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -169,15 +160,6 @@ export function devTool (
       process.exit(1)
     }
     return elasticUrl
-  }
-
-  function getFrontUrl (): string {
-    const frontUrl = process.env.FRONT_URL
-    if (frontUrl === undefined) {
-      console.error('please provide front url')
-      process.exit(1)
-    }
-    return frontUrl
   }
 
   const initWS = process.env.INIT_WORKSPACE
@@ -240,77 +222,6 @@ export function devTool (
         await createAcc(toolCtx, db, null, email, cmd.password, cmd.first, cmd.last, true)
       })
     })
-
-  // import-notion-with-teamspaces /home/anna/work/notion/pages/exported --workspace workspace
-  program
-    .command('import-notion-with-teamspaces <dir>')
-    .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
-    .action(async (dir: string, cmd) => {
-      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace)
-    })
-
-  // import-notion-to-teamspace /home/anna/work/notion/pages/exported --workspace workspace --teamspace notion
-  program
-    .command('import-notion-to-teamspace <dir>')
-    .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace where the documents should be imported to')
-    .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
-    .action(async (dir: string, cmd) => {
-      await importFromNotion(dir, cmd.user, cmd.password, cmd.workspace, cmd.teamspace)
-    })
-
-  async function importFromNotion (
-    dir: string,
-    user: string,
-    password: string,
-    workspace: string,
-    teamspace?: string
-  ): Promise<void> {
-    if (workspace === '' || user === '' || password === '' || teamspace === '') {
-      return
-    }
-
-    const userToken = await login(user, password, workspace)
-    const allWorkspaces = await getUserWorkspaces(userToken)
-    const workspaces = allWorkspaces.filter((ws) => ws.workspace === workspace)
-    if (workspaces.length < 1) {
-      console.log('Workspace not found: ', workspace)
-      return
-    }
-    const selectedWs = await selectWorkspace(userToken, workspaces[0].workspace)
-    console.log(selectedWs)
-
-    function uploader (token: string) {
-      return (id: string, data: any) => {
-        return fetch(concatLink(getFrontUrl(), '/files'), {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer ' + token
-          },
-          body: data
-        })
-      }
-    }
-
-    const connection = (await connect(
-      selectedWs.endpoint,
-      {
-        name: selectedWs.workspaceId
-      },
-      undefined,
-      {
-        mode: 'backup'
-      }
-    )) as unknown as CoreClient
-    const client = new TxOperations(connection, core.account.System)
-    await importNotion(client, uploader(selectedWs.token), dir, teamspace)
-    await connection.close()
-  }
 
   program
     .command('reset-account <email>')
@@ -929,56 +840,79 @@ export function devTool (
     .command('backup-compact-s3 <bucketName> <dirName>')
     .description('Compact a given backup to just one snapshot')
     .option('-f, --force', 'Force compact.', false)
-    .action(async (bucketName: string, dirName: string, cmd: { force: boolean }) => {
-      const { mongodbUri } = prepareTools()
-      await withStorage(mongodbUri, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+    .action(async (bucketName: string, dirName: string, cmd: { force: boolean, print: boolean }) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         await compactBackup(toolCtx, storage, cmd.force)
-      })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
     })
 
-  program
-    .command('backup-compact-s3-all <bucketName>')
-    .description('Compact a given backup to just one snapshot')
-    .option('-f, --force', 'Force compact.', false)
-    .action(async (bucketName: string, dirName: string, cmd: { force: boolean }) => {
-      const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
-        const { mongodbUri } = prepareTools()
-        await withStorage(mongodbUri, async (adapter) => {
-          const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
-          const workspaces = await listWorkspacesPure(db)
-
-          for (const w of workspaces) {
-            console.log(`clearing ${w.workspace} history:`)
-            await compactBackup(toolCtx, storage, cmd.force)
-          }
-        })
-      })
-    })
   program
     .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
-      const { mongodbUri } = prepareTools()
-      await withStorage(mongodbUri, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         const wsid = getWorkspaceId(workspace)
         const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
         await restore(toolCtx, endpoint, wsid, storage, {
           date: parseInt(date ?? '-1')
         })
-      })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
     })
   program
     .command('backup-s3-list <bucketName> <dirName>')
     .description('list snaphost ids for backup')
     .action(async (bucketName: string, dirName: string, cmd) => {
-      const { mongodbUri } = prepareTools()
-      await withStorage(mongodbUri, async (adapter) => {
-        const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         await backupList(storage)
-      })
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
+
+  program
+    .command('backup-s3-size <bucketName> <dirName>')
+    .description('list snaphost ids for backup')
+    .action(async (bucketName: string, dirName: string, cmd) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+        await backupSize(storage)
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
+
+  program
+    .command('backup-s3-download <bucketName> <dirName> <storeIn>')
+    .description('Download a full backup from s3 to local dir')
+    .action(async (bucketName: string, dirName: string, storeIn: string, cmd) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+        await backupDownload(storage, storeIn)
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
     })
 
   program
@@ -1229,6 +1163,81 @@ export function devTool (
         })
       })
     })
+
+  program
+    .command('show-lost-files')
+    .option('-w, --workspace <workspace>', 'Selected workspace only', '')
+    .option('--disabled', 'Include disabled workspaces', false)
+    .option('--all', 'Show all files', false)
+    .action(async (cmd: { workspace: string, disabled: boolean, all: boolean }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        await withStorage(mongodbUri, async (adapter) => {
+          try {
+            let index = 1
+            const workspaces = await listWorkspacesPure(db)
+            workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+            for (const workspace of workspaces) {
+              if (workspace.disabled === true && !cmd.disabled) {
+                console.log('ignore disabled workspace', workspace.workspace)
+                continue
+              }
+
+              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+                continue
+              }
+
+              try {
+                console.log('start', workspace.workspace, index, '/', workspaces.length)
+                const workspaceId = getWorkspaceId(workspace.workspace)
+                const wsDb = getWorkspaceDB(client, { name: workspace.workspace })
+                await showLostFiles(toolCtx, workspaceId, wsDb, adapter, { showAll: cmd.all })
+                console.log('done', workspace.workspace)
+              } catch (err) {
+                console.error(err)
+              }
+
+              index += 1
+            }
+          } catch (err: any) {
+            console.error(err)
+          }
+        })
+      })
+    })
+
+  program.command('show-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
+    const { mongodbUri } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      await withStorage(mongodbUri, async (adapter) => {
+        try {
+          const workspaceId = getWorkspaceId(workspace)
+          const token = generateToken(systemAccountEmail, workspaceId)
+          const endpoint = await getTransactorEndpoint(token)
+          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'show' })
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+  })
+
+  program.command('restore-lost-markup <workspace>').action(async (workspace: string, cmd: any) => {
+    const { mongodbUri } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      await withStorage(mongodbUri, async (adapter) => {
+        try {
+          const workspaceId = getWorkspaceId(workspace)
+          const token = generateToken(systemAccountEmail, workspaceId)
+          const endpoint = await getTransactorEndpoint(token)
+          await restoreLostMarkup(toolCtx, workspaceId, endpoint, adapter, { command: 'restore' })
+        } catch (err: any) {
+          console.error(err)
+        }
+      })
+    })
+  })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     const { mongodbUri } = prepareTools()

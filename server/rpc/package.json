@@ -29,7 +29,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@types/ws": "^8.5.11",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -41,7 +40,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
-    "msgpackr": "^1.8.5"
+    "msgpackr": "^1.11.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

@@ -1403,62 +1403,70 @@ export class GithubWorker implements IntegrationManager {
   async _performFullSync (): Promise<void> {
     // Wait previous active sync
     for (const integration of this.integrations.values()) {
-      await this.ctx.withLog('external sync', { installation: integration.installationName }, async () => {
-        if (!integration.enabled || integration.octokit === undefined) {
-          return
-        }
-
-        const upd: DocumentUpdate<GithubIntegration> = {}
-        if (integration.integration.byUser !== integration.login) {
-          upd.byUser = integration.login
-        }
-        if (integration.integration.type !== integration.type) {
-          upd.type = integration.type
-        }
-        if (integration.integration.clientId !== config.ClientID) {
-          upd.clientId = config.ClientID
-        }
-
-        if (integration.integration.name !== integration.installationName || !integration.integration.alive) {
-          upd.name = integration.installationName
-          upd.alive = true
-        }
-        if (Object.keys(upd).length > 0) {
-          await this._client.diffUpdate(integration.integration, upd, Date.now(), integration.integration.createdBy)
-          this.triggerUpdate()
-        }
-        const derivedClient = new TxOperations(this.client, core.account.System, true)
-
-        const { projects, repositories } = await this.collectActiveProjects()
-
-        const _projects = projects.filter((it) => it.integration === integration.integration._id)
-        const _prjIds = new Set(_projects.map((it) => it._id))
-        const _repositories = repositories.filter((it) => it.githubProject != null && _prjIds.has(it.githubProject))
-
-        // Cleanup broken synchronized documents
-
-        while (true) {
-          const withError = await derivedClient.findAll<any>(
-            github.class.DocSyncInfo,
-            { error: { $ne: null }, url: null },
-            { limit: 50 }
-          )
-          if (withError.length === 0) {
-            break
+      await this.ctx.withLog(
+        'external sync',
+        { installation: integration.installationName, workspace: this.workspace.name },
+        async () => {
+          if (!integration.enabled || integration.octokit === undefined) {
+            return
           }
-          const ops = derivedClient.apply()
-          for (const d of withError) {
-            await ops.remove(d)
-          }
-          await ops.commit()
-        }
 
-        for (const { _class, mapper } of this.mappers) {
-          await this.ctx.withLog('external sync', { _class: _class.join(', ') }, async () => {
-            await mapper.externalFullSync(integration, derivedClient, _projects, _repositories)
-          })
+          const upd: DocumentUpdate<GithubIntegration> = {}
+          if (integration.integration.byUser !== integration.login) {
+            upd.byUser = integration.login
+          }
+          if (integration.integration.type !== integration.type) {
+            upd.type = integration.type
+          }
+          if (integration.integration.clientId !== config.ClientID) {
+            upd.clientId = config.ClientID
+          }
+
+          if (integration.integration.name !== integration.installationName || !integration.integration.alive) {
+            upd.name = integration.installationName
+            upd.alive = true
+          }
+          if (Object.keys(upd).length > 0) {
+            await this._client.diffUpdate(integration.integration, upd, Date.now(), integration.integration.createdBy)
+            this.triggerUpdate()
+          }
+          const derivedClient = new TxOperations(this.client, core.account.System, true)
+
+          const { projects, repositories } = await this.collectActiveProjects()
+
+          const _projects = projects.filter((it) => it.integration === integration.integration._id)
+          const _prjIds = new Set(_projects.map((it) => it._id))
+          const _repositories = repositories.filter((it) => it.githubProject != null && _prjIds.has(it.githubProject))
+
+          // Cleanup broken synchronized documents
+
+          while (true) {
+            const withError = await derivedClient.findAll<any>(
+              github.class.DocSyncInfo,
+              { error: { $ne: null }, url: null },
+              { limit: 50 }
+            )
+            if (withError.length === 0) {
+              break
+            }
+            const ops = derivedClient.apply()
+            for (const d of withError) {
+              await ops.remove(d)
+            }
+            await ops.commit()
+          }
+
+          for (const { _class, mapper } of this.mappers) {
+            await this.ctx.withLog(
+              'external sync',
+              { _class: _class.join(', '), workspace: this.workspace.name },
+              async () => {
+                await mapper.externalFullSync(integration, derivedClient, _projects, _repositories)
+              }
+            )
+          }
         }
-      })
+      )
     }
   }
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type BaseWorkspaceInfo, type Data, type Version } from '@hcengineering/core'
+import { type BaseWorkspaceInfo, type Data, type Version, BackupStatus } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 
 import plugin from './plugin'
@@ -40,6 +40,24 @@ export async function listAccountWorkspaces (token: string): Promise<BaseWorkspa
       body: JSON.stringify({
         method: 'listWorkspaces',
         params: [token]
+      })
+    })
+  ).json()
+
+  return (workspaces.result as BaseWorkspaceInfo[]) ?? []
+}
+
+export async function updateBackupInfo (token: string, info: BackupStatus): Promise<BaseWorkspaceInfo[]> {
+  const accountsUrl = getAccoutsUrlOrFail()
+  const workspaces = await (
+    await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        method: 'updateBackupInfo',
+        params: [token, info]
       })
     })
   ).json()
@@ -149,7 +167,10 @@ export async function workerHandshake (
   })
 }
 
-export async function getWorkspaceInfo (token: string): Promise<BaseWorkspaceInfo | undefined> {
+export async function getWorkspaceInfo (
+  token: string,
+  updateLastAccess = false
+): Promise<BaseWorkspaceInfo | undefined> {
   const accountsUrl = getAccoutsUrlOrFail()
   const workspaceInfo = await (
     await fetch(accountsUrl, {
@@ -160,7 +181,7 @@ export async function getWorkspaceInfo (token: string): Promise<BaseWorkspaceInf
       },
       body: JSON.stringify({
         method: 'getWorkspaceInfo',
-        params: []
+        params: updateLastAccess ? [true] : []
       })
     })
   ).json()
@@ -182,8 +203,7 @@ export async function login (user: string, password: string, workspace: string):
   })
 
   const result = await response.json()
-  const { token } = result.result
-  return token
+  return result.result?.token
 }
 
 export async function getUserWorkspaces (token: string): Promise<BaseWorkspaceInfo[]> {

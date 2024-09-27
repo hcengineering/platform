@@ -365,7 +365,7 @@ export async function upgradeModel (
 
     await tryMigrate(migrateClient, coreId, [
       {
-        state: 'indexes-v4',
+        state: 'indexes-v5',
         func: upgradeIndexes
       },
       {

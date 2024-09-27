@@ -47,7 +47,7 @@
     "Settings": "Ajustes",
     "ArchiveChannel": "Archivar canal",
     "UnarchiveChannel": "Desarchivar canal",
-    "ArchiveConfirm": "¿Quieres archivar el canal?",
+    "ArchiveConfirm": "Cuando archivas un canal, se archiva para todos.<br/><br/>Nadie podrá enviar mensajes, pero seguirán teniendo acceso al historial del canal.<br/><br/>Todavía podrás encontrar el contenido del canal a través de la búsqueda.<br/>Y siempre puedes desarchivar el canal en el futuro, si es necesario.\n",
     "UnarchiveConfirm": "¿Quieres desarchivar el canal?",
     "AddToSaved": "Añadir a guardados",
     "RemoveFromSaved": "Eliminar de guardados",
@@ -127,6 +127,8 @@
     "Translate": "Traducir",
     "ShowOriginal": "Mostrar original",
     "Translating": "Traduciendo...",
-    "StartConversation": "Iniciar conversación"
+    "StartConversation": "Iniciar conversación",
+    "ViewingThreadFromArchivedChannel": "Estás viendo un hilo de un canal archivado",
+    "ViewingArchivedChannel": "Estás viendo un canal archivado"
   }
 }

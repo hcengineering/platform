@@ -47,7 +47,7 @@
     "Settings": "Paramètres",
     "ArchiveChannel": "Archiver le canal",
     "UnarchiveChannel": "Désarchiver le canal",
-    "ArchiveConfirm": "Voulez-vous archiver le canal ?",
+    "ArchiveConfirm": "Lorsque vous archivez un canal, il est archivé pour tout le monde.<br/><br/>Personne ne pourra envoyer de messages, mais ils auront toujours accès à l'historique du canal.<br/><br/>Vous pourrez toujours trouver le contenu du canal via la recherche.<br/>Et vous pourrez toujours désarchiver le canal à l'avenir, si nécessaire.\n",
     "UnarchiveConfirm": "Voulez-vous désarchiver le canal ?",
     "AddToSaved": "Ajouter aux favoris",
     "RemoveFromSaved": "Retirer des favoris",
@@ -127,6 +127,8 @@
     "Translate": "Traduire",
     "ShowOriginal": "Afficher l'original",
     "Translating": "Traduction en cours...",
-    "StartConversation": "Démarrer la conversation"
+    "StartConversation": "Démarrer la conversation",
+    "ViewingThreadFromArchivedChannel": "Vous consultez un fil de discussion d'un canal archivé",
+    "ViewingArchivedChannel": "Vous consultez un canal archivé"
   }
 }
