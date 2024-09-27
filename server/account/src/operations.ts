@@ -1017,7 +1017,8 @@ export async function listWorkspacesByAccount (db: Db, email: string): Promise<W
 export async function countWorkspacesInRegion (
   db: Db,
   region: string = '',
-  upToVersion?: Data<Version>
+  upToVersion?: Data<Version>,
+  visitedSince?: number
 ): Promise<number> {
   const regionQuery = region === '' ? { $or: [{ region: { $exists: false } }, { region: '' }] } : { region }
   const query: Filter<Workspace>['$and'] = [
@@ -1037,6 +1038,10 @@ export async function countWorkspacesInRegion (
         }
       ]
     })
+  }
+
+  if (visitedSince !== undefined) {
+    query.push({ lastVisit: { $gt: visitedSince } })
   }
 
   return await db.collection<Workspace>(WORKSPACE_COLLECTION).countDocuments({
@@ -1256,7 +1261,7 @@ export async function workerHandshake (
   const workspacesCnt = await ctx.with(
     'count-workspaces-in-region',
     {},
-    async (ctx) => await countWorkspacesInRegion(db, region, version)
+    async (ctx) => await countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
   )
 
   await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).insertOne({
@@ -1494,7 +1499,10 @@ export async function getPendingWorkspace (
         {
           $or: [{ mode: 'active' }, { mode: { $exists: false } }]
         },
-        versionQuery
+        versionQuery,
+        {
+          lastVisit: { $gt: Date.now() - 24 * 60 * 60 * 1000 }
+        }
       ]
     },
     {
@@ -1752,7 +1760,7 @@ export async function getWorkspaceInfo (
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (_updateLastVisit && isAccount(account)) {
+  if (_updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
     void ctx.with('update-last-visit', {}, async () => {
       await updateLastVisit(db, ws, account as Account)
     })

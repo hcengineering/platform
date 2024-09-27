@@ -47,7 +47,7 @@
     "Settings": "Settings",
     "ArchiveChannel": "Archive channel",
     "UnarchiveChannel": "Unarchive channel",
-    "ArchiveConfirm": "Do you want to archive channel?",
+    "ArchiveConfirm": "When you archive a channel, it’s archived for everyone.<br/><br/>No one will be able to send messages, but they’ll still have access to the channel’s history.<br/><br/>You’ll still be able to find the channel’s contents via search.<br/>And you can always unarchive the channel in the future, if needed.\n",
     "UnarchiveConfirm": "Do you want to unarchive channel?",
     "AddToSaved": "Add to saved",
     "RemoveFromSaved": "Remove from saved",
@@ -127,6 +127,8 @@
     "Translate": "Translate",
     "ShowOriginal": "Show original",
     "Translating": "Translating...",
-    "StartConversation": "Start conversation"
+    "StartConversation": "Start conversation",
+    "ViewingThreadFromArchivedChannel": "You are viewing a thread from an archived channel",
+    "ViewingArchivedChannel": "You are viewing an archived channel"
   }
 }

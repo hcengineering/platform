@@ -34,6 +34,7 @@ import core, {
   systemAccountEmail,
   TxCollectionCUD,
   WorkspaceId,
+  type BackupStatus,
   type Blob,
   type DocIndexState,
   type Tx
@@ -42,6 +43,8 @@ import { BlobClient, createClient } from '@hcengineering/server-client'
 import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
+import { createWriteStream, existsSync, mkdirSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
@@ -49,7 +52,6 @@ import { Writable } from 'stream'
 import { extract, Pack, pack } from 'tar-stream'
 import { createGunzip, gunzipSync, gzipSync } from 'zlib'
 import { BackupStorage } from './storage'
-import type { BackupStatus } from '@hcengineering/core/src/classes'
 export * from './storage'
 
 const dataBlobSize = 50 * 1024 * 1024
@@ -130,6 +132,7 @@ async function loadDigest (
   date?: number
 ): Promise<Map<Ref<Doc>, string>> {
   ctx = ctx.newChild('load digest', { domain, count: snapshots.length })
+  ctx.info('load-digest', { domain, count: snapshots.length })
   const result = new Map<Ref<Doc>, string>()
   for (const s of snapshots) {
     const d = s.domains[domain]
@@ -320,6 +323,7 @@ export async function cloneWorkspace (
                   needRetrieveChunks.push(needRetrieve)
                 }
                 if (it.finished) {
+                  ctx.info('processed-end', { processed, time: Date.now() - st, workspace: targetWorkspaceId.name })
                   await ctx.with('close-chunk', {}, async () => {
                     await sourceConnection.closeChunk(idx as number)
                   })
@@ -489,9 +493,9 @@ async function cleanDomain (ctx: MeasureContext, connection: CoreClient & Backup
   }
 }
 
-function doTrimHash (s: string | undefined): string {
+function doTrimHash (s: string | undefined): string | undefined {
   if (s == null) {
-    return ''
+    return undefined
   }
   if (s.startsWith('"') && s.endsWith('"')) {
     return s.slice(1, s.length - 1)
@@ -679,7 +683,7 @@ export async function backup (
     let downloaded = 0
 
     const printDownloaded = (msg: string, size?: number | null): void => {
-      if (size == null || Number.isNaN(size)) {
+      if (size == null || Number.isNaN(size) || !Number.isInteger(size)) {
         return
       }
       ops++
@@ -707,6 +711,30 @@ export async function backup (
       let changed: number = 0
       const needRetrieveChunks: Ref<Doc>[][] = []
       // Load all digest from collection.
+      ctx.info('processed', {
+        processed,
+        digest: digest.size,
+        time: Date.now() - st,
+        workspace: workspaceId.name
+      })
+      const oldHash = new Map<Ref<Doc>, string>()
+
+      function removeFromNeedRetrieve (needRetrieve: Ref<Doc>[], id: string): void {
+        const pos = needRetrieve.indexOf(id as Ref<Doc>)
+        if (pos !== -1) {
+          needRetrieve.splice(pos, 1)
+          processed--
+          changed--
+        }
+        for (const ch of needRetrieveChunks) {
+          const pos = ch.indexOf(id as Ref<Doc>)
+          if (pos !== -1) {
+            ch.splice(pos, 1)
+            processed--
+            changed--
+          }
+        }
+      }
       while (true) {
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(domain, idx, options.recheck))
@@ -732,17 +760,31 @@ export async function backup (
               })
               st = Date.now()
             }
-            const _hash = doTrimHash(hash)
-            const kHash = doTrimHash(digest.get(id as Ref<Doc>))
+            const _hash = doTrimHash(hash) as string
+            const kHash = doTrimHash(digest.get(id as Ref<Doc>) ?? oldHash.get(id as Ref<Doc>))
             if (kHash !== undefined) {
-              digest.delete(id as Ref<Doc>)
+              if (digest.delete(id as Ref<Doc>)) {
+                oldHash.set(id as Ref<Doc>, kHash)
+              }
               if (kHash !== _hash) {
+                if (changes.updated.has(id as Ref<Doc>)) {
+                  removeFromNeedRetrieve(needRetrieve, id as Ref<Doc>)
+                }
                 changes.updated.set(id as Ref<Doc>, _hash)
                 needRetrieve.push(id as Ref<Doc>)
                 currentNeedRetrieveSize += size
                 changed++
+              } else if (changes.updated.has(id as Ref<Doc>)) {
+                // We have same
+                changes.updated.delete(id as Ref<Doc>)
+                removeFromNeedRetrieve(needRetrieve, id as Ref<Doc>)
+                processed -= 1
               }
             } else {
+              if (domain === DOMAIN_BLOB && changes.added.has(id as Ref<Doc>)) {
+                // We need to clean old need retrieve in case of duplicates.
+                removeFromNeedRetrieve(needRetrieve, id)
+              }
               changes.added.set(id as Ref<Doc>, _hash)
               needRetrieve.push(id as Ref<Doc>)
               changed++
@@ -750,7 +792,9 @@ export async function backup (
             }
 
             if (currentNeedRetrieveSize > retrieveChunkSize) {
-              needRetrieveChunks.push(needRetrieve)
+              if (needRetrieve.length > 0) {
+                needRetrieveChunks.push(needRetrieve)
+              }
               currentNeedRetrieveSize = 0
               needRetrieve = []
             }
@@ -759,6 +803,12 @@ export async function backup (
             needRetrieveChunks.push(needRetrieve)
           }
           if (currentChunk.finished) {
+            ctx.info('processed-end', {
+              processed,
+              digest: digest.size,
+              time: Date.now() - st,
+              workspace: workspaceId.name
+            })
             await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(idx as number)
             })
@@ -826,12 +876,17 @@ export async function backup (
 
       const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
       let processed = 0
+      let blobs = 0
+
       while (needRetrieveChunks.length > 0) {
         if (canceled()) {
           return
         }
         const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
 
+        if (needRetrieve.length === 0) {
+          continue
+        }
         ctx.info('Retrieve chunk', {
           needRetrieve: needRetrieveChunks.reduce((v, docs) => v + docs.length, 0),
           toLoad: needRetrieve.length,
@@ -840,6 +895,10 @@ export async function backup (
         let docs: Doc[] = []
         try {
           docs = await ctx.with('load-docs', {}, async (ctx) => await connection.loadDocs(domain, needRetrieve))
+          if (docs.length !== needRetrieve.length) {
+            const nr = new Set(docs.map((it) => it._id))
+            ctx.error('failed to retrieve all documents', { missing: needRetrieve.filter((it) => !nr.has(it)) })
+          }
           ops++
         } catch (err: any) {
           ctx.error('error loading docs', { domain, err, workspace: workspaceId.name })
@@ -983,7 +1042,8 @@ export async function backup (
                   ctx.error('error packing file', { err })
                 }
               })
-              if (blob.size > 1024 * 1024) {
+              blobs++
+              if (blob.size > 1024 * 1024 || blobs >= 10) {
                 ctx.info('download blob', {
                   _id: blob._id,
                   contentType: blob.contentType,
@@ -991,6 +1051,9 @@ export async function backup (
                   provider: blob.provider,
                   pending: docs.length
                 })
+                if (blobs >= 10) {
+                  blobs = 0
+                }
               }
 
               printDownloaded('', blob.size)
@@ -1111,6 +1174,103 @@ export async function backupList (storage: BackupStorage): Promise<void> {
   for (const s of backupInfo.snapshots) {
     console.log('snapshot: id:', s.date, ' date:', new Date(s.date))
   }
+}
+
+/**
+ * @public
+ */
+export async function backupSize (storage: BackupStorage): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  let size = 0
+
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  const addFileSize = async (file: string | undefined | null): Promise<void> => {
+    if (file != null && (await storage.exists(file))) {
+      const fileSize = await storage.stat(file)
+      console.log(file, fileSize)
+      size += fileSize
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile)
+
+  console.log('Backup size', size / (1024 * 1024), 'Mb')
+}
+
+/**
+ * @public
+ */
+export async function backupDownload (storage: BackupStorage, storeIn: string): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  let size = 0
+
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+
+  const addFileSize = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
+    if (file != null) {
+      const target = join(storeIn, file)
+      const dir = dirname(target)
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
+      }
+      if (!existsSync(target) || force) {
+        const fileSize = await storage.stat(file)
+        console.log('downloading', file, fileSize)
+        const readStream = await storage.load(file)
+        const outp = createWriteStream(target)
+
+        readStream.pipe(outp)
+        await new Promise<void>((resolve) => {
+          readStream.on('end', () => {
+            readStream.destroy()
+            outp.close()
+            resolve()
+          })
+        })
+        size += fileSize
+      } else {
+        console.log('file-same', file)
+      }
+    }
+  }
+
+  // Let's calculate data size for backup
+  for (const sn of backupInfo.snapshots) {
+    for (const [, d] of Object.entries(sn.domains)) {
+      await addFileSize(d.snapshot)
+      for (const snp of d.snapshots ?? []) {
+        await addFileSize(snp)
+      }
+      for (const snp of d.storage ?? []) {
+        await addFileSize(snp)
+      }
+    }
+  }
+  await addFileSize(infoFile, true)
+
+  console.log('Backup size', size / (1024 * 1024), 'Mb')
 }
 
 /**
@@ -1584,7 +1744,7 @@ export async function compactBackup (
     const oldSnapshots = [...backupInfo.snapshots]
 
     backupInfo.snapshots = [snapshot]
-    let backupIndex = `${backupInfo.snapshotsIndex ?? oldSnapshots.length}`
+    let backupIndex = `${(backupInfo.snapshotsIndex ?? oldSnapshots.length) + 1}`
     while (backupIndex.length < 6) {
       backupIndex = '0' + backupIndex
     }

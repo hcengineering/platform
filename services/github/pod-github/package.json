@@ -167,6 +167,7 @@
     "@hcengineering/time": "^0.6.0",
     "@hcengineering/server-guest-resources": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/analytics-service": "^0.6.0"
+    "@hcengineering/analytics-service": "^0.6.0",
+    "ws": "^8.18.0"
   }
 }

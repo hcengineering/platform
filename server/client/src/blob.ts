@@ -98,6 +98,7 @@ export class BlobClient {
                 chunks.push(chunk)
               })
               readable.on('end', () => {
+                readable.destroy()
                 resolve()
               })
             })

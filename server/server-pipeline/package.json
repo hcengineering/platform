@@ -26,7 +26,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "@types/ws": "^8.5.11",
     "ts-node": "^10.8.0",
     "esbuild": "^0.20.0",
     "@typescript-eslint/parser": "^6.11.0",

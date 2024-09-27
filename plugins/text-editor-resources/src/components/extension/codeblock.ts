@@ -141,7 +141,7 @@ function createDecorations (doc: ProseMirrorNode, options: CodeBlockLowlightOpti
             button.addEventListener('click', (e) => {
               e.preventDefault()
               e.stopPropagation()
-              handleLangButtonClick(e, node, pos, view, options)
+              handleLangButtonClick(e, node, pos, view, button, options)
             })
           } else {
             button.disabled = true
@@ -181,6 +181,7 @@ function handleLangButtonClick (
   node: ProseMirrorNode,
   pos: number,
   view: EditorView,
+  button: HTMLButtonElement,
   options: CodeBlockLowlightOptions
 ): void {
   const language = node.attrs.language
@@ -191,6 +192,8 @@ function handleLangButtonClick (
     label: language
   }))
 
+  button.classList.add('hovered')
+
   showPopup(
     DropdownLabelsPopup,
     {
@@ -199,6 +202,7 @@ function handleLangButtonClick (
     },
     getEventPositionElement(evt),
     (result) => {
+      button.classList.remove('hovered')
       if (result != null) {
         const tr = view.state.tr.setNodeAttribute(pos, 'language', result)
         view.dispatch(tr)

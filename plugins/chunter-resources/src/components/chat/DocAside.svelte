@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
   import {
     AttributeBarEditor,
     getClient,
@@ -50,6 +50,8 @@
     )
     return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
+
+  $: readonly = hierarchy.isDerived(_class, core.class.Space) ? (object as Space).archived : false
 </script>
 
 <Scroller>
@@ -59,7 +61,7 @@
       {object}
       ignoreKeys={objectChatPanel?.ignoreKeys ?? []}
       showHeader={false}
-      readonly={false}
+      {readonly}
       on:update
     />
     <div class="popupPanel-body__aside-grid">

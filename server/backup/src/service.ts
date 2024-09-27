@@ -101,41 +101,54 @@ class BackupWorker {
 
   async schedule (ctx: MeasureContext): Promise<void> {
     console.log('schedule timeout for', this.config.Interval, ' seconds')
-    this.interval = setTimeout(() => {
-      if (this.backupPromise !== undefined) {
-        void this.backupPromise.then(() => {
-          void this.triggerBackup(ctx)
-        })
-      }
-      void this.triggerBackup(ctx)
-    }, this.config.Interval * 1000)
+    this.interval = setTimeout(
+      () => {
+        if (this.backupPromise !== undefined) {
+          void this.backupPromise.then(() => {
+            void this.triggerBackup(ctx)
+          })
+        }
+        void this.triggerBackup(ctx)
+      },
+      5 * 60 * 1000
+    ) // Re-check every 5 minutes.
   }
 
   async backup (
     ctx: MeasureContext
   ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
+    ctx.info('skipped workspaces', { workspacesIgnore })
+    let skipped = 0
     const workspaces = (await listAccountWorkspaces(this.config.Token)).filter((it) => {
       const lastBackup = it.backupInfo?.lastBackup ?? 0
       if ((Date.now() - lastBackup) / 1000 < this.config.Interval) {
         // No backup required, interval not elapsed
-        ctx.info('Skip backup', { workspace: it.workspace, lastBackup: Math.round((Date.now() - lastBackup) / 1000) })
+        skipped++
+        return false
+      }
+
+      if (it.lastVisit == null) {
+        skipped++
         return false
       }
 
       const lastVisitSec = Math.floor((Date.now() - it.lastVisit) / 1000)
       if (lastVisitSec > this.config.Interval) {
         // No backup required, interval not elapsed
-        ctx.info('Skip backup, since not visited since last check', {
-          workspace: it.workspace,
-          days: Math.floor(lastVisitSec / 3600 / 24),
-          seconds: lastVisitSec
-        })
+        skipped++
         return false
       }
       return !workspacesIgnore.has(it.workspace)
     })
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+
+    ctx.info('Preparing for BACKUP', {
+      total: workspaces.length,
+      skipped,
+      workspaces: workspaces.map((it) => it.workspace)
+    })
+
     return await this.doBackup(ctx, workspaces)
   }
 
@@ -230,7 +243,7 @@ class BackupWorker {
             dataSize: Math.round((result.dataSize * 100) / (1024 * 1024)) / 100,
             blobsSize: Math.round((result.blobsSize * 100) / (1024 * 1024)) / 100
           }
-          rootCtx.warn('\n\nBACKUP STATS ', {
+          rootCtx.warn('BACKUP STATS', {
             workspace: ws.workspace,
             index,
             ...backupInfo,

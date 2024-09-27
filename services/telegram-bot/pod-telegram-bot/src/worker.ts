@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Collection, WithId } from 'mongodb'
+import type { Collection, ObjectId, WithId } from 'mongodb'
 import { MeasureContext, Ref, SortingOrder, systemAccountEmail } from '@hcengineering/core'
 import { InboxNotification } from '@hcengineering/notification'
 import { TelegramNotificationRequest } from '@hcengineering/telegram'
@@ -44,9 +44,11 @@ const closeWorkspaceTimeout = 10 * 60 * 1000 // 10 minutes
 export class PlatformWorker {
   private readonly workspacesClients = new Map<string, WorkspaceClient>()
   private readonly closeWorkspaceTimeouts: Map<string, NodeJS.Timeout> = new Map<string, NodeJS.Timeout>()
-  private readonly intervalId: NodeJS.Timeout | undefined
+  private readonly otpIntervalId: NodeJS.Timeout | undefined
+  private readonly clearIntervalId: NodeJS.Timeout | undefined
 
-  private readonly channelsMap = new Map<string, WithId<ChannelRecord>[]>()
+  private readonly channelsByWorkspace = new Map<string, WithId<ChannelRecord>[]>()
+  private readonly channelById = new Map<ObjectId, WithId<ChannelRecord>>()
   private readonly workspaceInfoById = new Map<string, WorkspaceInfo>()
 
   private constructor (
@@ -58,11 +60,18 @@ export class PlatformWorker {
     private readonly repliesStorage: Collection<ReplyRecord>,
     private readonly channelsStorage: Collection<ChannelRecord>
   ) {
-    this.intervalId = setInterval(
+    this.otpIntervalId = setInterval(
       () => {
         void otpStorage.deleteMany({ expires: { $lte: Date.now() } })
       },
       3 * 60 * 1000
+    )
+    this.clearIntervalId = setInterval(
+      () => {
+        this.channelsByWorkspace.clear()
+        this.channelById.clear()
+      },
+      60 * 60 * 1000
     )
   }
 
@@ -75,8 +84,11 @@ export class PlatformWorker {
   }
 
   async close (): Promise<void> {
-    if (this.intervalId !== undefined) {
-      clearInterval(this.intervalId)
+    if (this.otpIntervalId !== undefined) {
+      clearInterval(this.otpIntervalId)
+    }
+    if (this.clearIntervalId !== undefined) {
+      clearInterval(this.clearIntervalId)
     }
   }
 
@@ -254,14 +266,32 @@ export class PlatformWorker {
   async getChannels (email: string, workspace: string): Promise<WithId<ChannelRecord>[]> {
     const key = `${email}:${workspace}`
 
-    if (this.channelsMap.has(key)) {
-      return this.channelsMap.get(key) ?? []
+    if (this.channelsByWorkspace.has(key)) {
+      return this.channelsByWorkspace.get(key) ?? []
     }
     const res = await this.channelsStorage
       .find({ workspace, email }, { sort: { name: SortingOrder.Ascending } })
       .toArray()
 
-    this.channelsMap.set(key, res)
+    this.channelsByWorkspace.set(key, res)
+    for (const channel of res) {
+      this.channelById.set(channel._id, channel)
+    }
+    return res
+  }
+
+  async getChannel (email: string, channelId: ObjectId): Promise<WithId<ChannelRecord> | undefined> {
+    if (this.channelById.has(channelId)) {
+      const channel = this.channelById.get(channelId)
+
+      return channel !== undefined && channel.email === email ? channel : undefined
+    }
+
+    const res = (await this.channelsStorage.findOne({ _id: channelId, email })) ?? undefined
+
+    if (res !== undefined) {
+      this.channelById.set(res._id, res)
+    }
     return res
   }
 
@@ -317,7 +347,12 @@ export class PlatformWorker {
       await this.channelsStorage.deleteMany({ _id: { $in: toDelete.map((c) => c._id) } })
     }
 
-    this.channelsMap.delete(`${email}:${workspace}`)
+    this.channelsByWorkspace.delete(`${email}:${workspace}`)
+    for (const [key, channel] of this.channelById.entries()) {
+      if (channel.email === email) {
+        this.channelById.delete(key)
+      }
+    }
   }
 
   async getWorkspaceInfo (workspaceId: string): Promise<WorkspaceInfo | undefined> {

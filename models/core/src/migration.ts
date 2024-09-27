@@ -285,7 +285,7 @@ export const coreOperation: MigrateOperation = {
         func: migrateAllSpaceToTyped
       },
       {
-        state: 'add-spaces-owner',
+        state: 'add-spaces-owner-v1',
         func: migrateSpacesOwner
       },
       {

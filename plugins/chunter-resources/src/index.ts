@@ -92,6 +92,7 @@ export async function ArchiveChannel (channel: Channel, evt: any, props?: { afte
   showPopup(MessageBox, {
     label: chunter.string.ArchiveChannel,
     message: chunter.string.ArchiveConfirm,
+    richMessage: true,
     action: async () => {
       const client = getClient()
 

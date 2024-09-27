@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,16 +11,7 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import { Widget, WidgetPreference } from '@hcengineering/workbench'
-  import { Ref } from '@hcengineering/core'
+//
+import { importTool } from '.'
 
-  import WidgetsBar from './widgets/WidgetsBar.svelte'
-
-  export let widgets: Widget[] = []
-  export let preferences: WidgetPreference[] = []
-  export let selected: Ref<Widget> | undefined = undefined
-</script>
-
-<WidgetsBar {widgets} {preferences} {selected} />
+importTool()

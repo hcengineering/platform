@@ -61,6 +61,7 @@
   export let type: ActivityMessageViewType = 'default'
   export let inlineActions: MessageInlineAction[] = []
   export let excludedActions: Ref<ViewAction>[] = []
+  export let readonly: boolean = false
   export let onClick: (() => void) | undefined = undefined
 
   export let socialIcon: Asset | undefined = undefined
@@ -107,8 +108,7 @@
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
   $: withActionMenu = withActions && !embedded && (actions.length > 0 || menuActionIds.length > 0)
 
-  let readonly: boolean = false
-  $: readonly = $restrictionStore.disableComments
+  $: readonly = readonly || $restrictionStore.disableComments
 
   function canDisplayShort (type: ActivityMessageViewType, isSaved: boolean): boolean {
     return type === 'short' && !isSaved && (message.replies ?? 0) === 0
@@ -143,6 +143,7 @@
   }
 
   function handleContextMenu (event: MouseEvent): void {
+    if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
       showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {

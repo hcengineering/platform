@@ -3,14 +3,30 @@
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
   import { Label } from '@hcengineering/ui'
   import ChannelScrollView from '../ChannelScrollView.svelte'
-  import { Ref } from '@hcengineering/core'
+  import core, { Doc, Ref, Space } from '@hcengineering/core'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+
   import { ChannelDataProvider } from '../../channelDataProvider'
   import chunter from '../../plugin'
 
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let message: ActivityMessage
 
+  const query = createQuery()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let channel: Doc | undefined = undefined
   let dataProvider: ChannelDataProvider | undefined = undefined
+
+  $: query.query(
+    message.attachedToClass,
+    { _id: message.attachedTo },
+    (res) => {
+      channel = res[0]
+    },
+    { limit: 1 }
+  )
 
   $: if (message !== undefined && dataProvider === undefined) {
     dataProvider = new ChannelDataProvider(
@@ -24,22 +40,26 @@
   }
 
   $: messagesStore = dataProvider?.messagesStore
+  $: readonly = hierarchy.isDerived(message.attachedToClass, core.class.Space)
+    ? (channel as Space)?.archived ?? false
+    : false
 </script>
 
 <div class="hulyComponent-content hulyComponent-content__container noShrink">
-  {#if dataProvider !== undefined}
+  {#if dataProvider !== undefined && channel !== undefined}
     <ChannelScrollView
       bind:selectedMessageId
       embedded
       skipLabels
       object={message}
+      {channel}
       provider={dataProvider}
       fullHeight={false}
       fixedInput={false}
     >
       <svelte:fragment slot="header">
         <div class="mt-3">
-          <ThreadParentMessage {message} />
+          <ThreadParentMessage {message} {readonly} />
         </div>
 
         {#if (message.replies ?? $messagesStore?.length ?? 0) > 0}

@@ -47,7 +47,7 @@
     "Settings": "设置",
     "ArchiveChannel": "归档频道",
     "UnarchiveChannel": "取消归档频道",
-    "ArchiveConfirm": "你想要归档频道吗？",
+    "ArchiveConfirm": "当你归档频道时，它会对所有人进行归档。<br/><br/>没有人能够发送消息，但他们仍然可以访问频道的历史记录。<br/><br/>你仍然可以通过搜索找到频道的内容。<br/>如果需要，你可以随时取消归档频道。\n",
     "UnarchiveConfirm": "你想要取消归档频道吗？",
     "AddToSaved": "添加到已保存",
     "RemoveFromSaved": "从已保存中移除",
@@ -127,6 +127,8 @@
     "Translate": "翻译",
     "ShowOriginal": "显示原文",
     "Translating": "翻译中...",
-    "StartConversation": "开始对话"
+    "StartConversation": "开始对话",
+    "ViewingThreadFromArchivedChannel": "你正在查看已归档频道的线程",
+    "ViewingArchivedChannel": "你正在查看已归档频道"
   }
 }
