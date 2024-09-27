@@ -368,6 +368,18 @@ pre.proseCodeBlock {
   word-break: normal;
 }
 
+pre.proseCodeBlock {
+  button:not(.hovered) {
+    opacity: 0;
+  }
+
+  &:hover {
+    button {
+      opacity: 1;
+    }
+  }
+}
+
 // Fixes for MessageViewer
 pre.proseCodeBlock > pre.proseCode {
   padding: 0;

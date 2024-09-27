@@ -47,7 +47,7 @@
     "Settings": "Definições",
     "ArchiveChannel": "Arquivar canal",
     "UnarchiveChannel": "Desarquivar canal",
-    "ArchiveConfirm": "Deseja arquivar o canal?",
+    "ArchiveConfirm": "Quando arquivar um canal, ele é arquivado para todos.<br/><br/>Ninguém poderá enviar mensagens, mas ainda terão acesso ao histórico do canal.<br/><br/>Ainda poderá encontrar o conteúdo do canal através da pesquisa.<br/>E poderá sempre desarquivar o canal no futuro, se necessário.\n",
     "UnarchiveConfirm": "Deseja desarquivar o canal?",
     "AddToSaved": "Adicionar aos guardados",
     "RemoveFromSaved": "Remover dos guardados",
@@ -127,6 +127,8 @@
     "Translate": "Traduzir",
     "ShowOriginal": "Mostrar original",
     "Translating": "A traduzir...",
-    "StartConversation": "Iniciar conversa"
+    "StartConversation": "Iniciar conversa",
+    "ViewingThreadFromArchivedChannel": "Está a visualizar uma conversa em cadeia de um canal arquivado",
+    "ViewingArchivedChannel": "Está a visualizar um canal arquivado"
   }
 }

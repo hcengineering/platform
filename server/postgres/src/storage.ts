@@ -512,8 +512,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
       if (val.classes !== undefined) {
         if (val.classes.length === 1) {
           res.push(`AND ${val.toAlias}._class = '${val.classes[0]}'`)
+        } else {
+          res.push(`AND ${val.toAlias}._class IN (${val.classes.map((c) => `'${c}'`).join(', ')})`)
         }
-        res.push(`AND ${val.toAlias}._class IN (${val.classes.map((c) => `'${c}'`).join(', ')})`)
       }
     }
     return res.join(' ')
@@ -863,8 +864,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
   private getProjectionsAliases (join: JoinProps): string[] {
     if (join.table === DOMAIN_MODEL) return []
     if (join.isReverse) {
+      let classsesQuery = ''
+      if (join.classes !== undefined) {
+        if (join.classes.length === 1) {
+          classsesQuery = ` AND ${join.toAlias}._class = '${join.classes[0]}'`
+        } else {
+          classsesQuery = ` AND ${join.toAlias}._class IN (${join.classes.map((c) => `'${c}'`).join(', ')})`
+        }
+      }
       return [
-        `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}") AS ${join.toAlias}`
+        `(SELECT jsonb_agg(${join.toAlias}.*) FROM ${join.table} AS ${join.toAlias} WHERE ${join.fromAlias}.${join.fromField} = ${join.toAlias}."${join.toField}" ${classsesQuery}) AS ${join.toAlias}`
       ]
     }
     const res: string[] = []

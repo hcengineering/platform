@@ -39,7 +39,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const contextByDocStore = inboxClient.contextByDoc
   const contextsStore = inboxClient.contexts
   const objectsQueryByClass = new Map<Ref<Class<Doc>>, { query: LiveQuery, limit: number }>()
 
@@ -70,18 +69,17 @@
     sections = res
   })
 
-  $: shouldPushObject =
-    object !== undefined && getObjectGroup(object) === model.id && !$contextByDocStore.has(object._id)
+  $: shouldPushObject = object !== undefined && getObjectGroup(object) === model.id
 
   function loadObjects (contexts: DocNotifyContext[]): void {
     const contextsByClass = groupByArray(contexts, ({ objectClass }) => objectClass)
 
     for (const [_class, ctx] of contextsByClass.entries()) {
-      const isChunterSpace = hierarchy.isDerived(_class, chunter.class.ChunterSpace)
+      const isSpace = hierarchy.isDerived(_class, core.class.Space)
       const ids = ctx.map(({ objectId }) => objectId)
       const { query, limit } = objectsQueryByClass.get(_class) ?? {
         query: createQuery(),
-        limit: isChunterSpace ? -1 : model.maxSectionItems ?? 5
+        limit: isSpace ? -1 : model.maxSectionItems ?? 5
       }
 
       objectsQueryByClass.set(_class, { query, limit: limit ?? model.maxSectionItems ?? 5 })
@@ -90,7 +88,7 @@
         _class,
         {
           _id: { $in: limit !== -1 ? ids.slice(0, limit) : ids },
-          ...(isChunterSpace ? { space: core.space.Space } : {})
+          ...(isSpace ? { space: core.space.Space, archived: false } : {})
         },
         (res) => {
           objectsByClass = objectsByClass.set(_class, { docs: res, total: res.total })
