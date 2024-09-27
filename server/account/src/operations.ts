@@ -1760,7 +1760,7 @@ export async function getWorkspaceInfo (
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (_updateLastVisit && isAccount(account)) {
+  if (_updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
     void ctx.with('update-last-visit', {}, async () => {
       await updateLastVisit(db, ws, account as Account)
     })
