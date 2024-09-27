@@ -165,10 +165,7 @@
     width: calc(100% - 3.5rem);
     height: 100%;
     background: var(--theme-panel-color);
-
     border-right: 1px solid var(--global-ui-BorderColor);
-    border-top-left-radius: var(--small-focus-BorderRadius);
-    border-bottom-left-radius: var(--small-focus-BorderRadius);
   }
 
   .component {
