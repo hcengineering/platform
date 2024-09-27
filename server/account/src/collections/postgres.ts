@@ -321,31 +321,6 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     await this.client.query(`
       CREATE INDEX ${this.name}_workspace ON ${this.name} ("workspace")
     `)
-
-    // NOTE: as SKIP LOCKED is not supported in Cockroachdb, we need our own skip locked implementation
-    await this.client.query(`
-      CREATE OR REPLACE FUNCTION is_ws_locked(varchar(255)) RETURNS BOOLEAN AS $$
-      DECLARE
-          id varchar(255);
-          ws_id varchar(255);
-          is_locked boolean;
-      BEGIN
-          ws_id := $1;
-          is_locked := FALSE;
-
-          BEGIN
-              -- we use FOR UPDATE to attempt a lock and NOWAIT to get the error immediately 
-              id := _id FROM public.workspace WHERE _id = ws_id FOR UPDATE NOWAIT;
-              EXCEPTION
-                  WHEN lock_not_available THEN
-                      is_locked := TRUE;
-          END;
-
-          RETURN is_locked;
-
-      END;
-      $$ LANGUAGE 'plpgsql' VOLATILE COST 100;
-    `)
   }
 
   protected buildSelectClause (): string {
@@ -491,6 +466,8 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
     sqlChunks.push('ORDER BY "lastVisit" DESC')
     sqlChunks.push('LIMIT 1')
+    // Note: SKIP LOCKED is supported starting from Postgres 9.5 and CockroachDB v22.2.1
+    sqlChunks.push('FOR UPDATE SKIP LOCKED')
 
     // We must have all the conditions in the DB query and we cannot filter anything in the code
     // because of possible concurrency between account services.
