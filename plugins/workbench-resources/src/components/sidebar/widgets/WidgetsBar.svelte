@@ -24,7 +24,6 @@
   export let widgets: Widget[] = []
   export let preferences: WidgetPreference[] = []
   export let selected: Ref<Widget> | undefined = undefined
-  export let roundBorder = false
 
   function handleAddWidget (): void {
     showPopup(AddWidgetsPopup, { widgets })
@@ -49,7 +48,7 @@
     .filter((widget): widget is Widget => widget !== undefined && widget.type === WidgetType.Configurable)
 </script>
 
-<div class="root" class:roundBorder>
+<div class="root">
   <div class="block">
     {#each fixedWidgets as widget}
       <WidgetPresenter
@@ -104,10 +103,6 @@
     max-width: 3.5rem;
     border-top: 1px solid var(--theme-divider-color);
     overflow-y: auto;
-
-    &.roundBorder {
-      border-top-left-radius: var(--small-focus-BorderRadius);
-    }
   }
 
   .block {

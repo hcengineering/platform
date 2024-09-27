@@ -910,6 +910,8 @@
       inset: 0;
       border: 1px solid var(--theme-divider-color);
       border-radius: var(--medium-BorderRadius);
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
       pointer-events: none;
     }
     .antiPanel-application {
