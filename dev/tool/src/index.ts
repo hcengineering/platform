@@ -266,6 +266,8 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         console.log('compacting db ...')
         let gtotal: number = 0
+        const client = getMongoClient(mongodbUri)
+        const _client = await client.getClient()
         try {
           const workspaces = await listWorkspacesPure(db)
           for (const workspace of workspaces) {
@@ -273,8 +275,6 @@ export function devTool (
               continue
             }
             let total: number = 0
-            const client = getMongoClient(mongodbUri)
-            const _client = await client.getClient()
             const wsDb = getWorkspaceMongoDB(_client, { name: workspace.workspace })
             const collections = wsDb.listCollections()
             while (true) {
@@ -291,6 +291,8 @@ export function devTool (
           console.log('global total feed', Math.round(gtotal / (1024 * 1024)))
         } catch (err: any) {
           console.error(err)
+        } finally {
+          client.close()
         }
       })
     })
@@ -518,44 +520,47 @@ export function devTool (
 
         await withStorage(mongodbUri, async (adapter) => {
           // We need to update workspaces with missing workspaceUrl
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
+          try {
+            for (const a of accounts) {
+              const authored = a.workspaces
+                .map((it) => workspaces.get(it.toString()))
+                .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
+              authored.sort((a, b) => b.lastVisit - a.lastVisit)
+              if (authored.length > 0) {
+                const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
+                toolCtx.info(a.email, {
+                  workspaces: a.workspaces.length,
+                  firstName: a.first,
+                  lastName: a.last,
+                  lastLoginDays
+                })
+                for (const ws of authored) {
+                  const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
 
-          for (const a of accounts) {
-            const authored = a.workspaces
-              .map((it) => workspaces.get(it.toString()))
-              .filter((it) => it !== undefined && it.createdBy?.trim() === a.email?.trim()) as Workspace[]
-            authored.sort((a, b) => b.lastVisit - a.lastVisit)
-            if (authored.length > 0) {
-              const lastLoginDays = Math.floor((Date.now() - a.lastVisit) / 1000 / 3600 / 24)
-              toolCtx.info(a.email, {
-                workspaces: a.workspaces.length,
-                firstName: a.first,
-                lastName: a.last,
-                lastLoginDays
-              })
-              for (const ws of authored) {
-                const lastVisitDays = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-
-                if (lastVisitDays > _timeout) {
-                  toolCtx.warn('  --- unused', {
-                    url: ws.workspaceUrl,
-                    id: ws.workspace,
-                    lastVisitDays
-                  })
-                  if (cmd.remove) {
-                    const client = getMongoClient(mongodbUri)
-                    const _client = await client.getClient()
-                    await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, adapter)
+                  if (lastVisitDays > _timeout) {
+                    toolCtx.warn('  --- unused', {
+                      url: ws.workspaceUrl,
+                      id: ws.workspace,
+                      lastVisitDays
+                    })
+                    if (cmd.remove) {
+                      await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, adapter)
+                    }
+                  } else {
+                    toolCtx.warn('  +++ used', {
+                      url: ws.workspaceUrl,
+                      id: ws.workspace,
+                      createdBy: ws.createdBy,
+                      lastVisitDays
+                    })
                   }
-                } else {
-                  toolCtx.warn('  +++ used', {
-                    url: ws.workspaceUrl,
-                    id: ws.workspace,
-                    createdBy: ws.createdBy,
-                    lastVisitDays
-                  })
                 }
               }
             }
+          } finally {
+            client.close()
           }
         })
       })
@@ -578,7 +583,11 @@ export function devTool (
           if (cmd.full) {
             const client = getMongoClient(mongodbUri)
             const _client = await client.getClient()
-            await dropWorkspaceFull(toolCtx, db, _client, null, workspace, storageAdapter)
+            try {
+              await dropWorkspaceFull(toolCtx, db, _client, null, workspace, storageAdapter)
+            } finally {
+              client.close()
+            }
           } else {
             await dropWorkspace(toolCtx, db, null, workspace)
           }
@@ -594,14 +603,18 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (storageAdapter) => {
         await withDatabase(mongodbUri, async (db) => {
-          for (const workspace of await listWorkspacesByAccount(db, email)) {
-            if (cmd.full) {
-              const client = getMongoClient(mongodbUri)
-              const _client = await client.getClient()
-              await dropWorkspaceFull(toolCtx, db, _client, null, workspace.workspace, storageAdapter)
-            } else {
-              await dropWorkspace(toolCtx, db, null, workspace.workspace)
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
+          try {
+            for (const workspace of await listWorkspacesByAccount(db, email)) {
+              if (cmd.full) {
+                await dropWorkspaceFull(toolCtx, db, _client, null, workspace.workspace, storageAdapter)
+              } else {
+                await dropWorkspace(toolCtx, db, null, workspace.workspace)
+              }
             }
+          } finally {
+            client.close()
           }
         })
       })
@@ -628,13 +641,17 @@ export function devTool (
       await withStorage(mongodbUri, async (storageAdapter) => {
         await withDatabase(mongodbUri, async (db) => {
           const workspacesJSON = await listWorkspacesPure(db)
-          for (const ws of workspacesJSON) {
-            const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-            if (lastVisit > 30) {
-              const client = getMongoClient(mongodbUri)
-              const _client = await client.getClient()
-              await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, storageAdapter)
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
+          try {
+            for (const ws of workspacesJSON) {
+              const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+              if (lastVisit > 30) {
+                await dropWorkspaceFull(toolCtx, db, _client, null, ws.workspace, storageAdapter)
+              }
             }
+          } finally {
+            client.close()
           }
         })
       })
@@ -688,17 +705,21 @@ export function devTool (
     const { mongodbUri, version } = prepareTools()
     await withDatabase(mongodbUri, async (db) => {
       const ws = await listWorkspacesPure(db)
-      for (const w of ws) {
-        const client = getMongoClient(mongodbUri)
-        const _client = await client.getClient()
-        const wsDb = getWorkspaceMongoDB(_client, { name: w.workspace })
-        await wsDb.collection('tx').updateMany(
-          {
-            objectClass: contact.class.PersonAccount,
-            objectSpace: null
-          },
-          { $set: { objectSpace: core.space.Model } }
-        )
+      const client = getMongoClient(mongodbUri)
+      const _client = await client.getClient()
+      try {
+        for (const w of ws) {
+          const wsDb = getWorkspaceMongoDB(_client, { name: w.workspace })
+          await wsDb.collection('tx').updateMany(
+            {
+              objectClass: contact.class.PersonAccount,
+              objectSpace: null
+            },
+            { $set: { objectSpace: core.space.Model } }
+          )
+        }
+      } finally {
+        client.close()
       }
 
       console.log('latest model version:', JSON.stringify(version))
@@ -1185,10 +1206,9 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
           try {
-            const client = getMongoClient(mongodbUri)
-            const _client = await client.getClient()
-
             let index = 1
             const workspaces = await listWorkspacesPure(db)
             workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
@@ -1217,6 +1237,8 @@ export function devTool (
             }
           } catch (err: any) {
             console.error(err)
+          } finally {
+            client.close()
           }
         })
       })
@@ -1531,28 +1553,32 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         await withStorage(mongodbUri, async (adapter) => {
           const workspaces = await listWorkspacesPure(db)
+          const client = getMongoClient(mongodbUri)
+          const _client = await client.getClient()
           let index = 0
-          for (const workspace of workspaces) {
-            if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
-              continue
+          try {
+            for (const workspace of workspaces) {
+              if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
+                continue
+              }
+
+              const wsId = getWorkspaceId(workspace.workspace)
+              console.log('processing workspace', workspace.workspace, index, workspaces.length)
+              const wsUrl: WorkspaceIdWithUrl = {
+                name: workspace.workspace,
+                workspaceName: workspace.workspaceName ?? '',
+                workspaceUrl: workspace.workspaceUrl ?? ''
+              }
+
+              const { pipeline } = await getServerPipeline(toolCtx, txes, mongodbUri, dbUrl, wsUrl)
+
+              await migrateMarkup(toolCtx, adapter, wsId, _client, pipeline, parseInt(cmd.concurrency))
+
+              console.log('...done', workspace.workspace)
+              index++
             }
-
-            const wsId = getWorkspaceId(workspace.workspace)
-            console.log('processing workspace', workspace.workspace, index, workspaces.length)
-            const wsUrl: WorkspaceIdWithUrl = {
-              name: workspace.workspace,
-              workspaceName: workspace.workspaceName ?? '',
-              workspaceUrl: workspace.workspaceUrl ?? ''
-            }
-
-            const { pipeline } = await getServerPipeline(toolCtx, txes, mongodbUri, dbUrl, wsUrl)
-
-            const client = getMongoClient(mongodbUri)
-            const _client = await client.getClient()
-            await migrateMarkup(toolCtx, adapter, wsId, _client, pipeline, parseInt(cmd.concurrency))
-
-            console.log('...done', workspace.workspace)
-            index++
+          } finally {
+            client.close()
           }
         })
       })
