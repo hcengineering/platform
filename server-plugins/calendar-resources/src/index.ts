@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import calendar, { Calendar, Event } from '@hcengineering/calendar'
-import { PersonAccount } from '@hcengineering/contact'
-import {
+import calendar, { Calendar, Event, ExternalCalendar } from '@hcengineering/calendar'
+import contactPlugin, { Contact, Person, PersonAccount } from '@hcengineering/contact'
+import core, {
   Class,
+  Data,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -25,7 +26,10 @@ import {
   Ref,
   Tx,
   TxCreateDoc,
-  TxProcessor
+  TxCUD,
+  TxProcessor,
+  TxRemoveDoc,
+  TxUpdateDoc
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { TriggerControl } from '@hcengineering/server-core'
@@ -98,6 +102,170 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
   return [res]
 }
 
+function getCalendar (calendars: Calendar[], person: Ref<PersonAccount>): Ref<Calendar> | undefined {
+  const filtered = calendars.filter((c) => (c.createdBy ?? c.modifiedBy) === person)
+  const defaultExternal = filtered.find((c) => (c as ExternalCalendar).default)
+  if (defaultExternal !== undefined) return defaultExternal._id
+  return filtered[0]?._id
+}
+
+function getEventPerson (current: Event, calendars: Calendar[], control: TriggerControl): Ref<Contact> | undefined {
+  const calendar = calendars.find((c) => c._id === current.calendar)
+  if (calendar === undefined) return
+  const accId = (current.createdBy ?? current.modifiedBy) as Ref<PersonAccount>
+  const acc = control.modelDb.findAllSync(contactPlugin.class.PersonAccount, { _id: accId })[0]
+  if (acc === undefined) return
+  return acc.person
+}
+
+async function OnEvent (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const ctx = TxProcessor.extractTx(tx) as TxCUD<Event>
+  if (ctx._class === core.class.TxCreateDoc) {
+    return await onEventCreate(ctx as TxCreateDoc<Event>, control)
+  } else if (ctx._class === core.class.TxUpdateDoc) {
+    return await onEventUpdate(ctx as TxUpdateDoc<Event>, control)
+  } else if (ctx._class === core.class.TxRemoveDoc) {
+    return await onRemoveEvent(ctx as TxRemoveDoc<Event>, control)
+  }
+
+  return []
+}
+
+async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
+  const ops = ctx.operations
+  const { visibility, ...otherOps } = ops
+  if (Object.keys(otherOps).length === 0) return []
+  const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }))[0]
+  if (event === undefined) return []
+  if (event.access !== 'owner') return []
+  const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
+  const res: Tx[] = []
+  const newParticipants = new Set<Ref<Contact>>(event.participants)
+  const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
+  for (const ev of events) {
+    if (ev._id === event._id) continue
+    const person = getEventPerson(ev, calendars, control)
+    if (person === undefined || !event.participants.includes(person)) {
+      const innerTx = control.txFactory.createTxRemoveDoc(ev._class, ev.space, ev._id)
+      const outerTx = control.txFactory.createTxCollectionCUD(
+        ev.attachedToClass,
+        ev.attachedTo,
+        ev.space,
+        ev.collection,
+        innerTx
+      )
+      res.push(outerTx)
+    } else {
+      newParticipants.delete(person)
+      const innerTx = control.txFactory.createTxUpdateDoc(ev._class, ev.space, ev._id, { ...otherOps })
+      const outerTx = control.txFactory.createTxCollectionCUD(
+        ev.attachedToClass,
+        ev.attachedTo,
+        ev.space,
+        ev.collection,
+        innerTx
+      )
+      res.push(outerTx)
+    }
+  }
+  if (newParticipants.size === 0) return res
+  const newPartTxs = await eventForNewParticipants(event, newParticipants, calendars, control)
+  return res.concat(newPartTxs)
+}
+
+async function eventForNewParticipants (
+  event: Event,
+  newParticipants: Set<Ref<Person>>,
+  calendars: Calendar[],
+  control: TriggerControl
+): Promise<Tx[]> {
+  const res: Tx[] = []
+  const accounts = await control.findAll(control.ctx, contactPlugin.class.PersonAccount, {
+    person: { $in: event.participants }
+  })
+  const access = 'reader'
+  const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
+  const data = attr as any as Data<Event>
+  for (const part of newParticipants) {
+    const acc = accounts.find((a) => a.person === part)
+    if (acc === undefined) continue
+    if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
+    const calendar = getCalendar(calendars, acc._id)
+    if (calendar === undefined) continue
+    const innerTx = control.txFactory.createTxCreateDoc(
+      _class,
+      space,
+      { ...data, calendar, access },
+      undefined,
+      undefined,
+      acc._id
+    )
+    const outerTx = control.txFactory.createTxCollectionCUD(
+      attachedToClass,
+      attachedTo,
+      space,
+      collection,
+      innerTx,
+      undefined,
+      acc._id
+    )
+    res.push(outerTx)
+  }
+  return res
+}
+
+async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl): Promise<Tx[]> {
+  const event = TxProcessor.createDoc2Doc(ctx)
+  if (event.access !== 'owner') return []
+  const res: Tx[] = []
+  const { _class, space, attachedTo, attachedToClass, collection, ...attr } = event
+  const data = attr as any as Data<Event>
+  const calendars = await control.findAll(control.ctx, calendar.class.Calendar, { hidden: false })
+  const accounts = await control.findAll(control.ctx, contactPlugin.class.PersonAccount, {
+    person: { $in: event.participants }
+  })
+  const access = 'reader'
+  for (const part of event.participants) {
+    const acc = accounts.find((a) => a.person === part)
+    if (acc === undefined) continue
+    if (acc._id === (event.createdBy ?? event.modifiedBy)) continue
+    const calendar = getCalendar(calendars, acc._id)
+    if (calendar === undefined) continue
+    const innerTx = control.txFactory.createTxCreateDoc(
+      _class,
+      space,
+      { ...data, calendar, access },
+      undefined,
+      undefined,
+      acc._id
+    )
+    const outerTx = control.txFactory.createTxCollectionCUD(
+      attachedToClass,
+      attachedTo,
+      space,
+      collection,
+      innerTx,
+      undefined,
+      acc._id
+    )
+    res.push(outerTx)
+  }
+  return res
+}
+
+async function onRemoveEvent (ctx: TxRemoveDoc<Event>, control: TriggerControl): Promise<Tx[]> {
+  const removed = control.removedMap.get(ctx.objectId) as Event
+  const res: Tx[] = []
+  if (removed !== undefined) {
+    if (removed.access !== 'owner') return []
+    const current = await control.findAll(control.ctx, calendar.class.Event, { eventId: removed.eventId })
+    for (const cur of current) {
+      res.push(control.txFactory.createTxRemoveDoc(cur._class, cur.space, cur._id))
+    }
+  }
+  return res
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
@@ -106,6 +274,7 @@ export default async () => ({
     FindReminders
   },
   trigger: {
-    OnPersonAccountCreate
+    OnPersonAccountCreate,
+    OnEvent
   }
 })
