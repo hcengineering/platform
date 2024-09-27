@@ -63,6 +63,7 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly reviewItemLink = (reviewId: string): Locator => this.page.locator(`tr:has-text('${reviewId}') td a`)
   readonly twoMembersButton = (): Locator => this.page.locator('button:has-text("2 members")')
   readonly chenRosamundPopupButton = (): Locator => this.page.locator('.popup button:has-text("Chen Rosamund")')
+  readonly buttonClearFilters = (): Locator => this.page.locator('button > span', { hasText: 'Clear filters' })
 
   async clickOnTitle (): Promise<void> {
     await this.title().click()

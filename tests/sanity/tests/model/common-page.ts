@@ -49,9 +49,10 @@ export class CommonPage {
   menuPopupItemButton = (itemText: string): Locator =>
     this.page.locator('div.selectPopup button.menu-item', { hasText: itemText })
 
-  buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
+  buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter', exact: true })
   inputFilterTitle = (): Locator => this.page.locator('div.selectPopup input[placeholder="Title"]')
   inputFilterName = (): Locator => this.page.locator('div.selectPopup input[placeholder="Name"]')
+  inputFilter = (name: string): Locator => this.page.locator(`div.selectPopup input[placeholder="${name}"]`)
   inputSearch = (): Locator => this.page.locator('div.selectPopup input[placeholder="Search..."]')
   buttonFilterApply = (): Locator => this.page.locator('div.selectPopup button[type="button"]', { hasText: 'Apply' })
   buttonClearFilters = (): Locator => this.page.locator('button > span', { hasText: 'Clear filters' })
@@ -227,6 +228,10 @@ export class CommonPage {
         case 'Labels':
           await this.selectFromDropdown(this.page, filterSecondLevel)
           break
+        case 'Location':
+          await this.inputFilter(filter).fill(filterSecondLevel)
+          await this.buttonFilterApply().click()
+          break
         case 'Skills':
           await this.inputSearch().fill(filterSecondLevel)
           await this.selectFromDropdown(this.page, filterSecondLevel)
@@ -238,11 +243,13 @@ export class CommonPage {
     }
   }
 
-  async filterOppositeCondition (filter: string, conditionBefore: string, conditionAfter: string): Promise<void> {
+  async filterOppositeCondition (filter: string, conditionBefore: string, conditionAfter?: string): Promise<void> {
     const filterSection = this.selectFilterSection(filter)
     await filterSection.locator('button', { hasText: conditionBefore }).isVisible()
-    await filterSection.locator('button[data-id="btnCondition"]').click()
-    await this.page.locator('div.selectPopup button.menu-item', { hasText: conditionAfter }).click()
+    if (typeof conditionAfter === 'string') {
+      await filterSection.locator('button[data-id="btnCondition"]').click()
+      await this.page.locator('div.selectPopup button.menu-item', { hasText: conditionAfter }).click()
+    }
   }
 
   async checkFilter (filter: string, filterSecondLevel?: string, filterThirdLevel?: string): Promise<void> {

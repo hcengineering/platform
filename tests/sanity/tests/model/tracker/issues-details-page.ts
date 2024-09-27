@@ -227,7 +227,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     await expect(this.buttonComponent()).toHaveText(defaultComponent)
   }
 
-  async checkIfButtonCbuttonCreatedByHaveTextCreatedBy (createdBy: string): Promise<void> {
+  async checkIfButtonCreatedByHaveTextCreatedBy (createdBy: string): Promise<void> {
     await expect(this.buttonCreatedBy()).toHaveText(createdBy)
   }
 }

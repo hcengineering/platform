@@ -11,10 +11,16 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Tracker filters tests', () => {
+test.describe.only('Tracker filters tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
+  const initialIssue: NewIssue = {
+    title: `Issue for filtering-${generateId()}`,
+    description: 'Issue to filter',
+    assignee: 'Appleseed John',
+    status: 'In progress'
+  }
 
   test.beforeEach(async ({ page }) => {
     leftSideMenuPage = new LeftSideMenuPage(page)
@@ -22,220 +28,211 @@ test.describe('Tracker filters tests', () => {
     issuesDetailsPage = new IssuesDetailsPage(page)
 
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
-  })
-
-  // TODO: We need to split them into separate one's and fix.
-  test.skip('Modified date', async () => {
-    const newIssue: NewIssue = {
-      title: `Issue for the Modified filter-${generateId()}`,
-      description: 'Issue for the Modified filter',
-      status: 'In Progress',
-      priority: 'Urgent',
-      assignee: 'Appleseed John',
-      createLabel: true,
-      component: 'No component',
-      estimation: '2',
-      milestone: 'No Milestone',
-      duedate: 'today',
-      filePath: 'cat.jpeg'
-    }
 
     await leftSideMenuPage.clickTracker()
-
     await issuesPage.clickModelSelectorAll()
-    await issuesPage.createNewIssue(newIssue)
-
-    await test.step('Check Filter Today', async () => {
-      await issuesPage.selectFilter('Modified date', 'Today')
-      await issuesPage.checkFilter('Modified date', 'Today')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
-
-    await test.step('Check Filter Yesterday', async () => {
-      await issuesPage.updateFilterDimension('Yesterday')
-      await issuesPage.checkFilter('Modified date', 'Yesterday')
-
-      await issuesPage.checkFilteredIssueNotExist(newIssue.title)
-    })
-
-    await test.step('Check Filter This week', async () => {
-      await issuesPage.updateFilterDimension('This week')
-      await issuesPage.checkFilter('Modified date', 'This week')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
-
-    await test.step('Check Filter This month', async () => {
-      await issuesPage.updateFilterDimension('This month')
-      await issuesPage.checkFilter('Modified date', 'This month')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
-
-    await test.step('Check Filter Exact date - Today', async () => {
-      await issuesPage.updateFilterDimension('Exact date', 'Today')
-      await issuesPage.checkFilter('Modified date', 'is', 'Today')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
-
-    await test.step('Check Filter Before date - Today', async () => {
-      await issuesPage.updateFilterDimension('Before date')
-      await issuesPage.checkFilter('Modified date', 'Before', 'Today')
-
-      await issuesPage.checkFilteredIssueNotExist(newIssue.title)
-    })
-
-    await test.step('Check Filter After date - Today', async () => {
-      await issuesPage.updateFilterDimension('After date')
-      await issuesPage.checkFilter('Modified date', 'After', 'Today')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
-
-    await test.step('Check Filter Between Dates', async () => {
-      await issuesPage.updateFilterDimension('Between dates')
-      const dateYesterday = new Date()
-      dateYesterday.setDate(dateYesterday.getDate() - 1)
-      const dateTomorrow = new Date()
-      dateTomorrow.setDate(dateTomorrow.getDate() + 1)
-      const dateYesterdayDivided: DateDivided = {
-        day: dateYesterday.getDate().toString(),
-        month: (dateYesterday.getMonth() + 1).toString(),
-        year: dateYesterday.getFullYear().toString()
-      }
-      const dateTomorrowDivided: DateDivided = {
-        day: dateTomorrow.getDate().toString(),
-        month: (dateTomorrow.getMonth() + 1).toString(),
-        year: dateTomorrow.getFullYear().toString()
-      }
-
-      await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
-      await issuesPage.checkFilter('Modified date', 'is between', dateYesterday.getDate().toString())
-      await issuesPage.checkFilter('Modified date', 'is between', dateTomorrow.getDate().toString())
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
   })
 
-  // TODO: We need to split them into separate one's and fix.
-  test.skip('Created date', async () => {
-    const yesterdayIssueTitle = 'Issue for the Check Filter Yesterday'
-    const newIssue: NewIssue = {
-      title: `Issue for the Created filter-${generateId()}`,
-      description: 'Issue for the Created filter',
-      status: 'In Progress',
-      priority: 'Urgent',
-      assignee: 'Appleseed John',
-      createLabel: true,
-      component: 'No component',
-      estimation: '2',
-      milestone: 'No Milestone',
-      duedate: 'today',
-      filePath: 'cat.jpeg'
+  // Modified date tests
+
+  test('Filter by Modified date: Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'Today')
+    await issuesPage.checkFilter('Modified date', 'Today')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Modified date: Yesterday', async () => {
+    const title = `Issue ${generateId()}`
+
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'Yesterday')
+    await issuesPage.checkFilter('Modified date', 'Yesterday')
+
+    await issuesPage.checkFilteredIssueNotExist(title)
+  })
+
+  test('Filter by Modified date: This week', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'This week')
+    await issuesPage.checkFilter('Modified date', 'This week')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Modified date: This month', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'This month')
+    await issuesPage.checkFilter('Modified date', 'This month')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Modified date: Exact Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'Today')
+    await issuesPage.updateFilterDimension('Exact date', 'Today')
+    await issuesPage.checkFilter('Modified date', 'is', 'Today')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Modified date: Before Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'Today')
+    await issuesPage.updateFilterDimension('Before date', 'Today')
+    await issuesPage.checkFilter('Modified date', 'Before', 'Today')
+
+    await issuesPage.checkFilteredIssueNotExist(title)
+  })
+
+  test('Filter by Modified date: After Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'Today')
+    await issuesPage.updateFilterDimension('After date', 'Today')
+    await issuesPage.checkFilter('Modified date', 'After', 'Today')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Modified date: Between dates', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Modified date', 'Today')
+    await issuesPage.updateFilterDimension('Between dates')
+
+    const dateYesterday = new Date()
+    dateYesterday.setDate(dateYesterday.getDate() - 1)
+
+    const dateTomorrow = new Date()
+    dateTomorrow.setDate(dateTomorrow.getDate() + 1)
+
+    const dateYesterdayDivided: DateDivided = {
+      day: dateYesterday.getDate().toString(),
+      month: (dateYesterday.getMonth() + 1).toString(),
+      year: dateYesterday.getFullYear().toString()
     }
 
-    await leftSideMenuPage.clickTracker()
+    const dateTomorrowDivided: DateDivided = {
+      day: dateTomorrow.getDate().toString(),
+      month: (dateTomorrow.getMonth() + 1).toString(),
+      year: dateTomorrow.getFullYear().toString()
+    }
 
-    await issuesPage.clickModelSelectorAll()
-    await issuesPage.createNewIssue(newIssue)
+    await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
+    await issuesPage.checkFilter('Modified date', 'is between', dateYesterday.getDate().toString())
+    await issuesPage.checkFilter('Modified date', 'is between', dateTomorrow.getDate().toString())
 
-    await test.step('Check Filter Today', async () => {
-      await issuesPage.selectFilter('Created date', 'Today')
-      await issuesPage.checkFilter('Created date', 'Today')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-      await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
-    })
-
-    await test.step('Check Filter Yesterday', async () => {
-      await issuesPage.updateFilterDimension('Yesterday')
-      await issuesPage.checkFilter('Created date', 'Yesterday')
-
-      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
-      await issuesPage.checkFilteredIssueNotExist(newIssue.title)
-    })
-
-    await test.step('Check Filter This week', async () => {
-      await issuesPage.updateFilterDimension('This week')
-      await issuesPage.checkFilter('Created date', 'This week')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-      // this week filter started on Monday, the yesterday created issue on Sunday
-      if (new Date().getDay() !== 1) {
-        await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
-      } else {
-        await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
-      }
-    })
-
-    await test.step('Check Filter This month', async () => {
-      await issuesPage.updateFilterDimension('This month')
-      await issuesPage.checkFilter('Created date', 'This month')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
-    })
-
-    await test.step('Check Filter Exact date - Yesterday', async () => {
-      const dateYesterday = new Date()
-      dateYesterday.setDate(dateYesterday.getDate() - 1)
-      await issuesPage.updateFilterDimension('Exact date', dateYesterday.getDate().toString())
-      await issuesPage.checkFilter('Created date', 'is', dateYesterday.getDate().toString())
-
-      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
-      await issuesPage.checkFilteredIssueNotExist(newIssue.title)
-    })
-
-    await test.step('Check Filter Exact date - Today', async () => {
-      await issuesPage.updateFilterDimension('Exact date', 'Today', true)
-      await issuesPage.checkFilter('Created date', 'is', 'Today')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-      await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
-    })
-
-    await test.step('Check Filter Before date - Today', async () => {
-      await issuesPage.updateFilterDimension('Before date')
-      await issuesPage.checkFilter('Created date', 'Before', 'Today')
-
-      await issuesPage.checkFilteredIssueNotExist(newIssue.title)
-    })
-
-    await test.step('Check Filter After date - Today', async () => {
-      await issuesPage.updateFilterDimension('After date')
-      await issuesPage.checkFilter('Created date', 'After', 'Today')
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
-
-    await test.step('Check Filter Between Dates', async () => {
-      await issuesPage.updateFilterDimension('Between dates')
-      const dateYesterday = new Date()
-      dateYesterday.setDate(dateYesterday.getDate() - 1)
-      const dateTomorrow = new Date()
-      dateTomorrow.setDate(dateTomorrow.getDate() + 1)
-      const dateYesterdayDivided: DateDivided = {
-        day: dateYesterday.getDate().toString(),
-        month: (dateYesterday.getMonth() + 1).toString(),
-        year: dateYesterday.getFullYear().toString()
-      }
-      const dateTomorrowDivided: DateDivided = {
-        day: dateTomorrow.getDate().toString(),
-        month: (dateTomorrow.getMonth() + 1).toString(),
-        year: dateTomorrow.getFullYear().toString()
-      }
-
-      await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
-      await issuesPage.checkFilter('Created date', 'is between', dateYesterday.getDate().toString())
-      await issuesPage.checkFilter('Created date', 'is between', dateTomorrow.getDate().toString())
-
-      await issuesPage.checkFilteredIssueExist(newIssue.title)
-    })
+    await issuesPage.checkFilteredIssueExist(title)
   })
 
-  test('Status filter', async () => {
+  // Created date tests
+
+  test('Filter by Created date: Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'Today')
+    await issuesPage.checkFilter('Created date', 'Today')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Created date: Yesterday', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'Yesterday')
+    await issuesPage.checkFilter('Created date', 'Yesterday')
+
+    await issuesPage.checkFilteredIssueNotExist(title)
+  })
+
+  test('Filter by Created date: This week', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'This week')
+    await issuesPage.checkFilter('Created date', 'This week')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Created date: This month', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'This month')
+    await issuesPage.checkFilter('Created date', 'This month')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Created date: Exact Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'Today')
+    await issuesPage.updateFilterDimension('Exact date', 'Today')
+    await issuesPage.checkFilter('Created date', 'is', 'Today')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Created date: Before Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'Today')
+    await issuesPage.updateFilterDimension('Before date', 'Today')
+    await issuesPage.checkFilter('Created date', 'Before', 'Today')
+
+    await issuesPage.checkFilteredIssueNotExist(title)
+  })
+
+  test('Filter by Created date: After Today', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'Today')
+    await issuesPage.updateFilterDimension('After date', 'Today')
+    await issuesPage.checkFilter('Created date', 'After', 'Today')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Created date: Between dates', async () => {
+    const title = `Issue ${generateId()}`
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    await issuesPage.selectFilter('Created date', 'Today')
+    await issuesPage.updateFilterDimension('Between dates')
+
+    const dateYesterday = new Date()
+    dateYesterday.setDate(dateYesterday.getDate() - 1)
+
+    const dateTomorrow = new Date()
+    dateTomorrow.setDate(dateTomorrow.getDate() + 1)
+
+    const dateYesterdayDivided: DateDivided = {
+      day: dateYesterday.getDate().toString(),
+      month: (dateYesterday.getMonth() + 1).toString(),
+      year: dateYesterday.getFullYear().toString()
+    }
+
+    const dateTomorrowDivided: DateDivided = {
+      day: dateTomorrow.getDate().toString(),
+      month: (dateTomorrow.getMonth() + 1).toString(),
+      year: dateTomorrow.getFullYear().toString()
+    }
+
+    await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
+    await issuesPage.checkFilter('Created date', 'is between', dateYesterday.getDate().toString())
+    await issuesPage.checkFilter('Created date', 'is between', dateTomorrow.getDate().toString())
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by Status', async () => {
     await leftSideMenuPage.clickTracker()
 
     await issuesPage.linkSidebarAll().click()
@@ -253,7 +250,7 @@ test.describe('Tracker filters tests', () => {
     }
   })
 
-  test('Priority filter', async () => {
+  test('Filter by Priority', async () => {
     await leftSideMenuPage.clickTracker()
 
     await issuesPage.clickModelSelectorAll()
@@ -269,7 +266,7 @@ test.describe('Tracker filters tests', () => {
     }
   })
 
-  test('Created by filter', async () => {
+  test('Filter by "Created by"', async () => {
     const createdBy = 'Appleseed John'
     await leftSideMenuPage.clickTracker()
 
@@ -282,12 +279,12 @@ test.describe('Tracker filters tests', () => {
     for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      await issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy)
+      await issuesDetailsPage.checkIfButtonCreatedByHaveTextCreatedBy(createdBy)
       await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
-  test('Component filter', async () => {
+  test('Filter by component', async () => {
     const defaultComponent = 'Default component'
     await leftSideMenuPage.clickTracker()
 
@@ -306,7 +303,7 @@ test.describe('Tracker filters tests', () => {
     }
   })
 
-  test('Title filter', async () => {
+  test('Filter by Title', async () => {
     const firstSearch = 'issue'
     const secondSearch = 'done'
     await leftSideMenuPage.clickTracker()
@@ -333,7 +330,7 @@ test.describe('Tracker filters tests', () => {
     })
   })
 
-  test('Modified by filter', async () => {
+  test('Filter by "Modified by"', async () => {
     const modifierName = 'Appleseed John'
     await leftSideMenuPage.clickTracker()
 
@@ -352,70 +349,56 @@ test.describe('Tracker filters tests', () => {
     }
   })
 
-  // TODO: We need to split them into separate one's and fix.
-  test.skip('Milestone filter', async () => {
-    const filterMilestoneName = 'Filter Milestone'
-    const milestoneIssue: NewIssue = {
-      title: `Issue for the Milestone filter-${generateId()}`,
-      description: 'Issue for the Milestone filter',
-      milestone: filterMilestoneName
-    }
+  test('Filter by Milestone: "Filter Milestone"', async () => {
+    const title = `Issue with milestone-${generateId()}`
+    const milestone = 'Filter Milestone'
 
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title, milestone } })
     await leftSideMenuPage.clickTracker()
-
     await issuesPage.clickModelSelectorAll()
-    await issuesPage.createNewIssue(milestoneIssue)
 
-    await test.step('Check Milestone filter for Filter Milestone', async () => {
-      await issuesPage.selectFilter('Milestone', filterMilestoneName)
-      await issuesPage.inputSearch().press('Escape')
-      await issuesPage.checkFilter('Milestone', 'is', '1 state')
+    await issuesPage.selectFilter('Milestone', milestone)
+    await issuesPage.page.keyboard.press('Escape')
+    await issuesPage.checkFilter('Milestone', 'is', '1 state')
 
-      for await (const issue of iterateLocator(issuesPage.issuesList())) {
-        await expect(issue.locator('div.compression-bar #milestone span.label')).toContainText(filterMilestoneName)
-      }
-    })
-
-    await test.step('Check Milestone filter for Not selected', async () => {
-      await issuesPage.buttonClearFilters().click()
-      await issuesPage.selectFilter('Milestone', 'Not selected')
-      await issuesPage.inputSearch().press('Escape')
-      await issuesPage.checkFilter('Milestone', 'is', '1 state')
-
-      for await (const issue of iterateLocator(issuesPage.issuesList())) {
-        await issue.locator('span.list > a').click()
-        await expect(issuesDetailsPage.buttonMilestone()).toHaveText('Milestone')
-
-        issuesDetailsPage.buttonCloseIssue()
-      }
-    })
+    for await (const issue of iterateLocator(issuesPage.issuesList())) {
+      await expect(issue.locator('div.compression-bar #milestone span.label')).toContainText(milestone)
+    }
   })
 
-  test('Label filter', async () => {
-    const filterLabel = 'Filter Label'
-    const labelIssue: NewIssue = {
-      title: `Issue for the Label filter-${generateId()}`,
-      description: 'Issue for the Label filter',
-      labels: filterLabel,
-      createLabel: true
-    }
+  test('Filter by Milestone: Not selected', async () => {
+    const title = `Issue without milestone-${generateId()}`
 
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
     await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
-    await issuesPage.createNewIssue(labelIssue)
+
+    await issuesPage.selectFilter('Milestone', 'Not selected')
+    await issuesPage.page.keyboard.press('Escape')
+    await issuesPage.checkFilter('Milestone', 'is', '1 state')
+
+    await issuesPage.checkFilteredIssueExist(title)
+  })
+
+  test('Filter by label', async () => {
+    const labels = 'Filter Label'
+    const title = `Issue with label ${generateId()}`
+    const createLabel = true
+
+    await issuesPage.createNewIssue({ ...initialIssue, ...{ title, labels, createLabel } })
 
     await test.step('Check Label filter for exist Label', async () => {
-      await issuesPage.selectFilter('Labels', filterLabel)
-      await issuesPage.inputSearch().press('Escape')
-      await issuesPage.checkFilter('Labels', 'is', filterLabel)
+      await issuesPage.selectFilter('Labels', labels)
+      await issuesPage.page.keyboard.press('Escape')
+      await issuesPage.checkFilter('Labels', 'is', labels)
       for await (const issue of iterateLocator(issuesPage.issuesList())) {
-        await expect(issue.locator('div.compression-bar > div.label-box span.label')).toContainText(filterLabel)
+        await expect(issue.locator('div.compression-bar > div.label-box span.label')).toContainText(labels)
       }
     })
   })
 
   // TODO: We need to split them into separate one's and fix.
-  test.skip('Due date filter', async () => {
+  test('Filter by Due date', async () => {
     const plusSevenDate = new Date()
     const currentMonth = plusSevenDate.getMonth()
     plusSevenDate.setDate(plusSevenDate.getDate() + 7)
@@ -441,13 +424,10 @@ test.describe('Tracker filters tests', () => {
       duedate: 'nextMonth'
     }
 
-    await leftSideMenuPage.clickTracker()
-    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(dueDateOverdueIssue)
     await issuesPage.createNewIssue(dueDateTodayIssue)
     await issuesPage.createNewIssue(dueDateNextWeekIssue)
     await issuesPage.createNewIssue(dueDateNextMonthIssue)
-    await issuesPage.openAllCategories()
 
     await test.step('Check Filter Overdue', async () => {
       await issuesPage.selectFilter('Due date', 'Overdue')
