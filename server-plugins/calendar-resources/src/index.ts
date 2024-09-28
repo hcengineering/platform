@@ -135,7 +135,7 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
   const ops = ctx.operations
   const { visibility, ...otherOps } = ops
   if (Object.keys(otherOps).length === 0) return []
-  const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }))[0]
+  const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: ctx.objectId }, { limit: 1 }))[0]
   if (event === undefined) return []
   if (event.access !== 'owner') return []
   const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
