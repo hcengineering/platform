@@ -10,7 +10,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Talents filters tests', () => {
+test.describe('Recruiting. Talents filters tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let talentsPage: TalentsPage
   let talentDetailsPage: TalentDetailsPage

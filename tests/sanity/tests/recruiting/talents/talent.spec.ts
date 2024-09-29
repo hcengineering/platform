@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Recruting. Talents tests', () => {
+test.describe('Recruting. Talent tests', () => {
   let talentsPage: TalentsPage
   let navigationMenuPage: NavigationMenuPage
   let talentDetailsPage: TalentDetailsPage
@@ -152,57 +152,5 @@ test.describe('Recruting. Talents tests', () => {
     await talentsPage.createNewTalentWithName(talentName.firstName, talentName.lastName)
     await talentsPage.rightClickAction(talentName, 'Match to vacancy')
     await talentsPage.checkMatchVacancy(`${talentName.lastName} ${talentName.firstName}`, '0')
-  })
-
-  test('Filter talents', async ({ page }) => {
-    const skillName = `Skill-${generateId(4)}`
-    const talentName = 'P. Andrey'
-    const location = 'Monte Carlo'
-
-    await test.step('Add attributest for filtering to talent', async () => {
-      await navigationMenuPage.clickButtonTalents()
-      await talentsPage.checkRowsInTableExist(talentName)
-      await talentsPage.openRowInTableByText(talentName)
-      await talentDetailsPage.addSkill(skillName, 'Skill Description')
-      await talentDetailsPage.buttonClosePanel().click()
-    })
-
-    const talentsCount = await talentsPage.linesFromTable().count()
-
-    await test.step('Filter by Talents properties', async () => {
-      const filtersWithSelection = [
-        { name: 'Skills', panelName: 'Skill', value: skillName },
-        { name: 'Remote', panelName: 'Remote', value: 'Yes' }
-        // { name: 'Onsite', panelName: 'Onsite', value: 'Yes' }
-      ]
-
-      const filtersWithText = [
-        { name: 'Location', panelName: 'Location', value: location },
-        { name: 'Name', panelName: 'Name', value: 'Andrey' }
-      ]
-
-      // const filtersWithUser = [
-      //   { name: 'Modified by', panelName: 'Modified by', value: 'Appleseed John' },
-      //   { name: 'Created by', panelName: 'Created by', value: 'Appleseed John' },
-      // ]
-
-      for (const { name, panelName, value } of filtersWithSelection) {
-        await talentsPage.selectFilter(name, value)
-        await talentsPage.page.keyboard.press('Escape')
-        await talentsPage.checkRowsInTableExist(talentName)
-        await talentsPage.filterOppositeCondition(panelName, 'is', 'is not')
-        await talentsPage.checkRowsInTableNotExist(talentName)
-        await talentsPage.checkRowsInTableExist('', talentsCount - 1)
-        await talentsPage.buttonClearFilters().click()
-      }
-
-      for (const { name, panelName, value } of filtersWithText) {
-        await talentsPage.selectFilter(name, value)
-        await talentsPage.checkRowsInTableExist(talentName)
-        await talentsPage.filterOppositeCondition(panelName, 'contains')
-        await talentsPage.checkRowsInTableExist(talentName)
-        await talentsPage.buttonClearFilters().click()
-      }
-    })
   })
 })

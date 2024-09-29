@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Recruting. Companies tests', () => {
+test.describe('Recruiting. Companies tests', () => {
   let navigationMenuPage: NavigationMenuPage
   let companiesPage: CompaniesPage
   let companyDetailsPage: CompanyDetailsPage

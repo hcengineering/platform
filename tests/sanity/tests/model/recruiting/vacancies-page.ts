@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { NewVacancy } from './types'
 import { CommonRecruitingPage } from './common-recruiting-page'
+import { generateId } from '../../utils'
 
 export class VacanciesPage extends CommonRecruitingPage {
   readonly page: Page
@@ -44,7 +45,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly recruitApplicationButton = (): Locator =>
     this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
 
-  readonly vacanciesMenuLink = (): Locator => this.page.locator('text=Vacancies')
+  readonly vacanciesMenuLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Vacancies')
   readonly createVacancyButton = (): Locator => this.page.locator('button:has-text("Vacancy")')
   readonly vacancyInputField = (): Locator => this.page.locator('form [placeholder="Software\\ Engineer"]')
   readonly createButton = (): Locator => this.page.locator('form button:has-text("Create")')
@@ -62,7 +63,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly applicantJohn = (): Locator => this.page.locator('text=Multiseed John').first()
   readonly applicantAlex = (): Locator => this.page.locator('text=P. Alex').first()
 
-  async clickOnVacancy (): Promise<void> {
+  async openVacancies (): Promise<void> {
     await this.vacanciesMenuLink().click()
   }
 
@@ -70,25 +71,31 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.vacancyButton().click()
   }
 
-  async fillSoftwareEngineerInput (vacancyId: string): Promise<void> {
-    await this.softwareEngineerInput().fill(vacancyId)
+  async fillSoftwareEngineerInput (vacancyTitle: string): Promise<void> {
+    await this.softwareEngineerInput().fill(vacancyTitle)
   }
 
   async clickOnVacanciesCreateButton (): Promise<void> {
     await this.vacanciesCreateButton().click()
   }
 
-  async createVacancy (vacancyId: string): Promise<void> {
+  async createVacancy (vacancyTitle?: string): Promise<string> {
+    if (typeof vacancyTitle !== 'string') {
+      vacancyTitle = `Vacancy ${generateId()}`
+    }
+
     await this.recruitApplicationButton().click()
     await this.vacanciesMenuLink().click()
     await this.createVacancyButton().click()
-    await this.vacancyInputField().fill(vacancyId)
+    await this.vacancyInputField().fill(vacancyTitle)
     await this.createButton().click()
     await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+
+    return vacancyTitle
   }
 
-  async modifyVacancy (vacancyId: string): Promise<void> {
-    await this.vacancyRow(vacancyId).click()
+  async modifyVacancy (vacancyTitle: string): Promise<void> {
+    await this.vacancyRow(vacancyTitle).click()
   }
 
   async createApplicationVacencies (assigneeName: string): Promise<void> {
@@ -151,12 +158,12 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.popupOk().click()
   }
 
-  async checkVacancyNotExist (vacancyName: string, message: string): Promise<void> {
-    await expect(this.page.locator('tr', { hasText: vacancyName }), message).toHaveCount(0)
+  async checkVacancyNotExist (vacancyName: string): Promise<void> {
+    await expect(this.page.locator('tr', { hasText: vacancyName })).toHaveCount(0)
   }
 
-  async checkVacancyExist (vacancyName: string, message: string): Promise<void> {
-    await expect(this.page.locator('tr', { hasText: vacancyName }), message).toHaveCount(1)
+  async checkVacancyExist (vacancyName: string): Promise<void> {
+    await expect(this.page.locator('tr', { hasText: vacancyName })).toHaveCount(1)
   }
 
   async selectAll (): Promise<void> {

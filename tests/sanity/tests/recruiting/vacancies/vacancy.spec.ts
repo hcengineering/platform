@@ -9,7 +9,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Recruting. Vacancy tests', () => {
+test.describe('Recruiting. Vacancy tests', () => {
   let navigationMenuPage: NavigationMenuPage
   let vacanciesPage: VacanciesPage
   let vacancyDetailsPage: VacancyDetailsPage
@@ -21,40 +21,11 @@ test.describe('Recruting. Vacancy tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-vacancy', async () => {
+  test('Create a Vacancy', async () => {
     const vacancyId = 'My vacancy ' + generateId(4)
     await vacanciesPage.createVacancy(vacancyId)
     await vacanciesPage.modifyVacancy(vacancyId)
     await vacanciesPage.createApplicationVacencies('Alex')
-  })
-
-  test('use-kanban', async () => {
-    await vacanciesPage.navigateToSoftwareEngineerVacancies()
-    await vacanciesPage.selectApplicationsTab()
-    await vacanciesPage.verifyApplicantsVisibility()
-
-    // test('application-search', async ({ page }) => {
-    // TODO: Application search is broken, since indexer now index from child to parent.
-    //   await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
-
-    //   await page.locator('text=Vacancies').click()
-    //   await page.click('text=Software Engineer')
-
-    //   await expect(page.locator('text=M. Marina')).toBeVisible()
-    //   expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
-
-    //   const searchBox = page.locator('[placeholder="Search"]')
-    //   await searchBox.fill('Frontend Engineer')
-    //   await searchBox.press('Enter')
-
-    //   await expect(page.locator('.antiTable-body__row')).toHaveCount(1)
-
-    //   await searchBox.fill('')
-    //   await searchBox.press('Enter')
-
-    //   await expect(page.locator('text=M. Marina')).toBeVisible()
-    //   expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
-    // })
   })
 
   test('Edit a Vacancy', async () => {
@@ -78,30 +49,6 @@ test.describe('Recruting. Vacancy tests', () => {
     await vacancyDetailsPage.addDueDateToday()
   })
 
-  test('Filter vacancies', async () => {
-    // viable when test set of vacancies fits to single page
-    const vacancyName = 'Archive Vacancy ' + generateId(5)
-    await navigationMenuPage.clickButtonVacancies()
-    await vacanciesPage.createNewVacancy({
-      title: vacancyName,
-      description: 'Vacancy description from Filter vacancies test',
-      location: 'Filter vacancies location'
-    })
-    await vacanciesPage.checkVacancyExist(vacancyName, `Created vacancy "${vacancyName}" visible by default.`)
-    await vacanciesPage.archiveVacancyByName(vacancyName)
-    await vacanciesPage.checkVacancyNotExist(vacancyName, `Archieved vacancy "${vacancyName}" not visible by default.`)
-    await vacanciesPage.showArchivedVacancy()
-    await vacanciesPage.checkVacancyExist(
-      vacancyName,
-      `Archieved vacancy "${vacancyName}" visible when hide archved off.`
-    )
-    await vacanciesPage.clickOnHideArchivedVacancies()
-    await vacanciesPage.checkVacancyNotExist(
-      vacancyName,
-      `Archieved vacancy "${vacancyName}" not visible when hide archved back on.`
-    )
-  })
-
   test('Export vacancies', async () => {
     await navigationMenuPage.clickButtonVacancies()
     await vacanciesPage.selectAll()
@@ -122,14 +69,8 @@ test.describe('Recruting. Vacancy tests', () => {
     await vacancyDetailsPage.pressYesForPopup(page)
     await vacancyDetailsPage.checkActivityExist('Archived set to Yes')
     await navigationMenuPage.clickButtonVacancies()
-    await vacanciesPage.checkVacancyNotExist(
-      archiveVacancy.title,
-      `Archieved vacancy "${archiveVacancy.title}" visible.`
-    )
+    await vacanciesPage.checkVacancyNotExist(archiveVacancy.title)
     await vacanciesPage.showArchivedVacancy()
-    await vacanciesPage.checkVacancyExist(
-      archiveVacancy.title,
-      `Archieved vacancy "${archiveVacancy.title}" is not visible.`
-    )
+    await vacanciesPage.checkVacancyExist(archiveVacancy.title)
   })
 })

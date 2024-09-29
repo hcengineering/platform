@@ -5,7 +5,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Recruting. Kill tests', () => {
+test.describe('Recruiting. Kill tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })

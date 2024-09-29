@@ -7,7 +7,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Recruting. Review tests', () => {
+test.describe('Recruiting. Review tests', () => {
   let recruitingPage: RecruitingPage
   let commonRecruitingPage: CommonRecruitingPage
 

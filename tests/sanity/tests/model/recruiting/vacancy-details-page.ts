@@ -18,6 +18,7 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
   readonly buttonInputDueDate = (): Locator => this.page.locator('button > div', { hasText: 'Due date' })
   readonly buttonDatePopupSave = (): Locator => this.page.locator('div.popup button[type="submit"]')
   readonly inputComment = (): Locator => this.page.locator('div.text-input div.tiptap')
+  readonly inputMembers = (): Locator => this.page.locator('.labelOnPanel:has-text("Members") + div .antiButton')
 
   async addComment (comment: string): Promise<void> {
     await this.inputComment().fill(comment)
@@ -47,6 +48,12 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
   async addDueDateToday (): Promise<void> {
     await this.buttonInputDueDate().click()
     await this.clickButtonDatePopupToday()
+  }
+
+  async addMember (name: string): Promise<void> {
+    await this.inputMembers().click()
+    await this.selectMenuItem(this.page, name)
+    await this.page.keyboard.press('Escape')
   }
 
   async fillInputDescription (description: string): Promise<void> {
