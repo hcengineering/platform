@@ -211,6 +211,7 @@
         focusIndex={10007}
         kind={'indented'}
         showButtons={false}
+        readonly={readOnly}
         placeholder={calendar.string.Description}
         bind:content={description}
       />
