@@ -1,15 +1,15 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
-import { VacanciesPage } from '../model/recruiting/vacancies-page'
-import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
-import { NewVacancy } from '../model/recruiting/types'
+import { generateId, PlatformSetting, PlatformURI } from '../../utils'
+import { NavigationMenuPage } from '../../model/recruiting/navigation-menu-page'
+import { VacanciesPage } from '../../model/recruiting/vacancies-page'
+import { VacancyDetailsPage } from '../../model/recruiting/vacancy-details-page'
+import { NewVacancy } from '../../model/recruiting/types'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Vacancy tests', () => {
+test.describe('Recruting. Vacancy tests', () => {
   let navigationMenuPage: NavigationMenuPage
   let vacanciesPage: VacanciesPage
   let vacancyDetailsPage: VacancyDetailsPage

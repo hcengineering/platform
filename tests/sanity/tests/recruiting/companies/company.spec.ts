@@ -1,15 +1,15 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
-import { CompaniesPage } from '../model/recruiting/companies-page'
-import { NewCompany } from '../model/recruiting/types'
-import { CompanyDetailsPage } from '../model/recruiting/company-details-page'
+import { generateId, PlatformSetting, PlatformURI } from '../../utils'
+import { NavigationMenuPage } from '../../model/recruiting/navigation-menu-page'
+import { CompaniesPage } from '../../model/recruiting/companies-page'
+import { NewCompany } from '../../model/recruiting/types'
+import { CompanyDetailsPage } from '../../model/recruiting/company-details-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Companies tests', () => {
+test.describe('Recruting. Companies tests', () => {
   let navigationMenuPage: NavigationMenuPage
   let companiesPage: CompaniesPage
   let companyDetailsPage: CompanyDetailsPage

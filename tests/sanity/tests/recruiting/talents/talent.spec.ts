@@ -1,15 +1,15 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
-import { TalentsPage } from '../model/recruiting/talents-page'
-import { TalentDetailsPage } from '../model/recruiting/talent-details-page'
-import { TalentName } from '../model/recruiting/types'
+import { generateId, PlatformSetting, PlatformURI } from '../../utils'
+import { NavigationMenuPage } from '../../model/recruiting/navigation-menu-page'
+import { TalentsPage } from '../../model/recruiting/talents-page'
+import { TalentDetailsPage } from '../../model/recruiting/talent-details-page'
+import { TalentName } from '../../model/recruiting/types'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Talents tests', () => {
+test.describe('Recruting. Talents tests', () => {
   let talentsPage: TalentsPage
   let navigationMenuPage: NavigationMenuPage
   let talentDetailsPage: TalentDetailsPage

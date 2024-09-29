@@ -11,21 +11,24 @@ test.use({
   storageState: PlatformSetting
 })
 
-test.describe.only('Tracker filters tests', () => {
+test.describe('Tracker filters tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let issuesPage: IssuesPage
   let issuesDetailsPage: IssuesDetailsPage
-  const initialIssue: NewIssue = {
-    title: `Issue for filtering-${generateId()}`,
-    description: 'Issue to filter',
-    assignee: 'Appleseed John',
-    status: 'In progress'
-  }
+  let issueData: NewIssue
+  let issueTitle: string
 
   test.beforeEach(async ({ page }) => {
     leftSideMenuPage = new LeftSideMenuPage(page)
     issuesPage = new IssuesPage(page)
     issuesDetailsPage = new IssuesDetailsPage(page)
+
+    issueData = {
+      title: `Issue for filtering-${generateId()}`,
+      description: 'Issue to filter',
+      assignee: 'Appleseed John',
+      status: 'In progress'
+    }
 
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
@@ -33,78 +36,67 @@ test.describe.only('Tracker filters tests', () => {
     await issuesPage.clickModelSelectorAll()
   })
 
-  // Modified date tests
-
   test('Filter by Modified date: Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'Today')
     await issuesPage.checkFilter('Modified date', 'Today')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Modified date: Yesterday', async () => {
-    const title = `Issue ${generateId()}`
-
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'Yesterday')
     await issuesPage.checkFilter('Modified date', 'Yesterday')
 
-    await issuesPage.checkFilteredIssueNotExist(title)
+    await issuesPage.checkFilteredIssueNotExist(issueTitle)
   })
 
   test('Filter by Modified date: This week', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'This week')
     await issuesPage.checkFilter('Modified date', 'This week')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Modified date: This month', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'This month')
     await issuesPage.checkFilter('Modified date', 'This month')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Modified date: Exact Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'Today')
     await issuesPage.updateFilterDimension('Exact date', 'Today')
     await issuesPage.checkFilter('Modified date', 'is', 'Today')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Modified date: Before Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'Today')
     await issuesPage.updateFilterDimension('Before date', 'Today')
     await issuesPage.checkFilter('Modified date', 'Before', 'Today')
 
-    await issuesPage.checkFilteredIssueNotExist(title)
+    await issuesPage.checkFilteredIssueNotExist(issueTitle)
   })
 
   test('Filter by Modified date: After Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'Today')
     await issuesPage.updateFilterDimension('After date', 'Today')
     await issuesPage.checkFilter('Modified date', 'After', 'Today')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Modified date: Between dates', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Modified date', 'Today')
     await issuesPage.updateFilterDimension('Between dates')
 
@@ -130,80 +122,70 @@ test.describe.only('Tracker filters tests', () => {
     await issuesPage.checkFilter('Modified date', 'is between', dateYesterday.getDate().toString())
     await issuesPage.checkFilter('Modified date', 'is between', dateTomorrow.getDate().toString())
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
-  // Created date tests
-
   test('Filter by Created date: Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'Today')
     await issuesPage.checkFilter('Created date', 'Today')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Created date: Yesterday', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'Yesterday')
     await issuesPage.checkFilter('Created date', 'Yesterday')
 
-    await issuesPage.checkFilteredIssueNotExist(title)
+    await issuesPage.checkFilteredIssueNotExist(issueTitle)
   })
 
   test('Filter by Created date: This week', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'This week')
     await issuesPage.checkFilter('Created date', 'This week')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Created date: This month', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'This month')
     await issuesPage.checkFilter('Created date', 'This month')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Created date: Exact Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'Today')
     await issuesPage.updateFilterDimension('Exact date', 'Today')
     await issuesPage.checkFilter('Created date', 'is', 'Today')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Created date: Before Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'Today')
     await issuesPage.updateFilterDimension('Before date', 'Today')
     await issuesPage.checkFilter('Created date', 'Before', 'Today')
 
-    await issuesPage.checkFilteredIssueNotExist(title)
+    await issuesPage.checkFilteredIssueNotExist(issueTitle)
   })
 
   test('Filter by Created date: After Today', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'Today')
     await issuesPage.updateFilterDimension('After date', 'Today')
     await issuesPage.checkFilter('Created date', 'After', 'Today')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Created date: Between dates', async () => {
-    const title = `Issue ${generateId()}`
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await issuesPage.selectFilter('Created date', 'Today')
     await issuesPage.updateFilterDimension('Between dates')
 
@@ -229,7 +211,7 @@ test.describe.only('Tracker filters tests', () => {
     await issuesPage.checkFilter('Created date', 'is between', dateYesterday.getDate().toString())
     await issuesPage.checkFilter('Created date', 'is between', dateTomorrow.getDate().toString())
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by Status', async () => {
@@ -353,7 +335,7 @@ test.describe.only('Tracker filters tests', () => {
     const title = `Issue with milestone-${generateId()}`
     const milestone = 'Filter Milestone'
 
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title, milestone } })
+    await issuesPage.createNewIssue({ ...issueData, ...{ title, milestone } })
     await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
 
@@ -367,9 +349,7 @@ test.describe.only('Tracker filters tests', () => {
   })
 
   test('Filter by Milestone: Not selected', async () => {
-    const title = `Issue without milestone-${generateId()}`
-
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title } })
+    issueTitle = await issuesPage.createNewIssue(issueData)
     await leftSideMenuPage.clickTracker()
     await issuesPage.clickModelSelectorAll()
 
@@ -377,15 +357,14 @@ test.describe.only('Tracker filters tests', () => {
     await issuesPage.page.keyboard.press('Escape')
     await issuesPage.checkFilter('Milestone', 'is', '1 state')
 
-    await issuesPage.checkFilteredIssueExist(title)
+    await issuesPage.checkFilteredIssueExist(issueTitle)
   })
 
   test('Filter by label', async () => {
     const labels = 'Filter Label'
-    const title = `Issue with label ${generateId()}`
     const createLabel = true
 
-    await issuesPage.createNewIssue({ ...initialIssue, ...{ title, labels, createLabel } })
+    issueTitle = await issuesPage.createNewIssue({ ...issueData, ...{ labels, createLabel } })
 
     await test.step('Check Label filter for exist Label', async () => {
       await issuesPage.selectFilter('Labels', labels)

@@ -1,13 +1,13 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { RecruitingPage } from '../model/recruiting/recruiting-page'
-import { CommonRecruitingPage } from '../model/recruiting/common-recruiting-page'
+import { generateId, PlatformSetting, PlatformURI } from '../../utils'
+import { RecruitingPage } from '../../model/recruiting/recruiting-page'
+import { CommonRecruitingPage } from '../../model/recruiting/common-recruiting-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('review tests', () => {
+test.describe('Recruting. Review tests', () => {
   let recruitingPage: RecruitingPage
   let commonRecruitingPage: CommonRecruitingPage
 

@@ -1,11 +1,11 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
+import { PlatformSetting, PlatformURI } from '../../utils'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('skill tests', () => {
+test.describe('Recruting. Kill tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })

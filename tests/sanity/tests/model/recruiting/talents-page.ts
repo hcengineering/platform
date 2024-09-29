@@ -41,7 +41,7 @@ export class TalentsPage extends CommonRecruitingPage {
 
   recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
 
-  talentsTab = (): Locator => this.page.locator('text=Talents')
+  talentsTab = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
   newTalentButton = (): Locator => this.page.locator('button:has-text("New Talent")')
   addSocialLinksButton = (): Locator => this.page.locator('[id="presentation\\:string\\:AddSocialLinks"]')
 
@@ -227,6 +227,10 @@ export class TalentsPage extends CommonRecruitingPage {
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('a.noOverflow')
       .click()
+  }
+
+  async checkTalentExist (talentName: TalentName): Promise<void> {
+    await expect(this.page.locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })).toHaveCount(1)
   }
 
   async checkTalentNotExist (talentName: TalentName): Promise<void> {

@@ -408,7 +408,7 @@ export class IssuesPage extends CommonTrackerPage {
     await this.linkSidebarMyIssue().click()
   }
 
-  async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
+  async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<string> {
     await this.buttonCreateNewIssue().click()
     await this.fillNewIssueForm(data)
     await this.clickButtonCreateIssue()
@@ -416,6 +416,7 @@ export class IssuesPage extends CommonTrackerPage {
       await this.closeNotification()
     }
     await attachScreenshot(`createdNewIssue-${data.title}.png`, this.page)
+    return data.title
   }
 
   async fillNewIssueForm (data: NewIssue): Promise<void> {

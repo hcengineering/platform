@@ -35,6 +35,9 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly buttonContactLinkedIn = (): Locator =>
     this.page.locator('div[class^="popupPanel-body"] div.horizontal button[id="contact:string:LinkedIn"]')
 
+  readonly buttonContactGithub = (): Locator =>
+    this.page.locator('div[class^="popupPanel-body"] div.horizontal button[id="contact:string:GitHub"]')
+
   readonly newTalentFirstName = (): Locator =>
     this.page.locator('div.popup form[id="recruit:string:CreateTalent"] input[placeholder="First name"]')
 
@@ -170,6 +173,12 @@ export class CommonRecruitingPage extends CalendarPage {
       case 'LinkedIn':
         await expect(this.buttonContactLinkedIn()).toBeVisible()
         await this.buttonContactLinkedIn().click()
+        await expect(this.inputSocialValue()).toHaveValue(value)
+        await this.buttonSocialSave().click()
+        break
+      case 'Github':
+        await expect(this.buttonContactGithub()).toBeVisible()
+        await this.buttonContactGithub().click()
         await expect(this.inputSocialValue()).toHaveValue(value)
         await this.buttonSocialSave().click()
         break

@@ -51,6 +51,7 @@ export class CommonPage {
 
   buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter', exact: true })
   inputFilterTitle = (): Locator => this.page.locator('div.selectPopup input[placeholder="Title"]')
+  inputFilterSource = (): Locator => this.page.locator('div.selectPopup input[placeholder="Source"]')
   inputFilterName = (): Locator => this.page.locator('div.selectPopup input[placeholder="Name"]')
   inputFilter = (name: string): Locator => this.page.locator(`div.selectPopup input[placeholder="${name}"]`)
   inputSearch = (): Locator => this.page.locator('div.selectPopup input[placeholder="Search..."]')
@@ -236,6 +237,10 @@ export class CommonPage {
           await this.inputSearch().fill(filterSecondLevel)
           await this.selectFromDropdown(this.page, filterSecondLevel)
           await this.page.keyboard.press('Escape')
+          break
+        case 'Source':
+          await this.inputFilterSource().fill(filterSecondLevel)
+          await this.buttonFilterApply().click()
           break
         default:
           await this.selectPopupMenu(filterSecondLevel).click()

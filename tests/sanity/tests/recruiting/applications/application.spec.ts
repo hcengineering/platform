@@ -1,18 +1,18 @@
 import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
-import { ApplicationsPage } from '../model/recruiting/applications-page'
-import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
-import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
-import { VacanciesPage } from '../model/recruiting/vacancies-page'
-import { RecruitingPage } from '../model/recruiting/recruiting-page'
-import { TalentsPage } from '../model/recruiting/talents-page'
+import { generateId, PlatformSetting, PlatformURI } from '../../utils'
+import { NavigationMenuPage } from '../../model/recruiting/navigation-menu-page'
+import { ApplicationsPage } from '../../model/recruiting/applications-page'
+import { ApplicationsDetailsPage } from '../../model/recruiting/applications-details-page'
+import { VacancyDetailsPage } from '../../model/recruiting/vacancy-details-page'
+import { VacanciesPage } from '../../model/recruiting/vacancies-page'
+import { RecruitingPage } from '../../model/recruiting/recruiting-page'
+import { TalentsPage } from '../../model/recruiting/talents-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
-test.describe('Application tests', () => {
+test.describe('Recruting. Application tests', () => {
   let recrutingPage: RecruitingPage
   let vacanciesPage: VacanciesPage
   let vacancyDetailsPage: VacancyDetailsPage
