@@ -41,6 +41,13 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCalendar.trigger.OnEvent,
+    txMatch: {
+      'tx.objectClass': calendar.class.Event
+    }
+  })
+
   builder.mixin<Class<Doc>, ObjectDDParticipant>(
     core.class.Doc,
     core.class.Class,

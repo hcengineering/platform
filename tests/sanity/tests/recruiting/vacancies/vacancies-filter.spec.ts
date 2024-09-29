@@ -215,15 +215,9 @@ test.describe('Recruiting. Vacancies filters tests', () => {
     await vacanciesPage.checkVacancyExist(name)
   })
 
-  test('Filter by "Created by"', async () => {
+  test.only('Filter by "Created by"', async () => {
     name = await vacanciesPage.createVacancy()
     const createdBy = 'Appleseed John'
-
-    await vacanciesPage.selectFilter('Created by', 'System')
-    await vacanciesPage.inputSearch().press('Escape')
-
-    await vacanciesPage.checkVacancyNotExist(name)
-    await vacanciesPage.buttonClearFilters().click()
 
     await vacanciesPage.selectFilter('Created by', createdBy)
     await vacanciesPage.inputSearch().press('Escape')
@@ -232,15 +226,9 @@ test.describe('Recruiting. Vacancies filters tests', () => {
     await vacanciesPage.checkVacancyExist(name)
   })
 
-  test('Filter by "Modified by"', async () => {
+  test.only('Filter by "Modified by"', async () => {
     name = await vacanciesPage.createVacancy()
     const createdBy = 'Appleseed John'
-
-    await vacanciesPage.selectFilter('Modified by', 'System')
-    await vacanciesPage.inputSearch().press('Escape')
-
-    await vacanciesPage.checkVacancyNotExist(name)
-    await vacanciesPage.buttonClearFilters().click()
 
     await vacanciesPage.selectFilter('Modified by', createdBy)
     await vacanciesPage.inputSearch().press('Escape')

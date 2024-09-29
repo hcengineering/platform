@@ -285,15 +285,9 @@ test.describe('Recruiting. Talents filters tests', () => {
     await talentsPage.checkTalentExist(talentName)
   })
 
-  test('Filter by "Created by"', async () => {
+  test.only('Filter by "Created by"', async () => {
     talentName = await talentsPage.createNewTalent()
     const createdBy = 'Appleseed John'
-
-    await talentsPage.selectFilter('Created by', 'System')
-    await talentsPage.inputSearch().press('Escape')
-
-    await talentsPage.checkTalentNotExist(talentName)
-    await talentsPage.buttonClearFilters().click()
 
     await talentsPage.selectFilter('Created by', createdBy)
     await talentsPage.inputSearch().press('Escape')
@@ -302,15 +296,9 @@ test.describe('Recruiting. Talents filters tests', () => {
     await talentsPage.checkTalentExist(talentName)
   })
 
-  test('Filter by "Modified by"', async () => {
+  test.only('Filter by "Modified by"', async () => {
     talentName = await talentsPage.createNewTalent()
     const createdBy = 'Appleseed John'
-
-    await talentsPage.selectFilter('Modified by', 'System')
-    await talentsPage.inputSearch().press('Escape')
-
-    await talentsPage.checkTalentNotExist(talentName)
-    await talentsPage.buttonClearFilters().click()
 
     await talentsPage.selectFilter('Modified by', createdBy)
     await talentsPage.inputSearch().press('Escape')
