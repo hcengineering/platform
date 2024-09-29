@@ -267,6 +267,24 @@ export class CommonPage {
     }
   }
 
+  async checkFilterWithInitials (filter: string, filterSecondLevel?: string, filterThirdLevel?: string): Promise<void> {
+    await expect(this.filterButton(1)).toHaveText(filter)
+    if (filterSecondLevel !== undefined) {
+      await expect(this.filterButton(2)).toContainText(filterSecondLevel)
+    }
+    if (filterThirdLevel !== undefined) {
+      const avatarWrapper = this.filterButton(3).locator(`[data-name="${filterThirdLevel}"]`)
+
+      const content = avatarWrapper.evaluate((elem) => {
+        const computedStyle = window.getComputedStyle(elem, '::after')
+        return computedStyle.getPropertyValue('content')
+      })
+
+      // Pseudoelement returns content "\"AJ\"
+      expect(await content).toEqual(JSON.stringify(filterThirdLevel))
+    }
+  }
+
   async updateFilterDimension (
     filterSecondLevel: string,
     dateStart?: string,

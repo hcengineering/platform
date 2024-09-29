@@ -218,22 +218,24 @@ test.describe('Recruiting. Vacancies filters tests', () => {
   test.only('Filter by "Created by"', async () => {
     name = await vacanciesPage.createVacancy()
     const createdBy = 'Appleseed John'
+    const createdByInitials = 'AJ'
 
     await vacanciesPage.selectFilter('Created by', createdBy)
     await vacanciesPage.inputSearch().press('Escape')
 
-    await vacanciesPage.checkFilter('Created by', 'is')
+    await vacanciesPage.checkFilterWithInitials('Created by', 'is', createdByInitials)
     await vacanciesPage.checkVacancyExist(name)
   })
 
   test.only('Filter by "Modified by"', async () => {
     name = await vacanciesPage.createVacancy()
-    const createdBy = 'Appleseed John'
+    const modifiedBy = 'Appleseed John'
+    const modifiedByInitials = 'AJ'
 
-    await vacanciesPage.selectFilter('Modified by', createdBy)
+    await vacanciesPage.selectFilter('Modified by', modifiedBy)
     await vacanciesPage.inputSearch().press('Escape')
 
-    await vacanciesPage.checkFilter('Modified by', 'is')
+    await vacanciesPage.checkFilterWithInitials('Modified by', 'is', modifiedByInitials)
     await vacanciesPage.checkVacancyExist(name)
   })
 

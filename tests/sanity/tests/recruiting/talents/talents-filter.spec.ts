@@ -288,22 +288,24 @@ test.describe('Recruiting. Talents filters tests', () => {
   test.only('Filter by "Created by"', async () => {
     talentName = await talentsPage.createNewTalent()
     const createdBy = 'Appleseed John'
+    const createdByInitials = 'AJ'
 
     await talentsPage.selectFilter('Created by', createdBy)
     await talentsPage.inputSearch().press('Escape')
 
-    await talentsPage.checkFilter('Created by', 'is')
+    await talentsPage.checkFilterWithInitials('Created by', 'is', createdByInitials)
     await talentsPage.checkTalentExist(talentName)
   })
 
   test.only('Filter by "Modified by"', async () => {
     talentName = await talentsPage.createNewTalent()
-    const createdBy = 'Appleseed John'
+    const modifiedBy = 'Appleseed John'
+    const modifiedByInitials = 'AJ'
 
-    await talentsPage.selectFilter('Modified by', createdBy)
+    await talentsPage.selectFilter('Modified by', modifiedBy)
     await talentsPage.inputSearch().press('Escape')
 
-    await talentsPage.checkFilter('Modified by', 'is')
+    await talentsPage.checkFilterWithInitials('Modified by', 'is', modifiedByInitials)
     await talentsPage.checkTalentExist(talentName)
   })
 
