@@ -89,6 +89,9 @@
     "Selected": "Selected:",
     "Submit": "Submit",
     "NextStep": "Next step",
-    "TypeHere": "Type here..."
+    "TypeHere": "Type here...",
+    "FullSize": "Full size",
+    "UseMaxWidth": "Max width",
+    "Sidebar": "Sidebar"
   }
 }
