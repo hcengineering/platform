@@ -461,8 +461,6 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
       whereChunks.push("(region IS NULL OR region = '')")
     }
 
-    whereChunks.push('is_ws_locked(_id) = FALSE')
-
     sqlChunks.push(`WHERE ${whereChunks.join(' AND ')}`)
     sqlChunks.push('ORDER BY "lastVisit" DESC')
     sqlChunks.push('LIMIT 1')
@@ -471,7 +469,6 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
 
     // We must have all the conditions in the DB query and we cannot filter anything in the code
     // because of possible concurrency between account services.
-    // is_ws_locked function locks the retrieved row for update.
     await this.client.query('BEGIN')
     const res = await this.client.query(sqlChunks.join(' '), values)
 

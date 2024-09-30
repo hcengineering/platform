@@ -124,6 +124,9 @@ export async function createWorkspace (
     await handleWsEvent?.('create-started', version, 10)
 
     const { mongodbUri, dbUrl } = prepareTools([])
+    if (mongodbUri === undefined) {
+      throw new Error('No MONGO_URL specified')
+    }
     const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
@@ -280,6 +283,9 @@ export async function upgradeWorkspace (
   }, 5000)
 
   const { mongodbUri, dbUrl } = prepareTools([])
+  if (mongodbUri === undefined) {
+    throw new Error('No MONGO_URL specified')
+  }
 
   const wsUrl: WorkspaceIdWithUrl = {
     name: ws.workspace,
