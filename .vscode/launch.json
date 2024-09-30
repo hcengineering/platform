@@ -51,6 +51,8 @@
       "env": {
         "ELASTIC_URL": "http://localhost:9200",
         "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "APM_SERVER_URL2": "http://localhost:8200",
         "METRICS_CONSOLE": "false",
         "METRICS_FILE": "${workspaceRoot}/metrics.txt", // Show metrics in console evert 30 seconds.,
@@ -87,6 +89,8 @@
       "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",
@@ -113,6 +117,8 @@
       "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
+        "DB_URL": "mongodb://localhost:27017",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",

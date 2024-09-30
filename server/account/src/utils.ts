@@ -50,7 +50,18 @@ export async function getAccountDB (uri: string, db: string = ACCOUNT_DB): Promi
     const pgClient = await client.getClient()
     const pgAccount = new PostgresAccountDB(pgClient)
 
-    await pgAccount.init()
+    let error = false
+
+    do {
+      try {
+        await pgAccount.init()
+        error = false
+      } catch (e) {
+        console.error('Error while initializing postgres account db', e)
+        error = true
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    } while (error)
 
     return [
       pgAccount,
