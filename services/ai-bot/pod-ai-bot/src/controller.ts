@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext, systemAccountEmail, isWorkspaceCreating } from '@hcengineering/core'
-import { aiBotAccountEmail, AIBotTransferEvent, TranslateResponse, TranslateRequest } from '@hcengineering/ai-bot'
+import { isWorkspaceCreating, Markup, MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import { aiBotAccountEmail, AIBotTransferEvent, TranslateRequest, TranslateResponse } from '@hcengineering/ai-bot'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
@@ -27,6 +27,8 @@ import { WorkspaceClient } from './workspaceClient'
 import { assignBotToWorkspace, getWorkspaceInfo } from './account'
 import config from './config'
 import { DbStorage } from './storage'
+import { SupportWsClient } from './supportWsClient'
+import { AIReplyTransferData } from './types'
 
 const POLLING_INTERVAL_MS = 5 * 1000 // 5 seconds
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
@@ -42,6 +44,8 @@ export class AIBotController {
 
   readonly aiClient?: OpenAI
   readonly encoding = encodingForModel(config.OpenAIModel)
+
+  supportClient: SupportWsClient | undefined = undefined
 
   assignTimeout: NodeJS.Timeout | undefined
   assignAttempts = 0
@@ -66,6 +70,16 @@ export class AIBotController {
   async updateWorkspaceClients (): Promise<void> {
     const activeRecords = await this.storage.getActiveWorkspaces()
 
+    if (this.supportClient === undefined && !this.connectingWorkspaces.has(config.SupportWorkspace)) {
+      this.connectingWorkspaces.add(config.SupportWorkspace)
+      const record = await this.storage.getWorkspace(config.SupportWorkspace)
+      this.supportClient = (await this.createWorkspaceClient(
+        config.SupportWorkspace,
+        record ?? { workspace: config.SupportWorkspace, active: true }
+      )) as SupportWsClient
+      this.connectingWorkspaces.delete(config.SupportWorkspace)
+    }
+
     for (const record of activeRecords) {
       const ws = record.workspace
 
@@ -82,8 +96,6 @@ export class AIBotController {
   }
 
   async closeWorkspaceClient (workspace: string): Promise<void> {
-    this.ctx.info('Closing workspace client: ', { workspace })
-
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
 
     if (timeoutId !== undefined) {
@@ -155,18 +167,29 @@ export class AIBotController {
     }
   }
 
+  async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient> {
+    this.ctx.info('Listen workspace: ', { workspace })
+    await this.assignToWorkspace(workspace)
+    const token = generateToken(aiBotAccountEmail, { name: workspace })
+    const endpoint = await getTransactorEndpoint(token, 'external')
+
+    if (workspace === config.SupportWorkspace) {
+      return new SupportWsClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
+    }
+
+    return new WorkspaceClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
+  }
+
   async initWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<void> {
+    if (workspace === config.SupportWorkspace) {
+      return
+    }
     this.connectingWorkspaces.add(workspace)
 
     if (!this.workspaces.has(workspace)) {
-      this.ctx.info('Listen workspace: ', { workspace })
-      await this.assignToWorkspace(workspace)
-      const token = generateToken(aiBotAccountEmail, { name: workspace })
-      const endpoint = await getTransactorEndpoint(token)
-      this.workspaces.set(
-        workspace,
-        new WorkspaceClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
-      )
+      const client = await this.createWorkspaceClient(workspace, info)
+
+      this.workspaces.set(workspace, client)
     }
 
     const timeoutId = this.closeWorkspaceTimeouts.get(workspace)
@@ -183,9 +206,28 @@ export class AIBotController {
     this.connectingWorkspaces.delete(workspace)
   }
 
+  allowAiReplies (workspace: string, email: string): boolean {
+    if (this.supportClient === undefined) return true
+
+    return this.supportClient.allowAiReplies(workspace, email)
+  }
+
+  async transferAIReplyToSupport (response: Markup, data: AIReplyTransferData): Promise<void> {
+    if (this.supportClient === undefined) return
+
+    await this.supportClient.transferAIReply(response, data)
+  }
+
   async transfer (event: AIBotTransferEvent): Promise<void> {
     const workspace = event.toWorkspace
     const info = await this.storage.getWorkspace(workspace)
+
+    if (workspace === config.SupportWorkspace) {
+      if (this.supportClient === undefined) return
+
+      await this.supportClient.transfer(event)
+      return
+    }
 
     if (info === undefined) {
       this.ctx.error('Workspace info not found -> cannot transfer event', { workspace })

@@ -51,13 +51,15 @@ export async function getOrCreateOnboardingChannel (
     description: '',
     private: false,
     members: [],
-    autoJoin: true,
+    autoJoin: false,
     archived: false,
     email,
     workspaceId: workspace.workspaceId,
     workspaceUrl: workspace.workspaceUrl,
     workspaceName: workspace.workspaceName,
-    userName: person?.name ?? email
+    userName: person?.name ?? email,
+    disableAIReplies: false,
+    showAIReplies: true
   })
 
   return [_id, true]

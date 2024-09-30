@@ -14,7 +14,7 @@
 //
 
 import aiBot, { aiBotAccountEmail, AIBotEvent, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
-import chunter, { Channel, ChatMessage, DirectMessage, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
+import chunter, { ChatMessage, DirectMessage, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
 import contact, {
   AvatarType,
   combineName,
@@ -48,6 +48,7 @@ import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
 import fs from 'fs'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
+import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 
 import config from './config'
 import { AIBotController } from './controller'
@@ -67,7 +68,7 @@ export class WorkspaceClient {
   loginTimeout: NodeJS.Timeout | undefined
   loginDelayMs = 2 * 1000
 
-  channelByKey = new Map<string, Ref<Channel>>()
+  channelByKey = new Map<string, Ref<OnboardingChannel>>()
   rate = new RateLimiter(1)
 
   aiAccount: PersonAccount | undefined
@@ -96,7 +97,7 @@ export class WorkspaceClient {
     })
   }
 
-  private async initClient (): Promise<TxOperations> {
+  protected async initClient (): Promise<TxOperations> {
     await this.tryLogin()
 
     this.client = await connectPlatform(this.token, this.transactorUrl)
@@ -198,7 +199,7 @@ export class WorkspaceClient {
 
   async getThreadParent (
     client: TxOperations,
-    event: AIBotTransferEvent,
+    parentMessageId: Ref<ChatMessage>,
     _id: Ref<Doc>,
     _class: Ref<Class<Doc>>
   ): Promise<ChatMessage | undefined> {
@@ -206,7 +207,7 @@ export class WorkspaceClient {
       attachedTo: _id,
       attachedToClass: _class,
       [aiBot.mixin.TransferredMessage]: {
-        messageId: event.parentMessageId,
+        messageId: parentMessageId,
         parentMessageId: undefined
       }
     })
@@ -216,7 +217,7 @@ export class WorkspaceClient {
     }
 
     return await client.findOne(chunter.class.ChatMessage, {
-      _id: event.parentMessageId
+      _id: parentMessageId
     })
   }
 
@@ -237,7 +238,9 @@ export class WorkspaceClient {
         _id,
         _class,
         event.collection,
-        { message }
+        { message },
+        undefined,
+        event.modifiedOn
       )
       await op.createMixin(ref, chunter.class.ChatMessage, space, aiBot.mixin.TransferredMessage, {
         messageId: event.messageId,
@@ -246,7 +249,7 @@ export class WorkspaceClient {
 
       await this.finishTyping(client, _id)
     } else if (event.messageClass === chunter.class.ThreadMessage && event.parentMessageId !== undefined) {
-      const parent = await this.getThreadParent(client, event, _id, _class)
+      const parent = await this.getThreadParent(client, event.parentMessageId, _id, _class)
       if (parent !== undefined) {
         await this.startTyping(client, space, parent._id, parent._class)
         const ref = await op.addCollection<Doc, ThreadMessage>(
@@ -255,7 +258,9 @@ export class WorkspaceClient {
           parent._id,
           parent._class,
           event.collection,
-          { message, objectId: parent.attachedTo, objectClass: parent.attachedToClass }
+          { message, objectId: parent.attachedTo, objectClass: parent.attachedToClass },
+          undefined,
+          event.modifiedOn
         )
         await op.createMixin(
           ref,
@@ -425,6 +430,10 @@ export class WorkspaceClient {
   async processResponseEvent (event: AIBotResponseEvent): Promise<void> {
     if (this.controller.aiClient === undefined) return
     const client = await this.opClient
+    if (!this.controller.allowAiReplies(this.workspace, event.email)) {
+      await client.remove(event)
+      return
+    }
     const hierarchy = client.getHierarchy()
 
     const op = client.apply(undefined, 'AIBotResponseEvent')
@@ -494,6 +503,15 @@ export class WorkspaceClient {
     await op.remove(event)
     await this.finishTyping(op, event.objectId)
     await op.commit()
+    await this.controller.transferAIReplyToSupport(parseResponse, {
+      messageClass,
+      email: event.email,
+      fromWorkspace: this.workspace,
+      originalMessageId: event.messageId,
+      originalParent: hierarchy.isDerived(event.objectClass, chunter.class.ChatMessage)
+        ? (event.objectId as Ref<ChatMessage>)
+        : undefined
+    })
   }
 
   async processTransferEvent (event: AIBotTransferEvent): Promise<void> {
@@ -503,7 +521,7 @@ export class WorkspaceClient {
     await client.remove(event)
   }
 
-  async transferToSupport (event: AIBotTransferEvent, channelRef?: Ref<Channel>): Promise<void> {
+  async transferToSupport (event: AIBotTransferEvent, channelRef?: Ref<OnboardingChannel>): Promise<void> {
     const client = await this.opClient
     const key = `${event.toEmail}-${event.fromWorkspace}`
     const channel =
@@ -523,7 +541,14 @@ export class WorkspaceClient {
 
     this.channelByKey.set(key, channel)
 
-    await this.createTransferMessage(client, event, channel, chunter.class.Channel, channel, event.message)
+    await this.createTransferMessage(
+      client,
+      event,
+      channel,
+      analyticsCollector.class.OnboardingChannel,
+      channel,
+      event.message
+    )
   }
 
   async transferToUserDirect (event: AIBotTransferEvent): Promise<void> {
@@ -539,7 +564,7 @@ export class WorkspaceClient {
     await this.createTransferMessage(client, event, direct, chunter.class.DirectMessage, direct, event.message)
   }
 
-  getChannelRef (email: string, workspace: string): Ref<Channel> | undefined {
+  getChannelRef (email: string, workspace: string): Ref<OnboardingChannel> | undefined {
     const key = `${email}-${workspace}`
 
     return this.channelByKey.get(key)

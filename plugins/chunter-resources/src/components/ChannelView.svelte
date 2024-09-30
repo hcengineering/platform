@@ -27,9 +27,10 @@
   import { DocNotifyContext } from '@hcengineering/notification'
   import { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
-  import { Channel } from '@hcengineering/chunter'
+  import { Channel, ObjectChatPanel } from '@hcengineering/chunter'
   import view from '@hcengineering/view'
   import { messageInFocus } from '@hcengineering/activity-resources'
+  import { onMount } from 'svelte'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -92,6 +93,13 @@
 
     messageInFocus.set(message._id)
   }
+
+  let objectChatPanel: ObjectChatPanel | undefined
+
+  $: if (object._id) {
+    objectChatPanel = hierarchy.classHierarchyMixin(object._class, chunter.mixin.ObjectChatPanel)
+    isAsideShown = objectChatPanel?.openByDefault === true
+  }
 </script>
 
 <div class="popupPanel">
@@ -145,9 +153,9 @@
         <Separator name="aside" float index={0} />
         <div class="antiPanel-wrap__content">
           {#if hierarchy.isDerived(object._class, chunter.class.Channel)}
-            <ChannelAside _class={object._class} object={toChannel(object)} />
+            <ChannelAside object={toChannel(object)} {objectChatPanel} />
           {:else}
-            <DocAside _class={object._class} {object} />
+            <DocAside {object} {objectChatPanel} />
           {/if}
         </div>
       </div>

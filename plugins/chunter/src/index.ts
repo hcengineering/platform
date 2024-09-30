@@ -46,6 +46,7 @@ export interface DirectMessage extends ChunterSpace {}
  * @public
  */
 export interface ObjectChatPanel extends Class<Doc> {
+  openByDefault?: boolean
   ignoreKeys: string[]
 }
 

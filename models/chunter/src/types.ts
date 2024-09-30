@@ -132,6 +132,7 @@ export class TChatMessageViewlet extends TDoc implements ChatMessageViewlet {
 
 @Mixin(chunter.mixin.ObjectChatPanel, core.class.Class)
 export class TObjectChatPanel extends TClass implements ObjectChatPanel {
+  openByDefault?: boolean
   ignoreKeys!: string[]
 }
 
