@@ -86,6 +86,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly documentThreeDots: Locator
   readonly buttonSubmitReview: Locator
   readonly completeReviewButton: Locator
+  readonly approveButton: Locator
 
   constructor (page: Page) {
     super(page)
@@ -182,7 +183,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.documentThreeDots = page.locator("div[class='no-print ml-1'] button[type='button']")
     this.buttonSubmitReview = page.getByRole('button', { name: 'Submit' })
     this.completeReviewButton = page.getByRole('button', { name: 'Complete review' })
-
+    this.approveButton = page.getByRole('button', { name: 'Approve' })
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -262,6 +263,12 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.createButton.click()
   }
 
+  async clickApproveButtonAndFillPassword (): Promise<void> {
+    await this.approveButton.click()
+    await this.inputPassword.fill(PlatformPassword)
+    await this.buttonSubmit.click()
+  }
+
   async expectCategoryCreated (categoryTitle: string, categoryCode: string): Promise<void> {
     await expect(this.page.getByText(categoryTitle)).toBeVisible()
     await expect(this.page.getByRole('link', { name: categoryCode })).toBeVisible()
@@ -292,11 +299,21 @@ export class DocumentContentPage extends DocumentCommonPage {
     }
   }
 
-  async addReviewersFromTeam (): Promise<void> {
+  async addReviewersFromTeam (anotherReviewer: boolean = false): Promise<void> {
     await this.page.waitForTimeout(500)
     await this.page.getByText('Team').click()
     await this.page.getByText('Add member').nth(1).click()
+    if (anotherReviewer) {
+      await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
+    }
     await this.selectRoleMemberAJ.click()
+    await this.page.keyboard.press('Escape')
+  }
+
+  async addApproversFromTeam (): Promise<void> {
+    await this.page.waitForTimeout(500)
+    await this.page.getByText('Add member').nth(2).click()
+    await this.page.getByRole('button', { name: 'DK Dirak Kainin' }).click()
     await this.page.keyboard.press('Escape')
   }
 
