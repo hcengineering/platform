@@ -14,7 +14,15 @@
 //
 
 import { isWorkspaceCreating, Markup, MeasureContext, systemAccountEmail } from '@hcengineering/core'
-import { aiBotAccountEmail, AIBotTransferEvent, TranslateRequest, TranslateResponse } from '@hcengineering/ai-bot'
+import {
+  aiBotAccountEmail,
+  AIBotTransferEvent,
+  OnboardingEvent,
+  OnboardingEventRequest,
+  OpenChatInSidebarData,
+  TranslateRequest,
+  TranslateResponse
+} from '@hcengineering/ai-bot'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
@@ -171,7 +179,7 @@ export class AIBotController {
     this.ctx.info('Listen workspace: ', { workspace })
     await this.assignToWorkspace(workspace)
     const token = generateToken(aiBotAccountEmail, { name: workspace })
-    const endpoint = await getTransactorEndpoint(token, 'external')
+    const endpoint = await getTransactorEndpoint(token)
 
     if (workspace === config.SupportWorkspace) {
       return new SupportWsClient(endpoint, token, workspace, this, this.ctx.newChild(workspace, {}), info)
@@ -259,6 +267,25 @@ export class AIBotController {
 
   async updateAvatarInfo (workspace: string, path: string, lastModified: number): Promise<void> {
     await this.storage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
+  }
+
+  async openChatInSidebar (data: OpenChatInSidebarData): Promise<void> {
+    const record = await this.storage.getWorkspace(data.workspace)
+
+    await this.initWorkspaceClient(data.workspace, record ?? { workspace: data.workspace, active: true })
+
+    const wsClient = this.workspaces.get(data.workspace)
+
+    if (wsClient === undefined) return
+    await wsClient.openAIChatInSidebar(data.email)
+  }
+
+  async processOnboardingEvent (event: OnboardingEventRequest): Promise<void> {
+    switch (event.event) {
+      case OnboardingEvent.OpenChatInSidebar:
+        await this.openChatInSidebar(event.data as OpenChatInSidebarData)
+        break
+    }
   }
 
   async translate (req: TranslateRequest): Promise<TranslateResponse | undefined> {

@@ -110,6 +110,13 @@ export interface ChatWidgetTab extends WidgetTab {
   }
 }
 
+export type ChunterExtensionPoint = 'aside'
+export interface ChunterExtension extends Doc {
+  ofClass: Ref<Class<Doc>>
+  point: ChunterExtensionPoint
+  component: AnyComponent
+}
+
 /**
  * @public
  */
@@ -140,7 +147,8 @@ export default plugin(chunterId, {
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
-    ThreadMessagePreview: '' as AnyComponent
+    ThreadMessagePreview: '' as AnyComponent,
+    DirectIcon: '' as AnyComponent
   },
   activity: {
     MembersChangedMessage: '' as AnyComponent
@@ -154,7 +162,8 @@ export default plugin(chunterId, {
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>,
     ChatSyncInfo: '' as Ref<Class<ChatSyncInfo>>,
     InlineButton: '' as Ref<Class<InlineButton>>,
-    TypingInfo: '' as Ref<Class<TypingInfo>>
+    TypingInfo: '' as Ref<Class<TypingInfo>>,
+    ChunterExtension: '' as Ref<Class<ChunterExtension>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
@@ -218,7 +227,8 @@ export default plugin(chunterId, {
     Translating: '' as IntlString,
     StartConversation: '' as IntlString,
     ViewingThreadFromArchivedChannel: '' as IntlString,
-    ViewingArchivedChannel: '' as IntlString
+    ViewingArchivedChannel: '' as IntlString,
+    OpenChatInSidebar: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

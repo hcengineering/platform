@@ -30,13 +30,15 @@ import type {
   ChatMessage,
   ChatMessageViewlet,
   ChatSyncInfo,
+  ChunterExtension,
   ChunterSpace,
   DirectMessage,
   InlineButton,
   InlineButtonAction,
   ObjectChatPanel,
   ThreadMessage,
-  TypingInfo
+  TypingInfo,
+  ChunterExtensionPoint
 } from '@hcengineering/chunter'
 import {
   type Class,
@@ -56,6 +58,7 @@ import type { IntlString, Resource } from '@hcengineering/platform'
 import type { DocNotifyContext } from '@hcengineering/notification'
 
 import chunter from './plugin'
+import type { AnyComponent } from '@hcengineering/ui'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 
@@ -157,4 +160,11 @@ export class TTypingInfo extends TDoc implements TypingInfo {
   objectClass!: Ref<Class<Doc>>
   person!: Ref<Person>
   lastTyping!: Timestamp
+}
+
+@Model(chunter.class.ChunterExtension, core.class.Doc, DOMAIN_MODEL)
+export class TChunterExtension extends TDoc implements ChunterExtension {
+  ofClass!: Ref<Class<Doc>>
+  point!: ChunterExtensionPoint
+  component!: AnyComponent
 }

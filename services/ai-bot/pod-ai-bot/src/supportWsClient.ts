@@ -70,6 +70,7 @@ export class SupportWsClient extends WorkspaceClient {
   }
 
   private handleTx (client: TxOperations, ...txes: Tx[]): void {
+    void super.txHandler(client, txes)
     for (const tx of txes) {
       const etx = TxProcessor.extractTx(tx)
       switch (etx._class) {

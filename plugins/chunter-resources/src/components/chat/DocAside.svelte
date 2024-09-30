@@ -23,8 +23,9 @@
   } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import { ClassAttributeBar, getDocMixins } from '@hcengineering/view-resources'
-
   import { ObjectChatPanel } from '@hcengineering/chunter'
+
+  import ChunterExtensionComponent from '../ChunterExtensionComponent.svelte'
 
   export let object: Doc
   export let objectChatPanel: ObjectChatPanel | undefined
@@ -79,5 +80,6 @@
       {/if}
     {/each}
   </div>
+  <ChunterExtensionComponent {object} point="aside" />
   <slot />
 </Scroller>

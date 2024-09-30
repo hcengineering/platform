@@ -19,6 +19,7 @@ import { getCurrentLocation } from '@hcengineering/ui'
 import { getResource } from '@hcengineering/platform'
 
 import { workspaceStore } from './utils'
+import { Analytics } from '@hcengineering/analytics'
 
 export enum SidebarVariant {
   MINI = 'mini',
@@ -108,6 +109,7 @@ export function openWidget (widget: Widget, data?: Record<string, any>, active =
     tabs: widgetState?.tabs ?? []
   })
 
+  Analytics.handleEvent('workbench.OpenSidebarWidget', { widget: widget._id })
   sidebarStore.set({
     ...state,
     widgetsState,
@@ -125,7 +127,7 @@ export function closeWidget (widget: Ref<Widget>): void {
   }
 
   widgetsState.delete(widget)
-
+  Analytics.handleEvent('workbench.CloseSidebarWidget', { widget })
   if (state.widget === widget) {
     sidebarStore.set({
       ...state,
@@ -151,6 +153,8 @@ export async function closeWidgetTab (widget: Widget, tab: string): Promise<void
   const tabs = widgetState.tabs
   const newTabs = tabs.filter((it) => it.id !== tab)
   const closedTab = tabs.find((it) => it.id === tab)
+
+  Analytics.handleEvent('workbench.CloseSidebarWidget', { widget: widget._id, tab })
 
   if (widget.onTabClose !== undefined && closedTab !== undefined) {
     const fn = await getResource(widget.onTabClose)
@@ -196,6 +200,7 @@ export function openWidgetTab (widget: Ref<Widget>, tab: string): void {
   if (newTab === undefined) return
 
   widgetsState.set(widget, { ...widgetState, tab })
+  Analytics.handleEvent('workbench.OpenSidebarWidget', { widget, tab })
   sidebarStore.set({
     ...state,
     widgetsState
@@ -230,6 +235,7 @@ export function createWidgetTab (widget: Widget, tab: WidgetTab, newTab = false)
     tab: tab.id
   })
 
+  Analytics.handleEvent('workbench.OpenSidebarWidget', { widget: widget._id, tab: tab.id })
   sidebarStore.set({
     ...state,
     widget: widget._id,

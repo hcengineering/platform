@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
-import OnboardingChannelPanelExtension from './components/OnboardingChannelAsideExtension.svelte'
+import { mergeIds } from '@hcengineering/platform'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
-export * from './utils'
-
-export default async (): Promise<Resources> => ({
+export default mergeIds(aiBotId, aiBot, {
   component: {
-    OnboardingChannelPanelExtension
+    OnboardingChannelPanelExtension: '' as AnyComponent
   }
 })

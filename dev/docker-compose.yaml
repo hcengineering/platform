@@ -203,7 +203,8 @@ services:
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
-      - BRANDING_PATH=/var/cfg/branding.json      
+      - BRANDING_PATH=/var/cfg/branding.json
+      - SUPPORT_WORKSPACE=support
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service

@@ -14,12 +14,19 @@
 //
 
 import aiBot, { aiBotAccountEmail, AIBotEvent, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
-import chunter, { ChatMessage, DirectMessage, ThreadMessage, TypingInfo } from '@hcengineering/chunter'
+import chunter, {
+  ChatMessage,
+  type ChatWidgetTab,
+  DirectMessage,
+  ThreadMessage,
+  TypingInfo
+} from '@hcengineering/chunter'
 import contact, {
   AvatarType,
   combineName,
   getFirstName,
   getLastName,
+  getName,
   Person,
   PersonAccount
 } from '@hcengineering/contact'
@@ -30,6 +37,7 @@ import core, {
   Client,
   Data,
   Doc,
+  generateId,
   MeasureContext,
   RateLimiter,
   Ref,
@@ -49,6 +57,7 @@ import fs from 'fs'
 import { WithId } from 'mongodb'
 import OpenAI from 'openai'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
+import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
 
 import config from './config'
 import { AIBotController } from './controller'
@@ -646,7 +655,7 @@ export class WorkspaceClient {
     }
   }
 
-  private async txHandler (_: TxOperations, txes: Tx[]): Promise<void> {
+  protected async txHandler (_: TxOperations, txes: Tx[]): Promise<void> {
     for (const ttx of txes) {
       const tx = TxProcessor.extractTx(ttx)
 
@@ -656,5 +665,50 @@ export class WorkspaceClient {
         await this.handleRemoveTx(tx as TxRemoveDoc<Doc>)
       }
     }
+  }
+
+  async openAIChatInSidebar (email: string): Promise<void> {
+    const client = await this.opClient
+    const direct = this.directByEmail.get(email) ?? (await getDirect(client, email, this.aiAccount))
+
+    if (direct === undefined || this.aiPerson === undefined) {
+      return
+    }
+
+    this.directByEmail.set(email, direct)
+
+    const hierarchy = client.getHierarchy()
+    const name = getName(hierarchy, this.aiPerson)
+
+    const tab: ChatWidgetTab = {
+      id: `chunter_${direct}`,
+      name,
+      iconComponent: chunter.component.DirectIcon,
+      iconProps: {
+        _id: direct,
+        size: 'tiny'
+      },
+      data: {
+        _id: direct,
+        _class: chunter.class.DirectMessage,
+        channelName: name
+      }
+    }
+
+    const tx: TxSidebarEvent = {
+      _id: generateId(),
+      _class: workbench.class.TxSidebarEvent,
+      objectSpace: core.space.DerivedTx,
+      space: core.space.DerivedTx,
+      event: SidebarEvent.OpenWidget,
+      params: {
+        widget: chunter.ids.ChatWidget,
+        tab
+      },
+      modifiedOn: Date.now(),
+      modifiedBy: aiBot.account.AIBot
+    }
+
+    await client.tx(tx)
   }
 }
