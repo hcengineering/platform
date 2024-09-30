@@ -64,6 +64,8 @@
   {noDivider}
   {forciblyСollapsed}
   on:click
+  on:dragover
+  on:drop
 >
   <slot />
   <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>

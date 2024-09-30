@@ -64,6 +64,10 @@
   showMenu={hovered}
   {shouldTooltip}
   {forciblyСollapsed}
+  draggable
+  on:dragstart
+  on:dragover
+  on:drop
   on:click={() => {
     selectDocument()
     dispatch('click')

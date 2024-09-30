@@ -104,6 +104,8 @@
     showMenu={showMenu || pressed}
     {noDivider}
     on:click
+    on:dragover
+    on:drop
     on:toggle={(ev) => {
       if (ev.detail !== undefined) collapsed = !ev.detail
     }}
@@ -168,6 +170,8 @@
     {shouldTooltip}
     showMenu={showMenu || pressed}
     on:click
+    on:dragover
+    on:drop
   >
     <slot />
     <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>

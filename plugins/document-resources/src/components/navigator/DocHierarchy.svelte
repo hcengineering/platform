@@ -34,6 +34,14 @@
   export let selected: Ref<Document> | undefined
   export let level: number = 0
 
+  export let onDragStart: (e: DragEvent, object: Ref<Document>) => void
+  export let onDragOver: (e: DragEvent, object: Ref<Document>) => void
+  export let onDragEnd: (e: DragEvent, object: Ref<Document>) => void
+  export let onDrop: (e: DragEvent, object: Ref<Document>) => void
+
+  export let draggedItem: Ref<Document> | undefined
+  export let draggedOver: Ref<Document> | undefined
+
   const client = getClient()
   const dispatch = createEventDispatcher()
 
@@ -84,9 +92,8 @@
 </script>
 
 {#each _documents as doc}
-  {@const desc = _descendants.get(doc._id) ?? []}
-
   {#if doc}
+    {@const desc = _descendants.get(doc._id) ?? []}
     <DocTreeElement
       {doc}
       icon={doc.icon === view.ids.IconWithEmoji ? IconWithEmoji : doc.icon ?? document.icon.Document}
@@ -96,7 +103,7 @@
             fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
           }}
       title={doc.name}
-      selected={selected === doc._id}
+      selected={selected === doc._id || draggedOver === doc._id}
       isFold
       {level}
       empty={desc.length === 0}
@@ -106,10 +113,50 @@
       on:click={() => {
         handleDocumentSelected(doc._id)
       }}
+      on:dragstart={(evt) => {
+        onDragStart(evt, doc._id)
+      }}
+      on:dragover={(evt) => {
+        onDragOver(evt, doc._id)
+      }}
+      on:dragend={(evt) => {
+        onDragEnd(evt, doc._id)
+      }}
+      on:drop={(evt) => {
+        onDrop(evt, doc._id)
+      }}
     >
       {#if desc.length}
-        <svelte:self documents={desc} {descendants} {documentById} {selected} level={level + 1} on:selected />
+        <svelte:self
+          documents={desc}
+          {descendants}
+          {documentById}
+          {selected}
+          level={level + 1}
+          {onDragOver}
+          {onDragStart}
+          {onDragEnd}
+          {onDrop}
+          {draggedItem}
+          {draggedOver}
+          on:selected
+        />
       {/if}
     </DocTreeElement>
   {/if}
 {/each}
+
+<style lang="scss">
+  .draggable {
+    position: relative;
+
+    .dragging {
+      opacity: 0.5;
+    }
+
+    // &.dragover::before {
+    //   content: '';
+    //   border-top: 1px solid var(--global-focus-BorderColor);
+    // }
+  }
+</style>

@@ -97,6 +97,8 @@
     class:selected
     class:showMenu={showMenu || pressed}
     on:click={toggle}
+    on:dragover
+    on:drop
   >
     {#if isFold && !empty}
       <button class="hulyNavGroup-header__chevron" class:collapsed={!isOpen}>

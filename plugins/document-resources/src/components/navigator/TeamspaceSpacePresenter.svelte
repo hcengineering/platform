@@ -23,7 +23,8 @@
     getPlatformColorForTextDef,
     themeStore,
     Action,
-    IconAdd
+    IconAdd,
+    closeTooltip
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { TreeNode, openDoc, getActions as getContributedActions } from '@hcengineering/view-resources'
@@ -53,6 +54,22 @@
 
   function getDescendants (obj: Ref<Document>): Ref<Document>[] {
     return (descendants.get(obj) ?? []).sort((a, b) => a.name.localeCompare(b.name)).map((p) => p._id)
+  }
+
+  function getAllDescendants (obj: Ref<Document>): Ref<Document>[] {
+    const result: Ref<Document>[] = []
+    const queue: Ref<Document>[] = [obj]
+
+    while (queue.length > 0) {
+      const next = queue.pop()
+      if (next === undefined) break
+
+      const children = descendants.get(next) ?? []
+      result.push(...children.map((p) => p._id))
+      queue.push(...children.map((p) => p._id))
+    }
+
+    return result
   }
 
   let selected: Ref<Document> | undefined
@@ -125,6 +142,67 @@
 
     return result
   }
+
+  let draggedItem: Ref<Document> | undefined = undefined
+  let draggedOver: Ref<Document> | undefined = undefined
+
+  function canDrop (object: Ref<Document>, target: Ref<Document>): boolean {
+    if (object === target) return false
+
+    const children = getAllDescendants(object)
+    if (children.includes(target)) return false
+
+    return true
+  }
+
+  function onDragStart (event: DragEvent, object: Ref<Document>): void {
+    // no prevent default to leverage default rendering
+    // event.preventDefault()
+    if (event.dataTransfer === null) {
+      return
+    }
+
+    closeTooltip()
+
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+    draggedItem = object
+  }
+
+  function onDragOver (event: DragEvent, object: Ref<Document>): void {
+    event.preventDefault()
+    if (event.dataTransfer === null) {
+      return
+    }
+
+    if (draggedItem !== undefined && canDrop(draggedItem, object)) {
+      event.dataTransfer.dropEffect = 'move'
+      draggedOver = object
+    } else {
+      event.dataTransfer.dropEffect = 'none'
+    }
+  }
+
+  function onDragEnd (event: DragEvent): void {
+    event.preventDefault()
+    draggedItem = undefined
+    draggedOver = undefined
+  }
+
+  function onDrop (event: DragEvent, target: Ref<Document>): void {
+    event.preventDefault()
+    if (event.dataTransfer === null) {
+      return
+    }
+    if (draggedItem !== undefined && draggedItem !== target) {
+      const doc = documentById.get(draggedItem)
+      if (doc !== undefined) {
+        void client.update(doc, { attachedTo: target })
+      }
+      draggedItem = undefined
+      draggedOver = undefined
+    }
+  }
 </script>
 
 <TreeNode
@@ -143,9 +221,27 @@
   highlighted={currentSpace === space._id}
   visible={currentSpace === space._id || forciblyСollapsed}
   actions={() => getActions(space)}
+  selected={draggedOver === document.ids.NoParent}
   {forciblyСollapsed}
+  on:drop={(evt) => {
+    onDrop(evt, document.ids.NoParent)
+  }}
+  on:dragover={(evt) => {
+    onDragOver(evt, document.ids.NoParent)
+  }}
 >
-  <DocHierarchy {documents} {descendants} {documentById} {selected} />
+  <DocHierarchy
+    {documents}
+    {descendants}
+    {documentById}
+    {selected}
+    {onDragStart}
+    {onDragEnd}
+    {onDragOver}
+    {onDrop}
+    {draggedItem}
+    {draggedOver}
+  />
 
   <svelte:fragment slot="visible">
     {#if (selected || forciblyСollapsed) && visibleItem}
