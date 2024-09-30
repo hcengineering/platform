@@ -36,8 +36,17 @@ export function generateTestData (): TestData {
   }
 }
 
-export function getTimeForPlanner (): string {
+export function getTimeForPlanner (plusHours?: number): string {
   let hour = new Date().getHours()
+  if (typeof plusHours === 'number') hour += plusHours
+  const ampm = hour < 13 ? 'am' : 'pm'
+  hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
+
+  return `${hour}${ampm}`
+}
+
+export function getNextHourTimeForPlanner (): string {
+  let hour = new Date().getHours() + 1
   const ampm = hour < 13 ? 'am' : 'pm'
   hour = hour < 1 ? 1 : hour >= 11 && hour < 13 ? 11 : hour >= 22 ? 10 : hour > 12 ? hour - 12 : hour
 
