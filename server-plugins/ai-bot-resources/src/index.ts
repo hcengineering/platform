@@ -373,10 +373,23 @@ export async function OnUserStatus (originTx: Tx, control: TriggerControl): Prom
     return []
   }
 
+  if (tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<UserStatus>
+    const status = TxProcessor.createDoc2Doc(createTx)
+    if (status.user === aiBot.account.AIBot || status.user === core.account.System || !status.online) {
+      return []
+    }
+  }
+
   if (tx._class === core.class.TxUpdateDoc) {
     const updateTx = tx as TxUpdateDoc<UserStatus>
     const val = updateTx.operations.online
     if (val !== true) {
+      return []
+    }
+
+    const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
+    if (status === undefined || status.user === aiBot.account.AIBot || status.user === core.account.System) {
       return []
     }
   }
