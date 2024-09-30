@@ -127,7 +127,7 @@ export async function createWorkspace (
     if (mongodbUri === undefined) {
       throw new Error('No MONGO_URL specified')
     }
-    const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
+    const dbUrls = mongodbUri !== undefined && dbUrl !== mongodbUri ? `${dbUrl};${mongodbUri}` : dbUrl
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
 

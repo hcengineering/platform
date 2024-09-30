@@ -37,7 +37,8 @@ export function startBackup (
   setMetadata(serverClientPlugin.metadata.Endpoint, config.AccountsURL)
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 
-  const [mainDbUrl, rawDbUrl] = config.MongoURL.split(';')
+  const mainDbUrl = config.DbURL
+  const rawDbUrl = config.MongoURL
 
   const backupStorageConfig = storageConfigFromEnv(config.Storage)
   const workspaceStorageConfig = storageConfigFromEnv(config.WorkspaceStorage)
