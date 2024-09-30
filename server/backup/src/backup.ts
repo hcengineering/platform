@@ -1121,9 +1121,26 @@ export async function backup (
     }
     result.result = true
 
+    const sizeFile = 'backup.size.gz'
+
+    let sizeInfo: Record<string, number> = {}
+
+    if (await storage.exists(sizeFile)) {
+      sizeInfo = JSON.parse(gunzipSync(await storage.loadFile(sizeFile)).toString())
+    }
+    let processed = 0
+
     const addFileSize = async (file: string | undefined | null): Promise<void> => {
-      if (file != null && (await storage.exists(file))) {
-        const fileSize = await storage.stat(file)
+      if (file != null) {
+        const sz = sizeInfo[file]
+        const fileSize = sz ?? (await storage.stat(file))
+        if (sz === undefined) {
+          sizeInfo[file] = fileSize
+          processed++
+          if (processed % 10 === 0) {
+            ctx.info('Calculate size processed', { processed, size: Math.round(result.backupSize / (1024 * 1024)) })
+          }
+        }
         result.backupSize += fileSize
       }
     }
@@ -1141,6 +1158,8 @@ export async function backup (
       }
     }
     await addFileSize(infoFile)
+
+    await storage.writeFile(sizeFile, gzipSync(JSON.stringify(sizeInfo, undefined, 2), { level: defaultLevel }))
 
     return result
   } catch (err: any) {

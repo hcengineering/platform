@@ -21,6 +21,7 @@ interface Config extends Omit<BackupConfig, 'Token'> {
   Secret: string
 
   Interval: number // Timeout in seconds
+  CoolDown: number
   Timeout: number // Timeout in seconds
   BucketName: string
   Storage: string // A bucket storage config
@@ -37,6 +38,7 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   BucketName: 'BUCKET_NAME',
   Interval: 'INTERVAL',
+  CoolDown: 'COOL_DOWN',
   Timeout: 'TIMEOUT',
   MongoURL: 'MONGO_URL',
   SkipWorkspaces: 'SKIP_WORKSPACES',
@@ -62,6 +64,7 @@ const config: Config = (() => {
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '3600'),
     Timeout: parseInt(process.env[envMap.Timeout] ?? '3600'),
+    CoolDown: parseInt(process.env[envMap.CoolDown] ?? '300'),
     MongoURL: process.env[envMap.MongoURL],
     SkipWorkspaces: process.env[envMap.SkipWorkspaces] ?? '',
     WorkspaceStorage: process.env[envMap.WorkspaceStorage],
