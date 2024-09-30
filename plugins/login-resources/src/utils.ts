@@ -14,18 +14,18 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
+import { AccountRole, concatLink, type Doc, type Ref } from '@hcengineering/core'
 import { loginId, type LoginInfo, type OtpInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
   PlatformError,
+  Severity,
+  Status,
   getMetadata,
   setMetadata,
   translate,
   unknownError,
-  unknownStatus,
-  Status,
-  Severity
+  unknownStatus
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
@@ -39,9 +39,9 @@ import {
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 
-import login from './plugin'
-import { type Pages } from './index'
 import { LoginEvents } from './analytics'
+import { type Pages } from './index'
+import login from './plugin'
 
 /**
  * Perform a login operation to required workspace with user credentials.
@@ -207,6 +207,16 @@ export async function createWorkspace (
   }
 }
 
+function getLastVisitDays (it: Workspace): number {
+  return Math.floor((Date.now() - it.lastVisit) / (1000 * 3600 * 24))
+}
+function getWorkspaceSize (it: Workspace): number {
+  let sz = 0
+  sz += it.backupInfo?.dataSize ?? 0
+  sz += it.backupInfo?.blobsSize ?? 0
+  return sz
+}
+
 export async function getWorkspaces (): Promise<Workspace[]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
@@ -241,7 +251,18 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     if (result.error != null) {
       throw new PlatformError(result.error)
     }
-    return result.result
+    const workspaces: Workspace[] = result.result
+
+    workspaces.sort((a, b) => {
+      const adays = getLastVisitDays(a)
+      const bdays = getLastVisitDays(b)
+      if (adays === bdays) {
+        return getWorkspaceSize(b) - getWorkspaceSize(a)
+      }
+      return bdays - adays
+    })
+
+    return workspaces
   } catch (err) {
     return []
   }

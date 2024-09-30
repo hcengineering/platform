@@ -47,6 +47,8 @@ export interface BackupConfig {
   Token: string
 
   Interval: number // Timeout in seconds
+
+  CoolDown: number // Cooldown in seconds
   Timeout: number // Timeout in seconds
   BucketName: string
   SkipWorkspaces: string
@@ -67,14 +69,9 @@ class BackupWorker {
   ) {}
 
   canceled = false
-  interval: any
-
   async close (): Promise<void> {
     this.canceled = true
-    clearTimeout(this.interval)
   }
-
-  backupPromise: Promise<void> | undefined
 
   printStats (
     ctx: MeasureContext,
@@ -91,27 +88,14 @@ class BackupWorker {
     )
   }
 
-  async triggerBackup (ctx: MeasureContext): Promise<void> {
-    const { failedWorkspaces } = await this.backup(ctx)
-    if (failedWorkspaces.length > 0) {
-      ctx.info('Failed to backup workspaces, Retry failed workspaces once.', { failed: failedWorkspaces.length })
-      this.printStats(ctx, await this.doBackup(ctx, failedWorkspaces))
-    }
-  }
-
   async schedule (ctx: MeasureContext): Promise<void> {
-    console.log('schedule timeout for', this.config.Interval, ' seconds')
-    this.interval = setTimeout(
-      () => {
-        if (this.backupPromise !== undefined) {
-          void this.backupPromise.then(() => {
-            void this.triggerBackup(ctx)
-          })
-        }
-        void this.triggerBackup(ctx)
-      },
-      5 * 60 * 1000
-    ) // Re-check every 5 minutes.
+    console.log('schedule backup with interval', this.config.Interval, 'seconds')
+    while (!this.canceled) {
+      const res = await this.backup(ctx)
+      this.printStats(ctx, res)
+      console.log('cool down', this.config.CoolDown, 'seconds')
+      await new Promise<void>((resolve) => setTimeout(resolve, this.config.CoolDown * 1000))
+    }
   }
 
   async backup (
@@ -171,11 +155,7 @@ class BackupWorker {
         index,
         total: workspaces.length
       })
-      const childLogger = rootCtx.logger.childLogger?.(ws.workspace, {
-        workspace: ws.workspace,
-        enableConsole: 'true'
-      })
-      const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace }, {}, childLogger)
+      const ctx = rootCtx.newChild(ws.workspace, { workspace: ws.workspace })
       let pipeline: Pipeline | undefined
       try {
         const storage = await createStorageBackupStorage(
@@ -245,6 +225,8 @@ class BackupWorker {
           }
           rootCtx.warn('BACKUP STATS', {
             workspace: ws.workspace,
+            workspaceUrl: ws.workspaceUrl,
+            workspaceName: ws.workspaceName,
             index,
             ...backupInfo,
             time: Math.round((Date.now() - st) / 1000),
@@ -259,7 +241,6 @@ class BackupWorker {
       } catch (err: any) {
         rootCtx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
         failedWorkspaces.push(ws)
-        await childLogger?.close()
       } finally {
         if (pipeline !== undefined) {
           await pipeline.close()
@@ -351,9 +332,6 @@ export function backupService (
     void backupWorker.close()
   }
 
-  void backupWorker.backup(ctx).then((res) => {
-    backupWorker.printStats(ctx, res)
-    void backupWorker.schedule(ctx)
-  })
+  void backupWorker.schedule(ctx)
   return shutdown
 }

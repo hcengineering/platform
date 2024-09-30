@@ -27,6 +27,7 @@
     NavGroup,
     ButtonIcon
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
 
   export let _id: Ref<Doc> | string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -115,6 +116,7 @@
             icon={action.icon ?? ActionIcon}
             size={'extra-small'}
             kind={'tertiary'}
+            tooltip={{ label: action.label, direction: 'top' }}
             on:click={(ev) => onInlineClick(ev, action)}
           />
         {/each}
@@ -131,7 +133,14 @@
           }}
         />
       {:else if popupMenuActions.length > 0}
-        <ButtonIcon icon={IconMoreH} size={'extra-small'} kind={'tertiary'} {pressed} on:click={onMenuClick} />
+        <ButtonIcon
+          icon={IconMoreH}
+          size={'extra-small'}
+          kind={'tertiary'}
+          tooltip={{ label: view.string.MoreActions, direction: 'top' }}
+          {pressed}
+          on:click={onMenuClick}
+        />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="visible"><slot name="visible" /></svelte:fragment>
@@ -170,6 +179,7 @@
             icon={action.icon ?? ActionIcon}
             size={'extra-small'}
             kind={'tertiary'}
+            tooltip={{ label: action.label, direction: 'bottom' }}
             on:click={(ev) => onInlineClick(ev, action)}
           />
         {/each}
