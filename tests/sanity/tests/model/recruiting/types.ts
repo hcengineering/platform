@@ -36,3 +36,13 @@ export interface NewCompany {
   socials?: SocialLink[]
   location?: string
 }
+
+export interface NewReview {
+  title: string
+  talent: TalentName
+  location?: string
+  description?: string
+  applications?: string[]
+  participants?: string[]
+  verdict?: string
+}

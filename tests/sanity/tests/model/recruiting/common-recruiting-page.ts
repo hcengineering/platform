@@ -97,6 +97,11 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.page.waitForSelector('form.antiCard', { state: 'detached' })
   }
 
+  async confirmCreateReview (): Promise<void> {
+    await this.createButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+  }
+
   async selectReviewItem (reviewId: string): Promise<void> {
     await this.reviewItemLink(reviewId).first().click()
   }

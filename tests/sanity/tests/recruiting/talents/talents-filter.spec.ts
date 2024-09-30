@@ -285,7 +285,7 @@ test.describe('Recruiting. Talents filters tests', () => {
     await talentsPage.checkTalentExist(talentName)
   })
 
-  test.only('Filter by "Created by"', async () => {
+  test('Filter by "Created by"', async () => {
     talentName = await talentsPage.createNewTalent()
     const createdBy = 'Appleseed John'
     const createdByInitials = 'AJ'
@@ -297,7 +297,7 @@ test.describe('Recruiting. Talents filters tests', () => {
     await talentsPage.checkTalentExist(talentName)
   })
 
-  test.only('Filter by "Modified by"', async () => {
+  test('Filter by "Modified by"', async () => {
     talentName = await talentsPage.createNewTalent()
     const modifiedBy = 'Appleseed John'
     const modifiedByInitials = 'AJ'
