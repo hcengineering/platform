@@ -235,7 +235,7 @@ export class WorkspaceClient {
           return
         }
         case core.class.TxUpdateDoc: {
-          await this.txUpdateEvent(actualTx as TxUpdateDoc<Doc>)
+          await this.txUpdateEvent(actualTx as TxUpdateDoc<Event>)
           return
         }
         case core.class.TxRemoveDoc: {
@@ -249,6 +249,7 @@ export class WorkspaceClient {
     const hierarhy = this.client.getHierarchy()
     if (hierarhy.isDerived(tx.objectClass, calendar.class.Event)) {
       const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Event>)
+      if (doc.access !== 'owner') return
       const client = this.getCalendarClientByCalendar(doc.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
         return
@@ -296,23 +297,24 @@ export class WorkspaceClient {
     }
   }
 
-  private async txUpdateEvent (tx: TxUpdateDoc<Doc>): Promise<void> {
+  private async txUpdateEvent (tx: TxUpdateDoc<Event>): Promise<void> {
     const hierarhy = this.client.getHierarchy()
     if (hierarhy.isDerived(tx.objectClass, calendar.class.Event)) {
-      if (tx.operations.space !== undefined) {
-        await this.handleMove(tx as TxUpdateDoc<Event>)
+      if (tx.operations.calendar !== undefined) {
+        await this.handleMove(tx)
         return
       }
-      const event = await this.client.findOne(calendar.class.Event, { _id: (tx as TxUpdateDoc<Event>).objectId })
+      const event = await this.client.findOne(calendar.class.Event, { _id: tx.objectId })
       if (event === undefined) {
         return
       }
+      if (event.access !== 'owner' && event.access !== 'writer') return
       const client = this.getCalendarClientByCalendar(event.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
         return
       }
       try {
-        await client.updateEvent(event, tx as TxUpdateDoc<Event>)
+        await client.updateEvent(event, tx)
         await this.updateSyncTime()
       } catch (err) {
         console.log(err)
@@ -328,6 +330,7 @@ export class WorkspaceClient {
       })
       const ev = TxProcessor.buildDoc2Doc<Event>(txes.map((tx) => TxProcessor.extractTx(tx)))
       if (ev === undefined) return
+      if (ev.access !== 'owner' && ev.access !== 'writer') return
       const client = this.getCalendarClientByCalendar(ev?.calendar as Ref<ExternalCalendar>)
       if (client === undefined) {
         return

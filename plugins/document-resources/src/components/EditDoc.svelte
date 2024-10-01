@@ -186,11 +186,13 @@
   const aside: ButtonItem[] = [
     {
       id: 'references',
-      icon: document.icon.References
+      icon: document.icon.References,
+      showTooltip: { label: document.string.Backlinks, direction: 'bottom' }
     },
     {
       id: 'activity',
-      icon: activity.icon.Activity
+      icon: activity.icon.Activity,
+      showTooltip: { label: activity.string.Activity, direction: 'bottom' }
     }
   ]
   let selectedAside: string | boolean = false
@@ -282,6 +284,7 @@
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}
           kind={'icon'}
+          showTooltip={{ label: view.string.MoreActions, direction: 'bottom' }}
           on:click={showContextMenu}
         />
         {#each actions as action}
@@ -311,6 +314,7 @@
                   fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
                 }}
             disabled={readonly}
+            showTooltip={{ label: document.string.Icon, direction: 'bottom' }}
             on:click={chooseIcon}
           />
         </div>

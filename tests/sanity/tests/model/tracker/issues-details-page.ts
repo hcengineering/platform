@@ -69,6 +69,11 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     return this.popup().locator(this.page.getByRole('button', { name: nameDr }))
   }
 
+  readonly rowDecriptionToDo = (hasText: string): Locator => this.page.locator('div.tiptap div.todo-item', { hasText })
+  readonly assigneeToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('div.assignee')
+  readonly checkboxToDo = (hasText: string): Locator => this.rowDecriptionToDo(hasText).locator('input.chBox')
+  readonly slashActionItemsPopup = (): Locator => this.page.locator('.selectPopup')
+
   async clickCloseIssueButton (): Promise<void> {
     await this.buttonCloseIssue().click()
   }
@@ -229,5 +234,11 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async checkIfButtonCbuttonCreatedByHaveTextCreatedBy (createdBy: string): Promise<void> {
     await expect(this.buttonCreatedBy()).toHaveText(createdBy)
+  }
+
+  async assignToDo (user: string, text: string): Promise<void> {
+    await this.rowDecriptionToDo(text).hover()
+    await this.assigneeToDo(text).click()
+    await this.selectListItem(user)
   }
 }

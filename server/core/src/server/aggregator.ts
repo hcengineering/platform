@@ -95,9 +95,12 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     for (const d of docs) {
       const blobInfo = existingBlobs.get(d._id)
       if (
-        blobInfo === undefined ||
-        this.doTrimHash(blobInfo.etag) !== this.doTrimHash(d.etag) ||
-        blobInfo.size !== d.size
+        blobInfo === undefined || // Blob info undefined
+        // Provider are same and etag or size are diffrent.
+        (d.provider === blobInfo.provider &&
+          (this.doTrimHash(blobInfo.etag) !== this.doTrimHash(d.etag) || blobInfo.size !== d.size)) ||
+        // We have replacement in default
+        (d.provider === this.defaultAdapter && blobInfo?.provider !== d.provider)
       ) {
         const stat = await this.adapters.get(d.provider)?.stat(ctx, workspaceId, d._id)
         if (stat !== undefined) {

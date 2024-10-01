@@ -34,6 +34,7 @@ export default plugin(serverCalendarId, {
     FindReminders: '' as Resource<ObjectDDParticipantFunc>
   },
   trigger: {
-    OnPersonAccountCreate: '' as Resource<TriggerFunc>
+    OnPersonAccountCreate: '' as Resource<TriggerFunc>,
+    OnEvent: '' as Resource<TriggerFunc>
   }
 })
