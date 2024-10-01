@@ -27,4 +27,4 @@ milestones:
       description: |
         The most important milestone **ever**
 ---
- This is my first teamspace in Huly! 🎉
+ This is my first project in Huly! 🎉
