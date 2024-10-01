@@ -52,7 +52,7 @@
         (doc.major === $controlledDocument.major && doc.minor <= $controlledDocument.minor)
       )
     })
-    .toSorted(documentCompareFn)
+    .sort(documentCompareFn)
 
   function getDescription (cc: ChangeControl | undefined): string {
     if (cc === undefined) {

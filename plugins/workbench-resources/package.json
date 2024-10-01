@@ -8,6 +8,7 @@
     "build": "compile ui",
     "build:docs": "api-extractor run --local",
     "format": "format src",
+    "svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
     "_phase:format": "format src",

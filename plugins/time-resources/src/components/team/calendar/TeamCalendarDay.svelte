@@ -143,14 +143,14 @@
         ...gitem.events,
         ...gitem.busyEvents,
         ...gitem.busy.slots
-      ].toSorted((a, b) => a.date - b.date)}
+      ].sort((a, b) => a.date - b.date)}
       <div style:overflow-x={'hidden'} style:overflow-y={'auto'} style:height="{height}rem">
         <div class="flex flex-row-center">
           <div class="flex-nowrap p-1 w-full" style:display={'inline-flex'}>
             {#each Array.from(Array(24).keys()) as hour}
               {@const _slots = slots
                 .filter((it) => new Date(it.date).getHours() === hour)
-                .toSorted((a, b) => a.date - b.date)}
+                .sort((a, b) => a.date - b.date)}
               {@const cwidth = hourWidths[hour]}
               <div class="flex-col" style:width="{cwidth}rem">
                 {#each _slots as m, i}
