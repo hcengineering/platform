@@ -3,10 +3,10 @@
 //
 
 import account, {
-  ACCOUNT_DB,
   EndpointKind,
   accountId,
   cleanExpiredOtp,
+  getAccountDB,
   getAllTransactors,
   getMethods
 } from '@hcengineering/account'
@@ -15,7 +15,6 @@ import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
-import { getMongoClient, type MongoClientReference } from '@hcengineering/mongo'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverClientPlugin from '@hcengineering/server-client'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
@@ -25,7 +24,6 @@ import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
-import type { MongoClient } from 'mongodb'
 import os from 'os'
 
 /**
@@ -35,12 +33,11 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   console.log('Starting account service with brandings: ', brandings)
   const methods = getMethods()
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
-  const dbUrls = process.env.MONGO_URL
-  if (dbUrls === undefined) {
-    console.log('Please provide db url')
+  const dbUrl = process.env.DB_URL
+  if (dbUrl === undefined) {
+    console.log('Please provide DB_URL')
     process.exit(1)
   }
-  const [dbUrl, mongoUrl] = dbUrls.split(';')
 
   const transactorUri = process.env.TRANSACTOR_URL
   if (transactorUri === undefined) {
@@ -90,8 +87,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   }
   setMetadata(serverClientPlugin.metadata.UserAgent, 'AccountService')
 
-  const client: MongoClientReference = getMongoClient(mongoUrl ?? dbUrl)
-  let _client: MongoClient | Promise<MongoClient> = client.getClient()
+  const accountsDb = getAccountDB(dbUrl)
 
   const app = new Koa()
   const router = new Router()
@@ -103,11 +99,23 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   )
   app.use(bodyParser())
 
-  const mongoClientPromise = client.getClient()
-  const dbPromise = mongoClientPromise.then((c) => c.db(ACCOUNT_DB))
-  registerProviders(measureCtx, app, router, dbPromise, serverSecret, frontURL, brandings)
+  registerProviders(
+    measureCtx,
+    app,
+    router,
+    new Promise((resolve) => {
+      void accountsDb.then((res) => {
+        const [db] = res
+        resolve(db)
+      })
+    }),
+    serverSecret,
+    frontURL,
+    brandings
+  )
 
-  void dbPromise.then((db) => {
+  void accountsDb.then((res) => {
+    const [db] = res
     setInterval(
       () => {
         void cleanExpiredOtp(db)
@@ -202,10 +210,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       ctx.body = JSON.stringify(response)
     }
 
-    if (_client instanceof Promise) {
-      _client = await _client
-    }
-    const db = _client.db(ACCOUNT_DB)
+    const [db] = await accountsDb
 
     let host: string | undefined
     const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
@@ -230,11 +235,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const close = (): void => {
     onClose?.()
-    if (client instanceof Promise) {
-      void client.then((c) => c.close())
-    } else {
-      client.close()
-    }
+    void accountsDb.then(([, closeAccountsDb]) => {
+      closeAccountsDb()
+    })
     server.close()
   }
 

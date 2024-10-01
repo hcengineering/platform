@@ -73,7 +73,8 @@ services:
     environment:
       - ACCOUNT_PORT=3000
       - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
+      # - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=${MONGO_URL}
       - TRANSACTOR_URL=ws://host.docker.internal:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -101,7 +102,9 @@ services:
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
-      - MONGO_URL=mongodb://mongodb:27017?compressors=snappy
+      - MONGO_URL=${MONGO_URL}
+      - DB_URL=${MONGO_URL}
+      # - DB_URL=postgresql://postgres:example@postgres:5432
       - TRANSACTOR_URL=ws://transactor:3333;ws://host.docker.internal:3333
       - SES_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -191,6 +194,8 @@ services:
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
       - ELASTIC_URL=http://host.docker.internal:9200
+      # - DB_URL=postgresql://postgres:example@postgres:5432
+      - DB_URL=${MONGO_URL}
       - MONGO_URL=${MONGO_URL}
       - 'MONGO_OPTIONS={"appName": "transactor", "maxPoolSize": 10}'
       - METRICS_CONSOLE=false

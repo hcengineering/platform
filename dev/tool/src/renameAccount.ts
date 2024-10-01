@@ -1,14 +1,20 @@
-import { type Account, changeEmail, getAccount, listWorkspacesPure, type Workspace } from '@hcengineering/account'
+import {
+  type Account,
+  type AccountDB,
+  changeEmail,
+  getAccount,
+  listWorkspacesPure,
+  type Workspace
+} from '@hcengineering/account'
 import core, { getWorkspaceId, type MeasureContext, systemAccountEmail, TxOperations } from '@hcengineering/core'
 import contact from '@hcengineering/model-contact'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
-import { type Db } from 'mongodb'
 
 export async function renameAccount (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   accountsUrl: string,
   oldEmail: string,
   newEmail: string
@@ -30,7 +36,7 @@ export async function renameAccount (
 
 export async function fixAccountEmails (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   transactorUrl: string,
   oldEmail: string,
   newEmail: string
@@ -44,7 +50,7 @@ export async function fixAccountEmails (
 }
 async function fixWorkspaceEmails (
   account: Account,
-  db: Db,
+  db: AccountDB,
   accountsUrl: string,
   oldEmail: string,
   newEmail: string

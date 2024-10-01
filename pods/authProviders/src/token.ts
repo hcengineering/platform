@@ -1,7 +1,6 @@
-import { getAccountInfoByToken } from '@hcengineering/account'
+import { type AccountDB, getAccountInfoByToken } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
 import Router from 'koa-router'
-import { Db } from 'mongodb'
 import qs from 'querystringify'
 import { Strategy as CustomStrategy } from 'passport-custom'
 import { Passport } from '.'
@@ -12,7 +11,7 @@ export function registerToken (
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
-  dbPromise: Promise<Db>,
+  dbPromise: Promise<AccountDB>,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {

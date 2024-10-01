@@ -1,15 +1,15 @@
-import { updateWorkspace, type Workspace } from '@hcengineering/account'
+import { type AccountDB, updateWorkspace, type Workspace } from '@hcengineering/account'
 import { type BackupClient, type Client, getWorkspaceId, systemAccountEmail, type Doc } from '@hcengineering/core'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { convertDoc, createTable, getDBClient, retryTxn, translateDomain } from '@hcengineering/postgres'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
-import { type Db, type MongoClient } from 'mongodb'
+import { type MongoClient } from 'mongodb'
 import { type Pool } from 'pg'
 
 export async function moveFromMongoToPG (
-  accountDb: Db,
+  accountDb: AccountDB,
   mongoUrl: string,
   dbUrl: string | undefined,
   workspaces: Workspace[],
@@ -38,7 +38,7 @@ export async function moveFromMongoToPG (
 }
 
 async function moveWorkspace (
-  accountDb: Db,
+  accountDb: AccountDB,
   mongo: MongoClient,
   pgClient: Pool,
   ws: Workspace,
@@ -46,7 +46,7 @@ async function moveWorkspace (
 ): Promise<void> {
   try {
     const wsId = getWorkspaceId(ws.workspace)
-    const mongoDB = getWorkspaceDB(mongo, wsId)
+    const mongoDB = getWorkspaceMongoDB(mongo, wsId)
     const collections = await mongoDB.collections()
     await createTable(
       pgClient,
@@ -99,7 +99,7 @@ async function moveWorkspace (
 }
 
 export async function moveWorkspaceFromMongoToPG (
-  accountDb: Db,
+  accountDb: AccountDB,
   mongoUrl: string,
   dbUrl: string | undefined,
   ws: Workspace,

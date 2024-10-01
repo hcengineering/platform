@@ -10,7 +10,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //
 // See the License for the specific language governing permissions and
-// limitations under the f.
+// limitations under the License.
 //
 
 import { Analytics } from '@hcengineering/analytics'
@@ -26,255 +26,83 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
-  BaseWorkspaceInfo,
   Client,
   concatLink,
   Data,
   generateId,
   getWorkspaceId,
-  groupByArray,
   isWorkspaceCreating,
   MeasureContext,
   RateLimiter,
   Ref,
   roleOrder,
   systemAccountEmail,
-  Timestamp,
   TxOperations,
   Version,
   versionToString,
   WorkspaceId,
   type BackupStatus,
-  type Branding,
-  type WorkspaceMode
+  type Branding
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hcengineering/server-token'
 import toolPlugin, { connect } from '@hcengineering/server-tool'
-import { pbkdf2Sync, randomBytes } from 'crypto'
-import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
+import { randomBytes } from 'crypto'
+import { type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import otpGenerator from 'otp-generator'
+
 import { accountPlugin } from './plugin'
+import type {
+  Account,
+  AccountInfo,
+  AccountDB,
+  ClientWorkspaceInfo,
+  Invite,
+  LoginInfo,
+  ObjectId,
+  OtpInfo,
+  Query,
+  UpgradeStatistic,
+  Workspace,
+  WorkspaceEvent,
+  WorkspaceInfo,
+  WorkspaceLoginInfo,
+  WorkspaceOperation
+} from './types'
+import {
+  toAccountInfo,
+  getEndpoint,
+  EndpointKind,
+  cleanEmail,
+  hashWithSalt,
+  isEmail,
+  verifyPassword,
+  areDbIdsEqual
+} from './utils'
 
-const WORKSPACE_COLLECTION = 'workspace'
-const ACCOUNT_COLLECTION = 'account'
-const OTP_COLLECTION = 'otp'
-const INVITE_COLLECTION = 'invite'
-const UPGRADE_COLLECTION = 'upgrade'
 /**
  * @public
  */
-export const ACCOUNT_DB = 'account'
-
-/**
- * Returns a hash code for a string.
- * (Compatible to Java's String.hashCode())
- *
- * The hash code for a string object is computed as
- *     s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]
- * using number arithmetic, where s[i] is the i th character
- * of the given string, n is the length of the string,
- * and ^ indicates exponentiation.
- * (The hash value of the empty string is zero.)
- *
- */
-function hashWorkspace (dbWorkspaceName: string): number {
-  return [...dbWorkspaceName].reduce((hash, c) => (Math.imul(31, hash) + c.charCodeAt(0)) | 0, 0)
+export async function getAccount (db: AccountDB, email: string): Promise<Account | null> {
+  return await db.account.findOne({ email: cleanEmail(email) })
 }
 
-export enum EndpointKind {
-  Internal,
-  External
-}
-
-const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {
-  const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
-  if (transactorsUrl === undefined) {
-    throw new Error('Please provide transactor endpoint url')
-  }
-  const endpoints = transactorsUrl
-    .split(',')
-    .map((it) => it.trim())
-    .filter((it) => it.length > 0)
-
-  if (endpoints.length === 0) {
-    throw new Error('Please provide transactor endpoint url')
-  }
-
-  const toTransactor = (line: string): { internalUrl: string, region: string, externalUrl: string } => {
-    const [internalUrl, externalUrl, region] = line.split(';')
-    return { internalUrl, region: region ?? '', externalUrl: externalUrl ?? internalUrl }
-  }
-
-  const byRegions = groupByArray(endpoints.map(toTransactor), (it) => it.region)
-  let transactors = (byRegions.get(workspaceInfo.region ?? '') ?? [])
-    .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
-    .flat()
-
-  // This is really bad
-  if (transactors.length === 0) {
-    ctx.error('No transactors for the target region, will use default region', { group: workspaceInfo.region })
-  }
-  transactors = (byRegions.get('') ?? [])
-    .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
-    .flat()
-
-  if (transactors.length === 0) {
-    ctx.error('No transactors for the default region')
-    throw new Error('Please provide transactor endpoint url')
-  }
-
-  const hash = hashWorkspace(workspaceInfo.workspace)
-  return transactors[Math.abs(hash % transactors.length)]
-}
-
-export function getAllTransactors (kind: EndpointKind): string[] {
-  const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
-  if (transactorsUrl === undefined) {
-    throw new Error('Please provide transactor endpoint url')
-  }
-  const endpoints = transactorsUrl
-    .split(',')
-    .map((it) => it.trim())
-    .filter((it) => it.length > 0)
-
-  if (endpoints.length === 0) {
-    throw new Error('Please provide transactor endpoint url')
-  }
-
-  const toTransactor = (line: string): { internalUrl: string, group: string, externalUrl: string } => {
-    const [internalUrl, externalUrl, group] = line.split(';')
-    return { internalUrl, group: group ?? '', externalUrl: externalUrl ?? internalUrl }
-  }
-
-  return endpoints.map(toTransactor).map((it) => (kind === EndpointKind.External ? it.externalUrl : it.internalUrl))
+async function getAccountByQuery (db: AccountDB, query: Record<string, string>): Promise<Account | null> {
+  return await db.account.findOne(query)
 }
 
 /**
  * @public
  */
-export interface Account {
-  _id: ObjectId
-  email: string
-  // null if auth provider was used
-  hash: Binary | null
-  salt: Binary
-  workspaces: ObjectId[]
-  first: string
-  last: string
-  // Defined for server admins only
-  admin?: boolean
-  confirmed?: boolean
-  lastWorkspace?: number
-  createdOn: number
-  lastVisit: number
-}
-
-/**
- * @public
- */
-export interface Workspace extends BaseWorkspaceInfo {
-  _id: ObjectId
-  accounts: ObjectId[]
-
-  region?: string // Transactor group name
-  lastProcessingTime?: number
-  attempts?: number
-  message?: string
-}
-
-export interface OtpRecord {
-  account: ObjectId
-  otp: string
-  expires: Timestamp
-  createdOn: Timestamp
-}
-
-export interface OtpInfo {
-  sent: boolean
-  retryOn: Timestamp
-}
-
-/**
- * @public
- */
-export interface LoginInfo {
-  email: string
-  token: string
-  endpoint: string
-}
-
-/**
- * @public
- */
-export interface WorkspaceLoginInfo extends LoginInfo {
-  workspace: string
-
-  workspaceId: string
-
-  mode: WorkspaceMode
-  progress?: number
-}
-
-/**
- * @public
- */
-export interface Invite {
-  _id: ObjectId
-  workspace: WorkspaceId
-  exp: number
-  emailMask: string
-  limit: number
-  role?: AccountRole
-  personId?: Ref<Person>
-}
-
-/**
- * @public
- */
-export type AccountInfo = Omit<Account, 'hash' | 'salt'>
-
-function hashWithSalt (password: string, salt: Buffer): Buffer {
-  return pbkdf2Sync(password, salt, 1000, 32, 'sha256')
-}
-
-function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean {
-  return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
-}
-
-function cleanEmail (email: string): string {
-  return email.toLowerCase().trim()
-}
-
-function isEmail (email: string): boolean {
-  const EMAIL_REGEX =
-    /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
-  return EMAIL_REGEX.test(email)
-}
-
-/**
- * @public
- */
-export async function getAccount (db: Db, email: string): Promise<Account | null> {
-  return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email: cleanEmail(email) })
-}
-
-async function getAccountByQuery (db: Db, query: Record<string, string>): Promise<Account | null> {
-  return await db.collection(ACCOUNT_COLLECTION).findOne<Account>(query)
-}
-
-/**
- * @public
- */
-export async function setAccountAdmin (db: Db, email: string, admin: boolean): Promise<void> {
+export async function setAccountAdmin (db: AccountDB, email: string, admin: boolean): Promise<void> {
   const account = await getAccount(db, email)
   if (account === null) {
     return
   }
   // Add workspace to account
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { admin } })
+  await db.account.updateOne({ _id: account._id }, { admin })
 }
 
 /**
@@ -283,15 +111,13 @@ export async function setAccountAdmin (db: Db, email: string, admin: boolean): P
  * @param workspaceUrl -
  * @returns
  */
-export async function getWorkspaceByUrl (db: Db, workspaceUrl: string): Promise<Workspace | null> {
-  const res = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspaceUrl })
+export async function getWorkspaceByUrl (db: AccountDB, workspaceUrl: string): Promise<Workspace | null> {
+  const res = await db.workspace.findOne({ workspaceUrl })
   if (res != null) {
     return res
   }
-  // Fallback to old workspaces.
-  return await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .findOne({ workspace: workspaceUrl, workspaceUrl: { $exists: false } })
+
+  return (await db.workspace.find({ workspace: workspaceUrl })).filter((ws) => ws.workspaceUrl == null)[0]
 }
 
 /**
@@ -300,19 +126,13 @@ export async function getWorkspaceByUrl (db: Db, workspaceUrl: string): Promise<
  * @param workspace -
  * @returns
  */
-export async function getWorkspaceById (db: Db, workspace: string): Promise<Workspace | null> {
-  return await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace })
-}
-
-function toAccountInfo (account: Account): AccountInfo {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { hash, salt, ...result } = account
-  return result
+export async function getWorkspaceById (db: AccountDB, workspace: string): Promise<Workspace | null> {
+  return await db.workspace.findOne({ workspace })
 }
 
 async function getAccountInfo (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   email: string,
   password: string
@@ -324,7 +144,7 @@ async function getAccountInfo (
   if (account.hash === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
-  if (!verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
+  if (!verifyPassword(password, account.hash, account.salt)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
   return toAccountInfo(account)
@@ -361,7 +181,7 @@ async function sendOtpEmail (branding: Branding | null, otp: string, email: stri
 
 export async function getAccountInfoByToken (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
@@ -400,7 +220,7 @@ export async function getAccountInfoByToken (
  */
 export async function login (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   password: string
@@ -423,20 +243,20 @@ export async function login (
   }
 }
 
-async function getNewOtp (db: Db): Promise<string> {
+async function getNewOtp (db: AccountDB): Promise<string> {
   let otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     lowerCaseAlphabets: false,
     specialChars: false
   })
 
-  let exist = await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ otp })
+  let exist = await db.otp.findOne({ otp })
 
   while (exist != null) {
     otp = otpGenerator.generate(6, {
       lowerCaseAlphabets: false
     })
-    exist = await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ otp })
+    exist = await db.otp.findOne({ otp })
   }
 
   return otp
@@ -444,7 +264,7 @@ async function getNewOtp (db: Db): Promise<string> {
 
 export async function sendOtp (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string
 ): Promise<OtpInfo> {
@@ -456,14 +276,7 @@ export async function sendOtp (
   }
 
   const now = Date.now()
-  const otpData = (
-    await db
-      .collection<OtpRecord>(OTP_COLLECTION)
-      .find({ account: account._id })
-      .sort({ createdOn: -1 })
-      .limit(1)
-      .toArray()
-  )[0]
+  const otpData = (await db.otp.find({ account: account._id }, { createdOn: 'descending' }, 1))[0]
 
   const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
   const isValid = otpData !== undefined && otpData.expires > now && otpData.createdOn + retryDelay * 1000 > now
@@ -477,21 +290,21 @@ export async function sendOtp (
   const otp = await getNewOtp(db)
 
   await sendOtpEmail(branding, otp, email)
-  await db.collection<OtpRecord>(OTP_COLLECTION).insertOne({ account: account._id, otp, expires, createdOn: now })
+  await db.otp.insertOne({ account: account._id, otp, expires, createdOn: now })
 
   return { sent: true, retryOn: now + retryDelay * 1000 }
 }
 
-async function isOtpValid (db: Db, account: Account, otp: string): Promise<boolean> {
+async function isOtpValid (db: AccountDB, account: Account, otp: string): Promise<boolean> {
   const now = Date.now()
-  const otpData = (await db.collection<OtpRecord>(OTP_COLLECTION).findOne({ account: account._id, otp })) ?? undefined
+  const otpData = (await db.otp.findOne({ account: account._id, otp })) ?? undefined
 
   return otpData !== undefined && otpData.expires > now
 }
 
 export async function validateOtp (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   otp: string
@@ -513,7 +326,7 @@ export async function validateOtp (
     const info = toAccountInfo(account)
 
     if (account.confirmed !== true) {
-      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
+      await db.account.updateOne({ _id: account._id }, { confirmed: true })
     }
 
     const result = {
@@ -522,7 +335,7 @@ export async function validateOtp (
       confirmed: true,
       token: generateToken(email, getWorkspaceId(''), getExtra(info))
     }
-    await db.collection<OtpRecord>(OTP_COLLECTION).deleteMany({ account: account._id })
+    await db.otp.deleteMany({ account: account._id })
     ctx.info('otp login success', { email })
     return result
   } catch (err: any) {
@@ -576,7 +389,7 @@ function decodeToken (ctx: MeasureContext, token: string): Token {
  */
 export async function selectWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   workspaceUrl: string,
@@ -649,7 +462,7 @@ export async function selectWorkspace (
     const workspaces = accountInfo?.workspaces ?? []
 
     for (const w of workspaces) {
-      if (w.equals(workspaceInfo._id)) {
+      if (areDbIdsEqual(w, workspaceInfo._id)) {
         const result = {
           endpoint: getEndpoint(ctx, workspaceInfo, endpointKind),
           email,
@@ -670,8 +483,8 @@ export async function selectWorkspace (
 /**
  * @public
  */
-export async function getInvite (db: Db, inviteId: ObjectId): Promise<Invite | null> {
-  return await db.collection(INVITE_COLLECTION).findOne<Invite>({ _id: new ObjectId(inviteId) })
+export async function getInvite (db: AccountDB, inviteId: ObjectId): Promise<Invite | null> {
+  return await db.invite.findOne({ _id: db.getObjectId(inviteId) })
 }
 
 /**
@@ -700,8 +513,8 @@ export async function checkInvite (ctx: MeasureContext, invite: Invite | null, e
 /**
  * @public
  */
-export async function useInvite (db: Db, inviteId: ObjectId): Promise<void> {
-  await db.collection(INVITE_COLLECTION).updateOne({ _id: inviteId }, { $inc: { limit: -1 } })
+export async function useInvite (db: AccountDB, inviteId: ObjectId): Promise<void> {
+  await db.invite.updateOne({ _id: inviteId }, { $inc: { limit: -1 } })
 }
 
 /**
@@ -709,7 +522,7 @@ export async function useInvite (db: Db, inviteId: ObjectId): Promise<void> {
  */
 export async function join (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   password: string,
@@ -738,7 +551,7 @@ export async function join (
 /**
  * @public
  */
-export async function confirmEmail (db: Db, _email: string): Promise<Account> {
+export async function confirmEmail (db: AccountDB, _email: string): Promise<Account> {
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
   console.log(`confirm email:${email}`)
@@ -750,7 +563,7 @@ export async function confirmEmail (db: Db, _email: string): Promise<Account> {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyConfirmed, { account: _email }))
   }
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { confirmed: true } })
+  await db.account.updateOne({ _id: account._id }, { confirmed: true })
   account.confirmed = true
   return account
 }
@@ -760,7 +573,7 @@ export async function confirmEmail (db: Db, _email: string): Promise<Account> {
  */
 export async function confirm (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
@@ -831,7 +644,7 @@ async function sendConfirmation (branding: Branding | null, account: Account): P
  */
 export async function signUpJoin (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   password: string,
@@ -875,7 +688,7 @@ export async function signUpJoin (
  */
 export async function createAcc (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   password: string | null,
@@ -900,18 +713,21 @@ export async function createAcc (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
 
-  await db.collection(ACCOUNT_COLLECTION).insertOne({
-    email,
-    hash,
-    salt,
-    first,
-    last,
-    confirmed,
-    workspaces: [],
-    createdOn: Date.now(),
-    lastVisit: Date.now(),
-    ...(extra ?? {})
-  })
+  await db.account.insertOne(
+    {
+      email,
+      hash,
+      salt,
+      first,
+      last,
+      confirmed,
+      workspaces: [],
+      createdOn: Date.now(),
+      lastVisit: Date.now(),
+      ...(extra ?? {})
+    },
+    '_id'
+  )
 
   const newAccount = await getAccount(db, email)
   if (newAccount === null) {
@@ -935,7 +751,7 @@ export async function createAcc (
  */
 export async function createAccount (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   password: string,
@@ -968,7 +784,7 @@ export async function createAccount (
  */
 export async function signUpOtp (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string
 ): Promise<OtpInfo> {
@@ -986,27 +802,26 @@ export async function signUpOtp (
  */
 export async function listWorkspaces (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string
 ): Promise<WorkspaceInfo[]> {
   decodeToken(ctx, token) // Just verify token is valid
-  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find({}).toArray())
-    .filter((it) => it.disabled !== true)
-    .map(trimWorkspaceInfo)
+
+  return (await db.workspace.find({})).filter((it) => it.disabled !== true).map(trimWorkspaceInfo)
 }
 
 /**
  * @public
  */
-export async function listWorkspacesByAccount (db: Db, email: string): Promise<WorkspaceInfo[]> {
+export async function listWorkspacesByAccount (db: AccountDB, email: string): Promise<WorkspaceInfo[]> {
   const account = await getAccount(db, email)
-  return (
-    await db
-      .collection<Workspace>(WORKSPACE_COLLECTION)
-      .find({ _id: { $in: account?.workspaces } })
-      .toArray()
-  )
+
+  if (account === null) {
+    return []
+  }
+
+  return (await db.workspace.find({ _id: { $in: account.workspaces } }))
     .filter((it) => it.disabled !== true)
     .map(trimWorkspaceInfo)
 }
@@ -1015,83 +830,55 @@ export async function listWorkspacesByAccount (db: Db, email: string): Promise<W
  * @public
  */
 export async function countWorkspacesInRegion (
-  db: Db,
+  db: AccountDB,
   region: string = '',
   upToVersion?: Data<Version>,
   visitedSince?: number
 ): Promise<number> {
-  const regionQuery = region === '' ? { $or: [{ region: { $exists: false } }, { region: '' }] } : { region }
-  const query: Filter<Workspace>['$and'] = [
-    regionQuery,
-    { $or: [{ disabled: false }, { disabled: { $exists: false } }] }
-  ]
-
-  if (upToVersion !== undefined) {
-    query.push({
-      $or: [
-        { 'version.major': { $lt: upToVersion.major } },
-        { 'version.major': upToVersion.major, 'version.minor': { $lt: upToVersion.minor } },
-        {
-          'version.major': upToVersion.major,
-          'version.minor': upToVersion.minor,
-          'version.patch': { $lt: upToVersion.patch }
-        }
-      ]
-    })
-  }
-
-  if (visitedSince !== undefined) {
-    query.push({ lastVisit: { $gt: visitedSince } })
-  }
-
-  return await db.collection<Workspace>(WORKSPACE_COLLECTION).countDocuments({
-    $and: query
-  })
+  return await db.workspace.countWorkspacesInRegion(region, upToVersion, visitedSince)
 }
 
 /**
  * @public
  */
-export async function listWorkspacesRaw (db: Db): Promise<Workspace[]> {
-  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find({}).toArray()).filter((it) => it.disabled !== true)
+export async function listWorkspacesRaw (db: AccountDB): Promise<Workspace[]> {
+  return (await db.workspace.find({})).filter((it) => it.disabled !== true)
 }
 
 /**
  * @public
  */
-export async function listWorkspacesPure (db: Db): Promise<Workspace[]> {
-  return await db.collection<Workspace>(WORKSPACE_COLLECTION).find({}).toArray()
-}
-/**
- * @public
- */
-export async function setWorkspaceDisabled (db: Db, workspaceId: Workspace['_id'], disabled: boolean): Promise<void> {
-  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $set: { disabled } })
-}
-
-export async function cleanExpiredOtp (db: Db): Promise<void> {
-  await db.collection<OtpRecord>(OTP_COLLECTION).deleteMany({ expires: { $lte: Date.now() } })
+export async function listWorkspacesPure (db: AccountDB): Promise<Workspace[]> {
+  return await db.workspace.find({})
 }
 
 /**
  * @public
  */
-export async function updateWorkspace (db: Db, info: Workspace, ops: Partial<Workspace>): Promise<void> {
-  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: info._id }, { $set: { ...info, ...ops } })
+export async function setWorkspaceDisabled (
+  db: AccountDB,
+  workspaceId: Workspace['_id'],
+  disabled: boolean
+): Promise<void> {
+  await db.workspace.updateOne({ _id: workspaceId }, { disabled })
+}
+
+export async function cleanExpiredOtp (db: AccountDB): Promise<void> {
+  await db.otp.deleteMany({ expires: { $lte: Date.now() } })
 }
 
 /**
  * @public
  */
-export async function clearWorkspaceProductId (db: Db, info: Workspace): Promise<void> {
-  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: info._id }, { $unset: { productId: '' } })
+export async function updateWorkspace (db: AccountDB, info: Workspace, ops: Partial<Workspace>): Promise<void> {
+  await db.workspace.updateOne({ _id: info._id }, { ...info, ...ops })
 }
 
 /**
  * @public
  */
-export async function listAccounts (db: Db): Promise<Account[]> {
-  return await db.collection<Account>(ACCOUNT_COLLECTION).find({}).toArray()
+export async function listAccounts (db: AccountDB): Promise<Account[]> {
+  return await db.account.find({})
 }
 
 const workspaceReg = /[a-z0-9]/
@@ -1114,22 +901,23 @@ function getEmailName (email: string): string {
 }
 
 async function generateWorkspaceRecord (
-  db: Db,
+  db: AccountDB,
   email: string,
   branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string
 ): Promise<Workspace> {
   type WorkspaceData = Omit<Workspace, '_id' | 'endpoint'>
-  const wsCollection = db.collection<WorkspaceData>(WORKSPACE_COLLECTION)
   const brandingKey = branding?.key ?? 'huly'
   if (fixedWorkspace !== undefined) {
-    const ws = await wsCollection.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
+    const ws = await db.workspace.find({ workspaceUrl: fixedWorkspace })
+
     if ((await getWorkspaceById(db, fixedWorkspace)) !== null || ws.length > 0) {
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: fixedWorkspace })
       )
     }
+
     const data: WorkspaceData = {
       workspace: fixedWorkspace,
       workspaceUrl: fixedWorkspace,
@@ -1147,9 +935,10 @@ async function generateWorkspaceRecord (
       attempts: 0
     }
     // Add fixed workspace
-    const id = await wsCollection.insertOne(data)
-    return { _id: id.insertedId, ...data, endpoint: '' }
+    const id = await db.workspace.insertOne(data, '_id')
+    return { _id: id, ...data, endpoint: '' }
   }
+
   const workspaceUrlPrefix = stripId(workspaceName)
   const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(0, 12)
   let iteration = 0
@@ -1162,8 +951,10 @@ async function generateWorkspaceRecord (
     if (workspaceUrl.trim().length === 0) {
       workspaceUrl = generateId('-')
     }
-    const ws = await wsCollection.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
-    if (ws.length === 0) {
+    const sameUrl = await db.workspace.findOne({ workspaceUrl })
+    const sameWorkspace = await db.workspace.findOne({ workspace })
+
+    if (sameUrl === null && sameWorkspace === null) {
       const data: WorkspaceData = {
         workspace,
         workspaceUrl,
@@ -1181,16 +972,15 @@ async function generateWorkspaceRecord (
         attempts: 0
       }
       // Nice we do not have a workspace or workspaceUrl duplicated.
-      const id = await wsCollection.insertOne(data)
-      return { _id: id.insertedId, ...data, endpoint: '' }
+      const id = await db.workspace.insertOne(data, '_id')
+      return { _id: id, ...data, endpoint: '' }
     }
-    for (const w of ws) {
-      if (w.workspace === workspaceUrl) {
-        idPostfix = generateId('-')
-      }
-      if (w.workspaceUrl === workspaceUrl) {
-        urlPostfix = generateId('-')
-      }
+
+    if (sameUrl !== null) {
+      urlPostfix = generateId('-')
+    }
+    if (sameWorkspace !== null) {
+      idPostfix = generateId('-')
     }
     iteration++
 
@@ -1209,7 +999,7 @@ const createQueue = new RateLimiter(1)
  */
 export async function createWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   email: string,
   workspaceName: string,
@@ -1222,21 +1012,12 @@ export async function createWorkspace (
   })
 }
 
-export interface UpgradeStatistic {
-  region: string
-  version: string
-  startTime: number
-  total: number
-  toProcess: number
-  lastUpdate?: number
-}
-
 /**
  * @public
  */
 export async function workerHandshake (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   region: string, // A worker region
@@ -1254,7 +1035,7 @@ export async function workerHandshake (
 
   const strVersion = versionToString(version)
 
-  if ((await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).findOne({ version: strVersion, region })) !== null) {
+  if ((await db.upgrade.findOne({ version: strVersion, region })) !== null) {
     return
   }
 
@@ -1264,7 +1045,7 @@ export async function workerHandshake (
     async (ctx) => await countWorkspacesInRegion(db, region, version, Date.now() - 24 * 60 * 60 * 1000)
   )
 
-  await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).insertOne({
+  await db.upgrade.insertOne({
     region,
     version: strVersion,
     startTime: Date.now(),
@@ -1273,15 +1054,12 @@ export async function workerHandshake (
   })
 }
 
-export type WorkspaceEvent = 'ping' | 'create-started' | 'upgrade-started' | 'progress' | 'create-done' | 'upgrade-done'
-export type WorkspaceOperation = 'create' | 'upgrade' | 'all'
-
 /**
  * @public
  */
 export async function updateWorkspaceInfo (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   workspaceId: string,
@@ -1299,7 +1077,6 @@ export async function updateWorkspaceInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
   }
 
-  const wsCollection = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
   const update: Partial<WorkspaceInfo> = {}
   switch (event) {
     case 'create-started':
@@ -1318,13 +1095,11 @@ export async function updateWorkspaceInfo (
       break
     case 'create-done':
       ctx.info('update workspace info: create-done', { workspaceId, event, version, progress })
-      await wsCollection.updateOne(
+      await db.workspace.updateOne(
         { _id: workspaceInfo._id },
         {
-          $set: {
-            version,
-            lastProcessingTime: Date.now()
-          }
+          version,
+          lastProcessingTime: Date.now()
         }
       )
       await postCreateUserWorkspace(ctx, db, branding, workspaceInfo)
@@ -1351,13 +1126,11 @@ export async function updateWorkspaceInfo (
     update.message = message
   }
 
-  await wsCollection.updateOne(
+  await db.workspace.updateOne(
     { _id: workspaceInfo._id },
     {
-      $set: {
-        ...update,
-        lastProcessingTime: Date.now()
-      }
+      ...update,
+      lastProcessingTime: Date.now()
     }
   )
 }
@@ -1367,7 +1140,7 @@ export async function updateWorkspaceInfo (
  */
 export async function updateBackupInfo (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   backupInfo: BackupStatus
@@ -1383,22 +1156,18 @@ export async function updateBackupInfo (
     )
   }
 
-  const wsCollection = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
-
-  await wsCollection.updateOne(
+  await db.workspace.updateOne(
     { _id: workspaceInfo._id },
     {
-      $set: {
-        backupInfo,
-        lastProcessingTime: Date.now()
-      }
+      backupInfo,
+      lastProcessingTime: Date.now()
     }
   )
 }
 
 async function postCreateUserWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   workspace: Workspace
 ): Promise<void> {
@@ -1434,12 +1203,13 @@ async function postCreateUserWorkspace (
 
 async function postUpgradeUserWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   region: string,
   version: Data<Version>
 ): Promise<void> {
-  await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).findOneAndUpdate(
+  // TODO: Exception $inc?
+  await db.upgrade.updateOne(
     {
       region,
       version: versionToString(version),
@@ -1449,9 +1219,7 @@ async function postUpgradeUserWorkspace (
       $inc: {
         toProcess: -1
       },
-      $set: {
-        lastUpdate: Date.now()
-      }
+      lastUpdate: Date.now()
     }
   )
 }
@@ -1466,7 +1234,7 @@ async function postUpgradeUserWorkspace (
  */
 export async function getPendingWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   region: string, // A region requested
@@ -1477,88 +1245,10 @@ export async function getPendingWorkspace (
   if (decodedToken.extra?.service !== 'workspace') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  const wsCollection = db.collection<Workspace>(WORKSPACE_COLLECTION)
   // Move to config?
   const processingTimeoutMs = 30 * 1000
 
-  const pendingCreationQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-creation', 'creating'] } }]
-
-  const versionQuery = {
-    $or: [
-      { 'version.major': { $lt: version.major } },
-      { 'version.major': version.major, 'version.minor': { $lt: version.minor } },
-      { 'version.major': version.major, 'version.minor': version.minor, 'version.patch': { $lt: version.patch } }
-    ]
-  }
-  const pendingUpgradeQuery: Filter<Workspace>['$or'] = [
-    {
-      $and: [
-        {
-          $or: [{ disabled: false }, { disabled: { $exists: false } }]
-        },
-        {
-          $or: [{ mode: 'active' }, { mode: { $exists: false } }]
-        },
-        versionQuery,
-        {
-          lastVisit: { $gt: Date.now() - 24 * 60 * 60 * 1000 }
-        }
-      ]
-    },
-    {
-      $or: [{ disabled: false }, { disabled: { $exists: false } }],
-      mode: 'upgrading'
-    }
-  ]
-  // TODO: support returning pending deletion workspaces when we will actually want
-  // to clear them with the worker.
-
-  const defaultRegionQuery = { $or: [{ region: { $exists: false } }, { region: '' }] }
-  const operationQuery = {
-    $or:
-      operation === 'create'
-        ? pendingCreationQuery
-        : operation === 'upgrade'
-          ? pendingUpgradeQuery
-          : [...pendingCreationQuery, ...pendingUpgradeQuery]
-  }
-  const attemptsQuery = { $or: [{ attempts: { $exists: false } }, { attempts: { $lte: 3 } }] }
-
-  // We must have all the conditions in the DB query and we cannot filter anything in the code
-  // because of possible concurrency between account services. We have to update "lastProcessingTime"
-  // at the time of retrieval and not after some additional processing.
-  const query: Filter<Workspace> = {
-    $and: [
-      operationQuery,
-      attemptsQuery,
-      region !== '' ? { region } : defaultRegionQuery,
-      {
-        $or: [
-          { lastProcessingTime: { $exists: false } },
-          { lastProcessingTime: { $lt: Date.now() - processingTimeoutMs } }
-        ]
-      }
-    ]
-  }
-
-  const result =
-    (await wsCollection.findOneAndUpdate(
-      query,
-      {
-        $inc: {
-          attempts: 1
-        },
-        $set: {
-          lastProcessingTime: Date.now()
-        }
-      },
-      {
-        returnDocument: 'after',
-        sort: {
-          lastVisit: -1 // Use last visit as a priority
-        }
-      }
-    )) ?? undefined
+  const result = await db.workspace.getPendingWorkspace(region, version, operation, processingTimeoutMs)
 
   if (result != null) {
     ctx.info('getPendingWorkspace', {
@@ -1579,7 +1269,7 @@ export async function getPendingWorkspace (
  */
 export async function createUserWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   workspaceName: string
@@ -1607,7 +1297,7 @@ export async function createUserWorkspace (
   const workspaceInfo = await createWorkspace(ctx, db, branding, email, workspaceName, undefined)
 
   // Update last workspace time.
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: userAccount._id }, { $set: { lastWorkspace: Date.now() } })
+  await db.account.updateOne({ _id: userAccount._id }, { lastWorkspace: Date.now() })
 
   await assignWorkspaceRaw(db, { account: userAccount, workspace: workspaceInfo })
 
@@ -1626,7 +1316,7 @@ export async function createUserWorkspace (
  */
 export async function getInviteLink (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   exp: number,
@@ -1654,19 +1344,9 @@ export async function getInviteLink (
   if (personId !== undefined) {
     data.personId = personId
   }
-  const result = await db.collection(INVITE_COLLECTION).insertOne(data)
-  return result.insertedId
+  const result = await db.invite.insertOne(data, '_id')
+  return result
 }
-
-/**
- * @public
- */
-export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'> & { workspaceId: string }
-
-/**
- * @public
- */
-export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts'>
 
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
@@ -1683,7 +1363,7 @@ function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {
  */
 export async function getUserWorkspaces (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string
 ): Promise<ClientWorkspaceInfo[]> {
@@ -1693,12 +1373,15 @@ export async function getUserWorkspaces (
     ctx.error('account not found', { email })
     return []
   }
+
+  if (account.admin !== true && account.workspaces.length === 0) {
+    return []
+  }
+
   return (
-    await db
-      .collection<Workspace>(WORKSPACE_COLLECTION)
-      .find(account.admin === true ? {} : { _id: { $in: account.workspaces } })
-      .sort({ lastVisit: -1 })
-      .toArray()
+    await db.workspace.find(account.admin === true ? {} : { _id: { $in: account.workspaces } }, {
+      lastVisit: 'descending'
+    })
   )
     .filter((it) => it.disabled !== true || isWorkspaceCreating(it.mode))
     .map(mapToClientWorkspace)
@@ -1718,7 +1401,7 @@ export type ClientWSInfoWithUpgrade = ClientWorkspaceInfo & {
  */
 export async function getWorkspaceInfo (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   _updateLastVisit: boolean = false
@@ -1726,7 +1409,7 @@ export async function getWorkspaceInfo (
   const { email, workspace, extra } = decodeToken(ctx, token)
   const guest = extra?.guest === 'true'
   let account: Pick<Account, 'admin' | 'workspaces'> | Account | null = null
-  const query: Filter<Workspace> = {
+  const query: Query<Workspace> = {
     workspace: workspace.name
   }
   if (email !== systemAccountEmail && !guest) {
@@ -1748,11 +1431,15 @@ export async function getWorkspaceInfo (
   }
 
   if (account.admin !== true && !guest) {
+    if (account.workspaces.length === 0) {
+      ctx.error('no workspace', { workspace: workspace.name, email })
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
     query._id = { $in: account.workspaces }
   }
 
   const [ws] = await ctx.with('get-workspace', {}, async () =>
-    (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(query).toArray()).filter(
+    (await db.workspace.find(query)).filter(
       (it) => it.disabled !== true || account?.admin === true || it.mode !== 'active'
     )
   )
@@ -1786,9 +1473,9 @@ export async function getWorkspaceInfo (
   return clientWs
 }
 
-async function getUpgradeStatistics (db: Db, region: string): Promise<UpgradeStatistic | undefined> {
+async function getUpgradeStatistics (db: AccountDB, region: string): Promise<UpgradeStatistic | undefined> {
   return (
-    (await db.collection<UpgradeStatistic>(UPGRADE_COLLECTION).findOne({
+    (await db.upgrade.findOne({
       region,
       toProcess: { $gt: 0 }
     })) ?? undefined
@@ -1799,17 +1486,17 @@ function isAccount (data: Pick<Account, 'admin' | 'workspaces'> | Account | null
   return (data as Account)._id !== undefined
 }
 
-async function updateLastVisit (db: Db, ws: Workspace, account: Account): Promise<void> {
+async function updateLastVisit (db: AccountDB, ws: Workspace, account: Account): Promise<void> {
   const now = Date.now()
-  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: ws._id }, { $set: { lastVisit: now } })
+  await db.workspace.updateOne({ _id: ws._id }, { lastVisit: now })
 
   // Add workspace to account
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { lastVisit: now } })
+  await db.account.updateOne({ _id: account._id }, { lastVisit: now })
 }
 
 async function getWorkspaceAndAccount (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   _email: string,
   workspaceUrl: string
 ): Promise<{ account: Account, workspace: Workspace }> {
@@ -1830,7 +1517,7 @@ async function getWorkspaceAndAccount (
  */
 export async function setRole (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   _email: string,
   workspace: string,
   role: AccountRole,
@@ -1866,7 +1553,7 @@ export async function setRole (
  */
 export async function createMissingEmployee (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string
 ): Promise<void> {
@@ -1886,7 +1573,7 @@ export async function createMissingEmployee (
  */
 export async function assignWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   workspaceId: string,
@@ -1926,15 +1613,11 @@ export async function assignWorkspace (
   return workspaceInfo.workspace
 }
 
-async function assignWorkspaceRaw (db: Db, workspaceInfo: { account: Account, workspace: Workspace }): Promise<void> {
-  await db
-    .collection(WORKSPACE_COLLECTION)
-    .updateOne({ _id: workspaceInfo.workspace._id }, { $addToSet: { accounts: workspaceInfo.account._id } })
-
-  // Add workspace to account
-  await db
-    .collection(ACCOUNT_COLLECTION)
-    .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
+async function assignWorkspaceRaw (
+  db: AccountDB,
+  workspaceInfo: { account: Account, workspace: Workspace }
+): Promise<void> {
+  await db.assignWorkspace(workspaceInfo.account._id, workspaceInfo.workspace._id)
 }
 
 async function createPerson (
@@ -2103,7 +1786,7 @@ async function createPersonAccount (
  */
 export async function changePassword (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   oldPassword: string,
@@ -2115,22 +1798,27 @@ export async function changePassword (
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+  await db.account.updateOne({ _id: account._id }, { salt, hash })
   ctx.info('change-password success', { email })
 }
 
 /**
  * @public
  */
-export async function changeEmail (ctx: MeasureContext, db: Db, account: Account, newEmail: string): Promise<void> {
-  await db.collection<Account>(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { email: newEmail } })
+export async function changeEmail (
+  ctx: MeasureContext,
+  db: AccountDB,
+  account: Account,
+  newEmail: string
+): Promise<void> {
+  await db.account.updateOne({ _id: account._id }, { email: newEmail })
   ctx.info('change-email success', { email: newEmail })
 }
 
 /**
  * @public
  */
-export async function replacePassword (db: Db, email: string, password: string): Promise<void> {
+export async function replacePassword (db: AccountDB, email: string, password: string): Promise<void> {
   const account = await getAccount(db, email)
 
   if (account === null) {
@@ -2139,7 +1827,7 @@ export async function replacePassword (db: Db, email: string, password: string):
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+  await db.account.updateOne({ _id: account._id }, { salt, hash })
 }
 
 /**
@@ -2147,7 +1835,7 @@ export async function replacePassword (db: Db, email: string, password: string):
  */
 export async function requestPassword (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string
 ): Promise<void> {
@@ -2203,7 +1891,7 @@ export async function requestPassword (
  */
 export async function restorePassword (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   password: string
@@ -2224,11 +1912,11 @@ export async function restorePassword (
   return await login(ctx, db, branding, email, password)
 }
 
-async function updatePassword (db: Db, account: Account, password: string | null): Promise<void> {
+async function updatePassword (db: AccountDB, account: Account, password: string | null): Promise<void> {
   const salt = randomBytes(32)
   const hash = password !== null ? hashWithSalt(password, salt) : null
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+  await db.account.updateOne({ _id: account._id }, { salt, hash })
 }
 
 /**
@@ -2236,22 +1924,14 @@ async function updatePassword (db: Db, account: Account, password: string | null
  */
 export async function removeWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   email: string,
   workspaceId: string
 ): Promise<void> {
   const { workspace, account } = await getWorkspaceAndAccount(ctx, db, email, workspaceId)
 
-  // Add account into workspace.
-  await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
-
-  // Add account a workspace
-  await db
-    .collection<Account>(ACCOUNT_COLLECTION)
-    .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+  await db.unassignWorkspace(account._id, workspace._id)
   ctx.info('Workspace removed', { email, workspace })
 }
 
@@ -2260,7 +1940,7 @@ export async function removeWorkspace (
  */
 export async function checkJoin (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   inviteId: ObjectId
@@ -2283,7 +1963,7 @@ export async function checkJoin (
  */
 export async function dropWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   workspaceId: string
 ): Promise<Workspace> {
@@ -2291,10 +1971,14 @@ export async function dropWorkspace (
   if (ws === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
   }
-  await db.collection(WORKSPACE_COLLECTION).deleteOne({ _id: ws._id })
-  await db
-    .collection<Account>(ACCOUNT_COLLECTION)
-    .updateMany({ _id: { $in: ws.accounts ?? [] } }, { $pull: { workspaces: ws._id } })
+
+  await Promise.all(
+    (ws.accounts ?? []).map(async (account) => {
+      await db.unassignWorkspace(account, ws._id)
+    })
+  )
+
+  await db.workspace.deleteMany({ _id: ws._id })
 
   ctx.info('Workspace dropped', { workspace: ws.workspace })
   return ws
@@ -2305,7 +1989,7 @@ export async function dropWorkspace (
  */
 export async function dropWorkspaceFull (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   client: MongoClient,
   branding: Branding | null,
   workspaceId: string,
@@ -2327,7 +2011,7 @@ export async function dropWorkspaceFull (
  */
 export async function dropAccount (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   email: string
 ): Promise<void> {
@@ -2336,10 +2020,7 @@ export async function dropAccount (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  const workspaces = await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .find({ _id: { $in: account.workspaces } })
-    .toArray()
+  const workspaces = await db.workspace.find({ _id: { $in: account.workspaces } })
 
   await Promise.all(
     workspaces.map(async (ws) => {
@@ -2347,10 +2028,14 @@ export async function dropAccount (
     })
   )
 
-  await db.collection(ACCOUNT_COLLECTION).deleteOne({ _id: account._id })
-  await db
-    .collection<Workspace>(WORKSPACE_COLLECTION)
-    .updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
+  await Promise.all(
+    (account.workspaces ?? []).map(async (ws) => {
+      await db.unassignWorkspace(account._id, ws)
+    })
+  )
+
+  await db.account.deleteMany({ _id: account._id })
+
   ctx.info('Account Dropped', { email, account })
 }
 
@@ -2359,7 +2044,7 @@ export async function dropAccount (
  */
 export async function leaveWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   email: string
@@ -2382,12 +2067,7 @@ export async function leaveWorkspace (
 
   const account = tokenData.email !== email ? await getAccount(db, email) : currentAccount
   if (account !== null) {
-    await db
-      .collection<Workspace>(WORKSPACE_COLLECTION)
-      .updateOne({ _id: workspace._id }, { $pull: { accounts: account._id } })
-    await db
-      .collection<Account>(ACCOUNT_COLLECTION)
-      .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
+    await db.unassignWorkspace(account._id, workspace._id)
   }
   ctx.info('Account removed from workspace', { email, workspace })
 }
@@ -2397,7 +2077,7 @@ export async function leaveWorkspace (
  */
 export async function sendInvite (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   email: string,
@@ -2458,7 +2138,12 @@ export async function sendInvite (
   ctx.info('Invite sent', { email, workspace, link })
 }
 
-async function deactivatePersonAccount (ctx: MeasureContext, db: Db, email: string, workspace: string): Promise<void> {
+async function deactivatePersonAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  email: string,
+  workspace: string
+): Promise<void> {
   const workspaceInfo = await getWorkspaceById(db, workspace)
   if (workspaceInfo == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
@@ -2488,18 +2173,18 @@ async function deactivatePersonAccount (ctx: MeasureContext, db: Db, email: stri
  */
 export type AccountMethod = (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   request: any,
   token?: string
 ) => Promise<any>
 
 function wrap (
-  accountMethod: (ctx: MeasureContext, db: Db, branding: Branding | null, ...args: any[]) => Promise<any>
+  accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
 ): AccountMethod {
   return async function (
     ctx: MeasureContext,
-    db: Db,
+    db: AccountDB,
     branding: Branding | null,
     request: any,
     token?: string
@@ -2534,7 +2219,7 @@ function wrap (
 
 export async function joinWithProvider (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   first: string,
@@ -2618,7 +2303,7 @@ export async function joinWithProvider (
 
 export async function loginWithProvider (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   _email: string,
   first: string,
@@ -2666,7 +2351,7 @@ export async function loginWithProvider (
  */
 export async function changeUsername (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   first: string,
@@ -2679,7 +2364,7 @@ export async function changeUsername (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { first, last } })
+  await db.account.updateOne({ _id: account._id }, { first, last })
   ctx.info('change-username success', { email })
 }
 
@@ -2688,7 +2373,7 @@ export async function changeUsername (
  */
 export async function updateWorkspaceName (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string,
   name: string
@@ -2701,12 +2386,10 @@ export async function updateWorkspaceName (
     )
   }
 
-  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne(
+  await db.workspace.updateOne(
     { _id: workspaceInfo._id },
     {
-      $set: {
-        workspaceName: name
-      }
+      workspaceName: name
     }
   )
 }
@@ -2716,7 +2399,7 @@ export async function updateWorkspaceName (
  */
 export async function deleteWorkspace (
   ctx: MeasureContext,
-  db: Db,
+  db: AccountDB,
   branding: Branding | null,
   token: string
 ): Promise<void> {
@@ -2739,13 +2422,11 @@ export async function deleteWorkspace (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
 
-    await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne(
+    await db.workspace.updateOne(
       { _id: workspaceInfo._id },
       {
-        $set: {
-          disabled: true,
-          mode: 'pending-deletion'
-        }
+        disabled: true,
+        mode: 'pending-deletion'
       }
     )
   } finally {

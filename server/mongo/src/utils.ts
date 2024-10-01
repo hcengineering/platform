@@ -155,7 +155,7 @@ export function getMongoClient (uri: string): MongoClientReference {
  *
  * Construct MongoDB table from workspace.
  */
-export function getWorkspaceDB (client: MongoClient, workspaceId: WorkspaceId): Db {
+export function getWorkspaceMongoDB (client: MongoClient, workspaceId: WorkspaceId): Db {
   return client.db(toWorkspaceString(workspaceId))
 }
 
