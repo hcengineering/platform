@@ -32,7 +32,13 @@
   import { getResource } from '@hcengineering/platform'
 
   import document from '../../plugin'
-  import { getDocumentIdFromFragment, createEmptyDocument } from '../../utils'
+  import {
+    getDocumentIdFromFragment,
+    createEmptyDocument,
+    moveDocument,
+    moveDocumentBefore,
+    moveDocumentAfter
+  } from '../../utils'
   import DocHierarchy from './DocHierarchy.svelte'
   import DocTreeElement from './DocTreeElement.svelte'
   import { Analytics } from '@hcengineering/analytics'
@@ -53,7 +59,7 @@
   let descendants: Map<Ref<Document>, Document[]> = new Map<Ref<Document>, Document[]>()
 
   function getDescendants (obj: Ref<Document>): Ref<Document>[] {
-    return (descendants.get(obj) ?? []).sort((a, b) => a.name.localeCompare(b.name)).map((p) => p._id)
+    return (descendants.get(obj) ?? []).sort((a, b) => a.rank.localeCompare(b.rank)).map((p) => p._id)
   }
 
   function getAllDescendants (obj: Ref<Document>): Ref<Document>[] {
@@ -65,8 +71,9 @@
       if (next === undefined) break
 
       const children = descendants.get(next) ?? []
-      result.push(...children.map((p) => p._id))
-      queue.push(...children.map((p) => p._id))
+      const childrenRefs = children.map((p) => p._id)
+      result.push(...childrenRefs)
+      queue.push(...childrenRefs)
     }
 
     return result
@@ -102,7 +109,7 @@
     },
     {
       sort: {
-        name: SortingOrder.Ascending
+        rank: SortingOrder.Ascending
       }
     }
   )
@@ -145,12 +152,13 @@
 
   let draggedItem: Ref<Document> | undefined = undefined
   let draggedOver: Ref<Document> | undefined = undefined
+  let draggedOverBefore = false
+  let draggedOverAfter = false
+  let cannotDropTo: Ref<Document>[] = []
 
   function canDrop (object: Ref<Document>, target: Ref<Document>): boolean {
     if (object === target) return false
-
-    const children = getAllDescendants(object)
-    if (children.includes(target)) return false
+    if (cannotDropTo.includes(target)) return false
 
     return true
   }
@@ -162,22 +170,43 @@
       return
     }
 
-    closeTooltip()
+    const doc = documentById.get(object)
+    if (doc === undefined) {
+      return
+    }
+
+    cannotDropTo = [doc._id, doc.attachedTo, ...getAllDescendants(object)]
 
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.dropEffect = 'move'
     draggedItem = object
+
+    closeTooltip()
+  }
+
+  function getDropPosition (event: DragEvent): { before: boolean, after: boolean } {
+    const targetRect = (event.target as HTMLElement).getBoundingClientRect()
+    const dropPosition = event.clientY - targetRect.top
+    return {
+      before: dropPosition < targetRect.height / 6,
+      after: dropPosition > (5 * targetRect.height) / 6
+    }
   }
 
   function onDragOver (event: DragEvent, object: Ref<Document>): void {
     event.preventDefault()
-    if (event.dataTransfer === null) {
+    if (!(event.target as HTMLElement).draggable) return
+    if (event.dataTransfer === null || event.target === null || draggedItem === object) {
       return
     }
 
     if (draggedItem !== undefined && canDrop(draggedItem, object)) {
       event.dataTransfer.dropEffect = 'move'
       draggedOver = object
+
+      const { before, after } = getDropPosition(event)
+      draggedOverBefore = before
+      draggedOverAfter = after
     } else {
       event.dataTransfer.dropEffect = 'none'
     }
@@ -187,21 +216,36 @@
     event.preventDefault()
     draggedItem = undefined
     draggedOver = undefined
+    draggedOverAfter = false
+    draggedOverBefore = false
   }
 
-  function onDrop (event: DragEvent, target: Ref<Document>): void {
+  function onDrop (event: DragEvent, object: Ref<Document>): void {
     event.preventDefault()
     if (event.dataTransfer === null) {
       return
     }
-    if (draggedItem !== undefined && draggedItem !== target) {
+    if (draggedItem !== undefined && canDrop(draggedItem, object)) {
       const doc = documentById.get(draggedItem)
-      if (doc !== undefined) {
-        void client.update(doc, { attachedTo: target })
+      const target = documentById.get(object)
+
+      if (doc !== undefined && doc._id !== object && doc.attachedTo !== object) {
+        if (object === document.ids.NoParent) {
+          void moveDocument(doc, doc.space, document.ids.NoParent)
+        } else if (target !== undefined) {
+          const { before, after } = getDropPosition(event)
+          if (before) {
+            void moveDocumentBefore(doc, target)
+          } else if (after) {
+            void moveDocumentAfter(doc, target)
+          } else {
+            void moveDocument(doc, target.space, target._id)
+          }
+        }
       }
-      draggedItem = undefined
-      draggedOver = undefined
     }
+    draggedItem = undefined
+    draggedOver = undefined
   }
 </script>
 
@@ -241,8 +285,9 @@
     {onDrop}
     {draggedItem}
     {draggedOver}
+    {draggedOverAfter}
+    {draggedOverBefore}
   />
-
   <svelte:fragment slot="visible">
     {#if (selected || forciblyСollapsed) && visibleItem}
       {@const item = visibleItem}

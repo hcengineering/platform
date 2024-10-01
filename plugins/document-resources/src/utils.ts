@@ -13,16 +13,56 @@
 // limitations under the License.
 //
 
-import { type AttachedData, type Client, type Ref, type TxOperations, makeCollaborativeDoc } from '@hcengineering/core'
-import { type Document, type Teamspace, documentId } from '@hcengineering/document'
+import {
+  type AttachedData,
+  type Client,
+  type QuerySelector,
+  type Ref,
+  SortingOrder,
+  type TxOperations,
+  makeCollaborativeDoc
+} from '@hcengineering/core'
+import { type Document, type Teamspace, documentId, getFirstRank } from '@hcengineering/document'
 import { getMetadata, translate } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
+import { makeRank } from '@hcengineering/rank'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import slugify from 'slugify'
 
-import { accessDeniedStore } from '@hcengineering/view-resources'
 import document from './plugin'
+
+export async function moveDocument (doc: Document, space: Ref<Teamspace>, parent: Ref<Document>): Promise<void> {
+  const client = getClient()
+
+  const prevRank = await getFirstRank(client, space, parent)
+  const rank = makeRank(prevRank, undefined)
+
+  await client.update(doc, { space, attachedTo: parent, rank })
+}
+
+export async function moveDocumentBefore (doc: Document, before: Document): Promise<void> {
+  const client = getClient()
+
+  const { space, attachedTo } = before
+  const query = { rank: { $lt: before.rank } as unknown as QuerySelector<Document['rank']> }
+  const lastRank = await getFirstRank(client, space, attachedTo, SortingOrder.Descending, query)
+  const rank = makeRank(lastRank, before.rank)
+
+  await client.update(doc, { space, attachedTo, rank })
+}
+
+export async function moveDocumentAfter (doc: Document, after: Document): Promise<void> {
+  const client = getClient()
+
+  const { space, attachedTo } = after
+  const query = { rank: { $gt: after.rank } as unknown as QuerySelector<Document['rank']> }
+  const nextRank = await getFirstRank(client, space, attachedTo, SortingOrder.Ascending, query)
+  const rank = makeRank(after.rank, nextRank)
+
+  await client.update(doc, { space, attachedTo, rank })
+}
 
 export async function createEmptyDocument (
   client: TxOperations,
@@ -33,6 +73,9 @@ export async function createEmptyDocument (
 ): Promise<void> {
   const name = await translate(document.string.Untitled, {})
 
+  const lastRank = await getFirstRank(client, space, parent)
+  const rank = makeRank(lastRank, undefined)
+
   const object: AttachedData<Document> = {
     name,
     content: makeCollaborativeDoc(id, 'content'),
@@ -42,6 +85,7 @@ export async function createEmptyDocument (
     labels: 0,
     comments: 0,
     references: 0,
+    rank,
     ...data
   }
 

@@ -67,6 +67,7 @@
   draggable
   on:dragstart
   on:dragover
+  on:dragend
   on:drop
   on:click={() => {
     selectDocument()
@@ -99,4 +100,5 @@
   <svelte:fragment slot="dropbox">
     <slot />
   </svelte:fragment>
+  <slot name="extra" />
 </NavItem>

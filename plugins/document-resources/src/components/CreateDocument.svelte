@@ -46,12 +46,8 @@
 
   const id: Ref<Document> = generateId()
 
-  const object: Omit<AttachedData<Document>, 'content'> = {
-    name: '',
-    attachments: 0,
-    labels: 0,
-    comments: 0,
-    references: 0
+  const object: Pick<AttachedData<Document>, 'name' | 'icon' | 'color'> = {
+    name: ''
   }
 
   const dispatch = createEventDispatcher()

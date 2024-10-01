@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollaborativeDoc, CollectionSize, Domain, Role, RolesAssignment } from '@hcengineering/core'
+import type { Class, CollaborativeDoc, CollectionSize, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
 import { IndexKind, Account, Ref, AccountRole } from '@hcengineering/core'
 import {
   type Document,
@@ -130,6 +130,10 @@ export class TDocument extends TAttachedDoc implements Document, Todoable {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(document.class.DocumentSnapshot, core.class.AttachedDoc, DOMAIN_DOCUMENT)

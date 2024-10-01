@@ -18,7 +18,6 @@
   import {
     Icon,
     Label,
-    IconOpenedArrow,
     IconDown,
     AnySvelteComponent,
     IconSize,
@@ -87,7 +86,7 @@
   class:indent
   class:disabled
   class:showMenu
-  draggable={draggable}
+  {draggable}
   class:noActions={$$slots.actions === undefined}
   on:dragstart
   on:dragover
