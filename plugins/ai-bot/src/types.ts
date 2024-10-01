@@ -24,3 +24,17 @@ export interface TranslateResponse {
   text: Markup
   lang: string
 }
+
+export enum OnboardingEvent {
+  OpenChatInSidebar = 'openChatInSidebar'
+}
+
+export interface OpenChatInSidebarData {
+  email: string
+  workspace: string
+}
+
+export interface OnboardingEventRequest<T = Record<string, any>> {
+  event: OnboardingEvent
+  data: T
+}

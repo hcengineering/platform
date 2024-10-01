@@ -77,19 +77,21 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
   }
 }
 
-function getMessageData (doc: Doc, message: ChatMessage): Data<AIBotResponseEvent> {
+function getMessageData (doc: Doc, message: ChatMessage, email: string): Data<AIBotResponseEvent> {
   return {
     objectId: message.attachedTo,
     objectClass: message.attachedToClass,
     objectSpace: doc.space,
     collection: message.collection,
     messageClass: message._class,
+    messageId: message._id,
     message: message.message,
-    user: message.createdBy ?? message.modifiedBy
+    user: message.createdBy ?? message.modifiedBy,
+    email
   }
 }
 
-function getThreadMessageData (message: ThreadMessage): Data<AIBotResponseEvent> {
+function getThreadMessageData (message: ThreadMessage, email: string): Data<AIBotResponseEvent> {
   return {
     objectId: message.attachedTo,
     objectClass: message.attachedToClass,
@@ -97,7 +99,9 @@ function getThreadMessageData (message: ThreadMessage): Data<AIBotResponseEvent>
     collection: message.collection,
     messageClass: message._class,
     message: message.message,
-    user: message.createdBy ?? message.modifiedBy
+    messageId: message._id,
+    user: message.createdBy ?? message.modifiedBy,
+    email
   }
 }
 
@@ -185,9 +189,9 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
   let data: Data<AIBotResponseEvent> | undefined
 
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = getThreadMessageData(message as ThreadMessage)
+    data = getThreadMessageData(message as ThreadMessage, account.email)
   } else {
-    data = getMessageData(direct, message)
+    data = getMessageData(direct, message, account.email)
   }
 
   await createResponseEvent(message, control, data)
@@ -219,11 +223,14 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
 
   const { workspaceId, email } = channel
   let data: Data<AIBotResponseEvent> | undefined
+  const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
+    _id: (message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
+  })[0]
 
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = getThreadMessageData(message as ThreadMessage)
+    data = getThreadMessageData(message as ThreadMessage, account.email)
   } else {
-    data = getMessageData(channel, message)
+    data = getMessageData(channel, message, account.email)
   }
 
   const tx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
@@ -373,10 +380,23 @@ export async function OnUserStatus (originTx: Tx, control: TriggerControl): Prom
     return []
   }
 
+  if (tx._class === core.class.TxCreateDoc) {
+    const createTx = tx as TxCreateDoc<UserStatus>
+    const status = TxProcessor.createDoc2Doc(createTx)
+    if (status.user === aiBot.account.AIBot || status.user === core.account.System || !status.online) {
+      return []
+    }
+  }
+
   if (tx._class === core.class.TxUpdateDoc) {
     const updateTx = tx as TxUpdateDoc<UserStatus>
     const val = updateTx.operations.online
     if (val !== true) {
+      return []
+    }
+
+    const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
+    if (status === undefined || status.user === aiBot.account.AIBot || status.user === core.account.System) {
       return []
     }
   }

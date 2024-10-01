@@ -327,7 +327,9 @@
         minimizeSidebar()
       }
     } else {
-      closeWidget(love.ids.VideoWidget)
+      if (isOpened) {
+        closeWidget(love.ids.VideoWidget)
+      }
     }
   }
 

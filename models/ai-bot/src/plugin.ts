@@ -13,28 +13,12 @@
 // limitations under the License.
 //
 
-import { Channel } from '@hcengineering/chunter'
+import { mergeIds } from '@hcengineering/platform'
+import aiBot, { aiBotId } from '@hcengineering/ai-bot'
+import type { AnyComponent } from '@hcengineering/ui/src/types'
 
-export enum AnalyticEventType {
-  SetUser = 'setUser',
-  SetTag = 'setTag',
-  Navigation = 'navigation',
-  Error = 'error',
-  CustomEvent = 'customEvent'
-}
-
-export interface AnalyticEvent {
-  event: AnalyticEventType
-  params: Record<string, any>
-  timestamp: number
-}
-
-export interface OnboardingChannel extends Channel {
-  workspaceId: string
-  workspaceName: string
-  workspaceUrl: string
-  email: string
-  userName: string
-  disableAIReplies: boolean
-  showAIReplies: boolean
-}
+export default mergeIds(aiBotId, aiBot, {
+  component: {
+    OnboardingChannelPanelExtension: '' as AnyComponent
+  }
+})
