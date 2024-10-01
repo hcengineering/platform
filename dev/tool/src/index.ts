@@ -104,7 +104,7 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
+import { moveFromMongoToPG, moveWorkspaceFromMongoToPG, moveAccountDbFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
@@ -1628,6 +1628,24 @@ export function devTool (
         throw new Error(`workspace ${workspace} is already migrated`)
       }
       await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
+    })
+  })
+
+  program.command('move-account-db-to-pg').action(async () => {
+    const { dbUrl, mongodbUri } = prepareTools()
+
+    if (mongodbUri === undefined) {
+      throw new Error('MONGO_URL is not set')
+    }
+
+    if (mongodbUri === dbUrl) {
+      throw new Error('MONGO_URL and DB_URL are the same')
+    }
+
+    await withDatabase(dbUrl, async (pgDb) => {
+      await withDatabase(mongodbUri, async (mongoDb) => {
+        await moveAccountDbFromMongoToPG(toolCtx, mongoDb, pgDb)
+      })
     })
   })
 

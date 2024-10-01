@@ -855,6 +855,13 @@ export async function listWorkspacesPure (db: AccountDB): Promise<Workspace[]> {
 /**
  * @public
  */
+export async function listInvites (db: AccountDB): Promise<Invite[]> {
+  return await db.invite.find({})
+}
+
+/**
+ * @public
+ */
 export async function setWorkspaceDisabled (
   db: AccountDB,
   workspaceId: Workspace['_id'],

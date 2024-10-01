@@ -274,7 +274,7 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account> i
   async insertOne<K extends keyof Account>(data: Partial<Account>, idKey?: K): Promise<any> {
     if (data.workspaces !== undefined) {
       if (data.workspaces.length > 0) {
-        throw new Error('Cannot assign workspaces directly')
+        console.warn('Cannot assign workspaces directly')
       }
 
       delete data.workspaces
@@ -361,7 +361,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
 
     if (data.accounts !== undefined) {
       if (data.accounts.length > 0) {
-        throw new Error('Cannot assign workspaces directly')
+        console.warn('Cannot assign workspaces directly')
       }
 
       delete dbData.accounts
