@@ -39,6 +39,7 @@
   export let noDivider: boolean = false
   export let shouldTooltip: boolean = false
   export let forciblyСollapsed: boolean = false
+  export let draggable: boolean = false
 </script>
 
 <TreeElement
@@ -63,7 +64,9 @@
   {showMenu}
   {noDivider}
   {forciblyСollapsed}
+  {draggable}
   on:click
+  on:dragstart
   on:dragover
   on:drop
 >

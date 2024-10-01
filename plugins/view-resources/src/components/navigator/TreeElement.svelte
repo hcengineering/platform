@@ -55,6 +55,7 @@
   export let showNotify: boolean = false
   export let forciblyСollapsed: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
+  export let draggable: boolean = false
 
   let pressed: boolean = false
   let inlineActions: Action[] = []
@@ -103,7 +104,9 @@
     {shouldTooltip}
     showMenu={showMenu || pressed}
     {noDivider}
+    {draggable}
     on:click
+    on:dragstart
     on:dragover
     on:drop
     on:toggle={(ev) => {
@@ -168,8 +171,10 @@
     {forciblyСollapsed}
     {level}
     {shouldTooltip}
+    {draggable}
     showMenu={showMenu || pressed}
     on:click
+    on:dragstart
     on:dragover
     on:drop
   >

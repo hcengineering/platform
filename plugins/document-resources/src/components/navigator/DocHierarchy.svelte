@@ -25,6 +25,7 @@
   import document from '../../plugin'
   import { createEmptyDocument } from '../../utils'
 
+  import DropArea from './DropArea.svelte'
   import DocTreeElement from './DocTreeElement.svelte'
 
   export let documents: Ref<Document>[]
@@ -41,8 +42,6 @@
 
   export let draggedItem: Ref<Document> | undefined
   export let draggedOver: Ref<Document> | undefined
-  export let draggedOverAfter: boolean
-  export let draggedOverBefore: boolean
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -96,9 +95,12 @@
 {#each _documents as doc}
   {#if doc}
     {@const desc = _descendants.get(doc._id) ?? []}
-    {@const isDraggedOverAfter = draggedOver === doc._id && draggedOverAfter}
-    {@const isDraggedOverBefore = draggedOver === doc._id && draggedOverBefore}
-    <div class="draggable flex-col relative" class:dragging={draggedItem === doc._id}>
+    {@const isDraggedOver = draggedOver === doc._id}
+    <div class="flex-col relative">
+      {#if isDraggedOver}
+        <DropArea />
+      {/if}
+
       <DocTreeElement
         {doc}
         icon={doc.icon === view.ids.IconWithEmoji ? IconWithEmoji : doc.icon ?? document.icon.Document}
@@ -108,7 +110,7 @@
               fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
             }}
         title={doc.name}
-        selected={selected === doc._id || draggedOver === doc._id}
+        selected={selected === doc._id && draggedItem === undefined}
         isFold
         {level}
         empty={desc.length === 0}
@@ -131,12 +133,6 @@
           onDrop(evt, doc._id)
         }}
       >
-        <svelte:fragment slot="extra">
-          {#if isDraggedOverAfter || isDraggedOverBefore}
-            <div class="drop-marker" class:before={isDraggedOverBefore} class:after={isDraggedOverAfter} />
-          {/if}
-        </svelte:fragment>
-
         {#if desc.length}
           <svelte:self
             documents={desc}
@@ -150,8 +146,6 @@
             {onDrop}
             {draggedItem}
             {draggedOver}
-            {draggedOverAfter}
-            {draggedOverBefore}
             on:selected
           />
         {/if}
@@ -159,32 +153,3 @@
     </div>
   {/if}
 {/each}
-
-<style lang="scss">
-  .draggable {
-    position: relative;
-
-    &.dragging {
-      opacity: 0.5;
-    }
-  }
-
-  .drop-marker {
-    pointer-events: none;
-    position: absolute;
-    z-index: 100;
-    height: 0.125rem;
-    background-color: var(--primary-button-focused);
-
-    left: 0.75rem;
-    right: 0.75rem;
-
-    &.before {
-      top: 0;
-    }
-
-    &.after {
-      top: 1.875rem;
-    }
-  }
-</style>

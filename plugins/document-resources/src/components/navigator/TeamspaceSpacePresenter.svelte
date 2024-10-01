@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -41,7 +42,8 @@
   } from '../../utils'
   import DocHierarchy from './DocHierarchy.svelte'
   import DocTreeElement from './DocTreeElement.svelte'
-  import { Analytics } from '@hcengineering/analytics'
+  import DropArea from './DropArea.svelte'
+  import DropMarker from './DropMarker.svelte'
 
   export let space: Teamspace
   export let model: SpacesNavModel
@@ -150,10 +152,11 @@
     return result
   }
 
+  let parent: HTMLElement
   let draggedItem: Ref<Document> | undefined = undefined
   let draggedOver: Ref<Document> | undefined = undefined
-  let draggedOverBefore = false
-  let draggedOverAfter = false
+  let draggedOverPos: 'before' | 'after' | undefined = undefined
+  let draggedOverTop: number = 0
   let cannotDropTo: Ref<Document>[] = []
 
   function canDrop (object: Ref<Document>, target: Ref<Document>): boolean {
@@ -166,16 +169,11 @@
   function onDragStart (event: DragEvent, object: Ref<Document>): void {
     // no prevent default to leverage default rendering
     // event.preventDefault()
-    if (event.dataTransfer === null) {
+    if (event.dataTransfer === null || event.target === null) {
       return
     }
 
-    const doc = documentById.get(object)
-    if (doc === undefined) {
-      return
-    }
-
-    cannotDropTo = [doc._id, doc.attachedTo, ...getAllDescendants(object)]
+    cannotDropTo = [object, ...getAllDescendants(object)]
 
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.dropEffect = 'move'
@@ -184,17 +182,25 @@
     closeTooltip()
   }
 
-  function getDropPosition (event: DragEvent): { before: boolean, after: boolean } {
+  function getDropPosition (event: DragEvent): { pos: 'before' | 'after' | undefined, top: number } {
+    const parentRect = parent.getBoundingClientRect()
     const targetRect = (event.target as HTMLElement).getBoundingClientRect()
     const dropPosition = event.clientY - targetRect.top
-    return {
-      before: dropPosition < targetRect.height / 6,
-      after: dropPosition > (5 * targetRect.height) / 6
-    }
+
+    const before = dropPosition >= 0 && dropPosition < targetRect.height / 6
+    const after = dropPosition <= targetRect.height && dropPosition > (5 * targetRect.height) / 6
+
+    const pos = before ? 'before' : after ? 'after' : undefined
+    const top = pos === 'before' ? targetRect.top - parentRect.top - 1 : targetRect.bottom - parentRect.top - 1
+
+    return { pos, top }
   }
 
   function onDragOver (event: DragEvent, object: Ref<Document>): void {
     event.preventDefault()
+    // this is an ugly solution to control drop effect
+    // we drag and drop elements that are in the depth of components hierarchy
+    // so we cannot access them directly
     if (!(event.target as HTMLElement).draggable) return
     if (event.dataTransfer === null || event.target === null || draggedItem === object) {
       return
@@ -204,9 +210,9 @@
       event.dataTransfer.dropEffect = 'move'
       draggedOver = object
 
-      const { before, after } = getDropPosition(event)
-      draggedOverBefore = before
-      draggedOverAfter = after
+      const { pos, top } = getDropPosition(event)
+      draggedOverPos = pos
+      draggedOverTop = top
     } else {
       event.dataTransfer.dropEffect = 'none'
     }
@@ -216,8 +222,7 @@
     event.preventDefault()
     draggedItem = undefined
     draggedOver = undefined
-    draggedOverAfter = false
-    draggedOverBefore = false
+    draggedOverPos = undefined
   }
 
   function onDrop (event: DragEvent, object: Ref<Document>): void {
@@ -229,16 +234,16 @@
       const doc = documentById.get(draggedItem)
       const target = documentById.get(object)
 
-      if (doc !== undefined && doc._id !== object && doc.attachedTo !== object) {
+      if (doc !== undefined && doc._id !== object) {
         if (object === document.ids.NoParent) {
           void moveDocument(doc, doc.space, document.ids.NoParent)
         } else if (target !== undefined) {
-          const { before, after } = getDropPosition(event)
-          if (before) {
+          const { pos } = getDropPosition(event)
+          if (pos === 'before') {
             void moveDocumentBefore(doc, target)
-          } else if (after) {
+          } else if (pos === 'after') {
             void moveDocumentAfter(doc, target)
-          } else {
+          } else if (doc.attachedTo !== object) {
             void moveDocument(doc, target.space, target._id)
           }
         }
@@ -249,65 +254,77 @@
   }
 </script>
 
-<TreeNode
-  _id={space?._id}
-  icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
-  iconProps={space?.icon === view.ids.IconWithEmoji
-    ? { icon: space.color }
-    : {
-        fill:
-          space.color !== undefined
-            ? getPlatformColorDef(space.color, $themeStore.dark).icon
-            : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
-      }}
-  title={space.name}
-  type={'nested'}
-  highlighted={currentSpace === space._id}
-  visible={currentSpace === space._id || forciblyСollapsed}
-  actions={() => getActions(space)}
-  selected={draggedOver === document.ids.NoParent}
-  {forciblyСollapsed}
-  on:drop={(evt) => {
-    onDrop(evt, document.ids.NoParent)
-  }}
-  on:dragover={(evt) => {
-    onDragOver(evt, document.ids.NoParent)
-  }}
->
-  <DocHierarchy
-    {documents}
-    {descendants}
-    {documentById}
-    {selected}
-    {onDragStart}
-    {onDragEnd}
-    {onDragOver}
-    {onDrop}
-    {draggedItem}
-    {draggedOver}
-    {draggedOverAfter}
-    {draggedOverBefore}
-  />
-  <svelte:fragment slot="visible">
-    {#if (selected || forciblyСollapsed) && visibleItem}
-      {@const item = visibleItem}
-      <DocTreeElement
-        doc={item}
-        icon={item.icon === view.ids.IconWithEmoji ? IconWithEmoji : item.icon ?? document.icon.Document}
-        iconProps={item.icon === view.ids.IconWithEmoji
-          ? { icon: visibleItem.color }
-          : {
-              fill: item.color !== undefined ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
-            }}
-        title={item.name}
-        selected
-        isFold
-        empty
-        shouldTooltip
-        actions={getDocActions(item)}
-        moreActions={() => getMoreActions(item)}
-        forciblyСollapsed
-      />
-    {/if}
-  </svelte:fragment>
-</TreeNode>
+<div bind:this={parent} class="flex-col relative">
+  {#if draggedOver === document.ids.NoParent}
+    <DropArea />
+  {/if}
+
+  {#if draggedOver && draggedOverPos}
+    <DropMarker top={draggedOverTop} />
+  {/if}
+
+  <TreeNode
+    _id={space?._id}
+    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
+    iconProps={space?.icon === view.ids.IconWithEmoji
+      ? { icon: space.color }
+      : {
+          fill:
+            space.color !== undefined
+              ? getPlatformColorDef(space.color, $themeStore.dark).icon
+              : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+        }}
+    title={space.name}
+    type={'nested'}
+    highlighted={currentSpace === space._id}
+    visible={currentSpace === space._id || forciblyСollapsed}
+    actions={() => getActions(space)}
+    selected={draggedOver === document.ids.NoParent}
+    {forciblyСollapsed}
+    draggable
+    on:drop={(evt) => {
+      onDrop(evt, document.ids.NoParent)
+    }}
+    on:dragover={(evt) => {
+      onDragOver(evt, document.ids.NoParent)
+    }}
+    on:dragstart={(evt) => {
+      evt.preventDefault()
+    }}
+  >
+    <DocHierarchy
+      {documents}
+      {descendants}
+      {documentById}
+      {selected}
+      {onDragStart}
+      {onDragEnd}
+      {onDragOver}
+      {onDrop}
+      {draggedItem}
+      {draggedOver}
+    />
+    <svelte:fragment slot="visible">
+      {#if (selected || forciblyСollapsed) && visibleItem}
+        {@const item = visibleItem}
+        <DocTreeElement
+          doc={item}
+          icon={item.icon === view.ids.IconWithEmoji ? IconWithEmoji : item.icon ?? document.icon.Document}
+          iconProps={item.icon === view.ids.IconWithEmoji
+            ? { icon: visibleItem.color }
+            : {
+                fill: item.color !== undefined ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
+              }}
+          title={item.name}
+          selected
+          isFold
+          empty
+          shouldTooltip
+          actions={getDocActions(item)}
+          moreActions={() => getMoreActions(item)}
+          forciblyСollapsed
+        />
+      {/if}
+    </svelte:fragment>
+  </TreeNode>
+</div>
