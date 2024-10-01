@@ -30,7 +30,7 @@ test.describe('Recruiting. Review tests', () => {
     await reviewsPage.openAndCheckReview(newReview)
   })
 
-  test.only('Edit a Review', async ({ page }) => {
+  test('Edit a Review', async ({ page }) => {
     const reviewTitle = await reviewsPage.createReview(newReview)
 
     const updateReviewData: NewReview = {
@@ -44,5 +44,13 @@ test.describe('Recruiting. Review tests', () => {
     await reviewsPage.openReviews()
 
     await reviewsPage.openAndCheckReview(updateReviewData)
+  })
+
+  test('Delete a Review', async ({ page }) => {
+    const reviewTitle = await reviewsPage.createReview(newReview)
+    await reviewsPage.openReviews()
+    await reviewsPage.checkReviewExist(reviewTitle)
+    await reviewsPage.deleteReview(reviewTitle)
+    await reviewsPage.checkReviewNotExist(reviewTitle)
   })
 })

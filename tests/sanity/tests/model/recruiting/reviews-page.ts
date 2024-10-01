@@ -19,6 +19,22 @@ export class ReviewsPage extends CommonRecruitingPage {
   readonly inputVerdict = (): Locator => this.page.locator('input[placeholder="Verdict"]')
   readonly buttonInputLocation = (): Locator => this.page.locator('span.labelOnPanel:has-text("Location") + div button')
   readonly editorDescription = (description: string): Locator => this.page.locator(`.tiptap:has-text("${description}")`)
+  readonly buttonMenuDelete = (): Locator => this.page.locator('button.ap-menuItem span', { hasText: 'Delete' })
+
+  async checkReviewExist (reviewName: string): Promise<void> {
+    await expect(this.page.locator('tr', { hasText: reviewName })).toHaveCount(1)
+  }
+
+  async checkReviewNotExist (reviewName: string): Promise<void> {
+    await expect(this.page.locator('tr', { hasText: reviewName })).toHaveCount(0)
+  }
+
+  async deleteReview (reviewName: string): Promise<void> {
+    await this.openReviews()
+    await this.page.locator('tr', { hasText: reviewName }).click({ button: 'right' })
+    await this.buttonMenuDelete().click()
+    await this.pressYesForPopup(this.page)
+  }
 
   async addDescription (oldDescription: string, newDescription: string): Promise<void> {
     await this.editorDescription(oldDescription).fill(newDescription)
