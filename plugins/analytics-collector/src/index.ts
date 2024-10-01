@@ -53,7 +53,9 @@ const analyticsCollector = plugin(analyticsCollectorId, {
     WorkspaceName: '' as IntlString,
     WorkspaceUrl: '' as IntlString,
     Email: '' as IntlString,
-    UserName: '' as IntlString
+    UserName: '' as IntlString,
+    DisableAIReplies: '' as IntlString,
+    ShowAIReplies: '' as IntlString
   }
 })
 

@@ -38,6 +38,9 @@ export class TAIBotEvent extends TDoc implements AIBotEvent {
   @Prop(TypeRef(chunter.class.ChatMessage), core.string.Class)
     messageClass!: Ref<Class<ChatMessage>>
 
+  @Prop(TypeRef(chunter.class.ChatMessage), core.string.Ref)
+    messageId!: Ref<ChatMessage>
+
   @Prop(TypeString(), getEmbeddedLabel('Collection'))
     collection!: string
 
@@ -58,6 +61,8 @@ export class TAIBotResponseEvent extends TAIBotEvent implements AIBotResponseEve
 
   @Prop(TypeRef(core.class.Account), core.string.Account)
     user!: Ref<Account>
+
+  email!: string
 }
 
 @Model(aiBot.class.AIBotTransferEvent, aiBot.class.AIBotEvent)
@@ -67,7 +72,6 @@ export class TAIBotTransferEvent extends TAIBotEvent implements AIBotTransferEve
   fromWorkspace!: string
   fromWorkspaceName!: string
   fromWorkspaceUrl!: string
-  messageId!: Ref<ChatMessage>
   parentMessageId?: Ref<ChatMessage>
 }
 

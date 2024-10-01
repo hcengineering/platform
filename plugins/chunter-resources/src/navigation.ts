@@ -249,8 +249,8 @@ export async function openChannelInSidebar (
   const object = doc ?? (await client.findOne(_class, { _id }))
   if (object === undefined) return
 
-  const titleIntl = client.getHierarchy().getClass(object._class).label
   const hierarchy = client.getHierarchy()
+  const titleIntl = hierarchy.getClass(object._class).label
   const iconMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIcon)
   const isPerson = hierarchy.isDerived(_class, contact.class.Person)
   const isDirect = hierarchy.isDerived(_class, chunter.class.DirectMessage)

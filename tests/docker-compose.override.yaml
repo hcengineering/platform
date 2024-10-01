@@ -4,7 +4,8 @@ services:
       - DB_URL=postgresql://postgres:example@postgres:5432
   transactor:
     environment:
-      - MONGO_URL=postgresql://postgres:example@postgres:5432;mongodb://mongodb:27018
+      - MONGO_URL=mongodb://mongodb:27018
+      - DB_URL=postgresql://postgres:example@postgres:5432
   workspace:
     environment:
       - DB_URL=postgresql://postgres:example@postgres:5432

@@ -34,6 +34,7 @@ import { preferenceId, createModel as preferenceModel } from '@hcengineering/mod
 import presentation, { presentationId, createModel as presentationModel } from '@hcengineering/model-presentation'
 import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/model-recruit'
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
+import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
@@ -359,6 +360,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [printModel, printId],
+    [aiBotModel, aiBotId],
     [driveModel, driveId],
     [
       documentsModel,

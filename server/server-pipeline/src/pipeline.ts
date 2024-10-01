@@ -231,16 +231,20 @@ export function createBackupPipeline (
 export async function getServerPipeline (
   ctx: MeasureContext,
   model: Tx[],
-  mongodbUri: string,
-  dbUrl: string | undefined,
+  mongodbUri: string | undefined,
+  dbUrl: string,
   wsUrl: WorkspaceIdWithUrl
 ): Promise<{
     pipeline: Pipeline
     storageAdapter: AggregatorStorageAdapter
   }> {
-  const dbUrls = dbUrl !== undefined ? `${dbUrl};${mongodbUri}` : mongodbUri
+  const dbUrls = mongodbUri !== undefined && mongodbUri !== dbUrl ? `${dbUrl};${mongodbUri}` : dbUrl
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
+
+  if (mongodbUri === undefined) {
+    throw new Error('MONGO_URL is not provided')
+  }
   const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
   const pipelineFactory = createServerPipeline(

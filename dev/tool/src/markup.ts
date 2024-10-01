@@ -21,7 +21,7 @@ import core, {
   SortingOrder,
   TxProcessor
 } from '@hcengineering/core'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import { isEmptyMarkup, jsonToText, markupToYDoc } from '@hcengineering/text'
@@ -41,7 +41,7 @@ export async function fixJsonMarkup (
 
   const client = getMongoClient(mongoUrl)
   const _client = await client.getClient()
-  const db = getWorkspaceDB(_client, workspaceId)
+  const db = getWorkspaceMongoDB(_client, workspaceId)
 
   try {
     const classes = hierarchy.getDescendants(core.class.Doc)

@@ -17,7 +17,7 @@ import { Token, decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { IncomingHttpHeaders, type Server } from 'http'
-import { TranslateRequest } from '@hcengineering/ai-bot'
+import { TranslateRequest, OnboardingEventRequest } from '@hcengineering/ai-bot'
 
 import { ApiError } from './error'
 import { AIBotController } from './controller'
@@ -106,6 +106,20 @@ export function createServer (controller: AIBotController): Express {
 
       res.status(200)
       res.json(response)
+    })
+  )
+
+  app.post(
+    '/onboarding',
+    wrapRequest(async (req, res) => {
+      if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
+        throw new ApiError(400)
+      }
+
+      await controller.processOnboardingEvent(req.body as OnboardingEventRequest)
+
+      res.status(200)
+      res.json({})
     })
   )
 

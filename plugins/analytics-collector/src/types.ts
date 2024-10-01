@@ -35,4 +35,6 @@ export interface OnboardingChannel extends Channel {
   workspaceUrl: string
   email: string
   userName: string
+  disableAIReplies: boolean
+  showAIReplies: boolean
 }

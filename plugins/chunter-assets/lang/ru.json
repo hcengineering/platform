@@ -129,6 +129,7 @@
     "Translating": "Перевод...",
     "StartConversation": "Начать диалог",
     "ViewingThreadFromArchivedChannel": "Вы просматриваете обсуждение из архивированного канала",
-    "ViewingArchivedChannel": "Вы просматриваете архивированный канал"
+    "ViewingArchivedChannel": "Вы просматриваете архивированный канал",
+    "OpenChatInSidebar": "Открыть чат в боковой панели"
   }
 }

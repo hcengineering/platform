@@ -115,7 +115,11 @@ export const uis = plugin(uiId, {
     Selected: '' as IntlString,
     Submit: '' as IntlString,
     NextStep: '' as IntlString,
-    TypeHere: '' as IntlString
+    TypeHere: '' as IntlString,
+
+    FullSize: '' as IntlString,
+    UseMaxWidth: '' as IntlString,
+    Sidebar: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,

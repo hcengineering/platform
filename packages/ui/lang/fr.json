@@ -89,6 +89,9 @@
     "Selected": "Sélectionné :",
     "Submit": "Soumettre",
     "NextStep": "Étape suivante",
-    "TypeHere": "Tapez ici..."
+    "TypeHere": "Tapez ici...",
+    "FullSize": "Taille réelle",
+    "UseMaxWidth": "Largeur maximale",
+    "Sidebar": "Barre latérale"
   }
 }

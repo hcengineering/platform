@@ -72,14 +72,15 @@ addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources')
 addLocation(serverAiBotId, () => import('@hcengineering/server-ai-bot-resources'))
 
 function prepareTools (): {
-  mongodbUri: string
-  dbUrl: string | undefined
+  mongodbUri: string | undefined
+  dbUrl: string
   txes: Tx[]
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]
 } {
   const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
   const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
+
   return { ...prepareToolsRaw(builder(enabled, disabled).getTxes()), version: getModelVersion(), migrateOperations }
 }
 

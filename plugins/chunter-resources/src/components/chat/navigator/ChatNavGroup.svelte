@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import activity from '@hcengineering/activity'
-  import core, { Class, Doc, groupByArray, reduceCalls, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, groupByArray, reduceCalls, Ref, Space } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString } from '@hcengineering/platform'
@@ -40,6 +40,7 @@
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextsStore = inboxClient.contexts
+  const contextByDocStore = inboxClient.contextByDoc
   const objectsQueryByClass = new Map<Ref<Class<Doc>>, { query: LiveQuery, limit: number }>()
 
   let contexts: DocNotifyContext[] = []
@@ -69,7 +70,14 @@
     sections = res
   })
 
-  $: shouldPushObject = object !== undefined && getObjectGroup(object) === model.id
+  $: shouldPushObject =
+    object !== undefined &&
+    getObjectGroup(object) === model.id &&
+    (!$contextByDocStore.has(object._id) || isArchived(object))
+
+  function isArchived (object: Doc): boolean {
+    return hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
+  }
 
   function loadObjects (contexts: DocNotifyContext[]): void {
     const contextsByClass = groupByArray(contexts, ({ objectClass }) => objectClass)

@@ -1,15 +1,32 @@
-import { updateWorkspace, type Workspace } from '@hcengineering/account'
-import { type BackupClient, type Client, getWorkspaceId, systemAccountEmail, type Doc } from '@hcengineering/core'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import {
+  type AccountDB,
+  listAccounts,
+  listWorkspacesPure,
+  listInvites,
+  updateWorkspace,
+  type Workspace,
+  type ObjectId,
+  getAccount,
+  getWorkspaceById
+} from '@hcengineering/account'
+import {
+  type BackupClient,
+  type Client,
+  getWorkspaceId,
+  systemAccountEmail,
+  type Doc,
+  type MeasureMetricsContext
+} from '@hcengineering/core'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { convertDoc, createTable, getDBClient, retryTxn, translateDomain } from '@hcengineering/postgres'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
-import { type Db, type MongoClient } from 'mongodb'
+import { type MongoClient } from 'mongodb'
 import { type Pool } from 'pg'
 
 export async function moveFromMongoToPG (
-  accountDb: Db,
+  accountDb: AccountDB,
   mongoUrl: string,
   dbUrl: string | undefined,
   workspaces: Workspace[],
@@ -38,7 +55,7 @@ export async function moveFromMongoToPG (
 }
 
 async function moveWorkspace (
-  accountDb: Db,
+  accountDb: AccountDB,
   mongo: MongoClient,
   pgClient: Pool,
   ws: Workspace,
@@ -46,7 +63,7 @@ async function moveWorkspace (
 ): Promise<void> {
   try {
     const wsId = getWorkspaceId(ws.workspace)
-    const mongoDB = getWorkspaceDB(mongo, wsId)
+    const mongoDB = getWorkspaceMongoDB(mongo, wsId)
     const collections = await mongoDB.collections()
     await createTable(
       pgClient,
@@ -99,7 +116,7 @@ async function moveWorkspace (
 }
 
 export async function moveWorkspaceFromMongoToPG (
-  accountDb: Db,
+  accountDb: AccountDB,
   mongoUrl: string,
   dbUrl: string | undefined,
   ws: Workspace,
@@ -116,4 +133,71 @@ export async function moveWorkspaceFromMongoToPG (
   await moveWorkspace(accountDb, mongo, pgClient, ws, region)
   pg.close()
   client.close()
+}
+
+export async function moveAccountDbFromMongoToPG (
+  ctx: MeasureMetricsContext,
+  mongoDb: AccountDB,
+  pgDb: AccountDB
+): Promise<void> {
+  const workspaceAssignments: [ObjectId, ObjectId][] = []
+  const accounts = await listAccounts(mongoDb)
+  const workspaces = await listWorkspacesPure(mongoDb)
+  const invites = await listInvites(mongoDb)
+
+  for (const mongoAccount of accounts) {
+    const pgAccount = {
+      ...mongoAccount,
+      _id: mongoAccount._id.toString()
+    }
+
+    delete (pgAccount as any).workspaces
+
+    const exists = await getAccount(pgDb, pgAccount.email)
+    if (exists === null) {
+      await pgDb.account.insertOne(pgAccount)
+      ctx.info('Moved account', { email: pgAccount.email })
+
+      for (const workspace of mongoAccount.workspaces) {
+        workspaceAssignments.push([pgAccount._id, workspace.toString()])
+      }
+    }
+  }
+
+  for (const mongoWorkspace of workspaces) {
+    const pgWorkspace = {
+      ...mongoWorkspace,
+      _id: mongoWorkspace._id.toString()
+    }
+
+    delete (pgWorkspace as any).accounts
+
+    const exists = await getWorkspaceById(pgDb, pgWorkspace.workspace)
+    if (exists === null) {
+      await pgDb.workspace.insertOne(pgWorkspace)
+      ctx.info('Moved workspace', {
+        workspace: pgWorkspace.workspace,
+        workspaceName: pgWorkspace.workspaceName,
+        workspaceUrl: pgWorkspace.workspaceUrl
+      })
+    }
+  }
+
+  for (const mongoInvite of invites) {
+    const pgInvite = {
+      ...mongoInvite,
+      _id: mongoInvite._id.toString()
+    }
+
+    const exists = await pgDb.invite.findOne({ _id: pgInvite._id })
+    if (exists === null) {
+      await pgDb.invite.insertOne(pgInvite)
+    }
+  }
+
+  if (workspaceAssignments.length > 0) {
+    for (const [accountId, workspaceId] of workspaceAssignments) {
+      await pgDb.assignWorkspace(accountId, workspaceId)
+    }
+  }
 }

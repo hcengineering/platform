@@ -27,7 +27,7 @@ import core, {
   SortingOrder,
   type WorkspaceId
 } from '@hcengineering/core'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'
 
 interface PropertyInfo {
@@ -102,7 +102,7 @@ export async function fixMixinForeignAttributes (
       const client = getMongoClient(mongoUrl)
       try {
         const _client = await client.getClient()
-        const db = getWorkspaceDB(_client, workspaceId)
+        const db = getWorkspaceMongoDB(_client, workspaceId)
 
         for (const [mixin, objects] of result) {
           console.log('fixing', mixin)

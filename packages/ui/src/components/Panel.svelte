@@ -34,6 +34,8 @@
   import IconScale from './icons/Scale.svelte'
   import IconScaleFull from './icons/ScaleFull.svelte'
 
+  import plugin from '../plugin'
+
   export let innerWidth: number = 0
   export let panelWidth: number = 0
   export let isHeader: boolean = true
@@ -209,6 +211,7 @@
           iconProps={{ size: 'medium' }}
           kind={'icon'}
           selected={useMaxWidth}
+          showTooltip={{ label: plugin.string.UseMaxWidth, direction: 'bottom' }}
           on:click={() => {
             useMaxWidth = !useMaxWidth
             dispatch('maxWidth', useMaxWidth)
@@ -222,6 +225,7 @@
           iconProps={{ size: 'medium' }}
           kind={'icon'}
           selected={fullSize}
+          showTooltip={{ label: plugin.string.FullSize, direction: 'bottom' }}
           on:click={() => {
             fullSize = !fullSize
             dispatch('fullsize')
@@ -244,6 +248,7 @@
             iconProps={{ size: 'medium', filled: asideShown }}
             kind={'icon'}
             selected={asideShown}
+            showTooltip={{ label: plugin.string.Sidebar, direction: 'bottom' }}
             on:click={handleAside}
           />
         {/if}

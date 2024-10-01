@@ -102,6 +102,30 @@ export async function getTransactorEndpoint (
   }
 }
 
+export function withRetryUntilTimeout<P extends any[], T> (
+  f: (...params: P) => Promise<T>,
+  timeoutMs: number = 5000
+): (...params: P) => Promise<T> {
+  return async function (...params: P): Promise<T> {
+    const timeout = Date.now() + timeoutMs
+    while (true) {
+      try {
+        return await f(...params)
+      } catch (err: any) {
+        if (timeout < Date.now()) {
+          // Timeout happened
+          throw err
+        }
+        if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
+          await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+        } else {
+          throw err
+        }
+      }
+    }
+  }
+}
+
 export async function getPendingWorkspace (
   token: string,
   region: string,

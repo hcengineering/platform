@@ -129,6 +129,7 @@
     "Translating": "Traduction en cours...",
     "StartConversation": "Démarrer la conversation",
     "ViewingThreadFromArchivedChannel": "Vous consultez un fil de discussion d'un canal archivé",
-    "ViewingArchivedChannel": "Vous consultez un canal archivé"
+    "ViewingArchivedChannel": "Vous consultez un canal archivé",
+    "OpenChatInSidebar": "Ouvrir le chat dans la barre latérale"
   }
 }

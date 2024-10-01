@@ -17,6 +17,7 @@
   import { type Resource } from '@hcengineering/drive'
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconMoreH } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { ObjectPresenter, TimestampPresenter, openDoc, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
@@ -71,6 +72,7 @@
             icon={IconMoreH}
             kind="ghost"
             size="medium"
+            showTooltip={{ label: view.string.MoreActions, direction: 'bottom' }}
             on:click={(evt) => {
               hovered = true
               showMenu(evt, { object }, () => {

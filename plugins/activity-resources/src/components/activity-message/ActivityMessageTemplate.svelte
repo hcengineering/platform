@@ -146,7 +146,7 @@
     if (readonly) return
     const showCustomPopup = !isTextClicked(event.target as HTMLElement, event.clientX, event.clientY)
     if (showCustomPopup) {
-      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
+      showMenu(event, { object: message, baseMenuClass: activity.class.ActivityMessage, excludedActions }, () => {
         isActionsOpened = false
       })
       isActionsOpened = true
