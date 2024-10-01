@@ -1,5 +1,5 @@
 import { devices, test } from '@playwright/test'
-import { attachScreenshot, DocumentURI, getSecondPage, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { attachScreenshot, DocumentURI, generateId, getSecondPage, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
@@ -15,7 +15,7 @@ test.use({
   channel: 'msedge'
 })
 
-test.describe.only('@PDF. QMS. PDF Download and Preview', () => {
+test.describe('QMS. PDF Download and Preview', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/${HomepageURI}`))?.finished()
   })
@@ -151,10 +151,7 @@ test.describe.only('@PDF. QMS. PDF Download and Preview', () => {
     //   await documentContentPageSecond.completeReview()
       await documentsPageSecond.openDocument(approveDocument.title)
 
-     
     })
-
-
     await test.step('7. Show Full screen preview', async () => {
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       const pdfPagesSecondPage = new PdfPages(userSecondPage)
@@ -171,8 +168,107 @@ test.describe.only('@PDF. QMS. PDF Download and Preview', () => {
       const visualCheckSecondPage = new VisualCheck(userSecondPage)
       await visualCheckSecondPage.comparePDFPreview('TESTS-387_pdf_preview')
     })
-
     await attachScreenshot('TESTS-387.png', page)
+  })
+
+  test('TESTS-393 - Doc Author, Reviewers, Approvers Electronic signature once doc is Effective', async ({ page, browser }) => {
+    await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
+    await allure.tms('TESTS-393', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-393')
+    const userSecondPage = await getSecondPage(browser) 
+    const approveDocument: NewDocument = {
+      template: 'HR (HR)',
+      title:  `Complete document-${generateId()}`,
+      description: `Complete document description-${generateId()}`
+    }
+    const documentDetails: DocumentDetails = {
+      type: 'HR',
+      category: 'Human Resources',
+      version: 'v0.1',
+      status: DocumentStatus.DRAFT,
+      owner: 'Appleseed John',
+      author: 'Appleseed John'
+    }
+
+    await prepareDocumentStep(page, approveDocument)
+    const documentContentPage = new DocumentContentPage(page)
+    await test.step('2. Add reviewers from team', async () => {
+      await documentContentPage.addReviewersFromTeam(false)
+      await documentContentPage.addApproversFromTeam()
+      await documentContentPage.buttonSendForApproval.click()
+      await documentContentPage.fillSelectApproversForm([documentDetails.owner])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_APPROVAL
+      })
+      await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
+      await documentContentPage.confirmApproval()
+    })
+    await test.step('4. Send for Approval', async () => {
+      await (await userSecondPage.goto(`${PlatformURI}/${DocumentURI}`))?.finished()
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      const documentsPageSecond = new DocumentsPage(userSecondPage)
+      await documentsPageSecond.openDocument(approveDocument.title)
+      await documentContentPageSecond.clickApproveButtonAndFillPassword()
+      await documentsPageSecond.openDocument(approveDocument.title)
+    })
+    await test.step('5. check if reviewers and approvers are visible', async () => {
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      await documentContentPageSecond.clickOpenTeam()
+      await documentContentPageSecond.checkIfReviewersAndApproversAreVisible()
+     })
+
+    await attachScreenshot('TESTS-393.png', page)
+  })
+
+  test('TESTS-394 - Doc Author, Reviewers, Approvers Electronic signature once doc is Effective', async ({ page, browser }) => {
+    await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
+    await allure.tms('TESTS-394', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-394')
+    const userSecondPage = await getSecondPage(browser) 
+    const approveDocument: NewDocument = {
+      template: 'HR (HR)',
+      title:  `Complete document-${generateId()}`,
+      description: `Complete document description-${generateId()}`
+    }
+    const documentDetails: DocumentDetails = {
+      type: 'HR',
+      category: 'Human Resources',
+      version: 'v0.1',
+      status: DocumentStatus.DRAFT,
+      owner: 'Appleseed John',
+      author: 'Appleseed John'
+    }
+
+    await prepareDocumentStep(page, approveDocument)
+    const documentContentPage = new DocumentContentPage(page)
+    await test.step('2. Add reviewers from team', async () => {
+      await documentContentPage.addReviewersFromTeam(false)
+      await documentContentPage.addApproversFromTeam()
+      await documentContentPage.buttonSendForApproval.click()
+      await documentContentPage.fillSelectApproversForm([documentDetails.owner])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_APPROVAL
+      })
+      await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
+      await documentContentPage.confirmApproval()
+    })
+    await test.step('4. Send for Approval', async () => {
+      await (await userSecondPage.goto(`${PlatformURI}/${DocumentURI}`))?.finished()
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      const documentsPageSecond = new DocumentsPage(userSecondPage)
+      await documentsPageSecond.openDocument(approveDocument.title)
+      await documentContentPageSecond.clickApproveButtonAndFillPassword()
+      await documentsPageSecond.openDocument(approveDocument.title)
+    })
+    await test.step('5. check if reviewers and approvers are visible', async () => {
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      await documentContentPageSecond.clickOpenTeam()
+      await documentContentPageSecond.checkTheUserCantChangeReviewersAndApprovers()
+     })
+
+    await attachScreenshot('TESTS-394.png', page)
   })
 
 })
