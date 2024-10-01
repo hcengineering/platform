@@ -26,10 +26,14 @@
   let candidate: Candidate | undefined = undefined
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  $: spaceQuery.query(recruit.class.Vacancy, { _id: value.space }, (res) => ([currentVacancy] = res))
+  $: spaceQuery.query(recruit.class.Vacancy, { _id: value.space }, (res) => {
+    ;[currentVacancy] = res
+  })
   const shortLabel = value && hierarchy.getClass(value._class).shortLabel
 
-  $: candidateQuery.query(recruit.mixin.Candidate, { _id: value.attachedTo }, (res) => ([candidate] = res))
+  $: candidateQuery.query(recruit.mixin.Candidate, { _id: value.attachedTo }, (res) => {
+    ;[candidate] = res
+  })
 
   $: title = `${shortLabel}-${value?.number}`
 </script>

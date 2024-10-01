@@ -7,6 +7,7 @@
     "build": "compile ui",
     "build:watch": "compile ui",
     "format": "format src",
+    "svelte-check": "do-svelte-check",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"

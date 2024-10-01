@@ -232,7 +232,8 @@
     goodTagMap = toIdMap(goodTags)
 
     const goodSortedTags = goodTags
-      .toSorted((a, b) => b.title.length - a.title.length)
+      .slice()
+      .sort((a, b) => b.title.length - a.title.length)
       .filter((t) => t.title.length > 2)
     const goodSortedTagsTitles = new Map<Ref<TagElement>, string>()
     processed = -1
@@ -251,7 +252,7 @@
 
     const tagElementIds = new Map<Ref<TagElement>, TagUpdatePlan['elements'][0]>()
 
-    for (const tag of tagElements.toSorted((a, b) => prepareTitle(a.title).length - prepareTitle(b.title).length)) {
+    for (const tag of tagElements.slice().sort((a, b) => prepareTitle(a.title).length - prepareTitle(b.title).length)) {
       processed++
       const refs = allRefs.filter((it) => it.tag === tag._id)
       if (goodTagMap.has(tag._id)) {

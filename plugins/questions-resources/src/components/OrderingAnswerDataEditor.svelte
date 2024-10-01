@@ -45,12 +45,12 @@
   $: if (showDiff && assessmentData !== null) {
     indices = assessmentData.correctOrder
       .map((position, index) => [position, index])
-      .toSorted(([aPosition], [bPosition]) => (aPosition > bPosition ? 1 : aPosition < bPosition ? -1 : 0))
+      .sort(([aPosition], [bPosition]) => (aPosition > bPosition ? 1 : aPosition < bPosition ? -1 : 0))
       .map(([_, index]) => index) as [number, ...number[]]
   } else if (answerData !== null) {
     indices = answerData.order
       .map((position, index) => [position, index])
-      .toSorted(([aPosition], [bPosition]) => (aPosition > bPosition ? 1 : aPosition < bPosition ? -1 : 0))
+      .sort(([aPosition], [bPosition]) => (aPosition > bPosition ? 1 : aPosition < bPosition ? -1 : 0))
       .map(([_, index]) => index) as [number, ...number[]]
   } else {
     indices = questionData.options.map((_, index) => index) as [number, ...number[]]
@@ -67,7 +67,7 @@
     indices = moveItem(indices, from, to)
     const order = indices
       .map((initialIndex, index) => [initialIndex, index])
-      .toSorted(([aInitialIndex], [bInitialIndex]) =>
+      .sort(([aInitialIndex], [bInitialIndex]) =>
         aInitialIndex > bInitialIndex ? 1 : aInitialIndex < bInitialIndex ? -1 : 0
       )
       .map(([_, index]) => index + 1) as [OrderingPosition, ...OrderingPosition[]]
