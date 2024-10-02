@@ -23,20 +23,19 @@
   } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import { ClassAttributeBar, getDocMixins } from '@hcengineering/view-resources'
+  import { ObjectChatPanel } from '@hcengineering/chunter'
 
-  import chunter from '../../plugin'
+  import ChunterExtensionComponent from '../ChunterExtensionComponent.svelte'
 
-  export let _class: Ref<Class<Doc>>
-  export let object: Doc | undefined
+  export let object: Doc
+  export let objectChatPanel: ObjectChatPanel | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   let mixins: Array<Mixin<Doc>> = []
 
-  $: objectChatPanel = hierarchy.classHierarchyMixin(_class, chunter.mixin.ObjectChatPanel)
-
-  $: mixins = object ? getDocMixins(object) : []
+  $: mixins = getDocMixins(object)
 
   function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
     if (object === undefined) return []
@@ -51,37 +50,36 @@
     return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
-  $: readonly = hierarchy.isDerived(_class, core.class.Space) ? (object as Space).archived : false
+  $: readonly = hierarchy.isDerived(object._class, core.class.Space) ? (object as Space).archived : false
 </script>
 
 <Scroller>
-  {#if object}
-    <ClassAttributeBar
-      _class={object._class}
-      {object}
-      ignoreKeys={objectChatPanel?.ignoreKeys ?? []}
-      showHeader={false}
-      {readonly}
-      on:update
-    />
-    <div class="popupPanel-body__aside-grid">
-      {#each mixins as mixin}
-        {@const mixinKeys = getMixinKeys(mixin._id)}
-        {#if mixinKeys.length}
-          <div class="divider" />
-          {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
-            <AttributeBarEditor
-              {key}
-              _class={mixin._id}
-              readonly={false}
-              object={hierarchy.as(object, mixin._id)}
-              showHeader={true}
-              size={'medium'}
-            />
-          {/each}
-        {/if}
-      {/each}
-    </div>
-  {/if}
+  <ClassAttributeBar
+    _class={object._class}
+    {object}
+    ignoreKeys={objectChatPanel?.ignoreKeys ?? []}
+    showHeader={false}
+    {readonly}
+    on:update
+  />
+  <div class="popupPanel-body__aside-grid">
+    {#each mixins as mixin}
+      {@const mixinKeys = getMixinKeys(mixin._id)}
+      {#if mixinKeys.length}
+        <div class="divider" />
+        {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
+          <AttributeBarEditor
+            {key}
+            _class={mixin._id}
+            readonly={false}
+            object={hierarchy.as(object, mixin._id)}
+            showHeader={true}
+            size={'medium'}
+          />
+        {/each}
+      {/if}
+    {/each}
+  </div>
+  <ChunterExtensionComponent {object} point="aside" />
   <slot />
 </Scroller>

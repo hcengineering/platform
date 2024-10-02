@@ -20,11 +20,19 @@ export function serverConfigFromEnv (): ServerEnv {
   const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
   const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'false') === 'true'
 
-  const url = process.env.MONGO_URL
-  if (url === undefined) {
+  const dbUrl = process.env.DB_URL
+  if (dbUrl === undefined) {
+    console.error('please provide DB_URL')
+    process.exit(1)
+  }
+
+  const mongoUrl = process.env.MONGO_URL
+  if (mongoUrl === undefined) {
     console.error('please provide mongodb url')
     process.exit(1)
   }
+
+  const url = dbUrl !== mongoUrl ? `${dbUrl};${mongoUrl}` : dbUrl
 
   const elasticUrl = process.env.ELASTIC_URL
   if (elasticUrl === undefined) {

@@ -81,7 +81,7 @@
     "Reacted": "Отреагировал(а)",
     "Docs": "Documents",
     "NewestFirst": "Сначала новые",
-    "ReplyToThread": "Ответить в канале",
+    "ReplyToThread": "Ответить в теме",
     "SentMessage": "Отправил(а) сообщение",
     "Direct": "Личные сообщения",
     "RepliedToThread": "Ответил(а) в канале",
@@ -129,6 +129,7 @@
     "Translating": "Перевод...",
     "StartConversation": "Начать диалог",
     "ViewingThreadFromArchivedChannel": "Вы просматриваете обсуждение из архивированного канала",
-    "ViewingArchivedChannel": "Вы просматриваете архивированный канал"
+    "ViewingArchivedChannel": "Вы просматриваете архивированный канал",
+    "OpenChatInSidebar": "Открыть чат в боковой панели"
   }
 }

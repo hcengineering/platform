@@ -15,7 +15,7 @@ import {
 import type { RawDBAdapter, RawDBAdapterStream } from '@hcengineering/server-core'
 import { type Document, type Filter, type FindCursor, type MongoClient, type Sort } from 'mongodb'
 import { toArray, uploadDocuments } from './storage'
-import { getMongoClient, getWorkspaceDB } from './utils'
+import { getMongoClient, getWorkspaceMongoDB } from './utils'
 
 export function createRawMongoDBAdapter (url: string): RawDBAdapter {
   const client = getMongoClient(url)
@@ -48,7 +48,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       total: number
     }> {
     mongoClient = mongoClient ?? (await client.getClient())
-    const db = getWorkspaceDB(mongoClient, workspace)
+    const db = getWorkspaceMongoDB(mongoClient, workspace)
     const coll = db.collection(domain)
     let cursor = coll.find<T>(query as Filter<Document>, {
       checkKeys: false
@@ -123,7 +123,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
     },
     upload: async (ctx: MeasureContext, workspace, domain, docs) => {
       mongoClient = mongoClient ?? (await client.getClient())
-      const db = getWorkspaceDB(mongoClient, workspace)
+      const db = getWorkspaceMongoDB(mongoClient, workspace)
       const coll = db.collection(domain)
       await uploadDocuments(ctx, docs, coll)
     },
@@ -132,7 +132,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
     },
     clean: async (ctx, workspace, domain, docs) => {
       mongoClient = mongoClient ?? (await client.getClient())
-      const db = getWorkspaceDB(mongoClient, workspace)
+      const db = getWorkspaceMongoDB(mongoClient, workspace)
       const coll = db.collection<Doc>(domain)
       await coll.deleteMany({ _id: { $in: docs } })
     },
@@ -144,7 +144,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
     ): Promise<void> => {
       await ctx.with('update', { domain }, async () => {
         mongoClient = mongoClient ?? (await client.getClient())
-        const db = getWorkspaceDB(mongoClient, workspace)
+        const db = getWorkspaceMongoDB(mongoClient, workspace)
         const coll = db.collection(domain)
 
         // remove old and insert new ones

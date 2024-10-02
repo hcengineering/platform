@@ -22,7 +22,8 @@ import {
   collaborativeDocParse
 } from '@hcengineering/core'
 import { yDocToBuffer } from '@hcengineering/collaboration'
-import document, { type Document, type Teamspace } from '@hcengineering/document'
+import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
+import { makeRank } from '@hcengineering/rank'
 import {
   MarkupMarkType,
   type MarkupNode,
@@ -328,6 +329,9 @@ async function createDBPageWithAttachments (
 
   const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 
+  const lastRank = await getFirstRank(client, space, parentId)
+  const rank = makeRank(lastRank, undefined)
+
   const object: AttachedData<Document> = {
     name: docMeta.name,
     content: collabId,
@@ -336,7 +340,8 @@ async function createDBPageWithAttachments (
     embeddings: 0,
     labels: 0,
     comments: 0,
-    references: 0
+    references: 0,
+    rank
   }
 
   await client.addCollection(
@@ -479,6 +484,9 @@ async function importPageDocument (
 
   const parentId = parentMeta?.id ?? document.ids.NoParent
 
+  const lastRank = await getFirstRank(client, space, parentId as Ref<Document>)
+  const rank = makeRank(lastRank, undefined)
+
   const attachedData: AttachedData<Document> = {
     name: docMeta.name,
     content: collabId,
@@ -487,7 +495,8 @@ async function importPageDocument (
     embeddings: 0,
     labels: 0,
     comments: 0,
-    references: 0
+    references: 0,
+    rank
   }
 
   await client.addCollection(

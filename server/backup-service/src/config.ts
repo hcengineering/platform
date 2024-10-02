@@ -30,6 +30,7 @@ interface Config extends Omit<BackupConfig, 'Token'> {
   SkipWorkspaces: string
 
   MongoURL: string
+  DbURL: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -41,6 +42,7 @@ const envMap: { [key in keyof Config]: string } = {
   CoolDown: 'COOL_DOWN',
   Timeout: 'TIMEOUT',
   MongoURL: 'MONGO_URL',
+  DbURL: 'DB_URL',
   SkipWorkspaces: 'SKIP_WORKSPACES',
   Storage: 'STORAGE',
   WorkspaceStorage: 'WORKSPACE_STORAGE'
@@ -52,6 +54,7 @@ const required: Array<keyof Config> = [
   'ServiceID',
   'BucketName',
   'MongoURL',
+  'DbURL',
   'Storage',
   'WorkspaceStorage'
 ]
@@ -66,6 +69,7 @@ const config: Config = (() => {
     Timeout: parseInt(process.env[envMap.Timeout] ?? '3600'),
     CoolDown: parseInt(process.env[envMap.CoolDown] ?? '300'),
     MongoURL: process.env[envMap.MongoURL],
+    DbURL: process.env[envMap.DbURL],
     SkipWorkspaces: process.env[envMap.SkipWorkspaces] ?? '',
     WorkspaceStorage: process.env[envMap.WorkspaceStorage],
     Storage: process.env[envMap.Storage]

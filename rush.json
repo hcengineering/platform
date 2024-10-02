@@ -2087,6 +2087,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/model-ai-bot",
+      "projectFolder": "models/ai-bot",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-server-ai-bot",
       "projectFolder": "models/server-ai-bot",
       "shouldPublish": false

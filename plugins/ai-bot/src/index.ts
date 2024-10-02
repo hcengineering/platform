@@ -27,6 +27,7 @@ export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
 export interface AIBotEvent extends Doc {
   collection: string
   messageClass: Ref<Class<ChatMessage>>
+  messageId: Ref<ChatMessage>
   message: string
 }
 
@@ -35,6 +36,7 @@ export interface AIBotResponseEvent extends AIBotEvent {
   objectClass: Ref<Class<Doc>>
   objectSpace: Ref<Space>
   user: Ref<Account>
+  email: string
 }
 
 export interface AIBotTransferEvent extends AIBotEvent {
@@ -43,7 +45,6 @@ export interface AIBotTransferEvent extends AIBotEvent {
   fromWorkspace: string
   fromWorkspaceName: string
   fromWorkspaceUrl: string
-  messageId: Ref<ChatMessage>
   parentMessageId?: Ref<ChatMessage>
 }
 

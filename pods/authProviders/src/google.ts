@@ -1,7 +1,6 @@
-import { joinWithProvider, LoginInfo, loginWithProvider } from '@hcengineering/account'
+import { type AccountDB, joinWithProvider, LoginInfo, loginWithProvider } from '@hcengineering/account'
 import { BrandingMap, concatLink, MeasureContext, getBranding } from '@hcengineering/core'
 import Router from 'koa-router'
-import { Db } from 'mongodb'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import qs from 'querystringify'
 import { Passport } from '.'
@@ -12,7 +11,7 @@ export function registerGoogle (
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
-  dbPromise: Promise<Db>,
+  dbPromise: Promise<AccountDB>,
   frontUrl: string,
   brandings: BrandingMap
 ): string | undefined {

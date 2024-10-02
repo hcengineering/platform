@@ -21,6 +21,7 @@
   import { createEventDispatcher } from 'svelte'
   import document from '../plugin'
   import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
+  import { moveDocument } from '../utils'
 
   export let value: Document
 
@@ -40,10 +41,7 @@
   async function save (): Promise<void> {
     const ops = client.apply(value._id)
 
-    await ops.update(value, {
-      space,
-      attachedTo: parent ?? document.ids.NoParent
-    })
+    await moveDocument(value, space, parent ?? document.ids.NoParent)
 
     if (space !== value.space) {
       const children = await findChildren(value)

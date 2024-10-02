@@ -98,7 +98,7 @@
   {/each}
   {#each Object.entries(metrics.params) as [k, v], i}
     <div style:margin-left={`${level * 0.5}rem`}>
-      {#each Object.entries(v).toSorted((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1)) as [kk, vv]}
+      {#each Object.entries(v).sort((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1)) as [kk, vv]}
         {@const childExpandable =
           vv.topResult !== undefined &&
           vv.topResult.length > 0 &&

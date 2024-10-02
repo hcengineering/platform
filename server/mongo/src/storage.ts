@@ -87,7 +87,7 @@ import {
   type UpdateFilter,
   type WithId
 } from 'mongodb'
-import { DBCollectionHelper, getMongoClient, getWorkspaceDB, type MongoClientReference } from './utils'
+import { DBCollectionHelper, getMongoClient, getWorkspaceMongoDB, type MongoClientReference } from './utils'
 
 function translateDoc (doc: Doc): Doc {
   return { ...doc, '%hash%': null } as any
@@ -1822,7 +1822,7 @@ export async function createMongoAdapter (
   options?: DbAdapterOptions
 ): Promise<DbAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
 
   return new MongoAdapter(db, hierarchy, modelDb, client, options)
 }
@@ -1838,7 +1838,7 @@ export async function createMongoTxAdapter (
   modelDb: ModelDb
 ): Promise<TxAdapter> {
   const client = getMongoClient(url)
-  const db = getWorkspaceDB(await client.getClient(), workspaceId)
+  const db = getWorkspaceMongoDB(await client.getClient(), workspaceId)
 
   return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }

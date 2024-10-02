@@ -87,17 +87,16 @@ export class FileModelLogger implements ModelLogger {
  * @public
  */
 export function prepareTools (rawTxes: Tx[]): {
-  mongodbUri: string
-  dbUrl: string | undefined
+  mongodbUri: string | undefined
+  dbUrl: string
   txes: Tx[]
 } {
   const mongodbUri = process.env.MONGO_URL
-  if (mongodbUri === undefined) {
-    console.error('please provide mongodb url.')
+  const dbUrl = process.env.DB_URL
+  if (dbUrl === undefined) {
+    console.error('please provide db url.')
     process.exit(1)
   }
-
-  const dbUrl = process.env.DB_URL
 
   return {
     mongodbUri,

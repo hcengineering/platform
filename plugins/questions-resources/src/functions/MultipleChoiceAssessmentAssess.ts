@@ -16,6 +16,8 @@ MultipleChoiceAssessmentAnswer
   return {
     score:
       // eslint-disable-next-line @typescript-eslint/require-array-sort-compare
-      answerData.selectedIndices.toSorted().join('~') === assessmentData.correctIndices.toSorted().join('~') ? 100 : 0
+      answerData.selectedIndices.slice().sort().join('~') === assessmentData.correctIndices.slice().sort().join('~')
+        ? 100
+        : 0
   }
 }

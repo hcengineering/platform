@@ -379,7 +379,7 @@
   function messageInView (msgElement: Element, containerRect: DOMRect): boolean {
     const messageRect = msgElement.getBoundingClientRect()
 
-    return messageRect.top >= containerRect.top && messageRect.bottom - messageRect.height / 2 <= containerRect.bottom
+    return messageRect.top >= containerRect.top && messageRect.top <= containerRect.bottom && messageRect.bottom >= 0
   }
 
   const messagesToReadAccumulator: Set<DisplayActivityMessage> = new Set<DisplayActivityMessage>()

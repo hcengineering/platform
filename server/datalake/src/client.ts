@@ -27,6 +27,14 @@ export interface ObjectMetadata {
 }
 
 /** @public */
+export interface StatObjectOutput {
+  lastModified: number
+  type: string
+  etag?: string
+  size?: number
+}
+
+/** @public */
 export interface PutObjectOutput {
   id: string
 }
@@ -55,9 +63,19 @@ export class Client {
 
   async getObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<Readable> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
-    const response = await fetch(url)
+
+    let response
+    try {
+      response = await fetch(url)
+    } catch (err: any) {
+      ctx.error('network error', { error: err })
+      throw new Error(`Network error ${err}`)
+    }
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not Found')
+      }
       throw new Error('HTTP error ' + response.status)
     }
 
@@ -69,12 +87,90 @@ export class Client {
     return Readable.from(response.body)
   }
 
+  async getPartialObject (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string,
+    offset: number,
+    length?: number
+  ): Promise<Readable> {
+    const url = this.getObjectUrl(ctx, workspace, objectName)
+    const headers = {
+      Range: `bytes=${offset}-${length ?? ''}`
+    }
+
+    let response
+    try {
+      response = await fetch(url, { headers })
+    } catch (err: any) {
+      ctx.error('network error', { error: err })
+      throw new Error(`Network error ${err}`)
+    }
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not Found')
+      }
+      throw new Error('HTTP error ' + response.status)
+    }
+
+    if (response.body == null) {
+      ctx.error('bad datalake response', { objectName })
+      throw new Error('Missing response body')
+    }
+
+    return Readable.from(response.body)
+  }
+
+  async statObject (
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    objectName: string
+  ): Promise<StatObjectOutput | undefined> {
+    const url = this.getObjectUrl(ctx, workspace, objectName)
+
+    let response
+    try {
+      response = await fetch(url, { method: 'HEAD' })
+    } catch (err: any) {
+      ctx.error('network error', { error: err })
+      throw new Error(`Network error ${err}`)
+    }
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return undefined
+      }
+      throw new Error('HTTP error ' + response.status)
+    }
+
+    const headers = response.headers
+    const lastModified = Date.parse(headers.get('Last-Modified') ?? '')
+    const size = parseInt(headers.get('Content-Length') ?? '0', 10)
+
+    return {
+      lastModified: isNaN(lastModified) ? 0 : lastModified,
+      size: isNaN(size) ? 0 : size,
+      type: headers.get('Content-Type') ?? '',
+      etag: headers.get('ETag') ?? ''
+    }
+  }
+
   async deleteObject (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): Promise<void> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
 
-    const response = await fetch(url, { method: 'DELETE' })
+    let response
+    try {
+      response = await fetch(url, { method: 'DELETE' })
+    } catch (err: any) {
+      ctx.error('network error', { error: err })
+      throw new Error(`Network error ${err}`)
+    }
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not Found')
+      }
       throw new Error('HTTP error ' + response.status)
     }
   }
@@ -100,10 +196,13 @@ export class Client {
     }
     form.append('file', stream, options)
 
-    const response = await fetch(url, {
-      method: 'POST',
-      body: form
-    })
+    let response
+    try {
+      response = await fetch(url, { method: 'POST', body: form })
+    } catch (err: any) {
+      ctx.error('network error', { error: err })
+      throw new Error(`Network error ${err}`)
+    }
 
     if (!response.ok) {
       throw new Error('HTTP error ' + response.status)

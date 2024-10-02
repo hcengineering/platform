@@ -71,8 +71,18 @@ function formatCustomEvent (event: AnalyticEvent): string | undefined {
   const text = event.params.event as string | undefined
 
   if (text === undefined || text === '') return
+  const paramsTexts = []
 
-  return toMarkup([toText(text)])
+  for (const key in event.params) {
+    if (key !== 'event') {
+      paramsTexts.push(`${key}: ${event.params[key]}`)
+    }
+  }
+
+  if (paramsTexts.length === 0) {
+    return toMarkup([toText(text)])
+  }
+  return toMarkup([toText(text + ' '), toText(paramsTexts.join(', '), 'code')])
 }
 
 async function formatErrorEvent (event: AnalyticEvent): Promise<string | undefined> {

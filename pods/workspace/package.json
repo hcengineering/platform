@@ -20,7 +20,7 @@
     "docker:abuild": "docker build -t hardcoreeng/workspace . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/workspace",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/workspace staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/workspace",
-    "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 MINIO_ACCESS_KEY=minioadmi MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost SERVER_SECRET='secret' TRANSACTOR_URL=ws://localhost:3333 ts-node src/__start.ts",
+    "run-local": "cross-env DB_URL=mongodb://localhost:27017 MONGO_URL=mongodb://localhost:27017 MINIO_ACCESS_KEY=minioadmi MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost SERVER_SECRET='secret' TRANSACTOR_URL=ws://localhost:3333 ts-node src/__start.ts",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
     "_phase:build": "compile transpile src",
