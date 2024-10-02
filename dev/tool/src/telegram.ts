@@ -18,7 +18,7 @@ import { DOMAIN_TX, type MeasureContext, type Ref, type WorkspaceId } from '@hce
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
-import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import telegram, { type SharedTelegramMessage, type SharedTelegramMessages } from '@hcengineering/telegram'
 import { type Document, type UpdateFilter } from 'mongodb'
@@ -38,7 +38,7 @@ export async function clearTelegramHistory (
   const client = getMongoClient(mongoUrl)
   try {
     const _client = await client.getClient()
-    const workspaceDB = getWorkspaceDB(_client, workspaceId)
+    const workspaceDB = getWorkspaceMongoDB(_client, workspaceId)
     const telegramDB = _client.db(tgDb)
 
     const sharedMessages = await workspaceDB

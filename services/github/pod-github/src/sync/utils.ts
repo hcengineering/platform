@@ -346,7 +346,7 @@ export async function syncDerivedDocuments<T extends { url: string }> (
   })
 
   const processed = new Set<Ref<DocSyncInfo>>()
-  const _docs = docs(ext)
+  const _docs = docs(ext).filter((it) => it != null)
   for (const r of _docs) {
     const existing = childDocsOfClass.find((it) => it.url.toLowerCase() === r.url.toLowerCase())
     if (existing === undefined) {

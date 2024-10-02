@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Builder, Model, Prop, ReadOnly, TypeString, UX } from '@hcengineering/model'
+import { type Builder, Model, Prop, ReadOnly, TypeString, UX, TypeBoolean } from '@hcengineering/model'
 import { type OnboardingChannel } from '@hcengineering/analytics-collector'
 import chunter from '@hcengineering/chunter'
 import { TChannel } from '@hcengineering/model-chunter'
@@ -55,10 +55,33 @@ export class TOnboardingChannel extends TChannel implements OnboardingChannel {
   @Prop(TypeString(), analyticsCollector.string.WorkspaceId)
   @ReadOnly()
     workspaceId!: string
+
+  @Prop(TypeBoolean(), analyticsCollector.string.DisableAIReplies)
+    disableAIReplies!: boolean
+
+  @Prop(TypeBoolean(), analyticsCollector.string.ShowAIReplies)
+    showAIReplies!: boolean
 }
 
 export function createModel (builder: Builder): void {
   builder.createModel(TOnboardingChannel)
+
+  builder.mixin(analyticsCollector.class.OnboardingChannel, core.class.Class, chunter.mixin.ObjectChatPanel, {
+    openByDefault: true,
+    ignoreKeys: [
+      'workspaceId',
+      'archived',
+      'collaborators',
+      'lastMessage',
+      'pinned',
+      'topic',
+      'description',
+      'members',
+      'owners',
+      'autoJoin',
+      'private'
+    ]
+  })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: analyticsCollector.class.OnboardingChannel,

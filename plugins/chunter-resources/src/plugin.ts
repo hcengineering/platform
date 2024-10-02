@@ -36,7 +36,6 @@ export default mergeIds(chunterId, chunter, {
     SavedMessages: '' as AnyComponent,
     Threads: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent,
-    DirectIcon: '' as AnyComponent,
     ChannelIcon: '' as AnyComponent
   },
   function: {

@@ -17,7 +17,7 @@
   import presentation from '@hcengineering/presentation'
   import { Label, showPopup, tooltip } from '@hcengineering/ui'
 
-  import { Channel, ChunterSpace } from '@hcengineering/chunter'
+  import { Channel, ChunterSpace, ObjectChatPanel } from '@hcengineering/chunter'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { EmployeeBox, personAccountByIdStore, SelectUsersPopup } from '@hcengineering/contact-resources'
 
@@ -25,8 +25,8 @@
   import DocAside from './DocAside.svelte'
   import { joinChannel, leaveChannel } from '../../utils'
 
-  export let _class: Ref<Class<ChunterSpace>>
-  export let object: ChunterSpace | undefined
+  export let object: ChunterSpace
+  export let objectChatPanel: ObjectChatPanel | undefined
 
   const currentAccount = getCurrentAccount()
 
@@ -118,8 +118,8 @@
   $: readonly = object?.archived ?? false
 </script>
 
-<DocAside {_class} {object}>
-  {#if object && creatorPersonRef}
+<DocAside {object} {objectChatPanel}>
+  {#if creatorPersonRef}
     <div class="popupPanel-body__aside-grid" style:margin-top="0">
       <span
         class="labelOnPanel"

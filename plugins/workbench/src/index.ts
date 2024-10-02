@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountRole, Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
+import type { AccountRole, Class, Doc, Mixin, Obj, Ref, Space, Tx } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -86,6 +86,20 @@ export interface WidgetTab {
   isPinned?: boolean
   allowedPath?: string
   data?: Record<string, any>
+}
+
+export enum SidebarEvent {
+  OpenWidget = 'openWidget'
+}
+
+export interface OpenSidebarWidgetParams {
+  widget: Ref<Widget>
+  tab?: WidgetTab
+}
+
+export interface TxSidebarEvent<T extends Record<string, any> = Record<string, any>> extends Tx {
+  event: SidebarEvent
+  params: T
 }
 
 /**
@@ -186,7 +200,8 @@ export default plugin(workbenchId, {
     ApplicationNavModel: '' as Ref<Class<ApplicationNavModel>>,
     HiddenApplication: '' as Ref<Class<HiddenApplication>>,
     Widget: '' as Ref<Class<Widget>>,
-    WidgetPreference: '' as Ref<Class<WidgetPreference>>
+    WidgetPreference: '' as Ref<Class<WidgetPreference>>,
+    TxSidebarEvent: '' as Ref<Class<TxSidebarEvent<Record<string, any>>>>
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>

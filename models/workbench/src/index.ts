@@ -24,14 +24,16 @@ import type {
   ApplicationNavModel,
   HiddenApplication,
   SpaceView,
+  TxSidebarEvent,
   ViewConfiguration,
   Widget,
   WidgetPreference,
   WidgetTab,
-  WidgetType
+  WidgetType,
+  SidebarEvent
 } from '@hcengineering/workbench'
 import { type AnyComponent } from '@hcengineering/ui'
-import core, { TClass, TDoc } from '@hcengineering/model-core'
+import core, { TClass, TDoc, TTx } from '@hcengineering/model-core'
 
 import workbench from './plugin'
 
@@ -90,8 +92,22 @@ export class TWidgetPreference extends TPreference implements WidgetPreference {
   enabled!: boolean
 }
 
+@Model(workbench.class.TxSidebarEvent, core.class.Doc)
+export class TTxSidebarEvent extends TTx implements TxSidebarEvent {
+  event!: SidebarEvent
+  params!: Record<string, any>
+}
+
 export function createModel (builder: Builder): void {
-  builder.createModel(TApplication, TSpaceView, THiddenApplication, TApplicationNavModel, TWidget, TWidgetPreference)
+  builder.createModel(
+    TApplication,
+    TSpaceView,
+    THiddenApplication,
+    TApplicationNavModel,
+    TWidget,
+    TWidgetPreference,
+    TTxSidebarEvent
+  )
 
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: workbench.component.ApplicationPresenter

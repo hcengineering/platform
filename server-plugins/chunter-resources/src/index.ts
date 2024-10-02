@@ -156,6 +156,7 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
   const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
   const message = TxProcessor.createDoc2Doc(actualTx)
+  if (message.modifiedBy === core.account.System) return []
   const mixin = hierarchy.classHierarchyMixin(message.attachedToClass, notification.mixin.ClassCollaborators)
 
   if (mixin === undefined) {

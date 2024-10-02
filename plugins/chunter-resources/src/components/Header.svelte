@@ -70,7 +70,7 @@
   {allowFullsize}
   type={allowClose ? 'type-aside' : 'type-component'}
   hideBefore={false}
-  hideActions={!((canOpen && object) || withAside || $$slots.actions) || hideActions}
+  hideActions={!((canOpen && object) || withAside || $$slots.actions || canOpenInSidebar) || hideActions}
   hideDescription={!description}
   adaptive={adaptive !== 'default' ? adaptive : withFilters ? 'freezeActions' : 'disabled'}
   {closeOnEscape}
@@ -177,14 +177,3 @@
     {/if}
   </svelte:fragment>
 </Header>
-
-<style lang="scss">
-  .title {
-    cursor: pointer;
-    color: var(--global-secondary-TextColor);
-
-    &:hover {
-      color: var(--global-primary-LinkColor);
-    }
-  }
-</style>
