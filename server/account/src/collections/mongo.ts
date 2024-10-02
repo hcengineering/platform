@@ -58,33 +58,41 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
    * @param indicesToEnsure MongoIndex
    */
   async ensureIndices (indicesToEnsure: MongoIndex[]): Promise<void> {
-    const indices = await this.collection.listIndexes().toArray()
+    try {
+      const indices = await this.collection.listIndexes().toArray()
 
-    for (const idx of indices) {
-      if (idx.key._id !== undefined) {
-        continue
-      }
-
-      const isEqualIndex = (ensureIdx: MongoIndex): boolean => {
-        const { key, options } = ensureIdx
-        const sameKeys = isShallowEqual(idx.key, key)
-
-        if (!sameKeys) {
-          return false
+      for (const idx of indices) {
+        if (idx.key._id !== undefined) {
+          continue
         }
 
-        const shortIdxOptions = { ...idx }
-        delete shortIdxOptions.key
-        delete shortIdxOptions.v
+        const isEqualIndex = (ensureIdx: MongoIndex): boolean => {
+          const { key, options } = ensureIdx
+          const sameKeys = isShallowEqual(idx.key, key)
 
-        return isShallowEqual(shortIdxOptions, options)
+          if (!sameKeys) {
+            return false
+          }
+
+          const shortIdxOptions = { ...idx }
+          delete shortIdxOptions.key
+          delete shortIdxOptions.v
+
+          return isShallowEqual(shortIdxOptions, options)
+        }
+
+        if (indicesToEnsure.some(isEqualIndex)) {
+          continue
+        }
+
+        await this.collection.dropIndex(idx.name)
       }
-
-      if (indicesToEnsure.some(isEqualIndex)) {
-        continue
+    } catch (e: any) {
+      if (e?.codeName === 'NamespaceNotFound') {
+        // Nothing to do, new DB
+      } else {
+        throw e
       }
-
-      await this.collection.dropIndex(idx.name)
     }
 
     for (const { key, options } of indicesToEnsure) {
