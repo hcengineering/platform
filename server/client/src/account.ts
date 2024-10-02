@@ -102,28 +102,45 @@ export async function getTransactorEndpoint (
   }
 }
 
-export function withRetryUntilTimeout<P extends any[], T> (
+export function withRetry<P extends any[], T> (
   f: (...params: P) => Promise<T>,
-  timeoutMs: number = 5000
+  shouldFail: (err: any, attempt: number) => boolean,
+  intervalMs: number = 1000
 ): (...params: P) => Promise<T> {
   return async function (...params: P): Promise<T> {
-    const timeout = timeoutMs > 0 ? Date.now() + timeoutMs : -1
+    let attempt = 0
     while (true) {
       try {
         return await f(...params)
       } catch (err: any) {
-        if (timeout > 0 && timeout < Date.now()) {
-          // Timeout happened
+        if (shouldFail(err, attempt)) {
           throw err
         }
-        if (err?.cause?.code === 'ECONNRESET' || err?.cause?.code === 'ECONNREFUSED') {
-          await new Promise<void>((resolve) => setTimeout(resolve, 1000))
-        } else {
-          throw err
-        }
+
+        attempt++
+        await new Promise<void>((resolve) => setTimeout(resolve, intervalMs))
       }
     }
   }
+}
+
+export function withRetryConnUntilTimeout<P extends any[], T> (
+  f: (...params: P) => Promise<T>,
+  timeoutMs: number = 5000
+): (...params: P) => Promise<T> {
+  const timeout = Date.now() + timeoutMs
+  const shouldFail = (err: any): boolean =>
+    (err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED') || timeout < Date.now()
+
+  return withRetry(f, shouldFail)
+}
+
+export function withRetryConnUntilSuccess<P extends any[], T> (
+  f: (...params: P) => Promise<T>
+): (...params: P) => Promise<T> {
+  const shouldFail = (err: any): boolean => err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED'
+
+  return withRetry(f, shouldFail)
 }
 
 export async function getPendingWorkspace (
