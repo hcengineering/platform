@@ -170,6 +170,13 @@ export async function moveAccountDbFromMongoToPG (
       _id: mongoWorkspace._id.toString()
     }
 
+    // delete deprecated fields
+    delete (pgWorkspace as any).createProgress
+    delete (pgWorkspace as any).creating
+    delete (pgWorkspace as any).productId
+    delete (pgWorkspace as any).organisation
+
+    // assigned separately
     delete (pgWorkspace as any).accounts
 
     const exists = await getWorkspaceById(pgDb, pgWorkspace.workspace)
