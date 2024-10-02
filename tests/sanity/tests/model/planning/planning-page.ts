@@ -132,7 +132,7 @@ export class PlanningPage extends CalendarPage {
       const boundingBox = await this.selectTimeCell(targetTime, column).boundingBox()
       expect(boundingBox).toBeTruthy()
       if (boundingBox != null) {
-        await this.page.mouse.move(boundingBox.x + 10, size === 'bottom' ? boundingBox.y - 8 : boundingBox.y + 5)
+        await this.page.mouse.move(boundingBox.x + 10, size === 'bottom' ? boundingBox.y + 5 : boundingBox.y - 8)
         await this.page.mouse.up()
       }
     }).toPass(retryOptions)

@@ -355,25 +355,27 @@ test.describe('Planning ToDo tests', () => {
       slots: [
         {
           dateStart: 'today',
-          timeStart: '1400',
+          timeStart: '0300',
           dateEnd: {
             day: dateEnd.getDate().toString(),
             month: (dateEnd.getMonth() + 1).toString(),
             year: dateEnd.getFullYear().toString()
           },
-          timeEnd: '1500'
+          timeEnd: '0400'
         }
       ]
     }
 
     await test.step('Prepare ToDo', async () => {
       await planningNavigationMenuPage.clickOnButtonToDoAll()
+      await planningPage.page.locator('.calendar-container').hover()
+      await page.mouse.wheel(0, -1000) // Make target hours visible
       await planningPage.createNewToDo(toDoWithLabel)
     })
 
     await test.step('Resize ToDo', async () => {
-      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, '4pm', 'bottom')
-      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, '1pm', 'top')
+      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, '2am', 'top')
+      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, '5am', 'bottom')
     })
 
     await test.step('Check time changes', async () => {
