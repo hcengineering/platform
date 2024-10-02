@@ -8,7 +8,7 @@ export class RecruitingPage {
   }
 
   recruitApplication = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
-  talentsNavElement = (): Locator => this.page.locator('text=Talents')
+  talentsNavElement = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
 
   frontendEngineerOption = (): Locator => this.page.locator('td:has-text("Frontend Engineer")')
   searchOrRunCommandInput = (): Locator => this.page.locator('[placeholder="Search\\ or\\ run\\ a\\ command\\.\\.\\."]')
