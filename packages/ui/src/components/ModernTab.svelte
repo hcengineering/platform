@@ -150,6 +150,7 @@
     .icon {
       writing-mode: initial;
       text-orientation: initial;
+      margin: 0;
       &.vertical {
         transform: rotate(90deg);
         text-orientation: upright;
@@ -158,6 +159,10 @@
 
     .close-button {
       display: flex;
+
+      &.horizontal {
+        margin: 0;
+      }
       &.vertical {
         transform: rotate(90deg);
       }

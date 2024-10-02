@@ -34,6 +34,7 @@
     "WidgetPreferences": "Préférences du widget",
     "OpenInSidebar": "Ouvrir dans la barre latérale",
     "OpenInSidebarNewTab": "Ouvrir dans un nouvel onglet de la barre latérale",
-    "ConfigureWidgets": "Configurer les widgets"
+    "ConfigureWidgets": "Configurer les widgets",
+    "Tab": "Onglet"
   }
 }

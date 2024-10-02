@@ -64,6 +64,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chunter.string.ApplicationLabelChunter,
+      locationDataResolver: chunter.function.LocationDataResolver,
       icon: chunter.icon.Chunter,
       alias: chunterId,
       hidden: false,
@@ -86,6 +87,11 @@ export function createModel (builder: Builder): void {
     },
     chunter.ids.ChatWidget
   )
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: workbench.extensions.WorkbenchTabExtensions,
+    component: chunter.component.WorkbenchTabExtension
+  })
 
   const spaceClasses = [chunter.class.Channel, chunter.class.DirectMessage]
 

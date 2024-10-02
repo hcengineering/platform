@@ -175,7 +175,10 @@ export function getDocumentLinkId (doc: Document): string {
   return `${slug}-${doc._id}`
 }
 
-export function parseDocumentId (shortLink: string): Ref<Document> | undefined {
+export function parseDocumentId (shortLink?: string): Ref<Document> | undefined {
+  if (shortLink === undefined) {
+    return undefined
+  }
   const parts = shortLink.split('-')
   if (parts.length > 1) {
     return parts[parts.length - 1] as Ref<Document>

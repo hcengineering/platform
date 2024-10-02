@@ -59,6 +59,7 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/workbench": "^0.6.16",
     "svelte": "^4.2.12"
   }
 }

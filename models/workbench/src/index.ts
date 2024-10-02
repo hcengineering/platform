@@ -30,10 +30,12 @@ import type {
   WidgetPreference,
   WidgetTab,
   WidgetType,
-  SidebarEvent
+  SidebarEvent,
+  WorkbenchTab
 } from '@hcengineering/workbench'
 import { type AnyComponent } from '@hcengineering/ui'
 import core, { TClass, TDoc, TTx } from '@hcengineering/model-core'
+import presentation from '@hcengineering/model-presentation'
 
 import workbench from './plugin'
 
@@ -98,6 +100,13 @@ export class TTxSidebarEvent extends TTx implements TxSidebarEvent {
   params!: Record<string, any>
 }
 
+@Model(workbench.class.WorkbenchTab, preference.class.Preference)
+@UX(workbench.string.Tab)
+export class TWorkbenchTab extends TPreference implements WorkbenchTab {
+  location!: string
+  isPinned!: boolean
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TApplication,
@@ -106,7 +115,8 @@ export function createModel (builder: Builder): void {
     TApplicationNavModel,
     TWidget,
     TWidgetPreference,
-    TTxSidebarEvent
+    TTxSidebarEvent,
+    TWorkbenchTab
   )
 
   builder.mixin(workbench.class.Application, core.class.Class, view.mixin.ObjectPresenter, {
@@ -131,6 +141,52 @@ export function createModel (builder: Builder): void {
     secured: true,
     context: {
       mode: ['workbench']
+    }
+  })
+
+  createAction(builder, {
+    action: workbench.actionImpl.PinTab,
+    label: view.string.Pin,
+    icon: view.icon.Pin,
+    input: 'focus',
+    category: workbench.category.Workbench,
+    target: workbench.class.WorkbenchTab,
+    query: {
+      isPinned: false
+    },
+    context: {
+      mode: 'context',
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    action: workbench.actionImpl.UnpinTab,
+    label: view.string.Unpin,
+    icon: view.icon.Pin,
+    input: 'focus',
+    category: workbench.category.Workbench,
+    target: workbench.class.WorkbenchTab,
+    query: {
+      isPinned: true
+    },
+    context: {
+      mode: 'context',
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    action: workbench.actionImpl.CloseTab,
+    label: presentation.string.Close,
+    icon: view.icon.Delete,
+    input: 'focus',
+    category: workbench.category.Workbench,
+    target: workbench.class.WorkbenchTab,
+    visibilityTester: workbench.function.CanCloseTab,
+    context: {
+      mode: 'context',
+      group: 'edit'
     }
   })
 }

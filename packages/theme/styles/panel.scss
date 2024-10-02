@@ -292,6 +292,8 @@
   min-width: 0;
   min-height: 0;
   border-radius: var(--small-focus-BorderRadius);
+  border-top-right-radius: 0;
+  border-bottom-right-radius:0 ;
 
   &:not(.rowContent) { flex-direction: column; }
   .panel-instance & {

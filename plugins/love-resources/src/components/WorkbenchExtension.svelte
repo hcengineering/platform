@@ -34,7 +34,7 @@
   }
 
   onMount(() => {
-    pushRootBarComponent('left', love.component.ControlExt)
+    pushRootBarComponent('left', love.component.ControlExt, 20)
     lk.on(RoomEvent.TrackSubscribed, handleTrackSubscribed)
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
   })
