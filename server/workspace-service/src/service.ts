@@ -84,7 +84,9 @@ export class WorkspaceWorker {
     }
     this.wakeup = this.defaultWakeup
     const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'workspace' })
-    await workerHandshake(token, this.region, this.version, this.operation)
+
+    await withRetryUntilTimeout(workerHandshake, -1)(token, this.region, this.version, this.operation)
+    ctx.info('Workspace service started and successfully connected to the account service')
 
     while (true) {
       await this.waitForAvailableThread()

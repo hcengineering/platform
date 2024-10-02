@@ -107,12 +107,12 @@ export function withRetryUntilTimeout<P extends any[], T> (
   timeoutMs: number = 5000
 ): (...params: P) => Promise<T> {
   return async function (...params: P): Promise<T> {
-    const timeout = Date.now() + timeoutMs
+    const timeout = timeoutMs > 0 ? Date.now() + timeoutMs : -1
     while (true) {
       try {
         return await f(...params)
       } catch (err: any) {
-        if (timeout < Date.now()) {
+        if (timeout > 0 && timeout < Date.now()) {
           // Timeout happened
           throw err
         }
