@@ -509,14 +509,17 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkIssueNotExist (issueName: string): Promise<void> {
+    await this.openAllCategories()
     await expect(this.issueNotExist(issueName)).toHaveCount(0)
   }
 
   async checkFilteredIssueExist (issueName: string): Promise<void> {
+    await this.openAllCategories()
     await expect(this.linesFromList(issueName)).toHaveCount(1)
   }
 
   async checkFilteredIssueNotExist (issueName: string): Promise<void> {
+    await this.openAllCategories()
     await expect(this.linesFromList(issueName)).toHaveCount(0)
   }
 
@@ -558,6 +561,7 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkIssuesCount (issueName: string, count: number, timeout?: number): Promise<void> {
+    await this.openAllCategories()
     await expect(async () => {
       await expect(this.issueAnchorByName(issueName)).toHaveCount(count)
     }).toPass(retryOptions)

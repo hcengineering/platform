@@ -49,7 +49,7 @@ export class CommonPage {
   menuPopupItemButton = (itemText: string): Locator =>
     this.page.locator('div.selectPopup button.menu-item', { hasText: itemText })
 
-  buttonFilter = (): Locator => this.page.getByRole('button', { name: 'Filter', exact: true })
+  buttonFilter = (): Locator => this.page.locator('.hulyHeader-container button:has-text("Filter")')
   inputFilterTitle = (): Locator => this.page.locator('div.selectPopup input[placeholder="Title"]')
   inputFilterSource = (): Locator => this.page.locator('div.selectPopup input[placeholder="Source"]')
   inputFilterName = (): Locator => this.page.locator('div.selectPopup input[placeholder="Name"]')

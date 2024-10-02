@@ -361,7 +361,7 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Filter by label', async () => {
-    const labels = 'Filter Label'
+    const labels = `Label ${generateId()}`
     const createLabel = true
 
     issueTitle = await issuesPage.createNewIssue({ ...issueData, ...{ labels, createLabel } })
