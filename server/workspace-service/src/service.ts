@@ -28,7 +28,8 @@ import {
   getPendingWorkspace,
   updateWorkspaceInfo,
   workerHandshake,
-  withRetryUntilTimeout
+  withRetryConnUntilTimeout,
+  withRetryConnUntilSuccess
 } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { FileModelLogger } from '@hcengineering/server-tool'
@@ -84,7 +85,12 @@ export class WorkspaceWorker {
     }
     this.wakeup = this.defaultWakeup
     const token = generateToken(systemAccountEmail, { name: '-' }, { service: 'workspace' })
-    await workerHandshake(token, this.region, this.version, this.operation)
+
+    ctx.info('Sending a handshake to the account service...')
+
+    await withRetryConnUntilSuccess(workerHandshake)(token, this.region, this.version, this.operation)
+
+    ctx.info('Successfully connected to the account service')
 
     while (true) {
       await this.waitForAvailableThread()
@@ -156,7 +162,7 @@ export class WorkspaceWorker {
         progress: number,
         message?: string
       ): Promise<void> => {
-        return withRetryUntilTimeout(
+        return withRetryConnUntilTimeout(
           () => updateWorkspaceInfo(token, ws.workspace, event, version, progress, message),
           5000
         )()
@@ -239,7 +245,7 @@ export class WorkspaceWorker {
         progress: number,
         message?: string
       ): Promise<void> => {
-        return withRetryUntilTimeout(
+        return withRetryConnUntilTimeout(
           () => updateWorkspaceInfo(token, ws.workspace, event, version, progress, message),
           5000
         )()
