@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { ObjectId as MongoObjectId } from 'mongodb'
-import type { Collection, Db, Filter, OptionalUnlessRequiredId, Sort } from 'mongodb'
+import type { Collection, CreateIndexesOptions, Db, Filter, OptionalUnlessRequiredId, Sort } from 'mongodb'
 import type { Data, Version } from '@hcengineering/core'
 
 import type {
@@ -31,6 +31,12 @@ import type {
   OtpRecord,
   UpgradeStatistic
 } from '../types'
+import { isShallowEqual } from '../utils'
+
+interface MongoIndex {
+  key: Record<string, any>
+  options: CreateIndexesOptions & { name: string }
+}
 
 export class MongoDbCollection<T extends Record<string, any>> implements DbCollection<T> {
   constructor (
@@ -43,7 +49,47 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
   }
 
   async init (): Promise<void> {
-    // May be used to create indicex in Mongo
+    // May be used to create indices in Mongo
+  }
+
+  /**
+   * Ensures indices in the collection or creates new if needed.
+   * Drops all other indices that are not in the list.
+   * @param indicesToEnsure MongoIndex
+   */
+  async ensureIndices (indicesToEnsure: MongoIndex[]): Promise<void> {
+    const indices = await this.collection.listIndexes().toArray()
+
+    for (const idx of indices) {
+      if (idx.key._id !== undefined) {
+        continue
+      }
+
+      const isEqualIndex = (ensureIdx: MongoIndex): boolean => {
+        const { key, options } = ensureIdx
+        const sameKeys = isShallowEqual(idx.key, key)
+
+        if (!sameKeys) {
+          return false
+        }
+
+        const shortIdxOptions = { ...idx }
+        delete shortIdxOptions.key
+        delete shortIdxOptions.v
+
+        return isShallowEqual(shortIdxOptions, options)
+      }
+
+      if (indicesToEnsure.some(isEqualIndex)) {
+        continue
+      }
+
+      await this.collection.dropIndex(idx.name)
+    }
+
+    for (const { key, options } of indicesToEnsure) {
+      await this.collection.createIndex(key, options)
+    }
   }
 
   async find (query: Query<T>, sort?: { [P in keyof T]?: 'ascending' | 'descending' }, limit?: number): Promise<T[]> {
@@ -99,7 +145,14 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account> impleme
   }
 
   async init (): Promise<void> {
-    await this.collection.createIndex({ email: 1 }, { unique: true })
+    const indicesToEnsure: MongoIndex[] = [
+      {
+        key: { email: 1 },
+        options: { unique: true, name: 'hc_account_email_1' }
+      }
+    ]
+
+    await this.ensureIndices(indicesToEnsure)
   }
 
   convertToObj (acc: Account): Account {
@@ -133,7 +186,26 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
   }
 
   async init (): Promise<void> {
-    await this.collection.createIndex({ workspace: 1 }, { unique: true })
+    // await this.collection.createIndex({ workspace: 1 }, { unique: true })
+
+    const indicesToEnsure: MongoIndex[] = [
+      {
+        key: { workspace: 1 },
+        options: {
+          unique: true,
+          name: 'hc_account_workspace_1'
+        }
+      },
+      {
+        key: { workspaceUrl: 1 },
+        options: {
+          unique: true,
+          name: 'hc_account_workspaceUrl_1'
+        }
+      }
+    ]
+
+    await this.ensureIndices(indicesToEnsure)
   }
 
   async countWorkspacesInRegion (region: string, upToVersion?: Data<Version>, visitedSince?: number): Promise<number> {
