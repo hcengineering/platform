@@ -208,6 +208,8 @@
     z-index: 401;
     position: fixed;
     background-color: transparent;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 
     @media print {
       position: static;

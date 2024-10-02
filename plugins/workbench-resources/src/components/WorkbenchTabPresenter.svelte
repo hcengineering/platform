@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnySvelteComponent, Location, ModernTab, navigate } from '@hcengineering/ui'
+  import { AnySvelteComponent, closePanel, getCurrentLocation, Location, ModernTab, navigate } from '@hcengineering/ui'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import { type Application, WorkbenchTab } from '@hcengineering/workbench'
@@ -31,7 +31,7 @@
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   let name: string | undefined = undefined
-  let label: IntlString = workbench.string.Tab
+  let label: IntlString | undefined = undefined
   let icon: Asset | AnySvelteComponent | undefined
   let iconProps: Record<string, any> | undefined
 
@@ -72,7 +72,7 @@
       const resolver = await getResource(application.locationDataResolver)
       const data = await resolver(tabLoc)
       name = data.name
-      label = data.nameIntl ?? label
+      label = data.nameIntl ?? application.label ?? workbench.string.Tab
 
       if (data.iconComponent) {
         icon = await getResource(data.iconComponent)
@@ -84,9 +84,8 @@
       const special = tabLoc.path[3]
       const specialLabel = application?.navigatorModel?.specials?.find((s) => s.id === special)?.label
       const resolvedLoc = await getResolvedLocation(tabLoc, application)
-
-      label = specialLabel ?? application?.label ?? workbench.string.Tab
       name = await getTabName(resolvedLoc)
+      label = specialLabel ?? application?.label ?? workbench.string.Tab
       icon = application?.icon
       iconProps = undefined
     }
@@ -97,6 +96,12 @@
   function handleClickTab (): void {
     selectTab(tab._id)
     const tabLoc = getTabLocation(tab)
+    const loc = getCurrentLocation()
+    const currentApp = loc.path[2]
+    const newApp = tabLoc.path[2]
+    if (newApp && newApp !== currentApp) {
+      closePanel(false)
+    }
     navigate(tabLoc)
   }
 

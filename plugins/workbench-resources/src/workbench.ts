@@ -15,7 +15,14 @@
 import { derived, get, writable } from 'svelte/store'
 import core, { concatLink, getCurrentAccount, type Ref } from '@hcengineering/core'
 import workbench, { type WorkbenchTab } from '@hcengineering/workbench'
-import { location as locationStore, locationToUrl, parseLocation, type Location, navigate } from '@hcengineering/ui'
+import {
+  location as locationStore,
+  locationToUrl,
+  parseLocation,
+  type Location,
+  navigate,
+  getCurrentLocation
+} from '@hcengineering/ui'
 import { getClient } from '@hcengineering/presentation'
 
 import { workspaceStore } from './utils'
@@ -103,7 +110,7 @@ export async function closeTab (tab: WorkbenchTab): Promise<void> {
 }
 
 export async function createTab (): Promise<void> {
-  const loc = get(locationStore)
+  const loc = getCurrentLocation()
   const client = getClient()
   const me = getCurrentAccount()
   const tab = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {

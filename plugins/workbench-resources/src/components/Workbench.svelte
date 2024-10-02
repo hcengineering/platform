@@ -161,6 +161,8 @@
 
   let tabs: WorkbenchTab[] = []
   let areTabsLoaded = false
+  let prevTab: Ref<WorkbenchTab> | undefined
+
   const query = createQuery()
   $: query.query(
     workbench.class.WorkbenchTab,
@@ -190,6 +192,7 @@
         location: locationToUrl(loc),
         isPinned: false
       })
+      prevTab = _id
       selectTab(_id)
     } else {
       const tab = tabs.find((t) => t._id === $tabIdStore)
@@ -200,6 +203,7 @@
         const url = locationToUrl(loc)
         const tabByUrl = tabs.find((t) => t.location === url)
         if (tabByUrl !== undefined) {
+          prevTab = tabByUrl._id
           selectTab(tabByUrl._id)
         } else {
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
@@ -207,6 +211,7 @@
             location: url,
             isPinned: false
           })
+          prevTab = _id
           selectTab(_id)
         }
       }
@@ -369,7 +374,13 @@
   async function syncLoc (loc: Location): Promise<void> {
     accessDeniedStore.set(false)
     const originalLoc = JSON.stringify(loc)
-
+    if ($tabIdStore !== prevTab) {
+      if (prevTab) {
+        clear(1)
+        clear(2)
+      }
+      prevTab = $tabIdStore
+    }
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
       const resolvedLoc = await resolveShortLink(loc)
