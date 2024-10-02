@@ -1,5 +1,5 @@
-//
-// Copyright © 2022-2024 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,13 +11,23 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  export let top: number
+</script>
 
-import { documentId, documentPlugin } from './plugin'
+<div class="drop-marker" style="top: {top}px;" />
 
-export * from './analytics'
-export * from './types'
-export * from './utils'
-export { documentId }
+<style lang="scss">
+  .drop-marker {
+    pointer-events: none;
+    position: absolute;
+    z-index: 100;
+    height: 0.125rem;
+    background-color: var(--primary-button-focused);
 
-export default documentPlugin
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 10rem;
+  }
+</style>

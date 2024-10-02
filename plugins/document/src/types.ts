@@ -14,7 +14,7 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { Account, AttachedDoc, Class, CollaborativeDoc, Ref, TypedSpace } from '@hcengineering/core'
+import { Account, AttachedDoc, Class, CollaborativeDoc, Rank, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
@@ -37,6 +37,8 @@ export interface Document extends AttachedDoc<Document, 'children', Teamspace>, 
   embeddings?: number
   labels?: number
   references?: number
+
+  rank: Rank
 }
 
 /** @public */
