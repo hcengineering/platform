@@ -17,5 +17,7 @@ import type { TxOperations } from '@hcengineering/core'
 import { type TrainingState, trainingStateOrder } from '@hcengineering/training'
 
 export async function trainingStateSort (_: TxOperations, states: TrainingState[]): Promise<TrainingState[]> {
-  return states.toSorted((state1, state2) => trainingStateOrder.indexOf(state1) - trainingStateOrder.indexOf(state2))
+  return states
+    .slice()
+    .sort((state1, state2) => trainingStateOrder.indexOf(state1) - trainingStateOrder.indexOf(state2))
 }

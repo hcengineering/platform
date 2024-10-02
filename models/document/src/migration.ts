@@ -13,16 +13,19 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, MeasureMetricsContext } from '@hcengineering/core'
+import { DOMAIN_TX, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
 import { type Document, type Teamspace } from '@hcengineering/document'
 import {
-  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  type MigrateUpdate,
+  type MigrationDocumentQuery,
+  tryMigrate
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { type Asset } from '@hcengineering/platform'
+import { makeRank } from '@hcengineering/rank'
 
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
 import { loadCollaborativeDoc, saveCollaborativeDoc, yDocCopyXmlField } from '@hcengineering/collaboration'
@@ -127,6 +130,30 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateRank (client: MigrationClient): Promise<void> {
+  const documents = await client.find<Document>(
+    DOMAIN_DOCUMENT,
+    {
+      _class: document.class.Document,
+      rank: { $exists: false }
+    },
+    { sort: { name: SortingOrder.Ascending } }
+  )
+
+  let rank = makeRank(undefined, undefined)
+  const operations: { filter: MigrationDocumentQuery<Document>, update: MigrateUpdate<Document> }[] = []
+
+  for (const doc of documents) {
+    operations.push({
+      filter: { _id: doc._id },
+      update: { $set: { rank } }
+    })
+    rank = makeRank(rank, undefined)
+  }
+
+  await client.bulk(DOMAIN_DOCUMENT, operations)
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -145,6 +172,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'migrateContentField',
         func: migrateContentField
+      },
+      {
+        state: 'migrateRank',
+        func: migrateRank
       }
     ])
   },

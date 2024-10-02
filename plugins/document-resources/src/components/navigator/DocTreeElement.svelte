@@ -64,6 +64,11 @@
   showMenu={hovered}
   {shouldTooltip}
   {forciblyСollapsed}
+  draggable
+  on:dragstart
+  on:dragover
+  on:dragend
+  on:drop
   on:click={() => {
     selectDocument()
     dispatch('click')
@@ -95,4 +100,5 @@
   <svelte:fragment slot="dropbox">
     <slot />
   </svelte:fragment>
+  <slot name="extra" />
 </NavItem>

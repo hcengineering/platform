@@ -18,7 +18,6 @@
   import {
     Icon,
     Label,
-    IconOpenedArrow,
     IconDown,
     AnySvelteComponent,
     IconSize,
@@ -56,6 +55,8 @@
   export let level: number = 0
   export let _id: any = undefined
 
+  export let draggable: boolean = false
+
   let labelEl: HTMLSpanElement
   let labelWidth: number
   let levelReset: boolean = false
@@ -85,7 +86,12 @@
   class:indent
   class:disabled
   class:showMenu
+  {draggable}
   class:noActions={$$slots.actions === undefined}
+  on:dragstart
+  on:dragover
+  on:dragend
+  on:drop
   on:mouseover={mouseOver}
   on:mouseleave={() => {
     if (levelReset && !showMenu) levelReset = false

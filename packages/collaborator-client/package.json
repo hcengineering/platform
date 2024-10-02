@@ -41,5 +41,9 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32"
+  },
+  "repository": "https://github.com/hcengineering/platform",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }

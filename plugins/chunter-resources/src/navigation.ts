@@ -151,7 +151,7 @@ export async function buildThreadLink (
     loc.path[2] = chunterId
   }
 
-  loc.query = { message: '' }
+  loc.query = { ...loc.query, message: '' }
   loc.path[3] = objectURI
   loc.path[4] = threadParent
   loc.fragment = undefined

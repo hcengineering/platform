@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -67,6 +67,9 @@
   }
 
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
+  let urlObjectId: Ref<Doc> | undefined = undefined
+  let urlObjectClass: Ref<Class<Doc>> | undefined = undefined
 
   let showArchive = false
   let archivedActivityNotifications: InboxNotification[] = []
@@ -165,14 +168,19 @@
 
     if (loc?.loc.path[3] == null) {
       selectedContext = undefined
+      urlObjectId = undefined
+      urlObjectClass = undefined
       restoreLocation(newLocation, notificationId)
       return
     }
 
     const [id, _class] = decodeObjectURI(loc?.loc.path[3] ?? '')
     const _id = await parseLinkId(linkProviders, id, _class)
+    urlObjectId = _id
+    urlObjectClass = _class
     const thread = loc?.loc.path[4] as Ref<ActivityMessage>
-    const context = $contextByDocStore.get(thread) ?? $contextByDocStore.get(_id)
+    const queryContext = loc.loc.query?.context as Ref<DocNotifyContext>
+    const context = $contextByIdStore.get(queryContext) ?? $contextByDocStore.get(thread) ?? $contextByDocStore.get(_id)
 
     selectedContextId = context?._id
 
@@ -199,7 +207,7 @@
 
   $: selectedContext = selectedContextId ? selectedContext ?? $contextByIdStore.get(selectedContextId) : undefined
 
-  $: void updateSelectedPanel(selectedContext)
+  $: void updateSelectedPanel(selectedContext, urlObjectClass)
   $: void updateTabItems(inboxData, $contextsStore)
 
   async function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): Promise<void> {
@@ -258,15 +266,28 @@
 
     void selectInboxContext(linkProviders, selectedContext, selectedNotification, event?.detail.object)
   }
+  function isChunterChannel (selectedContext: DocNotifyContext, urlObjectClass?: Ref<Class<Doc>>): boolean {
+    const isActivityMessageContext = hierarchy.isDerived(selectedContext.objectClass, activity.class.ActivityMessage)
+    const chunterClass = isActivityMessageContext
+      ? urlObjectClass ?? selectedContext.objectClass
+      : selectedContext.objectClass
+    return hierarchy.isDerived(chunterClass, chunter.class.ChunterSpace)
+  }
 
-  async function updateSelectedPanel (selectedContext?: DocNotifyContext): Promise<void> {
+  async function updateSelectedPanel (
+    selectedContext?: DocNotifyContext,
+    urlObjectClass?: Ref<Class<Doc>>
+  ): Promise<void> {
     if (selectedContext === undefined) {
       selectedComponent = undefined
       return
     }
 
-    const isChunterChannel = hierarchy.isDerived(selectedContext.objectClass, chunter.class.ChunterSpace)
-    const panelComponent = hierarchy.classHierarchyMixin(selectedContext.objectClass, view.mixin.ObjectPanel)
+    const isChunter = isChunterChannel(selectedContext, urlObjectClass)
+    const panelComponent = hierarchy.classHierarchyMixin(
+      isChunter ? urlObjectClass ?? selectedContext.objectClass : selectedContext.objectClass,
+      view.mixin.ObjectPanel
+    )
 
     selectedComponent = panelComponent?.component ?? view.component.EditDoc
 
@@ -278,7 +299,7 @@
         ops,
         contextNotifications
           .filter(({ _class, isViewed }) =>
-            isChunterChannel ? _class === notification.class.CommonInboxNotification : !isViewed
+            isChunter ? _class === notification.class.CommonInboxNotification : !isViewed
           )
           .map(({ _id }) => _id)
       )
@@ -432,8 +453,12 @@
       <Component
         is={selectedComponent}
         props={{
-          _id: selectedContext.objectId,
-          _class: selectedContext.objectClass,
+          _id: isChunterChannel(selectedContext, urlObjectClass)
+            ? urlObjectId ?? selectedContext.objectId
+            : selectedContext.objectId,
+          _class: isChunterChannel(selectedContext, urlObjectClass)
+            ? urlObjectClass ?? selectedContext.objectClass
+            : selectedContext.objectClass,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext }
