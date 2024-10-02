@@ -78,6 +78,7 @@ export class ReviewsPage extends CommonRecruitingPage {
 
   async enterVerdict (verdict: string): Promise<void> {
     await this.inputVerdict().click()
+    await this.inputVerdict().clear()
     await this.inputVerdict().fill(verdict)
   }
 
@@ -130,7 +131,7 @@ export class ReviewsPage extends CommonRecruitingPage {
     }
 
     if (typeof verdict === 'string') {
-      await expect(this.page.locator(`text=${verdict}`).first()).toBeVisible()
+      await expect(this.inputVerdict()).toHaveValue(verdict)
     }
   }
 
