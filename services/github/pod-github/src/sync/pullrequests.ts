@@ -700,10 +700,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const approvedOrChangesRequested = new Map<Ref<Person>, PullRequestReviewState>()
     const reviewStates = new Map<Ref<Person>, PullRequestReviewState[]>()
 
-    const sortedReviews: (Review & { date: number })[] = external.reviews.nodes.map((it) => ({
-      ...it,
-      date: new Date(it.updatedAt ?? it.submittedAt ?? it.createdAt).getTime()
-    }))
+    const sortedReviews: (Review & { date: number })[] = external.reviews.nodes
+      .filter((it) => it != null)
+      .map((it) => ({
+        ...it,
+        date: new Date(it.updatedAt ?? it.submittedAt ?? it.createdAt).getTime()
+      }))
 
     for (const it of external.latestReviews.nodes) {
       if (sortedReviews.some((qt) => it.id === qt.id)) {
