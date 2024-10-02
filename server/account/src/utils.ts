@@ -189,5 +189,8 @@ export function areDbIdsEqual (obj1: any, obj2: any): boolean {
 }
 
 export function isShallowEqual (obj1: Record<string, any>, obj2: Record<string, any>): boolean {
-  return Object.keys(obj1).every((k) => obj1[k] === obj2[k]) && Object.keys(obj1).length === Object.keys(obj2).length
+  const keys1 = Object.keys(obj1)
+  const keys2 = Object.keys(obj2)
+
+  return keys1.length === keys2.length && keys1.every((k) => obj1[k] === obj2[k])
 }
