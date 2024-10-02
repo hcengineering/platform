@@ -43,5 +43,9 @@
     "@hcengineering/preference": "^0.6.13",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13"
+  },
+  "repository": "https://github.com/hcengineering/platform",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   }
 }
