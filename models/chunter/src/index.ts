@@ -64,6 +64,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: chunter.string.ApplicationLabelChunter,
+      locationDataResolver: chunter.function.LocationDataResolver,
       icon: chunter.icon.Chunter,
       alias: chunterId,
       hidden: false,

@@ -34,6 +34,7 @@
     "WidgetPreferences": "Widget preferences",
     "OpenInSidebar": "Open in sidebar",
     "OpenInSidebarNewTab": "Open in sidebar new tab",
-    "ConfigureWidgets": "Configure widgets"
+    "ConfigureWidgets": "Configure widgets",
+    "Tab": "Tab"
   }
 }

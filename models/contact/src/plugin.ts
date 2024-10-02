@@ -21,9 +21,10 @@ import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineer
 import { type NotificationGroup } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
-import type { AnyComponent } from '@hcengineering/ui/src/types'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
+import { type LocationData } from '@hcengineering/workbench'
 
 export default mergeIds(contactId, contact, {
   activity: {
@@ -63,7 +64,6 @@ export default mergeIds(contactId, contact, {
     ChannelIcon: '' as AnyComponent
   },
   string: {
-    Persons: '' as IntlString,
     SearchEmployee: '' as IntlString,
     SearchPerson: '' as IntlString,
     SearchOrganization: '' as IntlString,
@@ -97,7 +97,6 @@ export default mergeIds(contactId, contact, {
 
     ConfigLabel: '' as IntlString,
     ConfigDescription: '' as IntlString,
-    Employees: '' as IntlString,
     People: '' as IntlString
   },
   completion: {
@@ -142,5 +141,8 @@ export default mergeIds(contactId, contact, {
     ChannelIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     SetPersonStore: '' as Resource<(manager: DocManager<any>) => void>,
     PersonFilterFunction: '' as Resource<(doc: Doc, target: Doc) => boolean>
+  },
+  resolver: {
+    LocationData: '' as Resource<(loc: Location) => Promise<LocationData>>
   }
 })

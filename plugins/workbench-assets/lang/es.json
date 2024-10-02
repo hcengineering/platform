@@ -34,6 +34,7 @@
     "WidgetPreferences": "Preferencias del widget",
     "OpenInSidebar": "Abrir en la barra lateral",
     "OpenInSidebarNewTab": "Abrir en una nueva pestaña de la barra lateral",
-    "ConfigureWidgets": "Configurar widgets"
+    "ConfigureWidgets": "Configurar widgets",
+    "Tab": "Pestaña"
   }
 }

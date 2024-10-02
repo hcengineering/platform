@@ -324,6 +324,7 @@ export function createModel (builder: Builder): void {
       hidden: false,
       // component: contact.component.ContactsTabs,
       locationResolver: contact.resolver.Location,
+      locationDataResolver: contact.resolver.LocationData,
       navigatorModel: {
         spaces: [],
         specials: [

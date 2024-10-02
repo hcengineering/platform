@@ -59,6 +59,7 @@ import {
   getMessageLink,
   getMessageLocation,
   getThreadLink,
+  locationDataResolver,
   openChannelInSidebar,
   openChannelInSidebarAction,
   openThreadInSidebar,
@@ -203,7 +204,8 @@ export default async (): Promise<Resources> => ({
     CloseChatWidgetTab: closeChatWidgetTab,
     OpenChannelInSidebar: openChannelInSidebar,
     CanTranslateMessage: canTranslateMessage,
-    OpenThreadInSidebar: openThreadInSidebar
+    OpenThreadInSidebar: openThreadInSidebar,
+    LocationDataResolver: locationDataResolver
   },
   actionImpl: {
     ArchiveChannel,

@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 
-import { type Doc, type Space } from '@hcengineering/core'
+import { type Doc, type Ref, type Space } from '@hcengineering/core'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { workbenchId } from '@hcengineering/workbench'
 import workbench from '@hcengineering/workbench-resources/src/plugin'
+import type { ActionCategory, ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(workbenchId, workbench, {
   component: {
@@ -30,6 +31,15 @@ export default mergeIds(workbenchId, workbench, {
   },
   function: {
     HasArchiveSpaces: '' as Resource<(spaces: Space[]) => Promise<boolean>>,
-    IsOwner: '' as Resource<(docs: Doc[]) => Promise<boolean>>
+    IsOwner: '' as Resource<(docs: Doc[]) => Promise<boolean>>,
+    CanCloseTab: '' as Resource<ViewActionAvailabilityFunction<Doc>>
+  },
+  category: {
+    Workbench: '' as Ref<ActionCategory>
+  },
+  actionImpl: {
+    PinTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>,
+    UnpinTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>,
+    CloseTab: '' as Resource<(doc?: Doc | Doc[]) => Promise<void>>
   }
 })
