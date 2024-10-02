@@ -254,7 +254,8 @@ export default plugin(workbenchId, {
     NavigationExpandedDefault: '' as Metadata<boolean>
   },
   extensions: {
-    WorkbenchExtensions: '' as ComponentExtensionId
+    WorkbenchExtensions: '' as ComponentExtensionId,
+    WorkbenchTabExtensions: '' as ComponentExtensionId
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

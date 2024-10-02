@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AnySvelteComponent, Location, ModernTab, navigate } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import { type Application, WorkbenchTab } from '@hcengineering/workbench'
   import { Class, Doc, Ref } from '@hcengineering/core'
@@ -123,4 +123,8 @@
   on:click={handleClickTab}
   on:close={handleCloseTab}
   on:contextmenu={handleMenu}
-/>
+>
+  <svelte:fragment slot="prefix">
+    <ComponentExtensions extension={workbench.extensions.WorkbenchTabExtensions} props={{ tab }} />
+  </svelte:fragment>
+</ModernTab>

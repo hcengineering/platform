@@ -34,7 +34,8 @@ export default mergeIds(chunterId, chunter, {
     ChatWidgetTab: '' as AnyComponent,
     ChatMessageNotificationLabel: '' as AnyComponent,
     ThreadNotificationPresenter: '' as AnyComponent,
-    JoinChannelNotificationPresenter: '' as AnyComponent
+    JoinChannelNotificationPresenter: '' as AnyComponent,
+    WorkbenchTabExtension: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,
