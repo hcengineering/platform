@@ -140,6 +140,8 @@
       const isReload = provider.jumpToMessage(msgData)
       if (isReload) {
         reinitializeScroll()
+      } else {
+        scrollToMessage()
       }
     } else if (selectedMessageId === undefined) {
       provider.jumpToEnd()
@@ -206,7 +208,7 @@
         return
       }
     } else {
-      msgElement.scrollIntoView({ block: 'end' })
+      msgElement.scrollIntoView({ block: 'start' })
     }
     read()
   }
@@ -604,7 +606,7 @@
         attachmentImageSize="x-large"
         type={canGroup ? 'short' : 'default'}
         isHighlighted={isSelected}
-        shouldScroll={isSelected}
+        shouldScroll={false}
         {readonly}
       />
     {/each}

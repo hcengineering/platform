@@ -17,8 +17,6 @@
   import { MarkupNode } from '@hcengineering/text'
   import { Component } from '@hcengineering/ui'
 
-  import { preloadedComponentsStore } from '../../utils'
-
   export let node: MarkupNode
   export let preview = false
 
@@ -29,10 +27,6 @@
 
 {#if node}
   <pre class="proseCodeBlock" style:margin={preview ? '0' : null}><code
-      >{#if $preloadedComponentsStore.has(diffview.component.Highlight)}<svelte:component
-          this={$preloadedComponentsStore.get(diffview.component.Highlight)}
-          {value}
-          {language}
-        />{:else}<Component is={diffview.component.Highlight} props={{ value, language }} />{/if}</code
+      ><Component is={diffview.component.Highlight} props={{ value, language }} /></code
     ></pre>
 {/if}

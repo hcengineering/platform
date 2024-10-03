@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, getResourceSync } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
   import { SvelteComponent } from 'svelte'
   import type { AnyComponent, AnySvelteComponent } from '../types'
@@ -46,55 +46,76 @@
       : _is == null
         ? Promise.reject(new Error('is not defined'))
         : Promise.resolve(_is)
+  const SyncedComponent = is != null && typeof is === 'string' ? getResourceSync<any>(is) : undefined
 </script>
 
 {#if _is}
-  {#await component}
-    {#if showLoading}
-      <Loading {shrink} />
-    {/if}
-  {:then Ctor}
-    <ErrorBoundary>
-      {#if $$slots.default !== undefined}
-        <Ctor
-          bind:this={innerRef}
-          {..._props}
-          {inline}
-          {disabled}
-          on:change
-          on:close
-          on:open
-          on:click
-          on:delete
-          on:action
-          on:valid
-          on:validate
-          on:submit
-        >
-          <slot />
-        </Ctor>
-      {:else}
-        <Ctor
-          bind:this={innerRef}
-          {..._props}
-          {inline}
-          {disabled}
-          on:change
-          on:close
-          on:open
-          on:click
-          on:delete
-          on:action
-          on:valid
-          on:validate
-          on:submit
-        />
+  {#if SyncedComponent}
+    <SyncedComponent
+      bind:this={innerRef}
+      {..._props}
+      {inline}
+      {disabled}
+      on:change
+      on:close
+      on:open
+      on:click
+      on:delete
+      on:action
+      on:valid
+      on:validate
+      on:submit
+    >
+      <slot />
+    </SyncedComponent>
+  {:else}
+    {#await component}
+      {#if showLoading}
+        <Loading {shrink} />
       {/if}
-    </ErrorBoundary>
-  {:catch err}
-    <pre style="max-height: 140px; overflow: auto;">
+    {:then Ctor}
+      <ErrorBoundary>
+        {#if $$slots.default !== undefined}
+          <Ctor
+            bind:this={innerRef}
+            {..._props}
+            {inline}
+            {disabled}
+            on:change
+            on:close
+            on:open
+            on:click
+            on:delete
+            on:action
+            on:valid
+            on:validate
+            on:submit
+          >
+            <slot />
+          </Ctor>
+        {:else}
+          <Ctor
+            bind:this={innerRef}
+            {..._props}
+            {inline}
+            {disabled}
+            on:change
+            on:close
+            on:open
+            on:click
+            on:delete
+            on:action
+            on:valid
+            on:validate
+            on:submit
+          />
+        {/if}
+      </ErrorBoundary>
+    {:catch err}
+      <pre style="max-height: 140px; overflow: auto;">
       <ErrorPresenter error={err} />
     </pre>
-    <!-- <Icon icon={ui.icon.Error} size="32" /> -->
-  {/await}
+      <!-- <Icon icon={ui.icon.Error} size="32" /> -->
+    {/await}
+  {/if}
 {/if}

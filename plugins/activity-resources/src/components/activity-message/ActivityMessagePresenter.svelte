@@ -19,8 +19,6 @@
   import { Action, Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
-  import { presentersStore } from '../../activity'
-
   export let value: DisplayActivityMessage
   export let doc: Doc | undefined = undefined
   export let showNotify: boolean = false
@@ -48,37 +46,9 @@
   const hierarchy = client.getHierarchy()
 
   $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
-  $: presenter = $presentersStore.get(value._class)
 </script>
 
-{#if presenter}
-  <svelte:component
-    this={presenter}
-    space={value.space}
-    {value}
-    {doc}
-    {showNotify}
-    {skipLabel}
-    {isHighlighted}
-    {isSelected}
-    {shouldScroll}
-    {embedded}
-    {withActions}
-    {showEmbedded}
-    {hideFooter}
-    {actions}
-    {hoverable}
-    {hoverStyles}
-    {withShowMore}
-    {attachmentImageSize}
-    {videoPreload}
-    {hideLink}
-    {type}
-    {readonly}
-    {compact}
-    {onClick}
-  />
-{:else if objectPresenter}
+{#if objectPresenter}
   <Component
     is={objectPresenter.presenter}
     props={{
