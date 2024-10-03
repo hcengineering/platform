@@ -161,7 +161,7 @@
             </button>
           </div>
         {/if}
-        <div class="flex-row-center" style:-webkit-app-region={'no-drag'}>
+        <div class="flex-row-center left-items" style:-webkit-app-region={'no-drag'}>
           <RootBarExtension position="left" />
         </div>
         <div
@@ -266,5 +266,9 @@
         flex-direction: column;
       }
     }
+  }
+
+  .left-items {
+    overflow-x: auto;
   }
 </style>

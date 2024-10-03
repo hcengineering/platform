@@ -4,7 +4,8 @@ import {
   getCurrentResolvedLocation,
   getLocation,
   type Location,
-  navigate
+  navigate,
+  languageStore
 } from '@hcengineering/ui'
 import { type Ref, type Doc, type Class, generateId } from '@hcengineering/core'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
@@ -16,12 +17,12 @@ import {
   type ThreadMessage
 } from '@hcengineering/chunter'
 import { type DocNotifyContext, notificationId } from '@hcengineering/notification'
-import workbench, { type Widget, workbenchId } from '@hcengineering/workbench'
-import { classIcon, getObjectLinkId } from '@hcengineering/view-resources'
+import workbench, { type Widget, workbenchId, type LocationData } from '@hcengineering/workbench'
+import { classIcon, getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
 import { getClient } from '@hcengineering/presentation'
 import view, { encodeObjectURI, decodeObjectURI } from '@hcengineering/view'
 import { createWidgetTab, isElementFromSidebar, sidebarStore } from '@hcengineering/workbench-resources'
-import { type Asset, translate } from '@hcengineering/platform'
+import { type Asset, type IntlString, translate } from '@hcengineering/platform'
 import contact from '@hcengineering/contact'
 import { get } from 'svelte/store'
 
@@ -151,7 +152,7 @@ export async function buildThreadLink (
     loc.path[2] = chunterId
   }
 
-  loc.query = { message: '' }
+  loc.query = { ...loc.query, message: '' }
   loc.path[3] = objectURI
   loc.path[4] = threadParent
   loc.fragment = undefined
@@ -389,5 +390,75 @@ export function removeThreadFromLoc (thread?: Ref<ActivityMessage>): void {
 export function closeChatWidgetTab (tab?: ChatWidgetTab): void {
   if (tab?.allowedPath !== undefined) {
     removeThreadFromLoc(tab.data.thread)
+  }
+}
+
+export async function locationDataResolver (loc: Location): Promise<LocationData> {
+  const point = loc.path[3]
+
+  if (point == null || point === '') {
+    return { name: await translate(chunter.string.Chat, {}, get(languageStore)) }
+  }
+
+  const specialsData: Record<
+  string,
+  {
+    label: IntlString
+    icon: Asset
+  }
+  > = {
+    threads: {
+      label: chunter.string.Threads,
+      icon: chunter.icon.Chunter
+      // icon: chunter.icon.Thread
+    },
+    saved: {
+      label: chunter.string.Saved,
+      icon: chunter.icon.Chunter
+      // icon: chunter.icon.Bookmarks
+    },
+    chunterBrowser: {
+      label: chunter.string.ChunterBrowser,
+      icon: chunter.icon.Chunter
+      // icon: chunter.icon.ChunterBrowser
+    },
+    channels: {
+      label: chunter.string.Channels,
+      icon: chunter.icon.Chunter
+      // icon: chunter.icon.Hashtag
+    }
+  }
+
+  const specialData = specialsData[point]
+
+  if (specialData !== undefined) {
+    return { name: await translate(specialData.label, {}, get(languageStore)), icon: specialData.icon }
+  }
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const [id, _class] = decodeObjectURI(loc.path[3])
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+  const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
+
+  const object = await client.findOne(_class, { _id })
+  if (object === undefined) return { name: await translate(chunter.string.Chat, {}, get(languageStore)) }
+
+  const titleIntl = client.getHierarchy().getClass(object._class).label
+  const iconMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIcon)
+  const isDirect = hierarchy.isDerived(_class, chunter.class.DirectMessage)
+  const isChunterSpace = hierarchy.isDerived(_class, chunter.class.ChunterSpace)
+  const name = (await getChannelName(_id, _class, object)) ?? (await translate(titleIntl, {}))
+
+  return {
+    name,
+    icon: chunter.icon.Chunter,
+    iconComponent: isChunterSpace ? iconMixin?.component : undefined,
+    iconProps: {
+      _id: object._id,
+      value: object,
+      size: isDirect ? 'tiny' : 'x-small'
+    }
   }
 }

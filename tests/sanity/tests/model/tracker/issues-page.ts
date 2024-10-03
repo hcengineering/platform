@@ -8,7 +8,7 @@ import { NewIssue } from './types'
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 export class IssuesPage extends CommonTrackerPage {
   modelSelectorAll = (): Locator => this.page.locator('label[data-id="tab-all"]')
-  issues = (): Locator => this.page.locator('text="Issues"')
+  issues = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
   subIssues = (): Locator => this.page.locator('button:has-text("Add sub-issue")')
   newIssue = (): Locator => this.page.locator('#new-issue')
   modelSelectorActive = (): Locator => this.page.locator('label[data-id="tab-active"]')
@@ -109,7 +109,7 @@ export class IssuesPage extends CommonTrackerPage {
   doneHeaderKanban = (): Locator => this.page.locator('.header :text-is("Done")').first()
   canceledHeaderKanban = (): Locator => this.page.locator('.header :text-is("Canceled")').first()
 
-  myIssuesButton = (): Locator => this.page.locator('text="My issues"')
+  myIssuesButton = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="My issues"')
   assignedTab = (): Locator => this.page.locator('[data-id="tab-assigned"]')
   createdTab = (): Locator => this.page.locator('[data-id="tab-created"]')
   subscribedTab = (): Locator => this.page.locator('[data-id="tab-subscribed"]')
@@ -140,7 +140,7 @@ export class IssuesPage extends CommonTrackerPage {
   timeSpentReports = (): Locator => this.page.getByText('Time spent reports', { exact: true })
   addTimeReport = (): Locator => this.page.locator('text="Add time report"')
   issueName = (name: string): Locator => this.page.locator(`text="${name}"`)
-  issuesButton = (): Locator => this.page.locator('text="Issues"')
+  issuesButton = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
   viewButton = (): Locator => this.page.locator('button[data-id="btn-viewOptions"]')
   orderingButton = (): Locator => this.page.locator('.ordering button')
   modifiedDateMenuItem = (): Locator => this.page.locator('button.menu-item', { hasText: 'Modified date' })

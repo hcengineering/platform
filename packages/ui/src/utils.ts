@@ -306,6 +306,7 @@ Array<
     id: string
     component: AnyComponent | AnySvelteComponent
     props?: Record<string, any>
+    order: number
   }
 ]
 >
@@ -331,14 +332,15 @@ export async function formatDuration (duration: number, language: string): Promi
   return text
 }
 
-export function pushRootBarComponent (pos: 'left' | 'right', component: AnyComponent): void {
+export function pushRootBarComponent (pos: 'left' | 'right', component: AnyComponent, order?: number): void {
   rootBarExtensions.update((cur) => {
     if (cur.find((p) => p[1].component === component) === undefined) {
       cur.push([
         pos,
         {
           id: component,
-          component
+          component,
+          order: order ?? 1000
         }
       ])
     }
@@ -369,6 +371,7 @@ export function pushRootBarProgressComponent (
         {
           id,
           component: RootStatusComponent,
+          order: 10,
           props: {
             label,
             onProgress,

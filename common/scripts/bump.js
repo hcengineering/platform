@@ -53,9 +53,15 @@ function publish (name) {
 function main () {
   const args = process.argv
 
-  const version = args[2]
+  const doPublish = args.includes('--publish')
+
+  const version = args.reverse().shift()
   if (version === undefined || version === '') {
-    console.log('usage: node bump.js <version>')
+    console.log('usage: node bump.js [--publish] <version>')
+    return
+  }
+  if( !/^(\d+\.)?(\d+\.)?(\*|\d+)$/.test(version)) {
+    console.log('Invalid <version>', version, ' should be xx.xx.xx')
     return
   }
 
@@ -76,10 +82,11 @@ function main () {
     const res = JSON.stringify(jsons[packageName], undefined, 2)
     fs.writeFileSync(file, res + '\n')
   }
-
-  for (const packageName of packageNames) {
-    if (shouldPublish(packageName)) {
-      publish(packageName)
+  if(doPublish) { 
+    for (const packageName of packageNames) {
+      if (shouldPublish(packageName)) {
+        publish(packageName)
+      }
     }
   }
 

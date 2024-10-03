@@ -15,17 +15,17 @@
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Button, Dialog, tooltip } from '@hcengineering/ui'
+  import { Dialog, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
 
-  import presentation from '../plugin'
-
-  import { getFileUrl } from '../file'
   import { BlobMetadata } from '../types'
 
   import ActionContext from './ActionContext.svelte'
   import FilePreview from './FilePreview.svelte'
-  import Download from './icons/Download.svelte'
+  import DownloadFileButton from './DownloadFileButton.svelte'
+  import { ComponentExtensions } from '../index'
+  import presentation from '../plugin'
+  import FileTypeIcon from './FileTypeIcon.svelte'
 
   export let file: Ref<Blob> | undefined
   export let name: string
@@ -38,21 +38,11 @@
 
   const dispatch = createEventDispatcher()
 
-  let download: HTMLAnchorElement
-
   onMount(() => {
     if (fullSize) {
       dispatch('fullsize')
     }
   })
-
-  function iconLabel (name: string): string {
-    const parts = `${name}`.split('.')
-    const ext = parts[parts.length - 1]
-    return ext.substring(0, 4).toUpperCase()
-  }
-
-  $: srcRef = file !== undefined ? getFileUrl(file, name) : undefined
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -67,9 +57,7 @@
     <div class="antiTitle icon-wrapper">
       {#if showIcon}
         <div class="wrapped-icon">
-          <div class="flex-center icon">
-            {iconLabel(name)}
-          </div>
+          <FileTypeIcon {name} />
         </div>
       {/if}
       <span class="wrapped-title" use:tooltip={{ label: getEmbeddedLabel(name) }}>{name}</span>
@@ -77,39 +65,19 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#await srcRef then src}
-      {#if src !== ''}
-        <a class="no-line" href={src} download={name} bind:this={download}>
-          <Button
-            icon={Download}
-            kind={'ghost'}
-            on:click={() => {
-              download.click()
-            }}
-            showTooltip={{ label: presentation.string.Download }}
-          />
-        </a>
-      {/if}
-    {/await}
+    <DownloadFileButton {name} {file} />
+    <ComponentExtensions
+      extension={presentation.extension.FilePreviewPopupActions}
+      props={{
+        file,
+        name,
+        contentType,
+        metadata
+      }}
+    />
   </svelte:fragment>
 
   {#if file}
     <FilePreview {file} {contentType} {name} {metadata} {props} fit />
   {/if}
 </Dialog>
-
-<style lang="scss">
-  .icon {
-    position: relative;
-    flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
-    font-weight: 500;
-    font-size: 0.625rem;
-    color: var(--primary-button-color);
-    background-color: var(--primary-button-default);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
-    cursor: pointer;
-  }
-</style>

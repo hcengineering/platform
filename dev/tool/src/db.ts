@@ -140,6 +140,7 @@ export async function moveAccountDbFromMongoToPG (
   mongoDb: AccountDB,
   pgDb: AccountDB
 ): Promise<void> {
+  // [accountId, workspaceId]
   const workspaceAssignments: [ObjectId, ObjectId][] = []
   const accounts = await listAccounts(mongoDb)
   const workspaces = await listWorkspacesPure(mongoDb)
@@ -153,14 +154,26 @@ export async function moveAccountDbFromMongoToPG (
 
     delete (pgAccount as any).workspaces
 
+    if (pgAccount.createdOn == null) {
+      pgAccount.createdOn = Date.now()
+    }
+
+    if (pgAccount.first == null) {
+      pgAccount.first = 'NotSet'
+    }
+
+    if (pgAccount.last == null) {
+      pgAccount.last = 'NotSet'
+    }
+
+    for (const workspaceString of new Set(mongoAccount.workspaces.map((w) => w.toString()))) {
+      workspaceAssignments.push([pgAccount._id, workspaceString])
+    }
+
     const exists = await getAccount(pgDb, pgAccount.email)
     if (exists === null) {
       await pgDb.account.insertOne(pgAccount)
       ctx.info('Moved account', { email: pgAccount.email })
-
-      for (const workspace of mongoAccount.workspaces) {
-        workspaceAssignments.push([pgAccount._id, workspace.toString()])
-      }
     }
   }
 
@@ -170,6 +183,17 @@ export async function moveAccountDbFromMongoToPG (
       _id: mongoWorkspace._id.toString()
     }
 
+    if (pgWorkspace.createdOn == null) {
+      pgWorkspace.createdOn = Date.now()
+    }
+
+    // delete deprecated fields
+    delete (pgWorkspace as any).createProgress
+    delete (pgWorkspace as any).creating
+    delete (pgWorkspace as any).productId
+    delete (pgWorkspace as any).organisation
+
+    // assigned separately
     delete (pgWorkspace as any).accounts
 
     const exists = await getWorkspaceById(pgDb, pgWorkspace.workspace)
@@ -195,9 +219,19 @@ export async function moveAccountDbFromMongoToPG (
     }
   }
 
-  if (workspaceAssignments.length > 0) {
-    for (const [accountId, workspaceId] of workspaceAssignments) {
-      await pgDb.assignWorkspace(accountId, workspaceId)
-    }
+  const pgAssignments = (await listAccounts(pgDb)).reduce<Record<ObjectId, ObjectId[]>>((assignments, acc) => {
+    assignments[acc._id] = acc.workspaces
+
+    return assignments
+  }, {})
+  const assignmentsToInsert = workspaceAssignments.filter(
+    ([accountId, workspaceId]) =>
+      pgAssignments[accountId] === undefined || !pgAssignments[accountId].includes(workspaceId)
+  )
+
+  for (const [accountId, workspaceId] of assignmentsToInsert) {
+    await pgDb.assignWorkspace(accountId, workspaceId)
   }
+
+  ctx.info('Assignments made', { count: assignmentsToInsert.length })
 }

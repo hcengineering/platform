@@ -11,9 +11,11 @@
     }
     oldLoc = newLocation.path[0]
   })
+
+  $: sorted = $rootBarExtensions.sort((a, b) => a[1].order - b[1].order)
 </script>
 
-{#each $rootBarExtensions as ext (ext[1].id)}
+{#each sorted as ext (ext[1].id)}
   {#if ext[0] === position}
     <div id={ext[1].id} style:margin-right={'1px'}>
       <Component

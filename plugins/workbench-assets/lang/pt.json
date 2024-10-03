@@ -34,6 +34,7 @@
     "WidgetPreferences": "Preferências do widget",
     "OpenInSidebar": "Abrir na barra lateral",
     "OpenInSidebarNewTab": "Abrir em uma nova aba da barra lateral",
-    "ConfigureWidgets": "Configurar widgets"
+    "ConfigureWidgets": "Configurar widgets",
+    "Tab": "Aba"
   }
 }

@@ -16,11 +16,20 @@
   import { Analytics } from '@hcengineering/analytics'
   import contact, { PersonAccount } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import core, {
+    AccountRole,
+    Class,
+    Doc,
+    getCurrentAccount,
+    hasAccountRole,
+    Ref,
+    SortingOrder,
+    Space
+  } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
+  import { broadcastEvent, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import {
     ActionContext,
     ComponentExtensions,
@@ -30,55 +39,62 @@
     reduceCalls
   } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import support, { SupportStatus, supportLink } from '@hcengineering/support'
+  import support, { supportLink, SupportStatus } from '@hcengineering/support'
   import {
     AnyComponent,
+    areLocationsEqual,
     Button,
+    closePanel,
+    closePopup,
+    closeTooltip,
     CompAndProps,
     Component,
+    defineSeparators,
+    deviceOptionsStore as deviceInfo,
     Dock,
+    getCurrentLocation,
+    getLocation,
     IconSettings,
     Label,
     Location,
+    location,
+    locationStorageKeyId,
+    locationToUrl,
+    mainSeparators,
+    navigate,
+    openPanel,
     PanelInstance,
     Popup,
     PopupAlignment,
     PopupPosAlignment,
     PopupResult,
-    ResolvedLocation,
-    Separator,
-    TooltipInstance,
-    areLocationsEqual,
-    closePanel,
-    closePopup,
-    closeTooltip,
-    defineSeparators,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
-    getLocation,
-    location,
-    locationStorageKeyId,
-    navigate,
-    openPanel,
     popupstore,
     pushRootBarComponent,
+    ResolvedLocation,
     resolvedLocationStore,
+    Separator,
     setResolvedLocation,
     showPopup,
-    workbenchSeparators,
-    mainSeparators
+    TooltipInstance,
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
+    accessDeniedStore,
     ActionHandler,
     ListSelectionProvider,
-    NavLink,
-    accessDeniedStore,
     migrateViewOpttions,
+    NavLink,
     parseLinkId,
     updateFocus
   } from '@hcengineering/view-resources'
-  import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
+  import type {
+    Application,
+    NavigatorModel,
+    SpecialNavModel,
+    ViewConfiguration,
+    WorkbenchTab
+  } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
   import workbench from '../plugin'
@@ -96,6 +112,7 @@
   import TopMenu from './icons/TopMenu.svelte'
   import WidgetsBar from './sidebar/Sidebar.svelte'
   import { sidebarStore, SidebarVariant, syncSidebarState } from '../sidebar'
+  import { getTabLocation, selectTab, syncWorkbenchTab, tabIdStore, tabsStore } from '../workbench'
 
   let contentPanel: HTMLElement
 
@@ -142,13 +159,74 @@
     }
   }
 
+  let tabs: WorkbenchTab[] = []
+  let areTabsLoaded = false
+  let prevTab: Ref<WorkbenchTab> | undefined
+
+  const query = createQuery()
+  $: query.query(
+    workbench.class.WorkbenchTab,
+    {},
+    (res) => {
+      tabs = res
+      tabsStore.set(tabs)
+      if (!areTabsLoaded) {
+        void initCurrentTab(tabs)
+        areTabsLoaded = true
+      }
+    },
+    {
+      sort: {
+        isPinned: SortingOrder.Descending,
+        createdOn: SortingOrder.Ascending
+      }
+    }
+  )
+
+  async function initCurrentTab (tabs: WorkbenchTab[]): Promise<void> {
+    if (tabs.length === 0) {
+      const loc = getCurrentLocation()
+
+      const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
+        attachedTo: account._id,
+        location: locationToUrl(loc),
+        isPinned: false
+      })
+      prevTab = _id
+      selectTab(_id)
+    } else {
+      const tab = tabs.find((t) => t._id === $tabIdStore)
+      const loc = getCurrentLocation()
+      const tabLoc = tab ? getTabLocation(tab) : undefined
+      const isLocEqual = tabLoc ? areLocationsEqual(loc, tabLoc) : false
+      if (!isLocEqual) {
+        const url = locationToUrl(loc)
+        const tabByUrl = tabs.find((t) => t.location === url)
+        if (tabByUrl !== undefined) {
+          prevTab = tabByUrl._id
+          selectTab(tabByUrl._id)
+        } else {
+          const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
+            attachedTo: account._id,
+            location: url,
+            isPinned: false
+          })
+          prevTab = _id
+          selectTab(_id)
+        }
+      }
+    }
+  }
+
   onMount(() => {
     pushRootBarComponent('right', view.component.SearchSelector)
+    pushRootBarComponent('left', workbench.component.WorkbenchTabs, 30)
     void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())
     })
     syncSidebarState()
+    syncWorkbenchTab()
   })
 
   const account = getCurrentAccount() as PersonAccount
@@ -173,6 +251,7 @@
 
   const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
+      tabs = []
       // Switch of workspace
       return
     }
@@ -296,7 +375,13 @@
   async function syncLoc (loc: Location): Promise<void> {
     accessDeniedStore.set(false)
     const originalLoc = JSON.stringify(loc)
-
+    if ($tabIdStore !== prevTab) {
+      if (prevTab) {
+        clear(1)
+        clear(2)
+      }
+      prevTab = $tabIdStore
+    }
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
       const resolvedLoc = await resolveShortLink(loc)

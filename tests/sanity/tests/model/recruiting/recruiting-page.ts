@@ -8,8 +8,8 @@ export class RecruitingPage {
   }
 
   recruitApplication = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
-  talentsNavElement = (): Locator => this.page.locator('text=Talents')
-  reviews = (): Locator => this.page.locator('text=Reviews')
+  talentsNavElement = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
+  reviews = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Reviews')
   reviewButton = (): Locator => this.page.getByRole('button', { name: 'Review', exact: true })
 
   frontendEngineerOption = (): Locator => this.page.locator('td:has-text("Frontend Engineer")')
@@ -27,13 +27,13 @@ export class RecruitingPage {
   newTalentModalPath = (): Locator => this.page.getByText('Person New Talent')
   recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
   applicationsLink = (): Locator => this.page.locator('text=/^Applications/')
-  talentsLink = (): Locator => this.page.locator('text=Talents')
-  vacanciesLink = (): Locator => this.page.locator('text=Vacancies')
+  talentsLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
+  vacanciesLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Vacancies')
   softwareEngineerLink = (): Locator => this.page.locator('text=Software Engineer')
   applicationLabelChunterButton = (): Locator =>
     this.page.locator('[id="app-chunter\\:string\\:ApplicationLabelChunter"]')
 
-  generalChatLink = (): Locator => this.page.locator('text=general')
+  generalChatLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=general')
   contactsButton = (): Locator => this.page.locator('[id="app-contact\\:string\\:Contacts"]')
   employeeSection = (): Locator => this.page.getByRole('button', { name: 'Employee' })
   johnAppleseed = (): Locator => this.page.locator('text=Appleseed John')

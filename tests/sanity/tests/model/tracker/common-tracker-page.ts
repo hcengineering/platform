@@ -53,7 +53,7 @@ export class CommonTrackerPage extends CalendarPage {
   submitDatePopup = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
 
   trackerApplicationButton = (): Locator => this.page.locator('[id="app-tracker\\:string\\:TrackerApplication"]')
-  componentsLink = (): Locator => this.page.locator('text=Components')
+  componentsLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Components')
   createComponentButton = (): Locator => this.page.getByRole('button', { name: 'Component', exact: true })
   componentNameInput = (): Locator => this.page.locator('[placeholder="Component\\ name"]')
   createComponentConfirmButton = (): Locator => this.page.locator('button:has-text("Create component")')

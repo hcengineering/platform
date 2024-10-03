@@ -531,6 +531,7 @@ async function generateLocation (
 
 async function navigateToInboxDoc (
   providers: LinkIdProvider[],
+  context: Ref<DocNotifyContext>,
   _id?: Ref<Doc>,
   _class?: Ref<Class<Doc>>,
   thread?: Ref<ActivityMessage>,
@@ -559,7 +560,7 @@ async function navigateToInboxDoc (
     loc.path.length = 4
   }
 
-  loc.query = { ...loc.query, message: message ?? null }
+  loc.query = { ...loc.query, context, message: message ?? null }
   messageInFocus.set(message)
   Analytics.handleEvent('inbox.ReadDoc', { objectId: id, objectClass: _class, thread, message })
   navigate(loc)
@@ -596,6 +597,7 @@ export async function selectInboxContext (
 
     void navigateToInboxDoc(
       linkProviders,
+      context._id,
       objectId,
       objectClass,
       isActivityMessageClass(objectClass) ? (objectId as Ref<ActivityMessage>) : undefined,
@@ -621,6 +623,7 @@ export async function selectInboxContext (
 
       void navigateToInboxDoc(
         linkProviders,
+        context._id,
         thread?.objectId ?? objectId,
         thread?.objectClass ?? objectClass,
         thread?.attachedTo,
@@ -642,6 +645,7 @@ export async function selectInboxContext (
 
       void navigateToInboxDoc(
         linkProviders,
+        context._id,
         channelId,
         channelClass,
         thread as Ref<ActivityMessage>,
@@ -657,6 +661,7 @@ export async function selectInboxContext (
 
     void navigateToInboxDoc(
       linkProviders,
+      context._id,
       channelId,
       channelClass,
       thread as Ref<ActivityMessage>,
@@ -667,6 +672,7 @@ export async function selectInboxContext (
 
   void navigateToInboxDoc(
     linkProviders,
+    context._id,
     objectId,
     objectClass,
     undefined,

@@ -40,6 +40,6 @@
   kind="tertiary"
   pressed={opened}
   {dataId}
-  tooltip={{ label }}
+  tooltip={{ label, direction: 'bottom' }}
   on:click={onClick}
 />
