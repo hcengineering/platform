@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { getClient, MessageViewer } from '@hcengineering/presentation'
+  import { getClient, LiteMessageViewer } from '@hcengineering/presentation'
   import { Person, type PersonAccount } from '@hcengineering/contact'
   import {
     Avatar,
@@ -150,7 +150,7 @@
           <Label label={intlLabel} />
         {/if}
         {#if text}
-          <MessageViewer message={text} preview />
+          <LiteMessageViewer message={text} />
         {/if}
       </span>
     {/if}

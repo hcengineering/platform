@@ -95,10 +95,12 @@
   }
 
   let objectChatPanel: ObjectChatPanel | undefined
+  let prevObjectId: Ref<Doc> | undefined = undefined
 
-  $: if (object._id) {
+  $: if (prevObjectId !== object._id) {
+    prevObjectId = object._id
     objectChatPanel = hierarchy.classHierarchyMixin(object._class, chunter.mixin.ObjectChatPanel)
-    isAsideShown = objectChatPanel?.openByDefault === true
+    isAsideShown = isAsideShown ?? objectChatPanel?.openByDefault === true
   }
 </script>
 
