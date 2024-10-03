@@ -388,7 +388,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.Inbox,
-      icon: notification.icon.Inbox,
+      icon: notification.icon.Notifications,
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,

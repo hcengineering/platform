@@ -52,6 +52,7 @@
     "UnPinAttachment": "Убрать пометку важное",
     "FilterAttachments": "Вложения",
     "RemovedAttachment": "Удалил(а) вложение",
-    "ContentType": "Тип контента"
+    "ContentType": "Тип контента",
+    "OpenInWindow": "Открыть в окне"
   }
 }

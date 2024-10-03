@@ -251,6 +251,7 @@
 
   const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
+      tabs = []
       // Switch of workspace
       return
     }

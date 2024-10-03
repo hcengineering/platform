@@ -64,7 +64,7 @@
   }
 
   async function updateTabData (tab: WorkbenchTab): Promise<void> {
-    const tabLoc = getTabLocation(tab)
+    const tabLoc = $tabIdStore === tab._id ? getCurrentLocation() : getTabLocation(tab)
     const alias = tabLoc.path[2]
     const application = client.getModel().findAllSync<Application>(workbench.class.Application, { alias })[0]
 

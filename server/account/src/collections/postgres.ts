@@ -59,6 +59,10 @@ export abstract class PostgresDbCollection<T extends Record<string, any>> implem
   }
 
   protected buildWhereClause (query: Query<T>, lastRefIdx: number = 0): [string, any[]] {
+    if (Object.keys(query).length === 0) {
+      return ['', []]
+    }
+
     const whereChunks: string[] = []
     const values: any[] = []
     let currIdx: number = lastRefIdx
@@ -131,7 +135,9 @@ export abstract class PostgresDbCollection<T extends Record<string, any>> implem
     const sqlChunks: string[] = [this.buildSelectClause()]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
-    sqlChunks.push(whereClause)
+    if (whereClause !== '') {
+      sqlChunks.push(whereClause)
+    }
 
     if (sort !== undefined) {
       sqlChunks.push(this.buildSortClause(sort))
@@ -200,7 +206,9 @@ export abstract class PostgresDbCollection<T extends Record<string, any>> implem
     const [whereClause, whereValues] = this.buildWhereClause(query, updateValues.length)
 
     sqlChunks.push(updateClause)
-    sqlChunks.push(whereClause)
+    if (whereClause !== '') {
+      sqlChunks.push(whereClause)
+    }
 
     const finalSql = sqlChunks.join(' ')
     await this.client.query(finalSql, [...updateValues, ...whereValues])
@@ -210,7 +218,9 @@ export abstract class PostgresDbCollection<T extends Record<string, any>> implem
     const sqlChunks: string[] = [`DELETE FROM ${this.name}`]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
-    sqlChunks.push(whereClause)
+    if (whereClause !== '') {
+      sqlChunks.push(whereClause)
+    }
 
     const finalSql = sqlChunks.join(' ')
     await this.client.query(finalSql, whereValues)

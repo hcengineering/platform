@@ -123,7 +123,8 @@ export default plugin(presentationId, {
     ContentTypeNotSupported: '' as IntlString
   },
   extension: {
-    FilePreviewExtension: '' as ComponentExtensionId
+    FilePreviewExtension: '' as ComponentExtensionId,
+    FilePreviewPopupActions: '' as ComponentExtensionId
   },
   metadata: {
     ModelVersion: '' as Metadata<string>,

@@ -40,6 +40,8 @@ import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedM
 import IconAttachment from './components/icons/Attachment.svelte'
 import FileDownload from './components/icons/FileDownload.svelte'
 import IconUploadDuo from './components/icons/UploadDuo.svelte'
+import PreviewWidget from './components/PreviewWidget.svelte'
+import PreviewPopupActions from './components/PreviewPopupActions.svelte'
 
 export * from './types'
 
@@ -256,7 +258,9 @@ export default async (): Promise<Resources> => ({
     Attachments,
     FileBrowser,
     Photos,
-    PDFViewer
+    PDFViewer,
+    PreviewWidget,
+    PreviewPopupActions
   },
   activity: {
     AttachmentsUpdatedMessage

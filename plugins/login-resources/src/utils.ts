@@ -259,7 +259,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
       if (adays === bdays) {
         return getWorkspaceSize(b) - getWorkspaceSize(a)
       }
-      return bdays - adays
+      return b.lastVisit - a.lastVisit
     })
 
     return workspaces

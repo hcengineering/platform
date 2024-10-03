@@ -254,7 +254,10 @@ const view = plugin(viewId, {
     TodoList: '' as Asset,
     DetailsFilled: '' as Asset,
     Translate: '' as Asset,
-    Undo: '' as Asset
+    Undo: '' as Asset,
+    Video: '' as Asset,
+    Audio: '' as Asset,
+    File: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

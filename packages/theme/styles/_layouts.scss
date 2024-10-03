@@ -108,7 +108,7 @@ li {
 }
 
 p {
-  user-select: text;
+  user-select:inherit;
   
   a {
     word-break: break-all;

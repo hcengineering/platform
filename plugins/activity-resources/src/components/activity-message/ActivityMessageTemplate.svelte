@@ -289,6 +289,7 @@
     border: 1px solid transparent;
     border-radius: 0.25rem;
     width: 100%;
+    user-select: text;
 
     &.clickable {
       cursor: pointer;

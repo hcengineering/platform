@@ -31,6 +31,8 @@ import {
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
+import workbench, { WidgetType } from '@hcengineering/workbench'
+import presentation from '@hcengineering/model-presentation'
 
 import attachment from './plugin'
 
@@ -95,6 +97,24 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(attachment.class.Photo, core.class.Class, view.mixin.CollectionEditor, {
     editor: attachment.component.Photos
+  })
+
+  builder.createDoc(
+    workbench.class.Widget,
+    core.space.Model,
+    {
+      label: attachment.string.Files,
+      type: WidgetType.Flexible,
+      icon: attachment.icon.Attachment,
+      component: attachment.component.PreviewWidget,
+      closeIfNoTabs: true
+    },
+    attachment.ids.PreviewWidget
+  )
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: presentation.extension.FilePreviewPopupActions,
+    component: attachment.component.PreviewPopupActions
   })
 
   builder.createDoc(
