@@ -130,6 +130,7 @@ export interface BreadcrumbItem {
   icon?: Asset | AnySvelteComponent | ComponentType
   iconProps?: any
   iconWidth?: string
+  iconMargin?: string
   withoutIconBackground?: boolean
   label?: IntlString
   title?: string

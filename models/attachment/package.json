@@ -40,6 +40,7 @@
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/model-presentation": "^0.6.0",
-    "@hcengineering/model-uploader": "^0.6.0"
+    "@hcengineering/model-uploader": "^0.6.0",
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

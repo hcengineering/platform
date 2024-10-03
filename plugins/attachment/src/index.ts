@@ -19,6 +19,7 @@ import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import { AnyComponent } from '@hcengineering/ui'
+import { Widget } from '@hcengineering/workbench'
 
 export * from './analytics'
 
@@ -87,6 +88,9 @@ export default plugin(attachmentId, {
     UploadFile: '' as Resource<(file: File) => Promise<Ref<Blob>>>,
     DeleteFile: '' as Resource<(id: string) => Promise<void>>
   },
+  ids: {
+    PreviewWidget: '' as Ref<Widget>
+  },
   string: {
     Files: '' as IntlString,
     NoFiles: '' as IntlString,
@@ -106,6 +110,7 @@ export default plugin(attachmentId, {
     FileBrowserTypeFilterPDFs: '' as IntlString,
     DeleteFile: '' as IntlString,
     Attachments: '' as IntlString,
-    FileBrowser: '' as IntlString
+    FileBrowser: '' as IntlString,
+    OpenInWindow: '' as IntlString
   }
 })

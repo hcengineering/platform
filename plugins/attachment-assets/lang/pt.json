@@ -52,6 +52,7 @@
     "UnPinAttachment": "Marcar como menos importante",
     "FilterAttachments": "Anexos",
     "RemovedAttachment": "Anexo removido",
-    "ContentType": "Tipo de conteúdo"
+    "ContentType": "Tipo de conteúdo",
+    "OpenInWindow": "Abrir numa janela"
   }
 }

@@ -58,5 +58,8 @@ loadMetadata(view.icon, {
   Copy: `${icons}#copy`,
   DetailsFilled: `${icons}#details-filled`,
   Translate: `${icons}#translate`,
-  Undo: `${icons}#undo`
+  Undo: `${icons}#undo`,
+  Video: `${icons}#video`,
+  Audio: `${icons}#audio`,
+  File: `${icons}#file`
 })

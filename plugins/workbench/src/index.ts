@@ -257,6 +257,10 @@ export default plugin(workbenchId, {
     WorkbenchExtensions: '' as ComponentExtensionId,
     WorkbenchTabExtensions: '' as ComponentExtensionId
   },
+  function: {
+    CreateWidgetTab: '' as Resource<(widget: Widget, tab: WidgetTab, newTab: boolean) => Promise<void>>,
+    CloseWidgetTab: '' as Resource<(widget: Widget, tab: string) => Promise<void>>
+  },
   actionImpl: {
     Navigate: '' as ViewAction<{
       mode: 'app' | 'special' | 'space'

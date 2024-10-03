@@ -22,6 +22,7 @@
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let iconWidth: string | undefined = undefined
+  export let iconMargin: string | undefined = undefined
   export let withoutIconBackground = false
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
@@ -31,7 +32,12 @@
 
 <button class="hulyBreadcrumb-container {size}" class:current={isCurrent} on:click>
   {#if size === 'large' && icon}
-    <div class="hulyBreadcrumb-avatar" style:width={iconWidth ?? null} class:withoutIconBackground>
+    <div
+      class="hulyBreadcrumb-avatar"
+      style:width={iconWidth ?? null}
+      style:margin={iconMargin}
+      class:withoutIconBackground
+    >
       <Icon {icon} size={'small'} {iconProps} />
     </div>
   {/if}

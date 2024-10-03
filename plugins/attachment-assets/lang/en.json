@@ -52,6 +52,7 @@
     "UnPinAttachment": "Mark less important",
     "FilterAttachments": "Attachments",
     "RemovedAttachment": "Removed attachment",
-    "ContentType": "Content type"
+    "ContentType": "Content type",
+    "OpenInWindow": "Open in window"
   }
 }
