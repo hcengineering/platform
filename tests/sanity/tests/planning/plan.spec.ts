@@ -291,7 +291,7 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test.only('ToDo labels are exist in Tag list', async ({ page }) => {
+  test('ToDo labels are exist in Tag list', async ({ page }) => {
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
 
