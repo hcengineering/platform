@@ -369,6 +369,7 @@ test.describe('Planning ToDo tests', () => {
     await test.step('Prepare ToDo', async () => {
       await planningNavigationMenuPage.clickOnButtonToDoAll()
       await planningPage.createNewToDo(toDoWithLabel)
+      await planningPage.selectTimeCell('10am').scrollIntoViewIfNeeded()
     })
 
     await test.step('Resize ToDo', async () => {

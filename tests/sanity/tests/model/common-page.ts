@@ -89,6 +89,7 @@ export class CommonPage {
     this.page.locator('div.date-popup-container div.input:last-child span.digit:nth-child(5)')
 
   submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
+  buttonBreadcrumb = (hasText?: string): Locator => this.page.locator('button.hulyBreadcrumb-container', { hasText })
 
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {

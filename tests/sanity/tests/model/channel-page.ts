@@ -296,9 +296,8 @@ export class ChannelPage extends CommonPage {
   }
 
   async checkIfNameIsChanged (channel: string): Promise<void> {
-    await expect(this.channel(channel).nth(0)).toBeVisible()
-    await expect(this.channel(channel).nth(1)).toBeVisible()
-    await expect(this.channel(channel).nth(2)).toBeVisible()
+    await expect(this.channelContainers().filter({ hasText: channel })).toBeVisible()
+    await expect(this.buttonBreadcrumb(channel)).toBeVisible()
   }
 
   async makeActionWithChannelInMenu (channelName: string, action: string): Promise<void> {
