@@ -33,7 +33,7 @@ export class RecruitingPage {
   applicationLabelChunterButton = (): Locator =>
     this.page.locator('[id="app-chunter\\:string\\:ApplicationLabelChunter"]')
 
-  generalChatLink = (): Locator => this.page.locator('text=general')
+  generalChatLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=general')
   contactsButton = (): Locator => this.page.locator('[id="app-contact\\:string\\:Contacts"]')
   employeeSection = (): Locator => this.page.getByRole('button', { name: 'Employee' })
   johnAppleseed = (): Locator => this.page.locator('text=Appleseed John')
