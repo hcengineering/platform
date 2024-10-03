@@ -35,6 +35,7 @@
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/preference": "^0.6.13",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/workbench": "^0.6.16",

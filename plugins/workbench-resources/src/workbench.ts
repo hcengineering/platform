@@ -23,7 +23,8 @@ import {
   navigate,
   getCurrentLocation
 } from '@hcengineering/ui'
-import { getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
 
 import { workspaceStore } from './utils'
 
@@ -44,7 +45,12 @@ locationStore.subscribe((loc) => {
   if (tab == null) return
   const tabId = tab._id
   if (tabId == null || tab._id !== tabId) return
-
+  const tabLoc = getTabLocation(tab)
+  const tabWs = tabLoc.path[1]
+  if (workspace !== tabWs) {
+    return
+  }
+  if (loc.path[2] === '' || loc.path[2] == null) return
   void getClient().update(tab, { location: locationToUrl(loc) })
 })
 
@@ -86,7 +92,8 @@ export function selectTab (_id: Ref<WorkbenchTab>): void {
 
 export function getTabLocation (tab: WorkbenchTab): Location {
   const base = `${window.location.protocol}//${window.location.host}`
-  const url = new URL(concatLink(base, tab.location))
+  const front = getMetadata(presentation.metadata.FrontUrl) ?? base
+  const url = new URL(concatLink(front, tab.location))
 
   return parseLocation(url)
 }
