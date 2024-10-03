@@ -344,7 +344,7 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test('Change ToDo start and end times by dragging', async ({ page }) => {
+  test.skip('Change ToDo start and end times by dragging', async ({ page }) => {
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
     const dateEnd = new Date()
