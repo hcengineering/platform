@@ -154,12 +154,20 @@ export async function moveAccountDbFromMongoToPG (
 
     delete (pgAccount as any).workspaces
 
-    if (pgAccount.createdOn === undefined) {
+    if (pgAccount.createdOn == null) {
       pgAccount.createdOn = Date.now()
     }
 
-    for (const workspace of mongoAccount.workspaces) {
-      workspaceAssignments.push([pgAccount._id, workspace.toString()])
+    if (pgAccount.first == null) {
+      pgAccount.first = 'NotSet'
+    }
+
+    if (pgAccount.last == null) {
+      pgAccount.last = 'NotSet'
+    }
+
+    for (const workspaceString of new Set(mongoAccount.workspaces.map((w) => w.toString()))) {
+      workspaceAssignments.push([pgAccount._id, workspaceString])
     }
 
     const exists = await getAccount(pgDb, pgAccount.email)
@@ -173,6 +181,10 @@ export async function moveAccountDbFromMongoToPG (
     const pgWorkspace = {
       ...mongoWorkspace,
       _id: mongoWorkspace._id.toString()
+    }
+
+    if (pgWorkspace.createdOn == null) {
+      pgWorkspace.createdOn = Date.now()
     }
 
     // delete deprecated fields
