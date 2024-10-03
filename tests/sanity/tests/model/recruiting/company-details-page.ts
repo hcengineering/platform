@@ -11,7 +11,7 @@ export class CompanyDetailsPage extends CommonRecruitingPage {
   }
 
   readonly inputName = (): Locator => this.page.locator('div.antiEditBox input')
-  readonly buttonCompanyDetails = (): Locator => this.page.locator('div.flex-row-center > span', { hasText: 'Company' })
+  readonly buttonCompanyDetails = (): Locator => this.page.locator('.popupPanel-body__aside').locator('text=Company')
   readonly buttonLocation = (): Locator =>
     this.page.locator('//span[text()="Location"]/following-sibling::div[1]/button/span')
 

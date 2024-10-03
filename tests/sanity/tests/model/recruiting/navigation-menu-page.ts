@@ -12,9 +12,11 @@ export class NavigationMenuPage {
   readonly buttonMyApplications = (): Locator =>
     this.page.locator('a[href$="my-applications"]', { hasText: 'My applications' })
 
-  readonly buttonTalents = (): Locator => this.page.locator('a[href$="talents"]', { hasText: 'Talents' })
-  readonly buttonVacancies = (): Locator => this.page.locator('a[href$="vacancies"]', { hasText: 'Vacancies' })
-  readonly buttonCompanies = (): Locator => this.page.locator('a[href$="organizations"]', { hasText: 'Companies' })
+  readonly navigator = (): Locator => this.page.locator('.antiPanel-navigator')
+  readonly buttonTalents = (): Locator => this.navigator().locator('a[href$="talents"]', { hasText: 'Talents' })
+  readonly buttonVacancies = (): Locator => this.navigator().locator('a[href$="vacancies"]', { hasText: 'Vacancies' })
+  readonly buttonCompanies = (): Locator =>
+    this.navigator().locator('a[href$="organizations"]', { hasText: 'Companies' })
 
   // Action methods to click on each button
   async clickButtonApplications (): Promise<void> {

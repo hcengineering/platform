@@ -44,7 +44,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly recruitApplicationButton = (): Locator =>
     this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
 
-  readonly vacanciesMenuLink = (): Locator => this.page.locator('text=Vacancies')
+  readonly vacanciesMenuLink = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Vacancies')
   readonly createVacancyButton = (): Locator => this.page.locator('button:has-text("Vacancy")')
   readonly vacancyInputField = (): Locator => this.page.locator('form [placeholder="Software\\ Engineer"]')
   readonly createButton = (): Locator => this.page.locator('form button:has-text("Create")')
