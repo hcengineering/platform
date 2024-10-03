@@ -47,6 +47,7 @@ export { default as BreadcrumbsElement } from './components/breadcrumbs/Breadcru
 export { default as ComponentExtensions } from './components/extensions/ComponentExtensions.svelte'
 export { default as DocCreateExtComponent } from './components/extensions/DocCreateExtComponent.svelte'
 export { default as SearchResult } from './components/SearchResult.svelte'
+export { default as LiteMessageViewer } from './components/LiteMessageViewer.svelte'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
