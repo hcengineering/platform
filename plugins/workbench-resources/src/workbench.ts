@@ -23,7 +23,7 @@ import {
   navigate,
   getCurrentLocation
 } from '@hcengineering/ui'
-import presentation,{ getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
 
 import { workspaceStore } from './utils'
@@ -45,6 +45,11 @@ locationStore.subscribe((loc) => {
   if (tab == null) return
   const tabId = tab._id
   if (tabId == null || tab._id !== tabId) return
+  const tabLoc = getTabLocation(tab)
+  const tabWs = tabLoc.path[1]
+  if (workspace !== tabWs) {
+    return
+  }
 
   void getClient().update(tab, { location: locationToUrl(loc) })
 })
