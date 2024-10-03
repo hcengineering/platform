@@ -355,6 +355,7 @@
   .notification {
     position: relative;
     cursor: pointer;
+    user-select: none;
 
     .embeddedMarker {
       position: absolute;
