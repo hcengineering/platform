@@ -50,7 +50,7 @@ locationStore.subscribe((loc) => {
   if (workspace !== tabWs) {
     return
   }
-
+  if (loc.path[2] === '' || loc.path[2] == null) return
   void getClient().update(tab, { location: locationToUrl(loc) })
 })
 
