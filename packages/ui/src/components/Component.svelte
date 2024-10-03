@@ -46,28 +46,50 @@
       : _is == null
         ? Promise.reject(new Error('is not defined'))
         : Promise.resolve(_is)
-  const SyncedComponent = is != null && typeof is === 'string' ? getResourceSync<any>(is) : undefined
+  $: SyncedComponent = _is != null && typeof _is === 'string' ? getResourceSync<any>(_is) : undefined
 </script>
 
 {#if _is}
   {#if SyncedComponent}
-    <SyncedComponent
-      bind:this={innerRef}
-      {..._props}
-      {inline}
-      {disabled}
-      on:change
-      on:close
-      on:open
-      on:click
-      on:delete
-      on:action
-      on:valid
-      on:validate
-      on:submit
-    >
-      <slot />
-    </SyncedComponent>
+    <ErrorBoundary>
+      {#if $$slots.default !== undefined}
+        <svelte:component
+          this={SyncedComponent}
+          bind:this={innerRef}
+          {..._props}
+          {inline}
+          {disabled}
+          on:change
+          on:close
+          on:open
+          on:click
+          on:delete
+          on:action
+          on:valid
+          on:validate
+          on:submit
+        >
+          <slot />
+        </svelte:component>
+      {:else}
+        <svelte:component
+          this={SyncedComponent}
+          bind:this={innerRef}
+          {..._props}
+          {inline}
+          {disabled}
+          on:change
+          on:close
+          on:open
+          on:click
+          on:delete
+          on:action
+          on:valid
+          on:validate
+          on:submit
+        />
+      {/if}
+    </ErrorBoundary>
   {:else}
     {#await component}
       {#if showLoading}

@@ -12,7 +12,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   pageHeader = (): Locator => this.page.locator('span[class*="header"]', { hasText: 'Talents' })
-  buttonCreateTalent = (): Locator => this.page.getByRole('button', { name: 'Talent', exact: true })
+  buttonCreateTalent = (): Locator => this.page.getByRole('button', { name: 'New Talent', exact: true })
 
   textVacancyMatchingTalent = (): Locator =>
     this.page.locator(
