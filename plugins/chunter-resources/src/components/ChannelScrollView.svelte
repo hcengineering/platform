@@ -43,6 +43,7 @@
   import JumpToDateSelector from './JumpToDateSelector.svelte'
   import HistoryLoading from './LoadingHistory.svelte'
   import ChannelInput from './ChannelInput.svelte'
+  import { messageInView } from '../scroll'
 
   export let provider: ChannelDataProvider
   export let object: Doc
@@ -374,12 +375,6 @@
     }
 
     return messageInView(msgElement, containerRect)
-  }
-
-  function messageInView (msgElement: Element, containerRect: DOMRect): boolean {
-    const messageRect = msgElement.getBoundingClientRect()
-
-    return messageRect.top >= containerRect.top && messageRect.top <= containerRect.bottom && messageRect.bottom >= 0
   }
 
   const messagesToReadAccumulator: Set<DisplayActivityMessage> = new Set<DisplayActivityMessage>()

@@ -134,10 +134,9 @@ export function getSelectedDate (
   return selectedDate
 }
 
-function messageInView (msgElement: Element, containerRect: DOMRect): boolean {
-  const messageRect = msgElement.getBoundingClientRect()
-
-  return messageRect.top >= containerRect.top && messageRect.bottom - messageRect.height / 2 <= containerRect.bottom
+export function messageInView (msgElement: Element, containerRect: DOMRect): boolean {
+  const rect = msgElement.getBoundingClientRect()
+  return rect.bottom > containerRect.top && rect.top < containerRect.bottom
 }
 
 const messagesToReadAccumulator: Set<DisplayActivityMessage> = new Set<DisplayActivityMessage>()
