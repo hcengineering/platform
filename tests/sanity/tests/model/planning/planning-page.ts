@@ -79,10 +79,14 @@ export class PlanningPage extends CalendarPage {
     this.popup().locator('div.month-container > div.header > div:last-child > button:first-child')
 
   readonly buttonPrevDayInSchedule = (): Locator =>
-    this.page.locator('div.hulyHeader-container', { hasText: 'Schedule:' }).locator('div.hulyHeader-buttonsGroup > button:first-child')
+    this.page
+      .locator('div.hulyHeader-container', { hasText: 'Schedule:' })
+      .locator('div.hulyHeader-buttonsGroup > button:first-child')
 
   readonly buttonNextDayInSchedule = (): Locator =>
-    this.page.locator('div.hulyHeader-container', { hasText: 'Schedule:' }).locator('div.hulyHeader-buttonsGroup > button:last-child')
+    this.page
+      .locator('div.hulyHeader-container', { hasText: 'Schedule:' })
+      .locator('div.hulyHeader-buttonsGroup > button:last-child')
 
   readonly selectInputToDo = (): Locator =>
     this.toDosContainer().getByPlaceholder('Add Action Item, press Enter to save')
@@ -258,9 +262,11 @@ export class PlanningPage extends CalendarPage {
       )
       const before: boolean = target.getTime() < today.getTime()
       const diffYear: number = Math.abs(target.getFullYear() - today.getFullYear())
-      const diffMonth: number = diffYear === 0
-        ? Math.abs(target.getMonth() - today.getMonth())
-        : (diffYear - 1) * 12 + (before ? today.getMonth() + 12 - target.getMonth() : target.getMonth() + 12 - today.getMonth())
+      const diffMonth: number =
+        diffYear === 0
+          ? Math.abs(target.getMonth() - today.getMonth())
+          : (diffYear - 1) * 12 +
+            (before ? today.getMonth() + 12 - target.getMonth() : target.getMonth() + 12 - today.getMonth())
       for (let i = 0; i < diffMonth; i++) {
         if (before) await this.buttonPopupSelectDatePrevMonth().click()
         else await this.buttonPopupSelectDateNextMonth().click()
