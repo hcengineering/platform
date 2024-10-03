@@ -40,6 +40,7 @@ import presentation from '@hcengineering/model-presentation'
 import workbench from './plugin'
 
 export { workbenchId } from '@hcengineering/workbench'
+export { workbenchOperation } from './migration'
 export type { Application }
 
 @Model(workbench.class.Application, core.class.Doc, DOMAIN_MODEL)

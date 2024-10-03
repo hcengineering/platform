@@ -51,6 +51,7 @@ import { documentsOperation } from '@hcengineering/model-controlled-documents'
 import { productsOperation } from '@hcengineering/model-products'
 import { requestOperation } from '@hcengineering/model-request'
 import { analyticsCollectorOperation } from '@hcengineering/model-analytics-collector'
+import { workbenchOperation } from '@hcengineering/model-workbench'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -90,5 +91,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['textEditorOperation', textEditorOperation],
   // We should call notification migration after activityServer and chunter
   ['notification', notificationOperation],
-  ['analyticsCollector', analyticsCollectorOperation]
+  ['analyticsCollector', analyticsCollectorOperation],
+  ['workbench', workbenchOperation]
 ]
