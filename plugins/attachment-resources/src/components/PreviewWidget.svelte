@@ -15,8 +15,11 @@
 <script lang="ts">
   import workbench, { Widget, WidgetTab } from '@hcengineering/workbench'
   import { FilePreview, DownloadFileButton, FilePreviewPopup, FileTypeIcon } from '@hcengineering/presentation'
-  import ui, { Breadcrumbs, Button, closeTooltip, Header, IconScaleFull, showPopup } from '@hcengineering/ui'
+  import { Breadcrumbs, Button, closeTooltip, Header, IconOpen, showPopup } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
+  import view from '@hcengineering/view'
+
+  import attachment from '../plugin'
 
   export let widget: Widget
   export let tab: WidgetTab
@@ -49,9 +52,9 @@
   <svelte:fragment slot="actions">
     <DownloadFileButton name={fileName} {file} />
     <Button
-      icon={IconScaleFull}
+      icon={view.icon.Open}
       kind="icon"
-      showTooltip={{ label: ui.string.FullSize }}
+      showTooltip={{ label: attachment.string.OpenInWindow }}
       on:click={() => {
         void closeTab()
         closeTooltip()

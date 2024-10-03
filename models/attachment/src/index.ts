@@ -103,7 +103,7 @@ export function createModel (builder: Builder): void {
     workbench.class.Widget,
     core.space.Model,
     {
-      label: attachment.string.Attachments,
+      label: attachment.string.Files,
       type: WidgetType.Flexible,
       icon: attachment.icon.Attachment,
       component: attachment.component.PreviewWidget,

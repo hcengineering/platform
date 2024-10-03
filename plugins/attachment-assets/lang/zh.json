@@ -52,6 +52,7 @@
     "UnPinAttachment": "标记为不重要",
     "FilterAttachments": "附件",
     "RemovedAttachment": "移除附件",
-    "ContentType": "内容类型"
+    "ContentType": "内容类型",
+    "OpenInWindow": "在新窗口中打开"
   }
 }

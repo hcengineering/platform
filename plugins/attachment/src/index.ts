@@ -110,6 +110,7 @@ export default plugin(attachmentId, {
     FileBrowserTypeFilterPDFs: '' as IntlString,
     DeleteFile: '' as IntlString,
     Attachments: '' as IntlString,
-    FileBrowser: '' as IntlString
+    FileBrowser: '' as IntlString,
+    OpenInWindow: '' as IntlString
   }
 })

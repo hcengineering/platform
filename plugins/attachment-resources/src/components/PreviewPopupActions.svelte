@@ -31,7 +31,7 @@
     icon={IconDetailsFilled}
     kind="icon"
     on:click={() => {
-      if(file === undefined) return
+      if (file === undefined) return
       closeTooltip()
       closePopup()
       void openFilePreviewInSidebar(file, name, contentType, metadata)

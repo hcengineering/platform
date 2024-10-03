@@ -27,6 +27,7 @@ import {
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { type FileOrBlob, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
+import view from '@hcengineering/view'
 
 import attachment from './plugin'
 
@@ -113,8 +114,21 @@ export async function openFilePreviewInSidebar (
   const client = getClient()
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: attachment.ids.PreviewWidget })[0]
   const createFn = await getResource(workbench.function.CreateWidgetTab)
+  let icon = attachment.icon.Attachment
+
+  if (contentType.startsWith('image/')) {
+    icon = view.icon.Image
+  } else if (contentType.startsWith('video/')) {
+    icon = view.icon.Video
+  } else if (contentType.startsWith('audio/')) {
+    icon = view.icon.Audio
+  } else {
+    icon = view.icon.File
+  }
+
   const tab: WidgetTab = {
     id: file,
+    icon,
     name,
     widget: attachment.ids.PreviewWidget,
     data: { file, name, contentType, metadata }
