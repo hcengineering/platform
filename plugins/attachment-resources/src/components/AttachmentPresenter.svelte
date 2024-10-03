@@ -17,11 +17,10 @@
   import type { Attachment } from '@hcengineering/attachment'
   import core, { type WithLookup } from '@hcengineering/core'
   import presentation, {
-    FilePreviewPopup,
     canPreviewFile,
+    FilePreviewPopup,
     getBlobRef,
     getFileUrl,
-    getPreviewAlignment,
     previewTypes,
     sizeToWidth
   } from '@hcengineering/presentation'
@@ -29,7 +28,7 @@
   import { permissionsStore } from '@hcengineering/view-resources'
   import filesize from 'filesize'
   import { createEventDispatcher } from 'svelte'
-  import { getType } from '../utils'
+  import { getType, openAttachmentInSidebar } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -70,7 +69,7 @@
     canPreview = false
   }
 
-  function clickHandler (e: MouseEvent): void {
+  async function clickHandler (e: MouseEvent): Promise<void> {
     if (value === undefined || !canPreview) return
 
     e.preventDefault()
@@ -80,16 +79,20 @@
       return
     }
     closeTooltip()
-    showPopup(
-      FilePreviewPopup,
-      {
-        file: value.file,
-        contentType: value.type,
-        name: value.name,
-        metadata: value.metadata
-      },
-      getPreviewAlignment(value.type)
-    )
+    if (value.type.startsWith('image/') || value.type.startsWith('video/') || value.type.startsWith('audio/')) {
+      showPopup(
+        FilePreviewPopup,
+        {
+          file: value.file,
+          contentType: value.type,
+          name: value.name,
+          metadata: value.metadata
+        },
+        'centered'
+      )
+    } else {
+      await openAttachmentInSidebar(value)
+    }
   }
 
   function middleClickHandler (e: MouseEvent): void {
