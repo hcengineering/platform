@@ -47,13 +47,15 @@ export default mergeIds(workbenchId, workbench, {
     WorkspaceCreating: '' as IntlString,
     AccessDenied: '' as IntlString,
     Widget: '' as IntlString,
-    WidgetPreference: '' as IntlString
+    WidgetPreference: '' as IntlString,
+    Tab: '' as IntlString
   },
   metadata: {
     MobileAllowed: '' as Metadata<boolean>
   },
   component: {
     SpacePanel: '' as AnyComponent,
-    Workbench: '' as AnyComponent
+    Workbench: '' as AnyComponent,
+    WorkbenchTabs: '' as AnyComponent
   }
 })

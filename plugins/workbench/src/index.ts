@@ -30,6 +30,15 @@ import { ViewAction } from '@hcengineering/view'
 /**
  * @public
  */
+
+export interface LocationData {
+  name?: string
+  nameIntl?: IntlString
+  icon?: Asset
+  iconComponent?: AnyComponent
+  iconProps?: Record<string, any>
+}
+
 export interface Application extends Doc {
   label: IntlString
   alias: string
@@ -42,6 +51,7 @@ export interface Application extends Doc {
   aside?: AnyComponent
 
   locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  locationDataResolver?: Resource<(loc: Location) => Promise<LocationData>>
 
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model
   component?: AnyComponent
@@ -100,6 +110,11 @@ export interface OpenSidebarWidgetParams {
 export interface TxSidebarEvent<T extends Record<string, any> = Record<string, any>> extends Tx {
   event: SidebarEvent
   params: T
+}
+
+export interface WorkbenchTab extends Preference {
+  location: string
+  isPinned: boolean
 }
 
 /**
@@ -201,7 +216,8 @@ export default plugin(workbenchId, {
     HiddenApplication: '' as Ref<Class<HiddenApplication>>,
     Widget: '' as Ref<Class<Widget>>,
     WidgetPreference: '' as Ref<Class<WidgetPreference>>,
-    TxSidebarEvent: '' as Ref<Class<TxSidebarEvent<Record<string, any>>>>
+    TxSidebarEvent: '' as Ref<Class<TxSidebarEvent<Record<string, any>>>>,
+    WorkbenchTab: '' as Ref<Class<WorkbenchTab>>
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>
@@ -238,7 +254,8 @@ export default plugin(workbenchId, {
     NavigationExpandedDefault: '' as Metadata<boolean>
   },
   extensions: {
-    WorkbenchExtensions: '' as ComponentExtensionId
+    WorkbenchExtensions: '' as ComponentExtensionId,
+    WorkbenchTabExtensions: '' as ComponentExtensionId
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

@@ -144,7 +144,8 @@ import {
   getCurrentEmployeePosition,
   getPersonTooltip,
   grouppingPersonManager,
-  resolveLocation
+  resolveLocation,
+  resolveLocationData
 } from './utils'
 
 export * from './utils'
@@ -444,7 +445,8 @@ export default async (): Promise<Resources> => ({
     PersonFilterFunction: filterPerson
   },
   resolver: {
-    Location: resolveLocation
+    Location: resolveLocation,
+    LocationData: resolveLocationData
   },
   aggregation: {
     // eslint-disable-next-line @typescript-eslint/unbound-method

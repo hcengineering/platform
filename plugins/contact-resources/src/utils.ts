@@ -50,7 +50,7 @@ import core, {
   type WithLookup
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
+import { type IntlString, getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
@@ -64,6 +64,7 @@ import {
 import view, { type Filter, type GrouppingManager } from '@hcengineering/view'
 import { accessDeniedStore, FilterQuery } from '@hcengineering/view-resources'
 import { derived, get, writable } from 'svelte/store'
+import { type LocationData } from '@hcengineering/workbench'
 
 import contact from './plugin'
 import { personStore } from '.'
@@ -535,4 +536,31 @@ export function groupPersonAccountValuesWithEmpty (
     >
   }
   return personAccountList.map((it) => it._id)
+}
+
+export async function resolveLocationData (loc: Location): Promise<LocationData> {
+  const special = loc.path[3]
+  const specialsData: Record<string, IntlString> = {
+    companies: contact.string.Organizations,
+    employees: contact.string.Employees,
+    persons: contact.string.Persons
+  }
+
+  if (special == null) {
+    return { nameIntl: contact.string.Contacts }
+  }
+
+  const specialLabel = specialsData[special]
+  if (specialLabel !== undefined) {
+    return { nameIntl: specialLabel }
+  }
+
+  const client = getClient()
+  const object = await client.findOne(contact.class.Contact, { _id: special as Ref<Contact> })
+
+  if (object === undefined) {
+    return { nameIntl: specialLabel }
+  }
+
+  return { name: getName(client.getHierarchy(), object) }
 }
