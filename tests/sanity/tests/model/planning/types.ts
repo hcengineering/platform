@@ -10,13 +10,13 @@ export interface NewToDo {
 }
 
 export interface Slot {
-  dateStart: string
+  dateStart: string | TDate
   timeStart: string
-  dateEnd: Date
+  dateEnd: TDate
   timeEnd: string
 }
 
-export interface Date {
+export interface TDate {
   day: string
   month: string
   year: string

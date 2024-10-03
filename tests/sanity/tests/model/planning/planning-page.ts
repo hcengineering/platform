@@ -73,7 +73,16 @@ export class PlanningPage extends CalendarPage {
 
   readonly buttonMenuDelete = (): Locator => this.page.locator('button.ap-menuItem span', { hasText: 'Delete' })
   readonly buttonPopupSelectDateNextMonth = (): Locator =>
-    this.popup().locator('div.header > div:last-child > button:last-child')
+    this.popup().locator('div.month-container > div.header > div:last-child > button:last-child')
+
+  readonly buttonPopupSelectDatePrevMonth = (): Locator =>
+    this.popup().locator('div.month-container > div.header > div:last-child > button:first-child')
+
+  readonly buttonPrevDayInSchedule = (): Locator =>
+    this.page.locator('div.hulyHeader-container', { hasText: 'Schedule:' }).locator('div.hulyHeader-buttonsGroup > button:first-child')
+
+  readonly buttonNextDayInSchedule = (): Locator =>
+    this.page.locator('div.hulyHeader-container', { hasText: 'Schedule:' }).locator('div.hulyHeader-buttonsGroup > button:last-child')
 
   readonly selectInputToDo = (): Locator =>
     this.toDosContainer().getByPlaceholder('Add Action Item, press Enter to save')
@@ -101,6 +110,14 @@ export class PlanningPage extends CalendarPage {
       .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
       .locator('xpath=..')
       .locator('button.reference')
+
+  async clickButtonPrevDayInSchedule (): Promise<void> {
+    await this.buttonPrevDayInSchedule().click()
+  }
+
+  async clickButtonNextDayInSchedule (): Promise<void> {
+    await this.buttonNextDayInSchedule().click()
+  }
 
   async dragToCalendar (title: string, column: number, time: string, addHalf: boolean = false): Promise<void> {
     await this.toDosContainer().getByRole('button', { name: title }).hover()
@@ -224,13 +241,33 @@ export class PlanningPage extends CalendarPage {
     await row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child .hulyButton').click()
     if (slot.dateStart === 'today') {
       await this.buttonCalendarToday().click()
-    } else {
+    } else if (typeof slot.dateStart === 'string') {
       if (slot.dateStart === '1') {
         await this.buttonPopupSelectDateNextMonth().click()
       }
       await this.page
         .locator('div.popup div.calendar button.day')
         .filter({ has: this.page.locator(`text="${slot.dateStart}"`) })
+        .click()
+    } else {
+      const today = new Date()
+      const target = new Date(
+        parseInt(slot.dateStart.year, 10),
+        parseInt(slot.dateStart.month, 10) - 1,
+        parseInt(slot.dateStart.day, 10)
+      )
+      const before: boolean = target.getTime() < today.getTime()
+      const diffYear: number = Math.abs(target.getFullYear() - today.getFullYear())
+      const diffMonth: number = diffYear === 0
+        ? Math.abs(target.getMonth() - today.getMonth())
+        : (diffYear - 1) * 12 + (before ? today.getMonth() + 12 - target.getMonth() : target.getMonth() + 12 - today.getMonth())
+      for (let i = 0; i < diffMonth; i++) {
+        if (before) await this.buttonPopupSelectDatePrevMonth().click()
+        else await this.buttonPopupSelectDateNextMonth().click()
+      }
+      await this.page
+        .locator('div.popup div.calendar button.day')
+        .filter({ has: this.page.locator(`text="${target.getDate()}"`) })
         .click()
     }
     // timeStart
