@@ -56,7 +56,6 @@
       kind="icon"
       showTooltip={{ label: attachment.string.OpenInWindow }}
       on:click={() => {
-        void closeTab()
         closeTooltip()
         showPopup(FilePreviewPopup, { file, name: fileName, contentType, metadata }, 'centered')
       }}
