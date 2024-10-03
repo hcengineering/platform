@@ -19,7 +19,8 @@ import {
   makeCollaborativeDoc,
   type TxOperations,
   type Blob,
-  collaborativeDocParse
+  collaborativeDocParse,
+  type Data
 } from '@hcengineering/core'
 import { yDocToBuffer } from '@hcengineering/collaboration'
 import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
@@ -325,16 +326,17 @@ async function createDBPageWithAttachments (
   documentMetaMap?: Map<string, DocumentMetadata>
 ): Promise<void> {
   const pageId = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(pageId, 'content')
+  const collabId = makeCollaborativeDoc(pageId, 'description')
 
   const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 
   const lastRank = await getFirstRank(client, space, parentId)
   const rank = makeRank(lastRank, undefined)
 
-  const object: AttachedData<Document> = {
-    name: docMeta.name,
-    content: collabId,
+  const object: Data<Document> = {
+    title: docMeta.name,
+    description: collabId,
+    parent: parentId,
     attachments: 0,
     children: 0,
     embeddings: 0,
@@ -344,15 +346,7 @@ async function createDBPageWithAttachments (
     rank
   }
 
-  await client.addCollection(
-    document.class.Document,
-    space,
-    parentId,
-    document.class.Document,
-    'children',
-    object,
-    pageId
-  )
+  await client.createDoc(document.class.Document, space, object, pageId)
 
   const dbPage: DocumentMetadata = {
     id: pageId,
@@ -466,7 +460,7 @@ async function importPageDocument (
   }
 
   const id = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(id, 'content')
+  const collabId = makeCollaborativeDoc(id, 'description')
   const yDoc = jsonToYDocNoSchema(json, 'content')
   const { documentId } = collaborativeDocParse(collabId)
   const buffer = yDocToBuffer(yDoc)
@@ -482,14 +476,15 @@ async function importPageDocument (
 
   await uploadFile(docMeta.id, form)
 
-  const parentId = parentMeta?.id ?? document.ids.NoParent
+  const parent = (parentMeta?.id as Ref<Document>) ?? document.ids.NoParent
 
-  const lastRank = await getFirstRank(client, space, parentId as Ref<Document>)
+  const lastRank = await getFirstRank(client, space, parent)
   const rank = makeRank(lastRank, undefined)
 
-  const attachedData: AttachedData<Document> = {
-    name: docMeta.name,
-    content: collabId,
+  const attachedData: Data<Document> = {
+    title: docMeta.name,
+    description: collabId,
+    parent,
     attachments: 0,
     children: 0,
     embeddings: 0,
@@ -499,15 +494,7 @@ async function importPageDocument (
     rank
   }
 
-  await client.addCollection(
-    document.class.Document,
-    space,
-    parentId as Ref<Document>,
-    document.class.Document,
-    'children',
-    attachedData,
-    id
-  )
+  await client.createDoc(document.class.Document, space, attachedData, id)
 }
 
 function preProcessMarkdown (json: MarkupNode, documentMetaMap: Map<string, DocumentMetadata>): void {

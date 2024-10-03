@@ -30,7 +30,7 @@
 <div class="container flex-col flex-gap-2 flex-no-shrink">
   <div class="flex-between h-8">
     <div class="fs-bold overflow-label">
-      {value.name}
+      {value.title}
     </div>
     <div class="time">
       <TimeSince value={value.createdOn} />

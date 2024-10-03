@@ -27,5 +27,5 @@
   <div class="icon">
     <Icon icon={document.icon.DocumentApplication} size={'small'} />
   </div>
-  {value.name}
+  {value.title}
 </div>

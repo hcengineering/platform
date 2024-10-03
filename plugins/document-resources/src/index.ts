@@ -57,7 +57,7 @@ import {
 
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
-  title: e.name,
+  title: e.title,
   icon: document.icon.Document,
   component: DocumentItem
 })

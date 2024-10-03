@@ -16,6 +16,7 @@
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import type { DocumentQuery } from './storage'
+import { CollaborativeDoc } from './collaboration'
 
 /**
  * @public
@@ -71,6 +72,13 @@ export interface Doc<S extends Space = Space> extends Obj {
   modifiedBy: Ref<Account>
   createdBy?: Ref<Account> // Marked as optional since it will be filled by platform.
   createdOn?: Timestamp // Marked as optional since it will be filled by platform.
+}
+
+export interface Card extends Doc {
+  title: string
+  description: CollaborativeDoc | null
+  identifier?: string
+  parent?: Ref<Card> | null
 }
 
 /**
