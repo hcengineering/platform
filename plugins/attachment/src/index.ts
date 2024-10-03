@@ -19,6 +19,7 @@ import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
 import { AnyComponent } from '@hcengineering/ui'
+import { Widget } from '@hcengineering/workbench'
 
 export * from './analytics'
 
@@ -86,6 +87,9 @@ export default plugin(attachmentId, {
   helper: {
     UploadFile: '' as Resource<(file: File) => Promise<Ref<Blob>>>,
     DeleteFile: '' as Resource<(id: string) => Promise<void>>
+  },
+  ids: {
+    PreviewWidget: '' as Ref<Widget>
   },
   string: {
     Files: '' as IntlString,

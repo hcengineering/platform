@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Attachment } from '@hcengineering/attachment'
+import { type BlobMetadata, type Attachment } from '@hcengineering/attachment'
 import {
   type Blob,
   type Class,
@@ -24,8 +24,9 @@ import {
   type Ref,
   type Space
 } from '@hcengineering/core'
-import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { type FileOrBlob, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+import { type FileOrBlob, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import workbench, { type WidgetTab } from '@hcengineering/workbench'
 
 import attachment from './plugin'
 
@@ -97,4 +98,26 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
   }
 
   return 'other'
+}
+
+export async function openAttachmentInSidebar (value: Attachment): Promise<void> {
+  await openFilePreviewInSidebar(value.file, value.name, value.type, value.metadata)
+}
+
+export async function openFilePreviewInSidebar (
+  file: Ref<Blob>,
+  name: string,
+  contentType: string,
+  metadata?: BlobMetadata
+): Promise<void> {
+  const client = getClient()
+  const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: attachment.ids.PreviewWidget })[0]
+  const createFn = await getResource(workbench.function.CreateWidgetTab)
+  const tab: WidgetTab = {
+    id: file,
+    name,
+    widget: attachment.ids.PreviewWidget,
+    data: { file, name, contentType, metadata }
+  }
+  await createFn(widget, tab, true)
 }

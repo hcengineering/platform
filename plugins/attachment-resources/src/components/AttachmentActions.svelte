@@ -25,10 +25,12 @@
   } from '@hcengineering/presentation'
   import { IconMoreH, Menu, Action as UIAction, closeTooltip, showPopup, tooltip } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
+  import workbench from '@hcengineering/workbench'
 
   import AttachmentAction from './AttachmentAction.svelte'
   import FileDownload from './icons/FileDownload.svelte'
   import attachmentPlugin from '../plugin'
+  import { openAttachmentInSidebar } from '../utils'
 
   export let attachment: WithLookup<Attachment>
   export let isSaved = false
@@ -95,6 +97,13 @@
     if (canPreview) {
       actions.push(openAction)
     }
+    actions.push({
+      icon: view.icon.DetailsFilled,
+      label: workbench.string.OpenInSidebar,
+      action: async () => {
+        await openAttachmentInSidebar(attachment)
+      }
+    })
     actions.push({
       label: saveAttachmentAction.label,
       icon: saveAttachmentAction.icon,

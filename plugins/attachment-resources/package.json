@@ -38,8 +38,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/contact": "^0.6.24",
     "@hcengineering/core": "^0.6.32",
@@ -55,6 +55,7 @@
     "@hcengineering/uploader": "^0.6.0",
     "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
+    "@hcengineering/workbench": "^0.6.16",
     "filesize": "^8.0.3",
     "svelte": "^4.2.12"
   },

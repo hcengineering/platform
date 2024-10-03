@@ -24,7 +24,9 @@ import type { ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(attachmentId, attachment, {
   component: {
-    AttachmentPresenter: '' as AnyComponent
+    AttachmentPresenter: '' as AnyComponent,
+    PreviewWidget: '' as AnyComponent,
+    PreviewPopupActions: '' as AnyComponent
   },
   string: {
     AddAttachment: '' as IntlString,
