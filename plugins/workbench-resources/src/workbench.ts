@@ -23,7 +23,8 @@ import {
   navigate,
   getCurrentLocation
 } from '@hcengineering/ui'
-import { getClient } from '@hcengineering/presentation'
+import presentation,{ getClient } from '@hcengineering/presentation'
+import { getMetadata } from '@hcengineering/platform'
 
 import { workspaceStore } from './utils'
 
@@ -86,7 +87,8 @@ export function selectTab (_id: Ref<WorkbenchTab>): void {
 
 export function getTabLocation (tab: WorkbenchTab): Location {
   const base = `${window.location.protocol}//${window.location.host}`
-  const url = new URL(concatLink(base, tab.location))
+  const front = getMetadata(presentation.metadata.FrontUrl) ?? base
+  const url = new URL(concatLink(front, tab.location))
 
   return parseLocation(url)
 }
