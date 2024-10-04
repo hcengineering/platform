@@ -261,3 +261,11 @@ export async function createAccountAndWorkspace (page: Page, request: APIRequest
   await api.createWorkspaceWithLogin(data.workspaceName, data.userName, '1234')
   await reLogin(page, data)
 }
+
+export const convertDate = (date: Date): { day: string, month: string, year: string } => {
+  return {
+    day: date.getDate().toString(),
+    month: (date.getMonth() + 1).toString(),
+    year: date.getFullYear().toString()
+  }
+}
