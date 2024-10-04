@@ -385,15 +385,20 @@ autoUpdater.on('update-available', (info: UpdateInfo) => {
         app.quit()
       }
       isUpdating = true
+      setDownloadProgress(0)
     })
 })
 
 autoUpdater.on('download-progress', (progressObj: ProgressInfo) => {
+  setDownloadProgress(progressObj.percent)
+})
+
+function setDownloadProgress (percent: number): void {
   if (mainWindow === undefined) return
 
-  mainWindow.setProgressBar(progressObj.percent / 100)
-  mainWindow.webContents.send('handle-update-download-progress', progressObj.percent)
-})
+  mainWindow.setProgressBar(percent / 100)
+  mainWindow.webContents.send('handle-update-download-progress', percent)
+}
 
 autoUpdater.on('update-downloaded', (info) => {
   // We have listeners that prevents the app from being exited on mac
