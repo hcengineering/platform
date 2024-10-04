@@ -127,8 +127,10 @@ export class DatalakeService implements StorageAdapter {
       size
     }
 
-    await ctx.with('put', {}, async () => {
-      return await this.client.putObject(ctx, workspaceId, objectName, stream, metadata)
+    await ctx.with('put', {}, async (ctx) => {
+      await withRetry(ctx, 5, async () => {
+        return await this.client.putObject(ctx, workspaceId, objectName, stream, metadata)
+      })
     })
 
     return {
@@ -186,4 +188,26 @@ export function processConfigFromEnv (storageConfig: StorageConfiguration): stri
   }
   storageConfig.storages.push(config)
   storageConfig.default = 'datalake'
+}
+
+async function withRetry<T> (
+  ctx: MeasureContext,
+  retries: number,
+  op: () => Promise<T>,
+  delay: number = 100
+): Promise<T> {
+  let error: any
+  while (retries > 0) {
+    retries--
+    try {
+      return await op()
+    } catch (err: any) {
+      error = err
+      ctx.error('error', { err })
+      if (retries !== 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+    }
+  }
+  throw error
 }
