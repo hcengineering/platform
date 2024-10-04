@@ -16,7 +16,7 @@
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { CreateGuest, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import { themeStore } from '@hcengineering/theme'
@@ -44,7 +44,7 @@
   let parentWidth: number | undefined
 
   $: style = `max-width: ${maxWidth || (parentWidth ? `${parentWidth}px` : 'max-content')};`
-  $: translate(placeholder, {}, $themeStore.language).then((res) => {
+  $: translateCB(placeholder, {}, $themeStore.language, (res) => {
     phTranslate = res
   })
 

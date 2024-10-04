@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { Component } from '@hcengineering/tracker'
   import { Icon, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -35,13 +35,9 @@
   $: if (value !== undefined) {
     label = value.label
   } else {
-    translate(tracker.string.NoComponent, {}, $themeStore.language)
-      .then((r) => {
-        label = r
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+    translateCB(tracker.string.NoComponent, {}, $themeStore.language, (r) => {
+      label = r
+    })
   }
   $: disabled = disabled || value === undefined
 </script>

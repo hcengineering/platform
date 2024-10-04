@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, getResourceP } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
   import { SvelteComponent } from 'svelte'
   import type { AnyComponent, AnySvelteComponent } from '../types'
@@ -40,23 +40,56 @@
     _props = props
   }
 
-  $: component =
-    _is != null && typeof _is === 'string'
-      ? getResource<any>(_is)
-      : _is == null
-        ? Promise.reject(new Error('is not defined'))
-        : Promise.resolve(_is)
+  let Ctor: any
+  let loading = false
+  let error: any
+  let counter = 0
+
+  function updateComponent (_is: AnyComponent | AnySvelteComponent): void {
+    const current = ++counter
+    if (_is == null) {
+      Ctor = undefined
+      error = new Error('is not defined')
+      return
+    }
+    if (typeof _is === 'string') {
+      const component = getResourceP<any>(_is)
+      if (component instanceof Promise) {
+        loading = true
+        Ctor = undefined
+        void component
+          .then((res) => {
+            if (current === counter) {
+              Ctor = res
+              loading = false
+            }
+          })
+          .catch((err) => {
+            if (current === counter) {
+              error = err
+            }
+          })
+      } else {
+        Ctor = component
+      }
+    } else {
+      Ctor = _is
+    }
+  }
+
+  $: updateComponent(_is)
 </script>
 
-{#if _is}
-  {#await component}
+{#if _is != null}
+  {#if loading}
     {#if showLoading}
       <Loading {shrink} />
     {/if}
-  {:then Ctor}
-    <ErrorBoundary>
+  {:else if Ctor != null}
+    <ErrorBoundary bind:error>
       {#if $$slots.default !== undefined}
-        <Ctor
+        <svelte:component
+          this={Ctor}
           bind:this={innerRef}
           {..._props}
           {inline}
@@ -72,9 +105,10 @@
           on:submit
         >
           <slot />
-        </Ctor>
+        </svelte:component>
       {:else}
-        <Ctor
+        <svelte:component
+          this={Ctor}
           bind:this={innerRef}
           {..._props}
           {inline}
@@ -91,10 +125,10 @@
         />
       {/if}
     </ErrorBoundary>
-  {:catch err}
-    <pre style="max-height: 140px; overflow: auto;">
-      <ErrorPresenter error={err} />
-    </pre>
-    <!-- <Icon icon={ui.icon.Error} size="32" /> -->
-  {/await}
+  {/if}
+{/if}
+{#if error != null}
+  <pre style="max-height: 140px; overflow: auto;">
+    <ErrorPresenter {error} />
+  </pre>
 {/if}

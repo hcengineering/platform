@@ -13,11 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Markup } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
-  import { CommonInboxNotification } from '@hcengineering/notification'
   import { BasePreview } from '@hcengineering/activity-resources'
+  import { Doc, Markup } from '@hcengineering/core'
+  import { CommonInboxNotification } from '@hcengineering/notification'
+  import { IntlString, translateCB } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { themeStore } from '@hcengineering/ui'
 
   export let value: CommonInboxNotification
 
@@ -31,7 +32,9 @@
     if (messageHtml !== undefined) {
       content = messageHtml
     } else if (message !== undefined) {
-      content = await translate(message, value.props)
+      translateCB(message, value.props, $themeStore.language, (res) => {
+        content = res
+      })
     }
   }
 

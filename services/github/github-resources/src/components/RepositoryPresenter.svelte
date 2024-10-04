@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
-  import { Icon, themeStore } from '@hcengineering/ui'
   import { GithubIntegrationRepository } from '@hcengineering/github'
+  import { translateCB } from '@hcengineering/platform'
+  import { Icon, themeStore } from '@hcengineering/ui'
   import github from '../plugin'
 
   export let value: WithLookup<GithubIntegrationRepository> | undefined
@@ -33,13 +33,9 @@
   $: if (value !== undefined) {
     label = value.name
   } else {
-    translate(github.string.NoRepository, {}, $themeStore.language)
-      .then((r) => {
-        label = r
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+    translateCB(github.string.NoRepository, {}, $themeStore.language, (r) => {
+      label = r
+    })
   }
   $: disabled = disabled || value === undefined
 </script>

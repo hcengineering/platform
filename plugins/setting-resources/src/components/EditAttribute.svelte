@@ -14,24 +14,23 @@
 -->
 <script lang="ts">
   import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@hcengineering/core'
-  import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
+  import { getEmbeddedLabel, getResource, translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import setting from '../plugin'
   import {
     AnyComponent,
+    ButtonIcon,
     Component,
     DropdownIntlItem,
     DropdownLabelsIntl,
-    ModernEditbox,
-    Label,
-    themeStore,
-    Modal,
-    ButtonIcon,
     IconDelete,
-    IconCopy
+    Label,
+    Modal,
+    ModernEditbox,
+    themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
-  import { clearSettingsStore, settingsStore } from '../store'
+  import setting from '../plugin'
+  import { clearSettingsStore } from '../store'
 
   export let attribute: AnyAttribute
   export let exist: boolean
@@ -46,7 +45,9 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
+  translateCB(attribute.label, {}, $themeStore.language, (p) => {
+    name = p
+  })
 
   async function save (): Promise<void> {
     if (disabled) {
