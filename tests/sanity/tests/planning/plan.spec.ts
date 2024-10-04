@@ -373,6 +373,7 @@ test.describe('Planning ToDo tests', () => {
         if (diff < 0) await planningPage.clickButtonPrevDayInSchedule()
         else await planningPage.clickButtonNextDayInSchedule()
       }
+      await planningPage.selectTimeCell('10am').scrollIntoViewIfNeeded()
     })
 
     await test.step('Resize ToDo', async () => {
