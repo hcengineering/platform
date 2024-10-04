@@ -21,13 +21,13 @@ import { type Document, type Teamspace } from './types'
 export async function getFirstRank (
   client: TxOperations,
   space: Ref<Teamspace>,
-  attachedTo: Ref<Document>,
+  parent: Ref<Document>,
   sort: SortingOrder = SortingOrder.Descending,
   extra: DocumentQuery<Document> = {}
 ): Promise<Rank | undefined> {
   const doc = await client.findOne(
     document.class.Document,
-    { space, attachedTo, ...extra },
+    { space, parent, ...extra },
     { sort: { rank: sort }, projection: { rank: 1 } }
   )
 

@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import type { Class, CollaborativeDoc, CollectionSize, Domain, Rank, Role, RolesAssignment } from '@hcengineering/core'
-import { IndexKind, Account, Ref, AccountRole } from '@hcengineering/core'
+import { Account, AccountRole, IndexKind, Ref } from '@hcengineering/core'
 import {
   type Document,
   type DocumentEmbedding,
@@ -29,19 +29,19 @@ import {
   Collection,
   Hidden,
   Index,
+  Mixin,
   Model,
   Prop,
+  TypeCollaborativeDoc,
+  TypeCollaborativeDocVersion,
   TypeNumber,
   TypeRef,
   TypeString,
-  UX,
-  TypeCollaborativeDoc,
-  TypeCollaborativeDocVersion,
-  Mixin
+  UX
 } from '@hcengineering/model'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TTypedSpace } from '@hcengineering/model-core'
+import core, { TCard, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -50,7 +50,7 @@ import tracker from '@hcengineering/model-tracker'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
+import { type Asset, getEmbeddedLabel } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import time, { type ToDo, type Todoable } from '@hcengineering/time'
 import document from './plugin'
@@ -69,31 +69,23 @@ export class TDocumentEmbedding extends TAttachment implements DocumentEmbedding
   declare attachedToClass: Ref<Class<Document>>
 }
 
-@Model(document.class.Document, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@Model(document.class.Document, core.class.Card, DOMAIN_DOCUMENT)
 @UX(document.string.Document, document.icon.Document, undefined, 'name', undefined, document.string.Documents)
-export class TDocument extends TAttachedDoc implements Document, Todoable {
+export class TDocument extends TCard implements Document, Todoable {
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
-  declare attachedTo: Ref<Document>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  @Hidden()
-  declare attachedToClass: Ref<Class<Document>>
+  declare parent: Ref<Document>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeString(), core.string.Collection)
-  @Hidden()
-  override collection: 'children' = 'children'
-
   @Prop(TypeString(), document.string.Name)
   @Index(IndexKind.FullText)
-    name!: string
+  declare title: string
 
   @Prop(TypeCollaborativeDoc(), document.string.Document)
-    content!: CollaborativeDoc
+  declare description: CollaborativeDoc
 
   @Prop(TypeRef(core.class.Account), document.string.LockedBy)
   @Hidden()
@@ -136,31 +128,24 @@ export class TDocument extends TAttachedDoc implements Document, Todoable {
     rank!: Rank
 }
 
-@Model(document.class.DocumentSnapshot, core.class.AttachedDoc, DOMAIN_DOCUMENT)
+@Model(document.class.DocumentSnapshot, core.class.Card, DOMAIN_DOCUMENT)
 @UX(document.string.Version)
-export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot {
+export class TDocumentSnapshot extends TCard implements DocumentSnapshot {
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
-  declare attachedTo: Ref<Document>
-
-  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
-  declare attachedToClass: Ref<Class<Document>>
+  declare parent: Ref<Document>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare space: Ref<Teamspace>
 
-  @Prop(TypeString(), core.string.Collection)
-  @Hidden()
-  override collection: 'snapshots' = 'snapshots'
-
   @Prop(TypeString(), document.string.Name)
   @Index(IndexKind.FullText)
-    name!: string
+  declare title: string
 
   @Prop(TypeCollaborativeDocVersion(), document.string.Document)
   @Hidden()
-    content!: CollaborativeDoc
+  declare description: CollaborativeDoc
 }
 
 @Model(document.class.SavedDocument, preference.class.Preference)

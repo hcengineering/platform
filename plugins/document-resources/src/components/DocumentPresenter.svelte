@@ -52,13 +52,13 @@
           </div>
         {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          {value.name}
+          {value.title}
         </span>
       </div>
     </DocNavLink>
   {:else if type === 'text'}
     <span class="overflow-label" use:tooltip={{ label: document.string.Document }}>
-      {value.name}
+      {value.title}
     </span>
   {/if}
 {/if}

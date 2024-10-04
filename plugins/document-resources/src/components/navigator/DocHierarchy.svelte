@@ -109,7 +109,7 @@
           : {
               fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
             }}
-        title={doc.name}
+        title={doc.title}
         selected={selected === doc._id && draggedItem === undefined}
         isFold
         {level}
