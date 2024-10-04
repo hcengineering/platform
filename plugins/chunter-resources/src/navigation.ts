@@ -436,7 +436,7 @@ export async function locationDataResolver (loc: Location): Promise<LocationData
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
   const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
 
-  const object = await client.findOne(_class, { _id })
+  const object = hierarchy.hasClass(_class) ? await client.findOne(_class, { _id }) : undefined
   if (object === undefined) return { name: await translate(chunter.string.Chat, {}, get(languageStore)) }
 
   const titleIntl = client.getHierarchy().getClass(object._class).label

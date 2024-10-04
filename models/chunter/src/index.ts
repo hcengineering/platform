@@ -21,6 +21,7 @@ import core from '@hcengineering/model-core'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { WidgetType } from '@hcengineering/workbench'
+import contact from '@hcengineering/contact'
 
 import chunter from './plugin'
 import { defineActions } from './actions'
@@ -301,6 +302,12 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_CHUNTER,
     disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
+
+  // Extensions
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: contact.extension.EmployeePopupActions,
+    component: chunter.component.DirectMessageButton
   })
 
   defineActions(builder)

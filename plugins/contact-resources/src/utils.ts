@@ -36,7 +36,7 @@ import core, {
   type Client,
   type Doc,
   type DocumentQuery,
-  getCurrentAccount,
+  getCurrentAccount, groupByArray,
   type Hierarchy,
   type IdMap,
   matchQuery,
@@ -308,6 +308,10 @@ export const personAccountPersonByIdStore = writable<IdMap<WithLookup<Person>>>(
 
 export const personIdByAccountId = derived(personAccountByIdStore, (vals) => {
   return new Map<Ref<PersonAccount>, Ref<Person>>(Array.from(vals.values()).map((it) => [it._id, it.person]))
+})
+
+export const personAccountByPersonId = derived(personAccountByIdStore, (vals) => {
+  return groupByArray(Array.from(vals.values()), (it) => it.person)
 })
 
 export const statusByUserStore = writable<Map<Ref<Account>, UserStatus>>(new Map())
