@@ -114,7 +114,7 @@ export class TDoc extends TObj implements Doc {
     createdOn!: Timestamp
 }
 
-@Model(core.class.Card, core.class.Obj)
+@Model(core.class.Card, core.class.Doc)
 @UX(core.string.Object)
 export class TCard extends TDoc implements Card {
   @Prop(TypeString(), core.string.Name)
