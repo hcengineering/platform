@@ -50,7 +50,6 @@ import { decodeToken as decodeTokenRaw, generateToken, type Token } from '@hceng
 import toolPlugin, { connect } from '@hcengineering/server-tool'
 import { randomBytes } from 'crypto'
 import { type MongoClient } from 'mongodb'
-import fetch from 'node-fetch'
 import otpGenerator from 'otp-generator'
 
 import { accountPlugin } from './plugin'
