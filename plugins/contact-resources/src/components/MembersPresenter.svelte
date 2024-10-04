@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
-  import { Button, showPopup, eventToHTMLElement, themeStore } from '@hcengineering/ui'
-  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import contact, { Employee } from '@hcengineering/contact'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
   import UsersPopup from './UsersPopup.svelte'
 
   export let value: Doc
@@ -36,7 +36,7 @@
   let buttonTitle = ''
 
   $: members = retrieveMembers(value)
-  $: translate(intlTitle, {}, $themeStore.language).then((res) => {
+  $: translateCB(intlTitle, {}, $themeStore.language, (res) => {
     buttonTitle = res
   })
 

@@ -81,7 +81,6 @@ export async function createEmptyDocument (
     title,
     description: makeCollaborativeDoc(id, 'description'),
     attachments: 0,
-    children: 0,
     embeddings: 0,
     labels: 0,
     comments: 0,

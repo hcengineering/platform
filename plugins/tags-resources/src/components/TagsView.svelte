@@ -14,18 +14,18 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
-  import { Asset, IntlString, translate } from '@hcengineering/platform'
+  import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
     AnySvelteComponent,
-    Button,
     Breadcrumb,
+    Button,
+    Header,
+    IconAdd,
     SearchInput,
     showPopup,
-    IconAdd,
-    themeStore,
-    Header
+    themeStore
   } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tags from '../plugin'
@@ -42,7 +42,7 @@
   export let onTag: ((tag: TagElement) => void) | undefined = undefined
 
   let keyTitle: string
-  $: translate(item, {}, $themeStore.language).then((t) => {
+  $: translateCB(item, {}, $themeStore.language, (t) => {
     keyTitle = t.toLowerCase()
   })
 

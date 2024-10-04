@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
-  import { IntlString, getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { IntlString, getEmbeddedLabel, translateCB } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps, PopupResult } from '@hcengineering/ui'
@@ -59,7 +59,7 @@
 
   $: handleSelectedMilestoneIdUpdated(value, rawMilestones)
 
-  $: translate(tracker.string.Milestone, {}, $themeStore.language).then((result) => (defaultMilestoneLabel = result))
+  $: translateCB(tracker.string.Milestone, {}, $themeStore.language, (result) => (defaultMilestoneLabel = result))
   const milestoneIcon = tracker.icon.Milestone
   $: milestoneText = shouldShowLabel ? selectedMilestone?.label ?? defaultMilestoneLabel : undefined
 

@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
+  import { getResource, translateCB } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, LabelAndProps, themeStore, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getResource, translate } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
 
-  import DocNavLink from './DocNavLink.svelte'
   import { getDocIdentifier } from '../utils'
+  import DocNavLink from './DocNavLink.svelte'
 
   export let _id: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
@@ -81,7 +81,13 @@
   async function updateDocLabel (doc?: Doc, _class?: Ref<Class<Doc>>): Promise<void> {
     const resultClass = doc?._class ?? _class
 
-    docLabel = resultClass ? await translate(hierarchy.getClass(resultClass).label, {}, $themeStore.language) : ''
+    if (resultClass != null) {
+      translateCB(hierarchy.getClass(resultClass).label, {}, $themeStore.language, (res) => {
+        docLabel = res
+      })
+    } else {
+      docLabel = ''
+    }
   }
 
   async function updateDocTitle (doc: Doc | undefined): Promise<void> {

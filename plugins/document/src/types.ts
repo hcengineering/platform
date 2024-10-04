@@ -33,7 +33,6 @@ export interface Document extends Card, IconProps {
 
   snapshots?: number
   attachments?: number
-  children?: number
   comments?: number
   embeddings?: number
   labels?: number

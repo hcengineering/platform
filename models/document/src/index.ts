@@ -91,9 +91,6 @@ export class TDocument extends TCard implements Document, Todoable {
   @Hidden()
     lockedBy?: Ref<Account>
 
-  @Prop(Collection(document.class.Document), document.string.ChildDocument)
-    children!: CollectionSize<Document>
-
   @Prop(Collection(document.class.DocumentEmbedding), document.string.Embeddings)
     embeddings?: number
 
@@ -447,7 +444,7 @@ function defineDocument (builder: Builder): void {
       allowedForAuthor: false,
       label: document.string.Document,
       group: document.ids.DocumentNotificationGroup,
-      field: 'content',
+      field: 'description',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
       defaultEnabled: false,
@@ -471,7 +468,7 @@ function defineDocument (builder: Builder): void {
     document.class.Document,
     document.ids.DocumentNotificationGroup,
     [],
-    ['attachments', 'children', 'comments']
+    ['attachments', 'comments']
   )
 
   // Activity & Inbox

@@ -5,16 +5,16 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
-  import type { IntlString, Asset } from '@hcengineering/platform'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import {
-    IModeSelector,
-    SearchInput,
-    ModeSelector,
-    themeStore,
-    Header,
     Breadcrumb,
-    HeaderAdaptive
+    Header,
+    HeaderAdaptive,
+    IModeSelector,
+    ModeSelector,
+    SearchInput,
+    themeStore
   } from '@hcengineering/ui'
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
 
@@ -44,7 +44,7 @@
   resultQuery = search === '' ? { ...query } : { ...query, $search: search }
 
   $: if (!label && title) {
-    translate(title, {}, $themeStore.language).then((res) => {
+    translateCB(title, {}, $themeStore.language, (res) => {
       label = res
     })
   }

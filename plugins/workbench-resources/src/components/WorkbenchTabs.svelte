@@ -19,7 +19,7 @@
 </script>
 
 <div class="root flex-gap-1">
-  {#each $tabsStore as tab}
+  {#each $tabsStore as tab (tab._id)}
     <WorkbenchTabPresenter {tab} />
   {/each}
   <div class="ml-1-5 plus-button mr-1">

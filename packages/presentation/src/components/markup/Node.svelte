@@ -25,7 +25,11 @@
 {#if node}
   {@const marks = node.marks ?? []}
 
-  <NodeMarks {marks}>
+  {#if marks.length > 0}
+    <NodeMarks {marks}>
+      <NodeContent {node} {preview} />
+    </NodeMarks>
+  {:else}
     <NodeContent {node} {preview} />
-  </NodeMarks>
+  {/if}
 {/if}

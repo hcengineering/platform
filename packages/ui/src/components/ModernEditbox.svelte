@@ -4,11 +4,11 @@
   // Licensed under the Eclipse Public License v2.0 (SPDX: EPL-2.0).
   //
 
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { themeStore } from '..'
   import { registerFocus } from '../focus'
   import Label from './Label.svelte'
-  import { themeStore } from '..'
 
   export let label: IntlString
   export let value: string | undefined = undefined
@@ -28,7 +28,7 @@
   $: maxlength = limit === 0 ? null : limit
 
   let placeholderStr: string = ''
-  $: ph = translate(label, {}, $themeStore.language).then((r) => {
+  $: translateCB(label, {}, $themeStore.language, (r) => {
     placeholderStr = r
   })
   $: labeled = kind === 'default' && size === 'large'

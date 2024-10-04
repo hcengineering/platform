@@ -22,13 +22,13 @@
     personAccountByIdStore,
     personByIdStore
   } from '@hcengineering/contact-resources'
-  import { Action } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { HTMLViewer } from '@hcengineering/presentation'
+  import { Action, themeStore } from '@hcengineering/ui'
 
-  import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
   import ActivityMessageHeader from '../activity-message/ActivityMessageHeader.svelte'
+  import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
 
   export let value: ActivityInfoMessage
   export let showNotify: boolean = false
@@ -52,13 +52,9 @@
 
   let content = ''
 
-  $: void translate(value.message, value.props)
-    .then((message) => {
-      content = message
-    })
-    .catch((err) => {
-      content = JSON.stringify(err, null, 2)
-    })
+  $: translateCB(value.message, value.props, $themeStore.language, (message) => {
+    content = message
+  })
 </script>
 
 <ActivityMessageTemplate
