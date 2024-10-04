@@ -301,7 +301,8 @@ export const contactPlugin = plugin(contactId, {
     Members: '' as IntlString,
     Contacts: '' as IntlString,
     Employees: '' as IntlString,
-    Persons: '' as IntlString
+    Persons: '' as IntlString,
+    ViewProfile: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

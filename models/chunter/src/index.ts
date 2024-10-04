@@ -309,6 +309,10 @@ export function createModel (builder: Builder): void {
     extension: contact.extension.EmployeePopupActions,
     component: chunter.component.DirectMessageButton
   })
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: activity.extension.ActivityEmployeePresenter,
+    component: chunter.component.EmployeePresenter
+  })
 
   defineActions(builder)
   defineNotifications(builder)

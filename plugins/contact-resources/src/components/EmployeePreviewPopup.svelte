@@ -3,7 +3,6 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { ModernButton, navigate, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
@@ -75,16 +74,22 @@
 >
   {#if employee}
     <div class="flex-presenter flex-gap-2 p-2">
-      <Avatar size="large" person={employee} name={employee.name}/>
+      <Avatar size="large" person={employee} name={employee.name} />
       <span class="username">
-      <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact/>
-        </span>
+        <EmployeePresenter value={employee} shouldShowAvatar={false} showPopup={false} compact />
+      </span>
       <span class="hulyAvatar-statusMarker small relative mt-0-5" class:online={isOnline} class:offline={!isOnline} />
     </div>
-    <div class="separator"/>
+    <div class="separator" />
     <div class="flex-presenter flex-gap-2 p-2">
-      <ComponentExtensions extension={contact.extension.EmployeePopupActions} props={{employee}}/>
-      <ModernButton label={getEmbeddedLabel('View Profile')} icon={contact.icon.Person} size="small" iconSize="small" on:click={viewProfile}/>
+      <ComponentExtensions extension={contact.extension.EmployeePopupActions} props={{ employee }} />
+      <ModernButton
+        label={contact.string.ViewProfile}
+        icon={contact.icon.Person}
+        size="small"
+        iconSize="small"
+        on:click={viewProfile}
+      />
     </div>
 
     <!--{#if status}-->

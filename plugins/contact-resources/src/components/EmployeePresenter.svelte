@@ -26,10 +26,9 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
 
-  $: employeeValue = typeof value === 'string' ? $personByIdStore.get(value) : value
+  $: employeeValue = typeof value === 'string' ? ($personByIdStore.get(value) as Employee) : (value as Employee)
 
-  $: active =
-    employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id as Ref<Employee>)?.active ?? false : false
+  $: active = employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id)?.active ?? false : false
 
   function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
     if (!active || value === undefined || !showPopup) {

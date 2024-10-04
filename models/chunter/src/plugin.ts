@@ -36,7 +36,8 @@ export default mergeIds(chunterId, chunter, {
     ThreadNotificationPresenter: '' as AnyComponent,
     JoinChannelNotificationPresenter: '' as AnyComponent,
     WorkbenchTabExtension: '' as AnyComponent,
-    DirectMessageButton: '' as AnyComponent
+    DirectMessageButton: '' as AnyComponent,
+    EmployeePresenter: '' as AnyComponent
   },
   action: {
     MarkCommentUnread: '' as Ref<Action>,

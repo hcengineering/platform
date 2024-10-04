@@ -30,7 +30,7 @@ import {
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
-import type { AnyComponent } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 
 /**
  * @public
@@ -333,6 +333,9 @@ export default plugin(activityId, {
   ids: {
     AllFilter: '' as Ref<ActivityMessagesFilter>,
     MentionNotification: '' as Ref<Doc>
+  },
+  extension: {
+    ActivityEmployeePresenter: '' as ComponentExtensionId
   },
   function: {
     ShouldScrollToActivity: '' as Resource<() => boolean>

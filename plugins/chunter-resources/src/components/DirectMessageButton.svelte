@@ -40,4 +40,10 @@
   }
 </script>
 
-<ModernButton label={chunter.string.Message} icon={view.icon.Bubble} size="small" iconSize="small" on:click={openDirect}/>
+<ModernButton
+  label={chunter.string.Message}
+  icon={view.icon.Bubble}
+  size="small"
+  iconSize="small"
+  on:click={openDirect}
+/>
