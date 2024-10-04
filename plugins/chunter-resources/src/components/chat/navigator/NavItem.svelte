@@ -102,7 +102,7 @@
       <div class="antiHSpacer" />
     {:else if secondaryNotifyMarker}
       <div class="antiHSpacer" />
-      <NotifyMarker count={0} kind="secondary" size="x-small" />
+      <NotifyMarker count={0} kind="simple" />
       <div class="antiHSpacer" />
     {/if}
   </svelte:fragment>
