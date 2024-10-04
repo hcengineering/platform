@@ -71,7 +71,6 @@ export interface Widget extends Doc {
   label: IntlString
   icon: Asset
   type: WidgetType
-  size?: 'small' | 'medium'
 
   component: AnyComponent
   tabComponent?: AnyComponent

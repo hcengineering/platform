@@ -361,7 +361,8 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 15rem;
+    width: 100%;
+    max-width: 100%;
     user-select: none;
 
     &:not(.isDock) {

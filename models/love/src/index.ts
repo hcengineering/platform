@@ -185,8 +185,7 @@ export function createModel (builder: Builder): void {
       label: love.string.MeetingRoom,
       type: WidgetType.Flexible,
       icon: love.icon.Cam,
-      component: love.component.VideoWidget,
-      size: 'medium'
+      component: love.component.VideoWidget
     },
     love.ids.VideoWidget
   )

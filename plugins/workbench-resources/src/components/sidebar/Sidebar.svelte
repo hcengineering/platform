@@ -33,9 +33,7 @@
     preferences = res
   })
 
-  $: widgetId = $sidebarStore.widget
-  $: widget = widgets.find((it) => it._id === widgetId)
-  $: size = $sidebarStore.variant === SidebarVariant.MINI ? 'mini' : widget?.size
+  $: size = $sidebarStore.variant === SidebarVariant.MINI ? 'mini' : undefined
 
   function txListener (tx: Tx): void {
     if (tx._class === workbench.class.TxSidebarEvent) {
@@ -78,18 +76,6 @@
       width: 3.5rem !important;
       min-width: 3.5rem !important;
       max-width: 3.5rem !important;
-    }
-
-    &.size-small {
-      width: 10rem !important;
-      min-width: 10rem !important;
-      max-width: 10rem !important;
-    }
-
-    &.size-medium {
-      width: 20rem !important;
-      min-width: 20rem !important;
-      max-width: 20rem !important;
     }
   }
 </style>
