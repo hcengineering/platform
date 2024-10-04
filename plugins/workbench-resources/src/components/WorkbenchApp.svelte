@@ -68,8 +68,8 @@
               {$versionError}
             </div>
           {/if}
-          {#if $upgradeDownloadProgress > 0}
-            <div class="ml-2" class:mt-1={$versionError !== undefined}>
+          {#if $upgradeDownloadProgress >= 0}
+            <div class="ml-1" class:ml-2={$versionError === undefined}>
               <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
             </div>
           {/if}
@@ -85,7 +85,7 @@
                 <h1><Label label={workbenchRes.string.ServerUnderMaintenance} /></h1>
               {/if}
               {$versionError}
-              {#if $upgradeDownloadProgress > 0}
+              {#if $upgradeDownloadProgress >= 0}
                 <div class="mt-1">
                   <Label
                     label={workbench.string.UpgradeDownloadProgress}
