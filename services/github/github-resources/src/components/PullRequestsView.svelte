@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, translate, translateCB } from '@hcengineering/platform'
   import { Button, IModeSelector, IconDetails, IconDetailsFilled, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
@@ -26,7 +26,7 @@
   let resultQuery: DocumentQuery<GithubPullRequest> = { ...searchQuery }
 
   $: if (!label && title) {
-    void translate(title, {}, $themeStore.language).then((res) => {
+    translateCB(title, {}, $themeStore.language, (res) => {
       label = res
     })
   }

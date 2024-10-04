@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import { createEventDispatcher, onMount } from 'svelte'
   import { deviceOptionsStore, resizeObserver } from '..'
   import plugin from '../plugin'
   import type { AnySvelteComponent, ListItem } from '../types'
   import Icon from './Icon.svelte'
   import ListView from './ListView.svelte'
-  import { themeStore } from '@hcengineering/theme'
 
   export let icon: Asset | AnySvelteComponent
   export let placeholder: IntlString = plugin.string.SearchDots
@@ -31,7 +31,7 @@
   let search: string = ''
   let phTranslate: string = ''
   $: if (placeholder) {
-    translate(placeholder, {}, $themeStore.language).then((res) => {
+    translateCB(placeholder, {}, $themeStore.language, (res) => {
       phTranslate = res
     })
   }
@@ -121,6 +121,7 @@
     </div>
   </div>
 </div>
+>
 
 <style lang="scss">
   .img {

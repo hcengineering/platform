@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { APIRequestContext, Browser, BrowserContext, Locator, Page, expect } from '@playwright/test'
-import { allure } from 'allure-playwright'
+import { attachment } from 'allure-js-commons'
 import path from 'path'
 import { ApiEndpoint } from './API/Api'
 import { TestData } from './chat/types'
@@ -169,7 +169,7 @@ export async function * iterateLocator (locator: Locator): AsyncGenerator<Locato
 }
 
 export async function attachScreenshot (name: string, page: Page): Promise<void> {
-  await allure.attachment(name, await page.screenshot(), {
+  await attachment(name, await page.screenshot(), {
     contentType: 'image/png'
   })
   await page.screenshot({ path: `screenshots/${name}` })

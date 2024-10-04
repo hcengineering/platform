@@ -16,7 +16,7 @@
   import { Channel } from '@hcengineering/contact'
   import { Data } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import {
     Button,
@@ -32,8 +32,8 @@
     showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
+  import { ContextMenu } from '@hcengineering/view-resources'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
   import IconCopy from './icons/Copy.svelte'
@@ -47,10 +47,10 @@
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
   let phTranslate: string
-  $: translate(placeholder, {}, $themeStore.language).then((tr) => (phTranslate = tr))
+  $: translateCB(placeholder, {}, $themeStore.language, (tr) => (phTranslate = tr))
   let label: IntlString = plugin.string.CopyToClipboard
   let lTranslate: string
-  $: translate(label, {}, $themeStore.language).then((tr) => (lTranslate = tr))
+  $: translateCB(label, {}, $themeStore.language, (tr) => (lTranslate = tr))
   let show: boolean = false
 
   const copyChannel = (): void => {

@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import plugin from '../plugin'
   import Label from './Label.svelte'
-  import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString | undefined = undefined
   export let width: string | undefined = undefined
@@ -32,7 +32,7 @@
   let input: HTMLTextAreaElement
   let phTranslate: string = ''
 
-  $: translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
 
@@ -55,6 +55,7 @@
     on:blur
   />
 </div>
+>
 
 <style lang="scss">
   .textarea {

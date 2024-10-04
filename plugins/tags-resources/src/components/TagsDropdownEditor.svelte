@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
@@ -44,7 +44,7 @@
 
   $: itemLabel = (key.attr.type as Collection<AttachedDoc>).itemLabel
 
-  $: void translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
+  $: translateCB(itemLabel ?? key.attr.label, {}, $themeStore.language, (v) => {
     keyLabel = v
   })
 
@@ -85,6 +85,11 @@
   async function removeTag (id: Ref<TagReference>): Promise<void> {
     dispatch('delete', id)
   }
+
+  let countText = ''
+  $: translateCB(countLabel, { count: items.length }, $themeStore.language, (res) => {
+    countText = res
+  })
 </script>
 
 <Button
@@ -103,9 +108,7 @@
   <svelte:fragment slot="content">
     {#if items.length > 0}
       <span class="flex-row-center flex-nowrap overflow-label disabled">
-        {#await translate(countLabel, { count: items.length }, $themeStore.language) then text}
-          {text}
-        {/await}
+        {countText}
       </span>
     {/if}
   </svelte:fragment>

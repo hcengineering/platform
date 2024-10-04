@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString
@@ -23,13 +23,9 @@
   let _value: string | undefined
 
   $: if (label !== undefined) {
-    translate(label, params ?? {}, $themeStore.language)
-      .then((r) => {
-        _value = r
-      })
-      .catch((err) => {
-        console.error(err)
-      })
+    translateCB(label, params ?? {}, $themeStore.language, (r) => {
+      _value = r
+    })
   } else {
     _value = label
   }

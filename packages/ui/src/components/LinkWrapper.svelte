@@ -15,15 +15,17 @@
 <script lang="ts">
   // This component converts all URLs from the provided string or IntlString to Links.
 
-  import { IntlString, translate } from '@hcengineering/platform'
-  import { replaceURLs } from '../utils'
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
+  import { replaceURLs } from '../utils'
 
   export let text: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let params: Readonly<Record<string, any>> = {}
 
-  $: label && translate(label, params, $themeStore.language).then((result) => (text = result))
+  $: if (label) {
+    translateCB(label, params, $themeStore.language, (result) => (text = result))
+  }
 </script>
 
 {#if text}

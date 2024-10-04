@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
-  import { createEventDispatcher, ComponentType } from 'svelte'
+  import { ComponentType, createEventDispatcher } from 'svelte'
 
   import plugin from '../plugin'
   import type { AnySvelteComponent } from '../types'
-  import Icon from './Icon.svelte'
   import Button from './Button.svelte'
+  import Icon from './Icon.svelte'
   import IconClose from './icons/Close.svelte'
   import Spinner from './Spinner.svelte'
 
@@ -44,7 +44,7 @@
     autoFocus = false
   }
 
-  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
   $: if (textHTML !== undefined) {
@@ -87,6 +87,7 @@
     {/if}
   </div>
 </div>
+>
 
 <style lang="scss">
   .editbox {

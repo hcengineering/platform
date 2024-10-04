@@ -85,6 +85,25 @@ async function loadTranslationsForComponent (plugin: Plugin, locale: string): Pr
   }
 }
 
+function getCachedTranslation (id: _IdInfo, locale: string): IntlString | Status | undefined {
+  const localtTanslations = translations.get(locale)
+  if (localtTanslations === undefined) {
+    return undefined
+  }
+  const messages = localtTanslations.get(id.component)
+  if (messages === undefined) {
+    return undefined
+  }
+  if (messages instanceof Status) {
+    return messages
+  }
+  if (id.kind !== undefined) {
+    if ((messages[id.kind] as Record<string, IntlString>)?.[id.name] !== undefined) {
+      return (messages[id.kind] as Record<string, IntlString>)?.[id.name]
+    }
+  }
+}
+
 async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString | Status | undefined> {
   try {
     const localtTanslations = translations.get(locale) ?? new Map<Plugin, Messages | Status<any>>()
@@ -152,7 +171,7 @@ export async function translate<P extends Record<string, any>> (
       if (id.component === _EmbeddedId) {
         return id.name
       }
-      const translation = (await getTranslation(id, locale)) ?? message
+      const translation = getCachedTranslation(id, locale) ?? (await getTranslation(id, locale)) ?? message
       if (translation instanceof Status) {
         localCache.set(message, translation)
         return message
@@ -162,9 +181,66 @@ export async function translate<P extends Record<string, any>> (
       return compiled.format(params)
     } catch (err) {
       const status = unknownError(err)
-      await setPlatformStatus(status)
+      void setPlatformStatus(status)
       localCache.set(message, status)
       return message
     }
+  }
+}
+/**
+ * Will do a translation in case language file already in cache, a translate is called and Promise is returned overwise
+ */
+export function translateCB<P extends Record<string, any>> (
+  message: IntlString<P>,
+  params: P,
+  language: string | undefined,
+  resolve: (value: string) => void
+): void {
+  const locale = language ?? getMetadata(platform.metadata.locale) ?? 'en'
+  const localCache = cache.get(locale) ?? new Map<IntlString, IntlMessageFormat | Status>()
+  if (!cache.has(locale)) {
+    cache.set(locale, localCache)
+  }
+  const compiled = localCache.get(message)
+
+  if (compiled !== undefined) {
+    if (compiled instanceof Status) {
+      resolve(message)
+      return
+    }
+    resolve(compiled.format(params))
+  } else {
+    let id: _IdInfo
+    try {
+      id = _parseId(message)
+      if (id.component === _EmbeddedId) {
+        resolve(id.name)
+        return
+      }
+    } catch (err) {
+      const status = unknownError(err)
+      void setPlatformStatus(status)
+      localCache.set(message, status)
+      resolve(message)
+      return
+    }
+    const translation = getCachedTranslation(id, locale)
+    if (translation === undefined || translation instanceof Status) {
+      void translate(message, params, language)
+        .then((res) => {
+          resolve(res)
+        })
+        .catch((err) => {
+          const status = unknownError(err)
+          void setPlatformStatus(status)
+          localCache.set(message, status)
+          resolve(message)
+        })
+      return
+    }
+
+    const compiled = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
+    localCache.set(message, compiled)
+    resolve(compiled.format(params))
   }
 }
