@@ -216,7 +216,7 @@
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
       // min-width: 600px;
-      font-size: 12px;
+      font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
       // border-bottom: 1px solid var(--theme-navpanel-divider);
