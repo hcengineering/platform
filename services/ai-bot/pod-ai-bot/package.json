@@ -36,7 +36,6 @@
     "@types/express": "^4.17.13",
     "@types/jest": "^29.5.5",
     "@types/node": "~20.11.16",
-    "@types/node-fetch": "~2.6.2",
     "@types/ws": "^8.5.11",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
@@ -81,7 +80,6 @@
     "form-data": "^4.0.0",
     "js-tiktoken": "^1.0.14",
     "mongodb": "^6.9.0",
-    "node-fetch": "^2.6.6",
     "openai": "^4.56.0",
     "ws": "^8.18.0"
   }
