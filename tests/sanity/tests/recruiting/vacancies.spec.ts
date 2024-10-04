@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI, attachScreenshot } from '../utils'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { VacanciesPage } from '../model/recruiting/vacancies-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
@@ -24,7 +24,6 @@ test.describe('Vacancy tests', () => {
   })
 
   test('create-vacancy', async ({ page }) => {
-    await attachScreenshot('create-vacancy - start', page)
     const settingsPage: SettingsPage = new SettingsPage(page)
     await settingsPage.profileButton().click()
     await settingsPage.selectPopupAp('Settings')
@@ -33,7 +32,10 @@ test.describe('Vacancy tests', () => {
     await settingsPage.checkOpened('Owners')
     await settingsPage.clickButtonRoleInComponent('Appleseed John')
     await settingsPage.selectPopupMenu('Owner').click()
-    await attachScreenshot('create-vacancy - premissions', page)
+    const count = await page.locator('div[id="workbench:component:WorkbenchTabs"] div.container.main').count()
+    for (let i = 1; i < count; i++) {
+      await page.locator('div[id="workbench:component:WorkbenchTabs"] div.container.main:first-child button').click()
+    }
 
     const vacancyId = 'My vacancy ' + generateId(4)
     await vacanciesPage.createVacancy(vacancyId)
