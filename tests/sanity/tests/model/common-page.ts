@@ -12,6 +12,7 @@ export class CommonPage {
   selectPopupInputSearch = (): Locator => this.page.locator('div.popup input.search')
   selectPopupListItem = (name: string): Locator => this.page.locator('div.selectPopup div.list-item', { hasText: name })
   selectPopupListItemFirst = (): Locator => this.page.locator('div.selectPopup div.list-item')
+  selectPopupApMenuItem = (hasText: string): Locator => this.page.locator('div.popup button.ap-menuItem', { hasText })
   selectPopupAddButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnAdd"]')
   selectPopupButton = (): Locator => this.page.locator('div.selectPopup button')
   selectPopupExpandButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnExpand"]')
@@ -193,6 +194,10 @@ export class CommonPage {
 
   async selectListItem (name: string): Promise<void> {
     await this.selectPopupListItem(name).click({ delay: 100 })
+  }
+
+  async selectPopupAp (name: string): Promise<void> {
+    await this.selectPopupApMenuItem(name).click({ delay: 100 })
   }
 
   async selectPopupItem (name: string): Promise<void> {

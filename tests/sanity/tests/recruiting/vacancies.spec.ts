@@ -1,9 +1,11 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformSetting, PlatformURI, attachScreenshot } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { VacanciesPage } from '../model/recruiting/vacancies-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
 import { NewVacancy } from '../model/recruiting/types'
+import { SettingsPage } from '../model/settings-page'
+import { WorkspaceSettingsPage } from '../model/workspace/workspace-settings-page'
 
 test.use({
   storageState: PlatformSetting
@@ -21,7 +23,18 @@ test.describe('Vacancy tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-vacancy', async () => {
+  test('create-vacancy', async ({ page }) => {
+    await attachScreenshot('create-vacancy - start', page)
+    const settingsPage: SettingsPage = new SettingsPage(page)
+    await settingsPage.profileButton().click()
+    await settingsPage.selectPopupAp('Settings')
+    const wsPage: WorkspaceSettingsPage = new WorkspaceSettingsPage(page)
+    await wsPage.owners().click()
+    await settingsPage.checkOpened('Owners')
+    await settingsPage.clickButtonRoleInComponent('Appleseed John')
+    await settingsPage.selectPopupMenu('Owner').click()
+    await attachScreenshot('create-vacancy - premissions', page)
+
     const vacancyId = 'My vacancy ' + generateId(4)
     await vacanciesPage.createVacancy(vacancyId)
     await vacanciesPage.modifyVacancy(vacancyId)
