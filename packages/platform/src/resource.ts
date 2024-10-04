@@ -128,10 +128,6 @@ export async function getResource<T> (resource: Resource<T>): Promise<T> {
   return value
 }
 
-export function getResourceSync<T> (resource: Resource<T>): T | undefined {
-  return cachedResource.get(resource)
-}
-
 /**
  * @public
  * @param resource -
