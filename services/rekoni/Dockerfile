@@ -1,4 +1,4 @@
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 
 RUN apk upgrade --update && apk add \
   coreutils \
