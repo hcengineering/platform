@@ -161,7 +161,7 @@
             </button>
           </div>
         {/if}
-        <div class="flex-row-center left-items" style:-webkit-app-region={'no-drag'}>
+        <div class="flex-row-center left-items flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
           <RootBarExtension position="left" />
         </div>
         <div
