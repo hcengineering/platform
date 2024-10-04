@@ -630,15 +630,23 @@
     loadMore()
   }
 
+  let timer: any
+
   function saveScrollPosition (): void {
     if (!scrollElement) {
       return
     }
 
-    const { offsetHeight, scrollHeight, scrollTop } = scrollElement
+    prevScrollHeight = scrollElement.scrollHeight
 
-    prevScrollHeight = scrollHeight
-    isScrollAtBottom = scrollHeight <= Math.ceil(scrollTop + offsetHeight)
+    clearTimeout(timer)
+    setTimeout(() => {
+      if (!scrollElement) {
+        return
+      }
+      const { offsetHeight, scrollHeight, scrollTop } = scrollElement
+      isScrollAtBottom = scrollHeight <= Math.ceil(scrollTop + offsetHeight)
+    }, 15)
   }
 
   beforeUpdate(() => {

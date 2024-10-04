@@ -1,5 +1,5 @@
 import { Browser, Locator, Page } from '@playwright/test'
-import { allure } from 'allure-playwright'
+import { attachment } from 'allure-js-commons'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -58,7 +58,7 @@ export function randomString (): string {
 }
 
 export async function attachScreenshot (name: string, page: Page): Promise<void> {
-  await allure.attachment(name, await page.screenshot(), {
+  await attachment(name, await page.screenshot(), {
     contentType: 'image/png'
   })
   await page.screenshot({ path: `screenshots/${name}` })

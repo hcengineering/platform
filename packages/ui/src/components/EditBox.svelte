@@ -14,14 +14,14 @@
 -->
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import { createEventDispatcher, onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import plugin from '../plugin'
   import type { EditStyle } from '../types'
-  import Label from './Label.svelte'
   import { floorFractionDigits } from '../utils'
-  import { themeStore } from '@hcengineering/theme'
+  import Label from './Label.svelte'
 
   export let id: string | undefined = undefined
   export let label: IntlString | undefined = undefined
@@ -56,7 +56,7 @@
       value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
     }
   }
-  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
 

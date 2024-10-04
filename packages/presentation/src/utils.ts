@@ -689,7 +689,7 @@ export function setPresentationCookie (token: string, workspaceId: string): void
   setToken('/files/' + workspaceId)
 }
 
-export const upgradeDownloadProgress = writable(0)
+export const upgradeDownloadProgress = writable(-1)
 
 export function setDownloadProgress (percent: number): void {
   if (Number.isNaN(percent)) {

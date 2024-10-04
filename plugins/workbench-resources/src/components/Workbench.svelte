@@ -184,27 +184,24 @@
   )
 
   async function initCurrentTab (tabs: WorkbenchTab[]): Promise<void> {
-    if (tabs.length === 0) {
-      const loc = getCurrentLocation()
-
-      const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-        attachedTo: account._id,
-        location: locationToUrl(loc),
-        isPinned: false
-      })
-      prevTab = _id
-      selectTab(_id)
-    } else {
-      const tab = tabs.find((t) => t._id === $tabIdStore)
-      const loc = getCurrentLocation()
-      const tabLoc = tab ? getTabLocation(tab) : undefined
-      const isLocEqual = tabLoc ? areLocationsEqual(loc, tabLoc) : false
-      if (!isLocEqual) {
-        const url = locationToUrl(loc)
-        const tabByUrl = tabs.find((t) => t.location === url)
-        if (tabByUrl !== undefined) {
-          prevTab = tabByUrl._id
-          selectTab(tabByUrl._id)
+    const tab = tabs.find((t) => t._id === $tabIdStore)
+    const loc = getCurrentLocation()
+    const tabLoc = tab ? getTabLocation(tab) : undefined
+    const isLocEqual = tabLoc ? areLocationsEqual(loc, tabLoc) : false
+    if (!isLocEqual) {
+      const url = locationToUrl(loc)
+      const tabByUrl = tabs.find((t) => t.location === url)
+      if (tabByUrl !== undefined) {
+        prevTab = tabByUrl._id
+        selectTab(tabByUrl._id)
+      } else {
+        const tabToReplace = tabs.findLast((t) => !t.isPinned)
+        if (tabToReplace !== undefined) {
+          await client.update(tabToReplace, {
+            location: url
+          })
+          prevTab = tabToReplace._id
+          selectTab(tabToReplace._id)
         } else {
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
             attachedTo: account._id,

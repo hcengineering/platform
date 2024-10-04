@@ -41,8 +41,9 @@
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
     "typescript": "^5.3.3",
-    "@playwright/test": "^1.41.2",
-    "allure-playwright": "^2.9.2",
+    "@playwright/test": "^1.47.2",
+    "allure-playwright": "^3.0.4",
+    "allure-js-commons": "^3.0.4",
     "@faker-js/faker": "^8.4.1"
   },
   "dependencies": {

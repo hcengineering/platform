@@ -70,9 +70,9 @@ function getLocation (plugin: Plugin): PluginLoader<Resources> {
   return location
 }
 
-const loading = new Map<Plugin, Promise<Resources>>()
+const loading = new Map<Plugin, Resources | Promise<Resources>>()
 
-async function loadPlugin (id: Plugin): Promise<Resources> {
+function loadPlugin (id: Plugin): Resources | Promise<Resources> {
   let pluginLoader = loading.get(id)
   if (pluginLoader === undefined) {
     const status = new Status(Severity.INFO, platform.status.LoadingPlugin, {
@@ -99,7 +99,7 @@ async function loadPlugin (id: Plugin): Promise<Resources> {
     )
     loading.set(id, pluginLoader)
   }
-  return await pluginLoader
+  return pluginLoader
 }
 
 const cachedResource = new Map<string, any>()
@@ -115,8 +115,12 @@ export async function getResource<T> (resource: Resource<T>): Promise<T> {
     return cached
   }
   const info = _parseId(resource)
-  const resources = loading.get(info.component) ?? loadPlugin(info.component)
-  const value = (await resources)[info.kind]?.[info.name]
+  let resources = loading.get(info.component) ?? loadPlugin(info.component)
+  if (resources instanceof Promise) {
+    resources = await resources
+    loading.set(info.component, resources)
+  }
+  const value = resources[info.kind]?.[info.name]
   if (value === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.ResourceNotFound, { resource }))
   }
@@ -126,6 +130,15 @@ export async function getResource<T> (resource: Resource<T>): Promise<T> {
 
 export function getResourceSync<T> (resource: Resource<T>): T | undefined {
   return cachedResource.get(resource)
+}
+
+/**
+ * @public
+ * @param resource -
+ * @returns
+ */
+export function getResourceP<T> (resource: Resource<T>): T | Promise<T> {
+  return cachedResource.get(resource) ?? getResource(resource)
 }
 
 /**

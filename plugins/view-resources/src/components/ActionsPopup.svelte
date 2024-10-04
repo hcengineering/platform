@@ -18,13 +18,11 @@
     Ref,
     SearchResultDoc,
     Tx,
-    TxBuilder,
     TxWorkspaceEvent,
     WithLookup,
-    WorkspaceEvent,
-    coreId
+    WorkspaceEvent
   } from '@hcengineering/core'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { getResource, translate, translateCB } from '@hcengineering/platform'
   import {
     ActionContext,
     SearchResult,
@@ -292,7 +290,7 @@
     if (autoFocus) focus()
   }
 
-  $: void translate(view.string.ActionPlaceholder, {}).then((res) => {
+  $: translateCB(view.string.ActionPlaceholder, {}, $themeStore.language, (res) => {
     phTraslate = res
   })
   let timer: any

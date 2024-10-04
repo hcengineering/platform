@@ -11,7 +11,7 @@ import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import slugify from 'slugify'
 
 function getDocumentId (doc: Document): string {
-  const slug = slugify(doc.name, { lower: true })
+  const slug = slugify(doc.title, { lower: true })
   return `${slug}-${doc._id}`
 }
 
@@ -23,7 +23,7 @@ export async function documentHTMLPresenter (doc: Doc, control: TriggerControl):
   const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${documentId}/${getDocumentId(document)}`
   const link = concatLink(front, path)
-  return `<a href="${link}">${document.name}</a>`
+  return `<a href="${link}">${document.title}</a>`
 }
 
 export async function documentLinkIdProvider (doc: Document): Promise<string> {
@@ -35,7 +35,7 @@ export async function documentLinkIdProvider (doc: Document): Promise<string> {
  */
 export async function documentTextPresenter (doc: Doc): Promise<string> {
   const document = doc as Document
-  return document.name
+  return document.title
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

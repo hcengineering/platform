@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
-  import IconSearch from './icons/Search.svelte'
-  import IconClose from './icons/Close.svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
+  import IconClose from './icons/Close.svelte'
+  import IconSearch from './icons/Search.svelte'
 
   export let value: string | undefined = undefined
   export let placeholder: IntlString = plugin.string.Search
@@ -29,7 +29,7 @@
   let input: HTMLInputElement
   let phTranslate: string = ''
 
-  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
 
@@ -86,6 +86,7 @@
     <IconClose size={'small'} />
   </button>
 </label>
+>
 
 <style lang="scss">
   .searchInput-wrapper {

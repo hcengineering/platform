@@ -15,9 +15,10 @@
 //
 -->
 <script lang="ts">
-  import { AttachedData, Ref, generateId } from '@hcengineering/core'
-  import { Document, Teamspace, DocumentEvents } from '@hcengineering/document'
-  import { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
+  import { Analytics } from '@hcengineering/analytics'
+  import { Data, generateId, Ref } from '@hcengineering/core'
+  import { Document, DocumentEvents, Teamspace } from '@hcengineering/document'
+  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import {
     Button,
     createFocusManager,
@@ -31,14 +32,13 @@
   import view from '@hcengineering/view'
   import { IconPicker, ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { Analytics } from '@hcengineering/analytics'
 
   import document from '../plugin'
   import { createEmptyDocument } from '../utils'
   import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
 
   export function canClose (): boolean {
-    return object.name === ''
+    return object.title === ''
   }
 
   export let space: Ref<Teamspace>
@@ -46,8 +46,8 @@
 
   const id: Ref<Document> = generateId()
 
-  const object: Pick<AttachedData<Document>, 'name' | 'icon' | 'color'> = {
-    name: ''
+  const object: Pick<Data<Document>, 'title' | 'icon' | 'color'> = {
+    title: ''
   }
 
   const dispatch = createEventDispatcher()
@@ -57,7 +57,7 @@
   let _parent = parent
 
   $: if (_space !== space) _parent = undefined
-  $: canSave = getTitle(object.name).length > 0 && _space !== undefined
+  $: canSave = getTitle(object.title).length > 0 && _space !== undefined
 
   function chooseIcon (): void {
     const { icon, color } = object
@@ -75,7 +75,7 @@
   }
 
   async function create (): Promise<void> {
-    await createEmptyDocument(client, id, _space, _parent ?? document.ids.NoParent, object)
+    await createEmptyDocument(client, id, _space, _parent, object)
     Analytics.handleEvent(DocumentEvents.DocumentCreated, { id, parent: _parent })
     dispatch('close', id)
   }
@@ -140,7 +140,7 @@
     </div>
     <EditBox
       placeholder={document.string.DocumentNamePlaceholder}
-      bind:value={object.name}
+      bind:value={object.title}
       kind={'large-style'}
       autoFocus
       focusIndex={1}

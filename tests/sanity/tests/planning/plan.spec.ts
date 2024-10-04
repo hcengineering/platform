@@ -6,7 +6,8 @@ import {
   generateTestData,
   getTimeForPlanner,
   getSecondPageByInvite,
-  getInviteLink
+  getInviteLink,
+  convertDate
 } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
@@ -344,23 +345,21 @@ test.describe('Planning ToDo tests', () => {
     })
   })
 
-  test.skip('Change ToDo start and end times by dragging', async ({ page }) => {
+  test('Change ToDo start and end times by dragging', async ({ page }) => {
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    const dateEnd = new Date()
+    const today = new Date()
+    const date = new Date()
+    date.setDate(date.getDate() + 3)
 
     const toDoWithLabel: NewToDo = {
       title: `ToDo to change duration-${generateId()}`,
       description: 'Description for ToDo to change duration',
       slots: [
         {
-          dateStart: 'today',
+          dateStart: convertDate(date),
           timeStart: '1400',
-          dateEnd: {
-            day: dateEnd.getDate().toString(),
-            month: (dateEnd.getMonth() + 1).toString(),
-            year: dateEnd.getFullYear().toString()
-          },
+          dateEnd: convertDate(date),
           timeEnd: '1500'
         }
       ]
@@ -369,6 +368,12 @@ test.describe('Planning ToDo tests', () => {
     await test.step('Prepare ToDo', async () => {
       await planningNavigationMenuPage.clickOnButtonToDoAll()
       await planningPage.createNewToDo(toDoWithLabel)
+      const diff = date.getTime() - today.getTime()
+      for (let i = 0; i < Math.abs(diff) / 86400000; i++) {
+        if (diff < 0) await planningPage.clickButtonPrevDayInSchedule()
+        else await planningPage.clickButtonNextDayInSchedule()
+      }
+      await planningPage.selectTimeCell('10am').scrollIntoViewIfNeeded()
     })
 
     await test.step('Resize ToDo', async () => {

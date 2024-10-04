@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import presentation, { createQuery } from '@hcengineering/presentation'
   import { TagCategory, TagElement } from '@hcengineering/tags'
   import {
@@ -47,7 +47,7 @@
 
   let phTranslate: string = ''
   $: if (placeholder) {
-    translate(placeholder, {}, $themeStore.language).then((res) => {
+    translateCB(placeholder, {}, $themeStore.language, (res) => {
       phTranslate = res
     })
   }
