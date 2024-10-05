@@ -196,6 +196,11 @@ export const storeNodes: Record<string, NodeProcessor> = {
         ')'
     )
   },
+  comment: (state, node) => {
+    state.write('<!--')
+    state.renderInline(node)
+    state.write('-->')
+  },
   hardBreak: (state, node, parent, index) => {
     const content = messageContent(parent)
     for (let i = index + 1; i < content.length; i++) {

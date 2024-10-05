@@ -602,6 +602,7 @@ export class MarkdownParser {
       html: true
     })
     this.tokenizer.core.ruler.after('inline', 'task_list', this.listRule)
+    this.tokenizer.core.ruler.after('inline', 'html_comment', this.htmlCommentRule)
 
     this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule, extensions)
   }
@@ -617,6 +618,19 @@ export class MarkdownParser {
       doc = state.closeNode()
     } while (state.stack.length > 0)
     return doc
+  }
+
+  htmlCommentRule: RuleCore = (state: StateCore): boolean => {
+    const tokens = state.tokens
+    for (let i = 0; i < tokens.length; i++) {
+      // Prosemirror entirely ignores comments when parsing, so
+      // here we replaces html comment tag with a custom tag so the comments got parsed as a node
+      if (tokens[i].type === 'html_block' || tokens[i].type === 'html_inline') {
+        const content = tokens[i].content.replaceAll('<!--', '<comment>').replaceAll('-->', '</comment>')
+        tokens[i].content = content
+      }
+    }
+    return true
   }
 
   listRule: RuleCore = (state: TaskListStateCore): boolean => {
