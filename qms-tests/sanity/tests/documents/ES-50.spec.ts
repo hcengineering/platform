@@ -213,6 +213,7 @@ test.describe('QMS. PDF Download and Preview', () => {
       await documentContentPage.buttonSendForApproval.click()
       await documentContentPage.fillSelectApproversForm([documentDetails.owner])
       await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+      await documentContentPage.checkIfLeftModalIsOpen()
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.IN_APPROVAL

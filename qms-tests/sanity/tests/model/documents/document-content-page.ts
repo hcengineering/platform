@@ -98,6 +98,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   readonly privateToggle: Locator
   readonly inputTeamspaceName: Locator
   readonly teamspaceArrow: Locator
+  readonly infoModal: Locator
 
   constructor (page: Page) {
     super(page)
@@ -206,6 +207,7 @@ export class DocumentContentPage extends DocumentCommonPage {
     this.privateToggle = page.locator('#teamspace-private span')
     this.inputTeamspaceName = page.getByPlaceholder('New teamspace')
     this.teamspaceArrow = page.locator('.w-full > button:nth-child(2)')
+    this.infoModal = page.locator('#btnGID-info')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {
@@ -676,6 +678,13 @@ export class DocumentContentPage extends DocumentCommonPage {
 
   async checkDocumentStatus (status: DocumentStatus): Promise<void> {
     await expect(this.textDocumentStatus).toHaveText(status)
+  }
+
+  async checkIfLeftModalIsOpen (): Promise<void> {
+    const teamspaceOrArrow = await this.page.isHidden('div.flex:has(div.label:text("Template name")) div.field')
+    if (teamspaceOrArrow) {
+      await this.infoModal.click()
+    }
   }
 
   async checkDocument (data: DocumentDetails): Promise<void> {
