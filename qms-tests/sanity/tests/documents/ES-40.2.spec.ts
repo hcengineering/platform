@@ -1,7 +1,7 @@
 import { test } from '@playwright/test'
-import { PlatformUser, HomepageURI, PlatformURI } from '../utils'
+import { PlatformUser } from '../utils'
 import { LoginPage } from '../model/login-page'
-import { SelectWorkspacePage } from '../model/select-workspace-page'
+
 test.describe('login test', () => {
   let loginPage: LoginPage
 
@@ -11,12 +11,13 @@ test.describe('login test', () => {
   })
 
   test('check login', async () => {
+    await loginPage.clickOnLoginWithPassword()
     await loginPage.login(PlatformUser, '1234')
   })
 
   test('TESTS-392 - As a non workspace user account I cannot log into TraceX', async () => {
     await loginPage.clickOnLoginWithPassword()
-    await loginPage.login("Wrong User", 'Wrong password')
+    await loginPage.login('Wrong User', 'Wrong password')
     await loginPage.checkIfErrorMessageIsShown('Account not found')
   })
 

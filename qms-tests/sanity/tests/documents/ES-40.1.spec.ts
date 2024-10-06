@@ -1,12 +1,7 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformSettingSecond, PlatformSettingThird, PlatformURI } from '../utils'
+import { HomepageURI, PlatformSettingThird, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
-
-import { SettingsPage } from './../model/setting-page'
-import { DocumentDetails, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
-import { faker } from '@faker-js/faker'
-import { prepareDocumentStep } from './common-documents-steps'
 
 test.use({
   storageState: PlatformSettingThird

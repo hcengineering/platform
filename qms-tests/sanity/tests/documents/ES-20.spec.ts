@@ -26,7 +26,9 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     }
   })
 
-  test('TESTS-277 - @PDF Author can Generate PDF from a doc with all Reviewers and Approvers signature info displayed', async ({ page }) => {
+  test('TESTS-277 - @PDF Author can Generate PDF from a doc with all Reviewers and Approvers signature info displayed', async ({
+    page
+  }) => {
     await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
     await allure.tms('TESTS-277', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-277')
     const approveDocument: NewDocument = {

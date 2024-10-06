@@ -1,15 +1,11 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformSettingSecond, PlatformSettingThird, PlatformURI } from '../utils'
+import { attachScreenshot, HomepageURI, PlatformSettingSecond, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
-
-import { SettingsPage } from './../model/setting-page'
-import { DocumentDetails, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { faker } from '@faker-js/faker'
-import { prepareDocumentStep } from './common-documents-steps'
 
 test.use({
-  storageState: PlatformSettingThird // Assuming this is a non-space owner user
+  storageState: PlatformSettingSecond
 })
 
 test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of external origin are identified and their distribution controlled', () => {
@@ -30,7 +26,8 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await documentContentPage.changeDocumentSpaceMembers(folderName)
       await documentContentPage.checkIfTheSpaceIsVisible(folderName, false)
       await documentContentPage.clickDocumentsSpace()
-      await documentContentPage.clickCreateTeamspace()
+      await page.waitForTimeout(1000)
+      await documentContentPage.clickOnTeamspaceOrArrow()
       await documentContentPage.fillTeamspaceFormManager(folderName)
       await documentContentPage.changeTeamspaceMembers(folderName)
       await documentContentPage.checkIfTheSpaceIsVisible(folderName, false)
@@ -47,11 +44,11 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.clickContacts()
       await documentContentPage.clickEmployee()
-      await documentContentPage.selectEmployee('VC Velasquez Cain')
+      await documentContentPage.selectEmployee('KA Karmin Armin')
       await documentContentPage.clickEmployeeDropdown()
       await documentContentPage.clickKickEmployee()
       await documentContentPage.clickConfirmKickEmployee()
-      await documentContentPage.checkIfEmployeeIsKicked('Velasquez Cain')
+      await documentContentPage.checkIfEmployeeIsKicked('Karmin Armin')
     })
   })
 })

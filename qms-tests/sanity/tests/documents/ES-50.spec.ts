@@ -1,5 +1,13 @@
 import { devices, test } from '@playwright/test'
-import { attachScreenshot, DocumentURI, generateId, getSecondPage, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import {
+  attachScreenshot,
+  DocumentURI,
+  generateId,
+  getSecondPage,
+  HomepageURI,
+  PlatformSetting,
+  PlatformURI
+} from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
@@ -27,10 +35,13 @@ test.describe('QMS. PDF Download and Preview', () => {
     }
   })
 
-  test('TESTS-386 - @PDF Author can Generate PDF from a doc with all Reviewers and Approvers signature info displayed', async ({ page, browser }) => {
+  test('TESTS-386 - @PDF Author can Generate PDF from a doc with all Reviewers and Approvers signature info displayed', async ({
+    page,
+    browser
+  }) => {
     await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
     await allure.tms('TESTS-386', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-386')
-    const userSecondPage = await getSecondPage(browser) 
+    const userSecondPage = await getSecondPage(browser)
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
       title: 'This is a test document QMS TESTS-386',
@@ -109,10 +120,13 @@ test.describe('QMS. PDF Download and Preview', () => {
     await attachScreenshot('TESTS-386.png', page)
   })
 
-  test('TESTS-387 - @PDF Author can Generate PDF from a doc with all Reviewers and Approvers signature info displayed', async ({ page, browser }) => {
+  test('TESTS-387 - @PDF Author can Generate PDF from a doc with all Reviewers and Approvers signature info displayed', async ({
+    page,
+    browser
+  }) => {
     await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
     await allure.tms('TESTS-387', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-387')
-    const userSecondPage = await getSecondPage(browser) 
+    const userSecondPage = await getSecondPage(browser)
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
       title: 'This is a test for a QMS TESTS-387',
@@ -148,9 +162,8 @@ test.describe('QMS. PDF Download and Preview', () => {
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       await documentsPageSecond.openDocument(approveDocument.title)
       await documentContentPageSecond.clickApproveButtonAndFillPassword()
-    //   await documentContentPageSecond.completeReview()
+      //   await documentContentPageSecond.completeReview()
       await documentsPageSecond.openDocument(approveDocument.title)
-
     })
     await test.step('7. Show Full screen preview', async () => {
       const documentsPageSecond = new DocumentsPage(userSecondPage)
@@ -171,13 +184,16 @@ test.describe('QMS. PDF Download and Preview', () => {
     await attachScreenshot('TESTS-387.png', page)
   })
 
-  test('TESTS-393 - Doc Author, Reviewers, Approvers Electronic signature once doc is Effective', async ({ page, browser }) => {
+  test('TESTS-393 - Doc Author, Reviewers, Approvers Electronic signature once doc is Effective', async ({
+    page,
+    browser
+  }) => {
     await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
     await allure.tms('TESTS-393', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-393')
-    const userSecondPage = await getSecondPage(browser) 
+    const userSecondPage = await getSecondPage(browser)
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
-      title:  `Complete document-${generateId()}`,
+      title: `Complete document-${generateId()}`,
       description: `Complete document description-${generateId()}`
     }
     const documentDetails: DocumentDetails = {
@@ -209,25 +225,28 @@ test.describe('QMS. PDF Download and Preview', () => {
       const documentContentPageSecond = new DocumentContentPage(userSecondPage)
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       await documentsPageSecond.openDocument(approveDocument.title)
-      await documentContentPageSecond.clickApproveButtonAndFillPassword()
+      await documentContentPageSecond.clickApproveButton()
       await documentsPageSecond.openDocument(approveDocument.title)
     })
     await test.step('5. check if reviewers and approvers are visible', async () => {
       const documentContentPageSecond = new DocumentContentPage(userSecondPage)
       await documentContentPageSecond.clickOpenTeam()
       await documentContentPageSecond.checkIfReviewersAndApproversAreVisible()
-     })
+    })
 
     await attachScreenshot('TESTS-393.png', page)
   })
 
-  test('TESTS-394 - Doc Author, Reviewers, Approvers Electronic signature once doc is Effective', async ({ page, browser }) => {
+  test('TESTS-394 - Doc Author, Reviewers, Approvers Electronic signature once doc is Effective', async ({
+    page,
+    browser
+  }) => {
     await allure.description('Requirement\nUsers need to review the document and review status is displayed in PDF')
     await allure.tms('TESTS-394', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-394')
-    const userSecondPage = await getSecondPage(browser) 
+    const userSecondPage = await getSecondPage(browser)
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
-      title:  `Complete document-${generateId()}`,
+      title: `Complete document-${generateId()}`,
       description: `Complete document description-${generateId()}`
     }
     const documentDetails: DocumentDetails = {
@@ -259,16 +278,15 @@ test.describe('QMS. PDF Download and Preview', () => {
       const documentContentPageSecond = new DocumentContentPage(userSecondPage)
       const documentsPageSecond = new DocumentsPage(userSecondPage)
       await documentsPageSecond.openDocument(approveDocument.title)
-      await documentContentPageSecond.clickApproveButtonAndFillPassword()
+      await documentContentPageSecond.clickApproveButton()
       await documentsPageSecond.openDocument(approveDocument.title)
     })
     await test.step('5. check if reviewers and approvers are visible', async () => {
       const documentContentPageSecond = new DocumentContentPage(userSecondPage)
       await documentContentPageSecond.clickOpenTeam()
       await documentContentPageSecond.checkTheUserCantChangeReviewersAndApprovers()
-     })
+    })
 
     await attachScreenshot('TESTS-394.png', page)
   })
-
 })
