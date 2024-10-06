@@ -360,7 +360,7 @@ export async function syncDerivedDocuments<T extends { url: string }> (
         externalVersion: githubExternalSyncVersion,
         derivedVersion: '',
         lastModified: new Date(r.updatedAt ?? r.createdAt).getTime(),
-        parent: ext.url,
+        parent: (ext.url ?? '').toLowerCase(),
         attachedTo: parentDoc._id,
         ...extra
       })

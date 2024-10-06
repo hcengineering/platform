@@ -267,7 +267,7 @@ export class ReviewSyncManager implements DocSyncManager {
         external: externalData,
         externalVersion: githubExternalSyncVersion,
         derivedVersion: '',
-        parent: createdEvent.pull_request.html_url,
+        parent: (createdEvent.pull_request.html_url ?? '').toLowerCase(),
         lastModified: new Date(createdEvent.review.submitted_at ?? Date.now()).getTime()
       })
     }
