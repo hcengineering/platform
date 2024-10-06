@@ -38,7 +38,7 @@
     while (currentDoc && (isAttachedDoc(currentDoc) || hasParent(currentDoc))) {
       const parent: Doc | undefined = isAttachedDoc(currentDoc)
         ? await client.findOne(currentDoc.attachedToClass, { _id: currentDoc.attachedTo })
-        : await client.findOne(currentDoc._class, { _id: currentDoc.parent })
+        : await client.findOne(currentDoc._class, { _id: (currentDoc as any).parent })
 
       if (parent) {
         currentDoc = parent
