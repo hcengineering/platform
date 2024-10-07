@@ -335,7 +335,7 @@ test.describe('Content in the Documents tests', () => {
     await documentContentPage.applyToolbarCommand('Line 16', 'btnBlockquote')
     await documentContentPage.applyToolbarCommand('Line 17', 'btnCode')
     await documentContentPage.applyToolbarCommand('Line 18', 'btnCodeBlock')
-    await documentContentPage.changeCodeBlockLanguage('Line 18', 'auto', 'css')
+    await documentContentPage.changeCodeBlockLanguage('Line 18', 'plaintext', 'css')
     await documentContentPage.applyNote('Line 19', 'warning', testNote)
     await documentContentPage.addImage('Line 20')
     await page.keyboard.type('Cat')
