@@ -33,7 +33,7 @@ export function createModel (builder: Builder): void {
         component: document.component.DocumentSearchIcon,
         props: ['icon', 'color']
       },
-      title: 'name'
+      title: 'title'
     }
   })
 }

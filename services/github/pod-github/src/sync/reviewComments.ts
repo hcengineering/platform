@@ -292,7 +292,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
         objectClass: github.class.GithubReviewComment,
         external: externalData,
         externalVersion: githubExternalSyncVersion,
-        parent: createdEvent.pull_request.html_url,
+        parent: (createdEvent.pull_request.html_url ?? '').toLowerCase(),
         lastModified: new Date(createdEvent.comment.updated_at ?? Date.now()).getTime()
       })
       this.provider.sync()

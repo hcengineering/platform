@@ -22,8 +22,12 @@
 
   const client = getClient()
 
+  function hasParent (doc: Doc | AttachedDoc): boolean {
+    return 'parent' in doc && doc.parent != null
+  }
+
   async function getParents (doc: Doc | AttachedDoc): Promise<readonly Doc[]> {
-    if (!isAttachedDoc(doc)) {
+    if (!isAttachedDoc(doc) && !hasParent(doc)) {
       return []
     }
 
@@ -31,8 +35,10 @@
 
     let currentDoc: Doc | undefined = doc
 
-    while (currentDoc && isAttachedDoc(currentDoc)) {
-      const parent: Doc | undefined = await client.findOne(currentDoc.attachedToClass, { _id: currentDoc.attachedTo })
+    while (currentDoc && (isAttachedDoc(currentDoc) || hasParent(currentDoc))) {
+      const parent: Doc | undefined = isAttachedDoc(currentDoc)
+        ? await client.findOne(currentDoc.attachedToClass, { _id: currentDoc.attachedTo })
+        : await client.findOne(currentDoc._class, { _id: (currentDoc as any).parent })
 
       if (parent) {
         currentDoc = parent
