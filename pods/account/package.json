@@ -14,7 +14,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --sourcemap=inline --external:*.node --external:snappy --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node > bundle/bundle.js",
+    "bundle": "mkdir -p bundle && esbuild src/__start.ts --external:*.node --external:snappy --keep-names --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --platform=node --outfile=bundle/bundle.js --log-level=error --sourcemap=external",
     "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/account",
     "docker:tbuild": "docker build -t hardcoreeng/account . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/account",
     "docker:abuild": "docker build -t hardcoreeng/account . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/account",
@@ -64,7 +64,6 @@
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/model-all": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0"
   }

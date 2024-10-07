@@ -296,8 +296,26 @@ module.exports = [
     // for some systems, watching many files can result in a lot of CPU or memory usage
     // https://webpack.js.org/configuration/watch/#watchoptionsignored
     // don't use this pattern, if you have a monorepo with linked packages
-    ignored: /node_modules/,
+    ignored: [
+      "**/node_modules",
+      "**/.git",
+      "**/common/temp",
+      "**/.rush",
+      "**/.rush/**",
+      "**/rush-logs",
+      "**/lib/*.js",
+      "**/lib/*.js.map",
+      "**/types/*.d.ts",
+      "**/.git/objects/**",
+      "**/node_modules/**",
+      "**/desktop/deploy/**",
+      "**/dist/**",
+      "**/.validate/**",
+      "**/.format/**",
+      "**/.build_dev/**"
+    ],
     aggregateTimeout: 100,
+    followSymlinks: false,
     poll: 250
   },
   devtool: prod ? 'source-map' : 'eval-source-map', // 'inline-source-map',

@@ -105,6 +105,11 @@ export interface WorkspaceLoginInfo extends LoginInfo {
   progress?: number
 }
 
+export interface RegionInfo {
+  region: string
+  name: string
+}
+
 /**
  * @public
  */

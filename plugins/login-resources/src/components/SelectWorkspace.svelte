@@ -109,8 +109,11 @@
   {#await _getWorkspaces() then}
     <Scroller padding={'.125rem 0'}>
       <div class="form">
-        {#each workspaces.filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as workspace}
+        {#each workspaces
+          .slice(0, 500)
+          .filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as workspace}
           {@const wsName = workspace.workspaceName ?? workspace.workspace}
+          {@const lastUsageDays = Math.round((Date.now() - workspace.lastVisit) / (1000 * 3600 * 24))}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
@@ -124,9 +127,24 @@
                   ({workspace.progress}%)
                 {/if}
               </span>
-              {#if isAdmin && wsName !== workspace.workspace}
-                <span class="text-xs flex-center">
+              {#if isAdmin}
+                <span class="text-xs flex-row-center flex-center">
                   {workspace.workspace}
+                  {#if workspace.region !== undefined}
+                    at ({workspace.region})
+                  {/if}
+                  <div class="text-sm">
+                    {#if workspace.backupInfo != null}
+                      {@const sz = workspace.backupInfo.dataSize + workspace.backupInfo.blobsSize}
+                      {@const szGb = Math.round((sz * 100) / 1024) / 100}
+                      {#if szGb > 0}
+                        - {Math.round((sz * 100) / 1024) / 100}Gb -
+                      {:else}
+                        - {Math.round(sz)}Mb -
+                      {/if}
+                    {/if}
+                    ({lastUsageDays} days)
+                  </div>
                 </span>
               {/if}
             </div>

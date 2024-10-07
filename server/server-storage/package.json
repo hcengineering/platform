@@ -47,6 +47,8 @@
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/s3": "^0.6.0",
     "@hcengineering/datalake": "^0.6.0",
+    "@hcengineering/storage": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11"
   }
 }

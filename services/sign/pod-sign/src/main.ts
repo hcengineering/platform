@@ -3,7 +3,7 @@
 //
 
 import { setMetadata } from '@hcengineering/platform'
-import { storageConfigFromEnv } from '@hcengineering/server'
+import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverClient from '@hcengineering/server-client'
 import { loadBrandingMap } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'

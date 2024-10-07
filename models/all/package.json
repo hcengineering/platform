@@ -13,7 +13,10 @@
     "format": "format src",
     "_phase:build": "compile transpile src",
     "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "_phase:validate": "compile validate",
+    "show-model": "node ./bundle/bundle.js",
+    "_phase:bundle": "rushx bundle",
+    "bundle": "mkdir -p bundle && esbuild src/show.ts --bundle --keep-names --platform=node --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --define:process.env.VERSION=$(node ../../common/scripts/show_tag.js) --define:process.env.GIT_REVISION=$(../../common/scripts/git_version.sh) --outfile=bundle/bundle.js --log-level=error && node ./bundle/bundle.js > ./bundle/model.json"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -27,7 +30,8 @@
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "esbuild": "^0.20.0"
   },
   "dependencies": {
     "@hcengineering/model": "^0.6.11",
@@ -85,7 +89,6 @@
     "@hcengineering/model-support": "^0.6.0",
     "@hcengineering/model-server-request": "^0.6.0",
     "@hcengineering/model-server-view": "^0.6.0",
-    "@hcengineering/model-server-translate": "^0.6.0",
     "@hcengineering/model-server-activity": "^0.6.0",
     "@hcengineering/model-drive": "^0.6.0",
     "@hcengineering/model-guest": "^0.6.0",

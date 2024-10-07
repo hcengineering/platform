@@ -16,16 +16,7 @@
 
 import { type MeasureContext } from '@hcengineering/core'
 import { type DbAdapterFactory } from './adapter'
-import { type FullTextPipelineStage } from './indexer/types'
-import { type StorageAdapter } from './storage'
-import type {
-  ContentTextAdapter,
-  ContentTextAdapterFactory,
-  FullTextAdapter,
-  FullTextAdapterFactory,
-  ServiceAdapterConfig,
-  SessionFindAll
-} from './types'
+import type { ContentTextAdapterFactory, ServiceAdapterConfig } from './types'
 
 /**
  * @public
@@ -47,25 +38,11 @@ export interface ContentTextAdapterConfiguration {
 /**
  * @public
  */
-export type FullTextPipelineStageFactory = (
-  adapter: FullTextAdapter,
-  storageFindAll: SessionFindAll,
-  storageAdapter: StorageAdapter,
-  contentAdapter: ContentTextAdapter
-) => FullTextPipelineStage[]
-/**
- * @public
- */
 export interface DbConfiguration {
   adapters: Record<string, DbAdapterConfiguration>
   domains: Record<string, string>
   defaultAdapter: string
   metrics: MeasureContext
-  fulltextAdapter: {
-    factory: FullTextAdapterFactory
-    url: string
-    stages: FullTextPipelineStageFactory
-  }
   contentAdapters: Record<string, ContentTextAdapterConfiguration>
   serviceAdapters: Record<string, ServiceAdapterConfig>
   defaultContentAdapter: string

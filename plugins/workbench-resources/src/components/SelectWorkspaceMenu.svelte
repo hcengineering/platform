@@ -178,6 +178,9 @@
               <div class="flex-col flex-grow">
                 <span class="label overflow-label flex flex-grow flex-between">
                   {wsName}
+                  {#if ws.region != null && ws.region !== ''}
+                    - ({ws.region})
+                  {/if}
                   {#if isAdmin && ws.lastVisit != null && ws.lastVisit !== 0}
                     <div class="text-sm">
                       {#if ws.backupInfo != null}

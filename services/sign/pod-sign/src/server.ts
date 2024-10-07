@@ -19,7 +19,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import { Token } from '@hcengineering/server-token'
 import { type Server } from 'http'
 import { StorageConfiguration } from '@hcengineering/server-core'
-import { buildStorageFromConfig } from '@hcengineering/server'
+import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { MeasureMetricsContext, generateId } from '@hcengineering/core'
 
 import { ApiError } from './error'
