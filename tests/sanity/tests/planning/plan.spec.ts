@@ -6,8 +6,7 @@ import {
   generateTestData,
   getTimeForPlanner,
   getSecondPageByInvite,
-  getInviteLink,
-  convertDate
+  getInviteLink
 } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
@@ -351,18 +350,13 @@ test.describe('Planning ToDo tests', () => {
     const today = new Date()
     const date = new Date()
     date.setDate(date.getDate() + 3)
+    const time = getTimeForPlanner(0, 2)
+    const timeStart = getTimeForPlanner(-1, 2)
+    const timeEnd = getTimeForPlanner(2, 2)
 
     const toDoWithLabel: NewToDo = {
       title: `ToDo to change duration-${generateId()}`,
-      description: 'Description for ToDo to change duration',
-      slots: [
-        {
-          dateStart: convertDate(date),
-          timeStart: '1400',
-          dateEnd: convertDate(date),
-          timeEnd: '1500'
-        }
-      ]
+      description: 'Description for ToDo to change duration'
     }
 
     await test.step('Prepare ToDo', async () => {
@@ -373,12 +367,12 @@ test.describe('Planning ToDo tests', () => {
         if (diff < 0) await planningPage.clickButtonPrevDayInSchedule()
         else await planningPage.clickButtonNextDayInSchedule()
       }
-      await planningPage.selectTimeCell('10am').scrollIntoViewIfNeeded()
+      await planningPage.dragToCalendar(toDoWithLabel.title, 1, time)
     })
 
     await test.step('Resize ToDo', async () => {
-      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, '4pm', 'bottom')
-      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, '1pm', 'top')
+      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, timeEnd, 'bottom')
+      await planningPage.moveToDoBorderByMouse(toDoWithLabel.title, 1, timeStart, 'top')
     })
 
     await test.step('Check time changes', async () => {
