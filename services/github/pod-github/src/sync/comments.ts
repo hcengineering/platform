@@ -233,7 +233,7 @@ export class CommentSyncManager implements DocSyncManager {
         objectClass: chunter.class.ChatMessage,
         external: createdEvent.comment as CommentExternalData,
         externalVersion: githubExternalSyncVersion,
-        parent: createdEvent.issue.url,
+        parent: (createdEvent.issue.url ?? '').toLocaleLowerCase(),
         lastModified: new Date(createdEvent.comment.updated_at).getTime()
       })
       this.provider.sync()
@@ -409,7 +409,7 @@ export class CommentSyncManager implements DocSyncManager {
         }
       })
       const upd: DocumentUpdate<DocSyncInfo> = {
-        parent: result?.data.html_url?.split('#')?.[0] ?? '',
+        parent: (result?.data.html_url?.split('#')?.[0] ?? '').toLowerCase(),
         url: (result?.data.url ?? '').toLowerCase(),
         external: result?.data as CommentExternalData,
         current: result?.data,
@@ -529,7 +529,7 @@ export class CommentSyncManager implements DocSyncManager {
             objectClass: chunter.class.ChatMessage,
             external: comment,
             externalVersion: githubExternalSyncVersion,
-            parent: comment.html_url.split('#')?.[0],
+            parent: (comment.html_url.split('#')?.[0] ?? '').toLowerCase(),
             repository: repo._id,
             lastModified
           })
