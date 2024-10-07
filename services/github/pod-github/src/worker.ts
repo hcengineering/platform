@@ -1114,7 +1114,7 @@ export class GithubWorker implements IntegrationManager {
   }
 
   private async performSync (projects: GithubProject[], repositories: GithubIntegrationRepository[]): Promise<boolean> {
-    const _projects = projects.map((it) => it._id)
+    const _projects = toIdMap(projects)
     const _repositories = repositories.map((it) => it._id)
 
     const docs = await this.ctx.with(
@@ -1126,7 +1126,7 @@ export class GithubWorker implements IntegrationManager {
           {
             needSync: { $ne: githubSyncVersion },
             externalVersion: { $in: [githubExternalSyncVersion, '#'] },
-            space: { $in: _projects },
+            space: { $in: Array.from(_projects.keys()) },
             repository: { $in: [null, ..._repositories] }
           },
           {
@@ -1142,18 +1142,21 @@ export class GithubWorker implements IntegrationManager {
       this.previousWait += docs.length
       this.ctx.info('Syncing', { docs: docs.length, workspace: this.workspace.name })
 
-      await this.doSyncFor(docs)
+      const bySpace = groupByArray(docs, (it) => it.space)
+      for (const [k, v] of bySpace.entries()) {
+        await this.doSyncFor(v, _projects.get(k as Ref<GithubProject>) as GithubProject)
+      }
     }
     return docs.length !== 0
   }
 
-  async doSyncFor (docs: DocSyncInfo[]): Promise<void> {
+  async doSyncFor (docs: DocSyncInfo[], project: GithubProject): Promise<void> {
     const byClass = this.groupByClass(docs)
 
     // We need to reorder based on our sync mappers
 
     for (const [_class, clDocs] of byClass.entries()) {
-      await this.syncClass(_class, clDocs)
+      await this.syncClass(_class, clDocs, project)
     }
   }
 
@@ -1220,12 +1223,13 @@ export class GithubWorker implements IntegrationManager {
     }
   }
 
-  async syncClass (_class: Ref<Class<Doc>>, syncInfo: DocSyncInfo[]): Promise<void> {
+  async syncClass (_class: Ref<Class<Doc>>, syncInfo: DocSyncInfo[], project: GithubProject): Promise<void> {
     const externalDocs = await this._client.findAll<Doc>(_class, {
       _id: { $in: syncInfo.map((it) => it._id as Ref<Doc>) }
     })
 
     const parents = await this._client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
+      space: project._id,
       url: { $in: syncInfo.map((it) => it.parent?.toLowerCase()).filter((it) => it) as string[] }
     })
 

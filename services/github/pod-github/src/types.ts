@@ -111,7 +111,7 @@ export interface IntegrationManager {
     event: T
   ) => Promise<void>
 
-  doSyncFor: (docs: DocSyncInfo[]) => Promise<void>
+  doSyncFor: (docs: DocSyncInfo[], project: GithubProject) => Promise<void>
   getWorkspaceId: () => WorkspaceIdWithUrl
   getBranding: () => Branding | null
 
