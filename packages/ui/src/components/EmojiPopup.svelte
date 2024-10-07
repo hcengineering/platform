@@ -17,6 +17,7 @@
   import { AnySvelteComponent, emojiSP } from '../types'
   import plugin from '../plugin'
   import { fromCodePoint } from '../utils'
+  import { get } from 'svelte/store'
 
   export let embedded = false
   export let selected: string | undefined
@@ -121,6 +122,17 @@
         ...getEmojis(0x1f532, 0x1f53d)
       ],
       icon: Symbols
+    },
+    {
+      id: 'express',
+      label: plugin.string.ExpressYourself,
+      emojis: [
+        ...generateSkinToneEmojis(0x1f44b),
+        ...generateSkinToneEmojis(0x1f44d),
+        ...generateSkinToneEmojis(0x1f44c),
+        ...generateSkinToneEmojis(0x1f64c),
+      ],
+      icon: Symbols
     }
   ]
 
@@ -132,6 +144,11 @@
       if ([...str.matchAll(regex)].length > 0) return str
       return undefined
     })
+  }
+
+  function generateSkinToneEmojis(baseEmoji: number): string[] {
+    const skinTones = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff]
+    return skinTones.map(skinTone => String.fromCodePoint(baseEmoji, skinTone))
   }
 
   function handleScrollToCategory (categoryId: string) {
