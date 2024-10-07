@@ -60,6 +60,7 @@
     flex-shrink: 0;
     margin: 0.25rem 0;
     height: 1.875rem;
+    font-size: 0.75rem;
 
     &:not(:first-child)::after {
       position: absolute;

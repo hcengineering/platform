@@ -55,7 +55,6 @@
     on:blur
   />
 </div>
->
 
 <style lang="scss">
   .textarea {

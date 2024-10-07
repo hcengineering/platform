@@ -107,6 +107,7 @@
     bind:this={list}
     bind:selection={listSelection}
     count={displayData.length}
+    items={displayData}
     highlightIndex={displayData.findIndex(([context]) => context === selectedContext)}
     noScroll
     minHeight="5.625rem"

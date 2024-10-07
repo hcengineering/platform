@@ -213,6 +213,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
       }
       case 'deleted': {
         const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.comment.html_url ?? '').toLowerCase()
         })
         if (reviewData !== undefined) {
@@ -232,6 +233,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
       }
       case 'edited': {
         const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.comment.html_url ?? '').toLowerCase()
         })
 
@@ -280,6 +282,7 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     externalData: ReviewCommentExternalData
   ): Promise<void> {
     const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+      space: repo.githubProject as Ref<GithubProject>,
       url: (createdEvent.comment.html_url ?? '').toLowerCase()
     })
 
@@ -331,9 +334,10 @@ export class ReviewCommentSyncManager implements DocSyncManager {
 
     if (info.reviewThreadId === undefined && reviewComment.replyTo?.url !== undefined) {
       const rthread = await derivedClient.findOne(github.class.GithubReviewComment, {
+        space: container.project._id,
         url: reviewComment.replyTo?.url?.toLowerCase()
       })
-      if (rthread !== undefined) {
+      if (rthread !== undefined && info.reviewThreadId !== rthread.reviewThreadId) {
         info.reviewThreadId = rthread.reviewThreadId
         await derivedClient.update(info, { reviewThreadId: info.reviewThreadId })
       }
@@ -519,8 +523,10 @@ export class ReviewCommentSyncManager implements DocSyncManager {
             external: reviewExternal,
             current: existing,
             repository: repo._id,
+            parent: parent.url.toLocaleLowerCase(),
             needSync: githubSyncVersion,
-            externalVersion: githubExternalSyncVersion
+            externalVersion: githubExternalSyncVersion,
+            reviewThreadId: info.reviewThreadId ?? existingReview.reviewThreadId
           }
           // We need to update in current promise, to prevent event changes.
           await derivedClient.update(info, upd)

@@ -340,6 +340,7 @@ export async function syncDerivedDocuments<T extends { url: string }> (
   extra?: any
 ): Promise<void> {
   const childDocsOfClass = await derivedClient.findAll(github.class.DocSyncInfo, {
+    space: prj._id,
     objectClass,
     parent: (parentDoc.url ?? '').toLowerCase(),
     ...query
@@ -352,7 +353,7 @@ export async function syncDerivedDocuments<T extends { url: string }> (
     if (existing === undefined) {
       await derivedClient.createDoc<DocSyncInfo>(github.class.DocSyncInfo, prj._id, {
         objectClass,
-        url: r.url.toLowerCase(),
+        url: (r.url ?? '').toLowerCase(),
         needSync: '', // we need to sync to retrieve patch in background
         githubNumber: 0,
         repository: repo._id,

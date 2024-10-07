@@ -84,4 +84,3 @@
 >
   {time}
 </span>
-span>

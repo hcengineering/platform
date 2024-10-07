@@ -2,12 +2,14 @@
   import { Employee, Person } from '@hcengineering/contact'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import ui, { IconSize } from '@hcengineering/ui'
+  import ui, { IconSize, LabelAndProps } from '@hcengineering/ui'
   import { PersonLabelTooltip, employeeByIdStore, personByIdStore } from '..'
   import PersonPresenter from '../components/PersonPresenter.svelte'
   import contact from '../plugin'
+  import EmployeePreviewPopup from './EmployeePreviewPopup.svelte'
 
   export let value: Ref<Person> | WithLookup<Person> | null | undefined
+  export let showPopup: boolean = true
   export let tooltipLabels: PersonLabelTooltip | undefined = undefined
   export let shouldShowAvatar: boolean = true
   export let shouldShowName: boolean = true
@@ -24,16 +26,26 @@
   export let compact: boolean = false
   export let showStatus: boolean = false
 
-  $: employeeValue = typeof value === 'string' ? $personByIdStore.get(value) : value
+  $: employeeValue = typeof value === 'string' ? ($personByIdStore.get(value) as Employee) : (value as Employee)
 
-  $: active =
-    employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id as Ref<Employee>)?.active ?? false : false
+  $: active = employeeValue !== undefined ? $employeeByIdStore.get(employeeValue?._id)?.active ?? false : false
+
+  function getPreviewPopup (active: boolean, value: Employee | undefined): LabelAndProps | undefined {
+    if (!active || value === undefined || !showPopup) {
+      return undefined
+    }
+    return {
+      component: EmployeePreviewPopup,
+      props: { employeeId: value._id }
+    }
+  }
 </script>
 
 <PersonPresenter
   value={employeeValue}
   {tooltipLabels}
   onEdit={onEmployeeEdit}
+  customTooltip={getPreviewPopup(active, employeeValue)}
   {shouldShowAvatar}
   {shouldShowName}
   {avatarSize}

@@ -156,8 +156,8 @@ export class CommentSyncManager implements DocSyncManager {
     derivedClient: TxOperations,
     integration: IntegrationContainer
   ): Promise<void> {
-    const { repository } = await this.provider.getProjectAndRepository(event.repository.node_id)
-    if (repository === undefined) {
+    const { repository: repo } = await this.provider.getProjectAndRepository(event.repository.node_id)
+    if (repo === undefined) {
       this.ctx.info('No project for repository', {
         repository: event.repository,
         workspace: this.provider.getWorkspaceId().name
@@ -168,11 +168,12 @@ export class CommentSyncManager implements DocSyncManager {
     const account = (await this.provider.getAccountU(event.sender))?._id ?? core.account.System
     switch (event.action) {
       case 'created': {
-        await this.createSyncData(event, derivedClient, repository)
+        await this.createSyncData(event, derivedClient, repo)
         break
       }
       case 'deleted': {
         const syncData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.comment.url ?? '').toLowerCase()
         })
         if (syncData !== undefined) {
@@ -183,6 +184,7 @@ export class CommentSyncManager implements DocSyncManager {
       }
       case 'edited': {
         const commentData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.comment.url ?? '').toLowerCase()
         })
 
@@ -221,6 +223,7 @@ export class CommentSyncManager implements DocSyncManager {
     repo: GithubIntegrationRepository
   ): Promise<void> {
     const commentData = await this.client.findOne(github.class.DocSyncInfo, {
+      space: repo.githubProject as Ref<GithubProject>,
       url: (createdEvent.comment.url ?? '').toLowerCase()
     })
 
@@ -266,6 +269,7 @@ export class CommentSyncManager implements DocSyncManager {
     if (parent === undefined) {
       // Find parent by issue url
       parent = await this.client.findOne(github.class.DocSyncInfo, {
+        space: container.project._id,
         url: (comment.html_url.split('#')?.[0] ?? '').toLowerCase()
       })
     }

@@ -127,7 +127,8 @@ function getDocumentLinkId (doc: Document): string {
   return `${slug}---${doc._id}`
 }
 
-function parseDocumentId (shortLink: string): Ref<ControlledDocument> | undefined {
+function parseDocumentId (shortLink?: string): Ref<ControlledDocument> | undefined {
+  if (shortLink === undefined) return undefined
   const parts = shortLink.split('---')
   if (parts.length > 1) {
     return parts[parts.length - 1] as Ref<ControlledDocument>

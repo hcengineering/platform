@@ -70,12 +70,12 @@
       <tr class="antiTable-body__row">
         <td><PersonRefPresenter value={requested.employee} /></td>
         <td><BooleanIcon value={requested.decision} /></td>
-        <td
-          >{#if requested.comment}
+        <td>
+          {#if requested.comment}
             <ShowMore limit={126} fixed>
               <MessageViewer message={requested.comment.message} />
-            </ShowMore>{/if}</td
-        >
+            </ShowMore>{/if}
+        </td>
       </tr>
     {/each}
   </tbody>

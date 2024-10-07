@@ -1110,7 +1110,6 @@ export function devTool (
     .action(
       async (cmd: { workspace: string, move: string, blobLimit: string, concurrency: string, disabled: boolean }) => {
         const params = {
-          blobSizeLimitMb: parseInt(cmd.blobLimit),
           concurrency: parseInt(cmd.concurrency),
           move: cmd.move === 'true'
         }

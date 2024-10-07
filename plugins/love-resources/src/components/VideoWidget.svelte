@@ -20,12 +20,12 @@
   import love from '../plugin'
   import VideoPopup from './VideoPopup.svelte'
 
-  export let widgetState: WidgetState
+  export let widgetState: WidgetState | undefined
 
   let room: Ref<TypeRoom> | undefined = undefined
-  $: room = widgetState.data?.room
+  $: room = widgetState?.data?.room
 
-  $: if (widgetState.data?.room === undefined) {
+  $: if (widgetState?.data?.room === undefined) {
     closeWidget(love.ids.VideoWidget)
   }
 </script>

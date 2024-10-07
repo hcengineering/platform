@@ -47,9 +47,9 @@
         <div class="icon circle">
           <Company size={'small'} />
         </div>
-        <span class="overflow-label label" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
-          >{value.name}</span
-        >
+        <span class="overflow-label label" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+          {value.name}
+        </span>
       </div>
     </DocNavLink>
   {:else if type === 'text'}

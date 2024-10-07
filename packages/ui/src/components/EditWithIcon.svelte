@@ -87,7 +87,6 @@
     {/if}
   </div>
 </div>
->
 
 <style lang="scss">
   .editbox {
