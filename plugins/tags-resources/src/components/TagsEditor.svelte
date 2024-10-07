@@ -22,7 +22,7 @@
     type IdMap,
     type Ref
   } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { createQuery, KeyedAttribute } from '@hcengineering/presentation'
   import { TagElement, TagReference } from '@hcengineering/tags'
   import {
@@ -59,7 +59,7 @@
 
   $: itemLabel = (key.attr.type as Collection<AttachedDoc>).itemLabel
 
-  $: translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
+  $: translateCB(itemLabel ?? key.attr.label, {}, $themeStore.language, (v) => {
     keyLabel = v
   })
 

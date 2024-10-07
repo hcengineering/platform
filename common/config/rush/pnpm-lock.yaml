@@ -54,8 +54,8 @@ dependencies:
     specifier: ^7.3.1
     version: 7.5.1
   '@playwright/test':
-    specifier: ^1.41.2
-    version: 1.41.2
+    specifier: ^1.47.2
+    version: 1.47.2
   '@rush-temp/account':
     specifier: file:./projects/account.tgz
     version: file:projects/account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1376,9 +1376,12 @@ dependencies:
   '@vercel/webpack-asset-relocator-loader':
     specifier: ^1.7.3
     version: 1.7.4
+  allure-js-commons:
+    specifier: ^3.0.4
+    version: 3.0.4(allure-playwright@3.0.4)
   allure-playwright:
-    specifier: ^2.9.2
-    version: 2.12.2
+    specifier: ^3.0.4
+    version: 3.0.4(@playwright/test@1.47.2)
   autolinker:
     specifier: 4.0.0
     version: 4.0.0
@@ -1724,6 +1727,9 @@ dependencies:
   pdfjs-dist:
     specifier: 2.12.313
     version: 2.12.313
+  pg:
+    specifier: 8.12.0
+    version: 8.12.0
   png-chunks-extract:
     specifier: ^1.0.0
     version: 1.0.0
@@ -6060,12 +6066,12 @@ packages:
     dev: false
     optional: true
 
-  /@playwright/test@1.41.2:
-    resolution: {integrity: sha512-qQB9h7KbibJzrDpkXkYvsmiDJK14FULCCZgEcoe2AvFAS64oCirWTwzTlAYEbKaRxWs5TFesE1Na6izMv3HfGg==}
-    engines: {node: '>=16'}
+  /@playwright/test@1.47.2:
+    resolution: {integrity: sha512-jTXRsoSPONAs8Za9QEQdyjFn+0ZQFjCiIztAIF6bi1HqhBzG9Ma7g1WotyiGqFSBRZjIEqMdT8RUlbk1QVhzCQ==}
+    engines: {node: '>=18'}
     hasBin: true
     dependencies:
-      playwright: 1.41.2
+      playwright: 1.47.2
     dev: false
 
   /@polka/url@1.0.0-next.24:
@@ -10563,17 +10569,25 @@ packages:
       require-from-string: 2.0.2
     dev: false
 
-  /allure-js-commons@2.12.2:
-    resolution: {integrity: sha512-bapkOHuwOYFR62aeNNwFmf8+LZSchzQ4Q8cFXWvEqP5fBTgADA+GujsRl936gjmTmKWVmKYwQfUt+PZw6tgFzw==}
+  /allure-js-commons@3.0.4(allure-playwright@3.0.4):
+    resolution: {integrity: sha512-/UgTzpd7a16t8WpkA/25acmkk8xwwYUK3YDeVcZb1+3+7HHZRE943ZlKxUF/LCeLrZEFgYmOtma9xmaHagSddw==}
+    peerDependencies:
+      allure-playwright: 3.0.4
+    peerDependenciesMeta:
+      allure-playwright:
+        optional: true
     dependencies:
-      properties: 1.2.1
-      strip-ansi: 5.2.0
+      allure-playwright: 3.0.4(@playwright/test@1.47.2)
+      md5: 2.3.0
     dev: false
 
-  /allure-playwright@2.12.2:
-    resolution: {integrity: sha512-QvDyCHABYlZ02PyGevbBZc9tS+Li0zXhTaTC1IJ2wJrd8q9cSS3mUnzAJUjPUuCtofdLBwePd2AuzsYE2ZXEJQ==}
+  /allure-playwright@3.0.4(@playwright/test@1.47.2):
+    resolution: {integrity: sha512-P2QBUZfEtqof3PLonVXcO2BdaYmWKGRDy4Ehl4dcAGsXdfS5QdrNat+DmR5BMxBNQgvf1805fGBeZh2Zn0gagQ==}
+    peerDependencies:
+      '@playwright/test': '>=1.36.0'
     dependencies:
-      allure-js-commons: 2.12.2
+      '@playwright/test': 1.47.2
+      allure-js-commons: 3.0.4(allure-playwright@3.0.4)
     dev: false
 
   /ansi-colors@4.1.3:
@@ -10602,11 +10616,6 @@ packages:
   /ansi-regex@3.0.1:
     resolution: {integrity: sha512-+O9Jct8wf++lXxxFc4hc8LsjaSq0HFzzL7cVsw8pRDIPdjKD2mT4ytDZlLuSBZ4cLKZFXIrMGO7DbQCtMJJMKw==}
     engines: {node: '>=4'}
-    dev: false
-
-  /ansi-regex@4.1.1:
-    resolution: {integrity: sha512-ILlv4k/3f6vfQ4OoP2AGvirOktlQ98ZEL1k9FaQjxa3L1abBgbuTDAdPOpvbGncC0BTVQrl+OM8xZGK6tWXt7g==}
-    engines: {node: '>=6'}
     dev: false
 
   /ansi-regex@5.0.1:
@@ -11751,6 +11760,10 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
+  /charenc@0.0.2:
+    resolution: {integrity: sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==}
+    dev: false
+
   /cheerio@0.22.0:
     resolution: {integrity: sha512-8/MzidM6G/TgRelkzDG13y3Y9LxBjCb+8yOEZ9+wwq5gVF2w2pV0wmHvjfT0RvuxGyR7UEuK36r+yYMbT4uKgA==}
     engines: {node: '>= 0.6'}
@@ -12396,6 +12409,10 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+    dev: false
+
+  /crypt@0.0.2:
+    resolution: {integrity: sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==}
     dev: false
 
   /crypto-js@4.2.0:
@@ -16391,6 +16408,10 @@ packages:
       has-tostringtag: 1.0.2
     dev: false
 
+  /is-buffer@1.1.6:
+    resolution: {integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==}
+    dev: false
+
   /is-callable@1.2.7:
     resolution: {integrity: sha512-1BC0BVFhS/p0qtw6enp8e+8OD0UrK0oFLztSjNzhcKA3WDuJxxAPXzPuPtKkjEY9UUoEWlX/8fgKeu2S8i9JTA==}
     engines: {node: '>= 0.4'}
@@ -18387,6 +18408,14 @@ packages:
     dev: false
     optional: true
 
+  /md5@2.3.0:
+    resolution: {integrity: sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==}
+    dependencies:
+      charenc: 0.0.2
+      crypt: 0.0.2
+      is-buffer: 1.1.6
+    dev: false
+
   /mdast-util-definitions@4.0.0:
     resolution: {integrity: sha512-k8AJ6aNnUkB7IE+5azR9h81O5EQ/cTDXtWdMq9Kk5KcEW/8ritU5CeLg/9HhOC++nALHBlaogJ5jz0Ybk3kPMQ==}
     dependencies:
@@ -20123,18 +20152,18 @@ packages:
       find-up: 3.0.0
     dev: false
 
-  /playwright-core@1.41.2:
-    resolution: {integrity: sha512-VaTvwCA4Y8kxEe+kfm2+uUUw5Lubf38RxF7FpBxLPmGe5sdNkSg5e3ChEigaGrX7qdqT3pt2m/98LiyvU2x6CA==}
-    engines: {node: '>=16'}
+  /playwright-core@1.47.2:
+    resolution: {integrity: sha512-3JvMfF+9LJfe16l7AbSmU555PaTl2tPyQsVInqm3id16pdDfvZ8TTZ/pyzmkbDrZTQefyzU7AIHlZqQnxpqHVQ==}
+    engines: {node: '>=18'}
     hasBin: true
     dev: false
 
-  /playwright@1.41.2:
-    resolution: {integrity: sha512-v0bOa6H2GJChDL8pAeLa/LZC4feoAMbSQm1/jF/ySsWWoaNItvrMP7GEkvEEFyCTUYKMxjQKaTSg5up7nR6/8A==}
-    engines: {node: '>=16'}
+  /playwright@1.47.2:
+    resolution: {integrity: sha512-nx1cLMmQWqmA3UsnjaaokyoUpdVaaDhJhMoxX2qj3McpjnsqFHs516QAKYhqHAgOP+oCFTEOCOAaD1RgD/RQfA==}
+    engines: {node: '>=18'}
     hasBin: true
     dependencies:
-      playwright-core: 1.41.2
+      playwright-core: 1.47.2
     optionalDependencies:
       fsevents: 2.3.2
     dev: false
@@ -20499,11 +20528,6 @@ packages:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
-    dev: false
-
-  /properties@1.2.1:
-    resolution: {integrity: sha512-qYNxyMj1JeW54i/EWEFsM1cVwxJbtgPp8+0Wg9XjNaK6VE/c4oRi6PNu5p7w1mNXEIQIjV5Wwn8v8Gz82/QzdQ==}
-    engines: {node: '>=0.10'}
     dev: false
 
   /prosemirror-changeset@2.2.1:
@@ -22398,13 +22422,6 @@ packages:
     engines: {node: '>=4'}
     dependencies:
       ansi-regex: 3.0.1
-    dev: false
-
-  /strip-ansi@5.2.0:
-    resolution: {integrity: sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA==}
-    engines: {node: '>=6'}
-    dependencies:
-      ansi-regex: 4.1.1
     dev: false
 
   /strip-ansi@6.0.1:
@@ -24945,7 +24962,7 @@ packages:
     dev: false
 
   file:projects/account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-bbpUd2zTOQEGPo6LCVfEp6pEiTxJrOXKHPmgVroenH1xPt7DuZWb3HRVym5E39Acx4vUMd85ySKNlmJKMCE0ZQ==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-dp4BS+teiLPEg/gxddOhYSuaxjuzascxr49DMYfpm4OZEFHdTOHlO3bJXGddaDLgCbT4OcG77W0rdFo38T5/bA==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -25099,7 +25116,7 @@ packages:
     dev: false
 
   file:projects/ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-kUT09zDslxlN/ni38NdRvzE4WtOBOtKbqKqTNvTDP78hcjh7rT3CnWpMUQGnDNI5rzQWiVAaWoHKf2LAHFolRQ==, tarball: file:projects/ai-bot-resources.tgz}
+    resolution: {integrity: sha512-VUzWp9Le++agPkh/Sq5V8y1LHVSofd+WOJNwkYFDWlJH0+TKM1F88CFBANOYUlg2ZvhOQGyLCCFTcjbPohfnSQ==, tarball: file:projects/ai-bot-resources.tgz}
     id: file:projects/ai-bot-resources.tgz
     name: '@rush-temp/ai-bot-resources'
     version: 0.0.0
@@ -25384,7 +25401,7 @@ packages:
     dev: false
 
   file:projects/attachment-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-yEPWonMOvXhIk5+IaNQVsyw6wnfqdcB/4UsEh8BLCQwhpepBeVrNSXgS+mLspQaL9g15E81PHwyrWyF1OcqQOQ==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-+/KTqroAiloV0TUV9iGmUInkS19oAY6pZ4cs/eeiOjX8ZIuLN/O7j1rbhldscXI1ZqmEYFtjTFKAxy7qMu21KQ==, tarball: file:projects/attachment-resources.tgz}
     id: file:projects/attachment-resources.tgz
     name: '@rush-temp/attachment-resources'
     version: 0.0.0
@@ -25430,7 +25447,7 @@ packages:
     dev: false
 
   file:projects/attachment.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-WiT8xtpwwGxmbvGxcHOH8JGj7rZqvwEmaEdTQeHMv/i3fRzT082qjXooTEKrcuMS6e5t33YosRJlq1X1NypNKQ==, tarball: file:projects/attachment.tgz}
+    resolution: {integrity: sha512-AOC7vKQzBuyM3NGVPnc8wLlrnvf6ve7CT/v4pNBI3ZC5DLXRHkeu4EhUmEujtM0dSUWXukGFnTpgjBYxr2b8Ww==, tarball: file:projects/attachment.tgz}
     id: file:projects/attachment.tgz
     name: '@rush-temp/attachment'
     version: 0.0.0
@@ -26213,7 +26230,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-MzZXj700B09rHWIeXhV8qKlv9OTeZvERBG/Clv+H6OyU9CR03EZpiYEYM725EjYKMTvso1XWsYbjEBfwBi0LYg==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-sQ0Exvw6ccJ6ioZzPui/xPCWfHp/ogGskjbC/w4tjTZEE7Lwu+nDyt+QNZwC0rjRAu0FuZOGFsEc4JyWApez1w==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -27678,7 +27695,7 @@ packages:
     dev: false
 
   file:projects/import-tool.tgz:
-    resolution: {integrity: sha512-8ZQpX7QgWZYBsG/Q307gT9dkAHebML7MeKTbOFsDRCcmj4lddBknHeP2m4LH2ZP7xk8dBuvnKR6SY0HwesLOrg==, tarball: file:projects/import-tool.tgz}
+    resolution: {integrity: sha512-QBo/RgAGnie95pESqQNJUQSCpQi1rEpXqZz1G1zZMfhAvisZtW2XutmaGMS1oDu2ZB05pk8WOO8x6bfdc+keZg==, tarball: file:projects/import-tool.tgz}
     name: '@rush-temp/import-tool'
     version: 0.0.0
     dependencies:
@@ -28289,7 +28306,7 @@ packages:
     dev: false
 
   file:projects/model-ai-bot.tgz:
-    resolution: {integrity: sha512-6ekOX88mYJEa+Lb+afb39noLVKRq935cP1EfVu9aqV5xbhFt6f1jKiDNz6eLtoR4zb/P8tBkFLfnu59rYMcIoA==, tarball: file:projects/model-ai-bot.tgz}
+    resolution: {integrity: sha512-tdvrfRa0PZZCWrUq5QqiZi4Bex97OgR7tMHVLMUJhhg7lJOnR9nyjFKn+X0lEI79pi0sllds53Ksdmi5Kd+OlQ==, tarball: file:projects/model-ai-bot.tgz}
     name: '@rush-temp/model-ai-bot'
     version: 0.0.0
     dependencies:
@@ -28348,7 +28365,7 @@ packages:
     dev: false
 
   file:projects/model-attachment.tgz:
-    resolution: {integrity: sha512-l6ido0KZWoQdDjZCYPzyauy2JZk04kXh48IpVSb4t4UwPfRXQKdKNZFecJxEyIkXW5T2uFYsWSpg+w7jYx85hw==, tarball: file:projects/model-attachment.tgz}
+    resolution: {integrity: sha512-DL/rIDjQ6d9r5gmpgzyLRkhlNNXE/3f0R5Ov5ZjvN4i6ghQSO5oeRW5qzm4MA3GtbIi6w8WOj8bSqJUW5hIsaw==, tarball: file:projects/model-attachment.tgz}
     name: '@rush-temp/model-attachment'
     version: 0.0.0
     dependencies:
@@ -28443,7 +28460,7 @@ packages:
     dev: false
 
   file:projects/model-contact.tgz:
-    resolution: {integrity: sha512-9JJBL0yu2LgUDzo51X9QPO+RyMeekvbXSIozSXKQR1ju3mYZoTlxsLPkqwh4qWYfUNYQyKCmyBtP7GlYsw27qw==, tarball: file:projects/model-contact.tgz}
+    resolution: {integrity: sha512-xIr8DSFUT2GSZ/4VvDc1zrlab+WhjCCM2tN/TNBEGroVUL2QW0/3VqODWs0UorvniaVWVoQNAj13cPZpE7yEfw==, tarball: file:projects/model-contact.tgz}
     name: '@rush-temp/model-contact'
     version: 0.0.0
     dependencies:
@@ -28520,7 +28537,7 @@ packages:
     dev: false
 
   file:projects/model-document.tgz:
-    resolution: {integrity: sha512-aQ1dqQdlY2Lc/HpchhCuHa3+9hqLhLA/I1OyVFBd1ap+qHLlLo5PyNnQE/laSmgW/3ULKXMG1xm3jRcmTT4VdA==, tarball: file:projects/model-document.tgz}
+    resolution: {integrity: sha512-tSr57oIXY1fECAB/axaDBJLSh/RVC4BXacjVHQ4wx3y+buoNngZoX9kpJsbNxEjCpW8yyhWwO1+sseyBi9RJdg==, tarball: file:projects/model-document.tgz}
     name: '@rush-temp/model-document'
     version: 0.0.0
     dependencies:
@@ -29679,7 +29696,7 @@ packages:
     dev: false
 
   file:projects/model-workbench.tgz:
-    resolution: {integrity: sha512-z/AtGaisKD57xttmNL8GsaX8ZvJ/LNqzZql5Kw9SDB1YKJIkICPGaT2WP+Os6mEd0B5dUHdrrfyxbVbXxPLyMA==, tarball: file:projects/model-workbench.tgz}
+    resolution: {integrity: sha512-V2NutYIJW4PcOf9i3vSpV5znaXD8SkItzvSnacTmbGWDjBkp7/pa8M5xFfoqoncMaGYerLAnsSlaxxw2k6i+TQ==, tarball: file:projects/model-workbench.tgz}
     name: '@rush-temp/model-workbench'
     version: 0.0.0
     dependencies:
@@ -30174,7 +30191,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-5UmhFvpzsbI/QsMVitLsuANDxxsBo0me4HqpGVbAdMEUhTwaa1MvbCWCsWN8TQFlrEsRXv6iiv3ysiHi7LaWmA==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-86BRJHqw7YBa4uTCvjyITwGUenWTJ6iSwZHZAI9Tf3gotChn1AhfK0HVVgGVQE+TGmW5R+oLx8s4NBMGBiZx1A==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -31463,17 +31480,18 @@ packages:
     dev: false
 
   file:projects/qms-tests-sanity.tgz:
-    resolution: {integrity: sha512-2NJnLTGNRdrMXybXslRQNNCyyDLmsA069UyXn8uBG/WQaMHzr9rTXvtRpltXSfgCn+WAc8VidyT68O6J8RAPQA==, tarball: file:projects/qms-tests-sanity.tgz}
+    resolution: {integrity: sha512-WH2sJcYUwJBzqHng4F/ceE1IkB4XD5HhfdsuSBgCSVD5jsqm+V39F0+AFmLhgQsJuvwd6D2rM/RaCE1hHmGxPw==, tarball: file:projects/qms-tests-sanity.tgz}
     name: '@rush-temp/qms-tests-sanity'
     version: 0.0.0
     dependencies:
       '@faker-js/faker': 8.4.1
-      '@playwright/test': 1.41.2
+      '@playwright/test': 1.47.2
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      allure-playwright: 2.12.2
+      allure-js-commons: 3.0.4(allure-playwright@3.0.4)
+      allure-playwright: 3.0.4(@playwright/test@1.47.2)
       cross-env: 7.0.3
       dotenv: 16.0.3
       eslint: 8.56.0
@@ -35014,17 +35032,18 @@ packages:
     dev: false
 
   file:projects/tests-sanity.tgz:
-    resolution: {integrity: sha512-w1P9UqT2V0jsmryhTVIu4kmS0zK+Sb7rMuJiJMdgYoXknh1eSjImVEcZgScK2O/ujQSBTlgEla6YFnuxaIbMTQ==, tarball: file:projects/tests-sanity.tgz}
+    resolution: {integrity: sha512-Ii9d6GDonR1QAp1S1uBqI6QdL7y/Xm3PC7W/HkwUtv8QTH1/gEslKOo6dXE7jxE1rHJigMWiy3ZP1+PHLFnuhg==, tarball: file:projects/tests-sanity.tgz}
     name: '@rush-temp/tests-sanity'
     version: 0.0.0
     dependencies:
       '@faker-js/faker': 8.4.1
-      '@playwright/test': 1.41.2
+      '@playwright/test': 1.47.2
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      allure-playwright: 2.12.2
+      allure-js-commons: 3.0.4(allure-playwright@3.0.4)
+      allure-playwright: 3.0.4(@playwright/test@1.47.2)
       cross-env: 7.0.3
       dotenv: 16.0.3
       eslint: 8.56.0

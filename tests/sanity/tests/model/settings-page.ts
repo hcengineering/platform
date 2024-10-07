@@ -53,6 +53,13 @@ export class SettingsPage extends CommonPage {
   asideFooterButton = (hasText: string): Locator =>
     this.page.locator('div.hulyModal-container.type-aside div.hulyModal-footer button', { hasText })
 
+  buttonRoleInComponent = (hasText: string): Locator =>
+    this.page.locator('div.hulyComponent-content > div.flex-row-center', { hasText }).locator('button')
+
+  async clickButtonRoleInComponent (name: string): Promise<void> {
+    await this.buttonRoleInComponent(name).click()
+  }
+
   async navigateToWorkspace (workspaceUrl: string): Promise<void> {
     const response = await this.page.goto(workspaceUrl)
     if (response === null || response === undefined) {

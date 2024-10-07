@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte'
   import type { IntlString } from '@hcengineering/platform'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
+  import { afterUpdate, onMount } from 'svelte'
 
-  import { DelayedCaller } from '../utils'
   import ui from '../plugin'
+  import { DelayedCaller } from '../utils'
 
   export let value: string | undefined = undefined
   export let placeholder: IntlString = ui.string.TypeHere
@@ -29,7 +29,7 @@
   let input: HTMLTextAreaElement
   let phTranslate: string = ''
 
-  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
+  $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
 
@@ -73,6 +73,7 @@
   on:keypress
   on:blur
 />
+>
 
 <style lang="scss">
   .root {

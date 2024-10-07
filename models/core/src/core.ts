@@ -14,6 +14,8 @@
 //
 
 import {
+  type Card,
+  type CollaborativeDoc,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
@@ -60,6 +62,7 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
+  TypeCollaborativeDoc,
   TypeFileSize,
   TypeIntlString,
   TypeRecord,
@@ -109,6 +112,22 @@ export class TDoc extends TObj implements Doc {
   @ReadOnly()
   @Index(IndexKind.IndexedDsc)
     createdOn!: Timestamp
+}
+
+@Model(core.class.Card, core.class.Doc)
+@UX(core.string.Object)
+export class TCard extends TDoc implements Card {
+  @Prop(TypeString(), core.string.Name)
+    title!: string
+
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
+    description!: CollaborativeDoc | null
+
+  @Prop(TypeString(), core.string.Id)
+    identifier?: string | undefined
+
+  @Prop(TypeRef(core.class.Card), core.string.AttachedTo)
+    parent?: Ref<Card> | null
 }
 
 @Model(core.class.AttachedDoc, core.class.Doc)

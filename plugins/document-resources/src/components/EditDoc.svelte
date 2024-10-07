@@ -80,7 +80,7 @@
   const client = getClient()
 
   let doc: WithLookup<Document> | undefined
-  let name = ''
+  let title = ''
   let innerWidth: number
 
   let headings: Heading[] = []
@@ -141,10 +141,10 @@
   $: _id !== undefined &&
     query.query(document.class.Document, { _id }, async (result) => {
       ;[doc] = result
-      name = doc?.name ?? ''
+      title = doc?.title ?? ''
     })
 
-  $: canSave = name.trim().length > 0
+  $: canSave = title.trim().length > 0
 
   async function saveTitle (ev: Event): Promise<void> {
     ev.preventDefault()
@@ -153,10 +153,10 @@
       return
     }
 
-    const nameTrimmed = name.trim()
+    const nameTrimmed = title.trim()
 
-    if (nameTrimmed.length > 0 && nameTrimmed !== doc.name) {
-      await client.update(doc, { name: nameTrimmed })
+    if (nameTrimmed.length > 0 && nameTrimmed !== doc.title) {
+      await client.update(doc, { title: nameTrimmed })
     }
   }
 
@@ -322,7 +322,7 @@
         <DocumentTitle
           focusIndex={1}
           fill
-          bind:value={name}
+          bind:value={title}
           {readonly}
           placeholder={document.string.DocumentNamePlaceholder}
           on:blur={(evt) => saveTitle(evt)}

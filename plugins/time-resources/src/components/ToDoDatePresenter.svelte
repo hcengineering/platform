@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { translate } from '@hcengineering/platform'
-  import { areDatesEqual } from '@hcengineering/ui'
+  import { translateCB } from '@hcengineering/platform'
   import { ToDo, WorkSlot } from '@hcengineering/time'
+  import { areDatesEqual, themeStore } from '@hcengineering/ui'
   import timePlugin from '../plugin'
   import { getNearest } from '../utils'
 
@@ -12,22 +12,28 @@
 
   $: near = getNearest(events)
 
-  async function getText (todo: ToDo, near: WorkSlot | undefined): Promise<void> {
+  function getText (todo: ToDo, near: WorkSlot | undefined): void {
     const today = new Date()
     const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1))
     const yesterday = new Date(new Date().setDate(new Date().getDate() - 1))
     if (todo.doneOn != null) {
       const day = new Date(todo.doneOn)
       if (areDatesEqual(day, today)) {
-        str = await translate(timePlugin.string.Today, {})
+        translateCB(timePlugin.string.Today, {}, $themeStore.language, (res) => {
+          str = res
+        })
         return
       }
       if (areDatesEqual(day, yesterday)) {
-        str = await translate(timePlugin.string.Yesterday, {})
+        translateCB(timePlugin.string.Yesterday, {}, $themeStore.language, (res) => {
+          str = res
+        })
         return
       }
       if (areDatesEqual(day, tomorrow)) {
-        str = await translate(timePlugin.string.Tomorrow, {})
+        translateCB(timePlugin.string.Tomorrow, {}, $themeStore.language, (res) => {
+          str = res
+        })
         return
       }
       str = new Date(todo.doneOn).toLocaleString('default', {
@@ -49,20 +55,28 @@
       })
       const day = new Date(near.date)
       if (areDatesEqual(day, today)) {
-        str = `${await translate(timePlugin.string.Today, {})} ${time}`
+        translateCB(timePlugin.string.Today, {}, $themeStore.language, (res) => {
+          str = `${res} ${time}`
+        })
         return
       }
       if (areDatesEqual(day, yesterday)) {
-        str = `${await translate(timePlugin.string.Yesterday, {})} ${time}`
+        translateCB(timePlugin.string.Yesterday, {}, $themeStore.language, (res) => {
+          str = `${res} ${time}`
+        })
         return
       }
       if (areDatesEqual(day, tomorrow)) {
-        str = `${await translate(timePlugin.string.Tomorrow, {})} ${time}`
+        translateCB(timePlugin.string.Tomorrow, {}, $themeStore.language, (res) => {
+          str = `${res} ${time}`
+        })
         return
       }
       return
     }
-    str = await translate(timePlugin.string.Inbox, {})
+    translateCB(timePlugin.string.Inbox, {}, $themeStore.language, (res) => {
+      str = res
+    })
   }
 
   let str = ''

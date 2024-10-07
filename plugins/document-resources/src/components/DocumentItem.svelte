@@ -28,6 +28,6 @@
     <DocumentIcon {value} size={'medium'} defaultIcon={document.icon.Document} />
   </div>
   <span class="overflow-label">
-    {value.name}
+    {value.title}
   </span>
 </div>

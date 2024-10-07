@@ -21,7 +21,7 @@
 {#if value}
   <div class="flex-col">
     <span class="overflow-label mt-10px">
-      {value.name}
+      {value.title}
     </span>
   </div>
 {/if}

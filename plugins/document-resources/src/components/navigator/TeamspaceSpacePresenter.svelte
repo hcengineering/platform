@@ -99,9 +99,9 @@
       descendants.clear()
 
       for (const doc of result) {
-        const current = descendants.get(doc.attachedTo) ?? []
+        const current = descendants.get(doc.parent) ?? []
         current.push(doc)
-        descendants.set(doc.attachedTo, current)
+        descendants.set(doc.parent, current)
         documentById.set(doc._id, doc)
       }
 
@@ -243,7 +243,7 @@
             void moveDocumentBefore(doc, target)
           } else if (pos === 'after') {
             void moveDocumentAfter(doc, target)
-          } else if (doc.attachedTo !== object) {
+          } else if (doc.parent !== object) {
             void moveDocument(doc, target.space, target._id)
           }
         }
@@ -315,7 +315,7 @@
             : {
                 fill: item.color !== undefined ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
               }}
-          title={item.name}
+          title={item.title}
           selected
           isFold
           empty

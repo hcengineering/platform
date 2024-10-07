@@ -24,7 +24,7 @@
     getCurrentAccount,
     hasAccountRole
   } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup, themeStore } from '@hcengineering/ui'
   import AddMembersPopup from './AddMembersPopup.svelte'
@@ -37,9 +37,7 @@
   const hierarchy = client.getHierarchy()
   $: label = hierarchy.getClass(space._class).label
   let spaceClass = ''
-  $: {
-    translate(label, {}, $themeStore.language).then((p) => (spaceClass = p.toLowerCase()))
-  }
+  $: translateCB(label, {}, $themeStore.language, (p) => (spaceClass = p.toLowerCase()))
   let search: string = ''
   $: isSearch = search.trim().length
   let members: Set<Ref<Person>> = new Set<Ref<Person>>()

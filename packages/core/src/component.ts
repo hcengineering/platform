@@ -21,6 +21,7 @@ import type {
   ArrOf,
   AttachedDoc,
   Blob,
+  Card,
   Class,
   Collection,
   Configuration,
@@ -82,6 +83,7 @@ export default plugin(coreId, {
   class: {
     Obj: '' as Ref<Class<Obj>>,
     Doc: '' as Ref<Class<Doc>>,
+    Card: '' as Ref<Class<Card>>,
     Blob: '' as Ref<Class<Blob>>,
     AttachedDoc: '' as Ref<Class<AttachedDoc>>,
     Class: '' as Ref<Class<Class<Obj>>>,

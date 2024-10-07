@@ -495,7 +495,7 @@ class Connection implements ClientConnection {
     }
   }
 
-  private async sendRequest (data: {
+  private sendRequest (data: {
     method: string
     params: any[]
     // If not defined, on reconnect with timeout, will retry automatically.
@@ -505,7 +505,7 @@ class Connection implements ClientConnection {
     measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
     allowReconnect?: boolean
   }): Promise<any> {
-    return await this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
+    return this.ctx.newChild('send-request', {}).with(data.method, {}, async (ctx) => {
       if (this.closed) {
         throw new PlatformError(unknownError('connection closed'))
       }
@@ -530,7 +530,7 @@ class Connection implements ClientConnection {
         await w
       }
       this.requests.set(id, promise)
-      const sendData = async (): Promise<void> => {
+      const sendData = (): void => {
         if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
           promise.startTime = Date.now()
 
@@ -553,23 +553,25 @@ class Connection implements ClientConnection {
           setTimeout(async () => {
             // In case we don't have response yet.
             if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-              void sendData()
+              sendData()
             }
           }, 50)
         }
       }
-      void ctx.with('send-data', {}, () => sendData())
+      ctx.withSync('send-data', {}, () => {
+        sendData()
+      })
       void ctx.with('broadcast-event', {}, () => broadcastEvent(client.event.NetworkRequests, this.requests.size))
       return await promise.promise
     })
   }
 
-  async loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
-    return await this.sendRequest({ method: 'loadModel', params: [last, hash] })
+  loadModel (last: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
+    return this.sendRequest({ method: 'loadModel', params: [last, hash] })
   }
 
-  async getAccount (): Promise<Account> {
-    return await this.sendRequest({ method: 'getAccount', params: [] })
+  getAccount (): Promise<Account> {
+    return this.sendRequest({ method: 'getAccount', params: [] })
   }
 
   async findAll<T extends Doc>(

@@ -14,21 +14,21 @@
 //
 
 import { DOMAIN_TX, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
-import { type Document, type Teamspace } from '@hcengineering/document'
+import { type DocumentSnapshot, type Document, type Teamspace } from '@hcengineering/document'
 import {
+  tryMigrate,
   type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient,
   type MigrateUpdate,
+  type MigrationClient,
   type MigrationDocumentQuery,
-  tryMigrate
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { type Asset } from '@hcengineering/platform'
 import { makeRank } from '@hcengineering/rank'
 
-import document, { documentId, DOMAIN_DOCUMENT } from './index'
 import { loadCollaborativeDoc, saveCollaborativeDoc, yDocCopyXmlField } from '@hcengineering/collaboration'
+import document, { documentId, DOMAIN_DOCUMENT } from './index'
 
 async function migrateDocumentIcons (client: MigrationClient): Promise<void> {
   await client.update<Teamspace>(
@@ -111,9 +111,9 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
 
   for (const document of documents) {
     try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
+      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.description, ctx)
       if (ydoc === undefined) {
-        ctx.error('document content not found', { document: document.name })
+        ctx.error('document content not found', { document: document.title })
         continue
       }
 
@@ -123,9 +123,9 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
 
       yDocCopyXmlField(ydoc, '', 'content')
 
-      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
+      await saveCollaborativeDoc(storage, client.workspaceId, document.description, ydoc, ctx)
     } catch (err) {
-      ctx.error('error document content migration', { error: err, document: document.name })
+      ctx.error('error document content migration', { error: err, document: document.title })
     }
   }
 }
@@ -154,6 +154,54 @@ async function migrateRank (client: MigrationClient): Promise<void> {
   await client.bulk(DOMAIN_DOCUMENT, operations)
 }
 
+async function renameFields (client: MigrationClient): Promise<void> {
+  const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
+    _class: document.class.Document,
+    content: { $exists: true }
+  })
+
+  for (const document of documents) {
+    await client.update(
+      DOMAIN_DOCUMENT,
+      { _id: document._id },
+      {
+        $rename: {
+          attachedTo: 'parent',
+          content: 'description',
+          name: 'title'
+        },
+        $unset: {
+          attachedToClass: '',
+          collection: ''
+        }
+      }
+    )
+  }
+
+  const spnapshots = await client.find<DocumentSnapshot>(DOMAIN_DOCUMENT, {
+    _class: document.class.DocumentSnapshot,
+    content: { $exists: true }
+  })
+
+  for (const snapshot of spnapshots) {
+    await client.update(
+      DOMAIN_DOCUMENT,
+      { _id: snapshot._id },
+      {
+        $rename: {
+          attachedTo: 'parent',
+          content: 'description',
+          name: 'title'
+        },
+        $unset: {
+          attachedToClass: '',
+          collection: ''
+        }
+      }
+    )
+  }
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -176,6 +224,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'migrateRank',
         func: migrateRank
+      },
+      {
+        state: 'renameFields',
+        func: renameFields
       }
     ])
   },

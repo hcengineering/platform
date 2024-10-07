@@ -12,6 +12,7 @@ export class CommonPage {
   selectPopupInputSearch = (): Locator => this.page.locator('div.popup input.search')
   selectPopupListItem = (name: string): Locator => this.page.locator('div.selectPopup div.list-item', { hasText: name })
   selectPopupListItemFirst = (): Locator => this.page.locator('div.selectPopup div.list-item')
+  selectPopupApMenuItem = (hasText: string): Locator => this.page.locator('div.popup button.ap-menuItem', { hasText })
   selectPopupAddButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnAdd"]')
   selectPopupButton = (): Locator => this.page.locator('div.selectPopup button')
   selectPopupExpandButton = (): Locator => this.page.locator('div.selectPopup button[data-id="btnExpand"]')
@@ -89,6 +90,7 @@ export class CommonPage {
     this.page.locator('div.date-popup-container div.input:last-child span.digit:nth-child(5)')
 
   submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
+  buttonBreadcrumb = (hasText?: string): Locator => this.page.locator('button.hulyBreadcrumb-container', { hasText })
 
   async selectMenuItem (page: Page, name: string, fullWordFilter: boolean = false): Promise<void> {
     if (name !== 'first') {
@@ -192,6 +194,10 @@ export class CommonPage {
 
   async selectListItem (name: string): Promise<void> {
     await this.selectPopupListItem(name).click({ delay: 100 })
+  }
+
+  async selectPopupAp (name: string): Promise<void> {
+    await this.selectPopupApMenuItem(name).click({ delay: 100 })
   }
 
   async selectPopupItem (name: string): Promise<void> {

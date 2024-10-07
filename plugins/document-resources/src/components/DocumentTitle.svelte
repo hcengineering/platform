@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { IntlString, translate } from '@hcengineering/platform'
+  import { IntlString, translateCB } from '@hcengineering/platform'
   import { registerFocus, themeStore } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
@@ -28,9 +28,11 @@
   let input: HTMLInputElement
   let placeholderTranslation = ''
 
-  async function updatePlaceholderTranslation (ph: IntlString | undefined) {
+  function updatePlaceholderTranslation (ph: IntlString | undefined): void {
     if (ph) {
-      placeholderTranslation = await translate(ph, {}, $themeStore.language)
+      translateCB(ph, {}, $themeStore.language, (res) => {
+        placeholderTranslation = res
+      })
     }
   }
 
