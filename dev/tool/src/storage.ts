@@ -135,7 +135,6 @@ async function processAdapter (
   let time = Date.now()
   let processedCnt = 0
   let processedBytes = 0
-  const skippedCnt = 0
   let movedCnt = 0
   let movedBytes = 0
   let batchBytes = 0
@@ -213,8 +212,6 @@ async function processAdapter (
             movedCnt,
             Math.round(movedBytes / 1024 / 1024) + 'MB',
             '+' + Math.round(batchBytes / 1024 / 1024) + 'MB',
-            'skipped',
-            skippedCnt,
             Math.round(duration / 1000) + 's'
           )
 
