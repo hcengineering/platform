@@ -68,7 +68,7 @@ async function queryDocument (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q: DocumentQuery<Document> = { name: { $like: `%${search}%` } }
+  const q: DocumentQuery<Document> = { title: { $like: `%${search}%` } }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
