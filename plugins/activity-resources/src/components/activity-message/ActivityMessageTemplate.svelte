@@ -244,7 +244,7 @@
           </div>
         {/if}
 
-        <slot name="content" />
+        <slot name="content" {readonly} />
 
         {#if !hideFooter}
           <Replies {embedded} object={message} />
