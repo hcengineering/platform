@@ -40,7 +40,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       'Requirement\nUser is not a part of space members and cannot see or edit any document from that space'
     )
     await allure.tms('TESTS-388', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-388')
-    await test.step('2. check if non member can see space', async () => {
+    await test.step('2. check if owner can kick user from workspace', async () => {
       const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.clickContacts()
       await documentContentPage.clickEmployee()

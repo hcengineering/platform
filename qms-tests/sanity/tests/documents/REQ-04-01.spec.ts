@@ -31,7 +31,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-271')
     const approveDocument: NewDocument = {
       template: 'HR (HR)',
-      title: 'Approve document-Test}',
+      title: 'Approve document-Test',
       description: 'Approve document description-Test}'
     }
     const documentDetails: DocumentDetails = {
