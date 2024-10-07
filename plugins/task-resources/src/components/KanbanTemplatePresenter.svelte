@@ -24,5 +24,7 @@
 
 <span class="label nowrap">
   {#if shortLabel}
-    {shortLabel}-{/if}{value.name}</span
->
+    {shortLabel}-
+  {/if}
+  {value.name}
+</span>

@@ -112,9 +112,9 @@
   {#if viewDate}
     <div class="caption">
       {#each [...Array(7).keys()] as dayOfWeek}
-        <span class="weekdays ui-regular-12"
-          >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
-        >
+        <span class="weekdays ui-regular-12">
+          {capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}
+        </span>
       {/each}
     </div>
     <div class="calendar">

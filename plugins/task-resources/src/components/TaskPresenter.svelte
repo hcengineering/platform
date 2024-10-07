@@ -33,9 +33,9 @@
       <div class="icon">
         <Icon icon={task.icon.Task} size={'small'} />
       </div>
-      <span class="label nowrap"
-        >{#if shortLabel}{shortLabel}-{/if}{value.number}</span
-      >
+      <span class="label nowrap">
+        {#if shortLabel}{shortLabel}-{/if}{value.number}
+      </span>
     </div>
   </DocNavLink>
 {/if}

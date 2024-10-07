@@ -186,8 +186,10 @@
         if (openable) {
           dispatch('update', 'open')
         }
-      }}>{value}</span
+      }}
     >
+      {value}
+    </span>
     <Button
       focusIndex={3}
       kind={'ghost'}

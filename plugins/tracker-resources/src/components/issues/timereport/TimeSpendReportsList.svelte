@@ -109,6 +109,6 @@
           <DatePresenter value={report.date} kind={'ghost'} size={'small'} />
         </FixedColumn>
       </div>
-    </div></svelte:fragment
-  >
+    </div>
+  </svelte:fragment>
 </ListView>

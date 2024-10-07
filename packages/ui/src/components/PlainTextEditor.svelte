@@ -73,7 +73,6 @@
   on:keypress
   on:blur
 />
->
 
 <style lang="scss">
   .root {
