@@ -76,9 +76,7 @@ export class DocumentsPage extends CalendarPage {
 
   async changeSpaceInCreateDocumentForm (space: string): Promise<void> {
     await this.changeSpaceButton.click()
-    await this.page
-      .locator(`div.list-container.flex-col.flex-grow.svelte-15na0wa >> text=${space}`)
-      .click({ force: true })
+    await this.page.locator(`div.selectPopup >> div.list-container >> text=${space}`).click({ force: true })
   }
 
   async createTemplate (title: string, description: string, category: string, spaceName: string): Promise<void> {
