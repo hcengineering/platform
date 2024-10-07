@@ -86,7 +86,6 @@
     <IconClose size={'small'} />
   </button>
 </label>
->
 
 <style lang="scss">
   .searchInput-wrapper {

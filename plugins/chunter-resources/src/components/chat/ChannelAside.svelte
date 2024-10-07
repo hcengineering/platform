@@ -126,8 +126,10 @@
         use:tooltip={{
           component: Label,
           props: { label: core.string.CreatedBy }
-        }}><Label label={core.string.CreatedBy} /></span
+        }}
       >
+        <Label label={core.string.CreatedBy} />
+      </span>
       <div class="flex flex-grow min-w-0">
         <EmployeeBox
           value={creatorPersonRef}

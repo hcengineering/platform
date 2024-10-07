@@ -134,9 +134,9 @@
   {#if viewDate}
     <div class="calendar" class:noPadding>
       {#each [...Array(7).keys()] as dayOfWeek}
-        <span class="caption"
-          >{capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}</span
-        >
+        <span class="caption">
+          {capitalizeFirstLetter(getWeekDayName(day(firstDayOfCurrentMonth, dayOfWeek), 'short'))}
+        </span>
       {/each}
 
       {#each [...Array(displayedWeeksCount).keys()] as weekIndex}

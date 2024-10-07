@@ -164,8 +164,10 @@
             setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
             setMetadataLocalStorage(login.metadata.LoginEmail, null)
             goTo('login')
-          }}><Label label={login.string.ChangeAccount} /></NavLink
+          }}
         >
+          <Label label={login.string.ChangeAccount} />
+        </NavLink>
       </div>
     </div>
   {/await}

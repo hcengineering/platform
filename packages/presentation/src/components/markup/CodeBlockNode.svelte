@@ -26,7 +26,9 @@
 </script>
 
 {#if node}
-  <pre class="proseCodeBlock" style:margin={preview ? '0' : null}><code
-      ><Component is={diffview.component.Highlight} props={{ value, language }} /></code
-    ></pre>
+  <pre class="proseCodeBlock" style:margin={preview ? '0' : null}>
+    <code>
+      <Component is={diffview.component.Highlight} props={{ value, language }} />
+    </code>
+  </pre>
 {/if}
