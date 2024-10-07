@@ -270,6 +270,9 @@
   aspect-ratio: 1;
   border-radius: 50%;
 
+  &.relative {
+    position: relative;
+  }
   &.xx-small,
   &.inline,
   &.tiny,

@@ -31,12 +31,21 @@ import { getChannelName, isThreadMessage } from './utils'
 import chunter from './plugin'
 import { threadMessagesStore } from './stores'
 
-export function openChannel (_id: string, _class: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>): void {
+export function openChannel (
+  _id: string,
+  _class: Ref<Class<Doc>>,
+  thread?: Ref<ActivityMessage>,
+  forceApplication = false
+): void {
   const loc = getCurrentLocation()
   const id = encodeObjectURI(_id, _class)
 
   if (loc.path[3] === id) {
     return
+  }
+
+  if (forceApplication) {
+    loc.path[2] = chunterId
   }
 
   loc.path[3] = id
@@ -317,7 +326,12 @@ export async function closeThreadInSidebarChannel (widget: Widget, tab: ChatWidg
   }, 100)
 }
 
-export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: ActivityMessage, doc?: Doc): Promise<void> {
+export async function openThreadInSidebar (
+  _id: Ref<ActivityMessage>,
+  msg?: ActivityMessage,
+  doc?: Doc,
+  selectedMessageId?: Ref<ActivityMessage>
+): Promise<void> {
   const client = getClient()
 
   const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: chunter.ids.ChatWidget })[0]
@@ -362,6 +376,7 @@ export async function openThreadInSidebar (_id: Ref<ActivityMessage>, msg?: Acti
       _id: object?._id,
       _class: object?._class,
       thread: message._id,
+      selectedMessageId,
       channelName: name
     }
   }
@@ -436,7 +451,7 @@ export async function locationDataResolver (loc: Location): Promise<LocationData
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
   const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
 
-  const object = await client.findOne(_class, { _id })
+  const object = hierarchy.hasClass(_class) ? await client.findOne(_class, { _id }) : undefined
   if (object === undefined) return { name: await translate(chunter.string.Chat, {}, get(languageStore)) }
 
   const titleIntl = client.getHierarchy().getClass(object._class).label

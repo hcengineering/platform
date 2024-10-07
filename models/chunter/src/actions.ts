@@ -46,8 +46,8 @@ export function defineActions (builder: Builder): void {
 
   createAction(builder, {
     action: chunter.actionImpl.StartConversation,
-    label: chunter.string.StartConversation,
-    icon: chunter.icon.Thread,
+    label: chunter.string.Message,
+    icon: view.icon.Bubble,
     input: 'focus',
     category: chunter.category.Chunter,
     target: contact.mixin.Employee,

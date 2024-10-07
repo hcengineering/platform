@@ -19,9 +19,9 @@
     ActivityMessageViewType
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
-  import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
+  import { Avatar, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { ComponentExtensions, getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
   import { Asset } from '@hcengineering/platform'
@@ -209,7 +209,7 @@
           <div class="header clear-mins">
             {#if person}
               <div class="username">
-                <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+                <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
               </div>
             {:else}
               <div class="strong">
