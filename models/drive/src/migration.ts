@@ -88,7 +88,7 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
 
 async function renameFields (client: MigrationClient): Promise<void> {
   const resources = await client.find<Resource>(DOMAIN_DRIVE, {
-    _class: { $in: [drive.class.Resource, drive.class.File, drive.class.Folder ] },
+    _class: { $in: [drive.class.Resource, drive.class.File, drive.class.Folder] },
     name: { $exists: true }
   })
 
