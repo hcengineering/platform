@@ -15,7 +15,7 @@ import core, {
 } from '@hcengineering/core'
 import { ModelLogger } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
-import { AggregatorStorageAdapter } from '@hcengineering/server-core'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { jsonToYDocNoSchema, parseMessageMarkdown } from '@hcengineering/text'
 import { v4 as uuid } from 'uuid'
 
@@ -91,7 +91,7 @@ export class WorkspaceInitializer {
 
   constructor (
     private readonly ctx: MeasureContext,
-    private readonly storageAdapter: AggregatorStorageAdapter,
+    private readonly storageAdapter: StorageAdapter,
     private readonly wsUrl: WorkspaceIdWithUrl,
     private readonly client: TxOperations
   ) {}

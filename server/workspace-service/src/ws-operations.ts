@@ -16,23 +16,13 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation, type ModelLogger } from '@hcengineering/model'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
+import { SessionDataImpl, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import {
-  DummyFullTextAdapter,
-  SessionDataImpl,
-  type Pipeline,
-  type PipelineFactory,
-  type StorageAdapter,
-  type StorageConfiguration
-} from '@hcengineering/server-core'
-import {
-  createIndexStages,
-  createServerPipeline,
   getServerPipeline,
   getTxAdapterFactory,
   registerServerPlugins,
   registerStringLoaders
 } from '@hcengineering/server-pipeline'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
 
@@ -130,9 +120,10 @@ export async function createWorkspace (
     const dbUrls = mongodbUri !== undefined && dbUrl !== mongodbUri ? `${dbUrl};${mongodbUri}` : dbUrl
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
+    registerServerPlugins()
+    registerStringLoaders()
 
-    const storageConfig: StorageConfiguration = storageConfigFromEnv()
-    const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+    const { pipeline, storageAdapter } = await getServerPipeline(ctx, txes, mongodbUri, dbUrl, wsUrl)
 
     try {
       const txFactory = getTxAdapterFactory(ctx, dbUrls, wsUrl, null, {
@@ -146,57 +137,12 @@ export async function createWorkspace (
       const txAdapter = await txFactory(ctx, hierarchy, dbUrl ?? mongodbUri, wsId, modelDb, storageAdapter)
 
       await childLogger.withLog('init-workspace', {}, async (ctx) => {
-        const deleteModelFirst = workspaceInfo.mode === 'creating'
-
-        await initModel(
-          ctx,
-          wsId,
-          txes,
-          txAdapter,
-          storageAdapter,
-          ctxModellogger,
-          async (value) => {
-            await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
-          },
-          deleteModelFirst
-        )
+        await initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {
+          await handleWsEvent?.('progress', version, 10 + Math.round((Math.min(value, 100) / 100) * 10))
+        })
       })
-      registerServerPlugins()
-      registerStringLoaders()
-      const factory: PipelineFactory = createServerPipeline(
-        ctx,
-        dbUrls,
-        txes,
-        {
-          externalStorage: storageAdapter,
-          fullTextUrl: 'http://localhost:9200',
-          indexParallel: 0,
-          indexProcessing: 0,
-          rekoniUrl: '',
-          usePassedCtx: true
-        },
-        {
-          fulltextAdapter: {
-            factory: async () => new DummyFullTextAdapter(),
-            url: '',
-            stages: (adapter, storage, storageAdapter, contentAdapter) =>
-              createIndexStages(
-                ctx.newChild('stages', {}),
-                wsUrl,
-                branding,
-                adapter,
-                storage,
-                storageAdapter,
-                contentAdapter,
-                0,
-                0
-              )
-          }
-        }
-      )
 
-      const pipeline = await factory(ctx, wsUrl, true, () => {}, null)
-      const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.System)
+      const client = new TxOperations(wrapPipeline(ctx, pipeline, wsUrl), core.account.ConfigUser)
 
       await updateModel(ctx, wsId, migrationOperation, client, pipeline, ctxModellogger, async (value) => {
         await handleWsEvent?.('progress', version, 20 + Math.round((Math.min(value, 100) / 100) * 10))
@@ -208,12 +154,14 @@ export async function createWorkspace (
         await handleWsEvent?.('progress', version, 30 + Math.round((Math.min(value, 100) / 100) * 60))
       })
 
-      await upgradeWorkspace(
+      await upgradeWorkspaceWith(
         ctx,
         version,
         txes,
         migrationOperation,
         workspaceInfo,
+        pipeline,
+        storageAdapter,
         ctxModellogger,
         async (event, version, value) => {
           ctx.info('Init script progress', { event, value })
@@ -223,12 +171,11 @@ export async function createWorkspace (
         false
       )
 
-      await pipeline.close()
-
       await handleWsEvent?.('create-done', version, 100, '')
     } catch (err: any) {
       await handleWsEvent?.('ping', version, 0, `Create failed: ${err.message}`)
     } finally {
+      await pipeline.close()
       await storageAdapter.close()
     }
   } finally {
@@ -246,6 +193,67 @@ export async function upgradeWorkspace (
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
   ws: BaseWorkspaceInfo,
+  logger: ModelLogger = consoleModelLogger,
+  handleWsEvent?: (
+    event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
+    version: Data<Version>,
+    progress: number,
+    message?: string
+  ) => Promise<void>,
+  forceUpdate: boolean = true,
+  forceIndexes: boolean = false,
+  external: boolean = false
+): Promise<void> {
+  const { mongodbUri, dbUrl } = prepareTools([])
+  if (mongodbUri === undefined) {
+    throw new Error('No MONGO_URL specified')
+  }
+  let pipeline: Pipeline | undefined
+  let storageAdapter: StorageAdapter | undefined
+
+  registerServerPlugins()
+  registerStringLoaders()
+  try {
+    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, mongodbUri, dbUrl, {
+      name: ws.workspace,
+      workspaceName: ws.workspaceName ?? '',
+      workspaceUrl: ws.workspaceUrl ?? ''
+    }))
+    if (pipeline === undefined || storageAdapter === undefined) {
+      return
+    }
+
+    await upgradeWorkspaceWith(
+      ctx,
+      version,
+      txes,
+      migrationOperation,
+      ws,
+      pipeline,
+      storageAdapter,
+      logger,
+      handleWsEvent,
+      forceUpdate,
+      forceIndexes,
+      external
+    )
+  } finally {
+    await pipeline?.close()
+    await storageAdapter?.close()
+  }
+}
+
+/**
+ * @public
+ */
+export async function upgradeWorkspaceWith (
+  ctx: MeasureContext,
+  version: Data<Version>,
+  txes: Tx[],
+  migrationOperation: [string, MigrateOperation][],
+  ws: BaseWorkspaceInfo,
+  pipeline: Pipeline,
+  storageAdapter: StorageAdapter,
   logger: ModelLogger = consoleModelLogger,
   handleWsEvent?: (
     event: 'upgrade-started' | 'progress' | 'upgrade-done' | 'ping',
@@ -282,20 +290,12 @@ export async function upgradeWorkspace (
     void handleWsEvent?.('progress', version, progress)
   }, 5000)
 
-  const { mongodbUri, dbUrl } = prepareTools([])
-  if (mongodbUri === undefined) {
-    throw new Error('No MONGO_URL specified')
-  }
-
   const wsUrl: WorkspaceIdWithUrl = {
     name: ws.workspace,
     workspaceName: ws.workspaceName ?? '',
     workspaceUrl: ws.workspaceUrl ?? ''
   }
-  let pipeline: Pipeline | undefined
-  let storageAdapter: StorageAdapter | undefined
   try {
-    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, mongodbUri, dbUrl, wsUrl))
     const contextData = new SessionDataImpl(
       systemAccountEmail,
       'backup',
@@ -320,7 +320,6 @@ export async function upgradeWorkspace (
       storageAdapter,
       migrationOperation,
       logger,
-      false,
       async (value) => {
         progress = value
       },
@@ -333,8 +332,6 @@ export async function upgradeWorkspace (
     await handleWsEvent?.('ping', version, 0, `Upgrade failed: ${err.message}`)
     throw err
   } finally {
-    await pipeline?.close()
-    await storageAdapter?.close()
     clearInterval(updateProgressHandle)
   }
 }
