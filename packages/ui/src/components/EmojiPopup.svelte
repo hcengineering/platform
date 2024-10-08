@@ -12,6 +12,7 @@
   import Places from './icons/Places.svelte'
   import Symbols from './icons/Symbols.svelte'
   import Work from './icons/Work.svelte'
+  import Palette from './icons/Palette.svelte'
 
   import { tooltip } from '../tooltips'
   import { AnySvelteComponent, emojiSP } from '../types'
@@ -132,7 +133,7 @@
         ...generateSkinToneEmojis(0x1f44c),
         ...generateSkinToneEmojis(0x1f64c),
       ],
-      icon: Symbols
+      icon: Palette
     }
   ]
 
