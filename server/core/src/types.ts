@@ -213,6 +213,9 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
+  // Cache per workspace
+  cache: Map<string, any>
+  // Cache per root tx
   contextCache: Map<string, any>
 
   // Since we don't have other storages let's consider adapter is MinioClient

@@ -83,7 +83,7 @@ import { encodeObjectURI } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
 
-import { Content, NotifyParams, NotifyResult } from './types'
+import { Content, ContextsCache, ContextsCacheKey, NotifyParams, NotifyResult } from './types'
 import {
   createPullCollaboratorsTx,
   createPushCollaboratorsTx,
@@ -727,6 +727,15 @@ async function createNotifyContext (
   updateTimestamp?: Timestamp,
   tx?: TxCUD<Doc>
 ): Promise<Ref<DocNotifyContext>> {
+  const contextsCache: ContextsCache = control.cache.get(ContextsCacheKey) ?? {
+    contexts: new Map<string, Ref<DocNotifyContext>>()
+  }
+  const cachedId = contextsCache.contexts.get(`${objectId}_${receiver._id}`)
+
+  if (cachedId !== undefined) {
+    return cachedId
+  }
+
   const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, receiver.space, {
     user: receiver._id,
     objectId,
@@ -738,6 +747,9 @@ async function createNotifyContext (
     lastUpdateTimestamp: updateTimestamp,
     lastViewedTimestamp: sender === receiver._id ? updateTimestamp : undefined
   })
+
+  contextsCache.contexts.set(`${objectId}_${receiver._id}`, createTx.objectId)
+  control.cache.set(ContextsCacheKey, contextsCache)
   await ctx.with('apply', {}, () => control.apply(control.ctx, [createTx]))
   if (receiver.account?.email !== undefined) {
     control.ctx.contextData.broadcast.targets['docNotifyContext' + createTx._id] = (it) => {

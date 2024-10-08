@@ -55,10 +55,17 @@ import serverCore, { BaseMiddleware, SessionDataImpl, SessionFindAll, Triggers }
 export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   triggers: Triggers
   storageAdapter!: StorageAdapter
+  cache = new Map<string, any>()
 
   constructor (context: PipelineContext, next: Middleware | undefined) {
     super(context, next)
     this.triggers = new Triggers(this.context.hierarchy)
+    setInterval(
+      () => {
+        this.cache.clear()
+      },
+      30 * 60 * 1000
+    )
   }
 
   static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
@@ -113,6 +120,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       contextCache: ctx.contextData.contextCache,
       modelDb: this.context.modelDb,
       hierarchy: this.context.hierarchy,
+      cache: this.cache,
       apply: async (ctx, tx, needResult) => {
         if (needResult === true) {
           return (await this.context.derived?.tx(ctx, tx)) ?? {}
