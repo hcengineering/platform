@@ -302,6 +302,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       }
       case 'synchronize': {
         const syncData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (externalData.url ?? '').toLowerCase()
         })
         if (syncData !== undefined) {

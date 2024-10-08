@@ -14,15 +14,9 @@
 -->
 
 <script lang="ts">
-  import { getClient, LiteMessageViewer } from '@hcengineering/presentation'
+  import { ComponentExtensions, getClient, LiteMessageViewer } from '@hcengineering/presentation'
   import { Person, type PersonAccount } from '@hcengineering/contact'
-  import {
-    Avatar,
-    EmployeePresenter,
-    personAccountByIdStore,
-    personByIdStore,
-    SystemAvatar
-  } from '@hcengineering/contact-resources'
+  import { Avatar, personAccountByIdStore, personByIdStore, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { Account, Doc, Ref, Timestamp, type WithLookup } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
@@ -131,7 +125,7 @@
               />
             </DocNavLink>
           {:else if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} compact showStatus={false} />
+            <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
           {:else}
             <Label label={core.string.System} />
           {/if}

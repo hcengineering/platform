@@ -89,9 +89,9 @@
   {#if selectedTZ}
     <div class="header flex-col">
       <div class="flex-between min-h-4" style:margin-right={'-.5rem'}>
-        <span class="text-xs font-medium uppercase content-darker-color flex-grow"
-          ><Label label={ui.string.Selected} /></span
-        >
+        <span class="text-xs font-medium uppercase content-darker-color flex-grow">
+          <Label label={ui.string.Selected} />
+        </span>
         {#if reset !== null}
           <ActionIcon
             icon={IconUndo}

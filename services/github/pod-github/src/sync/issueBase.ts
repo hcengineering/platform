@@ -201,6 +201,7 @@ export abstract class IssueSyncManagerBase {
             }
           )) as any
           const syncData = await this.client.findOne(github.class.DocSyncInfo, {
+            space: prj._id,
             url: (actualContent.node.content.url ?? '').toLowerCase()
           })
 
@@ -353,7 +354,8 @@ export abstract class IssueSyncManagerBase {
     }
 
     syncData =
-      syncData ?? (await this.client.findOne(github.class.DocSyncInfo, { url: (external.url ?? '').toLowerCase() }))
+      syncData ??
+      (await this.client.findOne(github.class.DocSyncInfo, { space: prj._id, url: (external.url ?? '').toLowerCase() }))
 
     if (syncData !== undefined) {
       const doc: Issue | undefined = await this.client.findOne<Issue>(syncData.objectClass, {
@@ -1262,7 +1264,10 @@ export abstract class IssueSyncManagerBase {
     err: any,
     _class: Ref<Class<Doc>> = tracker.class.Issue
   ): Promise<void> {
-    const syncData = await this.client.findOne(github.class.DocSyncInfo, { url: url.toLowerCase() })
+    const syncData = await this.client.findOne(github.class.DocSyncInfo, {
+      space: repo.githubProject as Ref<GithubProject>,
+      url: url.toLowerCase()
+    })
     if (syncData === undefined) {
       await derivedClient?.createDoc(github.class.DocSyncInfo, repo.githubProject as Ref<GithubProject>, {
         url,

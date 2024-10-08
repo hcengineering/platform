@@ -107,9 +107,9 @@
   on:keydown
 >
   {#if loading}
-    <div class="icon"><Spinner size={'small'} /></div>
+    <div class="icon no-gap"><Spinner size={'small'} /></div>
   {:else if icon}
-    <div class="icon"><Icon {icon} {iconProps} size={actualIconSize} /></div>
+    <div class="icon no-gap"><Icon {icon} {iconProps} size={actualIconSize} /></div>
   {/if}
   {#if label}<span><Label {label} params={labelParams} /></span>{/if}
   {#if title}<span>{title}</span>{/if}

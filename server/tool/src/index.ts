@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
 import core, {
   BackupClient,
   Branding,
@@ -36,17 +35,10 @@ import core, {
   WorkspaceId,
   WorkspaceIdWithUrl,
   type Doc,
-  type Ref,
-  type TxCUD
+  type Ref
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
-import {
-  AggregatorStorageAdapter,
-  DomainIndexHelperImpl,
-  Pipeline,
-  StorageAdapter,
-  type DbAdapter
-} from '@hcengineering/server-core'
+import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
 import { connect } from './connect'
 import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
@@ -113,10 +105,9 @@ export async function initModel (
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
   adapter: DbAdapter,
-  storageAdapter: AggregatorStorageAdapter,
+  storageAdapter: StorageAdapter,
   logger: ModelLogger = consoleModelLogger,
-  progress: (value: number) => Promise<void>,
-  deleteFirst: boolean = false
+  progress: (value: number) => Promise<void>
 ): Promise<void> {
   const { txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -124,23 +115,6 @@ export async function initModel (
   }
 
   try {
-    if (deleteFirst) {
-      logger.log('deleting model...', workspaceId)
-      await ctx.with('mongo-delete', {}, async () => {
-        const toRemove = await adapter.rawFindAll(DOMAIN_TX, {
-          objectSpace: core.space.Model,
-          modifiedBy: core.account.System,
-          objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
-        })
-        await adapter.clean(
-          ctx,
-          DOMAIN_TX,
-          toRemove.map((p) => p._id)
-        )
-      })
-      logger.log('transactions deleted.', { workspaceId: workspaceId.name })
-    }
-
     logger.log('creating database...', workspaceId)
     await adapter.upload(ctx, DOMAIN_TX, [
       {
@@ -219,7 +193,7 @@ export async function initializeWorkspace (
   ctx: MeasureContext,
   branding: Branding | null,
   wsUrl: WorkspaceIdWithUrl,
-  storageAdapter: AggregatorStorageAdapter,
+  storageAdapter: StorageAdapter,
   client: TxOperations,
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
@@ -263,7 +237,6 @@ export async function upgradeModel (
   storageAdapter: StorageAdapter,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
-  skipTxUpdate: boolean = false,
   progress: (value: number) => Promise<void>,
   forceIndexes: boolean = false
 ): Promise<Tx[]> {
@@ -309,15 +282,6 @@ export async function upgradeModel (
     }
   })
 
-  if (!skipTxUpdate) {
-    if (pipeline.context.lowLevelStorage === undefined) {
-      throw new PlatformError(unknownError('Low level storage is not available'))
-    }
-    logger.log('removing model...', { workspaceId: workspaceId.name })
-    await progress(10)
-    logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: txes.length })
-    await progress(20)
-  }
   const { migrateClient, migrateState } = await prepareMigrationClient(
     pipeline,
     hierarchy,
@@ -366,21 +330,6 @@ export async function upgradeModel (
       {
         state: 'indexes-v5',
         func: upgradeIndexes
-      },
-      {
-        state: 'delete-model',
-        func: async (client) => {
-          const model = await client.find<Tx>(DOMAIN_TX, { objectSpace: core.space.Model })
-
-          // Ignore Employee accounts.
-          const isUserTx = (it: Tx): boolean =>
-            it.modifiedBy !== core.account.System ||
-            (it as TxCUD<Doc>).objectClass === 'contact:class:Person' ||
-            (it as TxCUD<Doc>).objectClass === 'contact:class:PersonAccount'
-
-          const toDelete = model.filter((it) => !isUserTx(it)).map((it) => it._id)
-          await client.deleteMany(DOMAIN_TX, { _id: { $in: toDelete } })
-        }
       }
     ])
   })

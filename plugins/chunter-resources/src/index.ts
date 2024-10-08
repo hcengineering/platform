@@ -53,6 +53,8 @@ import ThreadViewPanel from './components/threads/ThreadViewPanel.svelte'
 import ChatWidget from './components/ChatWidget.svelte'
 import ChatWidgetTab from './components/ChatWidgetTab.svelte'
 import WorkbenchTabExtension from './components/WorkbenchTabExtension.svelte'
+import DirectMessageButton from './components/DirectMessageButton.svelte'
+import EmployeePresenter from './components/ChunterEmployeePresenter.svelte'
 
 import {
   chunterSpaceLinkFragmentProvider,
@@ -181,7 +183,9 @@ export default async (): Promise<Resources> => ({
     JoinChannelNotificationPresenter,
     ChatWidget,
     ChatWidgetTab,
-    WorkbenchTabExtension
+    WorkbenchTabExtension,
+    DirectMessageButton,
+    EmployeePresenter
   },
   activity: {
     ChannelCreatedMessage,

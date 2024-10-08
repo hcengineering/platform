@@ -47,7 +47,7 @@
   $: localStorage.setItem('activity-filter', JSON.stringify(selectedFiltersRefs))
   $: localStorage.setItem('activity-newest-first', JSON.stringify(isNewestFirst))
 
-  client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
+  void client.findAll(activity.class.ActivityMessagesFilter, {}).then((res) => {
     filters = res
 
     if (saved !== null && saved !== undefined) {

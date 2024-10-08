@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
-  import { IntlString, translate, translateCB } from '@hcengineering/platform'
-  import { Button, IModeSelector, IconDetails, IconDetailsFilled, themeStore } from '@hcengineering/ui'
+  import { IntlString, translateCB } from '@hcengineering/platform'
+  import { IModeSelector, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
   import { GithubPullRequest } from '@hcengineering/github'
@@ -11,7 +11,6 @@
   export let query: DocumentQuery<GithubPullRequest> = {}
   export let title: IntlString | undefined = undefined
   export let label: string = ''
-  export let panelWidth: number = 0
   export let modeSelectorProps: IModeSelector | undefined = undefined
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
@@ -30,18 +29,6 @@
       label = res
     })
   }
-
-  let asideFloat: boolean = false
-  let asideShown: boolean = true
-  $: if (panelWidth < 900 && !asideFloat) asideFloat = true
-  $: if (panelWidth >= 900 && asideFloat) {
-    asideFloat = false
-    asideShown = false
-  }
-  let docWidth: number
-  let docSize: boolean = false
-  $: if (docWidth <= 900 && !docSize) docSize = true
-  $: if (docWidth > 900 && docSize) docSize = false
 </script>
 
 <SpaceHeader
@@ -54,23 +41,11 @@
   {space}
   {modeSelectorProps}
 >
+  <svelte:fragment slot="header-tools">
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
-  </svelte:fragment>
-  <svelte:fragment slot="extra">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
-    {#if asideFloat && $$slots.aside}
-      <div class="buttons-divider" />
-      <Button
-        icon={asideShown ? IconDetailsFilled : IconDetails}
-        kind={'ghost'}
-        size={'medium'}
-        selected={asideShown}
-        on:click={() => {
-          asideShown = !asideShown
-        }}
-      />
-    {/if}
   </svelte:fragment>
 </SpaceHeader>
 {#if viewlet && viewOptions}
@@ -85,11 +60,6 @@
   <div class="popupPanel rowContent">
     {#if viewlet}
       <ViewletContentView _class={github.class.GithubPullRequest} {viewlet} query={resultQuery} {space} {viewOptions} />
-    {/if}
-    {#if $$slots.aside !== undefined && asideShown}
-      <div class="popupPanel-body__aside" class:shown={asideShown}>
-        <slot name="aside" />
-      </div>
     {/if}
   </div>
 {/if}

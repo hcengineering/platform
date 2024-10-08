@@ -203,6 +203,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       }
       case 'deleted': {
         const syncData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.issue.html_url ?? '').toLowerCase()
         })
         if (syncData !== undefined) {
@@ -291,6 +292,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     repo: GithubIntegrationRepository
   ): Promise<void> {
     const issueSyncData = await this.client.findOne(github.class.DocSyncInfo, {
+      space: repo.githubProject as Ref<GithubProject>,
       url: (issueExternal.url ?? '').toLowerCase()
     })
     if (issueSyncData === undefined) {
@@ -452,7 +454,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
           break
         }
 
-        await this.provider.doSyncFor(attachedDocs)
+        await this.provider.doSyncFor(attachedDocs, container.project)
         for (const child of attachedDocs) {
           await derivedClient.update(child, { createId })
         }

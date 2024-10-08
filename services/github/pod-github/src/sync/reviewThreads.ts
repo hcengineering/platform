@@ -205,6 +205,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       case 'unresolved': {
         const isResolved = event.action === 'resolved'
         const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: event.thread.node_id.toLocaleLowerCase()
         })
 
@@ -241,6 +242,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
           }
 
           const reviewPR = await this.client.findOne(github.class.DocSyncInfo, {
+            space: repo.githubProject as Ref<GithubProject>,
             url: (reviewData.parent ?? '').toLowerCase()
           })
           if (reviewPR !== undefined) {
@@ -516,6 +518,7 @@ export class ReviewThreadSyncManager implements DocSyncManager {
         .map((it) => (it.parent ?? '').toLowerCase())
         .filter((it, idx, arr) => it != null && arr.indexOf(it) === idx)
       const parents = await derivedClient.findAll(github.class.DocSyncInfo, {
+        space: repo.githubProject as Ref<GithubProject>,
         url: {
           $in: allParents
         }

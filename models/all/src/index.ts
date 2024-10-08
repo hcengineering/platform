@@ -256,7 +256,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: inventory.string.ConfigLabel,
         description: inventory.string.ConfigDescription,
-        enabled: false,
+        enabled: true,
         beta: false,
         classFilter: defaultFilter
       }
@@ -267,8 +267,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: hr.string.ConfigLabel,
         description: hr.string.ConfigDescription,
-        enabled: false,
-        beta: true,
+        enabled: true,
+        beta: false,
         icon: hr.icon.Structure,
         classFilter: defaultFilter
       }
@@ -292,7 +292,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: document.string.ConfigLabel,
         description: document.string.ConfigDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: document.icon.DocumentApplication,
         classFilter: defaultFilter
       }
@@ -343,7 +343,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: github.string.ConfigLabel,
         description: github.string.ConfigDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: github.icon.Github
       }
     ],

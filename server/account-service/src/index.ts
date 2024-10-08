@@ -77,10 +77,6 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  const initWS = process.env.INIT_WORKSPACE
-  if (initWS !== undefined) {
-    setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
-  }
   const initScriptUrl = process.env.INIT_SCRIPT_URL
   if (initScriptUrl !== undefined) {
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)

@@ -161,7 +161,7 @@
             </button>
           </div>
         {/if}
-        <div class="flex-row-center left-items" style:-webkit-app-region={'no-drag'}>
+        <div class="flex-row-center left-items flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
           <RootBarExtension position="left" />
         </div>
         <div
@@ -216,7 +216,7 @@
       min-height: var(--status-bar-height);
       height: var(--status-bar-height);
       // min-width: 600px;
-      font-size: 12px;
+      font-size: 0.75rem;
       line-height: 150%;
       background-color: var(--theme-statusbar-color);
       // border-bottom: 1px solid var(--theme-navpanel-divider);

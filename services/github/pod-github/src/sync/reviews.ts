@@ -198,6 +198,7 @@ export class ReviewSyncManager implements DocSyncManager {
         await this.createSyncData(event, derivedClient, repo, externalData)
 
         const parentDoc = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.pull_request.html_url ?? '').toLowerCase()
         })
         if (parentDoc !== undefined) {
@@ -211,6 +212,7 @@ export class ReviewSyncManager implements DocSyncManager {
       }
       case 'dismissed': {
         const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+          space: repo.githubProject as Ref<GithubProject>,
           url: (event.review.html_url ?? '').toLowerCase()
         })
 
@@ -254,6 +256,7 @@ export class ReviewSyncManager implements DocSyncManager {
     externalData: ReviewExternalData
   ): Promise<void> {
     const reviewData = await this.client.findOne(github.class.DocSyncInfo, {
+      space: repo.githubProject as Ref<GithubProject>,
       url: (createdEvent.review.html_url ?? '').toLowerCase()
     })
 

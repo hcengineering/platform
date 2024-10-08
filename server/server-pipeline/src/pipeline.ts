@@ -29,13 +29,13 @@ import {
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
   ModifiedMiddleware,
+  NotificationsMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware,
   TriggersMiddleware,
-  TxMiddleware,
-  NotificationsMiddleware
+  TxMiddleware
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
@@ -54,7 +54,6 @@ import {
   DummyDbAdapter,
   DummyFullTextAdapter,
   FullTextMiddleware,
-  type AggregatorStorageAdapter,
   type DbAdapterFactory,
   type DbConfiguration,
   type Middleware,
@@ -236,7 +235,7 @@ export async function getServerPipeline (
   wsUrl: WorkspaceIdWithUrl
 ): Promise<{
     pipeline: Pipeline
-    storageAdapter: AggregatorStorageAdapter
+    storageAdapter: StorageAdapter
   }> {
   const dbUrls = mongodbUri !== undefined && mongodbUri !== dbUrl ? `${dbUrl};${mongodbUri}` : dbUrl
 
@@ -258,7 +257,7 @@ export async function getServerPipeline (
       indexProcessing: 0,
       rekoniUrl: '',
       usePassedCtx: true,
-      disableTriggers: true
+      disableTriggers: false
     },
     {
       fulltextAdapter: {

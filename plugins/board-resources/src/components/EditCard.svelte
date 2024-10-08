@@ -92,10 +92,8 @@
     </svelte:fragment>
     <svelte:fragment slot="header">
       <div class="flex fs-title flex-gap-1">
-        <span class="over-underline" on:click={handleMove}>{space?.name}</span>><span
-          class="over-underline"
-          on:click={handleMove}>{state?.name}</span
-        >
+        <span class="over-underline" on:click={handleMove}>{space?.name}</span>>
+        <span class="over-underline" on:click={handleMove}>{state?.name}</span>
       </div>
     </svelte:fragment>
     <svelte:fragment slot="tools">

@@ -81,6 +81,7 @@
 <style lang="scss">
   .container {
     font-weight: 500;
+    font-size: 0.75rem;
     border: 1px solid transparent;
     border-radius: 0.25rem;
     cursor: pointer;

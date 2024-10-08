@@ -80,11 +80,11 @@
   const getTimeFormat = (hour: number, min: number = 0): string => {
     if (min === 0) {
       return ampm
-        ? `${hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}`
+        ? `${hour > 12 ? hour - 12 : hour}${hour < 12 || hour === 24 ? 'am' : 'pm'}`
         : `${addZero(hour === 24 ? 0 : hour)}:00`
     } else {
       return ampm
-        ? `${hour > 12 ? hour - 12 : hour}:${addZero(min)}${hour < 12 ? 'am' : 'pm'}`
+        ? `${hour > 12 ? hour - 12 : hour}:${addZero(min)}${hour < 12 || hour === 24 ? 'am' : 'pm'}`
         : `${addZero(hour === 24 ? 0 : hour)}:${addZero(min)}`
     }
   }

@@ -76,8 +76,9 @@
       use:tooltip={{
         component: Label,
         props: { label: attribute.label }
-      }}><Label label={attribute.label} /></span
-    >
+      }}
+      ><Label label={attribute.label} />
+    </span>
     <div class="flex flex-grow min-w-0">
       <svelte:component
         this={editor}
