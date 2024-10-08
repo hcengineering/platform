@@ -250,8 +250,10 @@
 
     await updateMarkup(data.fullDescription, { fullDescription })
 
-    const id = await client.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
-
+    const ops = client.apply()
+    const id = await ops.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
+    await descriptionBox.createAttachments(undefined, ops)
+    await ops.commit()
     Analytics.handleEvent(RecruitEvents.VacancyCreated, {
       id: getSequenceId({
         ...data,
@@ -273,8 +275,6 @@
         }
       }
     }
-
-    await descriptionBox.createAttachments()
 
     // Add vacancy mixin with roles assignment
     await client.createMixin(

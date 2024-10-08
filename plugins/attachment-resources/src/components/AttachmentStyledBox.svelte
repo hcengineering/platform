@@ -14,7 +14,18 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap, type Blob } from '@hcengineering/core'
+  import {
+    Account,
+    Class,
+    Doc,
+    generateId,
+    Markup,
+    Ref,
+    Space,
+    toIdMap,
+    type Blob,
+    TxOperations
+  } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     createQuery,
@@ -178,10 +189,10 @@
     }
   }
 
-  async function saveAttachment (doc: Attachment, objectId: Ref<Doc> | undefined): Promise<void> {
+  async function saveAttachment (doc: Attachment, objectId: Ref<Doc> | undefined, op?: TxOperations): Promise<void> {
     if (space === undefined || objectId === undefined || _class === undefined) return
     newAttachments.delete(doc._id)
-    await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    await (op ?? client).addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
   }
 
   async function fileSelected (): Promise<void> {
@@ -284,7 +295,7 @@
     }
   }
 
-  export async function createAttachments (_id: Ref<Doc> | undefined = objectId): Promise<void> {
+  export async function createAttachments (_id: Ref<Doc> | undefined = objectId, op?: TxOperations): Promise<void> {
     if (saved) {
       return
     }
@@ -293,7 +304,7 @@
     newAttachments.forEach((p) => {
       const attachment = attachments.get(p)
       if (attachment !== undefined) {
-        promises.push(saveAttachment(attachment, _id))
+        promises.push(saveAttachment(attachment, _id, op))
       }
     })
     removedAttachments.forEach((p) => {

@@ -42,7 +42,8 @@
     if (isCodeWrong || isTitleWrong) {
       return
     }
-    await client.createDoc(
+    const op = client.apply()
+    await op.createDoc(
       documents.class.DocumentCategory,
       space,
       {
@@ -53,8 +54,8 @@
       },
       _id
     )
-    await descriptionBox.createAttachments(_id)
-
+    await descriptionBox.createAttachments(_id, op)
+    await op.commit()
     dispatch('close', _id)
   }
 

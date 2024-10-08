@@ -169,7 +169,7 @@
       doc._id
     )
 
-    await descriptionBox.createAttachments()
+    await descriptionBox.createAttachments(undefined, ops)
 
     if (_comment.trim().length > 0 && !isEmptyMarkup(_comment)) {
       await ops.addCollection(chunter.class.ChatMessage, _space, doc._id, recruit.class.Applicant, 'comments', {
