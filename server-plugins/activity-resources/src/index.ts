@@ -351,9 +351,11 @@ export async function generateDocUpdateMessages (
           doc = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
         }
         if (doc === undefined) {
-          const createTx =
-            (await control.findAll(ctx, core.class.TxCreateDoc, { objectId: tx.objectId }, { limit: 1 }))[0] ??
-            (await control.findAll(ctx, core.class.TxCollectionCUD, { 'tx.objectId': tx.objectId }, { limit: 1 }))[0]
+          const isAttachedDoc = hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
+          const createTx = isAttachedDoc
+            ? (await control.findAll(ctx, core.class.TxCollectionCUD, { 'tx.objectId': tx.objectId }, { limit: 1 }))[0]
+            : (await control.findAll(ctx, core.class.TxCreateDoc, { objectId: tx.objectId }, { limit: 1 }))[0]
+
           doc =
             createTx !== undefined
               ? TxProcessor.createDoc2Doc(TxProcessor.extractTx(createTx) as TxCreateDoc<Doc>)
