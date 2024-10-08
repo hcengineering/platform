@@ -18,7 +18,6 @@
   import { AnySvelteComponent, emojiSP } from '../types'
   import plugin from '../plugin'
   import { fromCodePoint } from '../utils'
-  import { get } from 'svelte/store'
 
   export let embedded = false
   export let selected: string | undefined
