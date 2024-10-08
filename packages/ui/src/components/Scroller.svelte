@@ -31,6 +31,7 @@
   export let fade: FadeOptions = defaultSP
   export let noFade: boolean = true
   export let invertScroll: boolean = false
+  export let scrollDirection: 'vertical' | 'vertical-reverse' = 'vertical'
   export let contentDirection: 'vertical' | 'vertical-reverse' | 'horizontal' = 'vertical'
   export let horizontal: boolean = contentDirection === 'horizontal'
   export let align: 'start' | 'center' | 'end' | 'stretch' = 'stretch'
@@ -39,7 +40,7 @@
   export let buttons: 'normal' | 'union' | false = false
   export let shrink: boolean = false
   export let divScroll: HTMLElement | undefined | null = undefined
-  export let divBox: HTMLElement | undefined = undefined
+  export let divBox: HTMLElement | undefined | null = undefined
   export let checkForHeaders: boolean = false
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
@@ -50,7 +51,7 @@
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
       if (top !== 0) divScroll.scroll({ top, left: 0, behavior })
-      if (left !== 0 || left !== undefined) divScroll.scroll({ top: 0, left, behavior })
+      if (left !== 0 && left !== undefined) divScroll.scroll({ top: 0, left, behavior })
     }
   }
   export function scrollBy (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
@@ -102,11 +103,19 @@
       const scrollH = divScroll.scrollHeight
       const proc = scrollH / trackH
 
-      const newHeight = (divScroll.clientHeight - 4) / proc + 'px'
+      const newHeight = (divScroll.clientHeight - 4) / proc
+      const newHeightPx = newHeight + 'px'
       if (divBar.style.height !== 'newHeight') {
-        divBar.style.height = newHeight
+        divBar.style.height = newHeightPx
       }
-      const newTop = divScroll.scrollTop / proc + shiftTop + 2 + 'px'
+
+      let newTop = '0px'
+
+      if (scrollDirection === 'vertical-reverse') {
+        newTop = divScroll.clientHeight + divScroll.scrollTop / proc - newHeight - shiftTop - 2 + 'px'
+      } else {
+        newTop = divScroll.scrollTop / proc + shiftTop + 2 + 'px'
+      }
       if (divBar.style.top !== newTop) {
         divBar.style.top = newTop
       }
@@ -542,7 +551,8 @@
         divHeight = element.clientHeight
         onResize?.()
       }}
-      class="scroll relative flex-shrink"
+      class="scroll relative flex-shrink flex-col"
+      style:flex-direction={scrollDirection === 'vertical-reverse' ? 'column-reverse' : 'column'}
       class:disableOverscroll
       style:overflow-x={horizontal ? 'auto' : 'hidden'}
       on:scroll={() => {

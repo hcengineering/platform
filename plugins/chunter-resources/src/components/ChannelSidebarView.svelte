@@ -71,9 +71,11 @@
   $: if (tab.data.thread === undefined) {
     renderChannel = true
   }
+
+  $: visible = height !== '0px' && width !== '0px'
 </script>
 
-{#if object && renderChannel}
+{#if object && renderChannel && visible}
   <div class="channel" class:invisible={threadId !== undefined} style:height style:width>
     <ChannelHeader
       _id={object._id}
@@ -92,7 +94,7 @@
     {/key}
   </div>
 {/if}
-{#if threadId}
+{#if threadId && visible}
   <div class="thread" style:height style:width>
     <ThreadView
       _id={threadId}

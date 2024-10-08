@@ -27,7 +27,6 @@
   export let readonly: boolean = false
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
   const me = getCurrentAccount()
 
   let reactionsAccounts = new Map<string, Ref<Account>[]>()

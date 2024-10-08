@@ -54,9 +54,11 @@ import view, { type AttributeCategory, type AttributeEditor } from '@hcengineeri
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { get, writable, type Writable } from 'svelte/store'
+
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
+
 export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ

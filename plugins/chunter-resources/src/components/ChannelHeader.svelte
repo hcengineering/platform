@@ -74,7 +74,7 @@
   intlLabel={chunter.string.Channel}
   {description}
   titleKind={isPerson ? 'default' : 'breadcrumbs'}
-  withFilters={!hierarchy.isDerived(_class, chunter.class.ChunterSpace)}
+  withFilters={false}
   {allowClose}
   {canOpen}
   {withAside}
