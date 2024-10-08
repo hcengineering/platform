@@ -56,16 +56,21 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   triggers: Triggers
   storageAdapter!: StorageAdapter
   cache = new Map<string, any>()
+  intervalId: NodeJS.Timeout
 
   constructor (context: PipelineContext, next: Middleware | undefined) {
     super(context, next)
     this.triggers = new Triggers(this.context.hierarchy)
-    setInterval(
+    this.intervalId = setInterval(
       () => {
         this.cache.clear()
       },
       30 * 60 * 1000
     )
+  }
+
+  async close (): Promise<void> {
+    clearInterval(this.intervalId)
   }
 
   static async create (ctx: MeasureContext, context: PipelineContext, next?: Middleware): Promise<Middleware> {
