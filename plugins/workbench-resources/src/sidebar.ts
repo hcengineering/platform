@@ -32,6 +32,7 @@ export interface WidgetState {
   tabs: WidgetTab[]
   tab?: string
   closedByUser?: boolean
+  openedByUser?: boolean
 }
 
 export interface SidebarState {
@@ -97,16 +98,19 @@ function setSidebarStateToLocalStorage (state: SidebarState): void {
   )
 }
 
-export function openWidget (widget: Widget, data?: Record<string, any>, active = true): void {
+export function openWidget (widget: Widget, data?: Record<string, any>, params?: { active: boolean, openedByUser: boolean }): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
   const widgetState = widgetsState.get(widget._id)
+  const active = params?.active ?? true
+  const openedByUser = params?.openedByUser ?? false
 
   widgetsState.set(widget._id, {
     _id: widget._id,
     data: data ?? widgetState?.data,
     tab: widgetState?.tab,
-    tabs: widgetState?.tabs ?? []
+    tabs: widgetState?.tabs ?? [],
+    openedByUser
   })
 
   Analytics.handleEvent('workbench.OpenSidebarWidget', { widget: widget._id })
