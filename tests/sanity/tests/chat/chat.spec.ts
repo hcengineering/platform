@@ -439,28 +439,19 @@ test.describe('Channel tests', () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
     })
 
-    await test.step('Join channel from a leaved channel page', async () => {
-      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-      await channelPage.clickJoinChannelButton()
-      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-    })
-
-    await test.step('Leave channel #2', async () => {
-      await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
-    })
-
-    await test.step('Open another channel and then check that leaved channel is removed from left menu', async () => {
-      await channelPage.clickChooseChannel('random')
+    await test.step('Join channel from channels page', async () => {
       await channelPage.checkIfChannelDefaultExist(false, data.channelName)
-    })
-
-    await test.step('Join channel from a channels table', async () => {
       await channelPage.clickChannelTab()
       await channelPage.checkIfChannelTableExist(data.channelName, true)
       await channelPage.clickJoinChannelButton()
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.checkMessageExist('Test message', true, 'Test message')
+    })
+
+    await test.step('Open another channel and check that joined channel is visible', async () => {
+      await channelPage.clickChooseChannel('random')
+      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     })
   })
 

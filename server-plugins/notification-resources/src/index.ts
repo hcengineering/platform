@@ -1351,7 +1351,10 @@ async function collectionCollabDoc (
   return res
 }
 
-async function removeContextNotifications (control: TriggerControl, notifyContextRefs: Ref<DocNotifyContext>[]): Promise<Tx[]> {
+async function removeContextNotifications (
+  control: TriggerControl,
+  notifyContextRefs: Ref<DocNotifyContext>[]
+): Promise<Tx[]> {
   const inboxNotifications = await control.findAll(
     control.ctx,
     notification.class.InboxNotification,
