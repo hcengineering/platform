@@ -82,7 +82,7 @@
     departments.clear()
     descendants.clear()
     for (const doc of res) {
-      if (doc.parent !== undefined) {
+      if (doc.parent !== undefined && doc._id !== hr.ids.Head) {
         const current = descendants.get(doc.parent) ?? []
         current.push(doc)
         descendants.set(doc.parent, current)
