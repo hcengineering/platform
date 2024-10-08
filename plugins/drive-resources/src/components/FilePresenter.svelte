@@ -42,14 +42,14 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {accent} {noUnderline}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
         {#if shouldShowAvatar}
           <div class="icon">
             <Icon {icon} size={'small'} />
           </div>
         {/if}
         <div class="label nowrap flex flex-gap-2" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          <span>{value.name}</span>
+          <span>{value.title}</span>
           {#if shouldShowVersion}
             <span>•</span>
             <span>{formatFileVersion(value.version)}</span>
@@ -58,8 +58,8 @@
       </div>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      {value.name}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
+      {value.title}
     </span>
   {/if}
 {/if}

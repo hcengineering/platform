@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { type Ref } from '@hcengineering/core'
-  import drive, { type Folder } from '@hcengineering/drive'
+  import drive, { Drive, type Folder } from '@hcengineering/drive'
   import { createQuery } from '@hcengineering/presentation'
   import { showMenu } from '@hcengineering/view-resources'
 
@@ -34,11 +34,13 @@
   $: query.query(drive.class.Folder, { _id }, (res) => {
     ;[object] = res
   })
+
+  $: space = object?.space as Ref<Drive>
 </script>
 
 {#if object}
   <FolderBrowser
-    space={object.space}
+    {space}
     parent={object._id}
     {object}
     {embedded}

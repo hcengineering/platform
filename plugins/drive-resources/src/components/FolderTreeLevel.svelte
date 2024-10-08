@@ -33,7 +33,7 @@
   const dispatch = createEventDispatcher()
 
   function getDescendants (obj: Ref<Folder>): Ref<Folder>[] {
-    return (descendants.get(obj) ?? []).sort((a, b) => a.name.localeCompare(b.name)).map((p) => p._id)
+    return (descendants.get(obj) ?? []).sort((a, b) => a.title.localeCompare(b.title)).map((p) => p._id)
   }
 
   async function getActions (obj: Folder): Promise<Action[]> {
@@ -67,7 +67,7 @@
     <TreeItem
       _id={doc._id}
       folderIcon
-      title={doc.name}
+      title={doc.title}
       selected={selected === doc._id}
       isFold
       empty={desc.length === 0}

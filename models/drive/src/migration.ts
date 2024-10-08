@@ -14,7 +14,7 @@
 //
 
 import core, { type Blob, type Ref, DOMAIN_BLOB, generateId, toIdMap } from '@hcengineering/core'
-import type { File, FileVersion } from '@hcengineering/drive'
+import type { Drive, File, FileVersion, Resource } from '@hcengineering/drive'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -56,8 +56,8 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
       collection: 'versions',
       modifiedOn: file.modifiedOn,
       modifiedBy: file.modifiedBy,
-      space: file.space,
-      name: exfile.name,
+      space: file.space as Ref<Drive>,
+      title: exfile.title,
       file: blob._id,
       size: blob.size,
       lastModified: blob.modifiedOn,
@@ -86,12 +86,52 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
   }
 }
 
+async function renameFields (client: MigrationClient): Promise<void> {
+  const resources = await client.find<Resource>(DOMAIN_DRIVE, {
+    _class: { $in: [drive.class.Resource, drive.class.File, drive.class.Folder] },
+    name: { $exists: true }
+  })
+
+  for (const resource of resources) {
+    await client.update(
+      DOMAIN_DRIVE,
+      { _id: resource._id },
+      {
+        $rename: {
+          name: 'title'
+        }
+      }
+    )
+  }
+
+  const versions = await client.find<FileVersion>(DOMAIN_DRIVE, {
+    _class: drive.class.FileVersion,
+    name: { $exists: true }
+  })
+
+  for (const version of versions) {
+    await client.update(
+      DOMAIN_DRIVE,
+      { _id: version._id },
+      {
+        $rename: {
+          name: 'title'
+        }
+      }
+    )
+  }
+}
+
 export const driveOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, driveId, [
       {
         state: 'file-versions',
         func: migrateFileVersions
+      },
+      {
+        state: 'renameFields',
+        func: renameFields
       }
     ])
   },

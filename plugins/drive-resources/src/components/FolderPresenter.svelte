@@ -37,20 +37,20 @@
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
     <DocNavLink {disabled} object={value} {accent} {noUnderline}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
         {#if shouldShowAvatar}
           <div class="icon">
             <Icon icon={FolderIcon} size={'small'} fill="var(--global-accent-IconColor)" />
           </div>
         {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          {value.name}
+          {value.title}
         </span>
       </div>
     </DocNavLink>
   {:else if type === 'text'}
-    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-      {value.name}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>
+      {value.title}
     </span>
   {/if}
 {/if}

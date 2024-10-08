@@ -64,7 +64,7 @@ export class WorkspaceClient {
     if (blob !== undefined) {
       const data = {
         file: uuid as Ref<Blob>,
-        name,
+        title: name,
         size: blob.size,
         type: blob.contentType,
         lastModified: blob.modifiedOn,

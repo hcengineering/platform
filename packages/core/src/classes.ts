@@ -76,7 +76,7 @@ export interface Doc<S extends Space = Space> extends Obj {
 
 export interface Card extends Doc {
   title: string
-  description: CollaborativeDoc | null
+  description?: CollaborativeDoc | null
   identifier?: string
   parent?: Ref<Card> | null
 }

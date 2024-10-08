@@ -77,7 +77,7 @@
         async (uuid, name, file, path, metadata) => {
           const data = {
             file: uuid,
-            name,
+            title: name,
             size: file.size,
             type: file.type,
             lastModified: file instanceof File ? file.lastModified : Date.now(),
@@ -108,7 +108,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <a class="no-line" href={getFileUrl(version.file, object.name)} download={object.name} bind:this={download}>
+      <a class="no-line" href={getFileUrl(version.file, object.title)} download={object.title} bind:this={download}>
         <Button
           icon={IconDownload}
           iconProps={{ size: 'medium' }}
