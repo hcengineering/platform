@@ -730,10 +730,15 @@ async function createNotifyContext (
   const contextsCache: ContextsCache = control.cache.get(ContextsCacheKey) ?? {
     contexts: new Map<string, Ref<DocNotifyContext>>()
   }
-  const cachedId = contextsCache.contexts.get(`${objectId}_${receiver._id}`)
+  const cacheKey = `${objectId}_${receiver._id}`
+  const cachedId = contextsCache.contexts.get(cacheKey)
 
   if (cachedId !== undefined) {
-    return cachedId
+    if (control.removedMap.has(cachedId)) {
+      contextsCache.contexts.delete(cacheKey)
+    } else {
+      return cachedId
+    }
   }
 
   const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, receiver.space, {
@@ -748,7 +753,7 @@ async function createNotifyContext (
     lastViewedTimestamp: sender === receiver._id ? updateTimestamp : undefined
   })
 
-  contextsCache.contexts.set(`${objectId}_${receiver._id}`, createTx.objectId)
+  contextsCache.contexts.set(cacheKey, createTx.objectId)
   control.cache.set(ContextsCacheKey, contextsCache)
   await ctx.with('apply', {}, () => control.apply(control.ctx, [createTx]))
   if (receiver.account?.email !== undefined) {
@@ -1346,6 +1351,26 @@ async function collectionCollabDoc (
   return res
 }
 
+async function removeContextNotifications (control: TriggerControl, notifyContextRefs: Ref<DocNotifyContext>[]): Promise<Tx[]> {
+  const inboxNotifications = await control.findAll(
+    control.ctx,
+    notification.class.InboxNotification,
+    {
+      docNotifyContext: { $in: notifyContextRefs }
+    },
+    {
+      projection: {
+        _id: 1,
+        _class: 1,
+        space: 1
+      }
+    }
+  )
+
+  return inboxNotifications.map((notification) =>
+    control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id)
+  )
+}
 async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const mixin = hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
@@ -1374,24 +1399,8 @@ async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerCont
 
   const notifyContextRefs = notifyContexts.map(({ _id }) => _id)
 
-  const inboxNotifications = await control.findAll(
-    control.ctx,
-    notification.class.InboxNotification,
-    {
-      docNotifyContext: { $in: notifyContextRefs }
-    },
-    {
-      projection: {
-        _id: 1,
-        _class: 1,
-        space: 1
-      }
-    }
-  )
-
-  inboxNotifications.forEach((notification) => {
-    res.push(control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id))
-  })
+  const txes = await removeContextNotifications(control, notifyContextRefs)
+  res.push(...txes)
   notifyContexts.forEach((context) => {
     res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
   })
@@ -1908,6 +1917,17 @@ async function OnDocRemove (originTx: TxCUD<Doc>, control: TriggerControl): Prom
       const txes = await OnActivityMessageRemove(message, control)
       res.push(...txes)
     }
+  } else if (control.hierarchy.isDerived(tx.objectClass, notification.class.DocNotifyContext)) {
+    const contextsCache: ContextsCache | undefined = control.cache.get(ContextsCacheKey)
+    if (contextsCache !== undefined) {
+      for (const [key, value] of contextsCache.contexts.entries()) {
+        if (value === tx.objectId) {
+          contextsCache.contexts.delete(key)
+        }
+      }
+    }
+
+    return await removeContextNotifications(control, [tx.objectId as Ref<DocNotifyContext>])
   }
 
   const txes = await removeCollaboratorDoc(tx, control)
