@@ -132,7 +132,7 @@
         ...generateSkinToneEmojis(0x1f44c),
         ...generateSkinToneEmojis(0x1f64c),
         ...generateSkinToneEmojis(0x1f44f),
-        ...generateSkinToneEmojis(0x1f64f),
+        ...generateSkinToneEmojis(0x1f64f)
       ],
       icon: Palette
     }
