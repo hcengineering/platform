@@ -324,7 +324,11 @@
         )
       }
 
-      if (loc.path[2] === loveId && $sidebarStore.widget === love.ids.VideoWidget && widgetState?.openedByUser !== true) {
+      if (
+        loc.path[2] === loveId &&
+        $sidebarStore.widget === love.ids.VideoWidget &&
+        widgetState?.openedByUser !== true
+      ) {
         minimizeSidebar()
       }
     } else {

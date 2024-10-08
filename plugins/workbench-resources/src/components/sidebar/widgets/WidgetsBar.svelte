@@ -33,7 +33,7 @@
     if (selected === widget._id) {
       minimizeSidebar(true)
     } else {
-      openWidget(widget, $sidebarStore.widgetsState.get(widget._id)?.data, {active: true, openedByUser: true})
+      openWidget(widget, $sidebarStore.widgetsState.get(widget._id)?.data, { active: true, openedByUser: true })
     }
   }
 

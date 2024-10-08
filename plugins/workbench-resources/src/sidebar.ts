@@ -98,7 +98,11 @@ function setSidebarStateToLocalStorage (state: SidebarState): void {
   )
 }
 
-export function openWidget (widget: Widget, data?: Record<string, any>, params?: { active: boolean, openedByUser: boolean }): void {
+export function openWidget (
+  widget: Widget,
+  data?: Record<string, any>,
+  params?: { active: boolean, openedByUser: boolean }
+): void {
   const state = get(sidebarStore)
   const { widgetsState } = state
   const widgetState = widgetsState.get(widget._id)

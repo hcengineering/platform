@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   export let count: number = 0
-  export let kind: 'primary' | 'simple' = 'primary'
+  export let kind: 'primary' | 'simple' | 'with-dot' = 'primary'
   export let size: 'xx-small' | 'x-small' | 'small' | 'medium' = 'small'
 
   const maxNumber = 9
@@ -31,9 +31,11 @@
 {/if}
 
 {#if kind === 'simple'}
-  <div class="notifyMarker {size} {kind}" >
-    ●
-  </div>
+  <div class="notifyMarker {size} {kind}" />
+{/if}
+
+{#if kind === 'with-dot'}
+  <div class="notifyMarker {size} {kind}">●</div>
 {/if}
 
 <style lang="scss">
@@ -46,6 +48,7 @@
     font-weight: 700;
 
     &.simple,
+    &.with-dot,
     &.primary {
       background-color: var(--global-higlight-Color);
       color: var(--global-on-accent-TextColor);
@@ -73,9 +76,9 @@
       font-size: 0.625rem;
     }
 
-    &.simple {
+    &.with-dot {
       font-weight: 400;
-      font-size: 0.375rem;
+      font-size: 0.25rem;
     }
   }
 </style>
