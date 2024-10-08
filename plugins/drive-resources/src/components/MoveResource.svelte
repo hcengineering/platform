@@ -32,7 +32,7 @@
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  let space: Ref<Drive> = value.space
+  let space: Ref<Drive> = value.space as Ref<Drive>
   let parent: Ref<Folder> = value.parent as Ref<Folder>
 
   async function save (): Promise<void> {

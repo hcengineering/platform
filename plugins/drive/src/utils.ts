@@ -51,7 +51,7 @@ export async function createFile (
   const versionId: Ref<FileVersion> = generateId()
 
   const fileId = await client.createDoc(drive.class.File, space, {
-    name: data.name,
+    title: data.title,
     parent,
     path,
     file: versionId,

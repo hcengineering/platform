@@ -39,7 +39,7 @@
   let descendants: Map<Ref<Folder>, Folder[]> = new Map<Ref<Folder>, Folder[]>()
 
   function getDescendants (obj: Ref<Folder>): Ref<Folder>[] {
-    return (descendants.get(obj) ?? []).sort((a, b) => a.name.localeCompare(b.name)).map((p) => p._id)
+    return (descendants.get(obj) ?? []).sort((a, b) => a.title.localeCompare(b.title)).map((p) => p._id)
   }
 
   let selected: Ref<Doc> | undefined
@@ -134,7 +134,7 @@
           _id={folder._id}
           folderIcon
           iconProps={{ fill: 'var(--global-accent-IconColor)' }}
-          title={folder.name}
+          title={folder.title}
           selected
           isFold
           empty

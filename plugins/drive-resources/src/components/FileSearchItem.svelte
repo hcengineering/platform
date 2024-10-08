@@ -30,6 +30,6 @@
     <Icon {icon} size={'medium'} />
   </div>
   <span class="overflow-label">
-    {value.name}
+    {value.title}
   </span>
 </div>

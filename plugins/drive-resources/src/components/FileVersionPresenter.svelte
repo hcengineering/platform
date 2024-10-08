@@ -43,7 +43,7 @@
       {
         file: value.file,
         contentType: value.type,
-        name: value.name,
+        name: value.title,
         metadata: value.metadata
       },
       'centered'
