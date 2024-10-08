@@ -192,7 +192,15 @@
   async function saveAttachment (doc: Attachment, objectId: Ref<Doc> | undefined, op?: TxOperations): Promise<void> {
     if (space === undefined || objectId === undefined || _class === undefined) return
     newAttachments.delete(doc._id)
-    await (op ?? client).addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    await (op ?? client).addCollection(
+      attachment.class.Attachment,
+      space,
+      objectId,
+      _class,
+      'attachments',
+      doc,
+      doc._id
+    )
   }
 
   async function fileSelected (): Promise<void> {
