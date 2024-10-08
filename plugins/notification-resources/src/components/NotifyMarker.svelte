@@ -31,7 +31,9 @@
 {/if}
 
 {#if kind === 'simple'}
-  <div class="notifyMarker {size} {kind}" />
+  <div class="notifyMarker {size} {kind}" >
+    ●
+  </div>
 {/if}
 
 <style lang="scss">
@@ -69,6 +71,11 @@
       width: 1.25rem;
       height: 1.25rem;
       font-size: 0.625rem;
+    }
+
+    &.simple {
+      font-weight: 400;
+      font-size: 0.375rem;
     }
   }
 </style>
