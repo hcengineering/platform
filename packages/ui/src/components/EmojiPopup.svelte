@@ -149,9 +149,11 @@
     })
   }
 
-  function generateSkinToneEmojis(baseEmoji: number): string[] {
+  function generateSkinToneEmojis (baseEmoji: number): string[] {
     const skinTones = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff]
-    return skinTones.map(skinTone => String.fromCodePoint(baseEmoji, skinTone))
+    return skinTones.map((skinTone) => {
+      return String.fromCodePoint(baseEmoji, skinTone)
+    })
   }
 
   function handleScrollToCategory (categoryId: string) {
