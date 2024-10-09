@@ -433,7 +433,7 @@
       "request": "launch",
       "args": ["src/index.ts"],
       "env": {
-        "PORT": "4007",
+        "PORT": "4017",
         "SECRET": "secret",
         "MONGO_URL": "mongodb://localhost:27017",
         "MINIO_ENDPOINT": "localhost",

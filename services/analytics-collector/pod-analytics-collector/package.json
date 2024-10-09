@@ -57,6 +57,8 @@
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/analytics-collector-assets": "^0.6.0",
     "@hcengineering/analytics-service": "^0.6.0",
+    "@hcengineering/calendar": "^0.6.2",
+    "@hcengineering/calendar-assets": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/chunter-assets": "^0.6.18",
     "@hcengineering/client": "^0.6.18",

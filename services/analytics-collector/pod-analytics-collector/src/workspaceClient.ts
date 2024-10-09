@@ -23,8 +23,6 @@ export class WorkspaceClient {
   client: Client | undefined
   opClient: Promise<TxOperations> | TxOperations
 
-  initializePromise: Promise<void> | undefined = undefined
-
   constructor (
     readonly ctx: MeasureContext,
     readonly workspace: WorkspaceId

@@ -14,6 +14,7 @@
 //
 
 import { analyticsCollectorId } from '@hcengineering/analytics-collector'
+import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
 import { coreId } from '@hcengineering/core'
@@ -32,6 +33,7 @@ import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 import analyticsCollectorEn from '@hcengineering/analytics-collector-assets/lang/en.json'
+import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
 import coreEng from '@hcengineering/core/lang/en.json'
@@ -57,12 +59,14 @@ export function registerLoaders (): void {
   addStringsLoader(platformId, async (lang: string) => platformEng)
 
   addStringsLoader(analyticsCollectorId, async (lang: string) => analyticsCollectorEn)
+  addStringsLoader(calendarId, async (lang: string) => calendarEn)
   addStringsLoader(chunterId, async (lang: string) => chunterEn)
   addStringsLoader(contactId, async (lang: string) => contactEn)
   addStringsLoader(documentId, async (lang: string) => documentEn)
   addStringsLoader(driveId, async (lang: string) => driveEn)
   addStringsLoader(hrId, async (lang: string) => hrEn)
   addStringsLoader(leadId, async (lang: string) => leadEn)
+  addStringsLoader(loveId, async (lang: string) => loveEn)
   addStringsLoader(notificationId, async (lang: string) => notificationEn)
   addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
   addStringsLoader(recruitId, async (lang: string) => recruitEn)
@@ -71,5 +75,4 @@ export function registerLoaders (): void {
   addStringsLoader(trackerId, async (lang: string) => trackerEn)
   addStringsLoader(viewId, async (lang: string) => viewEn)
   addStringsLoader(workbenchId, async (lang: string) => workbenchEn)
-  addStringsLoader(loveId, async (lang: string) => loveEn)
 }
