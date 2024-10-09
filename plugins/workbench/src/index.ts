@@ -87,7 +87,6 @@ export interface WidgetPreference extends Preference {
 export interface WidgetTab {
   id: string
   name?: string
-  nameIntl?: IntlString
   icon?: Asset | AnySvelteComponent
   iconComponent?: AnyComponent
   iconProps?: Record<string, any>
