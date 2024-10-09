@@ -14,6 +14,7 @@
 //
 
 import { type Blob, type MeasureContext, type StorageIterator, type WorkspaceId } from '@hcengineering/core'
+import { PlatformError, unknownError } from '@hcengineering/platform'
 import { type Readable } from 'stream'
 
 export type ListBlobResult = Omit<Blob, 'contentType' | 'version'>
@@ -77,7 +78,7 @@ export interface StorageAdapterEx extends StorageAdapter {
     workspaceId: WorkspaceId,
     objectName: string,
     provider?: string
-  ) => Promise<void>
+  ) => Promise<Blob>
 
   find: (ctx: MeasureContext, workspaceId: WorkspaceId) => StorageIterator
 }
@@ -87,7 +88,9 @@ export interface StorageAdapterEx extends StorageAdapter {
  */
 export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
   defaultAdapter: string = ''
-  async syncBlobFromStorage (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<void> {}
+  async syncBlobFromStorage (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob> {
+    throw new PlatformError(unknownError('Method not implemented'))
+  }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 

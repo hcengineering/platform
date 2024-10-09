@@ -51,7 +51,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     workspaceId: WorkspaceId,
     objectName: string,
     providerId?: string
-  ): Promise<void> {
+  ): Promise<Blob> {
     let current: Blob | undefined = (
       await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: objectName as Ref<Blob> }, { limit: 1 })
     ).shift()
@@ -74,6 +74,9 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
       }
       await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [stat])
       // TODO:  We need to send notification about Blob is changed.
+      return stat
+    } else {
+      throw new NoSuchKeyError('No such blob found')
     }
   }
 
