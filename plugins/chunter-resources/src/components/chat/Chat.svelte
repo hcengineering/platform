@@ -58,6 +58,7 @@
 
   let object: Doc | undefined = undefined
   let replacedPanel: HTMLElement
+  let needRestoreLoc = true
 
   const unsubcribe = location.subscribe((loc) => {
     syncLocation(loc)
@@ -104,10 +105,14 @@
       currentSpecial = undefined
       selectedData = undefined
       object = undefined
-      restoreLocation(loc, chunterId)
+      if (needRestoreLoc) {
+        needRestoreLoc = false
+        restoreLocation(loc, chunterId)
+      }
       return
     }
 
+    needRestoreLoc = false
     currentSpecial = navigatorModel?.specials?.find((special) => special.id === id)
 
     if (currentSpecial !== undefined) {

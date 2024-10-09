@@ -287,6 +287,7 @@
       updateSelectedDate()
       updateScrollData()
       updateDownButtonVisibility($metadataStore, messages, scrollDiv)
+      loadMore()
     }
   }
 
