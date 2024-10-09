@@ -87,7 +87,7 @@
 
 <ModernTab
   label={tab.name}
-  labelIntl={tab.nameIntl ?? widget.label}
+  labelIntl={widget.label}
   highlighted={selected}
   orientation="vertical"
   kind={tab.isPinned ? 'secondary' : 'primary'}
