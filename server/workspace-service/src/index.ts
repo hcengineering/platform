@@ -68,12 +68,6 @@ export function serveWorkspaceAccount (
   }
   setMetadata(serverClientPlugin.metadata.Endpoint, accountUri)
 
-  const transactorUri = process.env.TRANSACTOR_URL
-  if (transactorUri === undefined) {
-    console.log('Please provide transactor url')
-    process.exit(1)
-  }
-
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.log('Please provide server secret')

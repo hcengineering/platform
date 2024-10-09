@@ -77,7 +77,6 @@ import view, { viewId, createModel as viewModel } from '@hcengineering/model-vie
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
 
-import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
 
@@ -256,7 +255,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: inventory.string.ConfigLabel,
         description: inventory.string.ConfigDescription,
-        enabled: false,
+        enabled: true,
         beta: false,
         classFilter: defaultFilter
       }
@@ -267,8 +266,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       {
         label: hr.string.ConfigLabel,
         description: hr.string.ConfigDescription,
-        enabled: false,
-        beta: true,
+        enabled: true,
+        beta: false,
         icon: hr.icon.Structure,
         classFilter: defaultFilter
       }
@@ -292,7 +291,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: document.string.ConfigLabel,
         description: document.string.ConfigDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: document.icon.DocumentApplication,
         classFilter: defaultFilter
       }
@@ -343,7 +342,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         label: github.string.ConfigLabel,
         description: github.string.ConfigDescription,
         enabled: true,
-        beta: true,
+        beta: false,
         icon: github.icon.Github
       }
     ],
@@ -426,7 +425,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverRequestModel, serverRequestId],
     [serverViewModel, serverViewId],
     [serverActivityModel, serverActivityId],
-    [serverTranslate, translateId],
     [serverDocumentModel, serverDocumentId],
     [serverGithubModel, serverGithubId],
     [serverLoveModel, serverLoveId],

@@ -59,12 +59,13 @@
   fillDefaults(hierarchy, object, contact.class.Organization)
 
   async function createOrganization (): Promise<void> {
+    const op = client.apply()
     await updateMarkup(object.description, { description })
-    await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
-    await descriptionBox.createAttachments(id)
+    await op.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
+    await descriptionBox.createAttachments(id, op)
 
     for (const channel of channels) {
-      await client.addCollection(
+      await op.addCollection(
         contact.class.Channel,
         contact.space.Contacts,
         id,
@@ -77,8 +78,9 @@
       )
     }
     if (onCreate !== undefined) {
-      await onCreate?.(id, client)
+      await onCreate?.(id, op)
     }
+    await op.commit()
     Analytics.handleEvent(ContactEvents.CompanyCreated, { id })
     dispatch('close', id)
   }

@@ -349,9 +349,20 @@ export async function generateDocUpdateMessages (
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
-          objectCache?.docs?.set(tx.objectId, doc)
+        }
+        if (doc === undefined) {
+          const isAttachedDoc = hierarchy.isDerived(tx.objectClass, core.class.AttachedDoc)
+          const createTx = isAttachedDoc
+            ? (await control.findAll(ctx, core.class.TxCollectionCUD, { 'tx.objectId': tx.objectId }, { limit: 1 }))[0]
+            : (await control.findAll(ctx, core.class.TxCreateDoc, { objectId: tx.objectId }, { limit: 1 }))[0]
+
+          doc =
+            createTx !== undefined
+              ? TxProcessor.createDoc2Doc(TxProcessor.extractTx(createTx) as TxCreateDoc<Doc>)
+              : undefined
         }
         if (doc !== undefined) {
+          objectCache?.docs?.set(tx.objectId, doc)
           return await ctx.with(
             'pushDocUpdateMessages',
             {},

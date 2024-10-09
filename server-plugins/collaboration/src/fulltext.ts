@@ -27,20 +27,18 @@ import core, {
   collaborativeDocParse,
   getFullTextIndexableAttributes
 } from '@hcengineering/core'
+import { ContentTextAdapter, DbAdapter, IndexedDoc, StorageAdapter } from '@hcengineering/server-core'
+
 import {
-  ContentTextAdapter,
-  DbAdapter,
   DocUpdateHandler,
   FullTextPipeline,
   FullTextPipelineStage,
-  IndexedDoc,
-  StorageAdapter,
   collabStageId,
   contentStageId,
   docKey,
   docUpdKey,
   fieldStateId
-} from '@hcengineering/server-core'
+} from '@hcengineering/server-indexer'
 
 /**
  * @public

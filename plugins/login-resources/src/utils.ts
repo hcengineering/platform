@@ -160,7 +160,8 @@ export async function signUpOtp (email: string): Promise<[Status, OtpInfo | unde
 }
 
 export async function createWorkspace (
-  workspaceName: string
+  workspaceName: string,
+  region?: string
 ): Promise<[Status, (LoginInfo & { workspace: string }) | undefined]> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
@@ -179,7 +180,7 @@ export async function createWorkspace (
 
   const request = {
     method: 'createWorkspace',
-    params: [workspaceName]
+    params: [workspaceName, region]
   }
 
   try {
@@ -288,6 +289,53 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 
   const request = {
     method: 'getAccountInfoByToken',
+    params: [] as any[]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error != null) {
+      throw new PlatformError(result.error)
+    }
+    return result.result
+  } catch (err: any) {
+    Analytics.handleError(err)
+  }
+}
+
+export interface RegionInfo {
+  region: string
+  name: string
+}
+
+export async function getRegionInfo (doNavigate: boolean = true): Promise<RegionInfo[] | undefined> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
+  if (token === undefined) {
+    if (doNavigate) {
+      const loc = getCurrentLocation()
+      loc.path[1] = 'login'
+      loc.path.length = 2
+      navigate(loc)
+    }
+    return
+  }
+
+  const request = {
+    method: 'getRegionInfo',
     params: [] as any[]
   }
 

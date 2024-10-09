@@ -156,9 +156,9 @@
     },
     {
       "commandKind": "phased",
-      "name": "revalidate",
+      "name": "dorevalidate",
       "phases": ["_phase:validate"],
-      "summary": "revalidate",
+      "summary": "dorevalidate",
       "enableParallelism": true,
       "incremental": false
     },
@@ -279,6 +279,14 @@
       "description": "Clean typescript incremental cache",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "find .|grep tsconfig.tsbuildinfo | xargs rm | pwd"
+    }, 
+    {
+      "commandKind": "global",
+      "name": "revalidate",
+      "summary": "Clean Validate cache and to validate again",
+      "description": "Clean typescript incremental cache",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "find .|grep tsBuildInfoFile.info | xargs rm | pwd && rush dorevalidate"
     },    
     {
       "commandKind": "global",
@@ -287,6 +295,14 @@
       "description": "show model version",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "npx node ./common/scripts/show_version.js"
+    },
+    {
+      "commandKind": "global",
+      "name": "show-model",
+      "summary": "show model",
+      "description": "show model",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./models/all && rushx show-model"
     },
     {
       "commandKind": "global",

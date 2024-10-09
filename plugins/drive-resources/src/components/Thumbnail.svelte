@@ -44,13 +44,13 @@
 {#if isFolder}
   <Icon icon={IconFolderThumbnail} size={'full'} fill={'var(--global-no-priority-PriorityColor)'} />
 {:else if previewRef != null && isImage && !isError}
-  {#await getBlobRef(previewRef, object.name, sizeToWidth(size)) then blobSrc}
+  {#await getBlobRef(previewRef, object.title, sizeToWidth(size)) then blobSrc}
     <img
       draggable="false"
       class="img-fit"
       src={blobSrc.src}
       srcset={blobSrc.srcset}
-      alt={object.name}
+      alt={object.title}
       on:error={() => {
         isError = true
       }}
@@ -58,7 +58,7 @@
   {/await}
 {:else}
   <div class="flex-center ext-icon">
-    {extensionIconLabel(object.name)}
+    {extensionIconLabel(object.title)}
   </div>
 {/if}
 

@@ -506,6 +506,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-indexer",
+      "projectFolder": "server/indexer",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/server-token",
       "projectFolder": "server/token",
       "shouldPublish": true
@@ -1524,16 +1529,6 @@
     {
       "packageName": "@hcengineering/server-request-resources",
       "projectFolder": "server-plugins/request-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/translate",
-      "projectFolder": "server/translate",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-server-translate",
-      "projectFolder": "models/server-translate",
       "shouldPublish": false
     },
     {

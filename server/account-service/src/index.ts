@@ -16,7 +16,6 @@ import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
-import serverClientPlugin from '@hcengineering/server-client'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
@@ -77,15 +76,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  const initWS = process.env.INIT_WORKSPACE
-  if (initWS !== undefined) {
-    setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
-  }
   const initScriptUrl = process.env.INIT_SCRIPT_URL
   if (initScriptUrl !== undefined) {
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
   }
-  setMetadata(serverClientPlugin.metadata.UserAgent, 'AccountService')
 
   const accountsDb = getAccountDB(dbUrl)
 

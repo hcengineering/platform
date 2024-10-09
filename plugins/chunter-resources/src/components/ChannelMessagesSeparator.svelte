@@ -19,7 +19,7 @@
   export let label: IntlString
   export let params: any = undefined
 
-  export let element: HTMLDivElement | undefined = undefined
+  export let element: HTMLDivElement | undefined | null = undefined
 </script>
 
 <div class="w-full text-sm flex-center whitespace-nowrap" bind:this={element}>

@@ -17,8 +17,8 @@
   import { Status, Severity, OK } from '@hcengineering/platform'
 
   import Form from './Form.svelte'
-  import { createWorkspace, getAccount, goTo, setLoginInfo } from '../utils'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { createWorkspace, getAccount, getRegionInfo, goTo, setLoginInfo, type RegionInfo } from '../utils'
+  import { getCurrentLocation, navigate, DropdownLabels } from '@hcengineering/ui'
   import login from '../plugin'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
@@ -40,9 +40,13 @@
   let status: Status<any> = OK
 
   let account: LoginInfo | undefined = undefined
+  let regions: RegionInfo[] = []
+  let selectedRegion: string = ''
 
   onMount(async () => {
     account = await getAccount()
+    regions = (await getRegionInfo()) ?? []
+    selectedRegion = regions[0]?.region
     if (account?.confirmed === false) {
       const loc = getCurrentLocation()
       loc.path[1] = 'confirmationSend'
@@ -56,17 +60,23 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace)
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion)
       status = loginStatus
 
       if (result !== undefined) {
-        setLoginInfo(result)
+        setLoginInfo(result as any)
 
         navigate({ path: [workbenchId, result.workspace] })
       }
     }
   }
 </script>
+
+{#if regions.length > 1}
+  <div class="flex flex-reverse p-3">
+    <DropdownLabels bind:selected={selectedRegion} items={regions.map((it) => ({ id: it.region, label: it.name }))} />
+  </div>
+{/if}
 
 <Form
   caption={login.string.CreateWorkspace}

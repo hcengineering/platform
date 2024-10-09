@@ -286,7 +286,7 @@ test.describe('Channel tests', () => {
 
   test('Check if user can copy message', async ({ page }) => {
     const baseURL = process.env.PLATFORM_URI ?? 'http://localhost:8083'
-    const expectedUrl = `${baseURL}/workbench/${data.workspaceName}/chunter/chunter:space:Random|chunter:class:Channel?message=`
+    const expectedUrl = `${baseURL}/workbench/${data.workspaceName}/chunter/chunter%3Aspace%3ARandom%7Cchunter%3Aclass%3AChannel?message=`
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('random')
     await channelPage.sendMessage('Test message')
@@ -439,28 +439,19 @@ test.describe('Channel tests', () => {
       await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
     })
 
-    await test.step('Join channel from a leaved channel page', async () => {
-      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-      await channelPage.clickJoinChannelButton()
-      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
-    })
-
-    await test.step('Leave channel #2', async () => {
-      await channelPage.makeActionWithChannelInMenu(data.channelName, 'Leave channel')
-    })
-
-    await test.step('Open another channel and then check that leaved channel is removed from left menu', async () => {
-      await channelPage.clickChooseChannel('random')
+    await test.step('Join channel from channels page', async () => {
       await channelPage.checkIfChannelDefaultExist(false, data.channelName)
-    })
-
-    await test.step('Join channel from a channels table', async () => {
       await channelPage.clickChannelTab()
       await channelPage.checkIfChannelTableExist(data.channelName, true)
       await channelPage.clickJoinChannelButton()
       await channelPage.checkIfChannelDefaultExist(true, data.channelName)
       await channelPage.clickChooseChannel(data.channelName)
       await channelPage.checkMessageExist('Test message', true, 'Test message')
+    })
+
+    await test.step('Open another channel and check that joined channel is visible', async () => {
+      await channelPage.clickChooseChannel('random')
+      await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     })
   })
 

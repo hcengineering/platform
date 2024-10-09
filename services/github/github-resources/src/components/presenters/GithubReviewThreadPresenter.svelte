@@ -105,7 +105,7 @@
         label={getEmbeddedLabel('reviewed')}
       />
     </svelte:fragment>
-    <svelte:fragment slot="content">
+    <svelte:fragment slot="content" let:readonly>
       <div class="file-content">
         {#if comments.length > 0}
           <Component
@@ -127,7 +127,11 @@
               <ReviewCommentPresenter {comment} />
             {/each}
           </div>
-          <ReferenceInput showSend={true} showHeader showActions on:message={onMessage} />
+          {#if !readonly}
+            <div class="ml-4 mr-4">
+              <ReferenceInput showSend={true} showHeader showActions on:message={onMessage} />
+            </div>
+          {/if}
           <div class="p-2 flex-row-center flex-grow">
             {#if githubConfiguration.ResolveThreadSupported}
               <Button

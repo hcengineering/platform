@@ -4,6 +4,7 @@ const { spawn } = require('child_process')
 
 const esbuild = require('esbuild')
 const { copy } = require('esbuild-plugin-copy')
+const fs = require('fs')
 
 async function execProcess(cmd, logFile, args, buildDir= '.build') {
   let compileRoot = dirname(dirname(process.argv[1]))
@@ -89,6 +90,36 @@ function collectFiles(source) {
   return result
 }
 
+function collectFileStats(source, result) {  
+  if( !existsSync(source)) {
+    return
+  }
+  const files = readdirSync(source)
+  for (const f of files) {
+    const sourceFile = join(source, f)
+    const stat = lstatSync(sourceFile)
+    if (stat.isDirectory()) {
+      collectFileStats(sourceFile, result)
+    } else {
+      let ext = basename(sourceFile)
+      if (!ext.endsWith('.ts') && !ext.endsWith('.js') && !ext.endsWith('.svelte')) {
+        continue
+      }
+      result[sourceFile] = stat.mtime.getTime()
+    }
+  }
+}
+
+function cleanNonModified(before, after) {
+  for( const [k,v] of Object.entries(before)) {
+    if( after[k] === v) {
+      // Same modify date, looks like not modified
+      console.log('clean file', k)
+      rmSync(k)
+    }
+  }
+}
+
 switch (args[0]) {
   case 'ui': {
     console.log('Nothing to compile to UI')
@@ -97,9 +128,15 @@ switch (args[0]) {
   case 'transpile': {
     const filesToTranspile = collectFiles(join(process.cwd(), args[1]))
     let st = Date.now()  
-    performESBuild(filesToTranspile)
+    const before = {}
+    const after = {}
+    collectFileStats('lib', before)
+
+    performESBuild(filesToTranspile)    
     .then(() => {
       console.log("Transpile time: ", Date.now() - st)
+      collectFileStats('lib', after)
+      cleanNonModified(before, after)
     })
     break
   }
@@ -125,7 +162,7 @@ switch (args[0]) {
     break
   }
 }
-async function performESBuild(filesToTranspile) {  
+async function performESBuild(filesToTranspile) {
   await esbuild.build({
     entryPoints: filesToTranspile,
     bundle: false,

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Ref } from '@hcengineering/core'
+  import { type Ref, type Space } from '@hcengineering/core'
   import { type Drive, type Folder } from '@hcengineering/drive'
   import { uploadFilesToDrive } from '../utils'
 

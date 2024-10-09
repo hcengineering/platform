@@ -30,7 +30,6 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "ts-node": "^10.8.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -45,9 +44,6 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/rpc": "^0.6.5",
-    "@hcengineering/middleware": "^0.6.0",
-    "@hcengineering/text": "^0.6.5",
-    "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0"
   }
 }

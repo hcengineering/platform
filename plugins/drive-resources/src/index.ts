@@ -44,14 +44,14 @@ import { restoreFileVersion, showCreateFolderPopup, showRenameResourcePopup } fr
 
 const toFileObjectSearchResult = (e: WithLookup<File>): ObjectSearchResult => ({
   doc: e,
-  title: e.name,
+  title: e.title,
   icon: drive.icon.File,
   component: FileSearchItem
 })
 
 const toFolderObjectSearchResult = (e: WithLookup<Folder>): ObjectSearchResult => ({
   doc: e,
-  title: e.name,
+  title: e.title,
   icon: drive.icon.Folder,
   component: FolderSearchItem
 })
@@ -62,7 +62,7 @@ async function queryFile (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q: DocumentQuery<File> = { name: { $like: `%${search}%` } }
+  const q: DocumentQuery<File> = { title: { $like: `%${search}%` } }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
@@ -81,7 +81,7 @@ async function queryFolder (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q: DocumentQuery<Folder> = { name: { $like: `%${search}%` } }
+  const q: DocumentQuery<Folder> = { title: { $like: `%${search}%` } }
   if (filter?.in !== undefined || filter?.nin !== undefined) {
     q._id = {}
     if (filter.in !== undefined) {
@@ -111,12 +111,12 @@ async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): P
   for (const file of files) {
     const version = file.$lookup?.file
     if (version != null) {
-      const href = getFileUrl(version.file, version.name)
+      const href = getFileUrl(version.file, version.title)
       const link = document.createElement('a')
       link.style.display = 'none'
       link.target = '_blank'
       link.href = href
-      link.download = file.name
+      link.download = file.title
       link.click()
     }
   }

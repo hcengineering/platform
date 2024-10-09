@@ -6,8 +6,8 @@ import {
   type MetricsData,
   toWorkspaceString
 } from '@hcengineering/core'
-import os from 'os'
-import { type SessionManager } from './types'
+import { type SessionManager } from '@hcengineering/server-core'
+import os from 'node:os'
 
 /**
  * @public

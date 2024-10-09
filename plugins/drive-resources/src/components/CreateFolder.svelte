@@ -53,7 +53,7 @@
     }
 
     const data: Omit<Data<Folder>, 'path'> = {
-      name: getTitle(name),
+      title: getTitle(name),
       parent: _parent ?? drive.ids.Root
     }
 

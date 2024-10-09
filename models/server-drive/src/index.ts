@@ -43,14 +43,14 @@ export function createModel (builder: Builder): void {
   builder.mixin(drive.class.File, core.class.Class, serverCore.mixin.SearchPresenter, {
     searchConfig: {
       icon: drive.icon.File,
-      title: 'name'
+      title: 'title'
     }
   })
 
   builder.mixin(drive.class.Folder, core.class.Class, serverCore.mixin.SearchPresenter, {
     searchConfig: {
       icon: drive.icon.Folder,
-      title: 'name'
+      title: 'title'
     }
   })
 }

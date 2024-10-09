@@ -48,7 +48,7 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import { getServerPipeline } from '@hcengineering/server-pipeline'
+import { getServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-service'
@@ -163,10 +163,6 @@ export function devTool (
     return elasticUrl
   }
 
-  const initWS = process.env.INIT_WORKSPACE
-  if (initWS !== undefined) {
-    setMetadata(toolPlugin.metadata.InitWorkspace, initWS)
-  }
   const initScriptUrl = process.env.INIT_SCRIPT_URL
   if (initScriptUrl !== undefined) {
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
@@ -1568,6 +1564,9 @@ export function devTool (
                 workspaceName: workspace.workspaceName ?? '',
                 workspaceUrl: workspace.workspaceUrl ?? ''
               }
+
+              registerServerPlugins()
+              registerStringLoaders()
 
               const { pipeline } = await getServerPipeline(toolCtx, txes, mongodbUri ?? dbUrl, dbUrl, wsUrl)
 

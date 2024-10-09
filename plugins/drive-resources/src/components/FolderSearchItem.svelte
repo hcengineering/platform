@@ -26,6 +26,6 @@
     <Icon icon={drive.icon.Folder} size={'medium'} />
   </div>
   <span class="overflow-label">
-    {value.name}
+    {value.title}
   </span>
 </div>

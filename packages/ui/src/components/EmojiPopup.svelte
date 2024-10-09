@@ -12,6 +12,7 @@
   import Places from './icons/Places.svelte'
   import Symbols from './icons/Symbols.svelte'
   import Work from './icons/Work.svelte'
+  import Palette from './icons/Palette.svelte'
 
   import { tooltip } from '../tooltips'
   import { AnySvelteComponent, emojiSP } from '../types'
@@ -50,9 +51,9 @@
         String.fromCodePoint(0x0031, 0xfe0f, 0x20e3),
         String.fromCodePoint(0x0032, 0xfe0f, 0x20e3),
         String.fromCodePoint(0x0033, 0xfe0f, 0x20e3),
-        String.fromCodePoint(0x1f44b, 0x1f3fc),
-        String.fromCodePoint(0x1f44d, 0x1f3fc),
-        String.fromCodePoint(0x1f44c, 0x1f3fc),
+        String.fromCodePoint(0x1f44b),
+        String.fromCodePoint(0x1f44d),
+        String.fromCodePoint(0x1f44c),
         String.fromCodePoint(0x1f525),
         String.fromCodePoint(0x1f680)
       ],
@@ -121,6 +122,19 @@
         ...getEmojis(0x1f532, 0x1f53d)
       ],
       icon: Symbols
+    },
+    {
+      id: 'express',
+      label: plugin.string.ExpressYourself,
+      emojis: [
+        ...generateSkinToneEmojis(0x1f44b),
+        ...generateSkinToneEmojis(0x1f44d),
+        ...generateSkinToneEmojis(0x1f44c),
+        ...generateSkinToneEmojis(0x1f64c),
+        ...generateSkinToneEmojis(0x1f44f),
+        ...generateSkinToneEmojis(0x1f64f)
+      ],
+      icon: Palette
     }
   ]
 
@@ -131,6 +145,13 @@
       const str = postfix ? fromCodePoint(v + startCode, ...postfix) : fromCodePoint(v + startCode)
       if ([...str.matchAll(regex)].length > 0) return str
       return undefined
+    })
+  }
+
+  function generateSkinToneEmojis (baseEmoji: number): string[] {
+    const skinTones = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff]
+    return skinTones.map((skinTone) => {
+      return String.fromCodePoint(baseEmoji, skinTone)
     })
   }
 

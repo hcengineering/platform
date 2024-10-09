@@ -51,6 +51,7 @@
     "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-client": "^0.6.0",
     "@hcengineering/server-token": "^0.6.11",
-    "@hcengineering/server-core": "^0.6.1"
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-indexer": "^0.6.0"
   }
 }

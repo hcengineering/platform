@@ -13,16 +13,16 @@
 // limitations under the License.
 //
 import { groupByArray, MeasureContext } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
+import { getMetadata } from '@hcengineering/platform'
 import { getDBClient } from '@hcengineering/postgres'
 
 import { pbkdf2Sync } from 'crypto'
 
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres'
-import type { Account, AccountInfo, AccountDB, WorkspaceInfo } from './types'
 import { accountPlugin } from './plugin'
+import type { Account, AccountDB, AccountInfo, RegionInfo, WorkspaceInfo } from './types'
 
 /**
  * @public
@@ -99,7 +99,15 @@ export enum EndpointKind {
   External
 }
 
-export const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {
+const toTransactor = (line: string): { internalUrl: string, region: string, externalUrl: string } => {
+  const [internalUrl, externalUrl, region] = line
+    .split(';')
+    .map((it) => it.trim())
+    .map((it) => (it.length === 0 ? undefined : it))
+  return { internalUrl: internalUrl ?? '', region: region ?? '', externalUrl: externalUrl ?? internalUrl ?? '' }
+}
+
+const getEndpoints = (): string[] => {
   const transactorsUrl = getMetadata(accountPlugin.metadata.Transactors)
   if (transactorsUrl === undefined) {
     throw new Error('Please provide transactor endpoint url')
@@ -112,13 +120,22 @@ export const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, k
   if (endpoints.length === 0) {
     throw new Error('Please provide transactor endpoint url')
   }
+  return endpoints
+}
 
-  const toTransactor = (line: string): { internalUrl: string, region: string, externalUrl: string } => {
-    const [internalUrl, externalUrl, region] = line.split(';')
-    return { internalUrl, region: region ?? '', externalUrl: externalUrl ?? internalUrl }
+export const getRegions = (): RegionInfo[] => {
+  if (process.env.REGION_INFO !== undefined) {
+    return process.env.REGION_INFO.split(';')
+      .map((it) => it.split('|'))
+      .map((it) => ({ region: it[0], name: it[1] }))
   }
+  return getEndpoints()
+    .map(toTransactor)
+    .map((it) => ({ region: it.region, name: it.region }))
+}
 
-  const byRegions = groupByArray(endpoints.map(toTransactor), (it) => it.region)
+export const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, kind: EndpointKind): string => {
+  const byRegions = groupByArray(getEndpoints().map(toTransactor), (it) => it.region)
   let transactors = (byRegions.get(workspaceInfo.region ?? '') ?? [])
     .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
     .flat()
@@ -126,10 +143,11 @@ export const getEndpoint = (ctx: MeasureContext, workspaceInfo: WorkspaceInfo, k
   // This is really bad
   if (transactors.length === 0) {
     ctx.error('No transactors for the target region, will use default region', { group: workspaceInfo.region })
+
+    transactors = (byRegions.get('') ?? [])
+      .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
+      .flat()
   }
-  transactors = (byRegions.get('') ?? [])
-    .map((it) => (kind === EndpointKind.Internal ? it.internalUrl : it.externalUrl))
-    .flat()
 
   if (transactors.length === 0) {
     ctx.error('No transactors for the default region')

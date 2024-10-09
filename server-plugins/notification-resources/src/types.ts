@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { BaseNotificationType, NotificationProvider } from '@hcengineering/notification'
+import { BaseNotificationType, DocNotifyContext, NotificationProvider } from '@hcengineering/notification'
 import { Ref } from '@hcengineering/core'
 
 /**
@@ -33,4 +33,9 @@ export interface NotifyParams {
   isOwn: boolean
   isSpace: boolean
   shouldUpdateTimestamp: boolean
+}
+
+export const ContextsCacheKey = 'DocNotifyContexts'
+export interface ContextsCache {
+  contexts: Map<string, Ref<DocNotifyContext>>
 }

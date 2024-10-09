@@ -19,6 +19,8 @@
 
   export let selectedDate: Timestamp | undefined
   export let fixed: boolean = false
+  export let idPrefix: string = ''
+  export let visible: boolean = true
 
   let div: HTMLDivElement | undefined
   const dispatch = createEventDispatcher()
@@ -28,30 +30,32 @@
   $: isCurrentYear = time ? new Date(time).getFullYear() === new Date().getFullYear() : undefined
 </script>
 
-<div id={fixed ? '' : time?.toString()} class="flex-center clear-mins dateSelector">
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    bind:this={div}
-    class="border-radius-4 dateSelectorButton clear-mins"
-    on:click={() => {
-      showPopup(DateRangePopup, {}, div, (v) => {
-        if (v) {
-          v.setHours(0, 0, 0, 0)
-          dispatch('jumpToDate', { date: v.getTime() })
-        }
-      })
-    }}
-  >
-    {#if time}
-      {new Date(time).toLocaleDateString('default', {
-        weekday: 'short',
-        month: 'long',
-        day: 'numeric',
-        year: isCurrentYear ? undefined : 'numeric'
-      })}
-    {/if}
-  </div>
+<div id={fixed ? '' : `${idPrefix}${time?.toString()}`} class="flex-center clear-mins dateSelector">
+  {#if visible}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      bind:this={div}
+      class="border-radius-4 dateSelectorButton clear-mins"
+      on:click={() => {
+        showPopup(DateRangePopup, {}, div, (v) => {
+          if (v) {
+            v.setHours(0, 0, 0, 0)
+            dispatch('jumpToDate', { date: v.getTime() })
+          }
+        })
+      }}
+    >
+      {#if time}
+        {new Date(time).toLocaleDateString('default', {
+          weekday: 'short',
+          month: 'long',
+          day: 'numeric',
+          year: isCurrentYear ? undefined : 'numeric'
+        })}
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

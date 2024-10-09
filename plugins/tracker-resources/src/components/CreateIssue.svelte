@@ -543,8 +543,8 @@
         }
       }
 
+      await descriptionBox?.createAttachments(_id, operations)
       const result = await operations.commit()
-      await descriptionBox?.createAttachments(_id)
 
       const parents: IssueParentInfo[] =
         parentIssue != null

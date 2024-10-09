@@ -18,16 +18,8 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    Button,
-    IconAdd,
-    Label,
-    closeTooltip,
-    eventToHTMLElement,
-    getEventPositionElement,
-    showPopup
-  } from '@hcengineering/ui'
-  import { Menu, openDoc, showMenu } from '@hcengineering/view-resources'
+  import { Button, IconAdd, Label, closeTooltip, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { openDoc, showMenu } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
   import CreateDepartment from './CreateDepartment.svelte'
