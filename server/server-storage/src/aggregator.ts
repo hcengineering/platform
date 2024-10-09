@@ -62,7 +62,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
       }
     }
 
-    const provider = this.adapters.get(current?.provider ?? this.defaultAdapter)
+    const provider = this.adapters.get(providerId ?? current?.provider ?? this.defaultAdapter)
     if (provider === undefined) {
       throw new NoSuchKeyError('No such provider found')
     }
