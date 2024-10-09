@@ -301,7 +301,8 @@
   }
 
   function checkActiveVideo (loc: Location, video: boolean, room: Ref<Room> | undefined): void {
-    const isOpened = $sidebarStore.widgetsState.has(love.ids.VideoWidget)
+    const widgetState = $sidebarStore.widgetsState.get(love.ids.VideoWidget)
+    const isOpened = widgetState !== undefined
 
     if (room === undefined) {
       if (isOpened) {
@@ -319,11 +320,15 @@
           {
             room
           },
-          loc.path[2] !== loveId
+          { active: loc.path[2] !== loveId, openedByUser: false }
         )
       }
 
-      if (loc.path[2] === loveId && $sidebarStore.widget === love.ids.VideoWidget) {
+      if (
+        loc.path[2] === loveId &&
+        $sidebarStore.widget === love.ids.VideoWidget &&
+        widgetState?.openedByUser !== true
+      ) {
         minimizeSidebar()
       }
     } else {
