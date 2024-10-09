@@ -299,7 +299,7 @@ export class S3Service implements StorageAdapter {
         version: result.VersionId ?? null
       }
     } catch (err: any) {
-      ctx.error('no object found', { error: err, objectName, workspaceId: workspaceId.name })
+      ctx.warn('no object found', { error: err, objectName, workspaceId: workspaceId.name })
     }
   }
 

@@ -130,27 +130,27 @@ export class WorkspaceClient {
     this.ctx.info('Upload avatar file', { workspace: this.workspace })
 
     try {
-      await this.checkPersonData(client)
-
       const stat = fs.statSync(config.AvatarPath)
       const lastModified = stat.mtime.getTime()
 
-      if (
+      const isAlreadyUploaded =
         this.info !== undefined &&
         this.info.avatarPath === config.AvatarPath &&
         this.info.avatarLastModified === lastModified
-      ) {
-        this.ctx.info('Avatar file already uploaded', { workspace: this.workspace, path: config.AvatarPath })
-        return
-      }
-      const data = fs.readFileSync(config.AvatarPath)
+      if (!isAlreadyUploaded) {
+        const data = fs.readFileSync(config.AvatarPath)
 
-      await this.blobClient.upload(this.ctx, config.AvatarName, data.length, config.AvatarContentType, data)
-      await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
-      this.ctx.info('Uploaded avatar file', { workspace: this.workspace, path: config.AvatarPath })
+        await this.blobClient.upload(this.ctx, config.AvatarName, data.length, config.AvatarContentType, data)
+        await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
+        this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
+      } else {
+        this.ctx.info('Avatar file already uploaded', { workspace: this.workspace, path: config.AvatarPath })
+      }
     } catch (e) {
       this.ctx.error('Failed to upload avatar file', { e })
     }
+
+    await this.checkPersonData(client)
   }
 
   private async tryLogin (): Promise<void> {

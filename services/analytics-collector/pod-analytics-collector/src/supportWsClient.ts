@@ -245,7 +245,7 @@ export class SupportWsClient extends WorkspaceClient {
     const hierarchy = client.getHierarchy()
 
     for (const event of events) {
-      const markup = await eventToMarkup(event, hierarchy)
+      const markup = await eventToMarkup(event, hierarchy, client)
 
       if (markup === undefined) {
         continue

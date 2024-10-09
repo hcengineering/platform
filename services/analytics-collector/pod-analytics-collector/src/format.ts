@@ -23,14 +23,19 @@ import notification, { notificationId } from '@hcengineering/notification'
 import recruit, { recruitId } from '@hcengineering/recruit'
 import time, { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
-import { Class, Doc, Hierarchy, Markup, Ref } from '@hcengineering/core'
+import workbench, { WorkbenchEvents } from '@hcengineering/workbench'
+import { Class, Doc, Hierarchy, Markup, Ref, TxOperations } from '@hcengineering/core'
 import { MarkupNode, MarkupNodeType, MarkupMark, MarkupMarkType } from '@hcengineering/text'
 import { translate } from '@hcengineering/platform'
 
-export async function eventToMarkup (event: AnalyticEvent, hierarchy: Hierarchy): Promise<Markup | undefined> {
+export async function eventToMarkup (
+  event: AnalyticEvent,
+  hierarchy: Hierarchy,
+  client: TxOperations
+): Promise<Markup | undefined> {
   switch (event.event) {
     case AnalyticEventType.CustomEvent:
-      return formatCustomEvent(event)
+      return await formatCustomEvent(event, client)
     case AnalyticEventType.Error:
       return await formatErrorEvent(event)
     case AnalyticEventType.Navigation:
@@ -67,10 +72,15 @@ function toText (text: string, display: 'normal' | 'bold' | 'code' = 'normal'): 
   return { type: MarkupNodeType.text, text, marks }
 }
 
-function formatCustomEvent (event: AnalyticEvent): string | undefined {
+async function formatCustomEvent (event: AnalyticEvent, client: TxOperations): Promise<string | undefined> {
   const text = event.params.event as string | undefined
 
   if (text === undefined || text === '') return
+  if (eventsToSkip.includes(event.params.event)) return
+  if (sidebarEvents.includes(text)) {
+    return await formatSidebarEvent(text, event.params, client)
+  }
+
   const paramsTexts = []
 
   for (const key in event.params) {
@@ -83,6 +93,41 @@ function formatCustomEvent (event: AnalyticEvent): string | undefined {
     return toMarkup([toText(text)])
   }
   return toMarkup([toText(text + ' '), toText(paramsTexts.join(', '), 'code')])
+}
+
+async function formatSidebarEvent (
+  event: string,
+  params: Record<string, any>,
+  client: TxOperations
+): Promise<string | undefined> {
+  let text = event
+  switch (event) {
+    case WorkbenchEvents.SidebarOpenWidget:
+      text = 'open widget'
+      break
+    case WorkbenchEvents.SidebarCloseWidget:
+      text = 'close widget'
+      break
+    default:
+      break
+  }
+  const paramsTexts = []
+
+  if (params.widget !== undefined) {
+    const widget = client.getModel().findAllSync(workbench.class.Widget, { _id: params.widget })[0]
+    if (widget !== undefined) {
+      const widgetName = await translate(widget.label, {})
+      paramsTexts.push(`widget: ${widgetName}`)
+    } else {
+      paramsTexts.push(`widget: ${params.widget}`)
+    }
+  }
+
+  if (params.tab !== undefined) {
+    paramsTexts.push(`tab: ${params.tab}`)
+  }
+
+  return toMarkup([toText('Sidebar: ', 'bold'), toText(text + ' '), toText(paramsTexts.join(', '), 'code')])
 }
 
 async function formatErrorEvent (event: AnalyticEvent): Promise<string | undefined> {
@@ -427,3 +472,17 @@ export function getOnboardingMessage (email: string, workspace: string, name: st
 
   return toMarkup(nodes)
 }
+
+const eventsToSkip = [
+  'Fetch workspace',
+  'Create Tab',
+  'Update Tab',
+  'document.Opened',
+  'Create Message',
+  'chunter.MessageCreated',
+  'Create Time',
+  'Create Tag',
+  'SetCollectionItems'
+]
+
+const sidebarEvents = [WorkbenchEvents.SidebarOpenWidget, WorkbenchEvents.SidebarCloseWidget] as string[]
