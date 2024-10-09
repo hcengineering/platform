@@ -62,13 +62,13 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
       }
     }
 
-    const provider = this.adapters.get(current?.provider ?? this.defaultAdapter)
+    const provider = this.adapters.get(providerId ?? current?.provider ?? this.defaultAdapter)
     if (provider === undefined) {
       throw new NoSuchKeyError('No such provider found')
     }
     const stat = await provider.stat(ctx, workspaceId, objectName)
     if (stat !== undefined) {
-      stat.provider = current?.provider ?? this.defaultAdapter
+      stat.provider = providerId ?? current?.provider ?? this.defaultAdapter
       if (current !== undefined) {
         await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, [current._id])
       }
