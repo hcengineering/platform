@@ -68,7 +68,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
     const stat = await provider.stat(ctx, workspaceId, objectName)
     if (stat !== undefined) {
-      stat.provider = current?.provider ?? this.defaultAdapter
+      stat.provider = providerId ?? current?.provider ?? this.defaultAdapter
       if (current !== undefined) {
         await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, [current._id])
       }
