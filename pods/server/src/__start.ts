@@ -9,7 +9,7 @@ import contactPlugin from '@hcengineering/contact'
 import { MeasureMetricsContext, newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
-import { getMetricsContext, serverConfigFromEnv } from '@hcengineering/server'
+import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverCore, { type StorageConfiguration, loadBrandingMap } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
@@ -20,6 +20,7 @@ import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
+import { getMetricsContext } from './metrics'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')

@@ -40,7 +40,8 @@ import core, {
   type Tx
 } from '@hcengineering/core'
 import { BlobClient, createClient } from '@hcengineering/server-client'
-import { fullTextPushStagePrefix, type StorageAdapter } from '@hcengineering/server-core'
+import { type StorageAdapter } from '@hcengineering/server-core'
+import { fullTextPushStagePrefix } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { createWriteStream, existsSync, mkdirSync } from 'node:fs'

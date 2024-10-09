@@ -34,18 +34,20 @@ import core, {
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
-import type { Pipeline, PipelineFactory, StorageAdapter } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
-
 import {
   LOGGING_ENABLED,
+  Pipeline,
+  PipelineFactory,
+  ServerFactory,
+  SessionManager,
+  StorageAdapter,
   type ClientSessionCtx,
   type ConnectionSocket,
-  type ServerFactory,
   type Session,
-  type SessionManager,
   type Workspace
-} from './types'
+} from '@hcengineering/server-core'
+import { type Token } from '@hcengineering/server-token'
+
 import { sendResponse } from './utils'
 
 const ticksPerSecond = 20
@@ -1013,6 +1015,25 @@ class TSessionManager implements SessionManager {
     }
   }
 }
+
+export function createSessionManager (
+  ctx: MeasureContext,
+  sessionFactory: (
+    token: Token,
+    pipeline: Pipeline,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null
+  ) => Session,
+  brandingMap: BrandingMap,
+  timeouts: Timeouts,
+  profiling?: {
+    start: () => void
+    stop: () => Promise<string | undefined>
+  }
+): SessionManager {
+  return new TSessionManager(ctx, sessionFactory, timeouts, brandingMap ?? null, profiling)
+}
+
 /**
  * @public
  */
@@ -1038,14 +1059,14 @@ export function startSessionManager (
     }
   } & Partial<Timeouts>
 ): () => Promise<void> {
-  const sessions = new TSessionManager(
+  const sessions = createSessionManager(
     ctx,
     opt.sessionFactory,
+    opt.brandingMap,
     {
       pingTimeout: opt.pingTimeout ?? 10000,
       reconnectTimeout: 500
     },
-    opt.brandingMap,
     opt.profiling
   )
   return opt.serverFactory(

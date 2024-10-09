@@ -2,13 +2,8 @@ import { DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
 import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
 import { S3Service, type S3Config } from '@hcengineering/s3'
-import {
-  AggregatorStorageAdapter,
-  StorageAdapter,
-  StorageConfiguration,
-  buildStorage,
-  type StorageConfig
-} from '@hcengineering/server-core'
+import { StorageAdapter, StorageConfiguration, type StorageConfig } from '@hcengineering/server-core'
+import { AggregatorStorageAdapter, buildStorage } from './aggregator'
 
 /*
 

@@ -100,6 +100,9 @@ export class MinioService implements StorageAdapter {
   async listBuckets (ctx: MeasureContext): Promise<BucketInfo[]> {
     if (this.opt.rootBucket !== undefined) {
       const info = new Map<string, BucketInfo>()
+      if (!(await this.client.bucketExists(this.opt.rootBucket))) {
+        return []
+      }
       const stream = this.client.listObjects(this.opt.rootBucket, '', false)
       await new Promise<void>((resolve, reject) => {
         stream.on('end', () => {

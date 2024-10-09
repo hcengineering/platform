@@ -22,12 +22,8 @@ import { createBackupPipeline, getConfig } from '@hcengineering/server-pipeline'
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
 
-import builder from '@hcengineering/model-all'
-
-const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
-const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
-
-const model = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as Tx[]
+import { readFileSync } from 'node:fs'
+const model = JSON.parse(readFileSync(process.env.MODEL_JSON ?? 'model.json').toString()) as Tx[]
 
 const metricsContext = new MeasureMetricsContext(
   'backup',

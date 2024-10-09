@@ -2,17 +2,20 @@
 import { type Branding, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
 import { CollaborativeContentRetrievalStage } from '@hcengineering/server-collaboration'
 import {
+  type ContentTextAdapter,
+  type FullTextAdapter,
+  type SessionFindAll,
+  type StorageAdapter
+} from '@hcengineering/server-core'
+
+import {
   ContentRetrievalStage,
   FullSummaryStage,
   FullTextPushStage,
   IndexedFieldStage,
   globalIndexer,
-  type ContentTextAdapter,
-  type FullTextAdapter,
-  type FullTextPipelineStage,
-  type SessionFindAll,
-  type StorageAdapter
-} from '@hcengineering/server-core'
+  type FullTextPipelineStage
+} from '@hcengineering/server-indexer'
 
 export function createIndexStages (
   fullText: MeasureContext,
@@ -46,15 +49,6 @@ export function createIndexStages (
       contentAdapter
     )
   )
-
-  // // Add any => english language translation
-  // const retranslateStage = new LibRetranslateStage(fullText.newChild('retranslate', {}), workspace)
-  // retranslateStage.clearExcept = stages.map(it => it.stageId)
-  // for (const st of stages) {
-  //   // Clear retranslation on content change.
-  //   st.updateFields.push((doc, upd) => retranslateStage.update(doc, upd))
-  // }
-  // stages.push(retranslateStage)
   // Summary stage
   const summaryStage = new FullSummaryStage(storageFindAll)
 

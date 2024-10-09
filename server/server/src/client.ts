@@ -35,15 +35,18 @@ import core, {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { BackupClientOps, SessionDataImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
-import { type Token } from '@hcengineering/server-token'
 import {
+  BackupClientOps,
+  SessionDataImpl,
+  createBroadcastEvent,
   type ClientSessionCtx,
   type ConnectionSocket,
+  type Pipeline,
   type Session,
   type SessionRequest,
   type StatisticsElement
-} from './types'
+} from '@hcengineering/server-core'
+import { type Token } from '@hcengineering/server-token'
 import { handleSend } from './utils'
 
 /**

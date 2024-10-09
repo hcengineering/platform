@@ -56,6 +56,7 @@
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server": "^0.6.4",
+    "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/core": "^0.6.32",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/client": "^0.6.18",

@@ -63,6 +63,7 @@ import type {
   ObjectId,
   OtpInfo,
   Query,
+  RegionInfo,
   UpgradeStatistic,
   Workspace,
   WorkspaceEvent,
@@ -75,6 +76,7 @@ import {
   cleanEmail,
   EndpointKind,
   getEndpoint,
+  getRegions,
   hashWithSalt,
   isEmail,
   toAccountInfo,
@@ -381,6 +383,17 @@ function decodeToken (ctx: MeasureContext, token: string): Token {
     }
     throw err
   }
+}
+
+/**
+ * @public
+ */
+export async function getRegionInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null
+): Promise<RegionInfo[]> {
+  return getRegions()
 }
 
 /**
@@ -911,10 +924,21 @@ async function generateWorkspaceRecord (
   email: string,
   branding: Branding | null,
   workspaceName: string,
-  fixedWorkspace?: string
+  fixedWorkspace?: string,
+  region?: string
 ): Promise<Workspace> {
   type WorkspaceData = Omit<Workspace, '_id' | 'endpoint'>
   const brandingKey = branding?.key ?? 'huly'
+
+  const reg = getRegions().find((it) => it.region === (region ?? ''))
+  if (reg === undefined) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.InternalServerError, {
+        workspace: fixedWorkspace,
+        region: region ?? ''
+      })
+    )
+  }
   if (fixedWorkspace !== undefined) {
     const ws = await db.workspace.find({ workspaceUrl: fixedWorkspace })
 
@@ -932,6 +956,7 @@ async function generateWorkspaceRecord (
       workspaceName,
       accounts: [],
       disabled: true,
+      region: region ?? '',
       mode: 'pending-creation',
       progress: 0,
       createdOn: Date.now(),
@@ -969,6 +994,7 @@ async function generateWorkspaceRecord (
         workspaceName,
         accounts: [],
         disabled: true,
+        region: region ?? '',
         mode: 'pending-creation',
         progress: 0,
         createdOn: Date.now(),
@@ -1009,12 +1035,13 @@ export async function createWorkspace (
   branding: Branding | null,
   email: string,
   workspaceName: string,
-  workspace?: string
+  workspace?: string,
+  region?: string
 ): Promise<Workspace> {
   // We need to search for duplicate workspaceUrl
   // Safe generate workspace record.
   return await createQueue.exec(async () => {
-    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace)
+    return await generateWorkspaceRecord(db, email, branding, workspaceName, workspace, region)
   })
 }
 
@@ -1276,7 +1303,8 @@ export async function createUserWorkspace (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  workspaceName: string
+  workspaceName: string,
+  region?: string
 ): Promise<LoginInfo> {
   const { email } = decodeToken(ctx, token)
 
@@ -1298,7 +1326,7 @@ export async function createUserWorkspace (
       )
     }
   }
-  const workspaceInfo = await createWorkspace(ctx, db, branding, email, workspaceName, undefined)
+  const workspaceInfo = await createWorkspace(ctx, db, branding, email, workspaceName, undefined, region)
 
   // Update last workspace time.
   await db.account.updateOne({ _id: userAccount._id }, { lastWorkspace: Date.now() })
@@ -2445,6 +2473,7 @@ export function getMethods (): Record<string, AccountMethod> {
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),
     selectWorkspace: wrap(selectWorkspace),
+    getRegionInfo: wrap(getRegionInfo),
     getUserWorkspaces: wrap(getUserWorkspaces),
     getInviteLink: wrap(getInviteLink),
     getAccountInfo: wrap(getAccountInfo),

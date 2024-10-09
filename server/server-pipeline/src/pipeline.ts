@@ -40,20 +40,12 @@ import {
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
 import {
-  buildStorageFromConfig,
-  createNullAdapter,
-  createRekoniAdapter,
-  createStorageDataAdapter,
-  createYDocAdapter,
-  storageConfigFromEnv
-} from '@hcengineering/server'
-import {
   createBenchmarkAdapter,
   createInMemoryAdapter,
+  createNullAdapter,
   createPipeline,
   DummyDbAdapter,
   DummyFullTextAdapter,
-  FullTextMiddleware,
   type DbAdapterFactory,
   type DbConfiguration,
   type Middleware,
@@ -64,6 +56,13 @@ import {
   type StorageAdapter,
   type StorageConfiguration
 } from '@hcengineering/server-core'
+import {
+  createRekoniAdapter,
+  createYDocAdapter,
+  FullTextMiddleware,
+  type FulltextDBConfiguration
+} from '@hcengineering/server-indexer'
+import { buildStorageFromConfig, createStorageDataAdapter, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { createIndexStages } from './indexing'
 
 /**
@@ -112,7 +111,7 @@ export function createServerPipeline (
 
     externalStorage: StorageAdapter
   },
-  extensions?: Partial<DbConfiguration>
+  extensions?: Partial<DbConfiguration> & Partial<FulltextDBConfiguration>
 ): PipelineFactory {
   return (ctx, workspace, upgrade, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
@@ -306,12 +305,12 @@ export function getConfig (
 
     externalStorage: StorageAdapter
   },
-  extensions?: Partial<DbConfiguration>
+  extensions?: Partial<DbConfiguration & FulltextDBConfiguration>
 ): DbConfiguration {
   const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
   const wsMetrics = metricsCtx.newChild('🧲 session', {})
   const [dbUrl, mongoUrl] = dbUrls.split(';')
-  const conf: DbConfiguration = {
+  const conf: DbConfiguration & FulltextDBConfiguration = {
     domains: {
       [DOMAIN_TX]: 'Tx',
       [DOMAIN_TRANSIENT]: 'InMemory',
