@@ -351,6 +351,17 @@ export const chunterOperation: MigrateOperation = {
         func: async (client) => {
           await removeDuplicatedDirects(client)
         }
+      },
+      {
+        state: 'remove-direct-members-messages',
+        func: async (client) => {
+          await client.deleteMany<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+            _class: activity.class.DocUpdateMessage,
+            attachedToClass: chunter.class.DirectMessage,
+            action: 'update',
+            'attributeUpdates.attrKey': 'members'
+          })
+        }
       }
     ])
   },
