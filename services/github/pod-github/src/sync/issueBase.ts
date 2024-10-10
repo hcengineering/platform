@@ -628,9 +628,17 @@ export abstract class IssueSyncManagerBase {
             itemId: target.prjData?.id as string
           })
         } catch (err: any) {
+          if (err.errors?.[0]?.type === 'NOT_FOUND') {
+            errors.push({ error: err, response })
+            return errors
+          }
           Analytics.handleError(err)
           // Failed to update one particular value, skip it.
-          this.ctx.error('error during field update', { error: err, response })
+          this.ctx.error('error during field update', {
+            error: err,
+            response,
+            workspace: this.provider.getWorkspaceId().name
+          })
           errors.push({ error: err, response })
         }
       }
@@ -892,10 +900,9 @@ export abstract class IssueSyncManagerBase {
       }
       if (fieldsUpdate.length > 0 && syncToProject && target.prjData !== undefined) {
         const errors = await this.updateIssueValues(target, okit, fieldsUpdate)
-        if (errors.length > 0) {
-          return { externalVersion: '', needUpdate: githubSyncVersion, error: errors }
+        if (errors.length === 0) {
+          needExternalSync = true
         }
-        needExternalSync = true
       }
       // TODO: Add support for labels, milestone, assignees
     }

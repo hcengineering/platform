@@ -105,6 +105,7 @@ export class TTxSidebarEvent extends TTx implements TxSidebarEvent {
 @UX(workbench.string.Tab)
 export class TWorkbenchTab extends TPreference implements WorkbenchTab {
   location!: string
+  name?: string
   isPinned!: boolean
 }
 

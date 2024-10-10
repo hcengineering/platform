@@ -32,7 +32,7 @@ export async function syncFiles (
 ): Promise<void> {
   if (exAdapter.adapters === undefined) return
 
-  for (const [name, adapter] of exAdapter.adapters.entries()) {
+  for (const [name, adapter] of [...exAdapter.adapters.entries()].reverse()) {
     await adapter.make(ctx, workspaceId)
 
     await retryOnFailure(ctx, 5, async () => {
@@ -47,7 +47,12 @@ export async function syncFiles (
 
           for (const data of dataBulk) {
             const blob = await exAdapter.stat(ctx, workspaceId, data._id)
-            if (blob !== undefined) continue
+            if (blob !== undefined) {
+              if (blob.provider !== name && name === exAdapter.defaultAdapter) {
+                await exAdapter.syncBlobFromStorage(ctx, workspaceId, data._id, exAdapter.defaultAdapter)
+              }
+              continue
+            }
 
             await exAdapter.syncBlobFromStorage(ctx, workspaceId, data._id, name)
 
@@ -167,6 +172,13 @@ async function processAdapter (
         let targetBlob: Blob | ListBlobResult | undefined = targetBlobs.get(data._id)
         if (targetBlob !== undefined) {
           console.log('Target blob already exists', targetBlob._id)
+
+          const aggrBlob = await exAdapter.stat(ctx, workspaceId, data._id)
+          if (aggrBlob === undefined || aggrBlob?.provider !== targetBlob.provider) {
+            targetBlob = await exAdapter.syncBlobFromStorage(ctx, workspaceId, targetBlob._id, exAdapter.defaultAdapter)
+          }
+          // We could safely delete source blob
+          toRemove.push(data._id)
         }
 
         if (targetBlob === undefined) {
@@ -176,32 +188,28 @@ async function processAdapter (
             console.error('blob not found', data._id)
             continue
           }
-          await rateLimiter.exec(async () => {
+          targetBlob = await rateLimiter.exec(async () => {
             try {
-              await retryOnFailure(
+              const result = await retryOnFailure(
                 ctx,
                 5,
                 async () => {
                   await processFile(ctx, source, target, workspaceId, sourceBlob)
                   // We need to sync and update aggregator table for now.
-                  targetBlob = await exAdapter.syncBlobFromStorage(
-                    ctx,
-                    workspaceId,
-                    sourceBlob._id,
-                    exAdapter.defaultAdapter
-                  )
+                  return await exAdapter.syncBlobFromStorage(ctx, workspaceId, sourceBlob._id, exAdapter.defaultAdapter)
                 },
                 50
               )
               movedCnt += 1
               movedBytes += sourceBlob.size
               batchBytes += sourceBlob.size
+              return result
             } catch (err) {
               console.error('failed to process blob', data._id, err)
             }
           })
 
-          if (targetBlob !== undefined && 'size' in targetBlob && (targetBlob as Blob).size === sourceBlob.size) {
+          if (targetBlob !== undefined) {
             // We could safely delete source blob
             toRemove.push(sourceBlob._id)
           }
@@ -233,7 +241,10 @@ async function processAdapter (
 
     await rateLimiter.waitProcessing()
     if (toRemove.length > 0 && params.move) {
-      await source.remove(ctx, workspaceId, toRemove)
+      while (toRemove.length > 0) {
+        const part = toRemove.splice(0, 500)
+        await source.remove(ctx, workspaceId, part)
+      }
     }
   } finally {
     await iterator.close()

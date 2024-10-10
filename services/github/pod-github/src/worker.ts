@@ -395,9 +395,6 @@ export class GithubWorker implements IntegrationManager {
   periodicSyncPromise: Promise<void> | undefined
   async performPeriodicSync (): Promise<void> {
     try {
-      for (const inst of this.integrations.values()) {
-        await this.repositoryManager.reloadRepositories(inst)
-      }
       this.triggerUpdate()
     } catch (err: any) {
       Analytics.handleError(err)

@@ -221,8 +221,12 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc<ActivityMessageControl<ChunterSpace>>(activity.class.ActivityMessageControl, core.space.Model, {
     objectClass: chunter.class.DirectMessage,
-    skip: [{ _class: core.class.TxMixin }, { _class: core.class.TxCreateDoc }, { _class: core.class.TxRemoveDoc }],
-    allowedFields: ['members']
+    skip: [
+      { _class: core.class.TxMixin },
+      { _class: core.class.TxCreateDoc },
+      { _class: core.class.TxRemoveDoc },
+      { _class: core.class.TxUpdateDoc }
+    ]
   })
 
   builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
@@ -233,16 +237,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
     objectClass: chunter.class.Channel,
-    action: 'update',
-    config: {
-      members: {
-        presenter: chunter.activity.MembersChangedMessage
-      }
-    }
-  })
-
-  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
-    objectClass: chunter.class.DirectMessage,
     action: 'update',
     config: {
       members: {
