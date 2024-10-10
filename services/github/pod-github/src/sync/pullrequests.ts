@@ -971,6 +971,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       return { needSync: githubSyncVersion }
     }
 
+    if (info.repository == null) {
+      return { needSync: githubSyncVersion }
+    }
+
     const pullRequestExternal = info.external as unknown as PullRequestExternalData
 
     if (info.externalVersion !== githubExternalSyncVersion) {
