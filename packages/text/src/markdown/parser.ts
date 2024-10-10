@@ -417,13 +417,13 @@ const tokensBlock: Record<string, ParsingBlockRule> = {
   paragraph: { block: MarkupNodeType.paragraph },
   list_item: { block: MarkupNodeType.list_item },
   task_item: { block: MarkupNodeType.taskItem, getAttrs: (tok) => ({ 'data-type': 'taskItem' }) },
-  bullet_list: { 
+  bullet_list: {
     block: MarkupNodeType.bullet_list,
     getAttrs: (tok) => ({
       bullet: tok.markup
     })
-   },
-  todo_list: { 
+  },
+  todo_list: {
     block: MarkupNodeType.todoList,
     getAttrs: (tok) => ({
       bullet: tok.markup
@@ -533,22 +533,22 @@ const tokensNode: Record<string, ParsingNodeRule> = {
   hardbreak: { node: MarkupNodeType.hard_break }
 }
 const tokensMark: Record<string, ParsingMarkRule> = {
-  em: { 
+  em: {
     mark: MarkupMarkType.em,
     getAttrs: (tok: Token, state: MarkdownParseState) => {
-      return {'marker' : tok.markup}
+      return { marker: tok.markup }
     }
   },
-  bold: { 
+  bold: {
     mark: MarkupMarkType.bold,
     getAttrs: (tok: Token, state: MarkdownParseState) => {
-      return {'marker' : tok.markup}
+      return { marker: tok.markup }
     }
   },
-  strong: { 
+  strong: {
     mark: MarkupMarkType.bold,
     getAttrs: (tok: Token, state: MarkdownParseState) => {
-      return {'marker' : tok.markup}
+      return { marker: tok.markup }
     }
   },
   s: { mark: MarkupMarkType.strike },

@@ -695,16 +695,16 @@ A list of closed updated issues`
               type: MarkupNodeType.text,
               text: 'hello'
             }
-          ],
+          ]
         },
         {
           type: MarkupNodeType.paragraph,
           content: [
             {
               text: '\n',
-              type: MarkupNodeType.text,
+              type: MarkupNodeType.text
             }
-          ],
+          ]
         },
         {
           type: MarkupNodeType.heading,
