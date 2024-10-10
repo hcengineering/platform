@@ -1,0 +1,35 @@
+{
+  "name": "@hcengineering/cloud-branding",
+  "version": "0.6.0",
+  "private": true,
+  "template": "@hcengineering/node-package",
+  "main": "lib/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --port 4021",
+    "start": "wrangler dev --port 4021",
+    "cf-typegen": "wrangler types",
+    "build": "compile",
+    "build:watch": "compile",
+    "test": "jest --passWithNoTests --silent --forceExit",
+    "format": "format src",
+    "_phase:build": "compile transpile src",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "^0.6.0",
+    "@cloudflare/workers-types": "^4.20240729.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.80.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1"
+  },
+  "dependencies": {
+    "itty-router": "^5.0.17",
+    "@hcengineering/core": "^0.6.32"
+  }
+}
