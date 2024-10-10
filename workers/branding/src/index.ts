@@ -19,16 +19,13 @@ import { Branding, BrandingMap } from '@hcengineering/core'
 import type { Env } from './env'
 
 const { preflight, corsify } = cors({
-  maxAge: 86400,
+  maxAge: 86400
 })
 
 const router = Router<Request>({
   before: [preflight],
   catch: error,
-  finally: [
-    (r: any) => r ?? error(404),
-    corsify
-  ]
+  finally: [(r: any) => r ?? error(404), corsify]
 })
 
 async function getBrandings(env: Env): Promise<BrandingMap> {
@@ -44,7 +41,7 @@ async function getBrandings(env: Env): Promise<BrandingMap> {
   }, {})
 }
 
-router.get('/brandings', async (req, ctx: { env: Env, exCtx: ExecutionContext }) => {
+router.get('/brandings', async (req, ctx: { env: Env; exCtx: ExecutionContext }) => {
   return new Response(JSON.stringify(await getBrandings(ctx.env)), { status: 200 })
 })
 
