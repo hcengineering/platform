@@ -652,15 +652,6 @@
       }}
     />
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="bar"
-      class:hovered={isScrolling === 'vertical'}
-      bind:this={divBar}
-      on:mousedown|stopPropagation={(ev) => {
-        onScrollStart(ev, 'vertical')
-      }}
-      on:mouseleave={checkFade}
-    />
   {/if}
   {#if horizontal && maskH !== 'none'}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
