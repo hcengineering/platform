@@ -28,7 +28,7 @@ const router = Router<Request>({
   finally: [(r: any) => r ?? error(404), corsify]
 })
 
-async function getBrandings(env: Env): Promise<BrandingMap> {
+async function getBrandings (env: Env): Promise<BrandingMap> {
   // Note: up to 100 keys can be listed at once. If more, use cursor.
   const keys = (await env.KV.list()).keys
   const values = await Promise.all(keys.map(async (key) => await env.KV.get(key.name)))
@@ -41,7 +41,7 @@ async function getBrandings(env: Env): Promise<BrandingMap> {
   }, {})
 }
 
-router.get('/brandings', async (req, ctx: { env: Env; exCtx: ExecutionContext }) => {
+router.get('/brandings', async (req, ctx: { env: Env, exCtx: ExecutionContext }) => {
   return new Response(JSON.stringify(await getBrandings(ctx.env)), { status: 200 })
 })
 
@@ -51,11 +51,11 @@ router.get('/brandings', async (req, ctx: { env: Env; exCtx: ExecutionContext })
 // router.put('/branding/{host}') [with auth]
 
 export default class BrandingWorker extends WorkerEntrypoint<Env> {
-  async fetch(request: Request): Promise<Response> {
-    return router.fetch(request, { env: this.env })
+  async fetch (request: Request): Promise<Response> {
+    return await router.fetch(request, { env: this.env })
   }
 
-  async getBranding(host: string): Promise<Branding | null> {
+  async getBranding (host: string): Promise<Branding | null> {
     const value = await this.env.KV.get(host)
 
     if (value == null) {
@@ -65,7 +65,7 @@ export default class BrandingWorker extends WorkerEntrypoint<Env> {
     return JSON.parse(value)
   }
 
-  async getBrandings(): Promise<BrandingMap> {
+  async getBrandings (): Promise<BrandingMap> {
     return await getBrandings(this.env)
   }
 }
