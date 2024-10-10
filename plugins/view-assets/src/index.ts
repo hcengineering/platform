@@ -61,5 +61,6 @@ loadMetadata(view.icon, {
   Undo: `${icons}#undo`,
   Video: `${icons}#video`,
   Audio: `${icons}#audio`,
-  File: `${icons}#file`
+  File: `${icons}#file`,
+  PinTack: `${icons}#pin-tack`
 })

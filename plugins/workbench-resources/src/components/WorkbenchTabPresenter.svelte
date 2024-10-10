@@ -13,85 +13,51 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnySvelteComponent, closePanel, getCurrentLocation, Location, ModernTab, navigate } from '@hcengineering/ui'
+  import {
+    AnySvelteComponent,
+    closePanel,
+    getCurrentLocation,
+    Icon,
+    ModernTab,
+    navigate,
+    languageStore,
+    locationToUrl
+  } from '@hcengineering/ui'
   import { ComponentExtensions, getClient } from '@hcengineering/presentation'
-  import { Asset, getResource, IntlString } from '@hcengineering/platform'
-  import { type Application, WorkbenchTab } from '@hcengineering/workbench'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Asset, getResource, translate } from '@hcengineering/platform'
+  import { WorkbenchTab } from '@hcengineering/workbench'
   import view from '@hcengineering/view'
-  import { parseLinkId, showMenu } from '@hcengineering/view-resources'
-  import { Analytics } from '@hcengineering/analytics'
+  import { showMenu } from '@hcengineering/view-resources'
 
-  import { closeTab, getTabLocation, selectTab, tabIdStore, tabsStore } from '../workbench'
+  import { closeTab, getTabDataByLocation, getTabLocation, selectTab, tabIdStore, tabsStore } from '../workbench'
   import workbench from '../plugin'
 
   export let tab: WorkbenchTab
 
   const client = getClient()
-  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  let name: string | undefined = undefined
-  let label: IntlString | undefined = undefined
+  let name: string | undefined = tab.name
   let icon: Asset | AnySvelteComponent | undefined
   let iconProps: Record<string, any> | undefined
 
-  async function getResolvedLocation (loc: Location, app?: Application): Promise<Location> {
-    if (app === undefined) return loc
-    if (app.locationResolver) {
-      const resolver = await getResource(app.locationResolver)
-      return (await resolver(loc))?.loc ?? loc
-    }
-
-    return loc
-  }
-
-  async function getTabName (loc: Location): Promise<string | undefined> {
-    if (loc.fragment == null) return
-    const hierarchy = client.getHierarchy()
-    const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
-    if (_class == null) return
-
-    const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
-    if (mixin === undefined) return
-    const titleProvider = await getResource(mixin.titleProvider)
-    try {
-      const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
-      return await titleProvider(client, _id)
-    } catch (err: any) {
-      Analytics.handleError(err)
-      console.error(err)
-    }
-  }
-
-  async function updateTabData (tab: WorkbenchTab): Promise<void> {
+  async function updateTabData (tab: WorkbenchTab, lang: string): Promise<void> {
     const tabLoc = $tabIdStore === tab._id ? getCurrentLocation() : getTabLocation(tab)
-    const alias = tabLoc.path[2]
-    const application = client.getModel().findAllSync<Application>(workbench.class.Application, { alias })[0]
+    const data = await getTabDataByLocation(tabLoc)
 
-    if (application?.locationDataResolver) {
-      const resolver = await getResource(application.locationDataResolver)
-      const data = await resolver(tabLoc)
-      name = data.name
-      label = data.nameIntl ?? application.label ?? workbench.string.Tab
-
-      if (data.iconComponent) {
-        icon = await getResource(data.iconComponent)
-      } else {
-        icon = data.icon ?? application?.icon
-      }
-      iconProps = data.iconProps
+    name = data.name ?? (await translate(data.label, {}, lang))
+    if (data.iconComponent !== undefined) {
+      icon = await getResource(data.iconComponent)
     } else {
-      const special = tabLoc.path[3]
-      const specialLabel = application?.navigatorModel?.specials?.find((s) => s.id === special)?.label
-      const resolvedLoc = await getResolvedLocation(tabLoc, application)
-      name = await getTabName(resolvedLoc)
-      label = specialLabel ?? application?.label ?? workbench.string.Tab
-      icon = application?.icon
-      iconProps = undefined
+      icon = data.icon
+    }
+    iconProps = data.iconProps
+
+    if (tab.name !== name && tab.location === locationToUrl(tabLoc)) {
+      await client.update(tab, { name })
     }
   }
 
-  $: void updateTabData(tab)
+  $: void updateTabData(tab, $languageStore)
 
   function handleClickTab (): void {
     selectTab(tab._id)
@@ -118,7 +84,6 @@
 </script>
 
 <ModernTab
-  labelIntl={label}
   label={name}
   {icon}
   {iconProps}
@@ -131,5 +96,10 @@
 >
   <svelte:fragment slot="prefix">
     <ComponentExtensions extension={workbench.extensions.WorkbenchTabExtensions} props={{ tab }} />
+  </svelte:fragment>
+  <svelte:fragment slot="postfix">
+    {#if tab.isPinned}
+      <Icon icon={view.icon.PinTack} size="x-small" />
+    {/if}
   </svelte:fragment>
 </ModernTab>

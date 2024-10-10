@@ -257,7 +257,8 @@ const view = plugin(viewId, {
     Undo: '' as Asset,
     Video: '' as Asset,
     Audio: '' as Asset,
-    File: '' as Asset
+    File: '' as Asset,
+    PinTack: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
