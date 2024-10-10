@@ -73,9 +73,10 @@
     <div class="close-button {orientation}">
       <ButtonIcon icon={IconClose} size="min" on:click={() => dispatch('close')} />
     </div>
-  {:else}
+  {:else if $$slots.postfix === undefined}
     <div />
   {/if}
+  <slot name="postfix" />
 </div>
 
 <style lang="scss">

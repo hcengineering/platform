@@ -113,6 +113,7 @@ export interface TxSidebarEvent<T extends Record<string, any> = Record<string, a
 export interface WorkbenchTab extends Preference {
   location: string
   isPinned: boolean
+  name?: string
 }
 
 /**
