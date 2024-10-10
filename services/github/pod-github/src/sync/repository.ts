@@ -265,7 +265,14 @@ export class RepositorySyncMapper implements DocSyncManager {
 
     let allRepos: GithubIntegrationRepository[] = [...allRepositories]
 
+    const githubRepos:
+    | Repository
+    | Endpoints['GET /installation/repositories']['response']['data']['repositories'][0][] = []
     for await (const { repository } of iterable) {
+      githubRepos.push(repository)
+    }
+
+    for (const repository of githubRepos) {
       const integrationRepo: GithubIntegrationRepository | undefined = allRepos.find(
         (it) => it.repositoryId === repository.id
       )
@@ -325,13 +332,8 @@ export class RepositorySyncMapper implements DocSyncManager {
 
     // Ok we have repos removed from integration, we need to delete them.
     for (const repo of allRepos) {
-      await this.client.remove(repo)
-      const prj = projects.find((it) => it._id === repo.githubProject)
-      if (prj !== undefined) {
-        await this.client.update(prj, {
-          $pull: { repositories: repo._id }
-        })
-      }
+      // Mark as archived
+      await this.client.update(repo, { archived: true })
     }
 
     // We need to delete and disconnect missing repositories.
