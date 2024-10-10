@@ -14,7 +14,7 @@
 //
 import { Router, error, cors } from 'itty-router'
 import { WorkerEntrypoint } from 'cloudflare:workers'
-import { Branding, BrandingMap } from '@hcengineering/core'
+import type { Branding, BrandingMap } from '@hcengineering/core'
 
 import type { Env } from './env'
 
