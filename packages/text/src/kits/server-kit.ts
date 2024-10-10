@@ -32,6 +32,7 @@ import { CodeBlockExtension, codeBlockOptions } from '../nodes'
 import { DefaultKit, DefaultKitOptions } from './default-kit'
 import { CodeExtension, codeOptions } from '../marks/code'
 import { NoteBaseExtension } from '../marks/noteBase'
+import { CommentNode } from '../nodes/comment'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
 
@@ -88,6 +89,7 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       TodoItemNode,
       TodoListNode,
       ReferenceNode,
+      CommentNode,
       NodeUuid,
       NoteBaseExtension
     ]

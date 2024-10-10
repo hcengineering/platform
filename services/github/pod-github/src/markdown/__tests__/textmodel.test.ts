@@ -34,16 +34,16 @@ describe('server', () => {
 ## Checklist
 
 * [ ] - Are screenshots added to PR if applicable?
-* [x] - Does the code work as expected and all the requirements in the task are covered?
-* [x] - Are all new user-facing texts added through the translations mechanism?
-* [x] - Are all of the requirements in the task well tested?
-* [x] - Tested in Chrome?
-* [x] - Tested in Safari?
-* [x] - Have you checked the new code for typos, TODOs, commented LOCs, debug code, etc.?
-* [x] - Ensure your branch is up to date with the \`main\` branch
-* [x] - Is there any redundant or duplicate code?
-* [x] - Are required links added to PR?
-* [x] - Is the new code well documented?
+* [X] - Does the code work as expected and all the requirements in the task are covered?
+* [X] - Are all new user-facing texts added through the translations mechanism?
+* [X] - Are all of the requirements in the task well tested?
+* [X] - Tested in Chrome?
+* [X] - Tested in Safari?
+* [X] - Have you checked the new code for typos, TODOs, commented LOCs, debug code, etc.?
+* [X] - Ensure your branch is up to date with the \`main\` branch
+* [X] - Is there any redundant or duplicate code?
+* [X] - Are required links added to PR?
+* [X] - Is the new code well documented?
 
 ## Related issues
 
@@ -399,7 +399,7 @@ A list of closed updated issues`
 
     const md = serializeMessage(msg, 'ref://', 'http://')
 
-    expect(md).toEqual('**BOLD *ITALIC* BOLD**')
+    expect(md).toEqual(t1)
   })
 
   it('Check styles-2', () => {
@@ -698,6 +698,15 @@ A list of closed updated issues`
           ]
         },
         {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              text: '\n',
+              type: MarkupNodeType.text,
+            }
+          ]
+        },
+        {
           type: MarkupNodeType.heading,
           attrs: { level: 2 },
           content: [
@@ -719,6 +728,9 @@ A list of closed updated issues`
       content: [
         {
           type: MarkupNodeType.bullet_list,
+          attrs: {
+            bullet: '*'
+          },
           content: [
             {
               type: MarkupNodeType.list_item,

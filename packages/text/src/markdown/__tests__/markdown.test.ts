@@ -96,6 +96,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'bulletList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'listItem',
@@ -154,6 +157,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -216,6 +222,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -253,6 +262,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'bulletList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'listItem',
@@ -313,6 +325,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -334,6 +349,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'bulletList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'listItem',
@@ -354,6 +372,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -375,6 +396,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'bulletList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'listItem',
@@ -418,6 +442,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -435,6 +462,9 @@ Lorem ipsum dolor sit amet.
                 },
                 {
                   type: 'todoList',
+                  attrs: {
+                    bullet: '-'
+                  },
                   content: [
                     {
                       type: 'todoItem',
@@ -487,6 +517,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -504,6 +537,9 @@ Lorem ipsum dolor sit amet.
                 },
                 {
                   type: 'bulletList',
+                  attrs: {
+                    bullet: '-'
+                  },
                   content: [
                     {
                       type: 'listItem',
@@ -524,6 +560,9 @@ Lorem ipsum dolor sit amet.
                 },
                 {
                   type: 'todoList',
+                  attrs: {
+                    bullet: '-'
+                  },
                   content: [
                     {
                       type: 'todoItem',
@@ -549,6 +588,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'bulletList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'listItem',
@@ -565,6 +607,9 @@ Lorem ipsum dolor sit amet.
                 },
                 {
                   type: 'todoList',
+                  attrs: {
+                    bullet: '-'
+                  },
                   content: [
                     {
                       type: 'todoItem',
@@ -586,6 +631,9 @@ Lorem ipsum dolor sit amet.
                 },
                 {
                   type: 'bulletList',
+                  attrs: {
+                    bullet: '-'
+                  },
                   content: [
                     {
                       type: 'listItem',
@@ -633,6 +681,9 @@ Lorem ipsum dolor sit amet.
         },
         {
           type: 'todoList',
+          attrs: {
+            bullet: '-'
+          },
           content: [
             {
               type: 'todoItem',
@@ -650,6 +701,9 @@ Lorem ipsum dolor sit amet.
                 },
                 {
                   type: 'todoList',
+                  attrs: {
+                    bullet: '-'
+                  },
                   content: [
                     {
                       type: 'todoItem',
