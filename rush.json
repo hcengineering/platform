@@ -2110,6 +2110,11 @@
       "packageName": "@hcengineering/openai",
       "projectFolder": "plugins/openai",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-branding",
+      "projectFolder": "workers/branding",
+      "shouldPublish": false
     }
   ]
 }

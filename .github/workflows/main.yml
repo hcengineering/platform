@@ -34,6 +34,7 @@ env:
     server-plugins
     templates
     services
+    workers
     tests
     qms-tests
     rush.json

@@ -1,0 +1,14 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "branding-worker"
+main = "src/index.ts"
+compatibility_date = "2024-07-01"
+keep_vars = true
+
+[build]
+command = "npm run build"
+watch_dir = "./src"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "c020474a-1223-402b-be0c-cd122bab9599"
+preview_id = "c320577a-5563-457b-be0c-cd152bab5599"
