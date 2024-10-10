@@ -50,20 +50,22 @@
   const account = getCurrentAccount() as PersonAccount
   $: person = $personByIdStore.get(account.person)
 
-  function selectCategory (sp?: SettingsCategory): void {
-    closePopup()
-    const loc = getCurrentResolvedLocation()
-    loc.fragment = undefined
-    loc.query = undefined
-    loc.path[2] = settingId
-    if (sp) {
-      loc.path[3] = sp.name
-      loc.path.length = 4
-    } else {
-      loc.path.length = 3
-    }
-    navigate(loc)
+  function selectCategory(sp?: SettingsCategory): void {
+  closePopup();
+  const loc = getCurrentResolvedLocation();
+  loc.fragment = undefined;
+  loc.query = undefined;
+  loc.path[2] = settingId;
+
+  if (sp) {
+    loc.path[3] = sp.name;
+    loc.path.length = 4;
+  } else {
+    loc.path.length = 3;
+    loc.path.push('profile');
   }
+  navigate(loc);
+}
 
   function inviteWorkspace (): void {
     showPopup(login.component.InviteLink, {})
