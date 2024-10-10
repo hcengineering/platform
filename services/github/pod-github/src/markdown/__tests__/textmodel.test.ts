@@ -399,7 +399,7 @@ A list of closed updated issues`
 
     const md = serializeMessage(msg, 'ref://', 'http://')
 
-    expect(md).toEqual('**BOLD *ITALIC* BOLD**')
+    expect(md).toEqual(t1)
   })
 
   it('Check styles-2', () => {
@@ -695,7 +695,16 @@ A list of closed updated issues`
               type: MarkupNodeType.text,
               text: 'hello'
             }
-          ]
+          ],
+        },
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              text: '\n',
+              type: MarkupNodeType.text,
+            }
+          ],
         },
         {
           type: MarkupNodeType.heading,
@@ -719,6 +728,9 @@ A list of closed updated issues`
       content: [
         {
           type: MarkupNodeType.bullet_list,
+          attrs: {
+            bullet: '*'
+          },
           content: [
             {
               type: MarkupNodeType.list_item,

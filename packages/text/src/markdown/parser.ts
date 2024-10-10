@@ -686,7 +686,9 @@ export class MarkdownParser {
         if (itemCloseIdx === -1) {
           itemCloseIdx = tokens.length - i
         } else if (tokens[i].type !== tokens[tokens.length - itemCloseIdx].type) {
-          tokens.splice(i + 1, 0, new state.Token('bullet_list_open', 'ul', 1))
+          const bulletListOpen = new state.Token('bullet_list_open', 'ul', 1)
+          bulletListOpen.markup = tokens[i + 1].markup
+          tokens.splice(i + 1, 0, bulletListOpen)
           tokens.splice(i + 1, 0, new state.Token('bullet_list_close', 'ul', -1))
           convertTodoList(tokens, i + 2, tokens.length - listCloseIdx, tokens.length - itemCloseIdx)
           listCloseIdx = tokens.length - i - 1
