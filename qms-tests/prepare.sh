@@ -28,14 +28,16 @@ fi
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
 ./tool.sh create-account user3 -f Cain -l Velasquez -p 1234
-
+./tool.sh create-account user4 -f Armin -l Karmin -p 1234
 ./tool.sh assign-workspace user1 sanity-ws-qms
 ./tool.sh assign-workspace user2 sanity-ws-qms
 ./tool.sh assign-workspace user3 sanity-ws-qms
+./tool.sh assign-workspace user4 sanity-ws-qms
 # Make user the workspace maintainer
 ./tool.sh confirm-email user1
 ./tool.sh confirm-email user2
 ./tool.sh confirm-email user3
+./tool.sh confirm-email user4
 
 ./tool.sh create-account user_qara -f Qara -l Admin -p 1234
 ./tool.sh assign-workspace user_qara sanity-ws-qms

@@ -18,6 +18,7 @@ export class SettingsPage {
   readonly deleteDocumentCategoryPermission: Locator
   readonly updateSpacePermission: Locator
   readonly addRoleUpdatePermissionOwner: Locator
+  readonly addUpdateDocumentOwnerPermission: Locator
 
   constructor (page: Page) {
     this.page = page
@@ -37,6 +38,7 @@ export class SettingsPage {
     this.deleteDocumentCategoryPermission = page.getByText('Delete document category', { exact: true })
     this.updateSpacePermission = page.getByText('Update space', { exact: true })
     this.addRoleUpdatePermissionOwner = page.getByRole('button', { name: 'Update document owner' })
+    this.addUpdateDocumentOwnerPermission = page.locator('.hulyTableAttr-header > .font-medium-14')
   }
 
   async openProfileMenu (): Promise<void> {
@@ -67,6 +69,10 @@ export class SettingsPage {
     await expect(this.updateDocumentCategoryPermission).toBeVisible()
     await expect(this.deleteDocumentCategoryPermission).toBeVisible()
     await expect(this.updateSpacePermission).toBeVisible()
+  }
+
+  async checkIfAddUpdateDocumentOwnerPermissionIsDisabled (): Promise<void> {
+    await expect(this.addUpdateDocumentOwnerPermission).toBeDisabled()
   }
 
   async checkPermissionsExistQualifyUser (): Promise<void> {
