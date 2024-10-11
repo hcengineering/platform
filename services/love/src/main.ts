@@ -79,8 +79,10 @@ export const main = async (): Promise<void> => {
           const data = dataByUUID.get(res.filename)
           if (data !== undefined) {
             const client = await WorkspaceClient.create(data.workspace)
-            await storageAdapter.syncBlobFromStorage(ctx, data.workspaceId, res.filename, storageConfig?.name)
-            await client.saveFile(res.filename, data.name)
+            const prefix = rootPrefix(storageConfig, data.workspaceId)
+            const filename = stripPrefix(prefix, res.filename)
+            await storageAdapter.syncBlobFromStorage(ctx, data.workspaceId, filename, storageConfig?.name)
+            await client.saveFile(filename, data.name)
             await client.close()
             dataByUUID.delete(res.filename)
           } else {
@@ -201,6 +203,17 @@ function getBucketFolder (workspaceId: WorkspaceId): string {
 
 function getDocumentKey (storageConfig: any, workspace: WorkspaceId, name: string): string {
   return storageConfig.rootBucket === undefined ? name : `${getBucketFolder(workspace)}/${name}`
+}
+
+function stripPrefix (prefix: string | undefined, key: string): string {
+  if (prefix !== undefined && key.startsWith(prefix)) {
+    return key.slice(prefix.length)
+  }
+  return key
+}
+
+function rootPrefix (storageConfig: any, workspaceId: WorkspaceId): string | undefined {
+  return storageConfig.rootBucket !== undefined ? getBucketFolder(workspaceId) + '/' : undefined
 }
 
 const startRecord = async (
