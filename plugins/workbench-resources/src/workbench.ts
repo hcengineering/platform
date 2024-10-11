@@ -117,15 +117,15 @@ async function syncTabLoc (): Promise<void> {
     tabsStore.update((tabs) => [...tabs, tab])
     selectTab(tab._id)
   } else {
-    if (
-      tabByName !== undefined &&
-      tabByName._id !== tab._id &&
-      (loc.path[2] !== tabLoc.path[2] || loc.path[3] !== tabLoc.path[3])
-    ) {
-      selectTab(tabByName._id)
-      prevTabIdStore.set(tabByName._id)
-      return
-    }
+    // TODO: Fix this
+    // if (
+    //   tabByName !== undefined &&
+    //   tabByName._id !== tab._id &&
+    //   (loc.path[2] !== tabLoc.path[2] || loc.path[3] !== tabLoc.path[3])
+    // ) {
+    //   selectTab(tabByName._id)
+    //   return
+    // }
 
     await getClient().update(tab, { location: url, name })
   }

@@ -171,7 +171,6 @@
 
   let tabs: WorkbenchTab[] = []
   let areTabsLoaded = false
-  $: prevTabId = $prevTabIdStore
 
   const query = createQuery()
   $: query.query(
@@ -391,9 +390,9 @@
   async function syncLoc (loc: Location): Promise<void> {
     accessDeniedStore.set(false)
     const originalLoc = JSON.stringify(loc)
-    if ($tabIdStore !== prevTabId) {
-      if (prevTabId) {
-        const prevTab = tabs.find((t) => t._id === prevTabId)
+    if ($tabIdStore !== $prevTabIdStore) {
+      if ($prevTabIdStore) {
+        const prevTab = tabs.find((t) => t._id === $prevTabIdStore)
         const prevTabLoc = prevTab ? getTabLocation(prevTab) : undefined
         if (prevTabLoc === undefined || prevTabLoc.path[2] !== loc.path[2]) {
           clear(1)
