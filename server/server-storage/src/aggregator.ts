@@ -55,10 +55,12 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     let current: Blob | undefined = (
       await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: objectName as Ref<Blob> }, { limit: 1 })
     ).shift()
+    let updated = false
     if (current === undefined && providerId !== undefined) {
       current = await this.adapters.get(providerId)?.stat(ctx, workspaceId, objectName)
       if (current !== undefined) {
         current.provider = providerId
+        updated = true
       }
     }
 
@@ -66,10 +68,10 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     if (provider === undefined) {
       throw new NoSuchKeyError('No such provider found')
     }
-    const stat = await provider.stat(ctx, workspaceId, objectName)
+    const stat = updated ? current : await provider.stat(ctx, workspaceId, objectName)
     if (stat !== undefined) {
       stat.provider = providerId ?? current?.provider ?? this.defaultAdapter
-      if (current !== undefined) {
+      if (current !== undefined && !updated) {
         await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, [current._id])
       }
       await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [stat])
