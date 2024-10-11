@@ -28,17 +28,27 @@ const router = Router<Request>({
   finally: [(r: any) => r ?? error(404), corsify]
 })
 
+const BRANDING_KEY_PREFIX = 'branding/'
+
 async function getBrandings (env: Env): Promise<BrandingMap> {
   // Note: up to 100 keys can be listed at once. If more, use cursor.
-  const keys = (await env.KV.list()).keys
-  const values = await Promise.all(keys.map(async (key) => await env.KV.get(key.name)))
+  const keys = (await env.KV.list({ prefix: BRANDING_KEY_PREFIX })).keys
+  const values = await Promise.all(keys.map(async (key) => await env.KV.get<Branding>(key.name, { type: 'json' })))
 
   return keys.reduce<BrandingMap>((acc, key, idx) => {
     if (values[idx] === null) return acc
 
-    acc[key.name] = JSON.parse(values[idx])
+    acc[getBrandingHost(key.name)] = values[idx]
     return acc
   }, {})
+}
+
+function getBrandingKey (host: string): string {
+  return `${BRANDING_KEY_PREFIX}${host}`
+}
+
+function getBrandingHost (key: string): string {
+  return key.slice(BRANDING_KEY_PREFIX.length)
 }
 
 router.get('/brandings', async (req, ctx: { env: Env, exCtx: ExecutionContext }) => {
@@ -56,13 +66,13 @@ export default class BrandingWorker extends WorkerEntrypoint<Env> {
   }
 
   async getBranding (host: string): Promise<Branding | null> {
-    const value = await this.env.KV.get(host)
+    const value = await this.env.KV.get<Branding>(getBrandingKey(host), { type: 'json' })
 
     if (value == null) {
       return null
     }
 
-    return JSON.parse(value)
+    return value
   }
 
   async getBrandings (): Promise<BrandingMap> {
