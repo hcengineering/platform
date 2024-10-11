@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { MarkupNode, ReferenceNode, jsonToPmNode } from '@hcengineering/text'
+  import { MarkupNode, ReferenceNode, CommentNode, jsonToPmNode } from '@hcengineering/text'
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
@@ -86,7 +86,8 @@
           objectClass
         }),
         ReferenceNode,
-        DecorationExtension
+        DecorationExtension,
+        CommentNode
       ],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected

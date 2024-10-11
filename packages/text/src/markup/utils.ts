@@ -200,7 +200,7 @@ export function markupToHTML (markup: Markup, extensions?: Extensions): string {
 /** @public */
 export function htmlToJSON (html: string, extensions?: Extensions): MarkupNode {
   extensions = extensions ?? defaultExtensions
-  return generateJSON(html, extensions) as MarkupNode
+  return generateJSON(html, extensions, { preserveWhitespace: 'full' }) as MarkupNode
 }
 
 /** @public */

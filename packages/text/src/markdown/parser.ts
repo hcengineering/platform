@@ -417,8 +417,18 @@ const tokensBlock: Record<string, ParsingBlockRule> = {
   paragraph: { block: MarkupNodeType.paragraph },
   list_item: { block: MarkupNodeType.list_item },
   task_item: { block: MarkupNodeType.taskItem, getAttrs: (tok) => ({ 'data-type': 'taskItem' }) },
-  bullet_list: { block: MarkupNodeType.bullet_list },
-  todo_list: { block: MarkupNodeType.todoList },
+  bullet_list: {
+    block: MarkupNodeType.bullet_list,
+    getAttrs: (tok) => ({
+      bullet: tok.markup
+    })
+  },
+  todo_list: {
+    block: MarkupNodeType.todoList,
+    getAttrs: (tok) => ({
+      bullet: tok.markup
+    })
+  },
   todo_item: {
     block: MarkupNodeType.todoItem,
     getAttrs: (tok) => ({
@@ -523,9 +533,24 @@ const tokensNode: Record<string, ParsingNodeRule> = {
   hardbreak: { node: MarkupNodeType.hard_break }
 }
 const tokensMark: Record<string, ParsingMarkRule> = {
-  em: { mark: MarkupMarkType.em },
-  bold: { mark: MarkupMarkType.bold },
-  strong: { mark: MarkupMarkType.bold },
+  em: {
+    mark: MarkupMarkType.em,
+    getAttrs: (tok: Token, state: MarkdownParseState) => {
+      return { marker: tok.markup }
+    }
+  },
+  bold: {
+    mark: MarkupMarkType.bold,
+    getAttrs: (tok: Token, state: MarkdownParseState) => {
+      return { marker: tok.markup }
+    }
+  },
+  strong: {
+    mark: MarkupMarkType.bold,
+    getAttrs: (tok: Token, state: MarkdownParseState) => {
+      return { marker: tok.markup }
+    }
+  },
   s: { mark: MarkupMarkType.strike },
   u: { mark: MarkupMarkType.underline },
   code_inline: {
@@ -602,6 +627,7 @@ export class MarkdownParser {
       html: true
     })
     this.tokenizer.core.ruler.after('inline', 'task_list', this.listRule)
+    this.tokenizer.core.ruler.after('inline', 'html_comment', this.htmlCommentRule)
 
     this.tokenHandlers = tokenHandlers(tokensBlock, tokensNode, tokensMark, specialRule, ignoreRule, extensions)
   }
@@ -617,6 +643,19 @@ export class MarkdownParser {
       doc = state.closeNode()
     } while (state.stack.length > 0)
     return doc
+  }
+
+  htmlCommentRule: RuleCore = (state: StateCore): boolean => {
+    const tokens = state.tokens
+    for (let i = 0; i < tokens.length; i++) {
+      // Prosemirror entirely ignores comments when parsing, so
+      // here we replaces html comment tag with a custom tag so the comments got parsed as a node
+      if (tokens[i].type === 'html_block' || tokens[i].type === 'html_inline') {
+        const content = tokens[i].content.replaceAll('<!--', '<comment>').replaceAll('-->', '</comment>')
+        tokens[i].content = content
+      }
+    }
+    return true
   }
 
   listRule: RuleCore = (state: TaskListStateCore): boolean => {
@@ -647,7 +686,9 @@ export class MarkdownParser {
         if (itemCloseIdx === -1) {
           itemCloseIdx = tokens.length - i
         } else if (tokens[i].type !== tokens[tokens.length - itemCloseIdx].type) {
-          tokens.splice(i + 1, 0, new state.Token('bullet_list_open', 'ul', 1))
+          const bulletListOpen = new state.Token('bullet_list_open', 'ul', 1)
+          bulletListOpen.markup = tokens[i + 1].markup
+          tokens.splice(i + 1, 0, bulletListOpen)
           tokens.splice(i + 1, 0, new state.Token('bullet_list_close', 'ul', -1))
           convertTodoList(tokens, i + 2, tokens.length - listCloseIdx, tokens.length - itemCloseIdx)
           listCloseIdx = tokens.length - i - 1
