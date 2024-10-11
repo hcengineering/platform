@@ -177,10 +177,8 @@ async function processAdapter (
           if (aggrBlob === undefined || aggrBlob?.provider !== targetBlob.provider) {
             targetBlob = await exAdapter.syncBlobFromStorage(ctx, workspaceId, targetBlob._id, exAdapter.defaultAdapter)
           }
-          if (targetBlob.size === data.size) {
-            // We could safely delete source blob
-            toRemove.push(data._id)
-          }
+          // We could safely delete source blob
+          toRemove.push(data._id)
         }
 
         if (targetBlob === undefined) {
@@ -211,7 +209,7 @@ async function processAdapter (
             }
           })
 
-          if (targetBlob !== undefined && targetBlob.size === sourceBlob.size) {
+          if (targetBlob !== undefined) {
             // We could safely delete source blob
             toRemove.push(sourceBlob._id)
           }

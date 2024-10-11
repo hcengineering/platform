@@ -29,7 +29,7 @@
   import login from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { broadcastEvent, getMetadata, getResource, IntlString } from '@hcengineering/platform'
+  import { broadcastEvent, getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
   import {
     ActionContext,
     ComponentExtensions,
@@ -56,6 +56,7 @@
     getLocation,
     IconSettings,
     Label,
+    languageStore,
     Location,
     location,
     locationStorageKeyId,
@@ -112,7 +113,16 @@
   import TopMenu from './icons/TopMenu.svelte'
   import WidgetsBar from './sidebar/Sidebar.svelte'
   import { sidebarStore, SidebarVariant, syncSidebarState } from '../sidebar'
-  import { getTabLocation, prevTabIdStore, selectTab, syncWorkbenchTab, tabIdStore, tabsStore } from '../workbench'
+  import {
+    getTabDataByLocation,
+    getTabLocation,
+    prevTabIdStore,
+    selectTab,
+    syncWorkbenchTab,
+    tabIdStore,
+    tabsStore
+  } from '../workbench'
+  import { get } from 'svelte/store'
 
   let contentPanel: HTMLElement
 
@@ -161,7 +171,7 @@
 
   let tabs: WorkbenchTab[] = []
   let areTabsLoaded = false
-  $: prevTab = $prevTabIdStore
+  $: prevTabId = $prevTabIdStore
 
   const query = createQuery()
   $: query.query(
@@ -190,10 +200,19 @@
     const isLocEqual = tabLoc ? areLocationsEqual(loc, tabLoc) : false
     if (!isLocEqual) {
       const url = locationToUrl(loc)
-      const tabByUrl = tabs.find((t) => t.location === url)
-      if (tabByUrl !== undefined) {
-        selectTab(tabByUrl._id)
-        prevTabIdStore.set(tabByUrl._id)
+      const data = await getTabDataByLocation(loc)
+      const name = data.name ?? (await translate(data.label, {}, get(languageStore)))
+      const tabByName = get(tabsStore).find((t) => {
+        if (t.location === url) return true
+        if (t.name !== name) return false
+
+        const tabLoc = getTabLocation(t)
+
+        return tabLoc.path[2] === loc.path[2] && tabLoc.path[3] === loc.path[3]
+      })
+      if (tabByName !== undefined) {
+        selectTab(tabByName._id)
+        prevTabIdStore.set(tabByName._id)
       } else {
         const tabToReplace = tabs.findLast((t) => !t.isPinned)
         if (tabToReplace !== undefined) {
@@ -372,10 +391,14 @@
   async function syncLoc (loc: Location): Promise<void> {
     accessDeniedStore.set(false)
     const originalLoc = JSON.stringify(loc)
-    if ($tabIdStore !== prevTab) {
-      if (prevTab) {
-        clear(1)
-        clear(2)
+    if ($tabIdStore !== prevTabId) {
+      if (prevTabId) {
+        const prevTab = tabs.find((t) => t._id === prevTabId)
+        const prevTabLoc = prevTab ? getTabLocation(prevTab) : undefined
+        if (prevTabLoc === undefined || prevTabLoc.path[2] !== loc.path[2]) {
+          clear(1)
+          clear(2)
+        }
       }
       prevTabIdStore.set($tabIdStore)
     }
