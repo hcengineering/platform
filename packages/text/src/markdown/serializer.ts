@@ -4,7 +4,7 @@ import { messageContent, nodeAttrs } from './node'
 import { MarkupMark, MarkupNode, MarkupNodeType } from '../markup/model'
 import { defaultExtensions } from '../extensions'
 
-type FirstDelim = (i: number, attrs?: Record<string, any>) => string
+type FirstDelim = (i: number, attrs?: Record<string, any>, parentAttrs?: Record<string, any>) => string
 interface IState {
   wrapBlock: (delim: string, firstDelim: string | null, node: MarkupNode, f: () => void) => void
   flushClose: (size: number) => void
@@ -59,13 +59,14 @@ function isPlainURL (link: MarkupMark, parent: MarkupNode, index: number): boole
   return index === (parent.content?.length ?? 0) - 1 || !isInSet(link, parent.content?.[index + 1]?.marks ?? [])
 }
 
-const formatTodoItem: FirstDelim = (i, attrs) => {
+const formatTodoItem: FirstDelim = (i, attrs, parentAttrs?: Record<string, any>) => {
   const meta =
     attrs?.todoid !== undefined && attrs?.userid !== undefined
       ? `<!-- todoid=${attrs?.todoid},userid=${attrs?.userid} -->`
       : ''
 
-  return `* [${attrs?.checked === true ? 'x' : ' '}] ${meta}`
+  const bullet = parentAttrs?.bullet ?? '*'
+  return `${bullet} [${attrs?.checked === true ? 'x' : ' '}] ${meta}`
 }
 
 // *************************************************************
@@ -672,7 +673,7 @@ export class MarkdownState implements IState {
     firstDelim: FirstDelim
   ): void {
     if (i > 0 && isTight) this.flushClose(1)
-    this.wrapBlock(delim, firstDelim(i, node.content?.[i].attrs), node, () => {
+    this.wrapBlock(delim, firstDelim(i, node.content?.[i].attrs, node.attrs), node, () => {
       this.render(child, node, i)
     })
   }
@@ -716,8 +717,11 @@ export class MarkdownState implements IState {
   // : (Mark, bool, string?) → string
   // Get the markdown string for a given opening or closing mark.
   markString (mark: MarkupMark, open: boolean, parent: MarkupNode, index: number): string {
-    const info = this.marks[mark.type]
-    const value = open ? info.open : info.close
+    let value = mark.attrs?.marker
+    if (value === undefined) {
+      const info = this.marks[mark.type]
+      value = open ? info.open : info.close
+    }
     return typeof value === 'string' ? value : value(this, mark, parent, index) ?? ''
   }
 }
