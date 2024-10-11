@@ -479,42 +479,32 @@ export class PostgresAccountDB implements AccountDB {
 
     // Apply all the migrations
     for (const migration of this.getMigrations()) {
-      await this.client.query('SELECT apply_migration($1, $2)', [migration[0], migration[1]])
+      await this.migrate(migration[0], migration[1])
+    }
+  }
+
+  async migrate (name: string, ddl: string): Promise<void> {
+    const res = await this.client.query(
+      'INSERT INTO _account_applied_migrations (identifier, ddl) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [name, ddl]
+    )
+
+    if (res.rowCount === 1) {
+      console.log(`Applying migration: ${name}`)
+      await this.client.query(ddl)
+    } else {
+      console.log(`Migration ${name} already applied`)
     }
   }
 
   async _init (): Promise<void> {
-    // Based on https://github.com/purcell/postgresql-migrations
     await this.client.query(
       `
-      DO
-      $body$
-      BEGIN
-        IF NOT EXISTS (SELECT FROM information_schema.routines WHERE routine_name = 'apply_migration') THEN
-          CREATE FUNCTION apply_migration (migration_name VARCHAR(255), ddl TEXT) RETURNS BOOLEAN
-            AS $$
-          BEGIN
-            IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '_account_applied_migrations') THEN
-              CREATE TABLE _account_applied_migrations (
-                  identifier VARCHAR(255) NOT NULL PRIMARY KEY
-                , ddl TEXT NOT NULL
-                , applied_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-              );
-            END IF;
-            LOCK TABLE _account_applied_migrations IN EXCLUSIVE MODE;
-            IF NOT EXISTS (SELECT 1 FROM _account_applied_migrations m WHERE m.identifier = migration_name)
-            THEN
-              RAISE NOTICE 'Applying migration: %', migration_name;
-              EXECUTE ddl;
-              INSERT INTO _account_applied_migrations (identifier, ddl) VALUES (migration_name, ddl);
-              RETURN TRUE;
-            END IF;
-            RETURN FALSE;
-          END;
-          $$ LANGUAGE plpgsql;
-        END IF;
-      END
-      $body$;
+        CREATE TABLE IF NOT EXISTS _account_applied_migrations (
+            identifier VARCHAR(255) NOT NULL PRIMARY KEY
+          , ddl TEXT NOT NULL
+          , applied_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        );
       `
     )
   }
@@ -544,109 +534,91 @@ export class PostgresAccountDB implements AccountDB {
     return [
       'account_db_v1_init',
       `
-      DO
-      $$
-      BEGIN
       /* ======= ACCOUNT ======= */
-      IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'account') THEN
-        CREATE TABLE account (
-          _id VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL,
-          hash BYTEA,
-          salt BYTEA NOT NULL,
-          first VARCHAR(255) NOT NULL,
-          last VARCHAR(255) NOT NULL,
-          admin BOOLEAN,
-          confirmed BOOLEAN,
-          "lastWorkspace" BIGINT,
-          "createdOn" BIGINT NOT NULL,
-          "lastVisit" BIGINT,
-          "githubId" VARCHAR(100),
-          "openId" VARCHAR(100),
-          PRIMARY KEY(_id)
-        );
+      CREATE TABLE IF NOT EXISTS account (
+        _id VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        hash BYTEA,
+        salt BYTEA NOT NULL,
+        first VARCHAR(255) NOT NULL,
+        last VARCHAR(255) NOT NULL,
+        admin BOOLEAN,
+        confirmed BOOLEAN,
+        "lastWorkspace" BIGINT,
+        "createdOn" BIGINT NOT NULL,
+        "lastVisit" BIGINT,
+        "githubId" VARCHAR(100),
+        "openId" VARCHAR(100),
+        PRIMARY KEY(_id)
+      );
 
-        CREATE INDEX account_email ON account ("email");
-      END IF;
+      CREATE INDEX IF NOT EXISTS account_email ON account ("email");
 
       /* ======= WORKSPACE ======= */
-      IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'workspace') THEN
-        CREATE TABLE workspace (
-          _id VARCHAR(255) NOT NULL,
-          workspace VARCHAR(255) NOT NULL,
-          disabled BOOLEAN,
-          "versionMajor" SMALLINT NOT NULL,
-          "versionMinor" SMALLINT NOT NULL,
-          "versionPatch" SMALLINT NOT NULL,
-          branding VARCHAR(255),
-          "workspaceUrl" VARCHAR(255),
-          "workspaceName" VARCHAR(255),
-          "createdOn" BIGINT NOT NULL,
-          "lastVisit" BIGINT,
-          "createdBy" VARCHAR(255),
-          mode VARCHAR(60),
-          progress SMALLINT,
-          endpoint VARCHAR(255),
-          region VARCHAR(100),
-          "lastProcessingTime" BIGINT,
-          attempts SMALLINT,
-          message VARCHAR(1000),
-          "backupInfo" JSONB,
-          PRIMARY KEY(_id)
-        );
+      CREATE TABLE IF NOT EXISTS workspace (
+        _id VARCHAR(255) NOT NULL,
+        workspace VARCHAR(255) NOT NULL,
+        disabled BOOLEAN,
+        "versionMajor" SMALLINT NOT NULL,
+        "versionMinor" SMALLINT NOT NULL,
+        "versionPatch" SMALLINT NOT NULL,
+        branding VARCHAR(255),
+        "workspaceUrl" VARCHAR(255),
+        "workspaceName" VARCHAR(255),
+        "createdOn" BIGINT NOT NULL,
+        "lastVisit" BIGINT,
+        "createdBy" VARCHAR(255),
+        mode VARCHAR(60),
+        progress SMALLINT,
+        endpoint VARCHAR(255),
+        region VARCHAR(100),
+        "lastProcessingTime" BIGINT,
+        attempts SMALLINT,
+        message VARCHAR(1000),
+        "backupInfo" JSONB,
+        PRIMARY KEY(_id)
+      );
 
-        CREATE INDEX workspace_workspace ON workspace ("workspace");
-      END IF;
+      CREATE INDEX IF NOT EXISTS workspace_workspace ON workspace ("workspace");
 
       /* ======= OTP ======= */
-      IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'otp') THEN
-        CREATE TABLE otp (
-          account VARCHAR(255) NOT NULL REFERENCES account (_id),
-          otp VARCHAR(20) NOT NULL,
-          expires BIGINT NOT NULL,
-          "createdOn" BIGINT NOT NULL,
-          PRIMARY KEY(account, otp)
-        );
-      END IF;
+      CREATE TABLE IF NOT EXISTS otp (
+        account VARCHAR(255) NOT NULL REFERENCES account (_id),
+        otp VARCHAR(20) NOT NULL,
+        expires BIGINT NOT NULL,
+        "createdOn" BIGINT NOT NULL,
+        PRIMARY KEY(account, otp)
+      );
 
       /* ======= INVITE ======= */
-      IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'invite') THEN
-        CREATE TABLE invite (
-            _id VARCHAR(255) NOT NULL,
-            workspace VARCHAR(255) NOT NULL,
-            exp BIGINT NOT NULL,
-            "emailMask" VARCHAR(100),
-            "limit" SMALLINT,
-            role VARCHAR(40),
-            "personId" VARCHAR(255),
-            PRIMARY KEY(_id)
-        );
-      END IF;
+      CREATE TABLE IF NOT EXISTS invite (
+        _id VARCHAR(255) NOT NULL,
+        workspace VARCHAR(255) NOT NULL,
+        exp BIGINT NOT NULL,
+        "emailMask" VARCHAR(100),
+        "limit" SMALLINT,
+        role VARCHAR(40),
+        "personId" VARCHAR(255),
+        PRIMARY KEY(_id)
+      );
 
       /* ======= UPGRADE ======= */
-      IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'upgrade') THEN
-        CREATE TABLE upgrade (
-            region VARCHAR(100) NOT NULL,
-            version VARCHAR(100) NOT NULL,
-            "startTime" BIGINT NOT NULL,
-            total INTEGER NOT NULL,
-            "toProcess" INTEGER NOT NULL,
-            "lastUpdate" BIGINT,
-            PRIMARY KEY(region, version)
-        );
-      END IF;
+      CREATE TABLE IF NOT EXISTS upgrade (
+        region VARCHAR(100) NOT NULL,
+        version VARCHAR(100) NOT NULL,
+        "startTime" BIGINT NOT NULL,
+        total INTEGER NOT NULL,
+        "toProcess" INTEGER NOT NULL,
+        "lastUpdate" BIGINT,
+        PRIMARY KEY(region, version)
+      );
 
       /* ======= SUPPLEMENTARY ======= */
-      IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '${this.wsAssignmentName}') THEN
-        CREATE TABLE ${this.wsAssignmentName} (
-            workspace VARCHAR(255) NOT NULL REFERENCES workspace (_id),
-            account VARCHAR(255) NOT NULL REFERENCES account (_id),
-            PRIMARY KEY(workspace, account)
-        );
-      END IF;
-
-      END
-      $$
+      CREATE TABLE IF NOT EXISTS ${this.wsAssignmentName} (
+        workspace VARCHAR(255) NOT NULL REFERENCES workspace (_id),
+        account VARCHAR(255) NOT NULL REFERENCES account (_id),
+        PRIMARY KEY(workspace, account)
+      );
     `
     ]
   }
