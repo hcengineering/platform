@@ -28,7 +28,7 @@ export class ChannelPage extends CommonPage {
       .locator('xpath=following-sibling::div[1]')
       .locator('button', { hasText: channel })
 
-  readonly chooseChannel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
+  readonly chooseChannel = (channel: string): Locator => this.page.locator('div.antiPanel-navigator').getByRole('button', { name: channel })
   readonly closePopupWindow = (): Locator => this.page.locator('.notifyPopup button[data-id="btnNotifyClose"]')
   readonly openAddMemberToChannel = (userName: string): Locator => this.page.getByRole('button', { name: userName })
   readonly addMemberToChannelTableButton = (userName: string): Locator =>
