@@ -100,6 +100,8 @@
   <svelte:fragment slot="postfix">
     {#if tab.isPinned}
       <Icon icon={view.icon.PinTack} size="x-small" />
+    {:else if $tabsStore.length === 1}
+      <div />
     {/if}
   </svelte:fragment>
 </ModernTab>

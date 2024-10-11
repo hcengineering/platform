@@ -112,7 +112,7 @@
   import TopMenu from './icons/TopMenu.svelte'
   import WidgetsBar from './sidebar/Sidebar.svelte'
   import { sidebarStore, SidebarVariant, syncSidebarState } from '../sidebar'
-  import { getTabLocation, selectTab, syncWorkbenchTab, tabIdStore, tabsStore } from '../workbench'
+  import { getTabLocation, prevTabIdStore, selectTab, syncWorkbenchTab, tabIdStore, tabsStore } from '../workbench'
 
   let contentPanel: HTMLElement
 
@@ -161,7 +161,7 @@
 
   let tabs: WorkbenchTab[] = []
   let areTabsLoaded = false
-  let prevTab: Ref<WorkbenchTab> | undefined
+  $: prevTab = $prevTabIdStore
 
   const query = createQuery()
   $: query.query(
@@ -192,24 +192,24 @@
       const url = locationToUrl(loc)
       const tabByUrl = tabs.find((t) => t.location === url)
       if (tabByUrl !== undefined) {
-        prevTab = tabByUrl._id
         selectTab(tabByUrl._id)
+        prevTabIdStore.set(tabByUrl._id)
       } else {
         const tabToReplace = tabs.findLast((t) => !t.isPinned)
         if (tabToReplace !== undefined) {
           await client.update(tabToReplace, {
             location: url
           })
-          prevTab = tabToReplace._id
           selectTab(tabToReplace._id)
+          prevTabIdStore.set(tabToReplace._id)
         } else {
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
             attachedTo: account._id,
             location: url,
             isPinned: false
           })
-          prevTab = _id
           selectTab(_id)
+          prevTabIdStore.set(_id)
         }
       }
     }
@@ -377,7 +377,7 @@
         clear(1)
         clear(2)
       }
-      prevTab = $tabIdStore
+      prevTabIdStore.set($tabIdStore)
     }
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
@@ -766,7 +766,7 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={notificationId} shrink={0}>
+        <NavLink app={notificationId} shrink={0} restoreLastLocation>
           <AppItem
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}
