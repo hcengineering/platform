@@ -20,5 +20,5 @@ export function isOwner (account: Account, ctx: MeasureContext<SessionData>): bo
 }
 
 export function isSystem (account: Account): boolean {
-  return account._id === core.account.System
+  return account._id === core.account.System || account._id.startsWith('system:')
 }
