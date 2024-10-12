@@ -788,7 +788,7 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={notificationId} shrink={0} restoreLastLocation>
+        <NavLink app={notificationId} shrink={0}>
           <AppItem
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}

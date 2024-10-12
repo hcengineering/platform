@@ -199,7 +199,7 @@ export async function createTab (): Promise<void> {
   try {
     const last = localStorage.getItem(`${locationStorageKeyId}_${notificationId}`)
     const lastLocation: Location | undefined = last != null ? JSON.parse(last) : undefined
-    if (lastLocation != null && lastLocation.path[2] === notificationId) {
+    if (lastLocation != null && lastLocation.path[1] === loc.path[1] && lastLocation.path[2] === notificationId) {
       defaultUrl = locationToUrl(lastLocation)
     }
   } catch (e) {
