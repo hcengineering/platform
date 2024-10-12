@@ -175,7 +175,7 @@
   const query = createQuery()
   $: query.query(
     workbench.class.WorkbenchTab,
-    {},
+    { attachedTo: account._id },
     (res) => {
       tabs = res
       tabsStore.set(tabs)
