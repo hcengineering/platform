@@ -108,34 +108,37 @@ export class ClientSession implements Session {
   async getAccount (ctx: ClientSessionCtx): Promise<void> {
     const account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
     if (account === undefined && this.token.extra?.admin === 'true') {
-      const systemAccount = this._pipeline.context.modelDb.findObject(this.token.email as Ref<Account>)
-      if (systemAccount === undefined) {
-        // Generate account for admin user
-        const factory = new TxFactory(core.account.System)
-        const email = `system:${this.token.email}`
-        const createTx = factory.createTxCreateDoc(
-          core.class.Account,
-          core.space.Model,
-          {
-            role: AccountRole.Owner,
-            email
-          },
-          this.token.email as Ref<Account>
-        )
-        this.includeSessionContext(ctx.ctx)
-        await this._pipeline.tx(ctx.ctx, [createTx])
-        const acc = TxProcessor.createDoc2Doc(createTx)
-        await ctx.sendResponse(acc)
-        return
-      } else {
-        await ctx.sendResponse(systemAccount)
-        return
-      }
+      await ctx.sendResponse(this.getSystemAccount())
+      return
     }
     await ctx.sendResponse(account)
   }
 
+  private getSystemAccount (): Account {
+    // Generate account for admin user
+    const factory = new TxFactory(core.account.System)
+    const email = `system:${this.token.email}`
+    const createTx = factory.createTxCreateDoc(
+      core.class.Account,
+      core.space.Model,
+      {
+        role: AccountRole.Owner,
+        email
+      },
+      email as Ref<Account>
+    )
+    return TxProcessor.createDoc2Doc(createTx)
+  }
+
   includeSessionContext (ctx: MeasureContext): void {
+    let account: Account | undefined
+    if (this.token.extra?.admin === 'true') {
+      account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
+      if (account === undefined) {
+        account = this.getSystemAccount()
+      }
+    }
+
     const contextData = new SessionDataImpl(
       this.token.email,
       this.sessionId,
@@ -149,7 +152,8 @@ export class ClientSession implements Session {
       false,
       new Map(),
       new Map(),
-      this._pipeline.context.modelDb
+      this._pipeline.context.modelDb,
+      account
     )
     ctx.contextData = contextData
   }
