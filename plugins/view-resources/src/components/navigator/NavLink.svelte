@@ -38,7 +38,7 @@
       if (last != null) {
         try {
           const newLocation: Location = JSON.parse(last)
-          if (newLocation.path[2] === app && newLocation.path[3] != null) {
+          if (newLocation.path[1] === loc.path[1] && newLocation.path[2] === app && newLocation.path[3] != null) {
             return newLocation
           }
         } catch (e) {
