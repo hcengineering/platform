@@ -107,32 +107,35 @@ export class ClientSession implements Session {
 
   async getAccount (ctx: ClientSessionCtx): Promise<void> {
     const account = this._pipeline.context.modelDb.getAccountByEmail(this.token.email)
-    if (account === undefined && this.token.extra?.admin === 'true') {
-      const systemAccount = this._pipeline.context.modelDb.findObject(this.token.email as Ref<Account>)
-      if (systemAccount === undefined) {
-        // Generate account for admin user
-        const factory = new TxFactory(core.account.System)
-        const email = `system:${this.token.email}`
-        const createTx = factory.createTxCreateDoc(
-          core.class.Account,
-          core.space.Model,
-          {
-            role: AccountRole.Owner,
-            email
-          },
-          this.token.email as Ref<Account>
-        )
-        this.includeSessionContext(ctx.ctx)
-        await this._pipeline.tx(ctx.ctx, [createTx])
-        const acc = TxProcessor.createDoc2Doc(createTx)
-        await ctx.sendResponse(acc)
-        return
-      } else {
-        await ctx.sendResponse(systemAccount)
-        return
-      }
+
+    if (account !== undefined || this.token.extra?.admin !== 'true') {
+      await ctx.sendResponse(account);
+      return;
     }
-    await ctx.sendResponse(account)
+    
+    const systemAccount = this._pipeline.context.modelDb.findObject(this.token.email as Ref<Account>);
+    if (systemAccount === undefined) {
+      await ctx.sendResponse(systemAccount);
+      return;
+    }
+    
+    // Generate account for admin user
+    const factory = new TxFactory(core.account.System);
+    const email = `system:${this.token.email}`;
+    const createTx = factory.createTxCreateDoc(
+      core.class.Account,
+      core.space.Model,
+      {
+        role: AccountRole.Owner,
+        email
+      },
+      this.token.email as Ref<Account>
+    );
+
+    this.includeSessionContext(ctx.ctx);
+    await this._pipeline.tx(ctx.ctx, [createTx]);
+    const acc = TxProcessor.createDoc2Doc(createTx);
+    await ctx.sendResponse(acc);
   }
 
   includeSessionContext (ctx: MeasureContext): void {
