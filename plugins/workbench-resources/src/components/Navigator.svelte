@@ -16,7 +16,7 @@
   import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
   import { Scroller, NavItem } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
@@ -40,6 +40,8 @@
   let starred: Space[] = []
   let shownSpaces: Space[] = []
 
+  const adminUser = isAdminUser()
+
   $: if (model) {
     const classes = Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
       (it) => !hierarchy.isMixin(it)
@@ -47,10 +49,12 @@
     if (classes.length > 0) {
       query.query(
         classes.length === 1 ? classes[0] : core.class.Space,
-        {
-          ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
-          members: getCurrentAccount()._id
-        },
+        !adminUser
+          ? {
+              ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
+              members: getCurrentAccount()._id
+            }
+          : { ...(classes.length === 1 ? {} : { _class: { $in: classes } }) },
         (result) => {
           spaces = result
         },
@@ -187,7 +191,7 @@
       />
     {/if}
 
-    {#each model.spaces as m, i (m.label)}
+    {#each model.spaces as m (m.label)}
       <SpacesNav
         spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
         {currentSpace}

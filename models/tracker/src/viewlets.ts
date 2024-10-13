@@ -528,7 +528,13 @@ export function defineViewlets (builder: Builder): void {
         hiddenKeys: ['identifier', 'name', 'description']
       },
       config: [
-        '',
+        {
+          key: '',
+          presenter: tracker.component.ProjectPresenter,
+          props: {
+            openIssues: true
+          }
+        },
         'members',
         {
           key: 'defaultAssignee',
