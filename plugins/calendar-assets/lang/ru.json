@@ -80,7 +80,7 @@
     "SeeAllNumberParticipants": "{value, plural, other {Увидеть всех # участников}}",
     "SeeAllNumberReminders": "{value, plural, other {Просмотреть все # напоминаний}}",
     "Visibility": "Видимость",
-    "Private": "Видно только Вам",
+    "Private": "Видно только вам",
     "Public": "Видно всем",
     "FreeBusy": "Скрыть детали",
     "DefaultVisibility": "Видимость по умолчанию",
