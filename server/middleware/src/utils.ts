@@ -19,6 +19,6 @@ export function isOwner (account: Account, ctx: MeasureContext<SessionData>): bo
   return account.role === AccountRole.Owner || account._id === core.account.System || ctx.contextData.admin === true
 }
 
-export function isSystem (account: Account): boolean {
-  return account._id === core.account.System || account._id.startsWith('system:')
+export function isSystem (account: Account, ctx: MeasureContext<SessionData>): boolean {
+  return account._id === core.account.System || ctx.contextData.admin === true
 }

@@ -503,17 +503,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
 
-    if (
-      ctx.contextData.admin === true &&
-      this.context.hierarchy.isDerived(_class, core.class.Space) &&
-      (newQuery as DocumentQuery<Space>).members !== undefined
-    ) {
-      delete (newQuery as any).members
-    }
-
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (!this.skipFindCheck && !isSystem(account) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
+    if (
+      !this.skipFindCheck &&
+      !isSystem(account, ctx) &&
+      account.role !== AccountRole.DocGuest &&
+      domain !== DOMAIN_MODEL
+    ) {
       if (!isOwner(account, ctx) || !isSpace) {
         if (query[field] !== undefined) {
           const res = await this.mergeQuery(ctx, account, query[field], domain, isSpace)
@@ -566,12 +563,6 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         }
       }
     }
-    if (ctx.contextData.admin === true && this.context.hierarchy.isDerived(_class, core.class.Space)) {
-      // We need to add amin to all spaces.
-      for (const d of findResult) {
-        ;(d as unknown as Space).members = [...((d as unknown as Space).members ?? []), ctx.contextData.account._id]
-      }
-    }
     return findResult
   }
 
@@ -583,7 +574,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.init(ctx)
     const newQuery = { ...query }
     const account = ctx.contextData.account
-    if (!isSystem(account)) {
+    if (!isSystem(account, ctx)) {
       const allSpaces = this.getAllAllowedSpaces(account, true)
       if (query.classes !== undefined) {
         const res = new Set<Ref<Space>>()
@@ -610,7 +601,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   async isUnavailable (ctx: MeasureContext<SessionData>, space: Ref<Space>): Promise<boolean> {
     const account = ctx.contextData.account
-    if (isSystem(account)) return false
+    if (isSystem(account, ctx)) return false
     return !this.getAllAllowedSpaces(account, true).includes(space)
   }
 
