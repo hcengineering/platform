@@ -169,7 +169,6 @@ export type Operations<T> = Partial<T> & {
 export interface DbCollection<T extends Record<string, any>> {
   name: string
 
-  init: () => Promise<void>
   find: (query: Query<T>, sort?: { [P in keyof T]?: 'ascending' | 'descending' }, limit?: number) => Promise<T[]>
   findOne: (query: Query<T>) => Promise<T | null>
   insertOne: <K extends keyof T>(data: Partial<T>, idKey?: K) => Promise<any>

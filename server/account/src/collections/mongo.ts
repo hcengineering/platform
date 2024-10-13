@@ -48,10 +48,6 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
     return this.db.collection<T>(this.name)
   }
 
-  async init (): Promise<void> {
-    // May be used to create indices in Mongo
-  }
-
   /**
    * Ensures indices in the collection or creates new if needed.
    * Drops all other indices that are not in the list.
@@ -152,17 +148,6 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account> impleme
     super('account', db)
   }
 
-  async init (): Promise<void> {
-    const indicesToEnsure: MongoIndex[] = [
-      {
-        key: { email: 1 },
-        options: { unique: true, name: 'hc_account_email_1' }
-      }
-    ]
-
-    await this.ensureIndices(indicesToEnsure)
-  }
-
   convertToObj (acc: Account): Account {
     return {
       ...acc,
@@ -191,29 +176,6 @@ export class AccountMongoDbCollection extends MongoDbCollection<Account> impleme
 export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> implements WorkspaceDbCollection {
   constructor (db: Db) {
     super('workspace', db)
-  }
-
-  async init (): Promise<void> {
-    // await this.collection.createIndex({ workspace: 1 }, { unique: true })
-
-    const indicesToEnsure: MongoIndex[] = [
-      {
-        key: { workspace: 1 },
-        options: {
-          unique: true,
-          name: 'hc_account_workspace_1'
-        }
-      },
-      {
-        key: { workspaceUrl: 1 },
-        options: {
-          unique: true,
-          name: 'hc_account_workspaceUrl_1'
-        }
-      }
-    ]
-
-    await this.ensureIndices(indicesToEnsure)
   }
 
   async countWorkspacesInRegion (region: string, upToVersion?: Data<Version>, visitedSince?: number): Promise<number> {
@@ -350,12 +312,28 @@ export class MongoAccountDB implements AccountDB {
   }
 
   async init (): Promise<void> {
-    await Promise.all([
-      this.workspace.init(),
-      this.account.init(),
-      this.otp.init(),
-      this.invite.init(),
-      this.upgrade.init()
+    await this.account.ensureIndices([
+      {
+        key: { email: 1 },
+        options: { unique: true, name: 'hc_account_email_1' }
+      }
+    ])
+
+    await this.workspace.ensureIndices([
+      {
+        key: { workspace: 1 },
+        options: {
+          unique: true,
+          name: 'hc_account_workspace_1'
+        }
+      },
+      {
+        key: { workspaceUrl: 1 },
+        options: {
+          unique: true,
+          name: 'hc_account_workspaceUrl_1'
+        }
+      }
     ])
   }
 

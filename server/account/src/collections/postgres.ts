@@ -31,28 +31,11 @@ import type {
   UpgradeStatistic
 } from '../types'
 
-export abstract class PostgresDbCollection<T extends Record<string, any>> implements DbCollection<T> {
+export class PostgresDbCollection<T extends Record<string, any>> implements DbCollection<T> {
   constructor (
     readonly name: string,
     readonly client: Pool
   ) {}
-
-  async exists (): Promise<boolean> {
-    const tableInfo = await this.client.query(
-      `
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_name = $1
-    `,
-      [this.name]
-    )
-
-    return (tableInfo.rowCount ?? 0) > 0
-  }
-
-  async init (): Promise<void> {
-    // Create tables, indexes, etc.
-  }
 
   protected buildSelectClause (): string {
     return `SELECT * FROM ${this.name}`
@@ -232,33 +215,6 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account> i
     super('account', client)
   }
 
-  async init (): Promise<void> {
-    if (await this.exists()) return
-
-    await this.client.query(
-      `CREATE TABLE ${this.name} (
-        _id VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        hash BYTEA,
-        salt BYTEA NOT NULL,
-        first VARCHAR(255) NOT NULL,
-        last VARCHAR(255) NOT NULL,
-        admin BOOLEAN,
-        confirmed BOOLEAN,
-        "lastWorkspace" BIGINT,
-        "createdOn" BIGINT NOT NULL,
-        "lastVisit" BIGINT,
-        "githubId" VARCHAR(100),
-        "openId" VARCHAR(100),
-        PRIMARY KEY(_id)
-      )`
-    )
-
-    await this.client.query(`
-      CREATE INDEX ${this.name}_email ON ${this.name} ("email")
-    `)
-  }
-
   protected buildSelectClause (): string {
     return `SELECT 
       _id, 
@@ -297,40 +253,6 @@ export class AccountPostgresDbCollection extends PostgresDbCollection<Account> i
 export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspace> implements WorkspaceDbCollection {
   constructor (readonly client: Pool) {
     super('workspace', client)
-  }
-
-  async init (): Promise<void> {
-    if (await this.exists()) return
-
-    await this.client.query(
-      `CREATE TABLE ${this.name} (
-        _id VARCHAR(255) NOT NULL,
-        workspace VARCHAR(255) NOT NULL,
-        disabled BOOLEAN,
-        "versionMajor" SMALLINT NOT NULL,
-        "versionMinor" SMALLINT NOT NULL,
-        "versionPatch" SMALLINT NOT NULL,
-        branding VARCHAR(255),
-        "workspaceUrl" VARCHAR(255),
-        "workspaceName" VARCHAR(255),
-        "createdOn" BIGINT NOT NULL,
-        "lastVisit" BIGINT,
-        "createdBy" VARCHAR(255),
-        mode VARCHAR(60),
-        progress SMALLINT,
-        endpoint VARCHAR(255),
-        region VARCHAR(100),
-        "lastProcessingTime" BIGINT,
-        attempts SMALLINT,
-        message VARCHAR(1000),
-        "backupInfo" JSONB,
-        PRIMARY KEY(_id)
-      )`
-    )
-
-    await this.client.query(`
-      CREATE INDEX ${this.name}_workspace ON ${this.name} ("workspace")
-    `)
   }
 
   protected buildSelectClause (): string {
@@ -495,46 +417,9 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
   }
 }
 
-export class OtpPostgresDbCollection extends PostgresDbCollection<OtpRecord> implements DbCollection<OtpRecord> {
-  constructor (readonly client: Pool) {
-    super('otp', client)
-  }
-
-  async init (): Promise<void> {
-    if (await this.exists()) return
-
-    await this.client.query(
-      `CREATE TABLE ${this.name} (
-        account VARCHAR(255) NOT NULL REFERENCES account (_id),
-        otp VARCHAR(20) NOT NULL,
-        expires BIGINT NOT NULL,
-        "createdOn" BIGINT NOT NULL,
-        PRIMARY KEY(account, otp)
-      )`
-    )
-  }
-}
-
 export class InvitePostgresDbCollection extends PostgresDbCollection<Invite> implements DbCollection<Invite> {
   constructor (readonly client: Pool) {
     super('invite', client)
-  }
-
-  async init (): Promise<void> {
-    if (await this.exists()) return
-
-    await this.client.query(
-      `CREATE TABLE ${this.name} (
-          _id VARCHAR(255) NOT NULL,
-          workspace VARCHAR(255) NOT NULL,
-          exp BIGINT NOT NULL,
-          "emailMask" VARCHAR(100),
-          "limit" SMALLINT,
-          role VARCHAR(40),
-          "personId" VARCHAR(255),
-          PRIMARY KEY(_id)
-      )`
-    )
   }
 
   protected buildSelectClause (): string {
@@ -572,30 +457,6 @@ export class InvitePostgresDbCollection extends PostgresDbCollection<Invite> imp
   }
 }
 
-export class UpgradePostgresDbCollection
-  extends PostgresDbCollection<UpgradeStatistic>
-  implements DbCollection<UpgradeStatistic> {
-  constructor (readonly client: Pool) {
-    super('upgrade', client)
-  }
-
-  async init (): Promise<void> {
-    if (await this.exists()) return
-
-    await this.client.query(
-      `CREATE TABLE ${this.name} (
-          region VARCHAR(100) NOT NULL,
-          version VARCHAR(100) NOT NULL,
-          "startTime" BIGINT NOT NULL,
-          total INTEGER NOT NULL,
-          "toProcess" INTEGER NOT NULL,
-          "lastUpdate" BIGINT,
-          PRIMARY KEY(region, version)
-      )`
-    )
-  }
-}
-
 export class PostgresAccountDB implements AccountDB {
   readonly wsAssignmentName = 'workspace_assignment'
 
@@ -608,39 +469,43 @@ export class PostgresAccountDB implements AccountDB {
   constructor (readonly client: Pool) {
     this.workspace = new WorkspacePostgresDbCollection(client)
     this.account = new AccountPostgresDbCollection(client)
-    this.otp = new OtpPostgresDbCollection(client)
+    this.otp = new PostgresDbCollection<OtpRecord>('otp', client)
     this.invite = new InvitePostgresDbCollection(client)
-    this.upgrade = new UpgradePostgresDbCollection(client)
+    this.upgrade = new PostgresDbCollection<UpgradeStatistic>('upgrade', client)
   }
 
   async init (): Promise<void> {
-    await Promise.all([this.workspace.init(), this.account.init(), this.upgrade.init()])
-
-    await Promise.all([this.otp.init(), this.invite.init()])
-
     await this._init()
+
+    // Apply all the migrations
+    for (const migration of this.getMigrations()) {
+      await this.migrate(migration[0], migration[1])
+    }
+  }
+
+  async migrate (name: string, ddl: string): Promise<void> {
+    const res = await this.client.query(
+      'INSERT INTO _account_applied_migrations (identifier, ddl) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+      [name, ddl]
+    )
+
+    if (res.rowCount === 1) {
+      console.log(`Applying migration: ${name}`)
+      await this.client.query(ddl)
+    } else {
+      console.log(`Migration ${name} already applied`)
+    }
   }
 
   async _init (): Promise<void> {
-    const tableInfo = await this.client.query(
-      `
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_name = $1
-    `,
-      [this.wsAssignmentName]
-    )
-
-    if ((tableInfo.rowCount ?? 0) > 0) {
-      return
-    }
-
     await this.client.query(
-      `CREATE TABLE ${this.wsAssignmentName} (
-          workspace VARCHAR(255) NOT NULL REFERENCES workspace (_id),
-          account VARCHAR(255) NOT NULL REFERENCES account (_id),
-          PRIMARY KEY(workspace, account)
-      )`
+      `
+        CREATE TABLE IF NOT EXISTS _account_applied_migrations (
+            identifier VARCHAR(255) NOT NULL PRIMARY KEY
+          , ddl TEXT NOT NULL
+          , applied_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        );
+      `
     )
   }
 
@@ -658,5 +523,103 @@ export class PostgresAccountDB implements AccountDB {
 
   getObjectId (id: string): ObjectId {
     return id
+  }
+
+  protected getMigrations (): [string, string][] {
+    return [this.getV1Migration()]
+  }
+
+  // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
+  private getV1Migration (): [string, string] {
+    return [
+      'account_db_v1_init',
+      `
+      /* ======= ACCOUNT ======= */
+      CREATE TABLE IF NOT EXISTS account (
+        _id VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        hash BYTEA,
+        salt BYTEA NOT NULL,
+        first VARCHAR(255) NOT NULL,
+        last VARCHAR(255) NOT NULL,
+        admin BOOLEAN,
+        confirmed BOOLEAN,
+        "lastWorkspace" BIGINT,
+        "createdOn" BIGINT NOT NULL,
+        "lastVisit" BIGINT,
+        "githubId" VARCHAR(100),
+        "openId" VARCHAR(100),
+        PRIMARY KEY(_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS account_email ON account ("email");
+
+      /* ======= WORKSPACE ======= */
+      CREATE TABLE IF NOT EXISTS workspace (
+        _id VARCHAR(255) NOT NULL,
+        workspace VARCHAR(255) NOT NULL,
+        disabled BOOLEAN,
+        "versionMajor" SMALLINT NOT NULL,
+        "versionMinor" SMALLINT NOT NULL,
+        "versionPatch" SMALLINT NOT NULL,
+        branding VARCHAR(255),
+        "workspaceUrl" VARCHAR(255),
+        "workspaceName" VARCHAR(255),
+        "createdOn" BIGINT NOT NULL,
+        "lastVisit" BIGINT,
+        "createdBy" VARCHAR(255),
+        mode VARCHAR(60),
+        progress SMALLINT,
+        endpoint VARCHAR(255),
+        region VARCHAR(100),
+        "lastProcessingTime" BIGINT,
+        attempts SMALLINT,
+        message VARCHAR(1000),
+        "backupInfo" JSONB,
+        PRIMARY KEY(_id)
+      );
+
+      CREATE INDEX IF NOT EXISTS workspace_workspace ON workspace ("workspace");
+
+      /* ======= OTP ======= */
+      CREATE TABLE IF NOT EXISTS otp (
+        account VARCHAR(255) NOT NULL REFERENCES account (_id),
+        otp VARCHAR(20) NOT NULL,
+        expires BIGINT NOT NULL,
+        "createdOn" BIGINT NOT NULL,
+        PRIMARY KEY(account, otp)
+      );
+
+      /* ======= INVITE ======= */
+      CREATE TABLE IF NOT EXISTS invite (
+        _id VARCHAR(255) NOT NULL,
+        workspace VARCHAR(255) NOT NULL,
+        exp BIGINT NOT NULL,
+        "emailMask" VARCHAR(100),
+        "limit" SMALLINT,
+        role VARCHAR(40),
+        "personId" VARCHAR(255),
+        PRIMARY KEY(_id)
+      );
+
+      /* ======= UPGRADE ======= */
+      CREATE TABLE IF NOT EXISTS upgrade (
+        region VARCHAR(100) NOT NULL,
+        version VARCHAR(100) NOT NULL,
+        "startTime" BIGINT NOT NULL,
+        total INTEGER NOT NULL,
+        "toProcess" INTEGER NOT NULL,
+        "lastUpdate" BIGINT,
+        PRIMARY KEY(region, version)
+      );
+
+      /* ======= SUPPLEMENTARY ======= */
+      CREATE TABLE IF NOT EXISTS ${this.wsAssignmentName} (
+        workspace VARCHAR(255) NOT NULL REFERENCES workspace (_id),
+        account VARCHAR(255) NOT NULL REFERENCES account (_id),
+        PRIMARY KEY(workspace, account)
+      );
+    `
+    ]
   }
 }

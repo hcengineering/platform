@@ -185,6 +185,8 @@
         {/each}
       {/if}
     </th>
+  {:else if node.type === MarkupNodeType.comment}
+    <!-- Ignore -->
   {:else}
     unknown node: "{node.type}"
     {#if nodes.length > 0}
