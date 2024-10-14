@@ -172,6 +172,12 @@ export const timeOperation: MigrateOperation = {
         func: async (client) => {
           await fillProps(client)
         }
+      },
+      {
+        state: 'fix-rename-backups',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(DOMAIN_TIME, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
       }
     ])
   },

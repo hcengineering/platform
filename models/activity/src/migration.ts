@@ -221,6 +221,12 @@ export const activityOperation: MigrateOperation = {
       {
         state: 'migrate-activity-markup',
         func: migrateActivityMarkup
+      },
+      {
+        state: 'fix-rename-backups',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(DOMAIN_ACTIVITY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
       }
     ])
   },

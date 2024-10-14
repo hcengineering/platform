@@ -393,6 +393,12 @@ export const notificationOperation: MigrateOperation = {
             { hidden: false }
           )
         }
+      },
+      {
+        state: 'fix-rename-backups',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(DOMAIN_DOC_NOTIFY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
       }
     ])
 
