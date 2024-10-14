@@ -209,7 +209,6 @@ export function createServer (
   app.post(
     '/notify',
     wrapRequest(async (req, res, token) => {
-      ctx.info('Received notification', { email: token.email })
       if (req.body == null || !Array.isArray(req.body)) {
         ctx.error('Invalid request body', { body: req.body, email: token.email })
         throw new ApiError(400)
