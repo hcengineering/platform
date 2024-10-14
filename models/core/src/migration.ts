@@ -301,6 +301,13 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'collaborative-content-to-storage',
         func: migrateCollaborativeContentToStorage
+      },
+      {
+        state: 'fix-rename-backups',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(DOMAIN_TX, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+          await client.update(DOMAIN_SPACE, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
       }
     ])
   },

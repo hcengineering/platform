@@ -1,5 +1,6 @@
 //
 
+import { AvatarType, type Contact, type Person, type PersonSpace } from '@hcengineering/contact'
 import {
   type Class,
   type Doc,
@@ -24,9 +25,8 @@ import {
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
-import { AvatarType, type Contact, type Person, type PersonSpace } from '@hcengineering/contact'
 
-import contact, { contactId, DOMAIN_CONTACT } from './index'
+import contact, { contactId, DOMAIN_CHANNEL, DOMAIN_CONTACT } from './index'
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
   const employees = await client.findAll(contact.mixin.Employee, {})
@@ -300,6 +300,13 @@ export const contactOperation: MigrateOperation = {
       {
         state: 'create-person-spaces-v1',
         func: createPersonSpaces
+      },
+      {
+        state: 'fix-rename-backups',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(DOMAIN_CONTACT, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+          await client.update(DOMAIN_CHANNEL, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
       }
     ])
   },

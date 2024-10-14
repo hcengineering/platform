@@ -14,13 +14,13 @@
 //
 
 import { getAccountDB, listWorkspacesRaw } from '@hcengineering/account'
-import attachment from '@hcengineering/attachment'
 import calendar from '@hcengineering/calendar'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { loadCollaborativeDoc, saveCollaborativeDoc, yDocToBuffer } from '@hcengineering/collaboration'
 import contact from '@hcengineering/contact'
 import core, {
   type ArrOf,
+  type AttachedDoc,
   type BackupClient,
   type Class,
   ClassifierKind,
@@ -45,11 +45,14 @@ import core, {
   SortingOrder,
   type Status,
   type StatusCategory,
+  type Tx,
   type TxCUD,
+  type TxCollectionCUD,
   type TxCreateDoc,
   type TxMixin,
   TxOperations,
   TxProcessor,
+  type TxRemoveDoc,
   type TxUpdateDoc,
   type WorkspaceId,
   generateId,
@@ -93,30 +96,6 @@ export async function cleanWorkspace (
 
     const hierarchy = ops.getHierarchy()
 
-    const attachments = await ops.findAll(attachment.class.Attachment, {})
-
-    const contacts = await ops.findAll(contact.class.Contact, {})
-
-    const files = new Set(
-      attachments.map((it) => it.file as string).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
-    )
-
-    const minioList = await storageAdapter.listStream(ctx, workspaceId)
-    const toClean: string[] = []
-    while (true) {
-      const mvFiles = await minioList.next()
-      if (mvFiles.length === 0) {
-        break
-      }
-
-      for (const mv of mvFiles) {
-        if (!files.has(mv._id)) {
-          toClean.push(mv._id)
-        }
-      }
-    }
-    await storageAdapter.remove(ctx, workspaceId, toClean)
-
     if (opt.recruit) {
       const contacts = await ops.findAll(recruit.mixin.Candidate, {})
       console.log('removing Talents', contacts.length)
@@ -134,13 +113,6 @@ export async function cleanWorkspace (
         const t2 = Date.now()
         console.log('remove time:', t2 - t, filter.length)
       }
-
-      // const vacancies = await ops.findAll(recruit.class.Vacancy, {})
-      // console.log('removing vacancies', vacancies.length)
-      // for (const c of vacancies) {
-      //   console.log('Remove', c.name)
-      //   await ops.remove(c)
-      // }
     }
 
     if (opt.tracker) {
@@ -166,12 +138,39 @@ export async function cleanWorkspace (
       const db = getWorkspaceMongoDB(_client, workspaceId)
 
       if (opt.removedTx) {
-        const txes = await db.collection(DOMAIN_TX).find({}).toArray()
+        let processed = 0
+        const iterator = db.collection(DOMAIN_TX).find({})
+        while (true) {
+          const txes: Tx[] = []
 
-        for (const tx of txes) {
-          if (tx._class === core.class.TxRemoveDoc) {
-            // We need to remove all update and create operations for document
-            await db.collection(DOMAIN_TX).deleteMany({ objectId: tx.objectId })
+          const doc = await iterator.next()
+          if (doc == null) {
+            break
+          }
+          txes.push(doc as unknown as Tx)
+          if (iterator.bufferedCount() > 0) {
+            txes.push(...(iterator.readBufferedDocuments() as unknown as Tx[]))
+          }
+
+          for (const tx of txes) {
+            if (tx._class === core.class.TxRemoveDoc) {
+              // We need to remove all update and create operations for document
+              await db.collection(DOMAIN_TX).deleteMany({ objectId: (tx as TxRemoveDoc<Doc>).objectId })
+              processed++
+            }
+            if (
+              tx._class === core.class.TxCollectionCUD &&
+              (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class === core.class.TxRemoveDoc
+            ) {
+              // We need to remove all update and create operations for document
+              await db.collection(DOMAIN_TX).deleteMany({
+                'tx.objectId': ((tx as TxCollectionCUD<Doc, AttachedDoc>).tx as TxRemoveDoc<Doc>).objectId
+              })
+              processed++
+            }
+          }
+          if (processed % 1000 === 0) {
+            console.log('processed', processed)
           }
         }
       }

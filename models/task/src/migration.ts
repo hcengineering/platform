@@ -584,6 +584,12 @@ export const taskOperation: MigrateOperation = {
         func: async (client: MigrationClient) => {
           await migrateSpace(client, task.space.Sequence, core.space.Workspace, [DOMAIN_KANBAN])
         }
+      },
+      {
+        state: 'fix-rename-backups',
+        func: async (client: MigrationClient): Promise<void> => {
+          await client.update(DOMAIN_TASK, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
+        }
       }
     ])
   },
