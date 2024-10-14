@@ -43,17 +43,43 @@ export class CalendarController {
 
   async startAll (): Promise<void> {
     const tokens = await this.mongo.collection<Token>('tokens').find().toArray()
+    const groups = new Map<string, Token[]>()
+    console.log('start calendar service', tokens.length)
     for (const token of tokens) {
-      try {
-        await this.createClient(token)
-      } catch (err) {
-        console.error(`Couldn't create client for ${token.workspace} ${token.userId}`)
+      const group = groups.get(token.workspace)
+      if (group === undefined) {
+        groups.set(token.workspace, [token])
+      } else {
+        group.push(token)
+        groups.set(token.workspace, group)
       }
     }
 
-    for (const client of this.workspaces.values()) {
-      void client.sync()
+    const promises: Promise<void>[] = []
+    for (const [workspace, tokens] of groups) {
+      const startPromise = this.startWorkspace(workspace, tokens)
+      const timeoutPromise = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 60000)
+      })
+      promises.push(Promise.race([startPromise, timeoutPromise]))
     }
+
+    await Promise.all(promises)
+    console.log('Calendar service started')
+  }
+
+  async startWorkspace (workspace: string, tokens: Token[]): Promise<void> {
+    const workspaceClient = await this.getWorkspaceClient(workspace)
+    for (const token of tokens) {
+      try {
+        await workspaceClient.createCalendarClient(token)
+      } catch (err) {
+        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
+      }
+    }
+    void workspaceClient.sync()
   }
 
   push (email: string, mode: 'events' | 'calendar', calendarId?: string): void {

@@ -56,19 +56,44 @@ export class GmailController {
 
   async startAll (): Promise<void> {
     const tokens = await this.mongo.collection<Token>('tokens').find().toArray()
+    const groups = new Map<string, Token[]>()
+    console.log('start gmail service', tokens.length)
     for (const token of tokens) {
-      try {
-        await this.createClient(token)
-      } catch (err) {
-        console.error(`Couldn't create client for ${token.workspace} ${token.userId}`)
+      const group = groups.get(token.workspace)
+      if (group === undefined) {
+        groups.set(token.workspace, [token])
+      } else {
+        group.push(token)
+        groups.set(token.workspace, group)
       }
     }
 
-    for (const client of this.workspaces.values()) {
-      void client.checkUsers().then(async () => {
-        await client.getNewMessages()
+    const promises: Promise<void>[] = []
+    for (const [workspace, tokens] of groups) {
+      const startPromise = this.startWorkspace(workspace, tokens)
+      const timeoutPromise = new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 60000)
       })
+      promises.push(Promise.race([startPromise, timeoutPromise]))
     }
+
+    await Promise.all(promises)
+  }
+
+  async startWorkspace (workspace: string, tokens: Token[]): Promise<void> {
+    const workspaceClient = await this.getWorkspaceClient(workspace)
+    for (const token of tokens) {
+      try {
+        await workspaceClient.createGmailClient(token)
+      } catch (err) {
+        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
+      }
+    }
+    void workspaceClient.checkUsers().then(async () => {
+      await workspaceClient.getNewMessages()
+    })
   }
 
   push (message: string): void {
@@ -121,8 +146,10 @@ export class GmailController {
     let res = this.workspaces.get(workspace)
     if (res === undefined) {
       try {
+        console.log('create workspace worker for', workspace)
         res = await WorkspaceClient.create(this.ctx, this.credentials, this.mongo, this.storageAdapter, workspace)
         this.workspaces.set(workspace, res)
+        console.log('created workspace worker for', workspace)
       } catch (err) {
         console.error(`Couldn't create workspace worker for ${workspace}, reason: `, err)
         throw err
