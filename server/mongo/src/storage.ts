@@ -251,6 +251,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     operations: DocumentUpdate<T>
   ): Promise<void> {
     if (isOperator(operations)) {
+      await this.db.collection(domain).updateMany(this.translateRawQuery(query), { $set: { '%hash%': null } })
       await this.db
         .collection(domain)
         .updateMany(this.translateRawQuery(query), { ...operations } as unknown as UpdateFilter<Document>)
