@@ -503,14 +503,6 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const isSpace = this.context.hierarchy.isDerived(_class, core.class.Space)
     const field = this.getKey(domain)
 
-    if (
-      ctx.contextData.admin === true &&
-      this.context.hierarchy.isDerived(_class, core.class.Space) &&
-      (newQuery as DocumentQuery<Space>).members !== undefined
-    ) {
-      delete (newQuery as any).members
-    }
-
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
     if (
@@ -569,12 +561,6 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
             await this.filterLookup(ctx, object.$lookup)
           }
         }
-      }
-    }
-    if (ctx.contextData.admin === true && this.context.hierarchy.isDerived(_class, core.class.Space)) {
-      // We need to add amin to all spaces.
-      for (const d of findResult) {
-        ;(d as unknown as Space).members = [...((d as unknown as Space).members ?? []), ctx.contextData.account._id]
       }
     }
     return findResult
