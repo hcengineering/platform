@@ -26,6 +26,7 @@ interface Config {
   WATCH_TOPIC_NAME: string
   SystemEmail: string
   FooterMessage: string
+  InitLimit: number
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -40,7 +41,8 @@ const envMap: { [key in keyof Config]: string } = {
   Credentials: 'Credentials',
   SystemEmail: 'SYSTEM_EMAIL',
   WATCH_TOPIC_NAME: 'WATCH_TOPIC_NAME',
-  FooterMessage: 'FOOTER_MESSAGE'
+  FooterMessage: 'FOOTER_MESSAGE',
+  InitLimit: 'INIT_LIMIT'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -56,6 +58,7 @@ const config: Config = (() => {
     SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     Credentials: process.env[envMap.Credentials],
     WATCH_TOPIC_NAME: process.env[envMap.WATCH_TOPIC_NAME],
+    InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     FooterMessage: process.env[envMap.FooterMessage] ?? '<br><br><p>Sent via <a href="https://huly.io">Huly</a></p>'
   }
 

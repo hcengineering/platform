@@ -211,6 +211,7 @@ export class GmailClient {
     await this.setToken(token.tokens)
     await this.refreshToken()
     await this.addClient()
+    void this.startSync()
     void this.getNewMessagesAfterAuth()
 
     const me = await this.getMe()
@@ -385,7 +386,6 @@ export class GmailClient {
   private async addClient (): Promise<void> {
     try {
       const me = await this.getMe()
-      void this.startSync()
       const controller = GmailController.getGmailController()
       controller.addClient(me, this)
     } catch (err) {
