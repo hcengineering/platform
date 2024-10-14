@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { MeasureContext, RateLimiter } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 
 import { type Db } from 'mongodb'
@@ -28,6 +28,7 @@ export class GmailController {
 
   private readonly credentials: ProjectCredentials
   private readonly clients: Map<string, GmailClient[]> = new Map<string, GmailClient[]>()
+  private readonly initLimitter = new RateLimiter(config.InitLimit)
 
   protected static _instance: GmailController
 
@@ -68,28 +69,41 @@ export class GmailController {
       }
     }
 
-    const promises: Promise<void>[] = []
+    const limiter = new RateLimiter(config.InitLimit)
     for (const [workspace, tokens] of groups) {
-      const startPromise = this.startWorkspace(workspace, tokens)
-      const timeoutPromise = new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve()
-        }, 60000)
+      await limiter.add(async () => {
+        const startPromise = this.startWorkspace(workspace, tokens)
+        const timeoutPromise = new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 60000)
+        })
+        await Promise.race([startPromise, timeoutPromise])
       })
-      promises.push(Promise.race([startPromise, timeoutPromise]))
     }
 
-    await Promise.all(promises)
+    await limiter.waitProcessing()
   }
 
   async startWorkspace (workspace: string, tokens: Token[]): Promise<void> {
     const workspaceClient = await this.getWorkspaceClient(workspace)
+    const clients: GmailClient[] = []
     for (const token of tokens) {
       try {
-        await workspaceClient.createGmailClient(token)
+        const timeout = setTimeout(() => {
+          console.log('init client hang', token.workspace, token.userId)
+        }, 60000)
+        const client = await workspaceClient.createGmailClient(token)
+        clearTimeout(timeout)
+        clients.push(client)
       } catch (err) {
         console.error(`Couldn't create client for ${workspace} ${token.userId}`)
       }
+    }
+    for (const client of clients) {
+      void this.initLimitter.add(async () => {
+        await client.startSync()
+      })
     }
     void workspaceClient.checkUsers().then(async () => {
       await workspaceClient.getNewMessages()

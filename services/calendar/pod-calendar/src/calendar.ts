@@ -102,7 +102,6 @@ export class CalendarClient {
       await calendarClient.setToken(user)
       await calendarClient.refreshToken()
       await calendarClient.addClient()
-      void calendarClient.startSync()
     }
     return calendarClient
   }

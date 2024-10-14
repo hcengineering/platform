@@ -24,6 +24,7 @@ interface Config {
   Credentials: string
   WATCH_URL: string
   SystemEmail: string
+  InitLimit: number
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -37,7 +38,8 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   Credentials: 'Credentials',
   SystemEmail: 'SYSTEM_EMAIL',
-  WATCH_URL: 'WATCH_URL'
+  WATCH_URL: 'WATCH_URL',
+  InitLimit: 'INIT_LIMIT'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -52,6 +54,7 @@ const config: Config = (() => {
     Secret: process.env[envMap.Secret],
     SystemEmail: process.env[envMap.SystemEmail] ?? 'anticrm@hc.engineering',
     Credentials: process.env[envMap.Credentials],
+    InitLimit: parseNumber(process.env[envMap.InitLimit]) ?? 50,
     WATCH_URL: process.env[envMap.WATCH_URL]
   }
 
