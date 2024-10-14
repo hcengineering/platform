@@ -159,11 +159,15 @@ export class WorkspaceClient {
     const newMessages = await this.client.findAll(gmailP.class.NewMessage, {
       status: 'new'
     })
+    console.log('get new messages, recieved', this.workspace, newMessages.length)
     await this.subscribeMessages()
     for (const message of newMessages) {
-      const client = this.getGmailClient(message.from ?? message.createdBy ?? message.modifiedBy)
+      const from = message.from ?? message.createdBy ?? message.modifiedBy
+      const client = this.getGmailClient(from)
       if (client !== undefined) {
         await client.createMessage(message)
+      } else {
+        console.log('client not found, skip message', this.workspace, from, message._id)
       }
     }
   }
@@ -342,6 +346,7 @@ export class WorkspaceClient {
         await this.txEmployeeHandler(tx)
       }
     })
+    console.log('deactivate users', this.workspace, accounts.length)
   }
 
   private async deactivateUser (acc: PersonAccount): Promise<void> {
