@@ -118,6 +118,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
+  const disableSignUp = process.env.DISABLE_SIGNUP
+
   const config = {
     elasticUrl,
     storageAdapter,
@@ -134,7 +136,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaborator,
     brandingUrl,
     previewConfig,
-    pushPublicKey
+    pushPublicKey,
+    disableSignUp
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

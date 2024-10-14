@@ -54,6 +54,7 @@
 
   export let page: Pages = 'signup'
 
+  const signUpDisabled = getMetadata(login.metadata.DisableSignUp) ?? false
   let navigateUrl: string | undefined
 
   onDestroy(location.subscribe(updatePageLoc))
@@ -134,13 +135,13 @@
       <Scroller padding={'1rem 0'}>
         <div class="form-content">
           {#if page === 'login'}
-            <LoginForm {navigateUrl} />
+            <LoginForm {navigateUrl} {signUpDisabled} />
           {:else if page === 'signup'}
-            <SignupForm />
+            <SignupForm {signUpDisabled} />
           {:else if page === 'createWorkspace'}
             <CreateWorkspaceForm />
           {:else if page === 'password'}
-            <PasswordRequest />
+            <PasswordRequest {signUpDisabled} />
           {:else if page === 'recovery'}
             <PasswordRestore />
           {:else if page === 'selectWorkspace'}

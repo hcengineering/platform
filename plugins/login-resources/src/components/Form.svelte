@@ -57,6 +57,7 @@
   export let ignoreInitialValidation: boolean = false
   export let withProviders: boolean = false
   export let subtitle: string | undefined = undefined
+  export let signUpDisabled = false
 
   $: $themeStore.language && validate($themeStore.language)
 
@@ -138,7 +139,7 @@
   }}
 >
   {#if loginState !== 'none'}
-    <Tabs {loginState} />
+    <Tabs {loginState} {signUpDisabled} />
   {:else}
     {#if subtitle !== undefined}
       <div class="fs-title">

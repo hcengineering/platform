@@ -2463,7 +2463,7 @@ export async function deleteWorkspace (
 /**
  * @public
  */
-export function getMethods (): Record<string, AccountMethod> {
+export function getMethods (hasSignUp: boolean = true): Record<string, AccountMethod> {
   return {
     login: wrap(login),
     join: wrap(join),
@@ -2478,7 +2478,7 @@ export function getMethods (): Record<string, AccountMethod> {
     getInviteLink: wrap(getInviteLink),
     getAccountInfo: wrap(getAccountInfo),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
-    createAccount: wrap(createAccount),
+    ...(hasSignUp ? { createAccount: wrap(createAccount) } : {}),
     createWorkspace: wrap(createUserWorkspace),
     assignWorkspace: wrap(assignWorkspace),
     removeWorkspace: wrap(removeWorkspace),

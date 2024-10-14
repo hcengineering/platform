@@ -21,6 +21,7 @@
   import login from '../plugin'
 
   export let navigateUrl: string | undefined = undefined
+  export let signUpDisabled = false
 
   let method: LoginMethods = LoginMethods.Otp
 
@@ -44,12 +45,12 @@
 </script>
 
 {#if method === LoginMethods.Otp}
-  <LoginOtpForm {navigateUrl} on:change={changeMethod} />
+  <LoginOtpForm {navigateUrl} {signUpDisabled} on:change={changeMethod} />
   <div class="action">
     <BottomActionComponent action={loginWithPasswordAction} />
   </div>
 {:else}
-  <LoginPasswordForm {navigateUrl} on:change={changeMethod} />
+  <LoginPasswordForm {navigateUrl} {signUpDisabled} on:change={changeMethod} />
   <div class="action">
     <BottomActionComponent action={loginWithCodeAction} />
   </div>
