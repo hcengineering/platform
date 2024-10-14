@@ -815,7 +815,7 @@ export abstract class IssueSyncManagerBase {
 
       // Collect field update.
       for (const [k, v] of Object.entries(platformUpdate)) {
-        const mapping = target.mappings.find((it) => it.name === k)
+        const mapping = target.mappings.filter((it) => it != null).find((it) => it.name === k)
         if (mapping === undefined) {
           continue
         }

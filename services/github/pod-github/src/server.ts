@@ -18,7 +18,7 @@ import { decodeToken } from '@hcengineering/server-token'
 /**
  * @public
  */
-export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Promise<void> {
+export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Promise<() => Promise<void>> {
   // Create an authenticated Octokit client authenticated as a GitHub App
   ctx.info('Running Huly Github integration', { appId: config.AppID, clientID: config.ClientID })
 
@@ -184,8 +184,13 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
     }
   })
 
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     ctx.info(`Server is listening for events at: ${localWebhookUrl}`)
     ctx.info('Press Ctrl + C to quit.')
   })
+
+  return async () => {
+    await worker.close()
+    server.close()
+  }
 }
