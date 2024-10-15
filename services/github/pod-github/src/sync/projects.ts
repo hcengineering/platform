@@ -376,6 +376,9 @@ export class ProjectsSyncManager implements DocSyncManager {
     repositories: GithubIntegrationRepository[]
   ): Promise<void> {
     for (const prj of projects) {
+      if (this.provider.isClosing()) {
+        break
+      }
       // Wait global project sync
       await integration.syncLock.get(prj._id)
 
@@ -449,6 +452,9 @@ export class ProjectsSyncManager implements DocSyncManager {
           (it) => it.space === prj._id
         )
         for (const m of milestones) {
+          if (this.provider.isClosing()) {
+            break
+          }
           try {
             let { projectStructure, wasUpdates } = await this.ctx.withLog(
               'update project structure',

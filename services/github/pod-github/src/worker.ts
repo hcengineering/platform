@@ -117,11 +117,18 @@ export class GithubWorker implements IntegrationManager {
 
   personMapper: UsersSyncManager
 
+  isClosing (): boolean {
+    return this.closing
+  }
+
   async close (): Promise<void> {
     clearInterval(this.periodicTimer)
 
     this.closing = true
+    this.ctx.warn('Closing', { workspace: this.workspace.name })
+    this.triggerSync()
     await this.syncPromise
+    this.ctx.warn('ClosingDone', { workspace: this.workspace.name })
     await this.client.close()
   }
 
@@ -1347,6 +1354,9 @@ export class GithubWorker implements IntegrationManager {
   }
 
   private async waitChanges (): Promise<void> {
+    if (this.closing) {
+      return
+    }
     if (this.triggerRequests > 0 || this.updateRequests > 0) {
       this.ctx.info('Trigger check pending:', {
         requests: this.triggerRequests,
@@ -1404,6 +1414,9 @@ export class GithubWorker implements IntegrationManager {
   async _performFullSync (): Promise<void> {
     // Wait previous active sync
     for (const integration of this.integrations.values()) {
+      if (this.closing) {
+        break
+      }
       await this.ctx.withLog(
         'external sync',
         { installation: integration.installationName, workspace: this.workspace.name },
@@ -1442,6 +1455,9 @@ export class GithubWorker implements IntegrationManager {
           // Cleanup broken synchronized documents
 
           while (true) {
+            if (this.closing) {
+              break
+            }
             const withError = await derivedClient.findAll<any>(
               github.class.DocSyncInfo,
               { error: { $ne: null }, url: null },
@@ -1458,6 +1474,9 @@ export class GithubWorker implements IntegrationManager {
           }
 
           for (const { _class, mapper } of this.mappers) {
+            if (this.closing) {
+              break
+            }
             await this.ctx.withLog(
               'external sync',
               { _class: _class.join(', '), workspace: this.workspace.name },
