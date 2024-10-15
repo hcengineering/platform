@@ -62,7 +62,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     await attachScreenshot('TESTS-381_document_space_created.png', page)
   })
 
-  test.only('TESTS-406. As a space member only, I cannot delete any doc from that space', async ({ page }) => {
+  test('TESTS-406. As a space member only, I cannot delete any doc from that space', async ({ page }) => {
     await allure.description('Requirement\nUsers need to create a new space')
     await allure.tms('TESTS-406', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-406')
     const leftSideMenuPage = new LeftSideMenuPage(page)
