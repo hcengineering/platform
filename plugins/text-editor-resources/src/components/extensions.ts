@@ -20,7 +20,7 @@ import textEditor from '@hcengineering/text-editor'
 import { type CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './node-view'
-import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from './extension/suggestion'
+import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
 import InlineCommandsList from './InlineCommandsList.svelte'
 
 export const mInsertTable = [
