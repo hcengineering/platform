@@ -20,7 +20,7 @@ import textEditor from '@hcengineering/text-editor'
 import { type CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './node-view'
-import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
+import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from './extension/suggestion'
 import InlineCommandsList from './InlineCommandsList.svelte'
 
 export const mInsertTable = [
@@ -141,14 +141,29 @@ export function inlineCommandsConfig (
 ): Partial<CompletionOptions> {
   return {
     suggestion: {
-      items: () => {
-        return [
+      items: ({ query }: { query: string }) => {
+        const items = [
           { id: 'image', label: textEditor.string.Image, icon: view.icon.Image },
           { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
           { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
           { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
         ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
+
+        // to handle case of `todo-list` and `action-item` being the same
+        const searchableItems = items.map(item =>
+          item.id === 'todo-list'
+            ? { ...item, searchLabels: ['action-item', textEditor.string.TodoList] }
+            : { ...item, searchLabels: [item.label] }
+        )
+
+        const filteredItems = searchableItems.filter(item =>
+          item.searchLabels.some(label =>
+            label.toLowerCase().includes(query.toLowerCase())
+          )
+        )
+
+        return filteredItems.length > 0 ? filteredItems : items
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
         editor.commands.deleteRange(range)
@@ -169,6 +184,7 @@ export function inlineCommandsConfig (
               element: document.body,
               props: {
                 ...props,
+                query: props.query,
                 close: () => {
                   component.destroy()
                 }
