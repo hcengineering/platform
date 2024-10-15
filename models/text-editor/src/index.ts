@@ -31,7 +31,6 @@ import {
   type TextEditorActionKind
 } from '@hcengineering/text-editor'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
 import textEditor from './plugin'
 
 export { textEditorOperation } from './migration'
@@ -329,6 +328,15 @@ export function createModel (builder: Builder): void {
     label: textEditor.string.ViewOriginal,
     category: 90,
     index: 10
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'image',
+    action: textEditor.function.DownloadImage,
+    icon: textEditor.icon.Download,
+    label: textEditor.string.Download,
+    category: 90,
+    index: 15
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {

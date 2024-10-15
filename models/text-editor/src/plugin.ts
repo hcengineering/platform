@@ -29,6 +29,7 @@ export default mergeIds(textEditorId, textEditor, {
     ExpandImage: '' as Resource<TextActionFunction>,
     MoreImageActions: '' as Resource<TextActionFunction>,
     ConfigureNote: '' as Resource<TextActionFunction>,
+    DownloadImage: '' as Resource<TextActionFunction>,
 
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,

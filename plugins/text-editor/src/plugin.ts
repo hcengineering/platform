@@ -72,6 +72,7 @@ export default plugin(textEditorId, {
     AlignRight: '' as IntlString,
     ViewImage: '' as IntlString,
     ViewOriginal: '' as IntlString,
+    Download: '' as IntlString,
     MoreActions: '' as IntlString,
 
     InsertTable: '' as IntlString,
@@ -115,6 +116,7 @@ export default plugin(textEditorId, {
     MoreH: '' as Asset,
     Expand: '' as Asset,
     ScaleOut: '' as Asset,
+    Download: '' as Asset,
     Note: '' as Asset
   }
 })

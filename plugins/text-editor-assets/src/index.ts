@@ -38,5 +38,6 @@ loadMetadata(textEditor.icon, {
   MoreH: `${icons}#moreH`,
   Expand: `${icons}#expand`,
   ScaleOut: `${icons}#scaleOut`,
+  Download: `${icons}#download`,
   Note: `${icons}#note`
 })
