@@ -72,7 +72,8 @@ export default plugin(loginId, {
     LoginTokens: '' as Metadata<Record<string, string>>,
     LastToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
-    LoginEmail: '' as Metadata<string>
+    LoginEmail: '' as Metadata<string>,
+    DisableSignUp: '' as Metadata<boolean>
   },
   component: {
     LoginApp: '' as AnyComponent,

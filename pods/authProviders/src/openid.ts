@@ -28,7 +28,8 @@ export function registerOpenid (
   accountsUrl: string,
   dbPromise: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
 ): string | undefined {
   const openidClientId = process.env.OPENID_CLIENT_ID
   const openidClientSecret = process.env.OPENID_CLIENT_SECRET
@@ -90,7 +91,7 @@ export function registerOpenid (
         const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
         measureCtx.info('Provider auth handler', { email, type: 'openid' })
         if (email !== undefined) {
-          let loginInfo: LoginInfo
+          let loginInfo: LoginInfo | null
           const state = safeParseAuthState(ctx.query?.state)
           const branding = getBranding(brandings, state?.branding)
           const db = await dbPromise
@@ -99,17 +100,35 @@ export function registerOpenid (
               openId: ctx.state.user.sub
             })
           } else {
-            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last, {
-              openId: ctx.state.user.sub
-            })
+            loginInfo = await loginWithProvider(
+              measureCtx,
+              db,
+              null,
+              email,
+              first,
+              last,
+              {
+                openId: ctx.state.user.sub
+              },
+              signUpDisabled
+            )
           }
 
-          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
+          if (loginInfo === null) {
+            measureCtx.info('Failed to auth: no associated account found', {
+              email,
+              type: 'openid',
+              user: ctx.state?.user
+            })
+            ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
+          } else {
+            const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+            const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
 
-          measureCtx.info('Success auth, redirect', { email, type: 'openid', target: origin })
-          // Successful authentication, redirect to your application
-          ctx.redirect(`${origin}?${query}`)
+            measureCtx.info('Success auth, redirect', { email, type: 'openid', target: origin })
+            // Successful authentication, redirect to your application
+            ctx.redirect(`${origin}?${query}`)
+          }
         }
       } catch (err: any) {
         measureCtx.error('failed to auth', { err, type: 'openid', user: ctx.state?.user })

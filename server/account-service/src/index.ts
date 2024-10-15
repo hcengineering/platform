@@ -30,7 +30,6 @@ import os from 'os'
  */
 export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
   console.log('Starting account service with brandings: ', brandings)
-  const methods = getMethods()
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUrl = process.env.DB_URL
   if (dbUrl === undefined) {
@@ -81,6 +80,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
   }
 
+  const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
+  const methods = getMethods(hasSignUp)
+
   const accountsDb = getAccountDB(dbUrl)
 
   const app = new Koa()
@@ -105,7 +107,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }),
     serverSecret,
     frontURL,
-    brandings
+    brandings,
+    !hasSignUp
   )
 
   void accountsDb.then((res) => {

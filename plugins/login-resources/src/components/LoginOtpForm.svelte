@@ -21,6 +21,7 @@
   import { OtpLoginSteps, sendOtp } from '../index'
 
   export let navigateUrl: string | undefined = undefined
+  export let signUpDisabled = false
 
   const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
   const formData = {
@@ -57,11 +58,12 @@
     {fields}
     object={formData}
     {action}
+    {signUpDisabled}
     ignoreInitialValidation
     withProviders
   />
 {/if}
 
 {#if step === OtpLoginSteps.Otp && formData.username !== ''}
-  <OtpForm email={formData.username} {navigateUrl} retryOn={otpRetryOn} on:step={handleStep} />
+  <OtpForm email={formData.username} {signUpDisabled} {navigateUrl} retryOn={otpRetryOn} on:step={handleStep} />
 {/if}

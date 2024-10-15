@@ -21,6 +21,7 @@
   import login from '../plugin'
 
   export let navigateUrl: string | undefined = undefined
+  export let signUpDisabled = false
 
   const fields = [
     { id: 'email', name: 'username', i18n: login.string.Email },
@@ -62,6 +63,7 @@
   {fields}
   {object}
   {action}
+  {signUpDisabled}
   bottomActions={[recoveryAction]}
   ignoreInitialValidation
   withProviders

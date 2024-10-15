@@ -28,6 +28,7 @@
   export let navigateUrl: string | undefined = undefined
   export let email: string
   export let retryOn: Timestamp
+  export let signUpDisabled = false
 
   const dispatch = createEventDispatcher()
 
@@ -232,7 +233,7 @@
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
 >
   <div class="header">
-    <Tabs loginState="login" />
+    <Tabs loginState="login" {signUpDisabled} />
     <div class="description">
       <Label label={login.string.SentTo} />
       <span class="email ml-1">

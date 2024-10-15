@@ -257,6 +257,7 @@ export function start (
     brandingUrl?: string
     previewConfig: string
     pushPublicKey?: string
+    disableSignUp?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -308,6 +309,7 @@ export function start (
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
+      DISABLE_SIGNUP: config.disableSignUp,
       ...(extraConfig ?? {})
     }
     res.status(200)

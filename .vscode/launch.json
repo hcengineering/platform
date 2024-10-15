@@ -97,7 +97,8 @@
         "SES_URL": "",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
-        "MINIO_ENDPOINT": "localhost"
+        "MINIO_ENDPOINT": "localhost",
+        // "DISABLE_SIGNUP": "true",
         // "INIT_SCRIPT_URL": "https://raw.githubusercontent.com/hcengineering/init/main/script.yaml",
         // "INIT_WORKSPACE": "onboarding",
       },
