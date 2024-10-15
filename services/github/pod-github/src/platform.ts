@@ -96,6 +96,7 @@ export class PlatformWorker {
 
   async close (): Promise<void> {
     this.canceled = true
+    clearInterval(this.periodicSyncInterval)
     await Promise.all(
       [...this.clients.values()].map(async (worker) => {
         await worker.close()

@@ -985,6 +985,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     let partsize = 50
     try {
       while (true) {
+        if (this.provider.isClosing()) {
+          break
+        }
         const idsPart = ids.splice(0, partsize)
         if (idsPart.length === 0) {
           break
@@ -1080,6 +1083,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     repositories: GithubIntegrationRepository[]
   ): Promise<void> {
     for (const repo of repositories) {
+      if (this.provider.isClosing()) {
+        break
+      }
       const prj = projects.find((it) => repo.githubProject === it._id)
       if (prj === undefined) {
         continue
@@ -1128,6 +1134,9 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       )
       try {
         for await (const data of i) {
+          if (this.provider.isClosing()) {
+            break
+          }
           const issues: IssueExternalData[] = data.repository.issues.nodes
           if (issues.some((issue) => issue.url === undefined && Object.keys(issue).length === 0)) {
             this.ctx.error('empty document content', {

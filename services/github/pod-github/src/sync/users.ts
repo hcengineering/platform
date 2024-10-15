@@ -60,6 +60,9 @@ export class UsersSyncManager implements DocSyncManager {
     repositories: GithubIntegrationRepository[]
   ): Promise<void> {
     for (const repo of repositories) {
+      if (this.provider.isClosing()) {
+        break
+      }
       const syncKey = `${repo._id}:users`
       if (
         repo.githubProject === undefined ||
@@ -107,6 +110,9 @@ export class UsersSyncManager implements DocSyncManager {
     )
     try {
       for await (const data of assignableUsersIterator) {
+        if (this.provider.isClosing()) {
+          break
+        }
         const users: UserInfo[] = data.repository[key]?.nodes ?? []
         for (const d of users) {
           if (d.login !== undefined) {
