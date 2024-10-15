@@ -71,7 +71,6 @@
   {title}
   {description}
   selected={isSelected}
-  {isSecondary}
   count={elementsCount > 0 ? elementsCount : null}
   {type}
   withBackground={withIconBackground}

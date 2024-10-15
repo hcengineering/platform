@@ -123,7 +123,6 @@
   _id={item.id}
   icon={item.icon}
   withIconBackground={item.withIconBackground}
-  isSecondary={item.isSecondary}
   iconSize={item.iconSize}
   {isSelected}
   iconProps={{ ...item.iconProps, value: item.object }}
