@@ -1,9 +1,8 @@
 import { test } from '@playwright/test'
-import { attachScreenshot, HomepageURI, PlatformSettingSecond, PlatformURI } from '../utils'
+import { attachScreenshot, HomepageURI, PlatformSettingSecond, PlatformURI, waitForNetworIdle } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { faker } from '@faker-js/faker'
-import { waitForNetworIdle } from '../utils'
 
 test.use({
   storageState: PlatformSettingSecond

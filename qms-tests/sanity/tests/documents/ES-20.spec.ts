@@ -1,5 +1,5 @@
 import { devices, test } from '@playwright/test'
-import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI, waitForNetworIdle } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
@@ -7,7 +7,6 @@ import { prepareDocumentStep } from './common-documents-steps'
 import { DocumentApprovalsPage } from '../model/documents/document-approvals-page'
 import { PdfPages } from '../model/documents/pdf-pages'
 import { VisualCheck } from '../model/visual-check'
-import { waitForNetworIdle } from '../utils'
 
 test.use({
   storageState: PlatformSetting,
