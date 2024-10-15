@@ -54,6 +54,10 @@ export async function moveFromMongoToPG (
   client.close()
 }
 
+function escapeBackticks (str: string): string {
+  return str.replaceAll("'", "''")
+}
+
 async function moveWorkspace (
   accountDb: AccountDB,
   mongo: MongoClient,
@@ -77,31 +81,34 @@ async function moveWorkspace (
     for (const collection of collections) {
       const cursor = collection.find()
       const domain = translateDomain(collection.collectionName)
+      const current = await pgClient.query(`SELECT _id FROM ${domain} WHERE "workspaceId" = $1`, [ws.workspace])
+      const currentIds = new Set(current.rows.map((r) => r._id))
       console.log('move domain', domain)
+      const docs: Doc[] = []
       while (true) {
         const doc = (await cursor.next()) as Doc | null
         if (doc === null) break
+        if (currentIds.has(doc._id)) continue
+        docs.push(doc)
+      }
+      while (docs.length > 0) {
+        const part = docs.splice(0, 500)
+        const vals = part
+          .map((doc) => {
+            const d = convertDoc(doc, ws.workspace)
+            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
+              d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
+            }, '${escapeBackticks(JSON.stringify(d.data))}')`
+          })
+          .join(', ')
         try {
-          const converted = convertDoc(doc, ws.workspaceName ?? ws.workspace)
           await retryTxn(pgClient, async (client) => {
             await client.query(
-              `INSERT INTO ${domain} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-              [
-                converted._id,
-                converted.workspaceId,
-                converted._class,
-                converted.createdBy ?? converted.modifiedBy,
-                converted.modifiedBy,
-                converted.modifiedOn,
-                converted.createdOn ?? converted.modifiedOn,
-                converted.space,
-                converted.attachedTo,
-                converted.data
-              ]
+              `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
             )
           })
         } catch (err) {
-          console.log('error when move doc', doc._id, doc._class, err)
+          console.log('error when move doc to', domain, err)
           continue
         }
       }
