@@ -65,6 +65,17 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
 
+  const wsLivenessDaysRaw = process.env.WS_LIVENESS_DAYS
+  let wsLivenessDays: number | undefined
+
+  if (wsLivenessDaysRaw !== undefined) {
+    try {
+      wsLivenessDays = parseInt(wsLivenessDaysRaw)
+    } catch (err: any) {
+      // DO NOTHING
+    }
+  }
+
   setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
@@ -72,6 +83,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
+  setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 

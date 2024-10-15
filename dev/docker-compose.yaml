@@ -83,6 +83,7 @@ services:
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
+      # - WS_LIVENESS_DAYS=1
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - DISABLE_SIGNUP=true
