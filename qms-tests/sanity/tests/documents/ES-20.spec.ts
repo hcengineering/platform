@@ -7,6 +7,7 @@ import { prepareDocumentStep } from './common-documents-steps'
 import { DocumentApprovalsPage } from '../model/documents/document-approvals-page'
 import { PdfPages } from '../model/documents/pdf-pages'
 import { VisualCheck } from '../model/visual-check'
+import { waitForNetworIdle } from '../utils'
 
 test.use({
   storageState: PlatformSetting,
@@ -85,6 +86,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
       await documentContentPage.clickDocumentThreeDots()
       const pdfPages = new PdfPages(page)
       await pdfPages.printToPdfClick()
+      await waitForNetworIdle(page)
       await page.waitForTimeout(2000)
       await pdfPages.showFullScreenPdfClick()
       await page.waitForTimeout(2000)

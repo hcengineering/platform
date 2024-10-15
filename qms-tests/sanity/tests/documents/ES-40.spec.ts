@@ -3,6 +3,7 @@ import { attachScreenshot, HomepageURI, PlatformSettingSecond, PlatformURI } fro
 import { allure } from 'allure-playwright'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { faker } from '@faker-js/faker'
+import { waitForNetworIdle } from '../utils'
 
 test.use({
   storageState: PlatformSettingSecond
@@ -26,7 +27,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await documentContentPage.changeDocumentSpaceMembers(folderName)
       await documentContentPage.checkIfTheSpaceIsVisible(folderName, false)
       await documentContentPage.clickDocumentsSpace()
-      await page.waitForTimeout(1000)
+      await waitForNetworIdle(page)
       await documentContentPage.clickOnTeamspaceOrArrow()
       await documentContentPage.fillTeamspaceFormManager(folderName)
       await documentContentPage.changeTeamspaceMembers(folderName)

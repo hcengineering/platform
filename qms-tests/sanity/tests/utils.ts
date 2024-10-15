@@ -74,3 +74,7 @@ export async function * iterateLocator (locator: Locator): AsyncGenerator<Locato
     yield locator.nth(index)
   }
 }
+
+export async function waitForNetworIdle (page: Page, timeout = 2000): Promise<void> {
+  await Promise.race([page.waitForLoadState('networkidle'), new Promise((resolve) => setTimeout(resolve, timeout))])
+}
