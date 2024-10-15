@@ -2334,8 +2334,9 @@ export async function loginWithProvider (
   _email: string,
   first: string,
   last: string,
-  extra?: Record<string, string>
-): Promise<LoginInfo> {
+  extra?: Record<string, string>,
+  signUpDisabled: boolean = false
+): Promise<LoginInfo | null> {
   try {
     const email = cleanEmail(_email)
     if (last == null) {
@@ -2357,6 +2358,11 @@ export async function loginWithProvider (
       }
       return result
     }
+
+    if (signUpDisabled) {
+      return null
+    }
+
     const newAccount = await createAcc(ctx, db, branding, email, null, first, last, true, true, extra)
 
     const result = {

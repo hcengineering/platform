@@ -107,7 +107,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }),
     serverSecret,
     frontURL,
-    brandings
+    brandings,
+    !hasSignUp
   )
 
   void accountsDb.then((res) => {

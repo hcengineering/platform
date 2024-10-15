@@ -13,7 +13,8 @@ export function registerToken (
   accountsUrl: string,
   dbPromise: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
 ): string | undefined {
   passport.use(
     'token',
