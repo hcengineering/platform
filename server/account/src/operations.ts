@@ -1278,8 +1278,10 @@ export async function getPendingWorkspace (
   }
   // Move to config?
   const processingTimeoutMs = 30 * 1000
+  const wsLivenessDays = getMetadata(accountPlugin.metadata.WsLivenessDays)
+  const wsLivenessMs = wsLivenessDays !== undefined ? wsLivenessDays * 24 * 60 * 60 * 1000 : undefined
 
-  const result = await db.workspace.getPendingWorkspace(region, version, operation, processingTimeoutMs)
+  const result = await db.workspace.getPendingWorkspace(region, version, operation, processingTimeoutMs, wsLivenessMs)
 
   if (result != null) {
     ctx.info('getPendingWorkspace', {

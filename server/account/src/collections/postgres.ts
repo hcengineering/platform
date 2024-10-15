@@ -358,7 +358,8 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     region: string,
     version: Data<Version>,
     operation: WorkspaceOperation,
-    processingTimeoutMs: number
+    processingTimeoutMs: number,
+    wsLivenessMs?: number
   ): Promise<WorkspaceInfo | undefined> {
     const sqlChunks: string[] = [`SELECT * FROM ${this.name}`]
     const whereChunks: string[] = []
@@ -367,7 +368,7 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     const pendingCreationSql = "mode IN ('pending-creation', 'creating')"
     const versionSql =
       '("versionMajor" < $1) OR ("versionMajor" = $1 AND "versionMinor" < $2) OR ("versionMajor" = $1 AND "versionMinor" = $2 AND "versionPatch" < $3)'
-    const pendingUpgradeSql = `(((disabled = FALSE OR disabled IS NULL) AND (mode = 'active' OR mode IS NULL) AND ${versionSql} AND "lastVisit" > $4) OR ((disabled = FALSE OR disabled IS NULL) AND mode = 'upgrading'))`
+    const pendingUpgradeSql = `(((disabled = FALSE OR disabled IS NULL) AND (mode = 'active' OR mode IS NULL) AND ${versionSql} ${wsLivenessMs !== undefined ? 'AND "lastVisit" > $4' : ''}) OR ((disabled = FALSE OR disabled IS NULL) AND mode = 'upgrading'))`
     const operationSql =
       operation === 'create'
         ? pendingCreationSql
@@ -375,7 +376,11 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
           ? pendingUpgradeSql
           : `(${pendingCreationSql} OR ${pendingUpgradeSql})`
     if (operation === 'upgrade' || operation === 'all') {
-      values.push(version.major, version.minor, version.patch, Date.now() - 24 * 60 * 60 * 1000)
+      values.push(version.major, version.minor, version.patch)
+
+      if (wsLivenessMs !== undefined) {
+        values.push(Date.now() - wsLivenessMs)
+      }
     }
     whereChunks.push(operationSql)
 
@@ -383,11 +388,11 @@ export class WorkspacePostgresDbCollection extends PostgresDbCollection<Workspac
     // to clear them with the worker.
 
     whereChunks.push('(attempts IS NULL OR attempts <= 3)')
-    whereChunks.push('("lastProcessingTime" IS NULL OR "lastProcessingTime" < $5)')
+    whereChunks.push(`("lastProcessingTime" IS NULL OR "lastProcessingTime" < $${values.length + 1})`)
     values.push(Date.now() - processingTimeoutMs)
 
     if (region !== '') {
-      whereChunks.push('region = $6')
+      whereChunks.push(`region = $${values.length + 1}`)
       values.push(region)
     } else {
       whereChunks.push("(region IS NULL OR region = '')")

@@ -212,7 +212,8 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
     region: string,
     version: Data<Version>,
     operation: WorkspaceOperation,
-    processingTimeoutMs: number
+    processingTimeoutMs: number,
+    wsLivenessMs?: number
   ): Promise<WorkspaceInfo | undefined> {
     const pendingCreationQuery: Filter<Workspace>['$or'] = [{ mode: { $in: ['pending-creation', 'creating'] } }]
 
@@ -233,9 +234,13 @@ export class WorkspaceMongoDbCollection extends MongoDbCollection<Workspace> imp
             $or: [{ mode: 'active' }, { mode: { $exists: false } }]
           },
           versionQuery,
-          {
-            lastVisit: { $gt: Date.now() - 24 * 60 * 60 * 1000 }
-          }
+          ...(wsLivenessMs !== undefined
+            ? [
+                {
+                  lastVisit: { $gt: Date.now() - wsLivenessMs }
+                }
+              ]
+            : [])
         ]
       },
       {
