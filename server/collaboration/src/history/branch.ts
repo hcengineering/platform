@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { generateId } from '@hcengineering/core'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 /**
@@ -25,7 +26,7 @@ import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
  * @public
  * */
 export function yDocBranch (source: YDoc): YDoc {
-  const target = new YDoc({ gc: source.gc })
+  const target = new YDoc({ guid: generateId(), gc: source.gc })
 
   const update = encodeStateAsUpdate(source)
   applyUpdate(target, update)
@@ -43,9 +44,9 @@ export function yDocBranch (source: YDoc): YDoc {
  * @public
  * */
 export function yDocBranchWithGC (source: YDoc): YDoc {
-  const target = new YDoc({ gc: source.gc })
+  const target = new YDoc({ guid: generateId(), gc: source.gc })
 
-  const gc = new YDoc({ gc: true })
+  const gc = new YDoc({ guid: generateId(), gc: true })
   applyUpdate(gc, encodeStateAsUpdate(source))
   applyUpdate(target, encodeStateAsUpdate(gc))
 

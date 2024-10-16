@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Ref, type CollaborativeDoc, type Doc, type Class } from '@hcengineering/core'
+import { type Ref, type CollaborativeDoc, type Doc, type Class, generateId } from '@hcengineering/core'
 import {
   type DocumentId,
   type PlatformDocumentId,
@@ -99,7 +99,7 @@ export const createTiptapCollaborationData = (params: {
   objectId?: Ref<Doc>
   objectAttr?: string
 }): { provider: Provider, ydoc: Ydoc } => {
-  const ydoc: Ydoc = new Ydoc()
+  const ydoc: Ydoc = new Ydoc({ guid: generateId() })
   return {
     ydoc,
     provider: createRemoteProvider(ydoc, params)

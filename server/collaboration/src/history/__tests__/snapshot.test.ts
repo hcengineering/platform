@@ -16,8 +16,8 @@
 import { Account, Ref, generateId } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 
-import { createYdocSnapshot, restoreYdocSnapshot } from '../snapshot'
 import { YDocVersion } from '../history'
+import { createYdocSnapshot, restoreYdocSnapshot } from '../snapshot'
 
 const HISTORY = 'history'
 const UPDATES = 'updates'
@@ -27,8 +27,8 @@ describe('snapshot', () => {
   let yHistory: YDoc
 
   beforeEach(() => {
-    yContent = new YDoc({ gc: false })
-    yHistory = new YDoc()
+    yContent = new YDoc({ guid: generateId(), gc: false })
+    yHistory = new YDoc({ guid: generateId() })
   })
 
   it('createYdocSnapshot appends new version', async () => {
@@ -74,7 +74,7 @@ describe('snapshot', () => {
     const versionId = generateId()
     const version = yDocVersion(versionId)
 
-    yContent = new YDoc({ gc: true })
+    yContent = new YDoc({ guid: generateId(), gc: true })
     createYdocSnapshot(yContent, yHistory, version)
     expect(() => restoreYdocSnapshot(yContent, yHistory, versionId)).toThrow()
   })

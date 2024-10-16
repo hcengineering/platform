@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref, generateId } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
@@ -102,7 +102,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
+  const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc({ guid: generateId() })
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
 
   const localProvider = createLocalProvider(ydoc, collaborativeDoc)
