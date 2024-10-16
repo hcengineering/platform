@@ -45,9 +45,9 @@ import core, {
   toFindResult
 } from '@hcengineering/core'
 import type { FullTextAdapter, IndexedDoc, SessionFindAll, StorageAdapter, WithFind } from '@hcengineering/server-core'
-import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type FullTextIndexPipeline } from './indexer'
 import { createStateDoc } from './indexer/utils'
+import { getScoringConfig, mapSearchResultDoc } from './mapper'
 
 /**
  * @public
@@ -90,7 +90,7 @@ export class FullTextIndex implements WithFind {
       if (TxProcessor.isExtendsCUD(tx._class)) {
         const cud = tx as TxCUD<Doc>
 
-        if (!isClassIndexable(this.hierarchy, cud.objectClass)) {
+        if (!isClassIndexable(this.hierarchy, cud.objectClass, this.indexer.contexts)) {
           // No need, since no indixable fields or attachments.
           continue
         }

@@ -262,7 +262,11 @@ export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // We need to delete all documents in doc index state for missing classes
     const allClasses = client.hierarchy.getDescendants(core.class.Doc)
-    const allIndexed = allClasses.filter((it) => isClassIndexable(client.hierarchy, it))
+    const contexts = new Map(
+      client.model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it])
+    )
+
+    const allIndexed = allClasses.filter((it) => isClassIndexable(client.hierarchy, it, contexts))
 
     // Next remove all non indexed classes and missing classes as well.
     await client.update(
