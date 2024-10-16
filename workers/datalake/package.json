@@ -6,8 +6,8 @@
   "template": "@hcengineering/cloud-package",
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
+    "dev": "wrangler dev --port 4021",
+    "start": "wrangler dev --port 4021",
     "cf-typegen": "wrangler types",
     "build": "compile",
     "build:watch": "compile",
