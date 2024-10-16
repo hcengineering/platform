@@ -1,0 +1,34 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "datalake-worker"
+main = "src/index.ts"
+compatibility_date = "2024-07-01"
+compatibility_flags = ["nodejs_compat"]
+keep_vars = true
+
+[[kv_namespaces]]
+binding = "datalake_blobs"
+id = "64144eb146fd45febc928d44419ebb39"
+preview_id = "31c6f6e76e7e4524a59f87a4f381de82"
+
+[[r2_buckets]]
+binding = "datalake_eu_west"
+bucket_name = "datalake-eu-west"
+preview_bucket_name = "dev-datalake-eu-west"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "df254690599f401f9a84744a866243f1"
+localConnectionString = "postgresql://root:roach@localhost:26257/datalake"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+S3_UPLOAD_BUCKET = "dev-datalake-eu-west"
+S3_UPLOAD_REGION = "auto"
+# STREAMS_ACCOUNT_ID = ""
+# STREAMS_AUTH_KEY = ""
+# S3_UPLOAD_ACCOUNT_ID = ""
+# S3_UPLOAD_KEY = ""
+# S3_UPLOAD_SECRET = ""
