@@ -66,10 +66,16 @@ export function parseUploadConfig (config: string, uploadUrl: string): UploadCon
   if (config !== undefined) {
     const configs = config.split(';')
     for (const c of configs) {
+      if (c === '') {
+        continue
+      }
+
       const [key, size, url] = c.split('|')
+
       if (url === undefined || url === '') {
         throw new Error(`Bad upload config: ${c}`)
       }
+
       if (key === 'form-data') {
         uploadConfig['form-data'] = { url }
       } else if (key === 'signed-url') {
