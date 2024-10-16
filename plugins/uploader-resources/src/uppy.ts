@@ -17,6 +17,7 @@ import { type Blob, type Ref, generateId } from '@hcengineering/core'
 import { getMetadata, PlatformError, unknownError } from '@hcengineering/platform'
 import presentation, {
   type FileUploadParams,
+  generateFileId,
   getFileMetadata,
   getFileUploadParams,
   getUploadUrl
@@ -123,7 +124,15 @@ export function getUppy (options: FileUploadOptions): Uppy<UppyMeta, UppyBody> {
 
   const uppy = new Uppy<UppyMeta, UppyBody>(uppyOptions)
 
-  configureXHR(uppy)
+  // Ensure we always have UUID
+  uppy.addPreProcessor(async (fileIds: string[]) => {
+    for (const fileId of fileIds) {
+      const file = uppy.getFile(fileId)
+      if (file != null && file.meta.uuid === undefined) {
+        uppy.setFileMeta(fileId, { uuid: generateFileId() })
+      }
+    }
+  })
 
   if (onFileUploaded != null) {
     uppy.addPostProcessor(async (fileIds: string[]) => {
@@ -143,10 +152,14 @@ export function getUppy (options: FileUploadOptions): Uppy<UppyMeta, UppyBody> {
             path: file.meta.relativePath,
             metadata
           })
+        } else {
+          console.warn('missing file metadata uuid', file)
         }
       }
     })
   }
+
+  configureXHR(uppy)
 
   return uppy
 }
