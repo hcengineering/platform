@@ -103,6 +103,8 @@ export interface WorkspaceLoginInfo extends LoginInfo {
 
   mode: WorkspaceMode
   progress?: number
+
+  archived?: boolean
 }
 
 export interface RegionInfo {

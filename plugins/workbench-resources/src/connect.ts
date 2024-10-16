@@ -16,7 +16,7 @@ import core, {
   type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
-import { broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
+import { broadcastEvent, getMetadata, getResource, setMetadata, translateCB } from '@hcengineering/platform'
 import presentation, {
   closeClient,
   loadServerConfig,
@@ -32,9 +32,10 @@ import {
   getCurrentLocation,
   locationStorageKeyId,
   navigate,
-  setMetadataLocalStorage
+  setMetadataLocalStorage,
+  themeStore
 } from '@hcengineering/ui'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { workspaceCreating } from './utils'
 
@@ -195,14 +196,23 @@ export async function connect (title: string): Promise<Client | undefined> {
             query: {}
           })
         },
+        onArchived: () => {
+          translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
+            versionError.set(r)
+          })
+        },
         // We need to refresh all active live queries and clear old queries.
         onConnect: (event: ClientConnectEvent, data: any) => {
           console.log('WorkbenchClient: onConnect', event)
           if (event === ClientConnectEvent.Maintenance) {
             if (data != null && data.total !== 0) {
-              versionError.set(`Maintenance ${Math.floor((100 / data.total) * (data.total - data.toProcess))}%`)
+              translateCB(plugin.string.ServerUnderMaintenance, {}, get(themeStore).language, (r) => {
+                versionError.set(`${r} ${Math.floor((100 / data.total) * (data.total - data.toProcess))}%`)
+              })
             } else {
-              versionError.set('Maintenance...')
+              translateCB(plugin.string.ServerUnderMaintenance, {}, get(themeStore).language, (r) => {
+                versionError.set(r)
+              })
             }
             return
           }

@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineering/core'
-import { UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
+import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
   doSessionOp,
@@ -31,8 +31,8 @@ import {
   LOGGING_ENABLED,
   type ConnectionSocket,
   type HandleRequestFunction,
-  type SessionManager,
   type PipelineFactory,
+  type SessionManager,
   type StorageAdapter
 } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
@@ -345,12 +345,27 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          cs.send(
-            ctx,
-            { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
-            false,
-            false
-          )
+          if (s.archived === true) {
+            cs.send(
+              ctx,
+              {
+                id: -1,
+                error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, {
+                  workspace: token.workspace.name
+                }),
+                terminate: s.terminate
+              },
+              false,
+              false
+            )
+          } else {
+            cs.send(
+              ctx,
+              { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
+              false,
+              false
+            )
+          }
           // No connection to account service, retry from client.
           setTimeout(() => {
             cs.close()

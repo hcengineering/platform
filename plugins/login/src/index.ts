@@ -38,6 +38,9 @@ export interface Workspace {
 
   backupInfo?: BackupStatus
 
+  archived?: boolean
+  archivedDate?: Timestamp
+
   region?: string
 }
 

@@ -65,7 +65,8 @@ class BackupWorker {
       workspace: WorkspaceIdWithUrl,
       branding: Branding | null,
       externalStorage: StorageAdapter
-    ) => DbConfiguration
+    ) => DbConfiguration,
+    readonly recheck: boolean = false
   ) {}
 
   canceled = false
@@ -173,7 +174,7 @@ class BackupWorker {
           backup(ctx, '', getWorkspaceId(ws.workspace), storage, {
             skipDomains: [],
             force: true,
-            recheck: false,
+            recheck: this.recheck,
             timeout: this.config.Timeout * 1000,
             connectTimeout: 5 * 60 * 1000, // 5 minutes to,
             blobDownloadLimit: 100,
@@ -334,4 +335,25 @@ export function backupService (
 
   void backupWorker.schedule(ctx)
   return shutdown
+}
+
+export async function doBackupWorkspace (
+  ctx: MeasureContext,
+  workspace: BaseWorkspaceInfo,
+  storage: StorageAdapter,
+  config: BackupConfig,
+  pipelineFactory: PipelineFactory,
+  workspaceStorageAdapter: StorageAdapter,
+  getConfig: (
+    ctx: MeasureContext,
+    workspace: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    externalStorage: StorageAdapter
+  ) => DbConfiguration,
+  recheck: boolean = false
+): Promise<boolean> {
+  const backupWorker = new BackupWorker(storage, config, pipelineFactory, workspaceStorageAdapter, getConfig, recheck)
+  const { processed } = await backupWorker.doBackup(ctx, [workspace])
+  await backupWorker.close()
+  return processed === 1
 }

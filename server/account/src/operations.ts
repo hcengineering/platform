@@ -465,6 +465,19 @@ export async function selectWorkspace (
   }
 
   if (workspaceInfo !== null) {
+    if (workspaceInfo.archived === true) {
+      const result: WorkspaceLoginInfo = {
+        endpoint: '',
+        email,
+        token: '',
+        workspace: workspaceUrl,
+        workspaceId: workspaceInfo.workspace,
+        mode: workspaceInfo.mode,
+        progress: workspaceInfo.progress,
+        archived: true
+      }
+      return result
+    }
     if (workspaceInfo.disabled === true && workspaceInfo.mode === 'active') {
       ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
@@ -1198,6 +1211,29 @@ export async function updateBackupInfo (
   )
 }
 
+/**
+ * @public
+ */
+export async function updateArchiveInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  workspace: string,
+  value: boolean
+): Promise<void> {
+  const workspaceInfo = await getWorkspaceById(db, workspace)
+  if (workspaceInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace }))
+  }
+
+  await db.workspace.updateOne(
+    { _id: workspaceInfo._id },
+    {
+      archived: value,
+      archivedDate: Date.now()
+    }
+  )
+}
+
 async function postCreateUserWorkspace (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1481,7 +1517,7 @@ export async function getWorkspaceInfo (
     ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (_updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
+  if (ws.archived !== true && _updateLastVisit && (isAccount(account) || email === systemAccountEmail)) {
     void ctx.with('update-last-visit', {}, async () => {
       await updateLastVisit(db, ws, account as Account)
     })

@@ -680,6 +680,10 @@ export interface BackupStatus {
 export interface BaseWorkspaceInfo {
   workspace: string // An uniq workspace name, Database names
   disabled?: boolean
+
+  archived?: boolean
+  archivedDate?: Timestamp
+
   version?: Data<Version>
   branding?: string
 

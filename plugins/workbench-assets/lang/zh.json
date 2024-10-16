@@ -35,6 +35,7 @@
     "OpenInSidebar": "在侧边栏中打开",
     "OpenInSidebarNewTab": "在侧边栏新标签页中打开",
     "ConfigureWidgets": "配置小部件",
-    "Tab": "选项卡"
+    "Tab": "选项卡",
+    "WorkspaceIsArchived": "工作区因未使用而归档，请与我们联系以恢复..."
   }
 }
