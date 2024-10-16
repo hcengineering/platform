@@ -26,6 +26,7 @@ import { NodeUuid } from '../marks/nodeUuid'
 import { FileNode, FileOptions } from '../nodes/file'
 import { ImageNode, ImageOptions } from '../nodes/image'
 import { ReferenceNode } from '../nodes/reference'
+import { InlineCommandNode } from '../nodes/inlineCommand'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
 
 import { CodeBlockExtension, codeBlockOptions } from '../nodes'
@@ -90,6 +91,7 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       TodoListNode,
       ReferenceNode,
       CommentNode,
+      InlineCommandNode,
       NodeUuid,
       NoteBaseExtension
     ]

@@ -15,9 +15,17 @@
 //
 
 import { type Class, type Ref } from '@hcengineering/core'
-import { type Asset, type IntlString, type Metadata, type Plugin, plugin } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Metadata, type Plugin, plugin, type Resource } from '@hcengineering/platform'
 
-import { type TextEditorExtensionFactory, type RefInputActionItem, TextEditorAction, CollaboratorType } from './types'
+import {
+  type TextEditorExtensionFactory,
+  type RefInputActionItem,
+  TextEditorAction,
+  CollaboratorType,
+  RefInputAction,
+  TextEditorInlineCommand,
+  InlineShortcutAction
+} from './types'
 
 /**
  * @public
@@ -28,7 +36,9 @@ export default plugin(textEditorId, {
   class: {
     RefInputActionItem: '' as Ref<Class<RefInputActionItem>>,
     TextEditorExtensionFactory: '' as Ref<Class<TextEditorExtensionFactory>>,
-    TextEditorAction: '' as Ref<Class<TextEditorAction>>
+    TextEditorAction: '' as Ref<Class<TextEditorAction>>,
+    TextEditorProps: '' as Ref<Class<TextEditorAction>>,
+    TextEditorInlineCommand: '' as Ref<Class<TextEditorInlineCommand>>
   },
   metadata: {
     Collaborator: '' as Metadata<CollaboratorType>
@@ -93,7 +103,8 @@ export default plugin(textEditorId, {
     Unset: '' as IntlString,
     Image: '' as IntlString,
     SeparatorLine: '' as IntlString,
-    TodoList: '' as IntlString
+    TodoList: '' as IntlString,
+    ShortcutsAndCommands: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,
@@ -118,5 +129,25 @@ export default plugin(textEditorId, {
     ScaleOut: '' as Asset,
     Download: '' as Asset,
     Note: '' as Asset
+  },
+  ids: {
+    CommandsPopupAction: '' as Ref<RefInputActionItem>
+  },
+  action: {
+    ShowCommands: '' as Resource<RefInputAction>
+  },
+  inlineCommand: {
+    InsertImage: '' as Ref<TextEditorInlineCommand>,
+    InsertTable: '' as Ref<TextEditorInlineCommand>,
+    InsertSeparatorLine: '' as Ref<TextEditorInlineCommand>,
+    InsertCodeBlock: '' as Ref<TextEditorInlineCommand>,
+    InsertTodoList: '' as Ref<TextEditorInlineCommand>
+  },
+  inlineCommandImpl: {
+    InsertImage: '' as Resource<InlineShortcutAction>,
+    InsertTable: '' as Resource<InlineShortcutAction>,
+    InsertSeparatorLine: '' as Resource<InlineShortcutAction>,
+    InsertCodeBlock: '' as Resource<InlineShortcutAction>,
+    InsertTodoList: '' as Resource<InlineShortcutAction>
   }
 })

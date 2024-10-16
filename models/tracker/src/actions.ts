@@ -22,6 +22,7 @@ import workbench, { createNavigateAction } from '@hcengineering/model-workbench'
 import { type IntlString } from '@hcengineering/platform'
 import { TrackerEvents, trackerId } from '@hcengineering/tracker'
 import { type KeyBinding } from '@hcengineering/view'
+import textEditor from '@hcengineering/text-editor'
 import tracker from './plugin'
 
 import tags from '@hcengineering/tags'
@@ -203,6 +204,16 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.NewIssue
   )
+
+  builder.createDoc(textEditor.class.TextEditorInlineCommand, core.space.Model, {
+    command: 'createIssue',
+    title: tracker.string.NewIssue,
+    icon: tracker.icon.NewIssue,
+    description: tracker.string.CreateIssueDescription,
+    category: 'general',
+    type: 'shortcut',
+    action: tracker.command.CreateIssue
+  })
 
   createAction(
     builder,

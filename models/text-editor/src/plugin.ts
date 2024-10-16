@@ -18,7 +18,8 @@ import { mergeIds, type Resource } from '@hcengineering/platform'
 import textEditor, {
   type TextActionFunction,
   type TextActionVisibleFunction,
-  textEditorId
+  textEditorId,
+  type RefInputActionDisabledFn
 } from '@hcengineering/text-editor'
 
 export default mergeIds(textEditorId, textEditor, {
@@ -34,6 +35,7 @@ export default mergeIds(textEditorId, textEditor, {
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,
     IsEditable: '' as Resource<TextActionVisibleFunction>,
-    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>
+    IsHeadingVisible: '' as Resource<TextActionVisibleFunction>,
+    DisableInlineCommands: '' as Resource<RefInputActionDisabledFn>
   }
 })

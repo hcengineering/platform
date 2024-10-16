@@ -48,8 +48,10 @@ export async function getModelRefActions (): Promise<RefAction[]> {
     actions.push({
       label: item.label,
       icon: item.icon,
+      iconProps: item.iconProps,
       order: item.order ?? 10000,
-      action: await getResource(item.action)
+      action: await getResource(item.action),
+      disabledFn: item.isDisabledFn !== undefined ? await getResource(item.isDisabledFn) : undefined
     })
   }
 

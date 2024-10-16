@@ -13,12 +13,19 @@
 // limitations under the License.
 //
 
-import { mergeIds } from '@hcengineering/platform'
+import { type Resource, mergeIds } from '@hcengineering/platform'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
+import { type InlineCommandAction, type InlineCommandVisibilityTester } from '@hcengineering/text-editor'
 
 export default mergeIds(aiBotId, aiBot, {
+  function: {
+    IsAiEnabled: '' as Resource<InlineCommandVisibilityTester>
+  },
   component: {
     OnboardingChannelPanelExtension: '' as AnyComponent
+  },
+  command: {
+    Translate: '' as Resource<InlineCommandAction>
   }
 })

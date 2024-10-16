@@ -26,7 +26,8 @@ import {
   getLastName,
   getName,
   type Person,
-  type PersonAccount
+  type PersonAccount,
+  type PersonSpace
 } from '@hcengineering/contact'
 import core, {
   type Account,
@@ -316,6 +317,7 @@ export const personAccountByPersonId = derived(personAccountByIdStore, (vals) =>
 })
 
 export const statusByUserStore = writable<Map<Ref<Account>, UserStatus>>(new Map())
+export const personSpaceStore = writable<PersonSpace>()
 
 export const personByIdStore = derived([personAccountPersonByIdStore, employeeByIdStore], (vals) => {
   const m1 = Array.from(vals[0].entries())
@@ -328,7 +330,11 @@ function fillStores (): void {
 
   if (client !== undefined) {
     const accountPersonQuery = createQuery(true)
-
+    const personSpaceQuery = createQuery(true)
+    const me = getCurrentAccount() as PersonAccount
+    personSpaceQuery.query<PersonSpace>(contact.class.PersonSpace, { person: me.person }, (res) => {
+      personSpaceStore.set(res[0])
+    })
     const query = createQuery(true)
     query.query(contact.mixin.Employee, { active: { $in: [true, false] } }, (res) => {
       employeesStore.set(res)

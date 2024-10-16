@@ -28,8 +28,16 @@ import {
   type TextActionActiveFunction,
   type ActiveDescriptor,
   type TogglerDescriptor,
-  type TextEditorActionKind
+  type TextEditorActionKind,
+  type TextEditorInlineCommand,
+  type InlineShortcutAction,
+  type TextEditorInlineCommandCategory,
+  type TextEditorInlineCommandType,
+  type InlineCommandAction,
+  type RefInputActionDisabledFn,
+  type InlineCommandVisibilityTester
 } from '@hcengineering/text-editor'
+import view from '@hcengineering/view'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
 import textEditor from './plugin'
@@ -43,9 +51,11 @@ export type { RefInputAction, RefInputActionItem }
 export class TRefInputActionItem extends TDoc implements RefInputActionItem {
   label!: IntlString
   icon!: Asset
+  iconProps?: Record<string, any>
 
   // Query for documents with pattern
   action!: Resource<RefInputAction>
+  isDisabledFn?: Resource<RefInputActionDisabledFn>
 }
 
 @Model(textEditor.class.TextEditorExtensionFactory, core.class.Doc, DOMAIN_MODEL)
@@ -64,6 +74,22 @@ export class TTextEditorAction extends TDoc implements TextEditorAction {
   label!: IntlString
   category!: number
   index!: number
+}
+
+@Model(textEditor.class.TextEditorInlineCommand, core.class.Doc, DOMAIN_MODEL)
+export class TTextEditorInlineCommand extends TDoc implements TextEditorInlineCommand {
+  icon!: Asset
+  title!: IntlString
+  description?: IntlString
+
+  command!: string
+  commandTemplate?: string
+
+  category!: TextEditorInlineCommandCategory
+  type!: TextEditorInlineCommandType
+
+  action!: Resource<InlineCommandAction> | Resource<InlineShortcutAction>
+  visibilityTester?: Resource<InlineCommandVisibilityTester>
 }
 
 function createHeaderAction (builder: Builder, level: number): void {
@@ -148,7 +174,7 @@ function createImageAlignmentAction (builder: Builder, align: 'center' | 'left' 
 }
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TRefInputActionItem, TTextEditorExtensionFactory, TTextEditorAction)
+  builder.createModel(TRefInputActionItem, TTextEditorExtensionFactory, TTextEditorAction, TTextEditorInlineCommand)
 
   createHeaderAction(builder, 1)
   createHeaderAction(builder, 2)
@@ -361,4 +387,90 @@ export function createModel (builder: Builder): void {
     category: 110,
     index: 5
   })
+
+  builder.createDoc(
+    textEditor.class.RefInputActionItem,
+    core.space.Model,
+    {
+      label: textEditor.string.ShortcutsAndCommands,
+      icon: view.icon.Slash,
+      iconProps: {
+        size: 'small'
+      },
+      action: textEditor.action.ShowCommands,
+      order: 6000,
+      isDisabledFn: textEditor.function.DisableInlineCommands
+    },
+    textEditor.ids.CommandsPopupAction
+  )
+
+  builder.createDoc(
+    textEditor.class.TextEditorInlineCommand,
+    core.space.Model,
+    {
+      command: 'image',
+      title: textEditor.string.Image,
+      icon: view.icon.Image,
+      category: 'editor',
+      type: 'shortcut',
+      action: textEditor.inlineCommandImpl.InsertImage
+    },
+    textEditor.inlineCommand.InsertImage
+  )
+
+  builder.createDoc(
+    textEditor.class.TextEditorInlineCommand,
+    core.space.Model,
+    {
+      command: 'table',
+      title: textEditor.string.Table,
+      icon: view.icon.Table2,
+      category: 'editor',
+      type: 'shortcut',
+      action: textEditor.inlineCommandImpl.InsertTable
+    },
+    textEditor.inlineCommand.InsertTable
+  )
+
+  builder.createDoc(
+    textEditor.class.TextEditorInlineCommand,
+    core.space.Model,
+    {
+      command: 'code-block',
+      title: textEditor.string.CodeBlock,
+      icon: view.icon.CodeBlock,
+      category: 'editor',
+      type: 'shortcut',
+      action: textEditor.inlineCommandImpl.InsertCodeBlock
+    },
+    textEditor.inlineCommand.InsertCodeBlock
+  )
+
+  builder.createDoc(
+    textEditor.class.TextEditorInlineCommand,
+    core.space.Model,
+    {
+      command: 'separator-line',
+      title: textEditor.string.SeparatorLine,
+      icon: view.icon.SeparatorLine,
+      category: 'editor',
+      type: 'shortcut',
+      action: textEditor.inlineCommandImpl.InsertSeparatorLine
+    },
+    textEditor.inlineCommand.InsertSeparatorLine
+  )
+
+  builder.createDoc(
+    textEditor.class.TextEditorInlineCommand,
+    core.space.Model,
+    {
+      command: 'todo-list',
+      title: textEditor.string.TodoList,
+      icon: view.icon.TodoList,
+      category: 'editor',
+      type: 'shortcut',
+      action: textEditor.inlineCommandImpl.InsertTodoList
+    },
+    textEditor.inlineCommand.InsertTodoList
+  )
 }

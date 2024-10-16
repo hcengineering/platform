@@ -21,7 +21,7 @@ import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 import { deepEqual } from 'fast-equals'
 import { defaultExtensions } from '../extensions'
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
-import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
+import { emptyMarkupNode, MarkupMark, MarkupNode, MarkupNodeType } from './model'
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
@@ -38,6 +38,28 @@ export function isEmptyMarkup (markup: Markup | undefined): boolean {
     return true
   }
   return isEmptyNode(markupToJSON(markup))
+}
+
+export function getInlineCommand (markup: Markup | undefined): string | undefined {
+  if (markup === undefined || markup === null || markup === '') {
+    return
+  }
+
+  const node = markupToJSON(markup)
+
+  if (node.type !== MarkupNodeType.doc) {
+    return
+  }
+
+  const content = node.content ?? []
+  const firstParagraph = content[0]
+  if (firstParagraph === undefined || firstParagraph.type !== MarkupNodeType.paragraph) {
+    return
+  }
+
+  if (firstParagraph.content?.[0].type === MarkupNodeType.inlineCommand) {
+    return firstParagraph.content?.[0]?.attrs?.command as string
+  }
 }
 
 /** @public */
@@ -100,6 +122,7 @@ const nonEmptyNodes = [
   MarkupNodeType.horizontal_rule,
   MarkupNodeType.image,
   MarkupNodeType.reference,
+  MarkupNodeType.inlineCommand,
   MarkupNodeType.subLink,
   MarkupNodeType.table
 ]
@@ -159,6 +182,7 @@ export function markupToJSON (markup: Markup): MarkupNode {
 /** @public */
 export function jsonToPmNode (json: MarkupNode, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
   schema ??= extensions == null ? defaultSchema : getSchema(extensions ?? defaultExtensions)
+
   return ProseMirrorNode.fromJSON(schema, json)
 }
 
@@ -263,13 +287,15 @@ export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions
         textParts.push(WHITESPACE)
         charCount++
       }
-    } else if (node.type.name === 'reference') {
+    } else if (node.type.name === MarkupNodeType.reference) {
       const label = node.attrs.label ?? ''
       pushText(label.length > 0 ? `@${label}` : '')
+    } else if (node.type.name === MarkupNodeType.inlineCommand) {
+      const command = node.attrs.command ?? ''
+      pushText(`/${command}`)
     }
     return true
   })
 
-  const result = textParts.join('')
-  return result
+  return textParts.join('')
 }

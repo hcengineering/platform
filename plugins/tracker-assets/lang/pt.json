@@ -269,7 +269,8 @@
     "DefaultIssueStatus": "Estado padrão do problema",
     "IssueStatus": "Estado",
     "Extensions": "Extensions",
-    "RoleLabel": "Cargo: {role}"
+    "RoleLabel": "Cargo: {role}",
+    "CreateIssueDescription": "Criar descrição"
   },
   "status": {}
 }

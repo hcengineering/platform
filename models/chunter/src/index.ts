@@ -38,7 +38,9 @@ import {
   TObjectChatPanel,
   TThreadMessage,
   TTypingInfo,
-  TChunterExtension
+  TChunterExtension,
+  TPrivateThreadMessage,
+  TPrivateChatMessage
 } from './types'
 
 export { chunterId } from '@hcengineering/chunter'
@@ -57,7 +59,9 @@ export function createModel (builder: Builder): void {
     TChatSyncInfo,
     TInlineButton,
     TTypingInfo,
-    TChunterExtension
+    TChunterExtension,
+    TPrivateThreadMessage,
+    TPrivateChatMessage
   )
 
   builder.createDoc(

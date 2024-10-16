@@ -13,37 +13,115 @@
 // limitations under the License.
 //
 
-import { Extension } from '@tiptap/core'
+import { Node, mergeAttributes } from '@tiptap/core'
 import { PluginKey } from '@tiptap/pm/state'
 import Suggestion, { type SuggestionOptions } from './suggestion'
+import { type TextEditorInlineCommand } from '@hcengineering/text-editor'
+import { getDataAttribute } from '../../utils'
+import { MarkupNodeType } from '@hcengineering/text'
 
 export interface InlineCommandsOptions {
-  suggestion: Omit<SuggestionOptions, 'editor'>
+  suggestion: Omit<SuggestionOptions<TextEditorInlineCommand>, 'editor'>
+  HTMLAttributes: Record<string, any>
+  renderLabel: (props: { options: InlineCommandsOptions, node: any }) => string
 }
 
 /*
  * @public
  */
-export const InlineCommandsExtension = Extension.create<InlineCommandsOptions>({
-  name: 'inline-commands',
+export const InlineCommandsExtension = Node.create<InlineCommandsOptions>({
+  name: 'inlineCommand',
+  group: 'inline',
+  inline: true,
 
   addOptions () {
     return {
       suggestion: {
         char: '/',
+        allowSpaces: true,
         allow: ({ state }) => {
           const { $anchor } = state.selection
           const parent = $anchor.parent
           return parent.type.name === 'paragraph'
         }
+      },
+      renderLabel ({ options, node }) {
+        return `${options.suggestion.char}${node.attrs.command}`
+      },
+      HTMLAttributes: {}
+    }
+  },
+
+  addAttributes () {
+    return {
+      command: getDataAttribute('command')
+    }
+  },
+
+  parseHTML () {
+    return [
+      {
+        tag: `span[data-type="${MarkupNodeType.inlineCommand}"]`
       }
+    ]
+  },
+
+  renderHTML ({ node, HTMLAttributes }) {
+    return [
+      'span',
+      mergeAttributes(
+        {
+          'data-type': MarkupNodeType.inlineCommand,
+          class: 'inlineCommand'
+        },
+        this.options.HTMLAttributes,
+        HTMLAttributes
+      ),
+      this.options.renderLabel({
+        options: this.options,
+        node
+      })
+    ]
+  },
+
+  renderText ({ node }) {
+    return this.options.renderLabel({
+      options: this.options,
+      node
+    })
+  },
+
+  addKeyboardShortcuts () {
+    return {
+      Backspace: () =>
+        this.editor.commands.command(({ tr, state }) => {
+          let isInlineCommand = false
+          const { selection } = state
+          const { empty, anchor } = selection
+
+          if (!empty) {
+            return false
+          }
+
+          state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
+            if (node.type.name === this.name) {
+              isInlineCommand = true
+
+              tr.insertText(this.options.suggestion.char ?? '/', pos, pos + node.nodeSize)
+
+              return false
+            }
+          })
+
+          return isInlineCommand
+        })
     }
   },
 
   addProseMirrorPlugins () {
     return [
       Suggestion({
-        pluginKey: new PluginKey('inline-commands'),
+        pluginKey: new PluginKey(this.name),
         editor: this.editor,
         ...this.options.suggestion
       })

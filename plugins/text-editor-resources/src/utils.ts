@@ -15,6 +15,10 @@
 
 import { type Attribute } from '@tiptap/core'
 import { showPopup, SelectPopup, type PopupAlignment } from '@hcengineering/ui'
+import textEditor, { type InlineShortcutAction, type TextEditorInlineCommand } from '@hcengineering/text-editor'
+import { getClient } from '@hcengineering/presentation'
+import { getResource } from '@hcengineering/platform'
+import { type DocumentQuery, type Ref } from '@hcengineering/core'
 
 import { mInsertTable } from './components/extensions'
 
@@ -64,4 +68,49 @@ export async function addTableHandler (
       }
     }
   )
+}
+
+export const insertImageShortcut: InlineShortcutAction = async (handler, pos, targetItem) => {
+  handler.insertImage?.(pos, targetItem)
+}
+
+export const insertTableShortcut: InlineShortcutAction = async (handler, pos, targetItem) => {
+  handler.insertTable?.(pos, targetItem)
+}
+
+export const insertSeparatorLineShortcut: InlineShortcutAction = async (handler, pos, targetItem) => {
+  handler.insertSeparatorLine?.(pos, targetItem)
+}
+
+export const insertCodeBlockShortcut: InlineShortcutAction = async (handler, pos, targetItem) => {
+  handler.insertCodeBlock?.(pos, targetItem)
+}
+
+export const insertTodoListShortcut: InlineShortcutAction = async (handler, pos, targetItem) => {
+  handler.insertTodoList?.(pos, targetItem)
+}
+
+export async function getInlineCommands (
+  query: DocumentQuery<TextEditorInlineCommand> = {},
+  excluded: Array<Ref<TextEditorInlineCommand>> = []
+): Promise<TextEditorInlineCommand[]> {
+  const client = getClient()
+  const allCommands = client.getModel().findAllSync(textEditor.class.TextEditorInlineCommand, query)
+  const result: TextEditorInlineCommand[] = []
+
+  for (const command of allCommands) {
+    if (excluded.includes(command._id)) {
+      continue
+    }
+
+    if (command.visibilityTester !== undefined) {
+      const visibleFn = await getResource(command.visibilityTester)
+      const isVisible = await visibleFn()
+      if (!isVisible) continue
+    }
+
+    result.push(command)
+  }
+
+  return result
 }

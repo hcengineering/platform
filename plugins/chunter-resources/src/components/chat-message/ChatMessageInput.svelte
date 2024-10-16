@@ -245,6 +245,7 @@
   {focusIndex}
   bind:this={inputRef}
   bind:content={inputContent}
+  context={{ objectId: object._id, objectClass: object._class }}
   {_class}
   space={getChannelSpace(object._class, object._id, object.space)}
   skipAttachmentsPreload={(currentMessage.attachments ?? 0) === 0}

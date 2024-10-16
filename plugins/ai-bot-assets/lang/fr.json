@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Translate": "Traduire",
+    "InstantlyTranslateText": "Traduire instantanément le texte",
+    "TranslateHelp": "Veuillez utiliser le format suivant pour traduire le texte:",
+    "Where": "Où",
+    "CodesHelp": "est égal à l'un des codes de langue suivants:",
+    "CantTranslateThisText": "Impossible de traduire ce texte."
+  }
+}

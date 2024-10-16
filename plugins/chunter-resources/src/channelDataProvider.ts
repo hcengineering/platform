@@ -32,6 +32,7 @@ import attachment from '@hcengineering/attachment'
 import { combineActivityMessages, sortActivityMessages } from '@hcengineering/activity-resources'
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import chunter from '@hcengineering/chunter'
+import { personSpaceStore } from '@hcengineering/contact-resources'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -195,9 +196,13 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.loadRefs()
     }
 
+    const personSpace = get(personSpaceStore)
     this.metadataQuery.query(
       this.msgClass,
-      { attachedTo: this.chatId, space: this.space },
+      {
+        attachedTo: this.chatId,
+        space: personSpace !== undefined ? { $in: [this.space, personSpace._id] } : this.space
+      },
       (res) => {
         this.updatesDates(res)
         this.metadataStore.set(res)
@@ -276,11 +281,12 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.tailStart = start
     }
 
+    const personSpace = get(personSpaceStore)
     this.tailQuery.query(
       this.msgClass,
       {
         attachedTo: this.chatId,
-        space: this.space,
+        space: personSpace !== undefined ? { $in: [this.space, personSpace._id] } : this.space,
         ...query,
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
@@ -330,11 +336,12 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const client = getClient()
     const skipIds = this.getChunkSkipIds(loadAfter)
 
+    const personSpace = get(personSpaceStore)
     let messages: ActivityMessage[] = await client.findAll(
       this.msgClass,
       {
         attachedTo: this.chatId,
-        space: this.space,
+        space: personSpace !== undefined ? { $in: [this.space, personSpace._id] } : this.space,
         createdOn: equal
           ? isBackward
             ? { $lte: loadAfter }

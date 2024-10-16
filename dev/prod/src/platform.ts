@@ -64,6 +64,7 @@ import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import { bitrixId } from '@hcengineering/bitrix'
 
 import '@hcengineering/activity-assets'
+import '@hcengineering/ai-bot-assets'
 import '@hcengineering/attachment-assets'
 import '@hcengineering/bitrix-assets'
 import '@hcengineering/board-assets'
@@ -224,6 +225,7 @@ function configureI18n(): void {
    addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
    addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
    addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
+    addStringsLoader(aiBotId, async (lang: string) => await import(`@hcengineering/ai-bot-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {

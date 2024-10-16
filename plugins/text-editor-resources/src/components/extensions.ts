@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import view from '@hcengineering/view'
 import { type Editor, type Range } from '@tiptap/core'
-import textEditor from '@hcengineering/text-editor'
+import { type TextEditorInlineCommand } from '@hcengineering/text-editor'
+import { MarkupNodeType } from '@hcengineering/text'
+import type { EditorState } from '@tiptap/pm/state'
 
 import { type CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
@@ -129,36 +130,91 @@ export const completionConfig: Partial<CompletionOptions> = {
   }
 }
 
-const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line', 'todo-list'] as const
-export type InlineCommandId = (typeof inlineCommandsIds)[number]
+function isStartOfText (start: number, end: number, state: EditorState): boolean {
+  const { doc } = state
+
+  if (start < 0 || end > doc.content.size || start > end) {
+    return false
+  }
+
+  let isContentStart = true
+
+  doc.nodesBetween(start, end, (node) => {
+    if (node.type.name !== 'paragraph') {
+      isContentStart = false
+    }
+  })
+
+  return isContentStart
+}
 
 /**
  * @public
  */
 export function inlineCommandsConfig (
-  handleSelect: (id: string, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>,
-  excludedCommands: InlineCommandId[] = []
+  commands: TextEditorInlineCommand[],
+  handleSelect: (item: TextEditorInlineCommand, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>,
+  props?: { allowFromStart: boolean }
 ): Partial<CompletionOptions> {
   return {
     suggestion: {
-      items: () => {
-        return [
-          { id: 'image', label: textEditor.string.Image, icon: view.icon.Image },
-          { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
-          { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-          { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-          { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
-        ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
+      allow: ({ state, range, editor }) => {
+        if (range.from > editor.state.doc.content.size) return false
+        const { $anchor } = state.selection
+        const parent = $anchor.parent
+
+        return (
+          parent.type.name === 'paragraph' && (props?.allowFromStart !== true || isStartOfText(0, range.from, state))
+        )
       },
-      command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
-        editor.commands.deleteRange(range)
-
-        if (props?.id != null) {
-          const { node } = editor.view.domAtPos(range.from)
-          const targetElement = node instanceof HTMLElement ? node : undefined
-
-          void handleSelect(props.id, range.from, targetElement)
+      items: () => commands,
+      command: ({
+        editor,
+        range,
+        props
+      }: {
+        editor: Editor
+        range: Range
+        props: { item?: TextEditorInlineCommand }
+      }) => {
+        if (props.item == null) {
+          editor.commands.deleteRange(range)
+          return
         }
+
+        if (props.item.type === 'shortcut') {
+          editor.commands.deleteRange(range)
+        } else if (props.item.type === 'command') {
+          // increase range.to by one when the next node is of type "text"
+          // and starts with a space character
+          const nodeAfter = editor.view.state.selection.$to.nodeAfter
+          const overrideSpace = nodeAfter?.text?.startsWith(' ')
+
+          if (overrideSpace !== undefined && overrideSpace) {
+            // eslint-disable-next-line
+            range.to += 1
+          }
+
+          editor
+            .chain()
+            .focus()
+            .insertContentAt(range, [
+              {
+                type: MarkupNodeType.inlineCommand,
+                attrs: { command: props.item.command }
+              },
+              {
+                type: 'text',
+                text: ' '
+              }
+            ])
+            .run()
+        }
+
+        const { node } = editor.view.domAtPos(range.from)
+        const targetElement = node instanceof HTMLElement ? node : undefined
+
+        void handleSelect(props.item, range.from, targetElement)
       },
       render: () => {
         let component: any

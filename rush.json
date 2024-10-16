@@ -2077,6 +2077,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/ai-bot-assets",
+      "projectFolder": "plugins/ai-bot-assets",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/ai-bot-resources",
       "projectFolder": "plugins/ai-bot-resources",
       "shouldPublish": false

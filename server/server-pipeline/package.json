@@ -171,6 +171,7 @@
     "@hcengineering/github": "^0.6.0",
     "@hcengineering/github-assets": "^0.6.0",
     "@hcengineering/server-ai-bot": "^0.6.0",
+    "@hcengineering/ai-bot-assets": "^0.6.0",
     "@hcengineering/server-ai-bot-resources": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
     "@hcengineering/time-assets": "^0.6.0"

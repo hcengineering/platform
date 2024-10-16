@@ -25,6 +25,7 @@ export enum MarkupNodeType {
   image = 'image',
   file = 'file',
   reference = 'reference',
+  inlineCommand = 'inlineCommand',
   hard_break = 'hardBreak',
   ordered_list = 'orderedList',
   bullet_list = 'bulletList',

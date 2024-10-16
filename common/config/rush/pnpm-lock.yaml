@@ -77,6 +77,9 @@ dependencies:
   '@rush-temp/ai-bot':
     specifier: file:./projects/ai-bot.tgz
     version: file:projects/ai-bot.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/ai-bot-assets':
+    specifier: file:./projects/ai-bot-assets.tgz
+    version: file:projects/ai-bot-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/ai-bot-resources':
     specifier: file:./projects/ai-bot-resources.tgz
     version: file:projects/ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -25637,8 +25640,38 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/ai-bot-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-xwtMv8lV+TmOJZ5SEA0YWNgptx+v9YRXtsR8uawwDJDOBkwsmpRoEsP3g/bXGijptA1T7VpNgPyreAOlGSqZZw==, tarball: file:projects/ai-bot-assets.tgz}
+    id: file:projects/ai-bot-assets.tgz
+    name: '@rush-temp/ai-bot-assets'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
   file:projects/ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-VUzWp9Le++agPkh/Sq5V8y1LHVSofd+WOJNwkYFDWlJH0+TKM1F88CFBANOYUlg2ZvhOQGyLCCFTcjbPohfnSQ==, tarball: file:projects/ai-bot-resources.tgz}
+    resolution: {integrity: sha512-rgc3ngDxitLmyUF5HCGSeZCeqweXu2+jmgj8vHK2CpPWjbBxLd8tF2lGYlicpU+9JLhnl0j0by5NciFKyWRvfA==, tarball: file:projects/ai-bot-resources.tgz}
     id: file:projects/ai-bot-resources.tgz
     name: '@rush-temp/ai-bot-resources'
     version: 0.0.0
@@ -26451,7 +26484,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-qC9oDROK1wvmwya82IbB9HAj4bYw3oBPa23nMIW8phhnkSp+6fCVboz3D8G1EIw5eZmDbPCSgtnZZh+mH/VqLw==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-XNRPFippUn7IcdWBIN89K2yw5BTyGIWVtWXFmshvu/Z3JwAU5LRh0AgkGQIkgc4wEPlfnjQahECRwCW0YM5Rpw==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -27174,7 +27207,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-bAR3xXsPX0SRBzBNKHnhr4KdUZibYwt2pOQBKp1pcybJXnw9pwv8A7S6wYWgaG6o091zASbDD/EGvxOqZ/bdSQ==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-zb6Uxzob+Vga320WvAnXKvB9O6c5hrpStA/z/HA9eVLKMruUiQ1OwSmfnHWlcDEgfYPyOvdiBNHf0NAdYzZ6tQ==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -28863,7 +28896,7 @@ packages:
     dev: false
 
   file:projects/model-ai-bot.tgz:
-    resolution: {integrity: sha512-tdvrfRa0PZZCWrUq5QqiZi4Bex97OgR7tMHVLMUJhhg7lJOnR9nyjFKn+X0lEI79pi0sllds53Ksdmi5Kd+OlQ==, tarball: file:projects/model-ai-bot.tgz}
+    resolution: {integrity: sha512-11PeZ6Wr6JqkZn4ft4j7VSR696l5GsLHLD+1z4PmlZfKjE42cPXtoEVI6DaqNN8LJxvJ5nxWX+T/w56XKejIlw==, tarball: file:projects/model-ai-bot.tgz}
     name: '@rush-temp/model-ai-bot'
     version: 0.0.0
     dependencies:
@@ -30112,7 +30145,7 @@ packages:
     dev: false
 
   file:projects/model-text-editor.tgz:
-    resolution: {integrity: sha512-z1TlVHF8VxcMeChSZ70ZGJsKdGSKisnpnPGuLmp2yYS30ckD5ohoj4KeqgbKu+qT+72FYSg4COXFoAYnszgfoA==, tarball: file:projects/model-text-editor.tgz}
+    resolution: {integrity: sha512-9s3E5iyN8yKzKTCaufGL6nwxOtSCbD2izkcbS3c346ej/K7yyUzW1v5bWDrSuDIE12P+i+i4BbGagwK4WffypQ==, tarball: file:projects/model-text-editor.tgz}
     name: '@rush-temp/model-text-editor'
     version: 0.0.0
     dependencies:
@@ -30149,7 +30182,7 @@ packages:
     dev: false
 
   file:projects/model-tracker.tgz:
-    resolution: {integrity: sha512-u9m53Xf1czr2mPQRN62kUs6umFh0ThtAahFquvZSdqY3bDjd1rYpG31SUOHphnGBTa4um183/pxGdJLtD599YQ==, tarball: file:projects/model-tracker.tgz}
+    resolution: {integrity: sha512-eaLvC0aM9jMISJOHLbmMC5yQKKHWyrkL+WTn4YhuwnJzZagCjRPFH4dWR4lr1JaDNIndI7h4arZILZWApwz3UA==, tarball: file:projects/model-tracker.tgz}
     name: '@rush-temp/model-tracker'
     version: 0.0.0
     dependencies:
@@ -31804,7 +31837,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-TnkAF2lFRAD6kQruc0x6uW65fsADXRJyTxBFx2mKJSsaZP57rWfmFDaO00am5SvSzGtUr2GguQvcCh+IeoPYrQ==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-kl1uUD52HqmPYcwNmNX8/fuZFF3scp1JPXFbfS+B6K42WKPLXDONHGfTsHuwjgenIRKxp2sJVWYv7hB7I9pakw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -33934,7 +33967,7 @@ packages:
     dev: false
 
   file:projects/server-pipeline.tgz:
-    resolution: {integrity: sha512-gaF/29tMBmt1rcHqrdJ87g7xHkb39eb8oZfDEVzyeK7qwf1vRjOYE0el4Pp/5OvkBrZSQGEwKgfUK3lHI3iLJQ==, tarball: file:projects/server-pipeline.tgz}
+    resolution: {integrity: sha512-DlpNsigfMkh58YF59z09JalNTXUwN1Aci6Rlwvt5dYu+wMx8TDtQpPqGtgWEdnaCPo9cbB/R23Ey4UUF1iI4qA==, tarball: file:projects/server-pipeline.tgz}
     name: '@rush-temp/server-pipeline'
     version: 0.0.0
     dependencies:

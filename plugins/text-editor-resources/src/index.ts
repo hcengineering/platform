@@ -20,6 +20,17 @@ import { isEditable, isHeadingVisible } from './kits/editor-kit'
 import { openTableOptions, isEditableTableActive } from './components/extension/table/table'
 import { openImage, downloadImage, expandImage, moreImageActions } from './components/extension/imageExt'
 import { configureNote, isEditableNote } from './components/extension/note'
+import type { TextEditorHandler } from '@hcengineering/text-editor'
+import type { Editor } from '@tiptap/core'
+import { type Markup } from '@hcengineering/core'
+import { isEmptyMarkup } from '@hcengineering/text'
+import {
+  insertImageShortcut,
+  insertCodeBlockShortcut,
+  insertSeparatorLineShortcut,
+  insertTableShortcut,
+  insertTodoListShortcut
+} from './utils'
 
 export * from '@hcengineering/presentation/src/types'
 export type { EditorKitOptions } from './kits/editor-kit'
@@ -46,6 +57,7 @@ export { default as TableOfContentsContent } from './components/toc/TableOfConte
 export * from './components/editor/actions'
 export * from './components/node-view'
 export * from './utils'
+export * from './inlineCommands'
 
 export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
 export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
@@ -76,6 +88,11 @@ export * from './command/deleteAttachment'
 export { createTiptapCollaborationData } from './provider/utils'
 export { type Provider } from './provider/types'
 
+function ShowCommands (_: any, editor: TextEditorHandler): void {
+  editor.insertText('/')
+  editor.focus()
+}
+
 export default async (): Promise<Resources> => ({
   function: {
     FormatLink: formatLink,
@@ -88,6 +105,20 @@ export default async (): Promise<Resources> => ({
     IsEditableTableActive: isEditableTableActive,
     IsEditableNote: isEditableNote,
     IsEditable: isEditable,
-    IsHeadingVisible: isHeadingVisible
+    IsHeadingVisible: isHeadingVisible,
+    DisableInlineCommands: (editor?: Editor, content?: Markup) => {
+      if (editor === undefined || content === undefined) return false
+      return !editor.isEditable || !isEmptyMarkup(content)
+    }
+  },
+  inlineCommandImpl: {
+    InsertImage: insertImageShortcut,
+    InsertTable: insertTableShortcut,
+    InsertSeparatorLine: insertSeparatorLineShortcut,
+    InsertCodeBlock: insertCodeBlockShortcut,
+    InsertTodoList: insertTodoListShortcut
+  },
+  action: {
+    ShowCommands
   }
 })

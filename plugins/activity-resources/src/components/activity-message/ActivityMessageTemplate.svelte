@@ -174,88 +174,90 @@
       on:click={onClick}
       on:contextmenu={handleContextMenu}
     >
-      {#if showNotify && !embedded && !isShort}
-        <div class="notify" />
-      {/if}
-      {#if embedded}
-        <div class="embeddedMarker" />
-      {:else if isShort}
-        <span class="text-sm lower time">
-          <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
-        </span>
-      {:else}
-        <div class="avatar mt-1 relative flex-no-shrink">
-          {#if $$slots.icon}
-            <slot name="icon" />
-          {:else if person}
-            <Avatar size="medium" {person} name={person.name} />
-          {:else}
-            <SystemAvatar size="medium" />
-          {/if}
-          {#if isSaved}
-            <div class="saveMarker">
-              <Icon icon={activity.icon.BookmarkFilled} size="xx-small" />
-            </div>
-          {/if}
-          {#if socialIcon}
-            <div class="socialIcon">
-              <Icon icon={socialIcon} size="x-small" />
-            </div>
-          {/if}
-        </div>
-      {/if}
-      <div class="flex-col ml-2 w-full clear-mins message-content">
-        {#if !isShort}
-          <div class="header clear-mins">
-            {#if person}
-              <div class="username">
-                <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
-              </div>
+      <slot name="before" {isShort} />
+      <div class="inner">
+        {#if showNotify && !embedded && !isShort}
+          <div class="notify" />
+        {/if}
+        {#if embedded}
+          <div class="embeddedMarker" />
+        {:else if isShort}
+          <span class="text-sm lower time">
+            <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
+          </span>
+        {:else}
+          <div class="avatar mt-1 relative flex-no-shrink">
+            {#if $$slots.icon}
+              <slot name="icon" />
+            {:else if person}
+              <Avatar size="medium" {person} name={person.name} />
             {:else}
-              <div class="strong">
-                <Label label={core.string.System} />
+              <SystemAvatar size="medium" />
+            {/if}
+            {#if isSaved}
+              <div class="saveMarker">
+                <Icon icon={activity.icon.BookmarkFilled} size="xx-small" />
               </div>
             {/if}
-
-            {#if !skipLabel}
-              <slot name="header" />
-            {/if}
-
-            {#if !skipLabel && showDatePreposition}
-              <span class="text-sm lower">
-                <Label label={activity.string.At} />
-              </span>
-            {/if}
-
-            <span class="text-sm lower">
-              <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
-            </span>
-            {#if message.editedOn}
-              <span class="text-sm lower">(<Label label={notification.string.Edited} />)</span>
-            {/if}
-
-            {#if withActions && inlineActions.length > 0 && !readonly}
-              <div class="flex-presenter flex-gap-2 ml-2">
-                {#each inlineActions as item}
-                  <InlineAction {item} />
-                {/each}
+            {#if socialIcon}
+              <div class="socialIcon">
+                <Icon icon={socialIcon} size="x-small" />
               </div>
             {/if}
           </div>
         {/if}
+        <div class="flex-col ml-2 w-full clear-mins message-content">
+          {#if !isShort}
+            <div class="header clear-mins">
+              {#if person}
+                <div class="username">
+                  <ComponentExtensions extension={activity.extension.ActivityEmployeePresenter} props={{ person }} />
+                </div>
+              {:else}
+                <div class="strong">
+                  <Label label={core.string.System} />
+                </div>
+              {/if}
 
-        <slot name="content" {readonly} />
+              {#if !skipLabel}
+                <slot name="header" />
+              {/if}
 
-        {#if !hideFooter}
-          <Replies {embedded} object={message} />
-        {/if}
-        <ReactionsPresenter object={message} {readonly} />
-        {#if parentMessage && showEmbedded}
-          <div class="mt-2" />
-          <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
-        {/if}
+              {#if !skipLabel && showDatePreposition}
+                <span class="text-sm lower">
+                  <Label label={activity.string.At} />
+                </span>
+              {/if}
+
+              <span class="text-sm lower">
+                <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
+              </span>
+              {#if message.editedOn}
+                <span class="text-sm lower">(<Label label={notification.string.Edited} />)</span>
+              {/if}
+
+              {#if withActions && inlineActions.length > 0 && !readonly}
+                <div class="flex-presenter flex-gap-2 ml-2">
+                  {#each inlineActions as item}
+                    <InlineAction {item} />
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/if}
+
+          <slot name="content" {readonly} />
+
+          {#if !hideFooter}
+            <Replies {embedded} object={message} />
+          {/if}
+          <ReactionsPresenter object={message} {readonly} />
+          {#if parentMessage && showEmbedded}
+            <div class="mt-2" />
+            <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
+          {/if}
+        </div>
       </div>
-
       {#if withActions && !readonly}
         <div class="actions" class:pending class:opened={isActionsOpened}>
           <ActivityMessageActions
@@ -282,14 +284,28 @@
   .activityMessage {
     position: relative;
     display: flex;
+    flex-direction: column;
     flex-shrink: 0;
     padding: 0.5rem 0.75rem 0.5rem 1rem;
-    gap: 1rem;
+    //gap: 1rem;
     //overflow: hidden;
     border: 1px solid transparent;
     border-radius: 0.25rem;
     width: 100%;
     user-select: text;
+
+    .inner {
+      display: inline-flex;
+      gap: 0.25rem;
+      .time {
+        display: flex;
+        justify-content: end;
+        width: 2.5rem;
+        min-width: 2.5rem;
+        visibility: hidden;
+        margin-top: 0.125rem;
+      }
+    }
 
     &.clickable {
       cursor: pointer;
@@ -326,17 +342,8 @@
       }
     }
 
-    &:hover > .time {
+    &:hover > .inner > .time {
       visibility: visible;
-    }
-
-    .time {
-      display: flex;
-      justify-content: end;
-      width: 2.5rem;
-      min-width: 2.5rem;
-      visibility: hidden;
-      margin-top: 0.125rem;
     }
 
     &.actionsOpened {

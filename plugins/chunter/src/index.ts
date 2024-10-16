@@ -20,7 +20,7 @@ import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
-import { Person, ChannelProvider as SocialChannelProvider } from '@hcengineering/contact'
+import { Person, PersonSpace, ChannelProvider as SocialChannelProvider } from '@hcengineering/contact'
 import { Widget, WidgetTab } from '@hcengineering/workbench'
 
 /**
@@ -69,6 +69,14 @@ export interface ThreadMessage extends ChatMessage {
   attachedToClass: Ref<Class<ActivityMessage>>
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
+}
+
+export interface PrivateChatMessage extends ChatMessage {
+  space: Ref<PersonSpace>
+}
+
+export interface PrivateThreadMessage extends ThreadMessage {
+  space: Ref<PersonSpace>
 }
 
 /**
@@ -163,7 +171,9 @@ export default plugin(chunterId, {
     ChatSyncInfo: '' as Ref<Class<ChatSyncInfo>>,
     InlineButton: '' as Ref<Class<InlineButton>>,
     TypingInfo: '' as Ref<Class<TypingInfo>>,
-    ChunterExtension: '' as Ref<Class<ChunterExtension>>
+    ChunterExtension: '' as Ref<Class<ChunterExtension>>,
+    PrivateChatMessage: '' as Ref<Class<PrivateChatMessage>>,
+    PrivateThreadMessage: '' as Ref<Class<PrivateThreadMessage>>
   },
   mixin: {
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
@@ -228,7 +238,8 @@ export default plugin(chunterId, {
     StartConversation: '' as IntlString,
     ViewingThreadFromArchivedChannel: '' as IntlString,
     ViewingArchivedChannel: '' as IntlString,
-    OpenChatInSidebar: '' as IntlString
+    OpenChatInSidebar: '' as IntlString,
+    OnlyVisibleToYou: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

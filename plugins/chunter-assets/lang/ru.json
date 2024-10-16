@@ -130,6 +130,7 @@
     "StartConversation": "Начать диалог",
     "ViewingThreadFromArchivedChannel": "Вы просматриваете обсуждение из архивированного канала",
     "ViewingArchivedChannel": "Вы просматриваете архивированный канал",
-    "OpenChatInSidebar": "Открыть чат в боковой панели"
+    "OpenChatInSidebar": "Открыть чат в боковой панели",
+    "OnlyVisibleToYou": "Видно только вам"
   }
 }

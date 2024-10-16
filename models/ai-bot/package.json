@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@hcengineering/ai-bot": "^0.6.0",
+    "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
     "@hcengineering/chunter": "^0.6.20",
     "@hcengineering/core": "^0.6.32",

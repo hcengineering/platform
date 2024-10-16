@@ -14,24 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    showPopup,
-    resizeObserver,
-    deviceOptionsStore as deviceInfo,
-    PopupResult,
-    SelectPopup
-  } from '@hcengineering/ui'
+  import { showPopup, resizeObserver, deviceOptionsStore as deviceInfo, PopupResult } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
-  import DummyPopup from './DummyPopup.svelte'
+  import { TextEditorInlineCommand } from '@hcengineering/text-editor'
+  import { Ref } from '@hcengineering/core'
 
-  export let items: any[]
+  import DummyPopup from './DummyPopup.svelte'
+  import InlineCommandsPopup from './InlineCommandsPopup.svelte'
+
+  export let query: string = ''
+  export let items: TextEditorInlineCommand[]
   export let clientRect: () => ClientRect
-  export let command: (props: any) => void
+  export let command: (props: { item?: TextEditorInlineCommand }) => void
   export let close: () => void
 
   let popup: HTMLDivElement
   let dummyPopup: PopupResult
-  let menuPopup: SelectPopup
+  let menuPopup: InlineCommandsPopup
+  let wPopup: number = 0
 
   onMount(() => {
     dummyPopup = showPopup(
@@ -40,7 +40,7 @@
       undefined,
       () => {
         close()
-        command(null)
+        command({})
       },
       () => {},
       { overlay: false, category: '' }
@@ -84,10 +84,12 @@
     updateStyle()
   }
 
-  let wPopup: number = 0
-
-  function handleSelected (id: any): void {
-    command({ id })
+  function handleSelected (_id: Ref<TextEditorInlineCommand>): void {
+    const item = items.find((it) => it._id === _id)
+    if (item != null) {
+      command({ item })
+      close()
+    }
   }
 </script>
 
@@ -113,7 +115,7 @@
     updateStyle()
   }}
 >
-  <SelectPopup bind:this={menuPopup} value={items} onSelect={handleSelected} />
+  <InlineCommandsPopup bind:this={menuPopup} {query} commands={items} onSelect={handleSelected} />
 </div>
 
 <style lang="scss">

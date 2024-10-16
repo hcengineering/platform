@@ -712,5 +712,10 @@ export default async (): Promise<Resources> => ({
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateComponentAggregationManager: AggregationManager.create,
     GrouppingComponentManager: grouppingComponentManager
+  },
+  command: {
+    CreateIssue: () => {
+      showPopup(CreateIssue, {}, 'top')
+    }
   }
 })

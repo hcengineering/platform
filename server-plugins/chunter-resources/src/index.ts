@@ -213,6 +213,13 @@ async function ChatNotificationsHandler (tx: TxCUD<Doc>, control: TriggerControl
 
   const chatMessage = TxProcessor.createDoc2Doc(actualTx)
 
+  if (
+    control.hierarchy.isDerived(chatMessage._class, chunter.class.PrivateChatMessage) ||
+    control.hierarchy.isDerived(chatMessage._class, chunter.class.PrivateThreadMessage)
+  ) {
+    return []
+  }
+
   return await createCollaboratorNotifications(control.ctx, tx, control, [chatMessage])
 }
 

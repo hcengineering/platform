@@ -479,6 +479,11 @@
   cursor: pointer;
 }
 
+.inlineCommand {
+  display: inline-flex;
+  width: fit-content;
+}
+
 .antiDivider {
   margin: .25rem 0;
   min-height: 1px;

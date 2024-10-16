@@ -38,7 +38,9 @@ import type {
   ObjectChatPanel,
   ThreadMessage,
   TypingInfo,
-  ChunterExtensionPoint
+  ChunterExtensionPoint,
+  PrivateThreadMessage,
+  PrivateChatMessage
 } from '@hcengineering/chunter'
 import {
   type Class,
@@ -50,7 +52,11 @@ import {
   type Ref,
   type Timestamp
 } from '@hcengineering/core'
-import contact, { type ChannelProvider as SocialChannelProvider, type Person } from '@hcengineering/contact'
+import contact, {
+  type ChannelProvider as SocialChannelProvider,
+  type Person,
+  type PersonSpace
+} from '@hcengineering/contact'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { TActivityMessage } from '@hcengineering/model-activity'
 import attachment from '@hcengineering/model-attachment'
@@ -117,6 +123,18 @@ export class TThreadMessage extends TChatMessage implements ThreadMessage {
   @Prop(TypeRef(core.class.Class), core.string.Class)
   @Index(IndexKind.Indexed)
     objectClass!: Ref<Class<Doc>>
+}
+
+@Model(chunter.class.PrivateChatMessage, chunter.class.ChatMessage)
+@UX(chunter.string.Message, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
+export class TPrivateChatMessage extends TChatMessage implements PrivateChatMessage {
+  declare space: Ref<PersonSpace>
+}
+
+@Model(chunter.class.PrivateThreadMessage, chunter.class.ThreadMessage)
+@UX(chunter.string.ThreadMessage, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
+export class TPrivateThreadMessage extends TThreadMessage implements PrivateThreadMessage {
+  declare space: Ref<PersonSpace>
 }
 
 @Model(chunter.class.ChatMessageViewlet, core.class.Doc, DOMAIN_MODEL)

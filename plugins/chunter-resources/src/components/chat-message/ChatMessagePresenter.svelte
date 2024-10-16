@@ -19,7 +19,7 @@
   import { getClient, MessageViewer } from '@hcengineering/presentation'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
-  import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
+  import { Action, Button, Icon, IconEdit, Label, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import activity, { ActivityMessage, ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate, MessageInlineAction } from '@hcengineering/activity-resources'
@@ -215,6 +215,11 @@
   } else {
     displayText = value?.message ?? EmptyMarkup
   }
+
+  $: isPrivate =
+    value &&
+    (hierarchy.isDerived(value._class, chunter.class.PrivateChatMessage) ||
+      hierarchy.isDerived(value._class, chunter.class.PrivateThreadMessage))
 </script>
 
 {#if inline && object}
@@ -246,7 +251,7 @@
     {skipLabel}
     {pending}
     {stale}
-    {readonly}
+    readonly={readonly || isPrivate}
     excludedActions={$shownTranslatedMessagesStore.has(value._id)
       ? [chunter.action.TranslateMessage]
       : [chunter.action.ShowOriginalMessage]}
@@ -256,6 +261,16 @@
     {type}
     {onClick}
   >
+    <svelte:fragment slot="before" let:isShort>
+      {#if isPrivate && !isShort}
+        <div class="flex-presenter private">
+          <div class="mt-0-5">
+            <Icon size="x-small" icon={view.icon.Eye} />
+          </div>
+          <Label label={chunter.string.OnlyVisibleToYou} />
+        </div>
+      {/if}
+    </svelte:fragment>
     <svelte:fragment slot="header">
       <ChatMessageHeader label={viewlet?.label} />
     </svelte:fragment>
@@ -307,3 +322,13 @@
     </svelte:fragment>
   </ActivityMessageTemplate>
 {/if}
+
+<style lang="scss">
+  .private {
+    margin-left: 1.75rem;
+    margin-bottom: 0.25rem;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--global-secondary-TextColor);
+  }
+</style>

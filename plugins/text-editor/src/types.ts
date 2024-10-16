@@ -35,6 +35,7 @@ export interface TextEditorHandler {
  * @public
  */
 export type RefInputAction = (element: HTMLElement, editor: TextEditorHandler, event?: MouseEvent) => void
+export type RefInputActionDisabledFn = (editor: Editor, content: Markup) => boolean
 /**
  * A contribution to reference input control, to allow to add more actions to it.
  * @public
@@ -42,9 +43,11 @@ export type RefInputAction = (element: HTMLElement, editor: TextEditorHandler, e
 export interface RefInputActionItem extends Doc {
   label: IntlString
   icon: Asset
+  iconProps?: Record<string, any>
 
   // Query for documents with pattern
   action: Resource<RefInputAction>
+  isDisabledFn?: Resource<RefInputActionDisabledFn>
 
   order?: number
 }
@@ -73,10 +76,12 @@ export const CollaborationIds = {
 export interface RefAction {
   label: IntlString
   icon: Asset | AnySvelteComponent
+  iconProps?: Record<string, any>
   action: RefInputAction
   order: number
   fill?: string
   disabled?: boolean
+  disabledFn?: RefInputActionDisabledFn
 }
 
 /**
@@ -200,4 +205,42 @@ export interface TextEditorAction extends Doc {
   label: IntlString
   category: number
   index: number
+}
+
+export type TextEditorInlineCommandCategory = 'editor' | 'general'
+export type TextEditorInlineCommandType = 'command' | 'shortcut'
+
+export interface InlineCommandEditorHandler {
+  editor: TextEditorHandler
+  insertImage?: (pos: number, targetItem?: MouseEvent | HTMLElement) => void
+  insertTable?: (pos: number, targetItem?: MouseEvent | HTMLElement) => void
+  insertCodeBlock?: (pos: number, targetItem?: MouseEvent | HTMLElement) => void
+  insertTodoList?: (pos: number, targetItem?: MouseEvent | HTMLElement) => void
+  insertSeparatorLine?: (pos: number, targetItem?: MouseEvent | HTMLElement) => void
+}
+
+export type InlineCommandAction = (
+  markup: Markup,
+  context: { objectId: Ref<Doc>, objectClass: Ref<Class<Doc>> }
+) => Promise<void>
+export type InlineShortcutAction = (
+  handler: InlineCommandEditorHandler,
+  pos: number,
+  targetItem?: MouseEvent | HTMLElement
+) => Promise<void>
+export type InlineCommandVisibilityTester = () => Promise<boolean>
+
+export interface TextEditorInlineCommand extends Doc {
+  icon: Asset
+  title: IntlString
+  description?: IntlString
+
+  command: string
+  commandTemplate?: string
+
+  category: TextEditorInlineCommandCategory
+  type: TextEditorInlineCommandType
+
+  action: Resource<InlineCommandAction> | Resource<InlineShortcutAction>
+  visibilityTester?: Resource<InlineCommandVisibilityTester>
 }

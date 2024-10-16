@@ -57,6 +57,7 @@
     "Unset": "Anular",
     "Image": "Imagen",
     "SeparatorLine": "Línea de separación",
-    "TodoList": "Tarea pendiente"
+    "TodoList": "Tarea pendiente",
+    "ShortcutsAndCommands": "Atajos y comandos"
   }
 }

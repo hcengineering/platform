@@ -17,7 +17,10 @@ import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
 import { type Asset, getMetadata } from '@hcengineering/platform'
-import { SelectPopup, getEventPositionElement, showPopup } from '@hcengineering/ui'
+import { getEventPositionElement, showPopup } from '@hcengineering/ui'
+import { type TextEditorInlineCommand } from '@hcengineering/text-editor'
+import InlineCommandsPopup from '../InlineCommandsPopup.svelte'
+import { type Ref } from '@hcengineering/core'
 
 export interface LeftMenuOptions {
   width: number
@@ -26,8 +29,8 @@ export interface LeftMenuOptions {
   className: string
   icon: Asset
   iconProps: any
-  items: Array<{ id: string, label: string, icon: Asset }>
-  handleSelect: (id: string, pos: number, event: MouseEvent) => Promise<void>
+  items: TextEditorInlineCommand[]
+  handleSelect: (item: TextEditorInlineCommand, pos: number, event: MouseEvent) => Promise<void>
 }
 
 function nodeDOMAtCoords (coords: { x: number, y: number }): Element | undefined {
@@ -100,15 +103,17 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
         e.preventDefault()
         e.stopPropagation()
         showPopup(
-          SelectPopup,
+          InlineCommandsPopup,
           {
-            value: options.items
+            commands: options.items
           },
           getEventPositionElement(e),
-          (val) => {
+          (val: Ref<TextEditorInlineCommand>) => {
             if (leftMenuElement === null) return
             const pos = posAtLeftMenuElement(view, leftMenuElement, offsetX)
-            void options.handleSelect(val, pos, e)
+            const item = options.items.find((it) => it._id === val)
+            if (item === undefined) return
+            void options.handleSelect(item, pos, e)
           }
         )
       })

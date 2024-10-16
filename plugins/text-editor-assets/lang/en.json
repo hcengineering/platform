@@ -59,6 +59,7 @@
     "Unset": "Unset",
     "Image": "Image",
     "SeparatorLine": "Separator line",
-    "TodoList": "Action item"
+    "TodoList": "Action item",
+    "ShortcutsAndCommands": "Shortcuts & commands"
   }
 }

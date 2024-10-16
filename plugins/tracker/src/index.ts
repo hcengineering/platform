@@ -513,7 +513,8 @@ const pluginState = plugin(trackerId, {
     Project: '' as IntlString,
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
-    NewProject: '' as IntlString
+    NewProject: '' as IntlString,
+    CreateIssueDescription: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

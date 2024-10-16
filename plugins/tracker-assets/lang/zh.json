@@ -286,7 +286,8 @@
     "DefaultIssueStatus": "默认问题状态",
     "IssueStatus": "状态",
     "Extensions": "扩展",
-    "RoleLabel": "角色：{role}"
+    "RoleLabel": "角色：{role}",
+    "CreateIssueDescription": "创建问题描述"
   },
   "status": {}
 }

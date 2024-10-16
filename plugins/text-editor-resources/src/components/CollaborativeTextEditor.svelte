@@ -17,8 +17,8 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { type Space, type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
-  import { IntlString, translate } from '@hcengineering/platform'
-  import { getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
+  import { getResource, IntlString, Resource, translate } from '@hcengineering/platform'
+  import { getClient, getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
@@ -50,7 +50,10 @@
     CollaborationUser,
     RefAction,
     TextEditorCommandHandler,
-    TextEditorHandler
+    TextEditorHandler,
+    TextEditorInlineCommand,
+    InlineCommandEditorHandler,
+    InlineShortcutAction
   } from '@hcengineering/text-editor'
   import { addTableHandler } from '../utils'
 
@@ -101,6 +104,7 @@
   export let kitOptions: Partial<EditorKitOptions> = {}
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
   const contextProvider = getContext<Provider>(CollaborationIds.Provider)
@@ -247,7 +251,12 @@
         })
       )
     }
+    const allCommands = client
+      .getModel()
+      .findAllSync(textEditor.class.TextEditorInlineCommand, { type: 'shortcut', category: 'editor' })
     if (withSideMenu) {
+      const excludedCommands = !canEmbedImages ? [textEditor.inlineCommand.InsertImage] : []
+      const commands = allCommands.filter(({ _id }) => !excludedCommands.includes(_id))
       optionalExtensions.push(
         LeftMenuExtension.configure({
           width: 20,
@@ -259,23 +268,15 @@
             className: 'svg-tiny',
             fill: 'currentColor'
           },
-          items: [
-            ...(canEmbedImages ? [{ id: 'image', label: textEditor.string.Image, icon: view.icon.Image }] : []),
-            { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
-            { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-            { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
-            { id: 'todo-list', label: textEditor.string.TodoList, icon: view.icon.TodoList }
-          ],
-          handleSelect: handleLeftMenuClick
+          items: commands,
+          handleSelect: handleInlineCommand
         })
       )
     }
     if (withInlineCommands) {
-      optionalExtensions.push(
-        InlineCommandsExtension.configure(
-          inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
-        )
-      )
+      const excludedCommands = attachFile === undefined || !canEmbedImages ? [textEditor.inlineCommand.InsertImage] : []
+      const commands = allCommands.filter(({ _id }) => !excludedCommands.includes(_id))
+      optionalExtensions.push(InlineCommandsExtension.configure(inlineCommandsConfig(commands, handleInlineCommand)))
     }
   }
 
@@ -324,40 +325,44 @@
     inputImage.value = ''
   }
 
-  async function handleLeftMenuClick (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
+  function handleAttachTable (pos: number, targetItem?: MouseEvent | HTMLElement): void {
+    let position: PopupAlignment | undefined = undefined
+    if (targetItem !== undefined) {
+      position =
+        targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
+    }
+
+    // We need to trigger it asynchronously in order for the editor to finish its focus event
+    // Otherwise, it hoggs the focus from the popup and keyboard navigation doesn't work
+    setTimeout(() => {
+      // addTableHandler opens popup so the editor loses focus so in the callback we need to refocus again
+      void addTableHandler((options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
+        editor.chain().focus(pos).insertTable(options).run()
+      }, position)
+    }, 0)
+  }
+
+  async function handleInlineCommand (
+    item: TextEditorInlineCommand,
+    pos: number,
+    targetItem?: MouseEvent | HTMLElement
+  ): Promise<void> {
     editor.commands.focus(pos, { scrollIntoView: false })
 
-    switch (id) {
-      case 'image':
-        handleAttachImage()
-        break
-      case 'table': {
-        let position: PopupAlignment | undefined = undefined
-        if (targetItem !== undefined) {
-          position =
-            targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
-        }
-
-        // We need to trigger it asynchronously in order for the editor to finish its focus event
-        // Otherwise, it hoggs the focus from the popup and keyboard navigation doesn't work
-        setTimeout(() => {
-          // addTableHandler opens popup so the editor loses focus so in the callback we need to refocus again
-          void addTableHandler((options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
-            editor.chain().focus(pos).insertTable(options).run()
-          }, position)
-        }, 0)
-        break
-      }
-      case 'code-block':
-        editor.commands.insertContentAt(pos, { type: 'codeBlock' })
-        break
-      case 'todo-list':
-        editor.chain().insertContentAt(pos, { type: 'paragraph' }).toggleTaskList().run()
-        break
-      case 'separator-line':
-        editor.commands.setHorizontalRule()
-        break
+    if (item.type !== 'shortcut') {
+      return
     }
+    const handler: InlineCommandEditorHandler = {
+      editor: editorHandler,
+      insertImage: handleAttachImage,
+      insertTable: handleAttachTable,
+      insertCodeBlock: () => editor.commands.insertContentAt(pos, { type: 'codeBlock' }),
+      insertTodoList: () => editor.chain().insertContentAt(pos, { type: 'paragraph' }).toggleTaskList().run(),
+      insertSeparatorLine: () => editor.commands.setHorizontalRule()
+    }
+
+    const fn = await getResource(item.action as Resource<InlineShortcutAction>)
+    await fn(handler, pos, targetItem)
   }
 
   const throttle = new ThrottledCaller(100)

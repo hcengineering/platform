@@ -1,9 +1,20 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import presentation, { MessageViewer, getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
+  import { IntlString, getResource, Resource } from '@hcengineering/platform'
+  import presentation, {
+    MessageViewer,
+    getFileUrl,
+    getImageSize,
+    imageSizeToRatio,
+    getClient
+  } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
-  import textEditor, { RefAction } from '@hcengineering/text-editor'
+  import textEditor, {
+    InlineCommandEditorHandler,
+    InlineShortcutAction,
+    RefAction,
+    TextEditorInlineCommand
+  } from '@hcengineering/text-editor'
   import {
     ActionIcon,
     ButtonSize,
@@ -79,6 +90,7 @@
   }
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   let canBlur = true
   let focused = false
@@ -199,39 +211,44 @@
     }
 
     if (enableInlineCommands) {
-      extensions.push(
-        InlineCommandsExtension.configure(
-          inlineCommandsConfig(handleCommandSelected, attachFile === undefined ? ['image'] : [])
-        )
-      )
+      const excludedCommands = attachFile === undefined ? [textEditor.inlineCommand.InsertImage] : []
+      const allCommands = client
+        .getModel()
+        .findAllSync(textEditor.class.TextEditorInlineCommand, { type: 'shortcut', category: 'editor' })
+      const commands = allCommands.filter(({ _id }) => !excludedCommands.includes(_id))
+      extensions.push(InlineCommandsExtension.configure(inlineCommandsConfig(commands, handleInlineCommand)))
     }
 
     return extensions
   }
 
-  async function handleCommandSelected (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
-    switch (id) {
-      case 'image':
-        handleAttachImage()
-        break
-      case 'table': {
-        let position: PopupAlignment | undefined = undefined
-        if (targetItem !== undefined) {
-          position =
-            targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
-        }
-
-        addTableHandler(editor.editorHandler.insertTable, position)
-        break
-      }
-      case 'code-block':
-        editor.editorHandler.insertCodeBlock(pos)
-
-        break
-      case 'separator-line':
-        editor.editorHandler.insertSeparatorLine()
-        break
+  async function handleAttachTable (pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
+    let position: PopupAlignment | undefined = undefined
+    if (targetItem !== undefined) {
+      position =
+        targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
     }
+
+    await addTableHandler(editor.editorHandler.insertTable, position)
+  }
+
+  async function handleInlineCommand (
+    item: TextEditorInlineCommand,
+    pos: number,
+    targetItem?: MouseEvent | HTMLElement
+  ): Promise<void> {
+    if (item.type !== 'shortcut') return
+    const handler: InlineCommandEditorHandler = {
+      editor: editor.editorHandler,
+      insertImage: handleAttachImage,
+      insertTable: () => {
+        void handleAttachTable(pos, targetItem)
+      },
+      insertCodeBlock: () => editor.editorHandler.insertCodeBlock(pos),
+      insertSeparatorLine: () => editor.editorHandler.insertSeparatorLine()
+    }
+    const fn = await getResource(item.action as Resource<InlineShortcutAction>)
+    await fn(handler, pos, targetItem)
   }
 
   let inputImage: HTMLInputElement

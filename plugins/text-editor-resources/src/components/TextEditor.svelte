@@ -129,6 +129,10 @@
     editor?.commands.insertContent(markupToJSON(markup))
   }
 
+  export function getEditor (): Editor {
+    return editor
+  }
+
   let needFocus = false
   let focused = false
   let posFocus: FocusPosition | undefined = undefined

@@ -109,6 +109,15 @@
         <Node {node} {preview} />
       {/each}
     {/if}
+  {:else if node.type === MarkupNodeType.inlineCommand}
+    {@const command = toString(attrs.command)}
+    {#if command !== undefined}
+      /{command}
+    {:else if nodes.length > 0}
+      {#each nodes as node}
+        <Node {node} {preview} />
+      {/each}
+    {/if}
   {:else if node.type === MarkupNodeType.hard_break}
     <br />
   {:else if node.type === MarkupNodeType.ordered_list}

@@ -14,7 +14,7 @@
 //
 
 import { Account, Class, Doc, type Mixin, Ref, Space } from '@hcengineering/core'
-import type { Metadata, Plugin } from '@hcengineering/platform'
+import type { IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ChatMessage } from '@hcengineering/chunter'
 
@@ -67,6 +67,14 @@ const aiBot = plugin(aiBotId, {
   },
   account: {
     AIBot: '' as Ref<Account>
+  },
+  string: {
+    Translate: '' as IntlString,
+    InstantlyTranslateText: '' as IntlString,
+    TranslateHelp: '' as IntlString,
+    Where: '' as IntlString,
+    CodesHelp: '' as IntlString,
+    CantTranslateThisText: '' as IntlString
   }
 })
 

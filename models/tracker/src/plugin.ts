@@ -25,6 +25,7 @@ import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ViewAction, type Viewlet } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
+import { type InlineShortcutAction } from '@hcengineering/text-editor'
 
 export default mergeIds(trackerId, tracker, {
   string: {
@@ -122,5 +123,8 @@ export default mergeIds(trackerId, tracker, {
   function: {
     SetComponentStore: '' as Resource<(manager: DocManager<any>) => void>,
     ComponentFilterFunction: '' as Resource<(doc: Doc, target: Doc) => boolean>
+  },
+  command: {
+    CreateIssue: '' as Resource<InlineShortcutAction>
   }
 })

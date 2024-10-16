@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Markup } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { Class, Doc, Markup, Ref } from '@hcengineering/core'
+  import { Asset, getResource, IntlString, Resource } from '@hcengineering/platform'
+  import { EmptyMarkup, getInlineCommand, isEmptyMarkup, markupToText } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
@@ -28,16 +28,25 @@
   import { createEventDispatcher } from 'svelte'
   import { FocusPosition } from '@tiptap/core'
   import { EditorView } from '@tiptap/pm/view'
-  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
+  import textEditor, {
+    InlineCommandAction,
+    InlineShortcutAction,
+    RefAction,
+    TextEditorHandler,
+    TextEditorInlineCommand
+  } from '@hcengineering/text-editor'
 
+  import { InlineCommandsExtension } from './extension/inlineCommands'
   import { Completion } from '../Completion'
   import TextEditor from './TextEditor.svelte'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
-  import { completionConfig } from './extensions'
+  import { completionConfig, inlineCommandsConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
   import Send from './icons/Send.svelte'
+  import { getInlineCommands } from '../utils'
 
+  export let context: { objectId: Ref<Doc>, objectClass: Ref<Class<Doc>> } | undefined = undefined
   export let content: Markup = EmptyMarkup
   export let showHeader = false
   export let showActions = true
@@ -71,7 +80,7 @@
   $: canSubmit = (haveAttachment || !isEmptyContent) && !loading
 
   function setContent (content: Markup): void {
-    editor?.setContent(content)
+    editor?.setContent?.(content)
   }
 
   const editorHandler: TextEditorHandler = {
@@ -140,6 +149,47 @@
       dispatch('open-document', { event, _id, _class })
     }
   })
+
+  let allCommands: TextEditorInlineCommand[] = []
+
+  void getInlineCommands({ category: 'general' }).then((commands) => {
+    allCommands = commands
+  })
+
+  async function handleShortcut (
+    item: TextEditorInlineCommand,
+    pos: number,
+    targetItem?: MouseEvent | HTMLElement
+  ): Promise<void> {
+    if (item.type === 'shortcut') {
+      const fn = await getResource(item.action as Resource<InlineShortcutAction>)
+      await fn({ editor: editorHandler }, pos, targetItem)
+    }
+  }
+
+  async function processCommand (command: TextEditorInlineCommand, markup: Markup): Promise<void> {
+    if (context === undefined) return
+    const fn = await getResource(command.action as Resource<InlineCommandAction>)
+    await fn(markup, context)
+  }
+
+  function handleSubmit (event: CustomEvent): void {
+    if (!canSubmit) return
+
+    const inlineCommandName = getInlineCommand(content)
+    const inlineCommand =
+      inlineCommandName !== undefined ? allCommands.find((it) => it.command === inlineCommandName) : undefined
+
+    if (inlineCommand?.action !== undefined) {
+      void processCommand(inlineCommand, content)
+      dispatch('update', { message: EmptyMarkup })
+    } else {
+      dispatch('message', event.detail)
+    }
+
+    content = EmptyMarkup
+    editor?.clear()
+  }
 </script>
 
 <div class="ref-container" class:focusable>
@@ -156,13 +206,7 @@
       {boundary}
       {canEmbedFiles}
       {canEmbedImages}
-      on:content={(ev) => {
-        if (canSubmit) {
-          dispatch('message', ev.detail)
-          content = EmptyMarkup
-          editor?.clear()
-        }
-      }}
+      on:content={handleSubmit}
       on:blur={() => {
         focused = false
         dispatch('blur')
@@ -174,6 +218,7 @@
       }}
       extensions={[
         completionPlugin,
+        InlineCommandsExtension.configure(inlineCommandsConfig(allCommands, handleShortcut)),
         EmojiExtension.configure(),
         IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
       ]}
@@ -188,9 +233,10 @@
         {#if showActions}
           {#each actions as a}
             <Button
-              disabled={a.disabled}
+              disabled={a.disabled ??
+                (a.disabledFn != null && editor ? a.disabledFn(editor.getEditor(), content) : false)}
               icon={a.icon}
-              iconProps={{ size: buttonSize }}
+              iconProps={{ size: buttonSize, ...a.iconProps }}
               kind="ghost"
               showTooltip={{ label: a.label }}
               size={buttonSize}

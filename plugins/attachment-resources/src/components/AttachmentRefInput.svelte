@@ -33,6 +33,7 @@
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
+  export let context: { objectId: Ref<Doc>, objectClass: Ref<Class<Doc>> } | undefined = undefined
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
@@ -340,6 +341,7 @@
   >
     <ReferenceInput
       {focusIndex}
+      {context}
       bind:this={refInput}
       bind:content
       {iconSend}

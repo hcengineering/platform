@@ -14,12 +14,20 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
+
 import OnboardingChannelPanelExtension from './components/OnboardingChannelAsideExtension.svelte'
+import { translateInlineCommand, isAiEnabled } from './utils'
 
 export * from './utils'
 
 export default async (): Promise<Resources> => ({
+  function: {
+    IsAiEnabled: isAiEnabled
+  },
   component: {
     OnboardingChannelPanelExtension
+  },
+  command: {
+    Translate: translateInlineCommand
   }
 })

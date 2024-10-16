@@ -17,6 +17,8 @@ import { type Builder } from '@hcengineering/model'
 import core, { type Domain } from '@hcengineering/core'
 import chunter from '@hcengineering/chunter'
 import analyticsCollector from '@hcengineering/analytics-collector'
+import textEditor from '@hcengineering/text-editor'
+import view from '@hcengineering/view'
 
 import aiBot from './plugin'
 
@@ -30,5 +32,17 @@ export function createModel (builder: Builder): void {
     point: 'aside',
     ofClass: analyticsCollector.class.OnboardingChannel,
     component: aiBot.component.OnboardingChannelPanelExtension
+  })
+
+  builder.createDoc(textEditor.class.TextEditorInlineCommand, core.space.Model, {
+    command: 'translate',
+    commandTemplate: '/translate [lang] [text]',
+    title: aiBot.string.Translate,
+    description: aiBot.string.InstantlyTranslateText,
+    icon: view.icon.Translate,
+    category: 'general',
+    type: 'command',
+    action: aiBot.command.Translate,
+    visibilityTester: aiBot.function.IsAiEnabled
   })
 }
