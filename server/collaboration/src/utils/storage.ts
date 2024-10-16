@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MeasureContext, WorkspaceId } from '@hcengineering/core'
+import { generateId, MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { Doc as YDoc } from 'yjs'
 
@@ -35,10 +35,10 @@ export async function yDocFromStorage (
 
   // no need to apply gc because we load existing document
   // it is either already gc-ed, or gc not needed and it is disabled
-  ydoc ??= new YDoc({ gc: false })
+  ydoc ??= new YDoc({ guid: generateId(), gc: false })
 
   const buffer = await storageAdapter.read(ctx, workspace, documentId)
-  return yDocFromBuffer(Buffer.concat(buffer), ydoc)
+  return yDocFromBuffer(Buffer.concat(buffer as any), ydoc)
 }
 
 /** @public */

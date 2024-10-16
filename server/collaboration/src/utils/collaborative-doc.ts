@@ -20,7 +20,8 @@ import {
   MeasureContext,
   WorkspaceId,
   collaborativeDocParse,
-  collaborativeDocUnchain
+  collaborativeDocUnchain,
+  generateId
 } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 
@@ -42,7 +43,13 @@ async function loadCollaborativeDocVersion (
   versionId: string
 ): Promise<YDoc | undefined> {
   const yContent = await ctx.with('yDocFromStorage', { type: 'content' }, async (ctx) => {
-    return await yDocFromStorage(ctx, storageAdapter, workspace, documentId, new YDoc({ gc: false }))
+    return await yDocFromStorage(
+      ctx,
+      storageAdapter,
+      workspace,
+      documentId,
+      new YDoc({ guid: generateId(), gc: false })
+    )
   })
 
   // the document does not exist
@@ -56,7 +63,7 @@ async function loadCollaborativeDocVersion (
 
   const historyDocumentId = collaborativeHistoryDocId(documentId)
   const yHistory = await ctx.with('yDocFromStorage', { type: 'history' }, async (ctx) => {
-    return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc())
+    return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc({ guid: generateId() }))
   })
 
   // the history document does not exist
