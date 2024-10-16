@@ -98,10 +98,7 @@ export async function updateField (
   }
 }
 
-export async function recreateElastic (
-  mongoUrl: string,
-  workspaceId: WorkspaceId
-): Promise<void> {
+export async function recreateElastic (mongoUrl: string, workspaceId: WorkspaceId): Promise<void> {
   const client = getMongoClient(mongoUrl)
   const _client = await client.getClient()
   try {
