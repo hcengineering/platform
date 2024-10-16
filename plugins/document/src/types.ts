@@ -14,7 +14,7 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { Account, Card, Class, CollaborativeDoc, Rank, Ref, TypedSpace } from '@hcengineering/core'
+import { Account, Class, CollaborativeDoc, Doc, Rank, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
@@ -22,11 +22,10 @@ import { IconProps } from '@hcengineering/view'
 export interface Teamspace extends TypedSpace, IconProps {}
 
 /** @public */
-export interface Document extends Card, IconProps {
+export interface Document extends Doc, IconProps {
+  title: string
+  content: CollaborativeDoc
   parent: Ref<Document>
-
-  description: CollaborativeDoc
-
   space: Ref<Teamspace>
 
   lockedBy?: Ref<Account> | null
@@ -42,10 +41,10 @@ export interface Document extends Card, IconProps {
 }
 
 /** @public */
-export interface DocumentSnapshot extends Card {
-  parent: Ref<Document>
+export interface DocumentSnapshot extends Doc {
   title: string
-  description: CollaborativeDoc
+  content: CollaborativeDoc
+  parent: Ref<Document>
 }
 
 /** @public */

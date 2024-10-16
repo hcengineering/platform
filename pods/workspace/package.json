@@ -51,7 +51,7 @@
     "@hcengineering/workspace-service": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/core": "^0.6.32",
-    "mongodb": "^6.9.0",
+    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
     "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-all": "^0.6.0",

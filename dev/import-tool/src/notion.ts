@@ -326,7 +326,7 @@ async function createDBPageWithAttachments (
   documentMetaMap?: Map<string, DocumentMetadata>
 ): Promise<void> {
   const pageId = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(pageId, 'description')
+  const collabId = makeCollaborativeDoc(pageId, 'content')
 
   const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 
@@ -335,7 +335,7 @@ async function createDBPageWithAttachments (
 
   const object: Data<Document> = {
     title: docMeta.name,
-    description: collabId,
+    content: collabId,
     parent: parentId,
     attachments: 0,
     embeddings: 0,
@@ -482,7 +482,7 @@ async function importPageDocument (
 
   const attachedData: Data<Document> = {
     title: docMeta.name,
-    description: collabId,
+    content: collabId,
     parent,
     attachments: 0,
     embeddings: 0,

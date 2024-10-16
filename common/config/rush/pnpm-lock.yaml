@@ -1683,8 +1683,8 @@ dependencies:
     specifier: ^8.0.0
     version: 8.0.0
   mongodb:
-    specifier: ^6.9.0
-    version: 6.9.0
+    specifier: 6.9.0-dev.20241016.sha.3d5bd513
+    version: 6.9.0-dev.20241016.sha.3d5bd513
   morgan:
     specifier: ^1.10.0
     version: 1.10.0
@@ -19237,8 +19237,8 @@ packages:
       mongodb-connection-string-url: 3.0.0
     dev: false
 
-  /mongodb@6.9.0:
-    resolution: {integrity: sha512-UMopBVx1LmEUbW/QE0Hw18u583PEDVQmUmVzzBRH0o/xtE9DBRA5ZYLOjpLIa03i8FXjzvQECJcqoMvCXftTUA==}
+  /mongodb@6.9.0-dev.20241016.sha.3d5bd513:
+    resolution: {integrity: sha512-O1rrjh8BZuPXJOwistKE1OqA9Ou34P7+xO22uL26H7SOYSetezSKBt+IJeXTc5gelHPM25GI6Y3ydLG3ERfpLw==}
     engines: {node: '>=16.20.1'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.188.0
@@ -25435,7 +25435,7 @@ packages:
     dev: false
 
   file:projects/account-service.tgz:
-    resolution: {integrity: sha512-yJ3m7Xo8Fp4h8l/PFxhe9+Z3mytzypkwpy/AAJaSo6qqOIk99GoAQs3fGA5KTMrmBvB4j23BTaNhxfyh+KWNqw==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-9dFU6pdxassyKSSGHM/gGTqVrwrVcrTEDwNkTQBxf96cGImsAofeQNoYHJJlc0ZlvvFY3/pMuKVjxYFxi69Dfw==, tarball: file:projects/account-service.tgz}
     name: '@rush-temp/account-service'
     version: 0.0.0
     dependencies:
@@ -25461,7 +25461,7 @@ packages:
       koa-bodyparser: 4.4.1
       koa-morgan: 1.0.1
       koa-router: 12.0.1
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -25485,7 +25485,7 @@ packages:
     dev: false
 
   file:projects/account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-+cnBQYOzJLNcW19m0ILPrDSFaP1C0v0zOnMu5RAWRBhYUe94PZW0NBlz8RhGtnTAJi/BdhKQq3O8ZPrO2rjQVg==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-duOFkzCRppNR6RuL9NSfuJoOTnsRRmC8QO8FmT80PlX4+I9X22KpWvgWHM/1I2RKzjDt1AL+W8zH4toqwL/D5g==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -25503,7 +25503,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       node-fetch: 2.7.0
       otp-generator: 4.0.1
       pg: 8.12.0
@@ -26000,7 +26000,7 @@ packages:
     dev: false
 
   file:projects/auth-providers.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-qWWHjVWGqQee3gYpGf2P9eG1UXscJOePyJ8AFmLGyBEJo3VpjtRFVbeU1C4FSQ0z0osIUBX98iM+ZwwY58n4/A==, tarball: file:projects/auth-providers.tgz}
+    resolution: {integrity: sha512-MNVXGhTHZcJEqmouIE3bwm3hTabYyXpreC5RxEdKjT8NGgZbjWBhdQ8pbY5GSL3uGnEd9VH/nfWqOd6mUyHzWA==, tarball: file:projects/auth-providers.tgz}
     id: file:projects/auth-providers.tgz
     name: '@rush-temp/auth-providers'
     version: 0.0.0
@@ -26027,7 +26027,7 @@ packages:
       koa-passport: 6.0.0
       koa-router: 12.0.1
       koa-session: 6.4.0
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       openid-client: 5.7.0
       passport-custom: 1.1.1
       passport-github2: 0.1.12
@@ -26693,7 +26693,7 @@ packages:
     dev: false
 
   file:projects/collaborator.tgz(@tiptap/pm@2.6.6)(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-protocols@1.0.6):
-    resolution: {integrity: sha512-ljGlQulKneGos0pwJDjmKkgFZVizNJ4CMyGUp14orVTc40IKNK4szU09WskcwoZ6MGbBnUJttMVuGf3tb0/0iA==, tarball: file:projects/collaborator.tgz}
+    resolution: {integrity: sha512-h2gb/rZV6QbaD1pYN6Z/j+SJgWAUdwZskQz+q8wxf7yduDa4B6/swju3aGC39xyUWqkkPkB8uiIKtdx9l3N71A==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
@@ -26722,7 +26722,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -30288,7 +30288,7 @@ packages:
     dev: false
 
   file:projects/mongo.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-2metf8b2bUeEB5fJB/ULlDXMgRk5UDkaanw/H40GwsJTWMxygWg5IhdbwZ9l8gXHFntx2HFQOtOK4ryOsFY+Ww==, tarball: file:projects/mongo.tgz}
+    resolution: {integrity: sha512-FRhf7lp4DQeOaaLd+wA8UGAKCxqTE961qvTKs6V8p338pus9R6Lg+iE5b5xzYaR8tg4W08ciezt4030ddFIX2Q==, tarball: file:projects/mongo.tgz}
     id: file:projects/mongo.tgz
     name: '@rush-temp/mongo'
     version: 0.0.0
@@ -30304,7 +30304,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -30681,7 +30681,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-stE21nBKo9wG2CZvTtEOSSD91zMmqVa68rq5XFNvohR3yhPRjfl0HHRl2vz8opfQUFqMoOfCk3WJu3LBiR4NTg==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-SX5TAQO+7mq5kie9ed/ZOUIlQXHEXLD5wgmILrMtBU2TXPvIriqFwUJFKetTdNwNHwYtd3c6kGN1LqIG9UjMxA==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -30705,7 +30705,7 @@ packages:
       koa: 2.15.3
       koa-bodyparser: 4.4.1
       koa-router: 12.0.1
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -30730,7 +30730,7 @@ packages:
     dev: false
 
   file:projects/pod-ai-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(zod@3.23.8):
-    resolution: {integrity: sha512-j8F0CnCN1Dl84mhnG8FIqGksrq9b7KwNf6RwpuaGRrdnclqJ1Hfj+PgCW3mG5YzXqMYYENVF87zkx5+MHmY2Iw==, tarball: file:projects/pod-ai-bot.tgz}
+    resolution: {integrity: sha512-jpa/Fp63/KSlRLWWvQ3sAv2vui5c0rCHmcJQCTITuqGtGm+1pNUfjD4wuKCuNp0314WXT7g8+Gge1u3SrQDLJg==, tarball: file:projects/pod-ai-bot.tgz}
     id: file:projects/pod-ai-bot.tgz
     name: '@rush-temp/pod-ai-bot'
     version: 0.0.0
@@ -30758,7 +30758,7 @@ packages:
       form-data: 4.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-tiktoken: 1.0.14
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       node-fetch: 2.7.0
       openai: 4.56.0(zod@3.23.8)
       prettier: 3.2.5
@@ -30789,7 +30789,7 @@ packages:
     dev: false
 
   file:projects/pod-analytics-collector.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-xm2a0OZCJDrc7dP9t/Yky6hFNn0Ud5+l8rcCe7PJaVccf1UkrgM2/3aqzm9EIC56sO5iEOQYcaAV4IfpnamS0g==, tarball: file:projects/pod-analytics-collector.tgz}
+    resolution: {integrity: sha512-p1DRXm3l2vi5nDlfZSPIWmmpNoN3k36Dw22zJjZeptBP9UKp18vSt9QMz78qPFymSVpPB9cpuGMNL+Tv+4+bYQ==, tarball: file:projects/pod-analytics-collector.tgz}
     id: file:projects/pod-analytics-collector.tgz
     name: '@rush-temp/pod-analytics-collector'
     version: 0.0.0
@@ -30813,7 +30813,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       puppeteer: 22.14.0(bufferutil@4.0.8)(typescript@5.3.3)(utf-8-validate@6.0.4)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -30877,7 +30877,7 @@ packages:
     dev: false
 
   file:projects/pod-calendar.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-XUGpIUp1qokoJXVLf9iKTUfYErDmObsJHDe7kTXQwe3k4qkcsGtXfnhrzuOerQZ6OM+oFxqasadS9fplTc6VrQ==, tarball: file:projects/pod-calendar.tgz}
+    resolution: {integrity: sha512-BB/3Jt3eUSiFhXd5U84GoiE0whIxRTbx98h/vHgWo/1SsPU2RWuJWcG22WmWji9z+0hw43FEc86H1/9dvY9c+g==, tarball: file:projects/pod-calendar.tgz}
     id: file:projects/pod-calendar.tgz
     name: '@rush-temp/pod-calendar'
     version: 0.0.0
@@ -30906,7 +30906,7 @@ packages:
       googleapis: 122.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       jwt-simple: 0.5.6
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
@@ -31015,7 +31015,7 @@ packages:
     dev: false
 
   file:projects/pod-github.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4)(y-prosemirror@1.2.12):
-    resolution: {integrity: sha512-eyMBtVIlmdGMh+T89SuihlOHLsLA6czYiSY5SiZ06YL+VOb/TrBiluqvbWyMWUThZ1gFQCpUH/jm+0nkDUZg+Q==, tarball: file:projects/pod-github.tgz}
+    resolution: {integrity: sha512-jSnbzFjyWZA1Hnjtyotd09jvLvQ+oGX0V4UOaXqZfyxM65JFeoit/DSrKlQTWJjSCbw9y6S90CYZN+pK3h8InA==, tarball: file:projects/pod-github.tgz}
     id: file:projects/pod-github.tgz
     name: '@rush-temp/pod-github'
     version: 0.0.0
@@ -31074,7 +31074,7 @@ packages:
       graphql-binding: 2.5.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       markdown-it: 14.0.0
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       octokit: 3.2.1
       prettier: 3.2.5
       smee-client: 1.2.5
@@ -31104,7 +31104,7 @@ packages:
     dev: false
 
   file:projects/pod-gmail.tgz(ts-node@10.9.2):
-    resolution: {integrity: sha512-6wJiI5B7yh9hIe3KOCR7xkiv/ohg+jYiYQT5jWjoA+ViHu3gGMeJPulXBObrpxKgu2dBN8zbBaPAPscpaJ/JrA==, tarball: file:projects/pod-gmail.tgz}
+    resolution: {integrity: sha512-FQ6MKS8/+EiKMaAZQ4+I7F8EBM8Do1aH8HDgmahfLi7vWivIaKcf5jc/p4pkVS/Gso0QG69OaF1yW88o6CCxVA==, tarball: file:projects/pod-gmail.tgz}
     id: file:projects/pod-gmail.tgz
     name: '@rush-temp/pod-gmail'
     version: 0.0.0
@@ -31135,7 +31135,7 @@ packages:
       googleapis: 122.0.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       jwt-simple: 0.5.6
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node-dev: 2.0.0(@types/node@20.11.19)(typescript@5.3.3)
@@ -31336,7 +31336,7 @@ packages:
     dev: false
 
   file:projects/pod-sign.tgz:
-    resolution: {integrity: sha512-TMB8kS/tFThMV9qh1o7nGBgyFK98OUUv4TI3yJj2/0HEMO6DKtAOFH4NPP3C5cvRebdd0vIQiYXwrWAdPOHe7A==, tarball: file:projects/pod-sign.tgz}
+    resolution: {integrity: sha512-QCrts7aicBJu+isEvsIzSN9/ni5xa9+UL+A7gblLjVuhR1vDI6buQmV/8p+T3rOjTGh/n3ww+r2FyGXJ0bIsZw==, tarball: file:projects/pod-sign.tgz}
     name: '@rush-temp/pod-sign'
     version: 0.0.0
     dependencies:
@@ -31363,7 +31363,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.19.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       node-forge: 1.3.1
       pdf-lib: 1.17.1
       prettier: 3.2.5
@@ -31389,7 +31389,7 @@ packages:
     dev: false
 
   file:projects/pod-telegram-bot.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-rNp3oKDqEjjL21fr2ElG+ESbHMrAaNjHFNMbUhWsODoK0+UKWohlYMui9TPXaN3SwDiAcE/zrmp0Lq2JFO9QDw==, tarball: file:projects/pod-telegram-bot.tgz}
+    resolution: {integrity: sha512-Bq0gNcjaTU0PEYhroGlOPGUD1UsNhYswf32XQ5fgz//09GK9gEBx6qBknRNYGvbN5558bUyyzKyp0KsWVfySkQ==, tarball: file:projects/pod-telegram-bot.tgz}
     id: file:projects/pod-telegram-bot.tgz
     name: '@rush-temp/pod-telegram-bot'
     version: 0.0.0
@@ -31417,7 +31417,7 @@ packages:
       express: 4.19.2
       htmlparser2: 9.1.0
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       node-fetch: 2.7.0
       otp-generator: 4.0.1
       prettier: 3.2.5
@@ -31448,7 +31448,7 @@ packages:
     dev: false
 
   file:projects/pod-telegram.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-dD1qmXqRBs/o4Hdywguab5+NB5FeeEKzO+BgShhQzD9sz98CbwOmtKFYQHiLyJvPI0MHvRdzTAkRXe59TssTSQ==, tarball: file:projects/pod-telegram.tgz}
+    resolution: {integrity: sha512-faO3U8WQP8r0+QQaCCwxYjw7ZUF/DvGgwXtevzL6zJOrlYhJ4wJs7gbY9cyWE6zBynZU+PqVl+bzEdpmQKhPQg==, tarball: file:projects/pod-telegram.tgz}
     id: file:projects/pod-telegram.tgz
     name: '@rush-temp/pod-telegram'
     version: 0.0.0
@@ -31478,7 +31478,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       jwt-simple: 0.5.6
       mime: 3.0.0
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       telegram: 2.22.2
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -31509,7 +31509,7 @@ packages:
     dev: false
 
   file:projects/pod-workspace.tgz:
-    resolution: {integrity: sha512-nC9coSAonWR/2WPwI4CYFxvPYcIkmU5lAQVQeiWaACTquGi5poDJ0Lq/lERb7+bMEcx5Dhj8HDuxpVoAk6sw6A==, tarball: file:projects/pod-workspace.tgz}
+    resolution: {integrity: sha512-URha8IAoD3oyYvggbvAHcxEtsBuJA73r8cRqX64i7X9KPCmldiLxFn4obQ8NGhjsdTzKzu65nrx8jnE/UJlf5A==, tarball: file:projects/pod-workspace.tgz}
     name: '@rush-temp/pod-workspace'
     version: 0.0.0
     dependencies:
@@ -31525,7 +31525,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -32656,7 +32656,7 @@ packages:
     dev: false
 
   file:projects/server-ai-bot-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-xg5klAybCHnYN9ATNatmTborTaMu5UAxMW8E+qi77BAS/eUSYw8Lvi/k7W1hvsCeZleMTQKi1hMJAdP9ceZJfg==, tarball: file:projects/server-ai-bot-resources.tgz}
+    resolution: {integrity: sha512-m+ZYZxCuYOJxhC31c3misAQofis4BG32ek1OPxXXdpOOxPQUFI1WjmwVqJlZDTz3Yt9EXTGv3qkvrNwJuIyWZA==, tarball: file:projects/server-ai-bot-resources.tgz}
     id: file:projects/server-ai-bot-resources.tgz
     name: '@rush-temp/server-ai-bot-resources'
     version: 0.0.0
@@ -32670,7 +32670,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -34533,7 +34533,7 @@ packages:
     dev: false
 
   file:projects/server-tool.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-btxvwskcvjmbGR6o7FZWaM2yCytqY91jUPab5L7Hhjzb+nx5orD0GAjn6SLhZwkrgcKbXHc5YDBnt0xVgkxFDg==, tarball: file:projects/server-tool.tgz}
+    resolution: {integrity: sha512-GyPiz3Jo+wIsJuK3D/tkCvNoMKVmTaLKakI6h9v7UZP5cHB81HIxn3YgW0ZKQ3snKbsSGemUDXf+Q9M9ftgAVw==, tarball: file:projects/server-tool.tgz}
     id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0
@@ -34552,7 +34552,7 @@ packages:
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       js-yaml: 4.1.0
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -36001,7 +36001,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-RSAbkqDJ6ZPQeb+14nifm31Puoq/ufGazM4zEu+oXzsYdpBZIv8peGii6BgGOGmAJaUPBkEXauieXvkdSnLIWg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-dgOs2ysRWXhSAqAdgds7tTLssdROYsTidpPcozKPLpcQnZsmn0Gs42t/y577rd0diONe8AWyXmUcfJMpj0b0mg==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -36031,7 +36031,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       libphonenumber-js: 1.10.56
       mime-types: 2.1.35
-      mongodb: 6.9.0
+      mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       pg: 8.12.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)

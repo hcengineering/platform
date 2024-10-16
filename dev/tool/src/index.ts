@@ -1522,8 +1522,23 @@ export function devTool (
     .action(async (workspace: string) => {
       const { dbUrl, mongodbUri } = prepareTools()
       const wsid = getWorkspaceId(workspace)
-      const endpoint = await getTransactorEndpoint(generateToken(systemAccountEmail, wsid), 'external')
-      await recreateElastic(mongodbUri ?? dbUrl, wsid, endpoint)
+      await recreateElastic(mongodbUri ?? dbUrl, wsid)
+    })
+
+  program
+    .command('recreate-all-elastic-indexes')
+    .description('reindex elastic')
+    .action(async () => {
+      const { dbUrl, mongodbUri } = prepareTools()
+
+      await withDatabase(dbUrl, async (db) => {
+        const workspaces = await listWorkspacesRaw(db)
+        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+        for (const workspace of workspaces) {
+          const wsid = getWorkspaceId(workspace.workspace)
+          await recreateElastic(mongodbUri ?? dbUrl, wsid)
+        }
+      })
     })
 
   program

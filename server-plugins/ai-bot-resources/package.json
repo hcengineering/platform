@@ -50,6 +50,6 @@
     "@hcengineering/ai-bot": "^0.6.0",
     "@hcengineering/server-ai-bot": "^0.6.0",
     "@hcengineering/analytics-collector": "^0.6.0",
-    "mongodb": "^6.9.0"
+    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513"
   }
 }

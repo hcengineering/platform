@@ -76,7 +76,7 @@
     "htmlparser2": "^9.0.0",
     "jwt-simple": "^0.5.6",
     "mime": "^3.0.0",
-    "mongodb": "^6.9.0",
+    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
     "telegram": "2.22.2",
     "uuid": "^8.3.2",
     "ws": "^8.18.0"
