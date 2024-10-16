@@ -41,7 +41,7 @@ import {
 } from '@hcengineering/model'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TCard, TTypedSpace } from '@hcengineering/model-core'
+import core, { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -69,23 +69,23 @@ export class TDocumentEmbedding extends TAttachment implements DocumentEmbedding
   declare attachedToClass: Ref<Class<Document>>
 }
 
-@Model(document.class.Document, core.class.Card, DOMAIN_DOCUMENT)
+@Model(document.class.Document, core.class.Doc, DOMAIN_DOCUMENT)
 @UX(document.string.Document, document.icon.Document, undefined, 'name', undefined, document.string.Documents)
-export class TDocument extends TCard implements Document, Todoable {
+export class TDocument extends TDoc implements Document, Todoable {
+  @Prop(TypeString(), document.string.Name)
+  @Index(IndexKind.FullText)
+    title!: string
+
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
+    description!: CollaborativeDoc
+
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
-  declare parent: Ref<Document>
+    parent!: Ref<Document>
 
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
   declare space: Ref<Teamspace>
-
-  @Prop(TypeString(), document.string.Name)
-  @Index(IndexKind.FullText)
-  declare title: string
-
-  @Prop(TypeCollaborativeDoc(), document.string.Document)
-  declare description: CollaborativeDoc
 
   @Prop(TypeRef(core.class.Account), document.string.LockedBy)
   @Hidden()
@@ -125,12 +125,9 @@ export class TDocument extends TCard implements Document, Todoable {
     rank!: Rank
 }
 
-@Model(document.class.DocumentSnapshot, core.class.Card, DOMAIN_DOCUMENT)
+@Model(document.class.DocumentSnapshot, core.class.Doc, DOMAIN_DOCUMENT)
 @UX(document.string.Version)
-export class TDocumentSnapshot extends TCard implements DocumentSnapshot {
-  @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
-  declare parent: Ref<Document>
-
+export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
   @Prop(TypeRef(core.class.Space), core.string.Space)
   @Index(IndexKind.Indexed)
   @Hidden()
@@ -138,11 +135,13 @@ export class TDocumentSnapshot extends TCard implements DocumentSnapshot {
 
   @Prop(TypeString(), document.string.Name)
   @Index(IndexKind.FullText)
-  declare title: string
+    title!: string
 
-  @Prop(TypeCollaborativeDocVersion(), document.string.Document)
-  @Hidden()
-  declare description: CollaborativeDoc
+  @Prop(TypeCollaborativeDocVersion(), core.string.Description)
+    description!: CollaborativeDoc
+
+  @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
+    parent!: Ref<Document>
 }
 
 @Model(document.class.SavedDocument, preference.class.Preference)

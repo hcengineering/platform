@@ -326,7 +326,7 @@ async function createDBPageWithAttachments (
   documentMetaMap?: Map<string, DocumentMetadata>
 ): Promise<void> {
   const pageId = docMeta.id as Ref<Document>
-  const collabId = makeCollaborativeDoc(pageId, 'description')
+  const collabId = makeCollaborativeDoc(pageId, 'content')
 
   const parentId = parentMeta !== undefined ? (parentMeta.id as Ref<Document>) : document.ids.NoParent
 

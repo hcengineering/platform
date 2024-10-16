@@ -56,12 +56,12 @@
 </script>
 
 <CollaboratorEditor
-  collaborativeDoc={object.description}
+  collaborativeDoc={object.content}
   objectClass={object._class}
   objectId={object._id}
   objectSpace={object.space}
-  objectAttr="description"
-  field="description"
+  objectAttr="content"
+  field="content"
   {user}
   {userComponent}
   {focusIndex}

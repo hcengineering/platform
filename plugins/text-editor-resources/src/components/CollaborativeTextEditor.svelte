@@ -365,15 +365,7 @@
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
   }
 
-  function parseField (collaborativeDoc: CollaborativeDoc): string | undefined {
-    if (collaborativeDoc === undefined) return undefined
-    const _id = collaborativeDoc.split(':')
-    if (_id === undefined) return undefined
-    return _id[0]?.split('%')?.[1]
-  }
-
   onMount(async () => {
-    const _field = parseField(collaborativeDoc) ?? field
     await ph
 
     editor = new Editor({
@@ -406,7 +398,7 @@
         Placeholder.configure({ placeholder: placeHolderStr }),
         Collaboration.configure({
           document: ydoc,
-          field: _field
+          field
         }),
         CollaborationCursor.configure({
           provider: remoteProvider,
