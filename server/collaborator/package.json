@@ -66,7 +66,7 @@
     "@hocuspocus/transformer": "^2.13.5",
     "@tiptap/core": "^2.6.6",
     "@tiptap/html": "^2.6.6",
-    "mongodb": "^6.9.0",
+    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
     "yjs": "^13.6.19",
     "y-prosemirror": "^1.2.12",
     "express": "^4.19.2",

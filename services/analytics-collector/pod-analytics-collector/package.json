@@ -102,7 +102,7 @@
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.19.2",
-    "mongodb": "^6.9.0",
+    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
     "puppeteer": "^22.6.1"
   }
 }
