@@ -111,7 +111,7 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
 
   for (const document of documents) {
     try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.description, ctx)
+      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
       if (ydoc === undefined) {
         ctx.error('document content not found', { document: document.title })
         continue
@@ -123,7 +123,7 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
 
       yDocCopyXmlField(ydoc, '', 'content')
 
-      await saveCollaborativeDoc(storage, client.workspaceId, document.description, ydoc, ctx)
+      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
     } catch (err) {
       ctx.error('error document content migration', { error: err, document: document.title })
     }

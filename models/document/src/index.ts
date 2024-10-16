@@ -76,8 +76,8 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeDoc(), core.string.Description)
-    description!: CollaborativeDoc
+  @Prop(TypeCollaborativeDoc(), document.string.Document)
+    content!: CollaborativeDoc
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -137,8 +137,8 @@ export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeDocVersion(), core.string.Description)
-    description!: CollaborativeDoc
+  @Prop(TypeCollaborativeDocVersion(), document.string.Document)
+    content!: CollaborativeDoc
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
@@ -443,7 +443,7 @@ function defineDocument (builder: Builder): void {
       allowedForAuthor: false,
       label: document.string.Document,
       group: document.ids.DocumentNotificationGroup,
-      field: 'description',
+      field: 'content',
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
       defaultEnabled: false,

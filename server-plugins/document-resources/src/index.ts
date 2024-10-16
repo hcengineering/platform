@@ -50,7 +50,7 @@ export async function findChildDocuments (
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
 ): Promise<Doc[]> {
-  return await findAll(document.class.Document, { parent: doc._id })
+  return await findAll(document.class.Document, { parent: doc._id as Ref<Document> })
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

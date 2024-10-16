@@ -335,7 +335,7 @@ async function createDBPageWithAttachments (
 
   const object: Data<Document> = {
     title: docMeta.name,
-    description: collabId,
+    content: collabId,
     parent: parentId,
     attachments: 0,
     embeddings: 0,
@@ -482,7 +482,7 @@ async function importPageDocument (
 
   const attachedData: Data<Document> = {
     title: docMeta.name,
-    description: collabId,
+    content: collabId,
     parent,
     attachments: 0,
     embeddings: 0,
