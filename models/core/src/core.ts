@@ -361,8 +361,10 @@ export class TDocIndexState extends TDoc implements DocIndexState {
     generationId?: string
 }
 
-@MMixin(core.mixin.FullTextSearchContext, core.class.Class)
-export class TFullTextSearchContext extends TClass implements FullTextSearchContext {}
+@Model(core.class.FullTextSearchContext, core.class.Doc, DOMAIN_MODEL)
+export class TFullTextSearchContext extends TDoc implements FullTextSearchContext {
+  toClass!: Ref<Class<Doc<Space>>>
+}
 
 @MMixin(core.mixin.ConfigurationElement, core.class.Class)
 export class TConfigurationElement extends TClass implements ConfigurationElement {

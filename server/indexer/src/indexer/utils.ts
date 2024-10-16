@@ -82,58 +82,55 @@ export function traverseFullTextContexts (
   pipeline: FullTextPipeline,
   objectClass: Ref<Class<Doc>>,
   op: (ftc: Omit<FullTextSearchContext, keyof Class<Doc>>) => void
-): Ref<Class<Doc>>[] {
-  const desc = new Set(pipeline.hierarchy.getDescendants(objectClass))
-  const propagate = new Set<Ref<Class<Doc>>>()
-
-  const ftContext = getFullTextContext(pipeline.hierarchy, objectClass)
+): void {
+  const cl = pipeline.hierarchy.getBaseClass(objectClass)
+  const ftContext = getFullTextContext(pipeline.hierarchy, cl, pipeline.contexts)
   if (ftContext !== undefined) {
     op(ftContext)
   }
-
-  // Add all parent mixins as well
-  for (const a of pipeline.hierarchy.getAncestors(objectClass)) {
-    const ftContext = getFullTextContext(pipeline.hierarchy, a)
-    if (ftContext !== undefined) {
-      op(ftContext)
-    }
-    const dsca = pipeline.hierarchy.getDescendants(a)
-    for (const dd of dsca) {
-      if (pipeline.hierarchy.isMixin(dd)) {
-        desc.add(dd)
-      }
+  const dsca = pipeline.hierarchy.getDescendants(cl)
+  for (const dd of dsca) {
+    const mContext = getFullTextContext(pipeline.hierarchy, dd, pipeline.contexts)
+    if (mContext !== undefined) {
+      op(mContext)
     }
   }
-
-  for (const d of desc) {
-    if (pipeline.hierarchy.isMixin(d)) {
-      const mContext = getFullTextContext(pipeline.hierarchy, d)
-      if (mContext !== undefined) {
-        op(mContext)
-      }
-    }
-  }
-  return Array.from(propagate.values())
 }
 
 /**
  * @public
  */
 export function collectPropagate (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
-  const propagate = new Set<Ref<Class<Doc>>>()
-  traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagate?.forEach((it) => propagate.add(it)))
+  let propagate = pipeline.propogage.get(objectClass)
+  if (propagate !== undefined) {
+    return propagate
+  }
+  const set = new Set<Ref<Class<Doc>>>()
+  traverseFullTextContexts(pipeline, objectClass, (fts) => {
+    fts?.propagate?.forEach((it) => {
+      set.add(it)
+    })
+  })
 
-  return Array.from(propagate.values())
+  propagate = Array.from(set.values())
+  pipeline.propogage.set(objectClass, propagate)
+  return propagate
 }
 
 /**
  * @public
  */
 export function collectPropagateClasses (pipeline: FullTextPipeline, objectClass: Ref<Class<Doc>>): Ref<Class<Doc>>[] {
-  const propagate = new Set<Ref<Class<Doc>>>()
-  traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagateClasses?.forEach((it) => propagate.add(it)))
+  let propagate = pipeline.propogageClasses.get(objectClass)
+  if (propagate !== undefined) {
+    return propagate
+  }
+  const set = new Set<Ref<Class<Doc>>>()
+  traverseFullTextContexts(pipeline, objectClass, (fts) => fts?.propagateClasses?.forEach((it) => set.add(it)))
 
-  return Array.from(propagate.values())
+  propagate = Array.from(set.values())
+  pipeline.propogageClasses.set(objectClass, propagate)
+  return propagate
 }
 
 const CUSTOM_ATTR_KEY = 'customAttributes'

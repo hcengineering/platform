@@ -19,6 +19,7 @@ import {
   type DocIndexState,
   type DocumentQuery,
   type DocumentUpdate,
+  type FullTextSearchContext,
   type Hierarchy,
   type MeasureContext,
   type ModelDb,
@@ -32,6 +33,12 @@ import type { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 export interface FullTextPipeline {
   hierarchy: Hierarchy
   model: ModelDb
+
+  contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
+
+  propogage: Map<Ref<Class<Doc>>, Ref<Class<Doc>>[]>
+  propogageClasses: Map<Ref<Class<Doc>>, Ref<Class<Doc>>[]>
+
   update: (
     docId: Ref<DocIndexState>,
     mark: boolean,
@@ -48,6 +55,11 @@ export interface FullTextPipeline {
     size: number | undefined,
     from?: number
   ) => Promise<{ docs: IndexedDoc[], pass: boolean }>
+
+  queue: (
+    ctx: MeasureContext,
+    updates: Map<Ref<DocIndexState>, { create?: DocIndexState, updated: boolean, removed: boolean }>
+  ) => Promise<void>
 
   cancelling: boolean
 }

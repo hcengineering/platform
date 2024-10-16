@@ -309,7 +309,8 @@ export function createModel (builder: Builder): void {
     ]
   })
 
-  builder.mixin(core.class.Space, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: core.class.Space,
     childProcessingAllowed: false
   })
 

@@ -578,7 +578,8 @@ export interface BlobLookup extends Blob {
  *
  * If defined for class, this class will be enabled for embedding search like openai.
  */
-export interface FullTextSearchContext extends Class<Doc> {
+export interface FullTextSearchContext extends Doc {
+  toClass: Ref<Class<Doc>>
   fullTextSummary?: boolean
   forceIndex?: boolean
 
