@@ -96,7 +96,7 @@ import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
+import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import love, { loveId } from '@hcengineering/love'
 import print, { printId } from '@hcengineering/print'
@@ -205,6 +205,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
+  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')

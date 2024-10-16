@@ -30,6 +30,7 @@ export interface Config {
   AI_URL?:string
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
+  UPLOAD_CONFIG: string
   DESKTOP_UPDATES_URL?: string
   DESKTOP_UPDATES_CHANNEL?: string
   TELEGRAM_BOT_URL?: string
