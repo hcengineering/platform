@@ -846,9 +846,9 @@ export function createModel (builder: Builder): void {
     card: recruit.component.KanbanCard
   })
 
-  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.PreviewPresenter, {
-    presenter: recruit.component.KanbanCard
-  })
+  // builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.PreviewPresenter, {
+  //   presenter: recruit.component.KanbanCard
+  // })
 
   builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.ObjectEditor, {
     editor: recruit.component.EditApplication
