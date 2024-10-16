@@ -221,6 +221,7 @@
           selectTab(tabToReplace._id)
           prevTabIdStore.set(tabToReplace._id)
         } else {
+          console.log('Creating new tab on init')
           const _id = await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
             attachedTo: account._id,
             location: url,

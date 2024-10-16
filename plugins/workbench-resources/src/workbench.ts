@@ -19,8 +19,8 @@ import core, {
   type Doc,
   getCurrentAccount,
   type Ref,
-  RateLimiter,
-  generateId
+  generateId,
+  reduceCalls
 } from '@hcengineering/core'
 import { type Application, workbenchId, type WorkbenchTab } from '@hcengineering/workbench'
 import {
@@ -56,20 +56,13 @@ tabIdStore.subscribe((value) => {
   prevTabId = value
 })
 
-// Use rate limiter to control tab creation, preventing multiple tabs during fast location changing
-const limiter = new RateLimiter(1)
-
 workspaceStore.subscribe((workspace) => {
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
 })
 
-locationStore.subscribe((l: Location) => {
-  void limiter.add(syncTabLoc)
-})
-
 tabIdStore.subscribe(saveTabToLocalStorage)
 
-async function syncTabLoc (): Promise<void> {
+const syncTabLoc = reduceCalls(async (): Promise<void> => {
   const loc = getCurrentLocation()
   const workspace = get(workspaceStore)
   if (workspace == null || workspace === '') return
@@ -102,7 +95,7 @@ async function syncTabLoc (): Promise<void> {
     }
 
     const me = getCurrentAccount()
-    const tab: WorkbenchTab = {
+    const newTab: WorkbenchTab = {
       _id: generateId(),
       _class: workbench.class.WorkbenchTab,
       space: core.space.Workspace,
@@ -113,9 +106,10 @@ async function syncTabLoc (): Promise<void> {
       modifiedOn: Date.now(),
       modifiedBy: me._id
     }
-    await getClient().createDoc(workbench.class.WorkbenchTab, core.space.Workspace, tab, tab._id)
-    tabsStore.update((tabs) => [...tabs, tab])
-    selectTab(tab._id)
+    console.log('Creating new tab when pinned location changed', { newLocation: url, pinnedLocation: tab.location })
+    await getClient().createDoc(workbench.class.WorkbenchTab, core.space.Workspace, newTab, newTab._id)
+    tabsStore.update((tabs) => [...tabs, newTab])
+    selectTab(newTab._id)
   } else {
     // TODO: Fix this
     // if (
@@ -127,9 +121,14 @@ async function syncTabLoc (): Promise<void> {
     //   return
     // }
 
-    await getClient().update(tab, { location: url, name })
+    await getClient().diffUpdate(tab, { location: url, name })
   }
-}
+})
+
+locationStore.subscribe((l: Location) => {
+  void syncTabLoc()
+})
+
 export function syncWorkbenchTab (): void {
   const workspace = get(workspaceStore)
   tabIdStore.set(getTabFromLocalStorage(workspace ?? ''))
