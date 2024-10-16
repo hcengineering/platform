@@ -126,9 +126,9 @@ function updatePackage(packageRoot, templates) {
   const preferedOrder = ['name', 'version', 'main', 'svelte', 'types', 'files', 'author', 'template', 'license', 'scripts', 'devDependencies', 'dependencies', 'repository', 'publishConfig']
 
   Object.keys(currentPackage).forEach(it => {
-    if( !preferedOrder.includes(it)) [
+    if( !preferedOrder.includes(it)) {
       preferedOrder.push(it)
-    ]
+    }
   })
 
   const ordered = preferedOrder.reduce(
