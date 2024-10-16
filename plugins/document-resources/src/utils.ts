@@ -79,7 +79,7 @@ export async function createEmptyDocument (
 
   const object: Data<Document> = {
     title,
-    description: makeCollaborativeDoc(id, 'description'),
+    content: makeCollaborativeDoc(id, 'content'),
     attachments: 0,
     embeddings: 0,
     labels: 0,

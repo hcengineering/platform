@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
+import { type CollaborativeDoc, DOMAIN_TX, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
 import { type DocumentSnapshot, type Document, type Teamspace } from '@hcengineering/document'
 import {
   tryMigrate,
@@ -111,7 +111,7 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
 
   for (const document of documents) {
     try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.description, ctx)
+      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
       if (ydoc === undefined) {
         ctx.error('document content not found', { document: document.title })
         continue
@@ -123,7 +123,7 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
 
       yDocCopyXmlField(ydoc, '', 'content')
 
-      await saveCollaborativeDoc(storage, client.workspaceId, document.description, ydoc, ctx)
+      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
     } catch (err) {
       ctx.error('error document content migration', { error: err, document: document.title })
     }
@@ -202,6 +202,68 @@ async function renameFields (client: MigrationClient): Promise<void> {
   }
 }
 
+async function renameFieldsRevert (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('renameFieldsRevert', {})
+  const storage = client.storageAdapter
+
+  type ExDocument = Document & {
+    description: CollaborativeDoc
+  }
+
+  const documents = await client.find<ExDocument>(DOMAIN_DOCUMENT, {
+    _class: document.class.Document,
+    description: { $exists: true }
+  })
+
+  for (const document of documents) {
+    await client.update(
+      DOMAIN_DOCUMENT,
+      { _id: document._id },
+      {
+        $rename: {
+          description: 'content'
+        }
+      }
+    )
+
+    if (document.description.includes('%description:')) {
+      try {
+        const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.description, ctx)
+        if (ydoc === undefined) {
+          continue
+        }
+
+        if (!ydoc.share.has('description') || ydoc.share.has('content')) {
+          continue
+        }
+
+        yDocCopyXmlField(ydoc, 'description', 'content')
+
+        await saveCollaborativeDoc(storage, client.workspaceId, document.description, ydoc, ctx)
+      } catch (err) {
+        ctx.error('error document content migration', { error: err, document: document.title })
+      }
+    }
+  }
+
+  const snapshots = await client.find<DocumentSnapshot>(DOMAIN_DOCUMENT, {
+    _class: document.class.DocumentSnapshot,
+    description: { $exists: true }
+  })
+
+  for (const snapshot of snapshots) {
+    await client.update(
+      DOMAIN_DOCUMENT,
+      { _id: snapshot._id },
+      {
+        $rename: {
+          description: 'content'
+        }
+      }
+    )
+  }
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -234,6 +296,10 @@ export const documentOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_DOCUMENT, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
         }
+      },
+      {
+        state: 'renameFieldsRevert',
+        func: renameFieldsRevert
       }
     ])
   },
