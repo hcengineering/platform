@@ -79,7 +79,7 @@
     "fast-equals": "^5.0.1",
     "form-data": "^4.0.0",
     "js-tiktoken": "^1.0.14",
-    "mongodb": "^6.9.0",
+    "mongodb": "6.9.0-dev.20241016.sha.3d5bd513",
     "openai": "^4.56.0",
     "ws": "^8.18.0"
   }
