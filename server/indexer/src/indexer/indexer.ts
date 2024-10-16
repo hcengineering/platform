@@ -21,6 +21,7 @@ import core, {
   type DocIndexState,
   type DocumentQuery,
   type DocumentUpdate,
+  type FullTextSearchContext,
   type Hierarchy,
   type MeasureContext,
   type ModelDb,
@@ -79,6 +80,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   uploadOps: DocIndexState[] = []
 
+  contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
+  propogage = new Map<Ref<Class<Doc>>, Ref<Class<Doc>>[]>()
+  propogageClasses = new Map<Ref<Class<Doc>>, Ref<Class<Doc>>[]>()
+
   constructor (
     private readonly storage: DbAdapter,
     private readonly stages: FullTextPipelineStage[],
@@ -90,6 +95,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ) {
     this.readyStages = stages.map((it) => it.stageId)
     this.readyStages.sort()
+    this.contexts = new Map(model.findAllSync(core.class.FullTextSearchContext, {}).map((it) => [it.toClass, it]))
   }
 
   async cancel (): Promise<void> {
@@ -386,8 +392,6 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       )
 
       // Also update doc index state queries.
-      _classes.push(core.class.DocIndexState)
-
       _classes.forEach((it) => this.broadcastClasses.add(it))
 
       if (this.triggerCounts > 0) {
@@ -410,10 +414,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
           }, 5000)
 
+          let notified = false
           await new Promise((resolve) => {
             this.triggerIndexing = () => {
               this.triggerCounts++
-              resolve(null)
+              if (!notified) {
+                notified = true
+                setTimeout(() => {
+                  resolve(null)
+                }, 500) // Start indexing only after cooldown
+              }
             }
           })
         }
@@ -435,14 +445,18 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           })
 
           let result: DocIndexState[] | undefined = await ctx.with('get-indexable', {}, async () => {
-            const q: DocumentQuery<DocIndexState> = {
-              needIndex: true
-            }
-            return await this.storage.findAll(ctx, core.class.DocIndexState, q, {
-              limit: globalIndexer.processingSize,
-              skipClass: true,
-              skipSpace: true
-            })
+            return await this.storage.findAll(
+              ctx,
+              core.class.DocIndexState,
+              {
+                needIndex: true
+              },
+              {
+                limit: globalIndexer.processingSize,
+                skipClass: true,
+                skipSpace: true
+              }
+            )
           })
           if (result === undefined) {
             // No more results

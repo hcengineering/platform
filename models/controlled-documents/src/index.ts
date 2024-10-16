@@ -549,7 +549,8 @@ export function createModel (builder: Builder): void {
     func: documents.function.GetAllDocumentStates
   })
 
-  builder.mixin(documents.class.Document, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: documents.class.Document,
     fullTextSummary: true,
     childProcessingAllowed: true
   })
@@ -886,11 +887,13 @@ export function defineNotifications (builder: Builder): void {
 }
 
 export function defineSearch (builder: Builder): void {
-  builder.mixin(documents.class.Document, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: documents.class.Document,
     parentPropagate: true
   })
 
-  builder.mixin(documents.class.DocumentMeta, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: documents.class.DocumentMeta,
     fullTextSummary: true,
     childProcessingAllowed: true,
     propagate: []

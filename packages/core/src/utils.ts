@@ -46,9 +46,9 @@ import core from './component'
 import { Hierarchy } from './hierarchy'
 import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
+import { Branding, BrandingMap } from './server'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
-import { Branding, BrandingMap } from './server'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -686,39 +686,48 @@ export function getFullTextIndexableAttributes (
   return result
 }
 
+const ctxKey = 'indexer_ftc'
 /**
  * @public
  */
 export function getFullTextContext (
   hierarchy: Hierarchy,
-  objectClass: Ref<Class<Doc>>
+  objectClass: Ref<Class<Doc>>,
+  contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
 ): Omit<FullTextSearchContext, keyof Class<Doc>> {
-  let objClass = hierarchy.getClass(objectClass)
-
-  while (true) {
-    if (hierarchy.hasMixin(objClass, core.mixin.FullTextSearchContext)) {
-      const ctx = hierarchy.as<Class<Doc>, FullTextSearchContext>(objClass, core.mixin.FullTextSearchContext)
+  let ctx: Omit<FullTextSearchContext, keyof Class<Doc>> | undefined = hierarchy.getClassifierProp(objectClass, ctxKey)
+  if (ctx !== undefined) {
+    return ctx
+  }
+  if (typeof ctx !== 'string') {
+    const anc = hierarchy.getAncestors(objectClass)
+    for (const oc of anc) {
+      const ctx = contexts.get(oc)
       if (ctx !== undefined) {
+        hierarchy.setClassifierProp(objectClass, ctxKey, ctx)
         return ctx
       }
     }
-    if (objClass.extends === undefined) {
-      break
-    }
-    objClass = hierarchy.getClass(objClass.extends)
   }
-  return {
+  ctx = {
+    toClass: objectClass,
     fullTextSummary: false,
     forceIndex: false,
     propagate: [],
     childProcessingAllowed: true
   }
+  hierarchy.setClassifierProp(objectClass, ctxKey, ctx)
+  return ctx
 }
 
 /**
  * @public
  */
-export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boolean {
+export function isClassIndexable (
+  hierarchy: Hierarchy,
+  c: Ref<Class<Doc>>,
+  contexts: Map<Ref<Class<Doc>>, FullTextSearchContext>
+): boolean {
   const indexed = hierarchy.getClassifierProp(c, 'class_indexed')
   if (indexed !== undefined) {
     return indexed as boolean
@@ -756,13 +765,13 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
 
   let result = true
 
-  if (attrs.length === 0 && !(getFullTextContext(hierarchy, c)?.forceIndex ?? false)) {
+  if (attrs.length === 0 && !(getFullTextContext(hierarchy, c, contexts)?.forceIndex ?? false)) {
     result = false
     // We need check if document has collections with indexable fields.
     const attrs = hierarchy.getAllAttributes(c).values()
     for (const attr of attrs) {
       if (attr.type._class === core.class.Collection) {
-        if (isClassIndexable(hierarchy, (attr.type as Collection<AttachedDoc>).of)) {
+        if (isClassIndexable(hierarchy, (attr.type as Collection<AttachedDoc>).of, contexts)) {
           result = true
           break
         }

@@ -522,7 +522,7 @@ class ElasticAdapter implements FullTextAdapter {
   async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
     const parts = Array.from(docs)
     while (parts.length > 0) {
-      const part = parts.splice(0, 1000)
+      const part = parts.splice(0, 500)
 
       const operations = part.flatMap((doc) => {
         const wsDoc = { workspaceId: this.workspaceString, ...doc }
