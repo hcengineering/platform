@@ -179,7 +179,8 @@ export function createModel (builder: Builder): void {
     telegram.ids.TelegramMessageSharedActivityViewlet
   )
 
-  builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: telegram.class.Message,
     parentPropagate: false,
     childProcessingAllowed: true
   })

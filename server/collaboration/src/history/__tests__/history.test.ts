@@ -25,7 +25,7 @@ describe('history', () => {
   let ydoc: YDoc
 
   beforeEach(() => {
-    ydoc = new YDoc()
+    ydoc = new YDoc({ guid: generateId() })
   })
 
   it('addVersion should append new version', async () => {

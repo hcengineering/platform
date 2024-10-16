@@ -233,6 +233,19 @@ export async function openImage (editor: Editor): Promise<void> {
   })
 }
 
+export async function downloadImage (editor: Editor): Promise<void> {
+  const attributes = editor.getAttributes('image')
+  const fileId = attributes['file-id'] ?? attributes.src
+  const href = getFileUrl(fileId)
+
+  const link = document.createElement('a')
+  link.style.display = 'none'
+  link.target = '_blank'
+  link.href = href
+  link.download = attributes.title ?? attributes.alt ?? ''
+  link.click()
+}
+
 export async function expandImage (editor: Editor): Promise<void> {
   const attributes = editor.getAttributes('image')
   const fileId = attributes['file-id'] ?? attributes.src

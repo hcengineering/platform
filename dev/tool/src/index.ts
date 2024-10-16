@@ -1598,7 +1598,7 @@ export function devTool (
       throw new Error('mongodbUri is not set')
     }
 
-    await withDatabase(dbUrl, async (db) => {
+    await withDatabase(mongodbUri, async (db) => {
       const workspaces = await listWorkspacesRaw(db)
       workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
       await moveFromMongoToPG(
@@ -1617,7 +1617,7 @@ export function devTool (
       throw new Error('mongodbUri is not set')
     }
 
-    await withDatabase(dbUrl, async (db) => {
+    await withDatabase(mongodbUri, async (db) => {
       const workspaceInfo = await getWorkspaceById(db, workspace)
       if (workspaceInfo === null) {
         throw new Error(`workspace ${workspace} not found`)

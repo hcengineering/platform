@@ -50,6 +50,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
   updateFields: DocUpdateHandler[] = []
 
   enabled = true
+
   constructor (private readonly dbStorageFindAll: SessionFindAll) {}
 
   async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {}
@@ -150,7 +151,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           }
 
           if (docState.attachedTo != null && changes > 0) {
-            const ctx = getFullTextContext(pipeline.hierarchy, objClass)
+            const ctx = getFullTextContext(pipeline.hierarchy, objClass, pipeline.contexts)
             if (ctx.parentPropagate ?? true) {
               // We need to clear field stage from parent, so it will be re indexed.
               await pipeline.update(docState.attachedTo as Ref<DocIndexState>, false, {})
@@ -173,17 +174,13 @@ export class IndexedFieldStage implements FullTextPipelineStage {
                     {
                       attachedTo: ids.length === 1 ? ids[0] : { $in: ids }
                     },
-                    { limit: ids.length }
+                    { limit: ids.length, skipSpace: true, skipClass: true }
                   )
               )
             }
             const childs = allChildDocs.filter((it) => it.attachedTo === docState._id)
-            for (const u of childs) {
-              if (propagate.some((it) => pipeline.hierarchy.isDerived(u.objectClass, it))) {
-                pipeline.add(u)
-                await pipeline.update(u._id, false, {})
-              }
-            }
+            // Marck childs to be indexed on next step
+            await pipeline.queue(metrics, new Map(childs.map((it) => [it._id, { updated: true, removed: false }])))
           }
 
           await pipeline.update(docState._id, true, docUpdate)

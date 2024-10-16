@@ -50,7 +50,7 @@ export async function createRekoniAdapter (
         }
         return r.content
       } catch (err: any) {
-        console.info('Content Processing error', name, type, doc, err.response.body)
+        console.info('Content Processing error', name, type, doc, err)
         if (err.message === 'Response code 400 (Bad Request)' || err.code === 400) {
           return ''
         }

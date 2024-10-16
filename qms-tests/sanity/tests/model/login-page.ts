@@ -8,7 +8,8 @@ export class LoginPage {
   readonly buttonLogin: Locator
   readonly buttonSignUp: Locator
   readonly loginWithPassword: Locator
-
+  readonly invalidPasswordMessage: Locator
+  readonly accountNotFoundMessage: Locator
   constructor (page: Page) {
     this.page = page
     this.inputEmail = page.locator('input[name=email]')
@@ -16,6 +17,8 @@ export class LoginPage {
     this.buttonLogin = page.locator('button', { hasText: 'Log In' })
     this.buttonSignUp = page.locator('a.title', { hasText: 'Sign Up' })
     this.loginWithPassword = page.locator('a', { hasText: 'Login with password' })
+    this.invalidPasswordMessage = page.getByText('Invalid password')
+    this.accountNotFoundMessage = page.getByText('Account not found')
   }
 
   async goto (): Promise<void> {
@@ -27,6 +30,19 @@ export class LoginPage {
     await this.inputPassword.fill(password)
     expect(await this.buttonLogin.isEnabled()).toBe(true)
     await this.buttonLogin.click()
+  }
+
+  async checkIfErrorMessageIsShown (message: string): Promise<void> {
+    if (message === 'Invalid password') {
+      await expect(this.invalidPasswordMessage).toContainText(message)
+    }
+    if (message === 'Account not found') {
+      await expect(this.accountNotFoundMessage).toContainText(message)
+    }
+  }
+
+  async clickOnLoginWithPassword (): Promise<void> {
+    await this.loginWithPassword.click()
   }
 
   async checkIfUserIsLoggedIn (credentials: string): Promise<void> {

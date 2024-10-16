@@ -142,10 +142,10 @@ export default plugin(coreId, {
     StatusCategory: '' as Ref<Class<StatusCategory>>,
     MigrationState: '' as Ref<Class<MigrationState>>,
 
-    BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>
+    BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>,
+    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>
   },
   mixin: {
-    FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
     IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>,
     SpacesTypeData: '' as Ref<Mixin<Space>>

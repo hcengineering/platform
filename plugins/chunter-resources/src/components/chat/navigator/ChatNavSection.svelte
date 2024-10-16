@@ -91,8 +91,7 @@
           icon: icon ?? getObjectIcon(_class),
           iconProps: { showStatus: true },
           iconSize,
-          withIconBackground: !isDirect && !isPerson,
-          isSecondary: isDocChat && !isPerson
+          withIconBackground: !isDirect && !isPerson
         })
       }
 

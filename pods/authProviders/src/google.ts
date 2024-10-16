@@ -13,7 +13,8 @@ export function registerGoogle (
   accountsUrl: string,
   dbPromise: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
 ): string | undefined {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
   const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -70,22 +71,31 @@ export function registerGoogle (
       measureCtx.info('Provider auth handler', { email, type: 'google' })
       if (email !== undefined) {
         try {
-          let loginInfo: LoginInfo
+          let loginInfo: LoginInfo | null
           const state = safeParseAuthState(ctx.query?.state)
           const branding = getBranding(brandings, state?.branding)
           const db = await dbPromise
           if (state.inviteId != null && state.inviteId !== '') {
             loginInfo = await joinWithProvider(measureCtx, db, null, email, first, last, state.inviteId as any)
           } else {
-            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last)
+            loginInfo = await loginWithProvider(measureCtx, db, null, email, first, last, undefined, signUpDisabled)
           }
 
-          const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-          const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
+          if (loginInfo === null) {
+            measureCtx.info('Failed to auth: no associated account found', {
+              email,
+              type: 'google',
+              user: ctx.state?.user
+            })
+            ctx.redirect(concatLink(branding?.front ?? frontUrl, '/login'))
+          } else {
+            const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+            const query = encodeURIComponent(qs.stringify({ token: loginInfo.token }))
 
-          // Successful authentication, redirect to your application
-          measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
-          ctx.redirect(`${origin}?${query}`)
+            // Successful authentication, redirect to your application
+            measureCtx.info('Success auth, redirect', { email, type: 'google', target: origin })
+            ctx.redirect(`${origin}?${query}`)
+          }
         } catch (err: any) {
           measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
         }

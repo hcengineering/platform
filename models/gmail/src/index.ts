@@ -214,7 +214,8 @@ export function createModel (builder: Builder): void {
     gmail.action.WriteEmail
   )
 
-  builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: gmail.class.Message,
     parentPropagate: false
   })
 

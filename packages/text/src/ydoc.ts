@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Markup } from '@hcengineering/core'
+import { generateId, Markup } from '@hcengineering/core'
 import { Extensions, getSchema } from '@tiptap/core'
 import { Node, Schema } from '@tiptap/pm/model'
 import { prosemirrorJSONToYDoc, prosemirrorToYDoc, yDocToProsemirrorJSON } from 'y-prosemirror'
@@ -50,7 +50,7 @@ export function jsonToYDocNoSchema (json: MarkupNode, field: string): YDoc {
   const nodes = json.type === 'doc' ? json.content ?? [] : [json]
   const content = nodes.map(nodeToYXmlElement)
 
-  const ydoc = new YDoc()
+  const ydoc = new YDoc({ guid: generateId() })
 
   const fragment = ydoc.getXmlFragment(field)
   fragment.push(content)
@@ -113,7 +113,10 @@ export function yDocContentToNodes (content: ArrayBuffer, schema?: Schema, exten
   const nodes: Node[] = []
 
   try {
-    const ydoc = new YDoc()
+    const ydoc = new YDoc({
+      gc: false,
+      guid: generateId()
+    })
     const uint8arr = new Uint8Array(content)
     applyUpdate(ydoc, uint8arr)
 
@@ -144,8 +147,8 @@ export function updateYDocContent (
   schema ??= extensions === undefined ? defaultSchema : getSchema(extensions ?? defaultExtensions)
 
   try {
-    const ydoc = new YDoc({ gc: false })
-    const res = new YDoc({ gc: false })
+    const ydoc = new YDoc({ guid: generateId(), gc: false })
+    const res = new YDoc({ guid: generateId(), gc: false })
     const uint8arr = new Uint8Array(content)
     applyUpdate(ydoc, uint8arr)
 

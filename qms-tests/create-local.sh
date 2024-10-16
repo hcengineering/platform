@@ -14,6 +14,9 @@
 # Create third user record in accounts
 ./tool-local.sh create-account user3 -f Cain -l Velasquez -p 1234
 ./tool-local.sh confirm-email user3
+# Create fourth user record in accounts
+./tool-local.sh create-account user4 -f Armin -l Karmin -p 1234
+./tool-local.sh confirm-email user4
 
 ./tool-local.sh create-account user_qara -f Qara -l Admin -p 1234
 ./tool-local.sh confirm-email user_qara

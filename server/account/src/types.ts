@@ -195,6 +195,7 @@ export interface WorkspaceDbCollection extends DbCollection<Workspace> {
     region: string,
     version: Data<Version>,
     operation: WorkspaceOperation,
-    processingTimeoutMs: number
+    processingTimeoutMs: number,
+    wsLivenessMs?: number
   ) => Promise<WorkspaceInfo | undefined>
 }

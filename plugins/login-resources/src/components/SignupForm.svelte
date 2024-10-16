@@ -21,6 +21,8 @@
   import { goTo, signUp } from '../utils'
   import Form from './Form.svelte'
 
+  export let signUpDisabled = false
+
   const fields = [
     { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
     { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
@@ -38,6 +40,10 @@
   }
 
   let status: Status<any> = OK
+
+  if (signUpDisabled) {
+    goTo('login')
+  }
 
   const action = {
     i18n: login.string.SignUp,

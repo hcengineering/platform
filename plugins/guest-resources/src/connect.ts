@@ -16,7 +16,8 @@ import presentation, {
   loadServerConfig,
   refreshClient,
   setClient,
-  setPresentationCookie
+  setPresentationCookie,
+  upgradeDownloadProgress
 } from '@hcengineering/presentation'
 import {
   desktopPlatform,
@@ -25,7 +26,8 @@ import {
   navigate,
   setMetadataLocalStorage
 } from '@hcengineering/ui'
-import { writable } from 'svelte/store'
+import { writable, get } from 'svelte/store'
+
 export const versionError = writable<string | undefined>(undefined)
 const versionStorageKey = 'last_server_version'
 
@@ -82,20 +84,29 @@ export async function connect (title: string): Promise<Client | undefined> {
         frontVersion !== serverVersion
       ) {
         const reloaded = localStorage.getItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`)
+        const isUpgrading = get(upgradeDownloadProgress) >= 0
 
         if (reloaded === null) {
           localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
-          location.reload()
+          // It might have been refreshed manually and download has started - do not reload
+          if (!isUpgrading) {
+            location.reload()
+          }
+
           return false
         } else {
           versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
-          if (!desktopPlatform) {
+          if (!desktopPlatform || !isUpgrading) {
             setTimeout(() => {
-              location.reload()
-            }, 5000)
+              // It might be possible that this callback will fire after the user has spent some time
+              // in the upgrade !modal! dialog and clicked upgrade - check again and do not reload
+              if (get(upgradeDownloadProgress) < 0) {
+                location.reload()
+              }
+            }, 10000)
           }
-          // For embedded it should download the upgrade and restart the app
+          // For embedded if the download has started it should download the upgrade and restart the app
 
           return false
         }

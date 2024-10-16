@@ -955,7 +955,8 @@ export function createModel (builder: Builder): void {
   )
 
   // Allow to use fuzzy search for mixins
-  builder.mixin(contact.class.Contact, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: contact.class.Contact,
     fullTextSummary: true
   })
 

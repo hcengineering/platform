@@ -83,8 +83,10 @@ services:
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
       - LAST_NAME_FIRST=true
+      # - WS_LIVENESS_DAYS=1
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - BRANDING_PATH=/var/cfg/branding.json
+      # - DISABLE_SIGNUP=true
       # - INIT_SCRIPT_URL=https://raw.githubusercontent.com/hcengineering/init/main/script.yaml
       # - INIT_WORKSPACE=onboarding      
     restart: unless-stopped
@@ -197,6 +199,7 @@ services:
       - DESKTOP_UPDATES_URL=https://dist.huly.io
       - DESKTOP_UPDATES_CHANNEL=dev
       - BRANDING_URL=http://host.docker.internal:8087/branding.json
+      # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
     image: hardcoreeng/transactor

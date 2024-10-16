@@ -19,6 +19,7 @@
   import login from '../plugin'
 
   export let loginState: 'login' | 'signup' | 'none' = 'none'
+  export let signUpDisabled = false
 
   const goTab = (path: string) => {
     const loc = getCurrentLocation()
@@ -29,16 +30,18 @@
 </script>
 
 <div class="flex-row-center caption">
-  <a
-    class="title"
-    class:selected={loginState === 'signup'}
-    href="."
-    on:click|preventDefault={() => {
-      if (loginState !== 'signup') goTab('signup')
-    }}
-  >
-    <Label label={login.string.SignUp} />
-  </a>
+  {#if !signUpDisabled}
+    <a
+      class="title"
+      class:selected={loginState === 'signup'}
+      href="."
+      on:click|preventDefault={() => {
+        if (loginState !== 'signup') goTab('signup')
+      }}
+    >
+      <Label label={login.string.SignUp} />
+    </a>
+  {/if}
   <a
     class="title"
     class:selected={loginState === 'login'}

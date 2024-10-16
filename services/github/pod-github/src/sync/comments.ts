@@ -457,6 +457,9 @@ export class CommentSyncManager implements DocSyncManager {
     repositories: GithubIntegrationRepository[]
   ): Promise<void> {
     for (const repo of repositories) {
+      if (this.provider.isClosing()) {
+        break
+      }
       const syncKey = `${repo._id}:comment`
       if (repo.githubProject === undefined || !repo.enabled || integration.synchronized.has(syncKey)) {
         if (!repo.enabled) {
@@ -487,6 +490,9 @@ export class CommentSyncManager implements DocSyncManager {
       })
       try {
         for await (const data of i) {
+          if (this.provider.isClosing()) {
+            break
+          }
           const comments: CommentExternalData[] = data.data as any
           this.ctx.info('retrieve comments for', {
             repo: repo.name,

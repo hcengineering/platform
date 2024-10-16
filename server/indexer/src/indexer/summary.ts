@@ -114,7 +114,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
         const childDocs = allChildDocs.filter((it) => it.attachedTo === doc._id)
         if (childDocs.length > 0) {
           for (const c of childDocs) {
-            const ctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
+            const ctx = getFullTextContext(pipeline.hierarchy, c.objectClass, pipeline.contexts)
             if (ctx.parentPropagate ?? true) {
               if (embeddingText.length > this.summaryLimit) {
                 break
@@ -137,22 +137,43 @@ export class FullSummaryStage implements FullTextPipelineStage {
               metrics,
               core.class.DocIndexState,
               { _id: doc.attachedTo as Ref<DocIndexState> },
-              { limit: 1 }
+              {
+                limit: 1,
+                skipSpace: true,
+                skipClass: true
+              }
             )
             if (parentDoc !== undefined) {
               const ctx = collectPropagateClasses(pipeline, parentDoc.objectClass)
               if (ctx.length > 0) {
-                const collections = await this.dbStorageFindAll(metrics, core.class.DocIndexState, {
-                  attachedTo: parentDoc._id,
-                  objectClass: ctx.length === 1 ? ctx[0] : { $in: ctx }
-                })
-                for (const c of collections) {
-                  embeddingText +=
-                    '\n' +
-                    (await extractIndexedValues(c, pipeline.hierarchy, {
-                      matchExtra: this.matchExtra,
-                      fieldFilter: this.fieldFilter
-                    }))
+                let last = 0
+                while (true) {
+                  const collections = await this.dbStorageFindAll(
+                    metrics,
+                    core.class.DocIndexState,
+                    {
+                      attachedTo: parentDoc._id,
+                      objectClass: ctx.length === 1 ? ctx[0] : { $in: ctx },
+                      modifiedOn: { $gt: last }
+                    },
+                    {
+                      limit: 250,
+                      skipClass: true,
+                      skipSpace: true
+                    }
+                  )
+                  if (collections.length === 0) {
+                    break
+                  }
+                  last = collections[collections.length - 1].modifiedOn
+                  for (const c of collections) {
+                    embeddingText +=
+                      '\n' +
+                      (await extractIndexedValues(c, pipeline.hierarchy, {
+                        matchExtra: this.matchExtra,
+                        fieldFilter: this.fieldFilter
+                      }))
+                  }
                 }
               }
 
@@ -188,7 +209,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
  * @public
  */
 export function isIndexingRequired (pipeline: FullTextPipeline, doc: DocIndexState): boolean {
-  return getFullTextContext(pipeline.hierarchy, doc.objectClass).fullTextSummary ?? false
+  return getFullTextContext(pipeline.hierarchy, doc.objectClass, pipeline.contexts).fullTextSummary ?? false
 }
 
 /**

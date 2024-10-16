@@ -129,6 +129,8 @@ export interface IntegrationManager {
   getProjectRepositories: (space: Ref<Space>) => Promise<GithubIntegrationRepository[]>
 
   getRepositoryById: (ref?: Ref<GithubIntegrationRepository> | null) => Promise<GithubIntegrationRepository | undefined>
+
+  isClosing: () => boolean
 }
 
 export type ExternalSyncField = 'externalVersion' | 'derivedVersion'

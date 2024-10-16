@@ -1438,13 +1438,15 @@ export function createModel (builder: Builder): void {
   )
 
   // Allow to use fuzzy search for mixins
-  builder.mixin(recruit.class.Vacancy, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: recruit.class.Vacancy,
     fullTextSummary: true,
     childProcessingAllowed: true,
     propagate: []
   })
 
-  builder.mixin(recruit.mixin.Candidate, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: recruit.mixin.Candidate,
     fullTextSummary: true,
     propagate: [recruit.class.Applicant],
     childProcessingAllowed: true,
@@ -1457,7 +1459,8 @@ export function createModel (builder: Builder): void {
   })
 
   // Allow to use fuzzy search for mixins
-  builder.mixin(recruit.class.Applicant, core.class.Class, core.mixin.FullTextSearchContext, {
+  builder.createDoc(core.class.FullTextSearchContext, core.space.Model, {
+    toClass: recruit.class.Applicant,
     fullTextSummary: true,
     forceIndex: true,
     childProcessingAllowed: true,

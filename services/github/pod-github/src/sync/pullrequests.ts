@@ -1433,6 +1433,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     repositories: GithubIntegrationRepository[]
   ): Promise<void> {
     for (const repo of repositories) {
+      if (this.provider.isClosing()) {
+        break
+      }
       const prj = projects.find((it) => repo.githubProject === it._id)
       if (prj === undefined) {
         continue
@@ -1518,6 +1521,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         }
       )
       for await (const data of pullRequestIterator) {
+        if (this.provider.isClosing()) {
+          break
+        }
         const issues: PullRequestExternalData[] = data.repository.pullRequests.nodes
         this.ctx.info('retrieve pull requests for', {
           repo: repo.name,

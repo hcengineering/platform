@@ -2,14 +2,14 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import { MeasureMetricsContext, metricsToString, newMetrics } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
 import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
+import { MeasureMetricsContext, metricsToString, newMetrics } from '@hcengineering/core'
+import { loadBrandingMap } from '@hcengineering/server-core'
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
 import config from './config'
 import { start } from './server'
-import { Analytics } from '@hcengineering/analytics'
-import { loadBrandingMap } from '@hcengineering/server-core'
 
 // Load and inc startID, to have easy logs.
 
@@ -39,11 +39,18 @@ const intTimer = setInterval(() => {
   }
 }, 30000)
 
-void start(metricsContext, loadBrandingMap(config.BrandingPath))
+let doOnClose: () => Promise<void> = async () => {}
+
+void start(metricsContext, loadBrandingMap(config.BrandingPath)).then((r) => {
+  doOnClose = r
+})
 
 const onClose = (): void => {
   clearInterval(intTimer)
   metricsContext.info('Closed')
+  void doOnClose().then((r) => {
+    process.exit(0)
+  })
 }
 
 process.on('uncaughtException', (e) => {

@@ -16,22 +16,23 @@
 import { Doc as YDoc, XmlElement as YXmlElement, XmlText as YXmlText, encodeStateVector } from 'yjs'
 
 import { clone, yDocCopyXmlField, yDocFromBuffer, yDocToBuffer } from '../ydoc'
+import { generateId } from '@hcengineering/core'
 
 describe('ydoc', () => {
   it('yDocFromBuffer converts ydoc to a buffer', async () => {
-    const ydoc = new YDoc()
+    const ydoc = new YDoc({ guid: generateId() })
     const buffer = yDocToBuffer(ydoc)
 
     expect(buffer).toBeDefined()
   })
 
   it('yDocFromBuffer converts buffer to a ydoc', async () => {
-    const source = new YDoc()
+    const source = new YDoc({ guid: generateId() })
     source.getArray('data').insert(0, [1, 2])
 
     const buffer = yDocToBuffer(source)
 
-    const target = yDocFromBuffer(buffer, new YDoc())
+    const target = yDocFromBuffer(buffer, new YDoc({ guid: generateId() }))
     expect(target).toBeDefined()
     expect(encodeStateVector(target)).toEqual(encodeStateVector(source))
   })

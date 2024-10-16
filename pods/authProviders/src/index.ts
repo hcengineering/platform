@@ -18,7 +18,8 @@ export type AuthProvider = (
   accountsUrl: string,
   db: Promise<AccountDB>,
   frontUrl: string,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled?: boolean
 ) => string | undefined
 
 export function registerProviders (
@@ -28,7 +29,8 @@ export function registerProviders (
   db: Promise<AccountDB>,
   serverSecret: string,
   frontUrl: string | undefined,
-  brandings: BrandingMap
+  brandings: BrandingMap,
+  signUpDisabled: boolean = false
 ): void {
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -63,7 +65,7 @@ export function registerProviders (
   const res: string[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub, registerOpenid]
   for (const provider of providers) {
-    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings)
+    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings, signUpDisabled)
     if (value !== undefined) res.push(value)
   }
 

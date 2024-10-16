@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Account, Ref } from '@hcengineering/core'
+import { Account, RateLimiter, Ref } from '@hcengineering/core'
 import { type Db } from 'mongodb'
 import { type CalendarClient } from './calendar'
 import config from './config'
@@ -25,6 +25,7 @@ export class CalendarController {
 
   private readonly credentials: ProjectCredentials
   private readonly clients: Map<string, CalendarClient[]> = new Map<string, CalendarClient[]>()
+  private readonly initLimitter = new RateLimiter(config.InitLimit)
 
   protected static _instance: CalendarController
 
@@ -43,17 +44,57 @@ export class CalendarController {
 
   async startAll (): Promise<void> {
     const tokens = await this.mongo.collection<Token>('tokens').find().toArray()
+    const groups = new Map<string, Token[]>()
+    console.log('start calendar service', tokens.length)
     for (const token of tokens) {
-      try {
-        await this.createClient(token)
-      } catch (err) {
-        console.error(`Couldn't create client for ${token.workspace} ${token.userId}`)
+      const group = groups.get(token.workspace)
+      if (group === undefined) {
+        groups.set(token.workspace, [token])
+      } else {
+        group.push(token)
+        groups.set(token.workspace, group)
       }
     }
 
-    for (const client of this.workspaces.values()) {
-      void client.sync()
+    const limiter = new RateLimiter(config.InitLimit)
+
+    for (const [workspace, tokens] of groups) {
+      await limiter.add(async () => {
+        const startPromise = this.startWorkspace(workspace, tokens)
+        const timeoutPromise = new Promise<void>((resolve) => {
+          setTimeout(() => {
+            resolve()
+          }, 60000)
+        })
+        await Promise.race([startPromise, timeoutPromise])
+      })
     }
+
+    await limiter.waitProcessing()
+    console.log('Calendar service started')
+  }
+
+  async startWorkspace (workspace: string, tokens: Token[]): Promise<void> {
+    const workspaceClient = await this.getWorkspaceClient(workspace)
+    const clients: CalendarClient[] = []
+    for (const token of tokens) {
+      try {
+        const timeout = setTimeout(() => {
+          console.log('init client hang', token.workspace, token.userId)
+        }, 60000)
+        const client = await workspaceClient.createCalendarClient(token)
+        clearTimeout(timeout)
+        clients.push(client)
+      } catch (err) {
+        console.error(`Couldn't create client for ${workspace} ${token.userId}`)
+      }
+    }
+    for (const client of clients) {
+      void this.initLimitter.add(async () => {
+        await client.startSync()
+      })
+    }
+    void workspaceClient.sync()
   }
 
   push (email: string, mode: 'events' | 'calendar', calendarId?: string): void {

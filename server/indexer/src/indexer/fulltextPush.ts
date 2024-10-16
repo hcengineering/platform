@@ -30,12 +30,13 @@ import core, {
   type MeasureContext,
   RateLimiter,
   type Ref,
+  SortingOrder,
   toIdMap,
   type WorkspaceId
 } from '@hcengineering/core'
 import { type DbAdapter, type FullTextAdapter, type IndexedDoc, type SessionFindAll } from '@hcengineering/server-core'
-import { updateDocWithPresenter } from '../mapper'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
+import { updateDocWithPresenter } from '../mapper'
 import {
   contentStageId,
   type DocUpdateHandler,
@@ -118,7 +119,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
       const childIds = toIndexPart
         .filter((it) => {
-          const fctx = getFullTextContext(pipeline.hierarchy, it.objectClass)
+          const fctx = getFullTextContext(pipeline.hierarchy, it.objectClass, pipeline.contexts)
           return fctx.childProcessingAllowed ?? true
         })
         .map((it) => it._id)
@@ -127,9 +128,17 @@ export class FullTextPushStage implements FullTextPipelineStage {
         'find-child',
         {},
         async (ctx) =>
-          await this.dbStorageFindAll(ctx, core.class.DocIndexState, {
-            attachedTo: childIds.length === 1 ? childIds[0] : { $in: childIds }
-          })
+          await this.dbStorageFindAll(
+            ctx,
+            core.class.DocIndexState,
+            {
+              attachedTo: childIds.length === 1 ? childIds[0] : { $in: childIds }
+            },
+            {
+              skipClass: true,
+              skipSpace: true
+            }
+          )
       )
 
       // spaces
@@ -138,14 +147,22 @@ export class FullTextPushStage implements FullTextPipelineStage {
           'find-spaces',
           {},
           async (ctx) =>
-            await this.dbStorageFindAll(ctx, core.class.DocIndexState, {
-              _id: {
-                $in: toIndexPart.map(
-                  (doc) =>
-                    (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
-                )
+            await this.dbStorageFindAll(
+              ctx,
+              core.class.DocIndexState,
+              {
+                _id: {
+                  $in: toIndexPart.map(
+                    (doc) =>
+                      (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
+                  )
+                }
+              },
+              {
+                skipClass: true,
+                skipSpace: true
               }
-            })
+            )
         )
       )
 
@@ -163,7 +180,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           const childDocs = allChildDocs.filter((it) => it.attachedTo === doc._id)
           if (childDocs.length > 0) {
             for (const c of childDocs) {
-              const fctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
+              const fctx = getFullTextContext(pipeline.hierarchy, c.objectClass, pipeline.contexts)
               if (fctx.parentPropagate ?? true) {
                 ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
                   updateDoc2Elastic(
@@ -195,7 +212,11 @@ export class FullTextPushStage implements FullTextPipelineStage {
                       {
                         _id: doc.attachedTo as Ref<DocIndexState>
                       },
-                      { limit: 1 }
+                      {
+                        limit: 1,
+                        skipClass: true,
+                        skipSpace: true
+                      }
                     )
                   ).shift()
                 ))
@@ -217,23 +238,43 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
                 const collectClasses = collectPropagateClasses(pipeline, parentDoc.objectClass)
                 if (collectClasses.length > 0) {
-                  const collections = await this.dbStorageFindAll<DocIndexState>(ctx, core.class.DocIndexState, {
-                    attachedTo: parentDoc._id,
-                    objectClass: { $in: collectClasses }
-                  })
-                  for (const c of collections) {
-                    ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
-                      updateDoc2Elastic(
-                        this.allAttrs,
-                        ctx,
-                        c.attributes,
-                        elasticDoc,
-                        c._id,
-                        undefined,
-                        pipeline.hierarchy,
-                        true
-                      )
-                    })
+                  let last: number = 0
+                  while (true) {
+                    const collections = await this.dbStorageFindAll<DocIndexState>(
+                      ctx,
+                      core.class.DocIndexState,
+                      {
+                        attachedTo: parentDoc._id,
+                        objectClass: { $in: collectClasses },
+                        modifiedOn: { $gt: last }
+                      },
+                      {
+                        sort: {
+                          modifiedOn: SortingOrder.Ascending
+                        },
+                        skipClass: true,
+                        skipSpace: true,
+                        limit: 500
+                      }
+                    )
+                    if (collections.length === 0) {
+                      break
+                    }
+                    last = collections[collections.length - 1].modifiedOn
+                    for (const c of collections) {
+                      ctx.withSync('updateDoc2Elastic', {}, (ctx) => {
+                        updateDoc2Elastic(
+                          this.allAttrs,
+                          ctx,
+                          c.attributes,
+                          elasticDoc,
+                          c._id,
+                          undefined,
+                          pipeline.hierarchy,
+                          true
+                        )
+                      })
+                    }
                   }
                 }
               }
@@ -262,7 +303,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
       }
       // Perform bulk update to elastic
 
-      void pushQueue.add(async () => {
+      await pushQueue.exec(async () => {
         try {
           try {
             await ctx.with('push-elastic', {}, async () => {

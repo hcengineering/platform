@@ -30,7 +30,6 @@ import os from 'os'
  */
 export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
   console.log('Starting account service with brandings: ', brandings)
-  const methods = getMethods()
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUrl = process.env.DB_URL
   if (dbUrl === undefined) {
@@ -66,6 +65,17 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const productName = process.env.PRODUCT_NAME
   const lang = process.env.LANGUAGE ?? 'en'
 
+  const wsLivenessDaysRaw = process.env.WS_LIVENESS_DAYS
+  let wsLivenessDays: number | undefined
+
+  if (wsLivenessDaysRaw !== undefined) {
+    try {
+      wsLivenessDays = parseInt(wsLivenessDaysRaw)
+    } catch (err: any) {
+      // DO NOTHING
+    }
+  }
+
   setMetadata(account.metadata.Transactors, transactorUri)
   setMetadata(platform.metadata.locale, lang)
   setMetadata(account.metadata.ProductName, productName)
@@ -73,6 +83,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(account.metadata.OtpRetryDelaySec, parseInt(process.env.OTP_RETRY_DELAY ?? '60'))
   setMetadata(account.metadata.SES_URL, ses)
   setMetadata(account.metadata.FrontURL, frontURL)
+  setMetadata(account.metadata.WsLivenessDays, wsLivenessDays)
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
@@ -80,6 +91,9 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   if (initScriptUrl !== undefined) {
     setMetadata(toolPlugin.metadata.InitScriptURL, initScriptUrl)
   }
+
+  const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
+  const methods = getMethods(hasSignUp)
 
   const accountsDb = getAccountDB(dbUrl)
 
@@ -105,7 +119,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     }),
     serverSecret,
     frontURL,
-    brandings
+    brandings,
+    !hasSignUp
   )
 
   void accountsDb.then((res) => {

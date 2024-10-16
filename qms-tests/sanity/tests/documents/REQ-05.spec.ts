@@ -5,6 +5,7 @@ import { DocumentContentPage } from '../model/documents/document-content-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 
 import { faker } from '@faker-js/faker'
+import { SettingsPage } from '../model/setting-page'
 
 test.use({
   storageState: PlatformSetting
@@ -59,5 +60,49 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     })
 
     await attachScreenshot('TESTS-381_document_space_created.png', page)
+  })
+
+  test('TESTS-406. As a space member only, I cannot delete any doc from that space', async ({ page }) => {
+    await allure.description('Requirement\nUsers need to create a new space')
+    await allure.tms('TESTS-406', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-406')
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    const folderName = generateId(5)
+
+    await leftSideMenuPage.clickButtonOnTheLeft('Documents')
+    await test.step('2. Create a new document space and check if user can create document', async () => {
+      const documentContentPage = new DocumentContentPage(page)
+      await documentContentPage.clickAddFolderButton()
+      await documentContentPage.fillDocumentAndSetMember(folderName)
+      await documentContentPage.checkIfUserCanCreateDocument(folderName)
+    })
+
+    await attachScreenshot('TESTS-406_user_cant_see_workspace.png', page)
+  })
+
+  test('TESTS-342. As a workspace owner, I can create roles and setup permissions', async ({ page }) => {
+    await allure.description(
+      'Requirement\nUser is the owner of the workspace and can create roles and setup permissions'
+    )
+    await allure.tms('TESTS-342', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-342')
+    await test.step('2. Check user role and if the update permission is disabled', async () => {
+      const settingsPage = new SettingsPage(page)
+      await settingsPage.openProfileMenu()
+      await settingsPage.clickSettings()
+      await settingsPage.clickDefaultDocuments()
+      await settingsPage.chooseRole('Manager')
+      await settingsPage.checkIfPermissionsExist()
+      await settingsPage.checkIfAddUpdateDocumentOwnerPermissionIsDisabled()
+      await attachScreenshot('TESTS-342_Manager_roles.png', page)
+      await settingsPage.clickDefaultDocuments()
+      await settingsPage.chooseRole('QARA')
+      await settingsPage.checkIfPermissionsExist()
+      await settingsPage.checkIfAddUpdateDocumentOwnerPermissionIsDisabled()
+      await attachScreenshot('TESTS-342_QARA_roles.png', page)
+      await settingsPage.clickDefaultDocuments()
+      await settingsPage.chooseRole('Qualified User')
+      await settingsPage.checkPermissionsExistQualifyUser()
+      await settingsPage.checkIfAddUpdateDocumentOwnerPermissionIsDisabled()
+      await attachScreenshot('TESTS-342_User_roles.png', page)
+    })
   })
 })

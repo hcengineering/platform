@@ -97,11 +97,11 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     })
   })
 
-  test.skip('TESTS-271. Generate a PDF from an Effective doc', async ({ page, browser }) => {
+  test('TESTS-272. @PDF Generate a PDF from an Effective doc', async ({ page, browser }) => {
     await allure.description(
       'Requirement\nUsers need to make a resolve all comments and done documents for the Effective status'
     )
-    await allure.tms('TESTS-271', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-271')
+    await allure.tms('TESTS-272', 'https://tracex.hc.engineering/workbench/platform/tracker/TESTS-272')
 
     const userSecondPage = await getSecondPage(browser)
     const completeDocument: NewDocument = {
@@ -152,11 +152,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
-      await attachScreenshot('TESTS-271_approve_document.png', page)
-    })
-
-    await test.step('4. Download PDF', async () => {
-      await attachScreenshot('TESTS-271-check_content.png', page)
+      await attachScreenshot('TESTS-272_approve_document.png', page)
     })
   })
 })

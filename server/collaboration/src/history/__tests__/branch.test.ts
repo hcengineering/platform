@@ -16,11 +16,12 @@
 import { Doc as YDoc, encodeStateAsUpdate, encodeStateVector } from 'yjs'
 
 import { yDocBranch, yDocBranchWithGC } from '../branch'
+import { generateId } from '@hcengineering/core'
 
 describe('branch', () => {
   describe('yDocBranch', () => {
     it('branches document without gc', async () => {
-      const source = new YDoc({ gc: false })
+      const source = new YDoc({ guid: generateId(), gc: false })
 
       applyGarbageCollectableChanges(source)
 
@@ -45,7 +46,7 @@ describe('branch', () => {
     })
 
     it('branches document state with gc', async () => {
-      const source = new YDoc({ gc: true })
+      const source = new YDoc({ guid: generateId(), gc: true })
 
       applyGarbageCollectableChanges(source)
 
@@ -72,7 +73,7 @@ describe('branch', () => {
 
   describe('yDocBranchWithGC', () => {
     it('branches document state without gc', async () => {
-      const source = new YDoc({ gc: false })
+      const source = new YDoc({ guid: generateId(), gc: false })
 
       applyGarbageCollectableChanges(source)
 
@@ -97,7 +98,7 @@ describe('branch', () => {
     })
 
     it('branches document state with gc', async () => {
-      const source = new YDoc({ gc: true })
+      const source = new YDoc({ guid: generateId(), gc: true })
 
       applyGarbageCollectableChanges(source)
 

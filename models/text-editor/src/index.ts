@@ -333,6 +333,15 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
     kind: 'image',
+    action: textEditor.function.DownloadImage,
+    icon: textEditor.icon.Download,
+    label: textEditor.string.Download,
+    category: 90,
+    index: 15
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    kind: 'image',
     action: textEditor.function.MoreImageActions,
     visibilityTester: textEditor.function.IsEditable,
     icon: textEditor.icon.MoreH,
