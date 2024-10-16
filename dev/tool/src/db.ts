@@ -86,30 +86,33 @@ async function moveWorkspace (
       console.log('move domain', domain)
       const docs: Doc[] = []
       while (true) {
-        const doc = (await cursor.next()) as Doc | null
-        if (doc === null) break
-        if (currentIds.has(doc._id)) continue
-        docs.push(doc)
-      }
-      while (docs.length > 0) {
-        const part = docs.splice(0, 500)
-        const vals = part
-          .map((doc) => {
-            const d = convertDoc(doc, ws.workspace)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
-              d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
-            }, '${escapeBackticks(JSON.stringify(d.data))}')`
-          })
-          .join(', ')
-        try {
-          await retryTxn(pgClient, async (client) => {
-            await client.query(
-              `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
-            )
-          })
-        } catch (err) {
-          console.log('error when move doc to', domain, err)
-          continue
+        while (docs.length < 50000) {
+          const doc = (await cursor.next()) as Doc | null
+          if (doc === null) break
+          if (currentIds.has(doc._id)) continue
+          docs.push(doc)
+        }
+        if (docs.length === 0) break
+        while (docs.length > 0) {
+          const part = docs.splice(0, 500)
+          const vals = part
+            .map((doc) => {
+              const d = convertDoc(doc, ws.workspace)
+              return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
+                d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
+              }, '${escapeBackticks(JSON.stringify(d.data))}')`
+            })
+            .join(', ')
+          try {
+            await retryTxn(pgClient, async (client) => {
+              await client.query(
+                `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
+              )
+            })
+          } catch (err) {
+            console.log('error when move doc to', domain, err)
+            continue
+          }
         }
       }
     }
