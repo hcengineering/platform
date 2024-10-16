@@ -235,7 +235,7 @@
   export async function fileDrop (e: DragEvent): Promise<void> {
     progress = true
     const list = e.dataTransfer?.files
-    if (list === null || list.length === 0) return
+    if (list === undefined || list.length === 0) return
     await uploadFiles(list, { onFileUploaded })
     progress = false
   }
@@ -356,7 +356,20 @@
     }
 
     const items = evt.clipboardData?.items ?? []
-    await uploadFiles(items, { onFileUploaded })
+    const files: File[] = []
+    for (const index in items) {
+      const item = items[index]
+      if (item.kind === 'file') {
+        const blob = item.getAsFile()
+        if (blob !== null) {
+          files.push(blob)
+        }
+      }
+    }
+
+    if (files.length > 0) {
+      await uploadFiles(files, { onFileUploaded })
+    }
   }
 
   $: dispatch('attachments', {
