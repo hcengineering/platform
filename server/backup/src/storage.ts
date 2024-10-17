@@ -12,7 +12,8 @@ export interface BackupStorage {
   loadFile: (name: string) => Promise<Buffer>
   load: (name: string) => Promise<Readable>
   write: (name: string) => Promise<Writable>
-  writeFile: (name: string, data: string | Buffer) => Promise<void>
+
+  writeFile: (name: string, data: string | Buffer | Readable) => Promise<void>
   exists: (name: string) => Promise<boolean>
 
   stat: (name: string) => Promise<number>
@@ -51,14 +52,14 @@ class FileStorage implements BackupStorage {
     await rm(join(this.root, name))
   }
 
-  async writeFile (name: string, data: string | Buffer): Promise<void> {
+  async writeFile (name: string, data: string | Buffer | Readable): Promise<void> {
     const fileName = join(this.root, name)
     const dir = dirname(fileName)
     if (!existsSync(dir)) {
       await mkdir(dir, { recursive: true })
     }
 
-    await writeFile(fileName, data)
+    await writeFile(fileName, data as any)
   }
 }
 
@@ -72,7 +73,7 @@ class AdapterStorage implements BackupStorage {
 
   async loadFile (name: string): Promise<Buffer> {
     const data = await this.client.read(this.ctx, this.workspaceId, join(this.root, name))
-    return Buffer.concat(data)
+    return Buffer.concat(data as any)
   }
 
   async write (name: string): Promise<Writable> {
@@ -106,16 +107,9 @@ class AdapterStorage implements BackupStorage {
     await this.client.remove(this.ctx, this.workspaceId, [join(this.root, name)])
   }
 
-  async writeFile (name: string, data: string | Buffer): Promise<void> {
+  async writeFile (name: string, data: string | Buffer | Readable): Promise<void> {
     // TODO: add mime type detection here.
-    await this.client.put(
-      this.ctx,
-      this.workspaceId,
-      join(this.root, name),
-      data,
-      'application/octet-stream',
-      data.length
-    )
+    await this.client.put(this.ctx, this.workspaceId, join(this.root, name), data, 'application/octet-stream')
   }
 }
 
