@@ -17,4 +17,4 @@ COPY bundle/bundle.js.map ./
 COPY bundle/model.json ./
 
 EXPOSE 3000
-CMD [ "node", "bundle.js" ]
+CMD [ "node", "--expose-gc", "bundle.js" ]

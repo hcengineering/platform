@@ -125,7 +125,9 @@ class BackupWorker {
       }
       return !workspacesIgnore.has(it.workspace)
     })
-    workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+    workspaces.sort((a, b) => {
+      return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+    })
 
     ctx.info('Preparing for BACKUP', {
       total: workspaces.length,
