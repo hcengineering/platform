@@ -38,7 +38,6 @@ import {
   TArrOf,
   TAttachedDoc,
   TAttribute,
-  TBlob,
   TClass,
   TCollection,
   TConfiguration,
@@ -171,7 +170,6 @@ export function createModel (builder: Builder): void {
     TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,
-    TBlob,
     TDomainIndexConfiguration,
     TBenchmarkDoc
   )

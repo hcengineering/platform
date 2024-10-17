@@ -4,7 +4,6 @@
 
 export interface Config {
   Port: number
-  DbURL: string
   Secret: string
 }
 
@@ -13,7 +12,6 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4005,
-    DbURL: process.env.MONGO_URL,
     Secret: process.env.SECRET
   }
 

@@ -35,7 +35,7 @@ registerStringLoaders()
  * @public
  */
 export function start (
-  dbUrls: string,
+  dbUrl: string,
   opt: {
     fullTextUrl: string
     storageConfig: StorageConfiguration
@@ -55,30 +55,32 @@ export function start (
       start: () => void
       stop: () => Promise<string | undefined>
     }
+
+    mongoUrl?: string
   }
 ): () => Promise<void> {
   const metrics = getMetricsContext()
 
   registerServerPlugins()
 
-  const [mainDbUrl, rawDbUrl] = dbUrls.split(';')
-
-  const externalStorage = buildStorageFromConfig(opt.storageConfig, rawDbUrl ?? mainDbUrl)
+  const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
   const pipelineFactory = createServerPipeline(
     metrics,
-    dbUrls,
+    dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: rawDbUrl !== undefined },
-    {
-      serviceAdapters: {
-        [serverAiBotId]: {
-          factory: createAIBotAdapter,
-          db: '%ai-bot',
-          url: rawDbUrl ?? mainDbUrl
+    { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
+    opt.mongoUrl !== undefined
+      ? {
+          serviceAdapters: {
+            [serverAiBotId]: {
+              factory: createAIBotAdapter,
+              db: '%ai-bot',
+              url: opt.mongoUrl
+            }
+          }
         }
-      }
-    }
+      : {}
   )
   const sessionFactory = (
     token: Token,

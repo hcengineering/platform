@@ -1,5 +1,6 @@
 export interface ServerEnv {
-  url: string
+  dbUrl: string
+  mongoUrl?: string
   elasticUrl: string
   serverSecret: string
   rekoniUrl: string
@@ -27,12 +28,6 @@ export function serverConfigFromEnv (): ServerEnv {
   }
 
   const mongoUrl = process.env.MONGO_URL
-  if (mongoUrl === undefined) {
-    console.error('please provide mongodb url')
-    process.exit(1)
-  }
-
-  const url = dbUrl !== mongoUrl ? `${dbUrl};${mongoUrl}` : dbUrl
 
   const elasticUrl = process.env.ELASTIC_URL
   if (elasticUrl === undefined) {
@@ -78,7 +73,8 @@ export function serverConfigFromEnv (): ServerEnv {
   const brandingPath = process.env.BRANDING_PATH
 
   return {
-    url,
+    dbUrl,
+    mongoUrl,
     elasticUrl,
     elasticIndexName,
     serverSecret,

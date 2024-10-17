@@ -551,8 +551,6 @@ export interface Blob extends Doc {
   // Provider
   provider: string
   // A provider specific id
-  storageId: string
-  // A content type for blob
   contentType: string
   // A etag for blob
   etag: string

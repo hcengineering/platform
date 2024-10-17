@@ -14,9 +14,6 @@
 //
 
 import {
-  type Card,
-  type CollaborativeDoc,
-  DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
@@ -26,9 +23,10 @@ import {
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
-  type Blob,
+  type Card,
   type Class,
   type ClassifierKind,
+  type CollaborativeDoc,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -63,7 +61,6 @@ import {
   ReadOnly,
   TypeBoolean,
   TypeCollaborativeDoc,
-  TypeFileSize,
   TypeIntlString,
   TypeRecord,
   TypeRef,
@@ -145,35 +142,6 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
     collection!: string
-}
-
-@Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB)
-@UX(core.string.Object)
-export class TBlob extends TDoc implements Blob {
-  @Prop(TypeString(), core.string.Blob)
-  @ReadOnly()
-  // @Index(IndexKind.Indexed)
-    provider!: string
-
-  @Prop(TypeString(), core.string.BlobContentType)
-  @ReadOnly()
-    contentType!: string
-
-  @Prop(TypeString(), core.string.BlobStorageId)
-  @ReadOnly()
-    storageId!: string
-
-  @Prop(TypeString(), core.string.BlobEtag)
-  @ReadOnly()
-    etag!: string
-
-  @Prop(TypeString(), core.string.BlobVersion)
-  @ReadOnly()
-    version!: string
-
-  @Prop(TypeFileSize(), core.string.BlobSize)
-  @ReadOnly()
-    size!: number
 }
 
 @UX(core.string.ClassLabel)

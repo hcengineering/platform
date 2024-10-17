@@ -63,8 +63,8 @@ export function docImportTool (): void {
   setMetadata(serverClientPlugin.metadata.Endpoint, accountUrl)
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
-  async function withStorage (mongodbUri: string, f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
-    const adapter = buildStorageFromConfig(storageConfigFromEnv(), mongodbUri)
+  async function withStorage (f: (storageAdapter: StorageAdapter) => Promise<any>): Promise<void> {
+    const adapter = buildStorageFromConfig(storageConfigFromEnv())
     try {
       await f(adapter)
     } catch (err: any) {
@@ -94,7 +94,7 @@ export function docImportTool (): void {
           }, space: ${cmd.space}, backend: ${cmd.backend}`
         )
 
-        await withStorage(mongodbUri, async (storageAdapter) => {
+        await withStorage(async (storageAdapter) => {
           const workspaceId = getWorkspaceId(workspace)
 
           const config: Config = {

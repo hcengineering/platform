@@ -14,19 +14,19 @@
 // limitations under the License.
 //
 
-import cors from 'cors'
-import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { Token } from '@hcengineering/server-token'
-import { type Server } from 'http'
+import { MeasureMetricsContext, generateId } from '@hcengineering/core'
 import { StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
+import { Token } from '@hcengineering/server-token'
+import cors from 'cors'
+import express, { type Express, type NextFunction, type Request, type Response } from 'express'
+import { type Server } from 'http'
 
+import { type Branding, type BrandingMap, extractBranding } from './branding'
+import config from './config'
 import { ApiError } from './error'
 import { signPDF } from './sign'
 import { extractToken } from './token'
-import { type Branding, type BrandingMap, extractBranding } from './branding'
-import config from './config'
 
 type AsyncRequestHandler = (
   req: Request,
@@ -58,8 +58,8 @@ const wrapRequest =
     handleRequest(fn, brandings, req, res, next)
   }
 
-export function createServer (dbUrl: string, storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
-  const storageAdapter = buildStorageFromConfig(storageConfig, dbUrl)
+export function createServer (storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
+  const storageAdapter = buildStorageFromConfig(storageConfig)
   const measureCtx = new MeasureMetricsContext('sign', {})
 
   const app = express()

@@ -70,15 +70,7 @@ export interface StorageAdapter {
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
-  defaultAdapter: string
-  adapters?: Map<string, StorageAdapter>
-
-  syncBlobFromStorage: (
-    ctx: MeasureContext,
-    workspaceId: WorkspaceId,
-    objectName: string,
-    provider?: string
-  ) => Promise<Blob>
+  adapters?: [string, StorageAdapter][]
 
   find: (ctx: MeasureContext, workspaceId: WorkspaceId) => StorageIterator
 }
