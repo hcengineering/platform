@@ -1290,7 +1290,8 @@ export async function getPendingWorkspace (
       workspaceName: result.workspaceName,
       operation,
       region,
-      version
+      workspaceVersion: result.version,
+      requestedVersion: version
     })
   }
 
