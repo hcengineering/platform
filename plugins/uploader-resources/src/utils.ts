@@ -14,54 +14,45 @@
 //
 
 import { showPopup } from '@hcengineering/ui'
-import {
-  type FileUploadCallback,
-  type FileUploadOptions,
-  type FileUploadPopupOptions,
-  type FileUploadTarget,
-  toFileWithPath
-} from '@hcengineering/uploader'
+import { type FileUploadOptions, type FileUploadPopupOptions, toFileWithPath } from '@hcengineering/uploader'
 
 import FileUploadPopup from './components/FileUploadPopup.svelte'
 
 import { dockFileUpload } from './store'
 import { getUppy } from './uppy'
+import { generateFileId } from '@hcengineering/presentation'
 
 /** @public */
 export async function showFilesUploadPopup (
-  target: FileUploadTarget,
   options: FileUploadOptions,
-  popupOptions: FileUploadPopupOptions,
-  onFileUploaded: FileUploadCallback
+  popupOptions: FileUploadPopupOptions
 ): Promise<void> {
-  const uppy = getUppy(options, onFileUploaded)
+  const uppy = getUppy(options)
 
-  showPopup(FileUploadPopup, { uppy, target, options: popupOptions }, undefined, (res) => {
-    if (res === true && options.hideProgress !== true) {
+  showPopup(FileUploadPopup, { uppy, options: popupOptions }, undefined, (res) => {
+    if (res === true && options.showProgress !== undefined) {
+      const { target } = options.showProgress
       dockFileUpload(target, uppy)
     }
   })
 }
 
 /** @public */
-export async function uploadFiles (
-  files: File[] | FileList,
-  target: FileUploadTarget,
-  options: FileUploadOptions,
-  onFileUploaded: FileUploadCallback
-): Promise<void> {
+export async function uploadFiles (files: File[] | FileList, options: FileUploadOptions): Promise<void> {
   const items = Array.from(files, (p) => toFileWithPath(p))
 
   if (items.length === 0) return
 
-  const uppy = getUppy(options, onFileUploaded)
+  const uppy = getUppy(options)
 
   for (const data of items) {
     const { name, type, relativePath } = data
-    uppy.addFile({ name, type, data, meta: { relativePath } })
+    const uuid = generateFileId()
+    uppy.addFile({ name, type, data, meta: { name: uuid, uuid, relativePath } })
   }
 
-  if (options.hideProgress !== true) {
+  if (options.showProgress !== undefined) {
+    const { target } = options.showProgress
     dockFileUpload(target, uppy)
   }
 

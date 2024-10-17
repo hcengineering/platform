@@ -35,7 +35,7 @@
     getModelRefActions
   } from '@hcengineering/text-editor-resources'
   import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
-  import { uploadFiles } from '@hcengineering/uploader'
+  import { type FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
   import view from '@hcengineering/view'
   import { getCollaborationUser, getObjectId, getObjectLinkFragment } from '@hcengineering/view-resources'
   import { Analytics } from '@hcengineering/analytics'
@@ -135,14 +135,7 @@
 
     progress = true
 
-    await uploadFiles(
-      list,
-      { objectId: object._id, objectClass: object._class },
-      {},
-      async (uuid, name, file, path, metadata) => {
-        await createAttachment(uuid, name, file, metadata)
-      }
-    )
+    await uploadFiles(list, { onFileUploaded })
 
     inputFile.value = ''
     progress = false
@@ -151,14 +144,7 @@
   async function attachFiles (files: File[] | FileList): Promise<void> {
     progress = true
     if (files.length > 0) {
-      await uploadFiles(
-        files,
-        { objectId: object._id, objectClass: object._class },
-        {},
-        async (uuid, name, file, path, metadata) => {
-          await createAttachment(uuid, name, file, metadata)
-        }
-      )
+      await uploadFiles(files, { onFileUploaded })
     }
     progress = false
   }
@@ -172,6 +158,10 @@
     } catch (err: any) {
       await setPlatformStatus(unknownError(err))
     }
+  }
+
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
+    await createAttachment(uuid, name, file, metadata)
   }
 
   async function createAttachment (

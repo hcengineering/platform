@@ -15,13 +15,13 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Blob, Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
+  import { Class, Data, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Icon, Label, resizeObserver, Scroller, Spinner, Button, IconAdd } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
   import { Table } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
-  import { uploadFiles } from '@hcengineering/uploader'
+  import { FileUploadCallbackParams, uploadFiles } from '@hcengineering/uploader'
   import { createEventDispatcher } from 'svelte'
 
   import attachment from '../plugin'
@@ -52,23 +52,31 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
+  async function onFileUploaded ({ uuid, name, file }: FileUploadCallbackParams): Promise<void> {
+    await createAttachment(
+      client,
+      uuid,
+      name,
+      file,
+      { objectClass: object?._class ?? _class, objectId, space },
+      attachmentClass,
+      attachmentClassOptions
+    )
+  }
+
   async function fileSelected (): Promise<void> {
     const list = inputFile.files
     if (list === null || list.length === 0) return
 
     loading++
     try {
-      await uploadFiles(list, { objectId, objectClass: object?._class ?? _class }, {}, async (uuid, name, file) => {
-        await createAttachment(
-          client,
-          uuid,
-          name,
-          file,
-          { objectClass: object?._class ?? _class, objectId, space },
-          attachmentClass,
-          attachmentClassOptions
-        )
-      })
+      const options = {
+        onFileUploaded,
+        showProgress: {
+          target: { objectId, objectClass: object?._class ?? _class }
+        }
+      }
+      await uploadFiles(list, options)
     } finally {
       loading--
     }
