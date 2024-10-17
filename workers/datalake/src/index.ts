@@ -14,10 +14,15 @@
 //
 
 import { type IRequest, Router, error, html } from 'itty-router'
-import { deleteBlob, getBlob, headBlob, postBlobFormData } from './blob'
+import {
+  deleteBlob as handleBlobDelete,
+  handleBlobGet,
+  handleBlobHead,
+  postBlobFormData as handleUploadFormData
+} from './blob'
 import { cors } from './cors'
-import { getImage } from './image'
-import { getVideoMeta } from './video'
+import { getImage as handleImageGet } from './image'
+import { getVideoMeta as handleVideoMetaGet } from './video'
 import { handleSignAbort, handleSignComplete, handleSignCreate } from './sign'
 
 const { preflight, corsify } = cors({
@@ -32,19 +37,19 @@ export default {
     })
 
     router
-      .get('/blob/:workspace/:name', ({ params }) => getBlob(request, env, ctx, params.workspace, params.name))
-      .head('/blob/:workspace/:name', ({ params }) => headBlob(request, env, ctx, params.workspace, params.name))
-      .delete('/blob/:workspace/:name', ({ params }) => deleteBlob(env, params.workspace, params.name))
+      .get('/blob/:workspace/:name', ({ params }) => handleBlobGet(request, env, ctx, params.workspace, params.name))
+      .head('/blob/:workspace/:name', ({ params }) => handleBlobHead(request, env, ctx, params.workspace, params.name))
+      .delete('/blob/:workspace/:name', ({ params }) => handleBlobDelete(env, params.workspace, params.name))
       // Image
       .get('/image/:transform/:workspace/:name', ({ params }) =>
-        getImage(request, params.workspace, params.name, params.transform)
+        handleImageGet(request, params.workspace, params.name, params.transform)
       )
       // Video
       .get('/video/:workspace/:name/meta', ({ params }) =>
-        getVideoMeta(request, env, ctx, params.workspace, params.name)
+        handleVideoMetaGet(request, env, ctx, params.workspace, params.name)
       )
-      // Upload
-      .post('/upload/form-data/:workspace', ({ params }) => postBlobFormData(request, env, params.workspace))
+      // Form Data
+      .post('/upload/form-data/:workspace', ({ params }) => handleUploadFormData(request, env, params.workspace))
       // Signed URL
       .post('/upload/signed-url/:workspace/:name', ({ params }) =>
         handleSignCreate(request, env, ctx, params.workspace, params.name)

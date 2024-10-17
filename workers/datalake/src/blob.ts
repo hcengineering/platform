@@ -17,8 +17,9 @@ import { error, json } from 'itty-router'
 import postgres from 'postgres'
 import * as db from './db'
 import { toUUID } from './encodings'
+import { selectStorage } from './storage'
+import { type UUID } from './types'
 import { copyVideo, deleteVideo } from './video'
-import { type Location, type UUID } from './types'
 
 const expires = 86400
 const cacheControl = `public,max-age=${expires}`
@@ -38,7 +39,7 @@ export function getBlobURL (request: Request, workspace: string, name: string): 
   return new URL(path, request.url).toString()
 }
 
-export async function getBlob (
+export async function handleBlobGet (
   request: Request,
   env: Env,
   ctx: ExecutionContext,
@@ -46,7 +47,7 @@ export async function getBlob (
   name: string
 ): Promise<Response> {
   const sql = postgres(env.HYPERDRIVE.connectionString)
-  const { bucket } = selectLocation(env, workspace)
+  const { bucket } = selectStorage(env, workspace)
 
   const blob = await db.getBlob(sql, { workspace, name })
   if (blob === null || blob.deleted) {
@@ -79,7 +80,7 @@ export async function getBlob (
   return response
 }
 
-export async function headBlob (
+export async function handleBlobHead (
   request: Request,
   env: Env,
   ctx: ExecutionContext,
@@ -87,7 +88,7 @@ export async function headBlob (
   name: string
 ): Promise<Response> {
   const sql = postgres(env.HYPERDRIVE.connectionString)
-  const { bucket } = selectLocation(env, workspace)
+  const { bucket } = selectStorage(env, workspace)
 
   const blob = await db.getBlob(sql, { workspace, name })
   if (blob === null) {
@@ -159,7 +160,7 @@ async function saveBlob (
   name: string,
   lastModified: number
 ): Promise<BlobMetadata> {
-  const { location, bucket } = selectLocation(env, workspace)
+  const { location, bucket } = selectStorage(env, workspace)
 
   const size = file.size
   const [mimetype, subtype] = type.split('/')
@@ -211,7 +212,7 @@ async function saveBlob (
 
 export async function handleBlobUploaded (env: Env, workspace: string, name: string, filename: UUID): Promise<void> {
   const sql = postgres(env.HYPERDRIVE.connectionString)
-  const { location, bucket } = selectLocation(env, workspace)
+  const { location, bucket } = selectStorage(env, workspace)
 
   const object = await bucket.head(filename)
   if (object?.httpMetadata === undefined) {
@@ -230,14 +231,6 @@ export async function handleBlobUploaded (env: Env, workspace: string, name: str
 
     await db.createData(sql, { hash, location, filename, type: mimetype, subtype, size })
     await db.createBlob(sql, { workspace, name, hash, location })
-  }
-}
-
-function selectLocation (env: Env, workspace: string): { location: Location, bucket: R2Bucket } {
-  // TODO Select location based on workspace
-  return {
-    location: 'weur',
-    bucket: env.datalake_eu_west
   }
 }
 

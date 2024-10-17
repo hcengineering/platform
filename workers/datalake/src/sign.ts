@@ -18,6 +18,7 @@ import { error } from 'itty-router'
 
 import { handleBlobUploaded } from './blob'
 import { type UUID } from './types'
+import { selectStorage, type Storage } from './storage'
 
 const S3_SIGNED_LINK_TTL = 3600
 
@@ -29,12 +30,12 @@ function signBlobKey (workspace: string, name: string): string {
   return `s/${workspace}/${name}`
 }
 
-function getS3Client (env: Env): AwsClient {
+function getS3Client (storage: Storage): AwsClient {
   return new AwsClient({
     service: 's3',
-    region: env.S3_UPLOAD_REGION,
-    accessKeyId: env.S3_UPLOAD_KEY,
-    secretAccessKey: env.S3_UPLOAD_SECRET
+    region: 'auto',
+    accessKeyId: storage.bucketAccessKey,
+    secretAccessKey: storage.bucketSecretKey
   })
 }
 
@@ -45,21 +46,21 @@ export async function handleSignCreate (
   workspace: string,
   name: string
 ): Promise<Response> {
-  const bucket = env.S3_UPLOAD_BUCKET
-  const accountId = env.S3_UPLOAD_ACCOUNT_ID
+  const storage = selectStorage(env, workspace)
+  const accountId = env.R2_ACCOUNT_ID
 
   const key = signBlobKey(workspace, name)
   const uuid = crypto.randomUUID() as UUID
 
   // Generate R2 object link
-  const url = new URL(`https://${bucket}.${accountId}.r2.cloudflarestorage.com`)
+  const url = new URL(`https://${storage.bucketName}.${accountId}.r2.cloudflarestorage.com`)
   url.pathname = uuid
   url.searchParams.set('X-Amz-Expires', S3_SIGNED_LINK_TTL.toString())
 
   // Sign R2 object link
   let signed: Request
   try {
-    const client = getS3Client(env)
+    const client = getS3Client(storage)
 
     signed = await client.sign(new Request(url, { method: 'PUT' }), { aws: { signQuery: true } })
   } catch (err: any) {
@@ -84,6 +85,7 @@ export async function handleSignComplete (
   workspace: string,
   name: string
 ): Promise<Response> {
+  const { bucket } = selectStorage(env, workspace)
   const key = signBlobKey(workspace, name)
 
   // Ensure we generated presigned URL earlier
@@ -96,7 +98,7 @@ export async function handleSignComplete (
 
   // Ensure the blob has been uploaded
   const { uuid } = signBlobInfo
-  const head = await env.datalake_eu_west.get(uuid)
+  const head = await bucket.get(uuid)
   if (head === null) {
     console.error({ error: 'blob not found', workspace, name, uuid })
     return error(400)
