@@ -381,9 +381,7 @@
         "PORT": "4005",
         "SECRET": "secret",
         "MONGO_URL": "mongodb://localhost:27017",
-        "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
