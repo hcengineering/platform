@@ -4,12 +4,12 @@
 
 import attachment, { type Attachment } from '@hcengineering/attachment'
 import {
-  clone,
-  loadCollaborativeDoc,
-  saveCollaborativeDoc,
-  YAbstractType,
   YXmlElement,
-  YXmlText
+  YXmlText,
+  YAbstractType,
+  yXmlElementClone,
+  loadCollabYdoc,
+  saveCollabYdoc
 } from '@hcengineering/collaboration'
 import {
   type ChangeControl,
@@ -26,7 +26,7 @@ import {
   type Doc,
   DOMAIN_TX,
   generateId,
-  makeCollaborativeDoc,
+  makeDocCollabId,
   MeasureMetricsContext,
   type Ref,
   SortingOrder,
@@ -144,7 +144,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         minor: 1,
         state: DocumentState.Effective,
         commentSequence: 0,
-        content: makeCollaborativeDoc(generateId())
+        content: null
       },
       ccCategory
     )
@@ -295,7 +295,8 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
 
     // Migrate sections headers + content
     try {
-      const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
+      const collabId = makeDocCollabId(document, 'content')
+      const ydoc = await loadCollabYdoc(ctx, storage, client.workspaceId, collabId)
       if (ydoc === undefined) {
         // no content, ignore
         continue
@@ -331,13 +332,17 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
             ...(sectionContent
               .toArray()
               .map((item) =>
-                item instanceof YAbstractType ? (item instanceof YXmlElement ? clone(item) : item.clone()) : item
+                item instanceof YAbstractType
+                  ? item instanceof YXmlElement
+                    ? yXmlElementClone(item)
+                    : item.clone()
+                  : item
               ) as any)
           ])
         }
       })
 
-      await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.content, ydoc)
+      await saveCollabYdoc(ctx, storage, client.workspaceId, collabId, ydoc)
     } catch (err) {
       ctx.error('error collaborative document content migration', { error: err, document: document.title })
     }

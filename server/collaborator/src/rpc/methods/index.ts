@@ -14,10 +14,12 @@
 //
 
 import { getContent } from './getContent'
+import { createContent } from './createContent'
 import { updateContent } from './updateContent'
 import { RpcMethod } from '../rpc'
 
 export const methods: Record<string, RpcMethod> = {
   getContent,
+  createContent,
   updateContent
 }

@@ -136,23 +136,23 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/rpc', async (req, res) => {
+  app.post('/rpc/:id', async (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
       res.status(403).send({ error: 'Unauthorized' })
       return
     }
 
-    const request = req.body as RpcRequest
-
-    const documentId = request.documentId
+    const documentId = req.params.id
     if (documentId === undefined || documentId === '') {
       const response: RpcErrorResponse = {
-        error: 'Missing documentId'
+        error: 'Missing document id'
       }
       res.status(400).send(response)
       return
     }
+
+    const request = req.body as RpcRequest
 
     const method = methods[request.method]
     if (method === undefined) {

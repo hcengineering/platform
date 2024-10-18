@@ -14,7 +14,7 @@
 //
 
 import contact from '@hcengineering/contact'
-import { type Space, TxOperations, type Ref, makeCollaborativeDoc } from '@hcengineering/core'
+import { type Space, TxOperations, type Ref } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
 import {
   MeetingStatus,
@@ -23,8 +23,7 @@ import {
   createDefaultRooms,
   isOffice,
   loveId,
-  type Floor,
-  type Room
+  type Floor
 } from '@hcengineering/love'
 import {
   createDefaultSpace,
@@ -90,7 +89,7 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
       language: 'en',
       startWithTranscription: false,
       startWithRecording: false,
-      description: makeCollaborativeDoc(love.ids.Reception, 'description')
+      description: null
     },
     love.ids.Reception
   )
@@ -154,18 +153,6 @@ export const loveOperation: MigrateOperation = {
         state: 'move-meeting-minutes',
         func: async (client) => {
           await client.move(DOMAIN_LOVE, { _class: love.class.MeetingMinutes }, DOMAIN_MEETING_MINUTES)
-        }
-      },
-      {
-        state: 'create-description-collaborative',
-        func: async (client) => {
-          const rooms = await client.find<Room>(DOMAIN_LOVE, { _class: { $in: [love.class.Room, love.class.Office] } })
-          for (const room of rooms) {
-            const description = room.description
-            if (description == null) {
-              await client.update(DOMAIN_LOVE, room, { description: makeCollaborativeDoc(room._id, 'description') })
-            }
-          }
         }
       },
       {

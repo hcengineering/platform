@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { generateId } from '@hcengineering/core'
 import {
   AbstractType as YAbstractType,
   Doc as YDoc,
@@ -24,7 +25,8 @@ import {
 export { XmlElement as YXmlElement, XmlText as YXmlText, AbstractType as YAbstractType } from 'yjs'
 
 /** @public */
-export function yDocFromBuffer (buffer: Buffer, ydoc: YDoc): YDoc {
+export function yDocFromBuffer (buffer: Buffer, ydoc?: YDoc): YDoc {
+  ydoc ??= new YDoc({ guid: generateId(), gc: false })
   try {
     const uint8arr = new Uint8Array(buffer)
     applyUpdate(ydoc, uint8arr)
@@ -59,7 +61,7 @@ export function yDocCopyXmlField (ydoc: YDoc, source: string, target: string): v
  * @param src YXmlElement
  * @returns YXmlElement
  */
-export function clone (src: YXmlElement): YXmlElement {
+export function yXmlElementClone (src: YXmlElement): YXmlElement {
   const el = new YXmlElement(src.nodeName)
   const attrs = src.getAttributes()
 
@@ -72,7 +74,7 @@ export function clone (src: YXmlElement): YXmlElement {
     src
       .toArray()
       .map((item) =>
-        item instanceof YAbstractType ? (item instanceof YXmlElement ? clone(item) : item.clone()) : item
+        item instanceof YAbstractType ? (item instanceof YXmlElement ? yXmlElementClone(item) : item.clone()) : item
       ) as any
   )
 

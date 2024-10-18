@@ -17,17 +17,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { Employee, PersonAccount } from '@hcengineering/contact'
-  import {
-    AttachedData,
-    Class,
-    generateId,
-    makeCollaborativeDoc,
-    getCurrentAccount,
-    Mixin,
-    Ref,
-    SortingOrder
-  } from '@hcengineering/core'
-  import { Card, copyDocument, createQuery, getClient } from '@hcengineering/presentation'
+  import { AttachedData, Class, generateId, getCurrentAccount, Mixin, Ref, SortingOrder } from '@hcengineering/core'
+  import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
   import { ObjectBox } from '@hcengineering/view-resources'
   import {
@@ -36,10 +27,10 @@
     type DocumentCategory,
     type ChangeControl,
     type DocumentSpace,
-    DocumentState,
-    createControlledDocFromTemplate
+    DocumentState
   } from '@hcengineering/controlled-documents'
 
+  import { createControlledDocFromTemplate } from '../docutils'
   import documents from '../plugin'
 
   export let documentClass: Ref<Class<ControlledDocument>> = documents.class.ControlledDocument
@@ -78,7 +69,7 @@
     approvers: [],
     coAuthors: [],
     changeControl: '' as Ref<ChangeControl>,
-    content: makeCollaborativeDoc(generateId())
+    content: null
   }
 
   let templateId: Ref<DocumentTemplate> | undefined = initTemplateId
@@ -91,17 +82,7 @@
       return
     }
 
-    await createControlledDocFromTemplate(
-      client,
-      templateId,
-      id,
-      object,
-      space,
-      undefined,
-      undefined,
-      documentClass,
-      copyDocument
-    )
+    await createControlledDocFromTemplate(client, templateId, id, object, space, undefined, undefined, documentClass)
 
     dispatch('close', id)
   }
@@ -109,7 +90,7 @@
   const manager = createFocusManager()
 
   $: if (templateId === undefined) {
-    client
+    void client
       .findOne(
         templateMixin,
         { _class: documentClass, _id: { $nin: excludedTemplates ?? [] } },
@@ -134,6 +115,7 @@
         object.template = template._id
         object.prefix = template.prefix
         object.category = template.category
+        object.content = template.content
       }
     },
     {

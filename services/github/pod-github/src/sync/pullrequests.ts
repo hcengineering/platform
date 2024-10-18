@@ -15,7 +15,8 @@ import core, {
   WithLookup,
   cutObjectArray,
   generateId,
-  makeCollaborativeDoc
+  makeCollabId,
+  makeDocCollabId
 } from '@hcengineering/core'
 import github, {
   DocSyncInfo,
@@ -217,12 +218,12 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         break
       }
       case 'review_requested': {
-        const update: DocumentUpdate<GithubPullRequest> = {}
+        const update: GithubPullRequestUpdate = {}
         await this.handleUpdate(externalData, derivedClient, update, account, prj, true)
         break
       }
       case 'review_request_removed': {
-        const update: DocumentUpdate<GithubPullRequest> = {}
+        const update: GithubPullRequestUpdate = {}
         await this.handleUpdate(externalData, derivedClient, update, account, prj, true)
         break
       }
@@ -234,7 +235,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       case 'assigned':
       case 'unassigned': {
         const assignees = await this.getAssignees(externalData)
-        const update: DocumentUpdate<GithubPullRequest> = {
+        const update: GithubPullRequestUpdate = {
           assignee: assignees?.[0]?.person ?? null
         }
         await this.handleUpdate(externalData, derivedClient, update, account, prj, true)
@@ -247,7 +248,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
         const isMerged = event.pull_request?.merged_at !== null
 
-        const update: DocumentUpdate<GithubPullRequest> = {
+        const update: GithubPullRequestUpdate = {
           draft: externalData.isDraft,
           head: externalData.headRef,
           base: externalData.baseRef,
@@ -594,8 +595,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           'query collaborative pull request description',
           {},
           async () => {
-            const content = await this.collaborator.getContent((existing as any).description)
-            return content.description
+            const collabId = makeDocCollabId(existing, 'description')
+            return await this.collaborator.getMarkup(collabId, (existing as GithubPullRequest).description)
           },
           { url: pullRequestExternal.url }
         )
@@ -998,7 +999,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   async performIssueFieldsUpdate (
     info: DocSyncInfo,
-    existing: Issue,
+    existing: WithMarkup<Issue>,
     platformUpdate: DocumentUpdate<Issue>,
     issueData: Pick<WithMarkup<Issue>, 'title' | 'description' | 'assignee' | 'status' | 'remainingTime' | 'component'>,
     container: ContainerFocus,
@@ -1180,7 +1181,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     const number = project.sequence
     const value: AttachedData<GithubPullRequest> = {
       ...data,
-      description: makeCollaborativeDoc(prId, 'description'),
+      description: null,
       kind: taskType,
       component: null,
       milestone: null,
@@ -1203,7 +1204,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       reviews: 0
     }
 
-    await this.collaborator.updateContent(value.description, { description })
+    const collabId = makeCollabId(github.class.GithubPullRequest, prId, 'description')
+    await this.collaborator.updateMarkup(collabId, description)
 
     await client.addCollection(
       github.class.GithubPullRequest,

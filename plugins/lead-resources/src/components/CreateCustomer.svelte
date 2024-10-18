@@ -25,12 +25,12 @@
     Ref,
     WithLookup,
     generateId,
-    makeCollaborativeDoc
+    makeCollabId
   } from '@hcengineering/core'
   import { Customer, LeadEvents } from '@hcengineering/lead'
-  import { Card, getClient, InlineAttributeBar, updateMarkup } from '@hcengineering/presentation'
+  import { Card, createMarkup, getClient, InlineAttributeBar } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
     Button,
     createFocusManager,
@@ -85,14 +85,17 @@
     }
 
     if (client.getHierarchy().isDerived(targetClass._id, contact.class.Organization)) {
-      ;(candidate as Organization).description = makeCollaborativeDoc(customerId, 'description')
+      ;(candidate as Organization).description = null
     }
 
     const candidateData: MixinData<Contact, Customer> = {
-      customerDescription: makeCollaborativeDoc(customerId, 'customerDescription')
+      customerDescription: null
     }
 
-    await updateMarkup(candidateData.customerDescription, { customerDescription: description })
+    if (!isEmptyMarkup(description)) {
+      const collabId = makeCollabId(lead.mixin.Customer, customerId, 'customerDescription')
+      candidateData.customerDescription = await createMarkup(collabId, description)
+    }
 
     const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
     await client.createMixin(

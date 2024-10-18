@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Doc, Markup, type Ref, concatLink, makeCollaborativeDoc } from '@hcengineering/core'
+import { type Class, type Doc, type Markup, type Ref, concatLink, makeCollabId } from '@hcengineering/core'
 import { type CollaboratorClient, getClient } from '@hcengineering/collaborator-client'
 import { parseMessageMarkdown, jsonToMarkup, markupToHTML, markupToMarkdown, htmlToMarkup } from '@hcengineering/text'
 
@@ -45,9 +45,15 @@ class MarkupOperationsImpl implements MarkupOperations {
     this.collaborator = getClient({ name: workspace }, token, config.COLLABORATOR_URL)
   }
 
-  async fetchMarkup (objectId: Ref<Doc>, objectAttr: string, doc: MarkupRef, format: MarkupFormat): Promise<string> {
-    const content = await this.collaborator.getContent(doc)
-    const markup = content[objectAttr] ?? ''
+  async fetchMarkup (
+    objectClass: Ref<Class<Doc>>,
+    objectId: Ref<Doc>,
+    objectAttr: string,
+    doc: MarkupRef,
+    format: MarkupFormat
+  ): Promise<string> {
+    const collabId = makeCollabId(objectClass, objectId, objectAttr)
+    const markup = await this.collaborator.getMarkup(collabId, doc)
 
     switch (format) {
       case 'markup':
@@ -61,7 +67,13 @@ class MarkupOperationsImpl implements MarkupOperations {
     }
   }
 
-  async uploadMarkup (objectId: Ref<Doc>, objectAttr: string, value: string, format: MarkupFormat): Promise<MarkupRef> {
+  async uploadMarkup (
+    objectClass: Ref<Class<Doc>>,
+    objectId: Ref<Doc>,
+    objectAttr: string,
+    value: string,
+    format: MarkupFormat
+  ): Promise<MarkupRef> {
     let markup: Markup = ''
 
     switch (format) {
@@ -78,8 +90,7 @@ class MarkupOperationsImpl implements MarkupOperations {
         throw new Error('Unknown content format')
     }
 
-    const doc = makeCollaborativeDoc(objectId, objectAttr)
-    await this.collaborator.updateContent(doc, { [objectAttr]: markup })
-    return doc
+    const collabId = makeCollabId(objectClass, objectId, objectAttr)
+    return await this.collaborator.createMarkup(collabId, markup)
   }
 }

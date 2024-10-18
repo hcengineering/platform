@@ -28,7 +28,7 @@ import {
   type Card,
   type Class,
   type ClassifierKind,
-  type CollaborativeDoc,
+  type MarkupBlobRef,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -121,7 +121,7 @@ export class TCard extends TDoc implements Card {
     title!: string
 
   @Prop(TypeCollaborativeDoc(), core.string.Description)
-    description!: CollaborativeDoc | null
+    description!: MarkupBlobRef | null
 
   @Prop(TypeString(), core.string.Id)
     identifier?: string | undefined
@@ -372,10 +372,6 @@ export class TDomainIndexConfiguration extends TDoc implements DomainIndexConfig
 @UX(core.string.CollaborativeDoc)
 @Model(core.class.TypeCollaborativeDoc, core.class.Type)
 export class TTypeCollaborativeDoc extends TType {}
-
-@UX(core.string.CollaborativeDocVersion)
-@Model(core.class.TypeCollaborativeDocVersion, core.class.Type)
-export class TTypeCollaborativeDocVersion extends TType {}
 
 @UX(core.string.Rank)
 @Model(core.class.TypeRank, core.class.Type)

@@ -17,9 +17,9 @@
 
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import core, { Data, DocumentQuery, Ref, generateId, makeCollaborativeDoc } from '@hcengineering/core'
+  import core, { Data, DocumentQuery, Ref, generateId, makeCollabId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
+  import { Card, SpaceSelector, createMarkup, createQuery, getClient } from '@hcengineering/presentation'
   import {
     TestCase,
     TestRun,
@@ -29,7 +29,7 @@
     TestManagementEvents
   } from '@hcengineering/test-management'
   import { DatePresenter, EditBox, Loading, navigate } from '@hcengineering/ui'
-  import { EmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { Analytics } from '@hcengineering/analytics'
 
   import { getTestRunsLink } from '../../navigation'
@@ -58,7 +58,7 @@
 
   const object: Data<TestRun> = {
     name: '' as IntlString,
-    description: makeCollaborativeDoc(id, 'description'),
+    description: null,
     dueDate: undefined
   }
 
@@ -74,7 +74,11 @@
       const applyOp = client.apply()
       await applyOp.createDoc(testManagement.class.TestRun, _space, object, id)
       const testCasesArray = testCases instanceof Array ? testCases : [testCases]
-      const createPromises = testCasesArray.map((testCase) => {
+      const createPromises = testCasesArray.map(async (testCase) => {
+        const descriptionRef = isEmptyMarkup(description)
+          ? null
+          : await createMarkup(makeCollabId(testManagement.class.TestRun, id, 'description'), description)
+
         const testResultId: Ref<TestResult> = generateId()
         const testResultData: Data<TestResult> = {
           attachedTo: id,
@@ -83,10 +87,11 @@
           testCase: testCase._id,
           testSuite: testCase.attachedTo,
           collection: 'results',
-          description: makeCollaborativeDoc(testResultId, 'description'),
+          description: descriptionRef,
           status: TestRunStatus.Untested
         }
-        return applyOp.addCollection(
+
+        return await applyOp.addCollection(
           testManagement.class.TestResult,
           _space,
           id,

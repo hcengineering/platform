@@ -21,7 +21,6 @@ import core, {
   type AttachedDoc,
   type Blob,
   type Class,
-  type CollaborativeDoc,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
   type Doc,
@@ -41,7 +40,6 @@ import core, {
   TxFactory,
   type WithLookup,
   type WorkspaceIdWithUrl,
-  collaborativeDocParse,
   coreId,
   docKey,
   generateId,
@@ -63,7 +61,7 @@ import type {
   StorageAdapter
 } from '@hcengineering/server-core'
 import { RateLimiter, SessionDataImpl } from '@hcengineering/server-core'
-import { jsonToText, markupToJSON, pmNodeToText, yDocContentToNodes } from '@hcengineering/text'
+import { jsonToText, markupToJSON, markupToText } from '@hcengineering/text'
 import { findSearchPresenter, updateDocWithPresenter } from '../mapper'
 import { type FullTextPipeline } from './types'
 import { createIndexedDoc, createStateDoc, getContent } from './utils'
@@ -780,14 +778,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     v: { value: any, attr: AnyAttribute },
     indexedDoc: IndexedDoc
   ): Promise<void> {
-    const collaborativeDoc = v.value as CollaborativeDoc
-    if (collaborativeDoc !== undefined && collaborativeDoc !== '') {
-      const { documentId } = collaborativeDocParse(collaborativeDoc)
-
+    const value = v.value as Ref<Blob>
+    if (value !== undefined && value !== '') {
       try {
-        const readable = await this.storageAdapter?.read(ctx, this.workspace, documentId)
-        const nodes = yDocContentToNodes(Buffer.concat(readable as any))
-        let textContent = nodes.map(pmNodeToText).join('\n')
+        const readable = await this.storageAdapter?.read(ctx, this.workspace, value)
+        const markup = Buffer.concat(readable as any).toString()
+        let textContent = markupToText(markup)
         textContent = textContent
           .split(/ +|\t+|\f+/)
           .filter((it) => it)
@@ -798,7 +794,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         indexedDoc.fulltextSummary += '\n' + textContent
       } catch (err: any) {
         Analytics.handleError(err)
-        ctx.error('failed to handle blob', { _id: documentId, workspace: this.workspace.name })
+        ctx.error('failed to handle blob', { _id: value, workspace: this.workspace.name })
       }
     }
   }

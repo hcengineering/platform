@@ -15,7 +15,6 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
-import { CollaborativeDoc } from './collaboration'
 import type { DocumentQuery } from './storage'
 
 /**
@@ -57,6 +56,13 @@ export type Rank = string
 
 /**
  * @public
+ *
+ * Reference to blob containing snapshot of collaborative doc.
+ */
+export type MarkupBlobRef = Ref<Blob>
+
+/**
+ * @public
  */
 export interface Obj {
   _class: Ref<Class<this>>
@@ -76,7 +82,7 @@ export interface Doc<S extends Space = Space> extends Obj {
 
 export interface Card extends Doc {
   title: string
-  description?: CollaborativeDoc | null
+  description?: MarkupBlobRef | null
   identifier?: string
   parent?: Ref<Card> | null
 }

@@ -22,7 +22,7 @@ import { RpcMethodParams } from '../rpc'
 export async function updateContent (
   ctx: MeasureContext,
   context: Context,
-  documentId: string,
+  documentName: string,
   payload: UpdateContentRequest,
   params: RpcMethodParams
 ): Promise<UpdateContentResponse> {
@@ -41,7 +41,7 @@ export async function updateContent (
   })
 
   const connection = await ctx.with('connect', {}, () => {
-    return hocuspocus.openDirectConnection(documentId, context)
+    return hocuspocus.openDirectConnection(documentName, context)
   })
 
   try {

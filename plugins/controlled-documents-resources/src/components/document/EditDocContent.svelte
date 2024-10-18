@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import { merge } from 'effector'
-  import { type CollaborativeDoc, type Ref, type Blob, generateId } from '@hcengineering/core'
+  import { type Ref, type Blob, generateId } from '@hcengineering/core'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
@@ -40,7 +40,6 @@
   import {
     $areDocumentCommentPopupsOpened as areDocumentCommentPopupsOpened,
     $controlledDocument as controlledDocument,
-    $controlledDocumentTemplate as controlledDocumentTemplate,
     $isEditable as isEditable,
     $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $areDocumentCommentPopupsOpened as arePopupsOpened,
@@ -66,16 +65,6 @@
   let isEmpty = true
   let editor: Editor
   let title = $controlledDocument?.title ?? ''
-
-  let collaborativeDoc: CollaborativeDoc | undefined
-  $: if ($controlledDocument !== null) {
-    collaborativeDoc = $controlledDocument.content
-  }
-
-  let initialCollaborativeDoc: CollaborativeDoc | undefined
-  $: if ($controlledDocumentTemplate !== null) {
-    initialCollaborativeDoc = $controlledDocumentTemplate.content
-  }
 
   $: isTemplate =
     $controlledDocument != null && hierarchy.hasMixin($controlledDocument, documents.mixin.DocumentTemplate)
@@ -237,9 +226,14 @@
       })
     ]
   }
+
+  $: attribute = {
+    key: 'content',
+    attr: client.getHierarchy().getAttribute(documents.class.ControlledDocument, 'content')
+  }
 </script>
 
-{#if $controlledDocument && collaborativeDoc}
+{#if $controlledDocument && attribute}
   <DocumentPrintTitlePage />
 
   {#if headings.length > 0}
@@ -270,14 +264,10 @@
         </DocumentTitle>
         <CollaboratorEditor
           bind:this={textEditor}
-          objectId={$controlledDocument._id}
-          objectClass={$controlledDocument._class}
-          objectSpace={$controlledDocument.space}
-          {collaborativeDoc}
-          {initialCollaborativeDoc}
+          object={$controlledDocument}
+          {attribute}
           {user}
           readonly={!$isEditable}
-          field="content"
           editorAttributes={{ style: 'padding: 0 2em; margin: 0 -2em;' }}
           overflow="none"
           canShowPopups={!$areDocumentCommentPopupsOpened}

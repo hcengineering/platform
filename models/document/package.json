@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/model-activity": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
     "@hcengineering/model-attachment": "^0.6.0",

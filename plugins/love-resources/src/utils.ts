@@ -9,7 +9,6 @@ import core, {
   generateId,
   getCurrentAccount,
   type IdMap,
-  makeCollaborativeDoc,
   type Ref,
   type Space,
   type TxOperations,
@@ -689,7 +688,7 @@ async function openMeetingMinutes (room: Room): Promise<void> {
       collection: 'meetings',
       space: core.space.Workspace,
       title: `${getRoomName(room, get(personByIdStore))} ${date}`,
-      description: makeCollaborativeDoc(_id, 'description'),
+      description: null,
       status: MeetingStatus.Active,
       modifiedBy: getCurrentAccount()._id,
       modifiedOn: Date.now()

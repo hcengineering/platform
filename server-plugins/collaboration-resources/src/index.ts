@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { removeCollaborativeDoc } from '@hcengineering/collaboration'
 import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core from '@hcengineering/core'
+import core, { makeCollabId } from '@hcengineering/core'
+import { removeCollabYdoc } from '@hcengineering/collaboration'
 import { type TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -39,17 +39,16 @@ export async function OnDelete (
     const attributes = hierarchy.getAllAttributes(rmTx.objectClass)
     for (const attribute of attributes.values()) {
       if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
-        const value = (doc as any)[attribute.name] as CollaborativeDoc
-        if (value !== undefined) {
-          toDelete.push(value)
-        }
+        toDelete.push(makeCollabId(doc._class, doc._id, attribute.name))
       }
     }
 
     // TODO This is not accurate way to delete collaborative document
     // Even though we are deleting it here, the document can be currently in use by someone else
     // and when editing session ends, the collborator service will recreate the document again
-    await removeCollaborativeDoc(storageAdapter, workspace, toDelete, ctx)
+    if (toDelete.length > 0) {
+      await removeCollabYdoc(storageAdapter, workspace, toDelete, ctx)
+    }
   }
   return []
 }

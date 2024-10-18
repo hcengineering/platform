@@ -13,16 +13,27 @@
 // limitations under the License.
 //
 
-import { CollaborativeDoc, Markup, WorkspaceId, concatLink } from '@hcengineering/core'
-import { formatDocumentId } from './utils'
+import { Blob, CollaborativeDoc, Markup, MarkupBlobRef, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
+import { encodeDocumentId } from './utils'
 
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface GetContentRequest {}
+export interface GetContentRequest {
+  source?: Ref<Blob>
+}
 
 /** @public */
 export interface GetContentResponse {
   content: Record<string, Markup>
+}
+
+/** @public */
+export interface CreateContentRequest {
+  content: Record<string, Markup>
+}
+
+/** @public */
+export interface CreateContentResponse {
+  content: Record<string, MarkupBlobRef>
 }
 
 /** @public */
@@ -36,8 +47,9 @@ export interface UpdateContentResponse {}
 
 /** @public */
 export interface CollaboratorClient {
-  getContent: (document: CollaborativeDoc) => Promise<Record<string, Markup>>
-  updateContent: (document: CollaborativeDoc, content: Record<string, Markup>) => Promise<void>
+  getMarkup: (document: CollaborativeDoc, source?: Ref<Blob> | null) => Promise<Markup>
+  createMarkup: (document: CollaborativeDoc, markup: Markup) => Promise<MarkupBlobRef>
+  updateMarkup: (document: CollaborativeDoc, markup: Markup) => Promise<void>
   copyContent: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
 }
 
@@ -54,11 +66,11 @@ class CollaboratorClientImpl implements CollaboratorClient {
     private readonly collaboratorUrl: string
   ) {}
 
-  private async rpc (document: CollaborativeDoc, method: string, payload: any): Promise<any> {
+  private async rpc<P, R>(document: CollaborativeDoc, method: string, payload: P): Promise<R> {
     const workspace = this.workspace.name
-    const documentId = formatDocumentId(workspace, document)
+    const documentId = encodeDocumentId(workspace, document)
 
-    const url = concatLink(this.collaboratorUrl, '/rpc')
+    const url = concatLink(this.collaboratorUrl, `/rpc/${encodeURIComponent(documentId)}`)
 
     const res = await fetch(url, {
       method: 'POST',
@@ -66,7 +78,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
         Authorization: 'Bearer ' + this.token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ method, documentId, payload })
+      body: JSON.stringify({ method, payload })
     })
 
     if (!res.ok) {
@@ -79,33 +91,58 @@ class CollaboratorClientImpl implements CollaboratorClient {
       throw new Error(result.error)
     }
 
-    return result
+    return result as R
   }
 
-  async getContent (document: CollaborativeDoc): Promise<Record<string, Markup>> {
+  async getMarkup (document: CollaborativeDoc, source?: Ref<Blob> | null): Promise<Markup> {
+    const payload: GetContentRequest = {
+      source: source !== null ? source : undefined
+    }
+
     const res = await retry(
       3,
       async () => {
-        return (await this.rpc(document, 'getContent', {})) as GetContentResponse
+        return await this.rpc<GetContentRequest, GetContentResponse>(document, 'getContent', payload)
       },
       50
     )
-    return res.content ?? {}
+
+    return res.content[document.objectAttr] ?? ''
   }
 
-  async updateContent (document: CollaborativeDoc, content: Record<string, Markup>): Promise<void> {
+  async createMarkup (document: CollaborativeDoc, markup: Markup): Promise<MarkupBlobRef> {
+    const content = {
+      [document.objectAttr]: markup
+    }
+
+    const res = await retry(
+      3,
+      async () => {
+        return await this.rpc<CreateContentRequest, CreateContentResponse>(document, 'createContent', { content })
+      },
+      50
+    )
+
+    return res.content[document.objectAttr]
+  }
+
+  async updateMarkup (document: CollaborativeDoc, markup: Markup): Promise<void> {
+    const content = {
+      [document.objectAttr]: markup
+    }
+
     await retry(
       3,
       async () => {
-        await this.rpc(document, 'updateContent', { content })
+        await this.rpc<UpdateContentRequest, UpdateContentResponse>(document, 'updateContent', { content })
       },
       50
     )
   }
 
-  async copyContent (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
-    const content = await this.getContent(source)
-    await this.updateContent(target, content)
+  async copyContent (source: CollaborativeDoc, target: CollaborativeDoc, content?: Ref<Blob>): Promise<void> {
+    const markup = await this.getMarkup(source, content)
+    await this.updateMarkup(target, markup)
   }
 }
 

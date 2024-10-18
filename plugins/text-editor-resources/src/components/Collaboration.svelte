@@ -15,26 +15,32 @@
 //
 -->
 <script lang="ts">
-  import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
-  import { onDestroy, setContext } from 'svelte'
+  import { type Doc } from '@hcengineering/core'
+  import { encodeDocumentId } from '@hcengineering/collaborator-client'
+  import { getAttribute, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import { CollaborationIds } from '@hcengineering/text-editor'
+  import { onDestroy, setContext } from 'svelte'
 
   import { createTiptapCollaborationData } from '../provider/utils'
   import { Provider } from '../provider/types'
-  import { formatDocumentId } from '@hcengineering/collaborator-client'
 
-  export let collaborativeDoc: CollaborativeDoc
-  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
+  export let object: Doc
+  export let attribute: KeyedAttribute
 
-  export let objectClass: Ref<Class<Doc>> | undefined = undefined
-  export let objectId: Ref<Doc> | undefined = undefined
-  export let objectAttr: string | undefined = undefined
+  const client = getClient()
 
   let provider: Provider | undefined
 
+  $: objectClass = object._class
+  $: objectId = object._id
+  $: objectAttr = attribute.key
+  $: content = getAttribute(client, object, attribute)
+
+  $: collaborativeDoc = { objectClass, objectId, objectAttr }
+
   // while editing, collaborative doc may change, hence we need to
   // build stable key to ensure we don't do unnecessary updates
-  $: documentId = formatDocumentId('', collaborativeDoc)
+  $: documentId = encodeDocumentId('', collaborativeDoc)
 
   let _documentId: string | undefined
 
@@ -44,13 +50,8 @@
     if (provider !== undefined) {
       void provider.destroy()
     }
-    const data = createTiptapCollaborationData({
-      document: collaborativeDoc,
-      initialDocument: initialCollaborativeDoc,
-      objectClass,
-      objectId,
-      objectAttr
-    })
+
+    const data = createTiptapCollaborationData(collaborativeDoc, content)
     provider = data.provider
     setContext(CollaborationIds.Doc, data.ydoc)
     setContext(CollaborationIds.Provider, provider)
@@ -61,6 +62,6 @@
   })
 </script>
 
-{#key _documentId}
+{#key documentId}
   <slot />
 {/key}

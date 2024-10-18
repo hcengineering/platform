@@ -1,5 +1,5 @@
 import { Employee, Person } from '@hcengineering/contact'
-import { Data, generateId, makeCollaborativeDoc, Ref } from '@hcengineering/core'
+import { Data, generateId, Ref } from '@hcengineering/core'
 
 import love, { Office, Room, ParticipantInfo, RoomAccess, RoomType, GRID_WIDTH } from '.'
 
@@ -34,7 +34,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
       language: 'en',
       startWithTranscription: false,
       startWithRecording: false,
-      description: makeCollaborativeDoc(_id, 'description')
+      description: null
     }
     res.push(office)
   }
@@ -53,7 +53,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     language: 'en',
     startWithTranscription: true,
     startWithRecording: true,
-    description: makeCollaborativeDoc(allHands, 'description')
+    description: null
   })
 
   const meetingRoom1 = generateId<Room>()
@@ -70,7 +70,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     language: 'en',
     startWithTranscription: true,
     startWithRecording: true,
-    description: makeCollaborativeDoc(meetingRoom1, 'description')
+    description: null
   })
   const meetingRoom2 = generateId<Room>()
   res.push({
@@ -86,7 +86,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     language: 'en',
     startWithTranscription: true,
     startWithRecording: true,
-    description: makeCollaborativeDoc(meetingRoom2, 'description')
+    description: null
   })
   const voiceRoom1 = generateId<Room>()
   res.push({
@@ -102,7 +102,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     language: 'en',
     startWithTranscription: false,
     startWithRecording: false,
-    description: makeCollaborativeDoc(voiceRoom1, 'description')
+    description: null
   })
   const voiceRoom2 = generateId<Room>()
   res.push({
@@ -118,7 +118,7 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     language: 'en',
     startWithTranscription: false,
     startWithRecording: false,
-    description: makeCollaborativeDoc(voiceRoom2, 'description')
+    description: null
   })
   return res
 }

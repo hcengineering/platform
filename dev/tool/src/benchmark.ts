@@ -21,7 +21,6 @@ import core, {
   concatLink,
   generateId,
   getWorkspaceId,
-  makeCollaborativeDoc,
   metricsToString,
   newMetrics,
   systemAccountEmail,
@@ -594,7 +593,7 @@ async function generateVacancy (client: TxOperations, members: Ref<PersonAccount
     {
       name: generateId().toString(),
       number: 0,
-      fullDescription: makeCollaborativeDoc(_id, 'fullDescription'),
+      fullDescription: generateId(),
       type: recruit.template.DefaultVacancy,
       description: '',
       private: false,
