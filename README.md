@@ -66,7 +66,7 @@ sh ./scripts/fast-start.sh
 
 ## Installation
 
-You need Microsoft's [rush](https://rushjs.io) to install application.
+You need Microsoft's [rush](https://rushjs.io) to install the application.
 
 1. Install Rush globally using the command:
    ```bash
