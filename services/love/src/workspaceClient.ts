@@ -41,7 +41,7 @@ export class WorkspaceClient {
     return this.client
   }
 
-  async saveFile (uuid: string, name: string): Promise<void> {
+  async saveFile (uuid: string, name: string, blob: Blob): Promise<void> {
     const current = await this.client.findOne(drive.class.Drive, { _id: love.space.Drive })
     if (current === undefined) {
       await this.client.createDoc(
@@ -59,23 +59,19 @@ export class WorkspaceClient {
         love.space.Drive
       )
     }
-
-    const blob = await this.client.findOne(core.class.Blob, { _id: uuid as Ref<Blob> })
-    if (blob !== undefined) {
-      const data = {
-        file: uuid as Ref<Blob>,
-        title: name,
-        size: blob.size,
-        type: blob.contentType,
-        lastModified: blob.modifiedOn,
-        // hardcoded values from preset we use
-        // https://docs.livekit.io/realtime/egress/overview/#EncodingOptionsPreset
-        metadata: {
-          originalHeight: 720,
-          originalWidth: 1280
-        }
+    const data = {
+      file: uuid as Ref<Blob>,
+      title: name,
+      size: blob.size,
+      type: blob.contentType,
+      lastModified: blob.modifiedOn,
+      // hardcoded values from preset we use
+      // https://docs.livekit.io/realtime/egress/overview/#EncodingOptionsPreset
+      metadata: {
+        originalHeight: 720,
+        originalWidth: 1280
       }
-      await createFile(this.client, love.space.Drive, drive.ids.Root, data)
     }
+    await createFile(this.client, love.space.Drive, drive.ids.Root, data)
   }
 }

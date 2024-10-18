@@ -110,8 +110,8 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
-export function createServer (dbUrl: string, storageConfig: StorageConfiguration): { app: Express, close: () => void } {
-  const storageAdapter = buildStorageFromConfig(storageConfig, dbUrl)
+export function createServer (storageConfig: StorageConfiguration): { app: Express, close: () => void } {
+  const storageAdapter = buildStorageFromConfig(storageConfig)
   const measureCtx = new MeasureMetricsContext('print', {})
 
   const app = express()
@@ -187,7 +187,7 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
           throw new ApiError(404, `File ${file} not found`)
         }
 
-        const htmlRes = await convertToHtml(Buffer.concat(originalFile))
+        const htmlRes = await convertToHtml(Buffer.concat(originalFile as any))
 
         if (htmlRes === undefined) {
           throw new ApiError(400, 'Failed to convert')

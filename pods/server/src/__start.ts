@@ -59,7 +59,7 @@ setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 
-const shutdown = start(config.url, {
+const shutdown = start(config.dbUrl, {
   fullTextUrl: config.elasticUrl,
   storageConfig,
   rekoniUrl: config.rekoniUrl,
@@ -73,7 +73,8 @@ const shutdown = start(config.url, {
   profiling: {
     start: profileStart,
     stop: profileStop
-  }
+  },
+  mongoUrl: config.mongoUrl
 })
 
 const close = (): void => {

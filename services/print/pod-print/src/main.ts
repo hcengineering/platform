@@ -17,7 +17,7 @@ export const main = async (): Promise<void> => {
   setupMetadata()
 
   const storageConfig = storageConfigFromEnv()
-  const { app, close } = createServer(config.DbURL, storageConfig)
+  const { app, close } = createServer(storageConfig)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {

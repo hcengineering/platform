@@ -91,7 +91,7 @@ export class PlatformWorker {
     this.userManager = new UserManager(db.collection<GithubUserRecord>('users'))
 
     const storageConfig = storageConfigFromEnv()
-    this.storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
+    this.storageAdapter = buildStorageFromConfig(storageConfig)
   }
 
   async close (): Promise<void> {

@@ -14,6 +14,5 @@
 // limitations under the License.
 //
 
-export * from './rawAdapter'
 export * from './storage'
 export * from './utils'

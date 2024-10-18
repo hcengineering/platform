@@ -1,9 +1,8 @@
 import { DatalakeService, type DatalakeConfig } from '@hcengineering/datalake'
 import { MinioConfig, MinioService, addMinioFallback } from '@hcengineering/minio'
-import { createRawMongoDBAdapter } from '@hcengineering/mongo'
 import { S3Service, type S3Config } from '@hcengineering/s3'
 import { StorageAdapter, StorageConfiguration, type StorageConfig } from '@hcengineering/server-core'
-import { AggregatorStorageAdapter, buildStorage } from './aggregator'
+import { FallbackStorageAdapter, buildStorage } from './fallback'
 
 /*
 
@@ -14,8 +13,6 @@ import { AggregatorStorageAdapter, buildStorage } from './aggregator'
   * kind - an storage kind minior/s3 for now.
   * name - a symbolic name for provider, name could be ommited in case kind will be used as name.
   * uri - an storage URI with encoded parameters.
-  * contentTypes - a comma separated list of content type patterns. Like 'image/*,video/gif' will match all image/* and video/gif formats.
-  So * will be replaced to `.*` for regexp
 
   Last one is used as default one, or one with conrent type matched will be used.
 
@@ -103,6 +100,6 @@ export function createStorageFromConfig (config: StorageConfig): StorageAdapter 
   }
 }
 
-export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): AggregatorStorageAdapter {
-  return buildStorage(config, createRawMongoDBAdapter(dbUrl), createStorageFromConfig)
+export function buildStorageFromConfig (config: StorageConfiguration): FallbackStorageAdapter {
+  return buildStorage(config, createStorageFromConfig)
 }
