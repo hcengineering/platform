@@ -38,14 +38,17 @@ export function registerOpenid (
   const redirectURL = '/auth/openid/callback'
   if (openidClientId === undefined || openidClientSecret === undefined || issuer === undefined) return
 
-  void Issuer.discover(issuer)
+  Issuer.discover(issuer)
     .then((issuerObj) => {
+      measureCtx.info('Discovered issuer', { issuer: issuerObj })
+
       const client = new issuerObj.Client({
         client_id: openidClientId,
         client_secret: openidClientSecret,
         redirect_uris: [concatLink(accountsUrl, redirectURL)],
         response_types: ['code']
       })
+      measureCtx.info('Created OIDC client')
 
       passport.use(
         'oidc',
@@ -53,9 +56,10 @@ export function registerOpenid (
           return done(null, userinfo)
         })
       )
+      measureCtx.info('Registered OIDC strategy')
     })
     .catch((err) => {
-      measureCtx.error('Failed to create client for IdP', { err })
+      measureCtx.error('Failed to create OIDC client for IdP with the provided configuration', { err })
     })
 
   router.get('/auth/openid', async (ctx, next) => {
