@@ -132,7 +132,7 @@ function handleAuthRedirects (window: BrowserWindow): void {
       event.preventDefault()
 
       void (async (): Promise<void> => {
-        await window.loadFile(path.join('dist', 'ui', 'index.html'), { search: urlObj.search })
+        await window.loadFile(path.join('dist', 'ui', 'index.html'))
         window.webContents.send('handle-auth', urlObj.searchParams.get('token'))
       })()
     }

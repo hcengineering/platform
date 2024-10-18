@@ -1476,8 +1476,8 @@ dependencies:
     specifier: ~22.8.7
     version: 22.8.8
   electron:
-    specifier: ^33.0.0
-    version: 33.0.1
+    specifier: ^32.1.1
+    version: 32.2.1
   electron-builder:
     specifier: ^25.0.5
     version: 25.0.5
@@ -13734,8 +13734,8 @@ packages:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
     dev: false
 
-  /electron@33.0.1:
-    resolution: {integrity: sha512-PipPnWH4gvf7o+P8jlKQZGgPfb5eHcLgTrnKkFzb98MXhyPjVJYCR7YWqcawZ8IfyJCut8vMxLuBFLT1Ag8TSQ==}
+  /electron@32.2.1:
+    resolution: {integrity: sha512-GCPI/5hU34pPcNltNpz+uylhhuTm9BM0N8RmrbVgaWBodLSmmcCkvpgN0BseKhO6IwQOPzWaovrcZ/nPIpfGaQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -27047,7 +27047,7 @@ packages:
     dev: false
 
   file:projects/desktop-1.tgz(webpack@5.90.3):
-    resolution: {integrity: sha512-nPRobkhf2mfIHeznleETeVvPhGYbFxCkfbfJD/5C+LtM2zJpRrSsFk+xfeEY5qlks/1mLtO7uImt/APluJslcg==, tarball: file:projects/desktop-1.tgz}
+    resolution: {integrity: sha512-rM1wKc4Rbw16Ur7VwAOQY55uUSOH1W6671Mhi5GKYwm93dofY7SSkNg83QD+Rt1w8SSckoKG7ScH11JYypDXNw==, tarball: file:projects/desktop-1.tgz}
     id: file:projects/desktop-1.tgz
     name: '@rush-temp/desktop-1'
     version: 0.0.0
@@ -27057,7 +27057,7 @@ packages:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 33.0.1
+      electron: 32.2.1
       electron-builder: 25.0.5
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.90.3)
@@ -27174,7 +27174,7 @@ packages:
     dev: false
 
   file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-qMAH4jlegmypW60lCHos/WEuHQ9dzuc+nNqZQSHutNDo4ekNB+nJBsoANjtkMe9D9dZ8z6ez33s9bEeviFn7hA==, tarball: file:projects/desktop.tgz}
+    resolution: {integrity: sha512-bAR3xXsPX0SRBzBNKHnhr4KdUZibYwt2pOQBKp1pcybJXnw9pwv8A7S6wYWgaG6o091zASbDD/EGvxOqZ/bdSQ==, tarball: file:projects/desktop.tgz}
     id: file:projects/desktop.tgz
     name: '@rush-temp/desktop'
     version: 0.0.0
@@ -27193,7 +27193,7 @@ packages:
       css-loader: 5.2.7(webpack@5.90.3)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.90.3)
-      electron: 33.0.1
+      electron: 32.2.1
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1

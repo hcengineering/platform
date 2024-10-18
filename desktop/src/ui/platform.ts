@@ -335,25 +335,23 @@ export async function configurePlatform (): Promise<void> {
     setLocationStorageKey('uberflow_child')
   }
 
-  if (getCurrentLocation().query === undefined) {
-    const last = localStorage.getItem(locationStorageKeyId)
+  const last = localStorage.getItem(locationStorageKeyId)
 
-    if (config.INITIAL_URL !== '') {
-      console.log('NAVIGATE', config.INITIAL_URL, getCurrentLocation())
-      // NavigationExpandedDefault=false fills buggy:
-      // — Navigator closes in unpredictable way
-      // — Many sections of the have have no default central content so without
-      // navigator is looks like something is broken
-      // Should consifer if we want to fix this
-      // setMetadata(workbench.metadata.NavigationExpandedDefault, false)
-      navigate({
-        path: config.INITIAL_URL.split('/')
-      })
-    } else if (last !== null) {
-      navigate(JSON.parse(last))
-    } else {
-      navigate({ path: [] })
-    }
+  if (config.INITIAL_URL !== '') {
+    console.log('NAVIGATE', config.INITIAL_URL, getCurrentLocation())
+    // NavigationExpandedDefault=false fills buggy:
+    // — Navigator closes in unpredictable way
+    // — Many sections of the have have no default central content so without
+    // navigator is looks like something is broken
+    // Should consifer if we want to fix this
+    // setMetadata(workbench.metadata.NavigationExpandedDefault, false)
+    navigate({
+      path: config.INITIAL_URL.split('/')
+    })
+  } else if (last !== null) {
+    navigate(JSON.parse(last))
+  } else {
+    navigate({ path: [] })
   }
 
   console.log('Initial location is: ', getCurrentLocation())
