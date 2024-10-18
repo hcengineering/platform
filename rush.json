@@ -2215,6 +2215,11 @@
       "packageName": "@hcengineering/cloud-transactor",
       "projectFolder": "workers/transactor",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-collaborator",
+      "projectFolder": "workers/collaborator",
+      "shouldPublish": false
     }
   ]
 }

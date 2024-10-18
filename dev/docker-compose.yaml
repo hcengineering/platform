@@ -94,7 +94,7 @@ services:
       # - REGION_INFO=cockroach|CockroachDB
       - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg,ws://host.docker.internal:3332;;cockroach,
       - SES_URL=
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STORAGE_CONFIG=datalake|https://huly.net
       - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
@@ -159,7 +159,7 @@ services:
       - STATS_URL=http://host.docker.internal:4900
       - SES_URL=
       - REGION=pg
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STORAGE_CONFIG=datalake|https://huly.net
       - FRONT_URL=http://host.docker.internal:8087
       - RESERVED_DB_NAMES=telegram,gmail,github
       - MODEL_ENABLED=*
@@ -240,7 +240,7 @@ services:
       - TELEGRAM_URL=http://host.docker.internal:8086
       - REKONI_URL=http://host.docker.internal:4004
       - COLLABORATOR_URL=ws://host.docker.internal:3078
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STORAGE_CONFIG=datalake|https://huly.net
       - GITHUB_URL=http://host.docker.internal:3500
       - PRINT_URL=http://host.docker.internal:4005
       - SIGN_URL=http://host.docker.internal:4006

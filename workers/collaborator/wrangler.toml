@@ -1,0 +1,32 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "collaborator-worker"
+main = "src/index.ts"
+compatibility_date = "2024-07-01"
+compatibility_flags = ["nodejs_compat"]
+keep_vars = true
+
+[[services]]
+binding = "DATALAKE"
+service = "datalake-worker"
+
+[[durable_objects.bindings]]
+name = "COLLABORATOR"
+class_name = "Collaborator"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["Collaborator"]
+
+[env.staging]
+name = "collaborator-worker-staging"
+
+services = [
+  { binding = "DATALAKE", service = "datalake-worker-staging" }
+]
+
+[env.dev]
+name = "collaborator-worker-dev"
+
+services = [
+  { binding = "DATALAKE", service = "datalake-worker-dev" }
+]
