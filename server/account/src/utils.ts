@@ -24,17 +24,12 @@ import { PostgresAccountDB } from './collections/postgres'
 import { accountPlugin } from './plugin'
 import type { Account, AccountDB, AccountInfo, RegionInfo, WorkspaceInfo } from './types'
 
-/**
- * @public
- */
-export const ACCOUNT_DB = 'account'
-
-export async function getAccountDB (uri: string, db: string = ACCOUNT_DB): Promise<[AccountDB, () => void]> {
+export async function getAccountDB (uri: string, dbNs?: string): Promise<[AccountDB, () => void]> {
   const isMongo = uri.startsWith('mongodb://')
 
   if (isMongo) {
     const client = getMongoClient(uri)
-    const db = (await client.getClient()).db(ACCOUNT_DB)
+    const db = (await client.getClient()).db(dbNs ?? 'account')
     const mongoAccount = new MongoAccountDB(db)
 
     await mongoAccount.init()
@@ -48,6 +43,7 @@ export async function getAccountDB (uri: string, db: string = ACCOUNT_DB): Promi
   } else {
     const client = getDBClient(uri)
     const pgClient = await client.getClient()
+    // TODO: if dbNs is provided put tables in that schema
     const pgAccount = new PostgresAccountDB(pgClient)
 
     let error = false

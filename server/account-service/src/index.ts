@@ -95,7 +95,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
   const methods = getMethods(hasSignUp)
 
-  const accountsDb = getAccountDB(dbUrl)
+  const dbNs = process.env.DB_NS
+  const accountsDb = getAccountDB(dbUrl, dbNs)
 
   const app = new Koa()
   const router = new Router()
