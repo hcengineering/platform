@@ -189,6 +189,190 @@ async function loadDigest (
   ctx.end()
   return result
 }
+async function verifyDigest (
+  ctx: MeasureContext,
+  storage: BackupStorage,
+  snapshots: BackupSnapshot[],
+  domain: Domain
+): Promise<boolean> {
+  ctx = ctx.newChild('verify digest', { domain, count: snapshots.length })
+  ctx.info('verify-digest', { domain, count: snapshots.length })
+  let modified = false
+  for (const s of snapshots) {
+    const d = s.domains[domain]
+    if (d === undefined) {
+      continue
+    }
+
+    const storageToRemove = new Set<string>()
+    // We need to verify storage has all necessary resources
+    ctx.info('checking', { domain })
+    // We have required documents here.
+    const validDocs = new Set<Ref<Doc>>()
+
+    for (const sf of d.storage ?? []) {
+      const blobs = new Map<string, { doc: Doc | undefined, buffer: Buffer | undefined }>()
+      try {
+        ctx.info('checking storage', { sf })
+        const readStream = await storage.load(sf)
+        const ex = extract()
+
+        ex.on('entry', (headers, stream, next) => {
+          const name = headers.name ?? ''
+          // We found blob data
+          if (name.endsWith('.json')) {
+            const chunks: Buffer[] = []
+            const bname = name.substring(0, name.length - 5)
+            stream.on('data', (chunk) => {
+              chunks.push(chunk)
+            })
+            stream.on('end', () => {
+              const bf = Buffer.concat(chunks as any)
+              const doc = JSON.parse(bf.toString()) as Doc
+              if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                const data = migradeBlobData(doc as Blob, '')
+                const d = blobs.get(bname) ?? (data !== '' ? Buffer.from(data, 'base64') : undefined)
+                if (d === undefined) {
+                  blobs.set(bname, { doc, buffer: undefined })
+                } else {
+                  blobs.delete(bname)
+                  const blob = doc as Blob
+
+                  if (blob.size === bf.length) {
+                    validDocs.add(name as Ref<Doc>)
+                  }
+                }
+              } else {
+                validDocs.add(name as Ref<Doc>)
+              }
+              next()
+            })
+          } else {
+            const chunks: Buffer[] = []
+            stream.on('data', (chunk) => {
+              chunks.push(chunk)
+            })
+            stream.on('end', () => {
+              const bf = Buffer.concat(chunks as any)
+              const d = blobs.get(name)
+              if (d === undefined) {
+                blobs.set(name, { doc: undefined, buffer: bf })
+              } else {
+                blobs.delete(name)
+                const doc = d?.doc as Blob
+                let sz = doc.size
+                if (Number.isNaN(sz) || sz !== bf.length) {
+                  sz = bf.length
+                }
+
+                // If blob size matches doc size, remove from requiredDocs
+                if (sz === bf.length) {
+                  validDocs.add(name as Ref<Doc>)
+                }
+              }
+              next()
+            })
+          }
+          stream.resume() // just auto drain the stream
+        })
+
+        const unzip = createGunzip({ level: defaultLevel })
+        const endPromise = new Promise((resolve) => {
+          ex.on('finish', () => {
+            resolve(null)
+          })
+          unzip.on('error', (err) => {
+            ctx.error('error during reading of', { sf, err })
+            modified = true
+            storageToRemove.add(sf)
+            resolve(null)
+          })
+        })
+
+        readStream.on('end', () => {
+          readStream.destroy()
+        })
+        readStream.pipe(unzip)
+        unzip.pipe(ex)
+
+        await endPromise
+      } catch (err: any) {
+        ctx.error('error during reading of', { sf, err })
+        // In case of invalid archive, we need to
+        // We need to remove broken storage file
+        modified = true
+        storageToRemove.add(sf)
+      }
+    }
+    if (storageToRemove.size > 0) {
+      modified = true
+      d.storage = (d.storage ?? []).filter((it) => !storageToRemove.has(it))
+    }
+
+    // if (d?.snapshot !== undefined) {
+    // Will not check old format
+    // }
+    const digestToRemove = new Set<string>()
+    for (const snapshot of d?.snapshots ?? []) {
+      try {
+        ctx.info('checking', { snapshot })
+        const changes: Snapshot = {
+          added: new Map(),
+          removed: [],
+          updated: new Map()
+        }
+        let lmodified = false
+        try {
+          const dataBlob = gunzipSync(await storage.loadFile(snapshot))
+            .toString()
+            .split('\n')
+          const addedCount = parseInt(dataBlob.shift() ?? '0')
+          const added = dataBlob.splice(0, addedCount)
+          for (const it of added) {
+            const [k, v] = it.split(';')
+            if (validDocs.has(k as any)) {
+              changes.added.set(k as Ref<Doc>, v)
+            } else {
+              lmodified = true
+            }
+          }
+
+          const updatedCount = parseInt(dataBlob.shift() ?? '0')
+          const updated = dataBlob.splice(0, updatedCount)
+          for (const it of updated) {
+            const [k, v] = it.split(';')
+            if (validDocs.has(k as any)) {
+              changes.updated.set(k as Ref<Doc>, v)
+            } else {
+              lmodified = true
+            }
+          }
+
+          const removedCount = parseInt(dataBlob.shift() ?? '0')
+          const removed = dataBlob.splice(0, removedCount)
+          changes.removed = removed as Ref<Doc>[]
+        } catch (err: any) {
+          ctx.warn('failed during processing of snapshot file, it will be skipped', { snapshot })
+          digestToRemove.add(snapshot)
+          modified = true
+        }
+
+        if (lmodified) {
+          modified = true
+          // Store changes without missing files
+          await writeChanges(storage, snapshot, changes)
+        }
+      } catch (err: any) {
+        digestToRemove.add(snapshot)
+        ctx.error('digest is broken, will do full backup for', { domain })
+        modified = true
+      }
+    }
+    d.snapshots = (d.snapshots ?? []).filter((it) => !digestToRemove.has(it))
+  }
+  ctx.end()
+  return modified
+}
 
 async function write (chunk: any, stream: Writable): Promise<void> {
   let needDrain = false
@@ -982,10 +1166,12 @@ export async function backup (
             storageZip.pipe(sizePass)
 
             _packClose = async () => {
-              _pack?.finalize()
-              storageZip.destroy()
-              _pack?.destroy()
-              tempFile.destroy()
+              await new Promise<void>((resolve) => {
+                tempFile.on('close', () => {
+                  resolve()
+                })
+                _pack?.finalize()
+              })
 
               // We need to upload file to storage
               ctx.info('Upload pack file', { storageFile, size: sz, workspace: workspaceId.name })
@@ -1238,6 +1424,26 @@ export async function backupList (storage: BackupStorage): Promise<void> {
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
   for (const s of backupInfo.snapshots) {
     console.log('snapshot: id:', s.date, ' date:', new Date(s.date))
+  }
+}
+
+/**
+ * @public
+ */
+export async function backupRemoveLast (storage: BackupStorage, date: number): Promise<void> {
+  const infoFile = 'backup.json.gz'
+
+  if (!(await storage.exists(infoFile))) {
+    throw new Error(`${infoFile} should present to restore`)
+  }
+  const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+  const old = backupInfo.snapshots.length
+  backupInfo.snapshots = backupInfo.snapshots.filter((it) => it.date < date)
+  if (old !== backupInfo.snapshots.length) {
+    console.log('removed snapshots: id:', old - backupInfo.snapshots.length)
+
+    await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
   }
 }
 
@@ -1980,7 +2186,7 @@ export async function compactBackup (
                     chunks.push(chunk)
                   })
                   stream.on('end', () => {
-                    const bf = Buffer.concat(chunks)
+                    const bf = Buffer.concat(chunks as any)
                     const d = blobs.get(name)
                     if (d === undefined) {
                       blobs.set(name, { doc: undefined, buffer: bf })
@@ -2031,12 +2237,16 @@ export async function compactBackup (
                 stream.resume() // just auto drain the stream
               })
 
+              const unzip = createGunzip({ level: defaultLevel })
               const endPromise = new Promise((resolve) => {
                 ex.on('finish', () => {
                   resolve(null)
                 })
+                unzip.on('error', (err) => {
+                  ctx.error('error during processing', { snapshot, err })
+                  resolve(null)
+                })
               })
-              const unzip = createGunzip({ level: defaultLevel })
 
               readStream.on('end', () => {
                 readStream.destroy()
@@ -2110,4 +2320,54 @@ function migradeBlobData (blob: Blob, etag: string): string {
     return result
   }
   return ''
+}
+
+/**
+ * Will check backup integrity, and in case of some missing resources, will update digest files, so next backup will backup all missing parts.
+ * @public
+ */
+export async function checkBackupIntegrity (ctx: MeasureContext, storage: BackupStorage): Promise<void> {
+  console.log('starting backup compaction')
+  try {
+    let backupInfo: BackupInfo
+
+    // Version 0.6.2, format of digest file is changed to
+
+    const infoFile = 'backup.json.gz'
+
+    if (await storage.exists(infoFile)) {
+      backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
+    } else {
+      console.log('No backup found')
+      return
+    }
+    if (backupInfo.version !== '0.6.2') {
+      console.log('Invalid backup version')
+      return
+    }
+
+    const domains: Domain[] = []
+    for (const sn of backupInfo.snapshots) {
+      for (const d of Object.keys(sn.domains)) {
+        if (!domains.includes(d as Domain)) {
+          domains.push(d as Domain)
+        }
+      }
+    }
+    let modified = false
+
+    for (const domain of domains) {
+      console.log('checking domain...', domain)
+      if (await verifyDigest(ctx, storage, backupInfo.snapshots, domain)) {
+        modified = true
+      }
+    }
+    if (modified) {
+      await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
+    }
+  } catch (err: any) {
+    console.error(err)
+  } finally {
+    console.log('end compacting')
+  }
 }
