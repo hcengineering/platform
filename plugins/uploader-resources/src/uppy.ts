@@ -128,8 +128,11 @@ export function getUppy (options: FileUploadOptions): Uppy<UppyMeta, UppyBody> {
   uppy.addPreProcessor(async (fileIds: string[]) => {
     for (const fileId of fileIds) {
       const file = uppy.getFile(fileId)
-      if (file != null && file.meta.uuid === undefined) {
-        uppy.setFileMeta(fileId, { uuid: generateFileId() })
+      if (file != null) {
+        // It may seem weird that we modify file name here
+        // but we need a way to pass file UUID to Datalake via form data
+        const uuid = file.meta.uuid ?? generateFileId()
+        uppy.setFileMeta(fileId, { uuid, name: uuid })
       }
     }
   })
