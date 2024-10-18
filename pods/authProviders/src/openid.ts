@@ -38,21 +38,25 @@ export function registerOpenid (
   const redirectURL = '/auth/openid/callback'
   if (openidClientId === undefined || openidClientSecret === undefined || issuer === undefined) return
 
-  void Issuer.discover(issuer).then((issuerObj) => {
-    const client = new issuerObj.Client({
-      client_id: openidClientId,
-      client_secret: openidClientSecret,
-      redirect_uris: [concatLink(accountsUrl, redirectURL)],
-      response_types: ['code']
-    })
-
-    passport.use(
-      'oidc',
-      new Strategy({ client, passReqToCallback: true }, (req: any, tokenSet: any, userinfo: any, done: any) => {
-        return done(null, userinfo)
+  void Issuer.discover(issuer)
+    .then((issuerObj) => {
+      const client = new issuerObj.Client({
+        client_id: openidClientId,
+        client_secret: openidClientSecret,
+        redirect_uris: [concatLink(accountsUrl, redirectURL)],
+        response_types: ['code']
       })
-    )
-  })
+
+      passport.use(
+        'oidc',
+        new Strategy({ client, passReqToCallback: true }, (req: any, tokenSet: any, userinfo: any, done: any) => {
+          return done(null, userinfo)
+        })
+      )
+    })
+    .catch((err) => {
+      measureCtx.error('Failed to create client for IdP', { err })
+    })
 
   router.get('/auth/openid', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'openid' })
