@@ -13,15 +13,16 @@
 // limitations under the License.
 //
 
+import textEditor from '@hcengineering/text-editor'
 import view from '@hcengineering/view'
 import { type Editor, type Range } from '@tiptap/core'
-import textEditor from '@hcengineering/text-editor'
 
 import { type CompletionOptions } from '../Completion'
-import MentionList from './MentionList.svelte'
-import { SvelteRenderer } from './node-view'
+import EmojiList from './EmojiList.svelte'
 import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
 import InlineCommandsList from './InlineCommandsList.svelte'
+import MentionList from './MentionList.svelte'
+import { SvelteRenderer } from './node-view'
 
 export const mInsertTable = [
   {
@@ -86,48 +87,56 @@ export const mInsertTable = [
   }
 ]
 
-/**
- * @public
- */
-export const completionConfig: Partial<CompletionOptions> = {
-  HTMLAttributes: {
-    class: 'reference'
-  },
-  suggestion: {
-    items: async () => {
-      return []
+const CompletionConfigFactory = (type: 'MentionList' | 'EmojiList'): Partial<CompletionOptions> => {
+  return {
+    HTMLAttributes: {
+      class: type === 'MentionList' ? 'reference' : 'completion-emoji'
     },
-    render: () => {
-      let component: any
+    suggestion: {
+      items: async () => {
+        return []
+      },
+      render: () => {
+        let component: any
 
-      return {
-        onStart: (props: SuggestionProps) => {
-          component = new SvelteRenderer(MentionList, {
-            element: document.body,
-            props: {
-              ...props,
-              close: () => {
-                component.destroy()
+        return {
+          onStart: (props: SuggestionProps) => {
+            component = new SvelteRenderer(type === 'MentionList' ? MentionList : EmojiList, {
+              element: document.body,
+              props: {
+                ...props,
+                close: () => {
+                  component.destroy()
+                }
               }
+            })
+          },
+          onUpdate (props: SuggestionProps) {
+            component.updateProps(props)
+          },
+          onKeyDown (props: SuggestionKeyDownProps) {
+            if (props.event.key === 'Escape') {
+              props.event.stopPropagation()
             }
-          })
-        },
-        onUpdate (props: SuggestionProps) {
-          component.updateProps(props)
-        },
-        onKeyDown (props: SuggestionKeyDownProps) {
-          if (props.event.key === 'Escape') {
-            props.event.stopPropagation()
+            return component.onKeyDown(props)
+          },
+          onExit () {
+            component.destroy()
           }
-          return component.onKeyDown(props)
-        },
-        onExit () {
-          component.destroy()
         }
       }
     }
   }
 }
+/**
+ * @public
+ */
+export const completionConfig = CompletionConfigFactory('MentionList')
+
+/**
+ * @public
+ */
+export const emojiCompletionConfig = CompletionConfigFactory('EmojiList')
 
 const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line', 'todo-list'] as const
 export type InlineCommandId = (typeof inlineCommandsIds)[number]

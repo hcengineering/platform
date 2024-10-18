@@ -177,3 +177,76 @@ export const Completion = Node.create<CompletionOptions>({
     ]
   }
 })
+export const CompletionEmoji = Node.create<CompletionOptions>({
+  name: 'completion-emoji',
+
+  addOptions () {
+    return {
+      HTMLAttributes: {},
+      renderLabel ({ options, node }) {
+        // eslint-disable-next-line
+        return `${node.attrs.objectclass}`
+      },
+      suggestion: {
+        char: ':',
+        allowSpaces: false,
+        command: ({ editor, range, props }) => {
+          // increase range.to by one when the next node is of type "text"
+          // and starts with a space character
+          const nodeAfter = editor.view.state.selection.$to.nodeAfter
+          const overrideSpace = nodeAfter?.text?.startsWith(' ')
+
+          if (overrideSpace !== undefined && overrideSpace) {
+            // eslint-disable-next-line
+            range.to += 1
+          }
+
+          if (props !== null) {
+            editor
+              .chain()
+              .focus()
+              .insertContentAt(range, [
+                {
+                  type: 'text',
+                  text: props.objectclass
+                },
+                {
+                  type: 'text',
+                  text: ' '
+                }
+              ])
+              .run()
+          }
+        },
+        allow: ({ editor, range }) => {
+          if (range.from > editor.state.doc.content.size) return false
+          const $from = editor.state.doc.resolve(range.from)
+          const type = editor.schema.nodes[this.name]
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+          return !!$from.parent.type.contentMatch.matchType(type)
+        }
+      }
+    }
+  },
+
+  group: 'inline',
+
+  inline: true,
+
+  selectable: true,
+
+  atom: true,
+
+  draggable: true,
+
+  addProseMirrorPlugins () {
+    return [
+      Suggestion({
+        editor: this.editor,
+        pluginKey: new PluginKey('completion-suggestion-emoji'),
+        ...this.options.suggestion
+      })
+
+    ]
+  }
+})

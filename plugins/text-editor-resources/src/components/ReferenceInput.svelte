@@ -16,26 +16,26 @@
   import { Markup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
   import {
     AnySvelteComponent,
     Button,
     ButtonKind,
-    handler,
-    registerFocus,
+    checkAdaptiveMatching,
     deviceOptionsStore as deviceInfo,
-    checkAdaptiveMatching
+    handler,
+    registerFocus
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import { FocusPosition } from '@tiptap/core'
   import { EditorView } from '@tiptap/pm/view'
-  import textEditor, { RefAction, TextEditorHandler } from '@hcengineering/text-editor'
+  import { createEventDispatcher } from 'svelte'
 
-  import { Completion } from '../Completion'
+  import { Completion, CompletionEmoji } from '../Completion'
   import TextEditor from './TextEditor.svelte'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
-  import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
+  import { completionConfig, emojiCompletionConfig } from './extensions'
   import Send from './icons/Send.svelte'
 
   export let content: Markup = EmptyMarkup
@@ -70,7 +70,7 @@
   $: isEmptyContent = isEmpty || isEmptyMarkup(content)
   $: canSubmit = (haveAttachment || !isEmptyContent) && !loading
 
-  function setContent (content: Markup): void {
+  function setContent(content: Markup): void {
     editor?.setContent(content)
   }
 
@@ -84,7 +84,7 @@
     insertTemplate: (name, markup) => {
       editor?.insertMarkup(markup)
     },
-    insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+    insertTable(options: { rows?: number; cols?: number; withHeaderRow?: boolean }) {
       editor?.insertTable(options)
     },
     insertCodeBlock: () => {
@@ -107,11 +107,11 @@
     actions = actions.concat(...modelActions).sort((a, b) => a.order - b.order)
   })
 
-  export function submit (): void {
+  export function submit(): void {
     editor?.submit()
   }
 
-  function handleAction (a: RefAction, evt?: Event): void {
+  function handleAction(a: RefAction, evt?: Event): void {
     a.action(evt?.target as HTMLElement, editorHandler)
   }
 
@@ -136,7 +136,13 @@
   }
   const completionPlugin = Completion.configure({
     ...completionConfig,
-    showDoc (event: MouseEvent, _id: string, _class: string) {
+    showDoc(event: MouseEvent, _id: string, _class: string) {
+      dispatch('open-document', { event, _id, _class })
+    }
+  })
+  const completionEmojiPlugin = CompletionEmoji.configure({
+    ...emojiCompletionConfig,
+    showDoc(event: MouseEvent, _id: string, _class: string) {
       dispatch('open-document', { event, _id, _class })
     }
   })
@@ -174,6 +180,7 @@
       }}
       extensions={[
         completionPlugin,
+        completionEmojiPlugin,
         EmojiExtension.configure(),
         IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
       ]}

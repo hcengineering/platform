@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import MentionPopup from './MentionPopup.svelte'
+  import EmojiPopup from './EmojiPopup.svelte'
   import Popup from './Popup.svelte'
 
   export let query: string = ''
@@ -22,9 +22,9 @@
   export let command: (props: any) => void
   export let close: () => void
 
-  let searchPopup: MentionPopup
+  let searchPopup: EmojiPopup
 
-  function dispatchItem(item: { id: string; label: string; objectclass: string }): void {
+  function dispatchItem(item: { id: string; objectclass: string }): void {
     if (item == null) {
       close()
     } else {
@@ -38,7 +38,7 @@
 </script>
 
 <Popup {query} {clientRect} {command} {close}>
-  <MentionPopup
+  <EmojiPopup
     bind:this={searchPopup}
     {query}
     on:close={(evt) => {
