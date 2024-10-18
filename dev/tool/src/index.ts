@@ -15,7 +15,6 @@
 //
 
 import accountPlugin, {
-  type AccountDB,
   assignWorkspace,
   confirmEmail,
   createAcc,
@@ -34,6 +33,7 @@ import accountPlugin, {
   setAccountAdmin,
   setRole,
   updateWorkspace,
+  type AccountDB,
   type Workspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
@@ -41,13 +41,21 @@ import {
   backup,
   backupFind,
   backupList,
+  backupRemoveLast,
   backupSize,
+  checkBackupIntegrity,
   compactBackup,
   createFileBackupStorage,
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { BlobClient, createClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, {
+  BlobClient,
+  createClient,
+  getTransactorEndpoint,
+  listAccountWorkspaces,
+  updateBackupInfo
+} from '@hcengineering/server-client'
 import { getServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
@@ -65,6 +73,7 @@ import core, {
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
+  RateLimiter,
   systemAccountEmail,
   versionToString,
   type Data,
@@ -77,8 +86,8 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import contact from '@hcengineering/model-contact'
-import { backupDownload } from '@hcengineering/server-backup/src/backup'
 import { getMongoClient, getWorkspaceMongoDB, shutdown } from '@hcengineering/mongo'
+import { backupDownload } from '@hcengineering/server-backup/src/backup'
 
 import type { StorageAdapter, StorageAdapterEx } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
@@ -104,7 +113,7 @@ import {
   restoreRecruitingTaskTypes
 } from './clean'
 import { changeConfiguration } from './configuration'
-import { moveFromMongoToPG, moveWorkspaceFromMongoToPG, moveAccountDbFromMongoToPG } from './db'
+import { moveAccountDbFromMongoToPG, moveFromMongoToPG, moveWorkspaceFromMongoToPG } from './db'
 import { fixJsonMarkup, migrateMarkup, restoreLostMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { fixAccountEmails, renameAccount } from './renameAccount'
@@ -814,6 +823,13 @@ export function devTool (
       const storage = await createFileBackupStorage(dirName)
       await compactBackup(toolCtx, storage, cmd.force)
     })
+  program
+    .command('backup-check <dirName>')
+    .description('Compact a given backup, will create one snapshot clean unused resources')
+    .action(async (dirName: string, cmd: any) => {
+      const storage = await createFileBackupStorage(dirName)
+      await checkBackupIntegrity(toolCtx, storage)
+    })
 
   program
     .command('backup-restore <dirName> <workspace> [date]')
@@ -864,6 +880,61 @@ export function devTool (
         await backup(toolCtx, endpoint, wsid, storage)
       })
     })
+  program
+    .command('backup-s3-clean <bucketName> <days>')
+    .description('dump workspace transactions and minio resources')
+    .action(async (bucketName: string, days: string, cmd) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+
+      const daysInterval = Date.now() - parseInt(days) * 24 * 60 * 60 * 1000
+      try {
+        const token = generateToken(systemAccountEmail, { name: 'any' })
+        const workspaces = (await listAccountWorkspaces(token)).filter((it) => {
+          const lastBackup = it.backupInfo?.lastBackup ?? 0
+          if (lastBackup > daysInterval) {
+            // No backup required, interval not elapsed
+            return true
+          }
+
+          if (it.lastVisit == null) {
+            return false
+          }
+
+          return false
+        })
+        workspaces.sort((a, b) => {
+          return (b.backupInfo?.backupSize ?? 0) - (a.backupInfo?.backupSize ?? 0)
+        })
+
+        for (const ws of workspaces) {
+          const storage = await createStorageBackupStorage(
+            toolCtx,
+            storageAdapter,
+            getWorkspaceId(bucketName),
+            ws.workspace
+          )
+          await backupRemoveLast(storage, daysInterval)
+          await updateBackupInfo(generateToken(systemAccountEmail, { name: 'any' }), {
+            backups: ws.backupInfo?.backups ?? 0,
+            backupSize: ws.backupInfo?.backupSize ?? 0,
+            blobsSize: ws.backupInfo?.blobsSize ?? 0,
+            dataSize: ws.backupInfo?.dataSize ?? 0,
+            lastBackup: daysInterval
+          })
+        }
+      } finally {
+        await storageAdapter.close()
+      }
+    })
+  program
+    .command('backup-clean <dirName> <days>')
+    .description('dump workspace transactions and minio resources')
+    .action(async (dirName: string, days: string, cmd) => {
+      const daysInterval = Date.now() - parseInt(days) * 24 * 60 * 60 * 1000
+      const storage = await createFileBackupStorage(dirName)
+      await backupRemoveLast(storage, daysInterval)
+    })
 
   program
     .command('backup-s3-compact <bucketName> <dirName>')
@@ -875,6 +946,20 @@ export function devTool (
       try {
         const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
         await compactBackup(toolCtx, storage, cmd.force)
+      } catch (err: any) {
+        toolCtx.error('failed to size backup', { err })
+      }
+      await storageAdapter.close()
+    })
+  program
+    .command('backup-s3-check <bucketName> <dirName>')
+    .description('Compact a given backup to just one snapshot')
+    .action(async (bucketName: string, dirName: string, cmd: any) => {
+      const backupStorageConfig = storageConfigFromEnv(process.env.STORAGE)
+      const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
+      try {
+        const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
+        await checkBackupIntegrity(toolCtx, storage)
       } catch (err: any) {
         toolCtx.error('failed to size backup', { err })
       }
@@ -1100,7 +1185,7 @@ export function devTool (
     .command('move-files')
     .option('-w, --workspace <workspace>', 'Selected workspace only', '')
     .option('-m, --move <move>', 'When set to true, the files will be moved, otherwise copied', 'false')
-    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '50')
+    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 50mb)', '999999')
     .option('-c, --concurrency <concurrency>', 'Number of files being processed concurrently', '10')
     .option('--disabled', 'Include disabled workspaces', false)
     .action(
@@ -1125,6 +1210,7 @@ export function devTool (
               const workspaces = await listWorkspacesPure(db)
               workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
 
+              const rateLimit = new RateLimiter(10)
               for (const workspace of workspaces) {
                 if (cmd.workspace !== '' && workspace.workspace !== cmd.workspace) {
                   continue
@@ -1134,12 +1220,14 @@ export function devTool (
                   continue
                 }
 
-                console.log('start', workspace.workspace, index, '/', workspaces.length)
-                await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
-                console.log('done', workspace.workspace)
-
-                index += 1
+                await rateLimit.exec(async () => {
+                  console.log('start', workspace.workspace, index, '/', workspaces.length)
+                  await moveFiles(toolCtx, getWorkspaceId(workspace.workspace), exAdapter, params)
+                  console.log('done', workspace.workspace)
+                  index += 1
+                })
               }
+              await rateLimit.waitProcessing()
             } catch (err: any) {
               console.error(err)
             }
