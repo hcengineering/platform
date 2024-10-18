@@ -138,8 +138,8 @@ function getFileUploadMethod (blob: Blob): { method: FileUploadMethod, url: stri
  * @public
  */
 export function getFileUploadParams (blobId: string, blob: Blob): FileUploadParams {
-  const workspaceId = encodeURI(getCurrentWorkspaceId())
-  const fileId = encodeURI(blobId)
+  const workspaceId = encodeURIComponent(getCurrentWorkspaceId())
+  const fileId = encodeURIComponent(blobId)
 
   const { method, url: urlTemplate } = getFileUploadMethod(blob)
 
