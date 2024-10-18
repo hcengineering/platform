@@ -315,7 +315,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
           return
         }
         if (query.space === acc._id) return
-        const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? 'data ->> "objectSpace"' : 'space'
+        const key = domain === DOMAIN_SPACE ? '_id' : domain === DOMAIN_TX ? 'data ->> \'objectSpace\'' : 'space'
         const privateCheck = domain === DOMAIN_SPACE ? " OR sec.data ->> 'private' = 'false'" : ''
         const q = `(sec.data -> 'members' @> '"${acc._id}"' OR sec."_class" = '${core.class.SystemSpace}'${privateCheck})`
         return `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = '${this.workspaceId.name}' AND ${q}`
@@ -1058,18 +1058,33 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const arr = docs.concat()
     return await this.retryTxn(async (client) => {
       while (arr.length > 0) {
-        const part = arr.splice(0, 500)
+        const part = docs.splice(0, 500)
+        const values: any[] = []
+        for (const doc of part) {
+          const d = convertDoc(doc, this.workspaceId.name)
+          values.push(
+            d._id,
+            d.workspaceId,
+            d._class,
+            d.createdBy ?? d.modifiedBy,
+            d.modifiedBy,
+            d.modifiedOn,
+            d.createdOn ?? d.modifiedOn,
+            d.space,
+            d.attachedTo ?? null,
+            JSON.stringify(d.data)
+          )
+        }
         const vals = part
-          .map((doc) => {
-            const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
-              d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
-            }, '${escapeBackticks(JSON.stringify(d.data))}')`
-          })
-          .join(', ')
+          .map(
+            (_, i) =>
+              `($${i * 10 + 1}, $${i * 10 + 2}, $${i * 10 + 3}, $${i * 10 + 4}, $${i * 10 + 5}, $${i * 10 + 6}, $${i * 10 + 7}, $${i * 10 + 8}, $${i * 10 + 9}, $${i * 10 + 10})`
+          )
+          .join(',')
         await client.query(
           `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals} 
-          ON CONFLICT (_id, "workspaceId") DO UPDATE SET _class = EXCLUDED._class, "createdBy" = EXCLUDED."createdBy", "modifiedBy" = EXCLUDED."modifiedBy", "modifiedOn" = EXCLUDED."modifiedOn", "createdOn" = EXCLUDED."createdOn", space = EXCLUDED.space, "attachedTo" = EXCLUDED."attachedTo", data = EXCLUDED.data;`
+          ON CONFLICT (_id, "workspaceId") DO UPDATE SET _class = EXCLUDED._class, "createdBy" = EXCLUDED."createdBy", "modifiedBy" = EXCLUDED."modifiedBy", "modifiedOn" = EXCLUDED."modifiedOn", "createdOn" = EXCLUDED."createdOn", space = EXCLUDED.space, "attachedTo" = EXCLUDED."attachedTo", data = EXCLUDED.data;`,
+          values
         )
       }
     })
@@ -1148,16 +1163,31 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return await this.retryTxn(async (client) => {
       while (docs.length > 0) {
         const part = docs.splice(0, 500)
+        const values: any[] = []
+        for (const doc of part) {
+          const d = convertDoc(doc, this.workspaceId.name)
+          values.push(
+            d._id,
+            d.workspaceId,
+            d._class,
+            d.createdBy ?? d.modifiedBy,
+            d.modifiedBy,
+            d.modifiedOn,
+            d.createdOn ?? d.modifiedOn,
+            d.space,
+            d.attachedTo ?? null,
+            JSON.stringify(d.data)
+          )
+        }
         const vals = part
-          .map((doc) => {
-            const d = convertDoc(doc, this.workspaceId.name)
-            return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
-              d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
-            }, '${escapeBackticks(JSON.stringify(d.data))}')`
-          })
-          .join(', ')
+          .map(
+            (_, i) =>
+              `($${i * 10 + 1}, $${i * 10 + 2}, $${i * 10 + 3}, $${i * 10 + 4}, $${i * 10 + 5}, $${i * 10 + 6}, $${i * 10 + 7}, $${i * 10 + 8}, $${i * 10 + 9}, $${i * 10 + 10})`
+          )
+          .join(',')
         await client.query(
-          `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
+          `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`,
+          values
         )
       }
     })

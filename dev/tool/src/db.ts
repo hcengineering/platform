@@ -54,10 +54,6 @@ export async function moveFromMongoToPG (
   client.close()
 }
 
-function escapeBackticks (str: string): string {
-  return str.replaceAll("'", "''")
-}
-
 async function moveWorkspace (
   accountDb: AccountDB,
   mongo: MongoClient,
@@ -95,18 +91,33 @@ async function moveWorkspace (
         if (docs.length === 0) break
         while (docs.length > 0) {
           const part = docs.splice(0, 500)
+          const values: any[] = []
+          for (const doc of part) {
+            const d = convertDoc(doc, ws.workspace)
+            values.push(
+              d._id,
+              d.workspaceId,
+              d._class,
+              d.createdBy ?? d.modifiedBy,
+              d.modifiedBy,
+              d.modifiedOn,
+              d.createdOn ?? d.modifiedOn,
+              d.space,
+              d.attachedTo ?? null,
+              JSON.stringify(d.data)
+            )
+          }
           const vals = part
-            .map((doc) => {
-              const d = convertDoc(doc, ws.workspace)
-              return `('${d._id}', '${d.workspaceId}', '${d._class}', '${d.createdBy ?? d.modifiedBy}', '${d.modifiedBy}', ${d.modifiedOn}, ${d.createdOn ?? d.modifiedOn}, '${d.space}', ${
-                d.attachedTo != null ? `'${d.attachedTo}'` : 'NULL'
-              }, '${escapeBackticks(JSON.stringify(d.data))}')`
-            })
-            .join(', ')
+            .map(
+              (_, i) =>
+                `($${i * 10 + 1}, $${i * 10 + 2}, $${i * 10 + 3}, $${i * 10 + 4}, $${i * 10 + 5}, $${i * 10 + 6}, $${i * 10 + 7}, $${i * 10 + 8}, $${i * 10 + 9}, $${i * 10 + 10})`
+            )
+            .join(',')
           try {
             await retryTxn(pgClient, async (client) => {
               await client.query(
-                `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`
+                `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`,
+                values
               )
             })
           } catch (err) {
