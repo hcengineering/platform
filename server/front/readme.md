@@ -17,6 +17,7 @@ Front service is suited to deliver application bundles and resource assets, it a
 * MODEL_VERSION: Specifies the required model version.
 * SERVER_SECRET: Specifies the server secret.
 * PREVIEW_CONFIG: Specifies the preview configuration.
+* UPLOAD_CONFIG: Specifies the upload configuration.
 * BRANDING_URL: Specifies the URL of the branding service.
 
 ## Preview service configuration

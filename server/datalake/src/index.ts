@@ -37,7 +37,7 @@ export class DatalakeService implements StorageAdapter {
   static config = 'datalake'
   client: Client
   constructor (readonly opt: DatalakeConfig) {
-    this.client = new Client(opt.endpoint)
+    this.client = new Client(opt.endpoint, opt.port)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -129,7 +129,7 @@ export class DatalakeService implements StorageAdapter {
 
     await ctx.with('put', {}, async (ctx) => {
       await withRetry(ctx, 5, async () => {
-        return await this.client.putObject(ctx, workspaceId, objectName, stream, metadata)
+        await this.client.putObject(ctx, workspaceId, objectName, stream, metadata, size)
       })
     })
 

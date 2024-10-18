@@ -2115,6 +2115,11 @@
       "packageName": "@hcengineering/cloud-branding",
       "projectFolder": "workers/branding",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-datalake",
+      "projectFolder": "workers/datalake",
+      "shouldPublish": false
     }
   ]
 }
