@@ -88,16 +88,15 @@ Development environment setup requires Docker to be installed on system.
 Support is available for both amd64 and arm64 containers on Linux and macOS.
 
 ```bash
-cd ./dev/
-rush build    # Will build all the required packages. 
-# rush rebuild  # could be used to omit build cache.
-rush bundle   # Will prepare bundles.
-rush package  # Will build all webpack packages.
-rush validate # Will validate all sources with typescript and generate d.ts files required for ts-node execution.
-rush svelte-check # Optional. svelte files validation using svelte-check.
-rush docker:build   # Will build Docker containers for all applications in the local Docker environment.
-rush docker:up # Will set up all the containers
+# For Unix-based systems (Linux, macOS)
+./dev/rush_build.sh
 ```
+
+```batch
+:: For Windows
+.\dev\rush_build.bat
+```
+
 
 Be aware `rush docker:build` will automatically execute all required phases like build, bundle, package.
 
