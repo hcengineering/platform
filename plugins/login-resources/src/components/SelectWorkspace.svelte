@@ -169,7 +169,12 @@
       {#if workspaces.length}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
-          <NavLink href={getHref('createWorkspace')}><Label label={login.string.CreateWorkspace} /></NavLink>
+          <NavLink
+            href={getHref('createWorkspace')}
+            onClick={() => {
+              goTo('createWorkspace')
+            }}><Label label={login.string.CreateWorkspace} /></NavLink
+          >
         </div>
       {/if}
       <div>

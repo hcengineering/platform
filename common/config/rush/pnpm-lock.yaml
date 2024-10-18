@@ -1483,7 +1483,7 @@ dependencies:
     version: 22.8.8
   electron:
     specifier: ^32.1.1
-    version: 32.1.1
+    version: 32.2.1
   electron-builder:
     specifier: ^25.0.5
     version: 25.0.5
@@ -13754,8 +13754,8 @@ packages:
     resolution: {integrity: sha512-hWFbUk9u3fQHcKzTAcjZAN7XH9bL9oH9g20RRDU/DVDNqdMI03GzlBZfR/R8R1krYu9AT4biLqSCAxnt9LMAfA==}
     dev: false
 
-  /electron@32.1.1:
-    resolution: {integrity: sha512-NlWvG6kXOJbZbELmzP3oV7u50I3NHYbCeh+AkUQ9vGyP7b74cFMx9HdTzejODeztW1jhr3SjIBbUZzZ45zflfQ==}
+  /electron@32.2.1:
+    resolution: {integrity: sha512-GCPI/5hU34pPcNltNpz+uylhhuTm9BM0N8RmrbVgaWBodLSmmcCkvpgN0BseKhO6IwQOPzWaovrcZ/nPIpfGaQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
@@ -27126,7 +27126,7 @@ packages:
       '@vercel/webpack-asset-relocator-loader': 1.7.4
       cross-env: 7.0.3
       dotenv: 16.0.3
-      electron: 32.1.1
+      electron: 32.2.1
       electron-builder: 25.0.5
       electron-squirrel-startup: 1.0.1
       node-loader: 2.0.0(webpack@5.90.3)
@@ -27262,7 +27262,7 @@ packages:
       css-loader: 5.2.7(webpack@5.90.3)
       dotenv: 16.0.3
       dotenv-webpack: 8.0.1(webpack@5.90.3)
-      electron: 32.1.1
+      electron: 32.2.1
       electron-context-menu: 4.0.4
       electron-log: 5.1.7
       electron-squirrel-startup: 1.0.1

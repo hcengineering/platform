@@ -39,7 +39,7 @@ import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
 import tracker, { trackerId } from '@hcengineering/tracker'
-import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey } from '@hcengineering/ui'
+import uiPlugin, { getCurrentLocation, locationStorageKeyId, locationToUrl, navigate, parseLocation, setLocationStorageKey } from '@hcengineering/ui'
 import { uploaderId } from '@hcengineering/uploader'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -337,6 +337,7 @@ export async function configurePlatform (): Promise<void> {
   }
 
   const last = localStorage.getItem(locationStorageKeyId)
+
   if (config.INITIAL_URL !== '') {
     console.log('NAVIGATE', config.INITIAL_URL, getCurrentLocation())
     // NavigationExpandedDefault=false fills buggy:
@@ -353,5 +354,6 @@ export async function configurePlatform (): Promise<void> {
   } else {
     navigate({ path: [] })
   }
+
   console.log('Initial location is: ', getCurrentLocation())
 }
