@@ -95,6 +95,7 @@
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
         "SES_URL": "",
+        // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",

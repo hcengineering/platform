@@ -75,6 +75,7 @@ services:
       - SERVER_SECRET=secret
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - DB_URL=${MONGO_URL}
+      # - DB_NS=account-2
       - REGION_INFO=|Mongo;pg|Postgres
       - TRANSACTOR_URL=ws://host.docker.internal:3333,ws://host.docker.internal:3331;;pg
       - SES_URL=
