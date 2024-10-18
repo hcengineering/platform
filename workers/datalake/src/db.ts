@@ -16,12 +16,12 @@
 import type postgres from 'postgres'
 import { type Location, type UUID } from './types'
 
-export interface DataId {
+export interface BlobDataId {
   hash: UUID
   location: Location
 }
 
-export interface DataRecord extends DataId {
+export interface BlobDataRecord extends BlobDataId {
   filename: UUID
   size: number
   type: string
@@ -43,10 +43,10 @@ export interface BlobRecordWithFilename extends BlobRecord {
   filename: string
 }
 
-export async function getData (sql: postgres.Sql, hashId: DataId): Promise<DataRecord | null> {
-  const { hash, location } = hashId
+export async function getData (sql: postgres.Sql, dataId: BlobDataId): Promise<BlobDataRecord | null> {
+  const { hash, location } = dataId
 
-  const rows = await sql<DataRecord[]>`
+  const rows = await sql<BlobDataRecord[]>`
     SELECT hash, location, filename, size, type, subtype
     FROM blob.data
     WHERE hash = ${hash} AND location = ${location}
@@ -59,8 +59,8 @@ export async function getData (sql: postgres.Sql, hashId: DataId): Promise<DataR
   return null
 }
 
-export async function createData (sql: postgres.Sql, record: DataRecord): Promise<void> {
-  const { hash, location, filename, size, type, subtype } = record
+export async function createData (sql: postgres.Sql, data: BlobDataRecord): Promise<void> {
+  const { hash, location, filename, size, type, subtype } = data
 
   await sql`
     UPSERT INTO blob.data (hash, location, filename, size, type, subtype)

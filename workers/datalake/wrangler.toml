@@ -19,7 +19,7 @@ r2_buckets = [
 
 [[hyperdrive]]
 binding = "HYPERDRIVE"
-id = "df254690599f401f9a84744a866243f1"
+id = "87259c3ae41e41a7b35e610d4282d85a"
 localConnectionString = "postgresql://root:roach@localhost:26257/datalake"
 
 [observability]
