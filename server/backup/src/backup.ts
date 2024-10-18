@@ -26,6 +26,7 @@ import core, {
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
+  DOMAIN_TX,
   MeasureContext,
   MeasureMetricsContext,
   RateLimiter,
@@ -44,8 +45,9 @@ import { type StorageAdapter } from '@hcengineering/server-core'
 import { fullTextPushStagePrefix } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
-import { createWriteStream, existsSync, mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
+import { basename, dirname } from 'node:path'
 import { PassThrough } from 'node:stream'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
@@ -662,6 +664,13 @@ export async function backup (
             (options.include === undefined || options.include.has(it))
         )
     ]
+    domains.sort((a, b) => {
+      if (a === DOMAIN_TX) {
+        return -1
+      }
+
+      return a.localeCompare(b)
+    })
 
     ctx.info('domains for dump', { domains: domains.length })
 
@@ -863,12 +872,15 @@ export async function backup (
       const digest = await ctx.with('load-digest', {}, (ctx) => loadDigest(ctx, storage, backupInfo.snapshots, domain))
 
       let _pack: Pack | undefined
+      let _packClose = async (): Promise<void> => {}
       let addedDocuments = (): number => 0
 
       progress(0)
       let { changed, needRetrieveChunks } = await ctx.with('load-chunks', { domain }, (ctx) =>
         loadChangesFromServer(ctx, domain, digest, changes)
       )
+      processedChanges.removed = Array.from(digest.keys())
+      digest.clear()
       progress(10)
 
       if (needRetrieveChunks.length > 0) {
@@ -878,6 +890,10 @@ export async function backup (
       const totalChunks = needRetrieveChunks.flatMap((it) => it.length).reduce((p, c) => p + c, 0)
       let processed = 0
       let blobs = 0
+
+      try {
+        global.gc?.()
+      } catch (err) {}
 
       while (needRetrieveChunks.length > 0) {
         if (canceled()) {
@@ -910,11 +926,16 @@ export async function backup (
 
         while (docs.length > 0) {
           // Chunk data into small pieces
-          if (addedDocuments() > dataBlobSize && _pack !== undefined) {
-            _pack.finalize()
-            _pack = undefined
+          if (
+            (addedDocuments() > dataBlobSize || processedChanges.added.size + processedChanges.updated.size > 500000) &&
+            _pack !== undefined
+          ) {
+            await _packClose()
 
             if (changed > 0) {
+              try {
+                global.gc?.()
+              } catch (err) {}
               snapshot.domains[domain] = domainInfo
               domainInfo.added += processedChanges.added.size
               domainInfo.updated += processedChanges.updated.size
@@ -940,7 +961,9 @@ export async function backup (
             const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
             ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
             domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
-            const dataStream = await storage.write(storageFile)
+            const tmpFile = basename(storageFile) + '.tmp'
+            const tempFile = createWriteStream(tmpFile)
+            // const dataStream = await storage.write(storageFile)
 
             const sizePass = new PassThrough()
             let sz = 0
@@ -951,12 +974,26 @@ export async function backup (
               cb()
             }
 
-            sizePass.pipe(dataStream)
+            sizePass.pipe(tempFile)
 
             const storageZip = createGzip({ level: defaultLevel, memLevel: 9 })
             addedDocuments = () => sz
             _pack.pipe(storageZip)
             storageZip.pipe(sizePass)
+
+            _packClose = async () => {
+              _pack?.finalize()
+              storageZip.destroy()
+              _pack?.destroy()
+              tempFile.destroy()
+
+              // We need to upload file to storage
+              ctx.info('Upload pack file', { storageFile, size: sz, workspace: workspaceId.name })
+              await storage.writeFile(storageFile, createReadStream(tmpFile))
+              await rm(tmpFile)
+
+              _pack = undefined
+            }
           }
           if (canceled()) {
             return
@@ -1025,7 +1062,7 @@ export async function backup (
                 }
               })
 
-              const finalBuffer = Buffer.concat(buffers)
+              const finalBuffer = Buffer.concat(buffers as any)
               if (finalBuffer.length !== blob.size) {
                 ctx.error('download blob size mismatch', {
                   _id: blob._id,
@@ -1078,7 +1115,7 @@ export async function backup (
           }
         }
       }
-      processedChanges.removed = Array.from(digest.keys())
+
       if (processedChanges.removed.length > 0) {
         changed++
       }
@@ -1097,7 +1134,7 @@ export async function backup (
         processedChanges.added.clear()
         processedChanges.removed = []
         processedChanges.updated.clear()
-        _pack?.finalize()
+        await _packClose()
         // This will allow to retry in case of critical error.
         await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
       }
@@ -1108,6 +1145,14 @@ export async function backup (
       if (canceled()) {
         break
       }
+      const oldUsed = process.memoryUsage().heapUsed
+      try {
+        global.gc?.()
+      } catch (err) {}
+      ctx.info('memory-stats', {
+        old: Math.round(oldUsed / (1024 * 1024)),
+        current: Math.round(process.memoryUsage().heapUsed / (1024 * 1024))
+      })
       await ctx.with('process-domain', { domain }, async (ctx) => {
         await processDomain(ctx, domain, (value) => {
           options.progress?.(Math.round(((domainProgress + value / 100) / domains.length) * 100))
@@ -1457,6 +1502,12 @@ export async function restore (
     const changeset = await loadDigest(ctx, storage, snapshots, c, opt.date)
     // We need to load full changeset from server
     const serverChangeset = new Map<Ref<Doc>, string>()
+
+    const oldUsed = process.memoryUsage().heapUsed
+    try {
+      global.gc?.()
+    } catch (err) {}
+    ctx.info('memory-stats', { old: oldUsed / (1024 * 1024), current: process.memoryUsage().heapUsed / (1024 * 1024) })
 
     let idx: number | undefined
     let loaded = 0
