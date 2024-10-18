@@ -169,7 +169,7 @@ async function performESBuild(filesToTranspile) {
     minify: false,
     outdir: 'lib',
     keepNames: true,
-    sourcemap: 'inline',
+    sourcemap: 'linked',
     allowOverwrite: true,
     format: 'cjs',
     plugins: [
