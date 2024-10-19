@@ -19,7 +19,7 @@
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  export let query: string = ''
+  export let query = ''
 
   let items: SearchItem[] = []
 
@@ -29,7 +29,7 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem (item: SearchResultDoc): void {
+  function dispatchItem(item: SearchResultDoc): void {
     dispatch('close', {
       id: item.id,
       label: item.shortTitle ?? item.title,
@@ -37,7 +37,7 @@
     })
   }
 
-  export function onKeyDown (key: KeyboardEvent): boolean {
+  export function onKeyDown(key: KeyboardEvent): boolean {
     if (key.key === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()

@@ -19,7 +19,7 @@
   import { createEventDispatcher } from 'svelte'
   import emojiReplaceDict from './extension/emojiIdMap.json'
 
-  export let query: string = ''
+  export let query = ''
 
   let items = Object.entries(emojiReplaceDict)
 

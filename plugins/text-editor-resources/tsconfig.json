@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
-    "declarationDir": "./types"
+    "declarationDir": "./types",
+    "resolveJsonModule": true
   }
 }

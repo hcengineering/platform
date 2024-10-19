@@ -18,7 +18,7 @@
   import { onDestroy, onMount } from 'svelte'
   import DummyPopup from './DummyPopup.svelte'
 
-  export let query: string = ''
+  export let query = ''
   export let clientRect: () => ClientRect
   export let command: (props: any) => void
   export let close: () => void
