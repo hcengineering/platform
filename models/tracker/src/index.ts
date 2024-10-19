@@ -602,7 +602,8 @@ export function createModel (builder: Builder): void {
       title: tracker.string.Issues,
       query: tracker.completion.IssueQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: tracker.class.Issue
+      classToSearch: tracker.class.Issue,
+      priority: 300
     },
     tracker.completion.IssueCategory
   )
