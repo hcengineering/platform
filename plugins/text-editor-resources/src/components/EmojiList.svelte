@@ -24,7 +24,7 @@
 
   let searchPopup: EmojiPopup
 
-  function dispatchItem(item: { id: string; objectclass: string }): void {
+  function dispatchItem(item?: { id: string; objectclass: string }): void {
     if (item == null) {
       close()
     } else {
