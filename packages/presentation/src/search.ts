@@ -98,9 +98,14 @@ async function doFulltextSearch (
   }
 
   return sections.sort((a, b) => {
-    const maxScoreA = Math.max(...(a?.items ?? []).map((obj) => obj?.score ?? 0))
-    const maxScoreB = Math.max(...(b?.items ?? []).map((obj) => obj?.score ?? 0))
-    return maxScoreB - maxScoreA
+    const ac = categories.indexOf(a.category)
+    const bc = categories.indexOf(b.category)
+    if (ac === bc) {
+      const maxScoreA = Math.max(...(a?.items ?? []).map((obj) => obj?.score ?? 0))
+      const maxScoreB = Math.max(...(b?.items ?? []).map((obj) => obj?.score ?? 0))
+      return maxScoreB - maxScoreA
+    }
+    return ac - bc
   })
 }
 
@@ -114,6 +119,8 @@ export async function searchFor (
   let categories = categoriesByContext.get(context)
   if (categories === undefined) {
     categories = await client.findAll(plugin.class.ObjectSearchCategory, { context })
+
+    categories.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     categoriesByContext.set(context, categories)
   }
 

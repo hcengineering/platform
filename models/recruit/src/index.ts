@@ -1048,7 +1048,8 @@ export function createModel (builder: Builder): void {
       title: recruit.string.Applications,
       query: recruit.completion.ApplicationQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: recruit.class.Applicant
+      classToSearch: recruit.class.Applicant,
+      priority: 500
     },
     recruit.completion.ApplicationCategory
   )
@@ -1062,7 +1063,8 @@ export function createModel (builder: Builder): void {
       title: recruit.string.Vacancies,
       query: recruit.completion.VacancyQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: recruit.class.Vacancy
+      classToSearch: recruit.class.Vacancy,
+      priority: 550
     },
     recruit.completion.VacancyCategory
   )
