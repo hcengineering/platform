@@ -64,6 +64,14 @@
   function updateStatuses (taskTypes: IdMap<TaskType>, store: IdMap<Status>, kind: Ref<TaskType> | undefined): void {
     if (kind === undefined) {
       statuses = []
+      if (Array.isArray(value)) {
+        const statusIds = value
+          .map((k) => taskTypes.get(k.kind))
+          .filter((p) => p !== undefined)
+          .map((t) => t?.statuses ?? [])
+        const intersectingStatuses = statusIds[0].filter((p) => statusIds.every((sArray) => sArray.includes(p)))
+        statuses = intersectingStatuses.map((s) => store.get(s)).filter((p) => p !== undefined) as Status[]
+      }
     } else {
       const type = taskTypes.get(kind)
       if (type !== undefined) {
