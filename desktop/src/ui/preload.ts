@@ -130,6 +130,12 @@ const expose: IPCMainExposed = {
     })
   },
 
+  handleAuth: (callback) => {
+    ipcRenderer.on('handle-auth', (event, value) => {
+      callback(value)
+    })
+  },
+
   async setFrontCookie (host: string, name: string, value: string): Promise<void> {
     ipcRenderer.send('set-front-cookie', host, name, value)
   },

@@ -95,6 +95,7 @@
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
         "SES_URL": "",
+        // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
         "MINIO_ACCESS_KEY": "minioadmin",
         "MINIO_SECRET_KEY": "minioadmin",
@@ -381,9 +382,7 @@
         "PORT": "4005",
         "SECRET": "secret",
         "MONGO_URL": "mongodb://localhost:27017",
-        "MINIO_ENDPOINT": "localhost",
-        "MINIO_ACCESS_KEY": "minioadmin",
-        "MINIO_SECRET_KEY": "minioadmin"
+        "STORAGE_CONFIG": "minio|localhost?accessKey=minioadmin&secretKey=minioadmin"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

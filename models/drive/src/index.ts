@@ -444,7 +444,8 @@ function defineFolder (builder: Builder): void {
       label: presentation.string.Search,
       query: drive.completion.FolderQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: drive.class.Folder
+      classToSearch: drive.class.Folder,
+      priority: 700
     },
     drive.completion.FolderCategory
   )
@@ -594,7 +595,8 @@ function defineFile (builder: Builder): void {
       label: presentation.string.Search,
       query: drive.completion.FileQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: drive.class.File
+      classToSearch: drive.class.File,
+      priority: 600
     },
     drive.completion.FileCategory
   )

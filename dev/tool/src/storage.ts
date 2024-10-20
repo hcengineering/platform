@@ -144,6 +144,23 @@ async function processAdapter (
   let movedBytes = 0
   let batchBytes = 0
 
+  function printStats (): void {
+    const duration = Date.now() - time
+    console.log(
+      '...processed',
+      processedCnt,
+      Math.round(processedBytes / 1024 / 1024) + 'MB',
+      'moved',
+      movedCnt,
+      Math.round(movedBytes / 1024 / 1024) + 'MB',
+      '+' + Math.round(batchBytes / 1024 / 1024) + 'MB',
+      Math.round(duration / 1000) + 's'
+    )
+
+    batchBytes = 0
+    time = Date.now()
+  }
+
   const rateLimiter = new RateLimiter(params.concurrency)
 
   const iterator = await source.listStream(ctx, workspaceId)
@@ -152,21 +169,27 @@ async function processAdapter (
 
   const targetBlobs = new Map<Ref<Blob>, ListBlobResult>()
 
-  while (true) {
-    const part = await targetIterator.next()
-    for (const p of part) {
-      targetBlobs.set(p._id, p)
-    }
-    if (part.length === 0) {
-      break
-    }
-  }
+  let targetFilled = false
 
   const toRemove: string[] = []
   try {
     while (true) {
       const dataBulk = await iterator.next()
       if (dataBulk.length === 0) break
+
+      if (!targetFilled) {
+        // Only fill target if have something to move.
+        targetFilled = true
+        while (true) {
+          const part = await targetIterator.next()
+          for (const p of part) {
+            targetBlobs.set(p._id, p)
+          }
+          if (part.length === 0) {
+            break
+          }
+        }
+      }
 
       for (const data of dataBulk) {
         let targetBlob: Blob | ListBlobResult | undefined = targetBlobs.get(data._id)
@@ -219,22 +242,7 @@ async function processAdapter (
 
         if (processedCnt % 100 === 0) {
           await rateLimiter.waitProcessing()
-
-          const duration = Date.now() - time
-
-          console.log(
-            '...processed',
-            processedCnt,
-            Math.round(processedBytes / 1024 / 1024) + 'MB',
-            'moved',
-            movedCnt,
-            Math.round(movedBytes / 1024 / 1024) + 'MB',
-            '+' + Math.round(batchBytes / 1024 / 1024) + 'MB',
-            Math.round(duration / 1000) + 's'
-          )
-
-          batchBytes = 0
-          time = Date.now()
+          printStats()
         }
       }
     }
@@ -246,6 +254,7 @@ async function processAdapter (
         await source.remove(ctx, workspaceId, part)
       }
     }
+    printStats()
   } finally {
     await iterator.close()
   }

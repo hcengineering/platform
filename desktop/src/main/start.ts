@@ -124,6 +124,21 @@ function hookOpenWindow (window: BrowserWindow): void {
   })
 }
 
+function handleAuthRedirects (window: BrowserWindow): void {
+  window.webContents.on('will-redirect', (event) => {
+    if (event?.url.startsWith(`${FRONT_URL}/login/auth`)) {
+      console.log('Auth happened, redirecting to local index')
+      const urlObj = new URL(decodeURIComponent(event.url))
+      event.preventDefault()
+
+      void (async (): Promise<void> => {
+        await window.loadFile(path.join('dist', 'ui', 'index.html'))
+        window.webContents.send('handle-auth', urlObj.searchParams.get('token'))
+      })()
+    }
+  })
+}
+
 const createWindow = async (): Promise<void> => {
   mainWindow = new BrowserWindow({
     width: defaultWidth,
@@ -146,6 +161,7 @@ const createWindow = async (): Promise<void> => {
   }
   await mainWindow.loadFile(path.join('dist', 'ui', 'index.html'))
   addPermissionHandlers(mainWindow.webContents.session)
+  handleAuthRedirects(mainWindow)
 
   // In this example, only windows with the `about:blank` url will be created.
   // All other urls will be blocked.

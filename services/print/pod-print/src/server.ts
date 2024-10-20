@@ -193,7 +193,9 @@ export function createServer (dbUrl: string, storageConfig: StorageConfiguration
           throw new ApiError(400, 'Failed to convert')
         }
 
-        await storageAdapter.put(measureCtx, token.workspace, convertId, htmlRes, 'text/html', htmlRes.length)
+        const htmlBuf = Buffer.from(htmlRes)
+
+        await storageAdapter.put(measureCtx, token.workspace, convertId, htmlBuf, 'text/html', htmlBuf.length)
       }
 
       res.contentType('application/json')

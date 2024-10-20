@@ -988,7 +988,8 @@ export function createModel (builder: Builder): void {
       label: github.string.PullRequests,
       query: tracker.completion.IssueQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: github.class.GithubPullRequest
+      classToSearch: github.class.GithubPullRequest,
+      priority: 280
     },
     github.completion.PullRequestCategory
   )

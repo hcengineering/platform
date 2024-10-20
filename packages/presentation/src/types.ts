@@ -72,6 +72,8 @@ export interface ObjectSearchCategory extends Doc {
   // Query for documents with pattern
   query: Resource<ObjectSearchFactory>
   classToSearch?: Ref<Class<Doc>>
+
+  priority?: number
 }
 
 export interface ComponentExt {

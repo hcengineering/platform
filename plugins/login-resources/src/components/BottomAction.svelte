@@ -18,7 +18,7 @@
   import { NavLink } from '@hcengineering/presentation'
 
   import { getHref } from '../utils'
-  import { BottomAction } from '../index'
+  import { BottomAction, goTo } from '../index'
 
   export let action: BottomAction
 </script>
@@ -28,7 +28,16 @@
     <span><Label label={action.caption} /></span>
   {/if}
   {#if action.page}
-    <NavLink href={getHref(action.page)}><Label label={action.i18n} /></NavLink>
+    <NavLink
+      href={getHref(action.page)}
+      onClick={() => {
+        if (action.func !== undefined) {
+          action.func()
+        } else if (action.page !== undefined) {
+          goTo(action.page)
+        }
+      }}><Label label={action.i18n} /></NavLink
+    >
   {:else}
     <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
   {/if}

@@ -1,0 +1,48 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "datalake-worker"
+main = "src/index.ts"
+compatibility_date = "2024-07-01"
+compatibility_flags = ["nodejs_compat"]
+keep_vars = true
+
+kv_namespaces = [
+  { binding = "datalake_blobs", id = "64144eb146fd45febc928d44419ebb39",  preview_id = "31c6f6e76e7e4524a59f87a4f381de82" }
+]
+
+r2_buckets = [
+  { binding = "DATALAKE_APAC", bucket_name = "datalake-apac", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_EEUR", bucket_name = "datalake-eeur", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_WEUR", bucket_name = "datalake-weur", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_ENAM", bucket_name = "datalake-enam", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_WNAM", bucket_name = "datalake-wnam", preview_bucket_name = "dev-datalake-eu-west" }
+]
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "87259c3ae41e41a7b35e610d4282d85a"
+localConnectionString = "postgresql://root:roach@localhost:26257/datalake"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+DATALAKE_EEUR_BUCKET_NAME = "datalake-eeur"
+# DATALAKE_EEUR_ACCESS_KEY = ""
+# DATALAKE_EEUR_SECRET_KEY = ""
+DATALAKE_WEUR_BUCKET_NAME = "datalake-weur"
+# DATALAKE_WEUR_ACCESS_KEY = ""
+# DATALAKE_WEUR_SECRET_KEY = ""
+DATALAKE_APAC_BUCKET_NAME = "datalake-apac"
+# DATALAKE_APAC_ACCESS_KEY = ""
+# DATALAKE_APAC_SECRET_KEY = ""
+DATALAKE_ENAM_BUCKET_NAME = "datalake-enam"
+# DATALAKE_ENAM_ACCESS_KEY = ""
+# DATALAKE_ENAM_SECRET_KEY = ""
+DATALAKE_WNAM_BUCKET_NAME = "datalake-wnam"
+# DATALAKE_WNAM_ACCESS_KEY = ""
+# DATALAKE_WNAM_SECRET_KEY = ""
+
+# STREAMS_ACCOUNT_ID = ""
+# STREAMS_AUTH_KEY = ""
+# R2_ACCOUNT_ID = ""

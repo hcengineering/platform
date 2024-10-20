@@ -39,7 +39,7 @@ import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
 import tracker, { trackerId } from '@hcengineering/tracker'
-import uiPlugin, { getCurrentLocation, locationStorageKeyId, navigate, setLocationStorageKey } from '@hcengineering/ui'
+import uiPlugin, { getCurrentLocation, locationStorageKeyId, locationToUrl, navigate, parseLocation, setLocationStorageKey } from '@hcengineering/ui'
 import { uploaderId } from '@hcengineering/uploader'
 import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -96,7 +96,7 @@ import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
+import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
 import love, { loveId } from '@hcengineering/love'
 import print, { printId } from '@hcengineering/print'
@@ -205,6 +205,7 @@ export async function configurePlatform (): Promise<void> {
   setMetadata(presentation.metadata.FilesURL, config.FILES_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
+  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')
@@ -336,6 +337,7 @@ export async function configurePlatform (): Promise<void> {
   }
 
   const last = localStorage.getItem(locationStorageKeyId)
+
   if (config.INITIAL_URL !== '') {
     console.log('NAVIGATE', config.INITIAL_URL, getCurrentLocation())
     // NavigationExpandedDefault=false fills buggy:
@@ -352,5 +354,6 @@ export async function configurePlatform (): Promise<void> {
   } else {
     navigate({ path: [] })
   }
+
   console.log('Initial location is: ', getCurrentLocation())
 }

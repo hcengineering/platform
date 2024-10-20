@@ -37,7 +37,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "itty-router": "^5.0.17"
+    "itty-router": "^5.0.18"
   },
   "private": true
 }
