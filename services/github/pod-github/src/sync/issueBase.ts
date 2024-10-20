@@ -1068,17 +1068,20 @@ export abstract class IssueSyncManagerBase {
     _class: Ref<Class<Doc>>,
     repo: GithubIntegrationRepository,
     issues: IssueExternalData[],
-    derivedClient: TxOperations
+    derivedClient: TxOperations,
+    syncDocs?: DocSyncInfo[]
   ): Promise<void> {
     if (repo.githubProject == null) {
       return
     }
-    const syncInfo = await this.client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
-      space: repo.githubProject,
-      repository: repo._id,
-      objectClass: _class,
-      url: { $in: issues.map((it) => (it.url ?? '').toLowerCase()) }
-    })
+    const syncInfo =
+      syncDocs ??
+      (await this.client.findAll<DocSyncInfo>(github.class.DocSyncInfo, {
+        space: repo.githubProject,
+        repository: repo._id,
+        objectClass: _class,
+        url: { $in: issues.map((it) => (it.url ?? '').toLowerCase()) }
+      }))
 
     const ops = derivedClient.apply()
 
@@ -1088,8 +1091,10 @@ export abstract class IssueSyncManagerBase {
           this.ctx.info('Retrieve empty document', { repo: repo.name, workspace: this.provider.getWorkspaceId().name })
           continue
         }
-        const existing = syncInfo.find((it) => it.url === issue.url.toLowerCase())
-        if (existing === undefined) {
+        const existing =
+          syncInfo.find((it) => it.url.toLowerCase() === issue.url.toLowerCase()) ??
+          syncInfo.find((it) => (it.external as IssueExternalData)?.id === issue.id)
+        if (existing === undefined && syncDocs === undefined) {
           this.ctx.info('Create sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId().name })
           await ops.createDoc<DocSyncInfo>(github.class.DocSyncInfo, repo.githubProject, {
             url: issue.url.toLowerCase(),
@@ -1103,7 +1108,10 @@ export abstract class IssueSyncManagerBase {
             externalVersionSince: '',
             lastModified: new Date(issue.updatedAt).getTime()
           })
-        } else {
+        } else if (existing !== undefined) {
+          if (syncDocs !== undefined) {
+            syncDocs = syncDocs.filter((it) => it._id !== existing._id)
+          }
           const externalEqual = deepEqual(existing.external, issue)
           if (!externalEqual || existing.externalVersion !== githubExternalSyncVersion) {
             this.ctx.info('Update sync doc', { url: issue.url, workspace: this.provider.getWorkspaceId().name })
@@ -1125,6 +1133,14 @@ export abstract class IssueSyncManagerBase {
         Analytics.handleError(err)
         this.ctx.error(err)
       }
+    }
+    // if no sync doc, mark it as synchronized
+    for (const sd of syncDocs ?? []) {
+      await ops.update(sd, {
+        needSync: githubSyncVersion,
+        externalVersion: githubExternalSyncVersion,
+        error: 'not found external doc'
+      })
     }
     await ops.commit(true)
     this.provider.sync()
