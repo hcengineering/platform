@@ -2,7 +2,7 @@
 // Copyright © 2023 Hardcore Engineering Inc.
 //
 
-import core, { toIdMap, type AnyAttribute, type Ref, type Status } from '@hcengineering/core'
+import core, { DOMAIN_TX, toIdMap, type AnyAttribute, type Ref, type Status } from '@hcengineering/core'
 import {
   tryMigrate,
   tryUpgrade,
@@ -326,6 +326,12 @@ export const githubOperationPreTime: MigrateOperation = {
       {
         state: 'migrate-missing-states',
         func: migrateMissingStates
+      },
+      {
+        state: 'remove-doc-sync-info-txes',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_TX, { objectClass: github.class.DocSyncInfo })
+        }
       }
     ])
   },
