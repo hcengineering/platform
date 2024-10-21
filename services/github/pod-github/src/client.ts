@@ -37,6 +37,7 @@ export async function createPlatformClient (
     { mode: 'github' }
   )
   setMetadata(client.metadata.ConnectionTimeout, timeout)
+  setMetadata(client.metadata.FilterModel, 'client')
   const endpoint = await getTransactorEndpoint(token)
   const connection = await (
     await clientResources()
