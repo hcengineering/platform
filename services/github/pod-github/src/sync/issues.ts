@@ -980,7 +980,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     // Wait global project sync
     await integration.syncLock.get(prj._id)
 
-    const ids = syncDocs.map((it) => (it.external as IssueExternalData).id).filter((it) => it !== undefined)
+    const allSyncDocs = [...syncDocs]
     //
     let partsize = 50
     try {
@@ -988,7 +988,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
         if (this.provider.isClosing()) {
           break
         }
-        const idsPart = ids.splice(0, partsize)
+        const docsPart = allSyncDocs.splice(0, partsize)
+        const idsPart = docsPart.map((it) => (it.external as IssueExternalData).id).filter((it) => it !== undefined)
         if (idsPart.length === 0) {
           break
         }
@@ -1023,11 +1024,11 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
             })
           }
 
-          await this.syncIssues(tracker.class.Issue, repo, issues, derivedClient)
+          await this.syncIssues(tracker.class.Issue, repo, issues, derivedClient, docsPart)
         } catch (err: any) {
           if (partsize > 1) {
             partsize = 1
-            ids.push(...idsPart)
+            allSyncDocs.push(...docsPart)
             this.ctx.warn('issue external retrieval switch to one by one mode', {
               errors: err.errors,
               msg: err.message,
