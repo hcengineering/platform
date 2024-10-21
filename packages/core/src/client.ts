@@ -13,17 +13,16 @@
 // limitations under the License.
 //
 
-import { Plugin } from '@hcengineering/platform'
 import { BackupClient, DocChunk } from './backup'
-import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Timestamp } from './classes'
+import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
-import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
-import { toFindResult, toIdMap } from './utils'
+import { Tx, TxCUD, TxCollectionCUD } from './tx'
+import { toFindResult } from './utils'
 
 const transactionThreshold = 500
 
@@ -215,13 +214,15 @@ export interface TxPersistenceStore {
   store: (model: LoadModelResponse) => Promise<void>
 }
 
+export type ModelFilter = (tx: Tx[]) => Promise<Tx[]>
+
 /**
  * @public
  */
 export async function createClient (
   connect: (txHandler: TxHandler) => Promise<ClientConnection>,
   // If set will build model with only allowed plugins.
-  allowedPlugins?: Plugin[],
+  modelFilter?: ModelFilter,
   txPersistence?: TxPersistenceStore,
   _ctx?: MeasureContext
 ): Promise<AccountClient> {
@@ -248,14 +249,12 @@ export async function createClient (
     }
     lastTx = tx.reduce((cur, it) => (it.modifiedOn > cur ? it.modifiedOn : cur), 0)
   }
-  const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
-
   const conn = await ctx.with('connect', {}, async () => await connect(txHandler))
 
   await ctx.with(
     'load-model',
     { reload: false },
-    async (ctx) => await loadModel(ctx, conn, allowedPlugins, configs, hierarchy, model, false, txPersistence)
+    async (ctx) => await loadModel(ctx, conn, modelFilter, hierarchy, model, false, txPersistence)
   )
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
@@ -277,7 +276,7 @@ export async function createClient (
     const loadModelResponse = await ctx.with(
       'connect',
       { reload: true },
-      async (ctx) => await loadModel(ctx, conn, allowedPlugins, configs, hierarchy, model, true, txPersistence)
+      async (ctx) => await loadModel(ctx, conn, modelFilter, hierarchy, model, true, txPersistence)
     )
 
     if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
@@ -286,7 +285,7 @@ export async function createClient (
       model = new ModelDb(hierarchy)
 
       await ctx.with('build-model', {}, async (ctx) => {
-        await buildModel(ctx, loadModelResponse, allowedPlugins, configs, hierarchy, model)
+        await buildModel(ctx, loadModelResponse, modelFilter, hierarchy, model)
       })
       await oldOnConnect?.(ClientConnectEvent.Upgraded)
 
@@ -393,8 +392,7 @@ function isPersonAccount (tx: Tx): boolean {
 async function loadModel (
   ctx: MeasureContext,
   conn: ClientConnection,
-  allowedPlugins: Plugin[] | undefined,
-  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  modelFilter: ModelFilter | undefined,
   hierarchy: Hierarchy,
   model: ModelDb,
   reload = false,
@@ -418,19 +416,18 @@ async function loadModel (
     )
   }
 
-  await ctx.with('build-model', {}, (ctx) => buildModel(ctx, modelResponse, allowedPlugins, configs, hierarchy, model))
+  await ctx.with('build-model', {}, (ctx) => buildModel(ctx, modelResponse, modelFilter, hierarchy, model))
   return modelResponse
 }
 
 async function buildModel (
   ctx: MeasureContext,
   modelResponse: LoadModelResponse,
-  allowedPlugins: Plugin[] | undefined,
-  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  modelFilter: ModelFilter | undefined,
   hierarchy: Hierarchy,
   model: ModelDb
 ): Promise<void> {
-  let systemTx: Tx[] = []
+  const systemTx: Tx[] = []
   const userTx: Tx[] = []
 
   const atxes = modelResponse.transactions
@@ -444,22 +441,10 @@ async function buildModel (
     )
   })
 
-  if (allowedPlugins != null) {
-    await ctx.with('fill config system', {}, async () => {
-      fillConfiguration(systemTx, configs)
-    })
-    await ctx.with('fill config user', {}, async () => {
-      fillConfiguration(userTx, configs)
-    })
-    const excludedPlugins = Array.from(configs.values()).filter(
-      (it) => !it.enabled || !allowedPlugins.includes(it.pluginId)
-    )
-    await ctx.with('filter txes', {}, async () => {
-      systemTx = pluginFilterTx(excludedPlugins, configs, systemTx)
-    })
+  let txes = systemTx.concat(userTx)
+  if (modelFilter !== undefined) {
+    txes = await modelFilter(txes)
   }
-
-  const txes = systemTx.concat(userTx)
 
   await ctx.with('build hierarchy', {}, async () => {
     for (const tx of txes) {
@@ -487,61 +472,4 @@ function getLastTxTime (txes: Tx[]): number {
     }
   }
   return lastTxTime
-}
-
-function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {
-  for (const t of systemTx) {
-    if (t._class === core.class.TxCreateDoc) {
-      const ct = t as TxCreateDoc<Doc>
-      if (ct.objectClass === core.class.PluginConfiguration) {
-        configs.set(ct.objectId as Ref<PluginConfiguration>, TxProcessor.createDoc2Doc(ct) as PluginConfiguration)
-      }
-    } else if (t._class === core.class.TxUpdateDoc) {
-      const ut = t as TxUpdateDoc<Doc>
-      if (ut.objectClass === core.class.PluginConfiguration) {
-        const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
-        if (c !== undefined) {
-          TxProcessor.updateDoc2Doc(c, ut)
-        }
-      }
-    }
-  }
-}
-
-function pluginFilterTx (
-  excludedPlugins: PluginConfiguration[],
-  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
-  systemTx: Tx[]
-): Tx[] {
-  const stx = toIdMap(systemTx)
-  const totalExcluded = new Set<Ref<Tx>>()
-  let msg = ''
-  for (const a of excludedPlugins) {
-    for (const c of configs.values()) {
-      if (a.pluginId === c.pluginId) {
-        for (const id of c.transactions) {
-          if (c.classFilter !== undefined) {
-            const filter = new Set(c.classFilter)
-            const tx = stx.get(id as Ref<Tx>)
-            if (
-              tx?._class === core.class.TxCreateDoc ||
-              tx?._class === core.class.TxUpdateDoc ||
-              tx?._class === core.class.TxRemoveDoc
-            ) {
-              const cud = tx as TxCUD<Doc>
-              if (filter.has(cud.objectClass)) {
-                totalExcluded.add(id as Ref<Tx>)
-              }
-            }
-          } else {
-            totalExcluded.add(id as Ref<Tx>)
-          }
-        }
-        msg += ` ${c.pluginId}:${c.transactions.length}`
-      }
-    }
-  }
-  console.log('exclude plugin', msg)
-  systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
-  return systemTx
 }
