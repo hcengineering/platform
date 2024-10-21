@@ -2,6 +2,61 @@
 
 Changelog.
 
+## [0.6.333] - 2024-10-20
+
+* UBERF-8516: · Stable mentions popup ([#6993](https://github.com/hcengineering/platform/issues/6993)) 
+
+## [s0.6.332] - 2024-10-18
+
+* UBERF-8427: · Fix desktop oauth flow ([#6975](https://github.com/hcengineering/platform/issues/6975)) 
+* UBERF-8500: · Improve OIDC init logging ([#6981](https://github.com/hcengineering/platform/issues/6981)) 
+* QFIX: · Pass file uuid to uppy metadata ([#6985](https://github.com/hcengineering/platform/issues/6985)) 
+* UBERF-8511: · Configurable account db ns ([#6978](https://github.com/hcengineering/platform/issues/6978)) 
+
+## [s0.6.331] - 2024-10-18
+
+* 🚀 FEATURES: · Datalake worker initial version ([#6952](https://github.com/hcengineering/platform/issues/6952)) 
+* 🐛 BUG FIXES: · Use ordered list start attribute ([#6974](https://github.com/hcengineering/platform/issues/6974)) 
+* UBERF-8510: · Fix OOM in backup service ([#6973](https://github.com/hcengineering/platform/issues/6973)) 
+* UBERF-8509: · Fix docx to html conversion ([#6970](https://github.com/hcengineering/platform/issues/6970)) 
+
+## [0.6.331] - 2024-10-16
+
+* UBERF-8499: · Optimize indexer operation ([#6959](https://github.com/hcengineering/platform/issues/6959)) 
+
+## [0.6.330] - 2024-10-16
+
+* 🐛 BUG FIXES: · Revert document content field rename ([#6955](https://github.com/hcengineering/platform/issues/6955)) · Use const slack link ([#6935](https://github.com/hcengineering/platform/issues/6935)) 
+* UBERF-8455: · Fix admin users ([#6909](https://github.com/hcengineering/platform/issues/6909)) 
+* UBERF-8461: · Fix migration do not clean backup info ([#6913](https://github.com/hcengineering/platform/issues/6913)) 
+* UBERF-8469: · Fix exit from github service ([#6921](https://github.com/hcengineering/platform/issues/6921)) 
+* QFIX: · Disable applicant preview ([#6962](https://github.com/hcengineering/platform/issues/6962)) 
+
+## [0.6.329] - 2024-10-16
+
+* 🐛 BUG FIXES: · Use const slack link ([#6935](https://github.com/hcengineering/platform/issues/6935)) 
+* UBERF-8429: · Allow to disable sign-ups ([#6934](https://github.com/hcengineering/platform/issues/6934)) 
+* UBERF-8469: · Fix exit from github service ([#6921](https://github.com/hcengineering/platform/issues/6921)) 
+* UBERF-8499: · Use our generateId for ydocs ([#6958](https://github.com/hcengineering/platform/issues/6958)) · Optimize indexer operation ([#6959](https://github.com/hcengineering/platform/issues/6959)) 
+* UBERF-8480: · Configurable liveness condition for upgrade ([#6943](https://github.com/hcengineering/platform/issues/6943)) 
+* UBERF-8481: · Upgrade desktop upgrade UX ([#6957](https://github.com/hcengineering/platform/issues/6957)) 
+* UBERF-8485: · Fix sounds ([#6944](https://github.com/hcengineering/platform/issues/6944)) 
+
+## [0.6.328] - 2024-10-14
+
+* UBERF-8461: · Fix migration do not clean backup info ([#6913](https://github.com/hcengineering/platform/issues/6913)) 
+
+## [0.6.326] - 2024-10-13
+
+* UBERF-7911: · Branding worker ([#6858](https://github.com/hcengineering/platform/issues/6858)) 
+* UBERF-8426: · Controlled account db migration ([#6885](https://github.com/hcengineering/platform/issues/6885)) 
+* UBERF-8445: · More smart admin mode ([#6897](https://github.com/hcengineering/platform/issues/6897)) 
+* UBERF-8455: · Fix admin users ([#6909](https://github.com/hcengineering/platform/issues/6909)) 
+
+## [0.6.325] - 2024-10-12
+
+* UBERF-8445: · More smart admin mode ([#6897](https://github.com/hcengineering/platform/issues/6897)) 
+
 ## [0.6.322] - 2024-10-10
 
 * 🐛 BUG FIXES: · Code block formatting in one line ([#6866](https://github.com/hcengineering/platform/issues/6866)) 
