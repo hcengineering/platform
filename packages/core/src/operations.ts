@@ -314,7 +314,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 
   apply (scope?: string, measure?: string): ApplyOperations {
-    return new ApplyOperations(this, scope, measure)
+    return new ApplyOperations(this, scope, measure, this.isDerived)
   }
 
   async diffUpdate<T extends Doc = Doc>(
