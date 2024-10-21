@@ -27,7 +27,7 @@ export function startBackup (
   pipelineFactoryFactory: (mongoUrl: string, storage: StorageAdapter) => PipelineFactory,
   getConfig: (
     ctx: MeasureContext,
-    dbUrls: string,
+    dbUrl: string,
     workspace: WorkspaceIdWithUrl,
     branding: Branding | null,
     externalStorage: StorageAdapter
@@ -38,13 +38,12 @@ export function startBackup (
   setMetadata(serverClientPlugin.metadata.UserAgent, config.ServiceID)
 
   const mainDbUrl = config.DbURL
-  const rawDbUrl = config.MongoURL
 
   const backupStorageConfig = storageConfigFromEnv(config.Storage)
   const workspaceStorageConfig = storageConfigFromEnv(config.WorkspaceStorage)
 
   const storageAdapter = createStorageFromConfig(backupStorageConfig.storages[0])
-  const workspaceStorageAdapter = buildStorageFromConfig(workspaceStorageConfig, rawDbUrl ?? mainDbUrl)
+  const workspaceStorageAdapter = buildStorageFromConfig(workspaceStorageConfig)
 
   const pipelineFactory = pipelineFactoryFactory(mainDbUrl, workspaceStorageAdapter)
 

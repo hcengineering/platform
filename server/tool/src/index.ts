@@ -35,7 +35,8 @@ import core, {
   WorkspaceId,
   WorkspaceIdWithUrl,
   type Doc,
-  type Ref
+  type Ref,
+  type WithLookup
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
@@ -79,11 +80,9 @@ export class FileModelLogger implements ModelLogger {
  * @public
  */
 export function prepareTools (rawTxes: Tx[]): {
-  mongodbUri: string | undefined
   dbUrl: string
   txes: Tx[]
 } {
-  const mongodbUri = process.env.MONGO_URL
   const dbUrl = process.env.DB_URL
   if (dbUrl === undefined) {
     console.error('please provide db url.')
@@ -91,7 +90,6 @@ export function prepareTools (rawTxes: Tx[]): {
   }
 
   return {
-    mongodbUri,
     dbUrl,
     txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[]
   }
@@ -157,7 +155,12 @@ export async function updateModel (
 
   const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
-  const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
+
+  const _toSet = (vals: WithLookup<MigrationState>[]): Set<string> => {
+    return new Set(vals.map((q) => q.state))
+  }
+
+  const migrateState = new Map<string, Set<string>>(sts.map((it) => [it[0], _toSet(it[1])]))
 
   try {
     let i = 0
@@ -447,9 +450,11 @@ async function createUpdateIndexes (
     if (adapter === undefined) {
       throw new PlatformError(unknownError(`Adapter for domain ${domain} not found`))
     }
-    const dbHelper = adapter.helper()
+    const dbHelper = adapter.helper?.()
 
-    await domainHelper.checkDomain(ctx, domain, await dbHelper.estimatedCount(domain), dbHelper)
+    if (dbHelper !== undefined) {
+      await domainHelper.checkDomain(ctx, domain, await dbHelper.estimatedCount(domain), dbHelper)
+    }
     completed++
     await progress((100 / allDomains.length) * completed)
   }

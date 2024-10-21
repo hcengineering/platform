@@ -1,22 +1,4 @@
-import core, {
-  Hierarchy,
-  ModelDb,
-  TxProcessor,
-  toFindResult,
-  type Blob,
-  type Class,
-  type Doc,
-  type DocumentQuery,
-  type DocumentUpdate,
-  type Domain,
-  type FindOptions,
-  type FindResult,
-  type MeasureContext,
-  type Ref,
-  type WorkspaceId
-} from '@hcengineering/core'
-import { genMinModel } from '@hcengineering/core/src/__tests__/minmodel'
-import type { RawDBAdapter, RawDBAdapterStream } from '@hcengineering/server-core'
+import core, { type Blob, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
 import type { BlobStorageIterator, BucketInfo, StorageAdapter, UploadedObjectInfo } from '@hcengineering/storage'
 import { Readable } from 'stream'
 
@@ -102,7 +84,7 @@ export class MemStorageAdapter implements StorageAdapter {
         })
       })
     }
-    const data = Buffer.concat(buffer)
+    const data = Buffer.concat(buffer as any)
     const dta = {
       _class: core.class.Blob,
       _id: objectName as any,
@@ -114,7 +96,6 @@ export class MemStorageAdapter implements StorageAdapter {
       modifiedOn: Date.now(),
       provider: '_test',
       space: '' as any,
-      storageId: objectName,
       version: null,
       workspace: workspaceId.name
     }
@@ -147,96 +128,4 @@ export class MemStorageAdapter implements StorageAdapter {
   async getUrl (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<string> {
     return '/files/' + objectName
   }
-}
-
-export class MemRawDBAdapter implements RawDBAdapter {
-  hierarchy: Hierarchy
-  workspaces = new Map<string, ModelDb>()
-  constructor () {
-    this.hierarchy = new Hierarchy()
-    const minModel = genMinModel()
-    minModel.forEach((it) => {
-      this.hierarchy.tx(it)
-    })
-  }
-
-  async find<T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
-  ): Promise<FindResult<T>> {
-    const db = this.workspaces.get(workspace.name)
-    if (db === undefined) {
-      return toFindResult([])
-    }
-    return await db.findAll(core.class.Blob as Ref<Class<T>>, query, options)
-  }
-
-  async findStream<T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
-  ): Promise<RawDBAdapterStream<T>> {
-    const db = this.workspaces.get(workspace.name)
-
-    let result: T[] = []
-    if (db !== undefined) {
-      result = await db.findAll(core.class.Blob as Ref<Class<T>>, query, options)
-    }
-    return {
-      next: async () => {
-        return result.splice(0, 50)
-      },
-      close: async () => {}
-    }
-  }
-
-  async upload<T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: T[]): Promise<void> {
-    let db = this.workspaces.get(workspace.name)
-    if (db === undefined) {
-      db = new ModelDb(this.hierarchy)
-      this.workspaces.set(workspace.name, db)
-    }
-    for (const d of docs) {
-      db.addDoc(d)
-    }
-  }
-
-  async update<T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    docs: Map<Ref<T>, DocumentUpdate<T>>
-  ): Promise<void> {
-    let db = this.workspaces.get(workspace.name)
-    if (db === undefined) {
-      db = new ModelDb(this.hierarchy)
-      this.workspaces.set(workspace.name, db)
-    }
-    for (const [du, upd] of docs.entries()) {
-      const doc = db.getObject(du)
-      TxProcessor.applyUpdate<T>(doc, upd)
-    }
-  }
-
-  async clean<T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    docs: Ref<T>[]
-  ): Promise<void> {
-    const db = this.workspaces.get(workspace.name)
-    if (db === undefined) {
-      return
-    }
-    for (const d of docs) {
-      db.delDoc(d)
-    }
-  }
-
-  async close (): Promise<void> {}
 }

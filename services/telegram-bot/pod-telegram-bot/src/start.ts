@@ -78,7 +78,7 @@ export const start = async (): Promise<void> => {
   registerLoaders()
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const worker = await PlatformWorker.create(ctx, storageAdapter)
   const bot = await setUpBot(worker)

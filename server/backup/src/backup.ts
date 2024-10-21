@@ -1856,7 +1856,7 @@ export async function restore (
                   chunks.push(chunk)
                 })
                 stream.on('end', () => {
-                  const bf = Buffer.concat(chunks)
+                  const bf = Buffer.concat(chunks as any)
                   const doc = JSON.parse(bf.toString()) as Doc
                   if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
                     const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
@@ -2211,7 +2211,7 @@ export async function compactBackup (
                     chunks.push(chunk)
                   })
                   stream.on('end', () => {
-                    const bf = Buffer.concat(chunks)
+                    const bf = Buffer.concat(chunks as any)
                     const doc = JSON.parse(bf.toString()) as Doc
                     if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
                       const d = blobs.get(bname)
@@ -2314,7 +2314,6 @@ function migradeBlobData (blob: Blob, etag: string): string {
   if (blob._class === 'core:class:BlobData') {
     const bd = blob as unknown as BlobData
     blob.contentType = blob.contentType ?? bd.type
-    blob.storageId = bd._id
     blob.etag = etag
     blob._class = core.class.Blob
     delete (blob as any).type
