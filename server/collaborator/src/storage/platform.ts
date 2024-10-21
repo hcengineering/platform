@@ -124,7 +124,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     return await ctx.with('load-document', {}, async (ctx) => {
       return await withRetry(ctx, 5, async () => {
-        return await loadCollaborativeDoc(this.storage, context.workspaceId, collaborativeDoc, ctx)
+        return await loadCollaborativeDoc(ctx, this.storage, context.workspaceId, collaborativeDoc)
       })
     })
   }
@@ -139,7 +139,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     await ctx.with('save-document', {}, async (ctx) => {
       await withRetry(ctx, 5, async () => {
-        await saveCollaborativeDoc(this.storage, context.workspaceId, collaborativeDoc, document, ctx)
+        await saveCollaborativeDoc(ctx, this.storage, context.workspaceId, collaborativeDoc, document)
       })
     })
   }

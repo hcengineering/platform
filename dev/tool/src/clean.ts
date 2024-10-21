@@ -1270,7 +1270,7 @@ async function updateYDoc (
   doc: RelatedDocument
 ): Promise<void> {
   try {
-    const ydoc = await loadCollaborativeDoc(storage, workspaceId, _id, ctx)
+    const ydoc = await loadCollaborativeDoc(ctx, storage, workspaceId, _id)
     if (ydoc === undefined) {
       ctx.error('document content not found', { document: contentDoc._id })
       return
@@ -1284,7 +1284,7 @@ async function updateYDoc (
     })
 
     if (updatedYDoc !== undefined) {
-      await saveCollaborativeDoc(storage, workspaceId, _id, updatedYDoc, ctx)
+      await saveCollaborativeDoc(ctx, storage, workspaceId, _id, updatedYDoc)
     }
   } catch {
     // do nothing, the collaborative doc does not sem to exist yet
