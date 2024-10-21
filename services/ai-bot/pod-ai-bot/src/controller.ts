@@ -33,10 +33,10 @@ import OpenAI from 'openai'
 import { encodingForModel } from 'js-tiktoken'
 import { htmlToMarkup, markupToHTML } from '@hcengineering/text'
 
-import { WorkspaceClient } from './workspaceClient'
+import { WorkspaceClient } from './workspace/workspaceClient'
 import config from './config'
 import { DbStorage } from './storage'
-import { SupportWsClient } from './supportWsClient'
+import { SupportWsClient } from './workspace/supportWsClient'
 import { AIReplyTransferData } from './types'
 import { tryAssignToWorkspace } from './utils/account'
 import { translateHtml } from './utils/openai'
@@ -99,7 +99,7 @@ export class AIControl {
   }
 
   async createWorkspaceClient (workspace: string, info: WorkspaceInfoRecord): Promise<WorkspaceClient | undefined> {
-    const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
+    const isAssigned = await tryAssignToWorkspace( workspace, this.ctx)
 
     if (!isAssigned) {
       return

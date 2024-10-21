@@ -50,7 +50,7 @@ import core, {
 import { countTokens } from '@hcengineering/openai'
 import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
 import { getOrCreateOnboardingChannel } from '@hcengineering/server-analytics-collector-resources'
-import { BlobClient } from '@hcengineering/server-client'
+import { BlobClient, login } from '@hcengineering/server-client'
 import { jsonToMarkup, MarkdownParser, markupToText } from '@hcengineering/text'
 import fs from 'fs'
 import { WithId } from 'mongodb'
@@ -58,12 +58,11 @@ import OpenAI from 'openai'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
 import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
 
-import config from './config'
-import { AIControl } from './controller'
-import { connectPlatform, getDirect } from './utils/platform'
-import { HistoryRecord } from './types'
-import { loginBot } from './utils/account'
-import { createChatCompletion, requestSummary } from './utils/openai'
+import config from '../config'
+import { AIControl } from '../controller'
+import { connectPlatform, getDirect } from '../utils/platform'
+import { HistoryRecord } from '../types'
+import { createChatCompletion, requestSummary } from '../utils/openai'
 
 const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
 const UPDATE_TYPING_TIMEOUT_MS = 1000
@@ -150,7 +149,8 @@ export class WorkspaceClient {
 
   private async tryLogin (): Promise<void> {
     this.ctx.info('Logging in: ', { workspace: this.workspace })
-    const token = (await loginBot())?.token
+
+    const token = await login(aiBotAccountEmail, config.Password, this.workspace)
 
     clearTimeout(this.loginTimeout)
 

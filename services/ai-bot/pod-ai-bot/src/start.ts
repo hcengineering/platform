@@ -15,16 +15,17 @@
 
 import { setMetadata } from '@hcengineering/platform'
 import serverAiBot from '@hcengineering/server-ai-bot'
-import serverClient from '@hcengineering/server-client'
+import serverClient, { createAccount } from '@hcengineering/server-client'
 import serverToken from '@hcengineering/server-token'
 import { initStatisticsContext } from '@hcengineering/server-core'
+import { aiBotAccountEmail } from '@hcengineering/ai-bot'
 
-import config from './config'
 import { AIControl } from './controller'
-import { registerLoaders } from './loaders'
+import config from './config'
 import { closeDB, DbStorage, getDB } from './storage'
-import { createBotAccount } from './utils/account'
+import { registerLoaders } from './loaders'
 import { createServer, listen } from './server/server'
+
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -42,7 +43,7 @@ export const start = async (): Promise<void> => {
   for (let i = 0; i < 5; i++) {
     ctx.info('Creating bot account', { attempt: i })
     try {
-      await createBotAccount()
+      await createAccount(aiBotAccountEmail, config.Password, config.FirstName, config.LastName)
       break
     } catch (e) {
       ctx.error('Error during account creation', { error: e })
