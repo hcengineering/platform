@@ -199,7 +199,7 @@ async function processMigrateMarkupFor (
           if (blob === undefined) {
             try {
               const ydoc = markupToYDoc(value, attribute.name)
-              await saveCollaborativeDoc(storageAdapter, workspaceId, collaborativeDoc, ydoc, ctx)
+              await saveCollaborativeDoc(ctx, storageAdapter, workspaceId, collaborativeDoc, ydoc)
             } catch (err) {
               console.error('failed to process document', doc._class, doc._id, err)
             }
@@ -298,7 +298,7 @@ export async function restoreLostMarkup (
             console.log(doc._class, doc._id, attr.name, markup)
             if (command === 'restore') {
               const ydoc = markupToYDoc(markup, attr.name)
-              await saveCollaborativeDoc(storageAdapter, workspaceId, value, ydoc, ctx)
+              await saveCollaborativeDoc(ctx, storageAdapter, workspaceId, value, ydoc)
             }
             restored = true
             break
@@ -329,7 +329,7 @@ export async function restoreLostMarkup (
                 console.log(doc._class, doc._id, attr.name, markup)
                 if (command === 'restore') {
                   const ydoc = markupToYDoc(markup, attr.name)
-                  await saveCollaborativeDoc(storageAdapter, workspaceId, value, ydoc, ctx)
+                  await saveCollaborativeDoc(ctx, storageAdapter, workspaceId, value, ydoc)
                 }
               }
             }

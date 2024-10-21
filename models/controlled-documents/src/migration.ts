@@ -292,7 +292,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
 
     // Migrate sections headers + content
     try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
+      const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
       if (ydoc === undefined) {
         ctx.error('collaborative document content not found', { document: document.title })
         continue
@@ -334,7 +334,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
         }
       })
 
-      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
+      await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.content, ydoc)
     } catch (err) {
       ctx.error('error collaborative document content migration', { error: err, document: document.title })
     }

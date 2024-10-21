@@ -43,10 +43,12 @@ describe('ydoc', () => {
 
       const source = ydoc.getXmlFragment('source')
       source.insertAfter(null, [new YXmlElement('p'), new YXmlText('foo'), new YXmlElement('p')])
+      expect(ydoc.share.has('target')).toBeFalsy()
 
       yDocCopyXmlField(ydoc, 'source', 'target')
       const target = ydoc.getXmlFragment('target')
 
+      expect(ydoc.share.has('target')).toBeTruthy()
       expect(target.toJSON()).toEqual(source.toJSON())
     })
 
@@ -61,6 +63,7 @@ describe('ydoc', () => {
       expect(target.toJSON()).not.toEqual(source.toJSON())
 
       yDocCopyXmlField(ydoc, 'source', 'target')
+      expect(ydoc.share.has('target')).toBeTruthy()
       expect(target.toJSON()).toEqual(source.toJSON())
     })
   })

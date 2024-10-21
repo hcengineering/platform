@@ -229,7 +229,7 @@ async function processMigrateContentFor (
             if (blob === undefined) {
               try {
                 const ydoc = markupToYDoc(value, attribute.name)
-                await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
+                await saveCollaborativeDoc(ctx, storageAdapter, client.workspaceId, collaborativeDoc, ydoc)
               } catch (err) {
                 console.error('failed to process document', doc._class, doc._id, err)
               }
