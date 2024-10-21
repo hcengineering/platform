@@ -24,7 +24,16 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   concatLink,
-  createClient
+  createClient,
+  fillConfiguration,
+  pluginFilterTx,
+  type Class,
+  type ClientConnection,
+  type Doc,
+  type ModelFilter,
+  type PluginConfiguration,
+  type Ref,
+  type TxCUD
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -70,68 +79,123 @@ export default async () => {
   return {
     function: {
       GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<AccountClient> => {
-        const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
+        const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? 'none'
 
-        const client = createClient(
-          async (handler: TxHandler) => {
-            const url = concatLink(endpoint, `/${token}`)
+        const handler = async (handler: TxHandler): Promise<ClientConnection> => {
+          const url = concatLink(endpoint, `/${token}`)
 
-            const upgradeHandler: TxHandler = (...txes: Tx[]) => {
-              for (const tx of txes) {
-                if (tx?._class === core.class.TxModelUpgrade) {
-                  opt?.onUpgrade?.()
-                  return
-                }
-                if (tx?._class === core.class.TxWorkspaceEvent) {
-                  const event = tx as TxWorkspaceEvent
-                  if (event.event === WorkspaceEvent.MaintenanceNotification) {
-                    void setPlatformStatus(
-                      new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
-                        time: event.params.timeMinutes
-                      })
-                    )
-                  }
+          const upgradeHandler: TxHandler = (...txes: Tx[]) => {
+            for (const tx of txes) {
+              if (tx?._class === core.class.TxModelUpgrade) {
+                opt?.onUpgrade?.()
+                return
+              }
+              if (tx?._class === core.class.TxWorkspaceEvent) {
+                const event = tx as TxWorkspaceEvent
+                if (event.event === WorkspaceEvent.MaintenanceNotification) {
+                  void setPlatformStatus(
+                    new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
+                      time: event.params.timeMinutes
+                    })
+                  )
                 }
               }
-              handler(...txes)
             }
-            const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
+            handler(...txes)
+          }
+          const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
 
-            const newOpt = { ...opt }
-            const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
-            let connectPromise: Promise<void> | undefined
-            if ((connectTimeout ?? 0) > 0) {
-              connectPromise = new Promise<void>((resolve, reject) => {
-                const connectTO = setTimeout(() => {
-                  if (!clientConnection.isConnected()) {
-                    newOpt.onConnect = undefined
-                    void clientConnection?.close()
-                    void opt?.onDialTimeout?.()
-                    reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
-                  }
-                }, connectTimeout)
-                newOpt.onConnect = (event) => {
-                  // Any event is fine, it means server is alive.
-                  clearTimeout(connectTO)
-                  resolve()
+          const newOpt = { ...opt }
+          const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
+          let connectPromise: Promise<void> | undefined
+          if ((connectTimeout ?? 0) > 0) {
+            connectPromise = new Promise<void>((resolve, reject) => {
+              const connectTO = setTimeout(() => {
+                if (!clientConnection.isConnected()) {
+                  newOpt.onConnect = undefined
+                  void clientConnection?.close()
+                  void opt?.onDialTimeout?.()
+                  reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
                 }
-              })
-            }
-            const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
-            if (connectPromise !== undefined) {
-              await connectPromise
-            }
-            return await Promise.resolve(clientConnection)
-          },
-          filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
-          createModelPersistence(getWSFromToken(token)),
-          opt?.ctx
-        )
+              }, connectTimeout)
+              newOpt.onConnect = (event) => {
+                // Any event is fine, it means server is alive.
+                clearTimeout(connectTO)
+                resolve()
+              }
+            })
+          }
+          const clientConnection = connect(url, upgradeHandler, tokenPayload.workspace, tokenPayload.email, newOpt)
+          if (connectPromise !== undefined) {
+            await connectPromise
+          }
+          return await Promise.resolve(clientConnection)
+        }
+
+        const modelFilter: ModelFilter = async (txes) => {
+          if (filterModel === 'client') {
+            return returnClientTxes(txes)
+          }
+          if (filterModel === 'ui') {
+            return returnUITxes(txes)
+          }
+          return txes
+        }
+
+        const client = createClient(handler, modelFilter, createModelPersistence(getWSFromToken(token)), opt?.ctx)
         return await client
       }
     }
   }
 }
+function returnUITxes (txes: Tx[]): Tx[] {
+  const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+  fillConfiguration(txes, configs)
+
+  const allowedPlugins = [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])]
+  const excludedPlugins = Array.from(configs.values()).filter(
+    (it) => !it.enabled || !allowedPlugins.includes(it.pluginId)
+  )
+  return pluginFilterTx(excludedPlugins, configs, txes)
+}
+
+function returnClientTxes (txes: Tx[]): Tx[] {
+  const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+  fillConfiguration(txes, configs)
+  const excludedPlugins = Array.from(configs.values()).filter((it) => !it.enabled || it.pluginId.startsWith('server-'))
+
+  const toExclude = new Set([
+    'workbench:class:Application' as Ref<Class<Doc>>,
+    'presentation:class:ComponentPointExtension' as Ref<Class<Doc>>,
+    'presentation:class:ObjectSearchCategory' as Ref<Class<Doc>>,
+    'notification:class:NotificationGroup' as Ref<Class<Doc>>,
+    'notification:class:NotificationType' as Ref<Class<Doc>>,
+    'view:class:Action' as Ref<Class<Doc>>,
+    'view:class:Viewlet' as Ref<Class<Doc>>,
+    'text-editor:class:TextEditorAction' as Ref<Class<Doc>>,
+    'templates:class:TemplateField' as Ref<Class<Doc>>,
+    'activity:class:DocUpdateMessageViewlet' as Ref<Class<Doc>>,
+    'core:class:PluginConfiguration' as Ref<Class<Doc>>,
+    'core:class:DomainIndexConfiguration' as Ref<Class<Doc>>
+  ])
+
+  const result = pluginFilterTx(excludedPlugins, configs, txes).filter((tx) => {
+    // Exclude all matched UI plugins
+    if (
+      tx?._class === core.class.TxCreateDoc ||
+      tx?._class === core.class.TxUpdateDoc ||
+      tx?._class === core.class.TxRemoveDoc
+    ) {
+      const cud = tx as TxCUD<Doc>
+      if (toExclude.has(cud.objectClass)) {
+        return false
+      }
+    }
+    return true
+  })
+  return result
+}
+
 function createModelPersistence (workspace: string): TxPersistenceStore | undefined {
   const overrideStore = getMetadata(clientPlugin.metadata.OverridePersistenceStore)
   if (overrideStore !== undefined) {

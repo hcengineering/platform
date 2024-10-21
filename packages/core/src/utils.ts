@@ -40,7 +40,8 @@ import {
   roleOrder,
   Space,
   TypedSpace,
-  WorkspaceMode
+  WorkspaceMode,
+  type PluginConfiguration
 } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
@@ -48,7 +49,7 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { Branding, BrandingMap } from './server'
 import { DocumentQuery, FindResult } from './storage'
-import { DOMAIN_TX } from './tx'
+import { DOMAIN_TX, TxProcessor, type Tx, type TxCreateDoc, type TxCUD, type TxUpdateDoc } from './tx'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -834,4 +835,61 @@ export function getBranding (brandings: BrandingMap, key: string | undefined): B
   if (key === undefined) return null
 
   return Object.values(brandings).find((branding) => branding.key === key) ?? null
+}
+
+export function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {
+  for (const t of systemTx) {
+    if (t._class === core.class.TxCreateDoc) {
+      const ct = t as TxCreateDoc<Doc>
+      if (ct.objectClass === core.class.PluginConfiguration) {
+        configs.set(ct.objectId as Ref<PluginConfiguration>, TxProcessor.createDoc2Doc(ct) as PluginConfiguration)
+      }
+    } else if (t._class === core.class.TxUpdateDoc) {
+      const ut = t as TxUpdateDoc<Doc>
+      if (ut.objectClass === core.class.PluginConfiguration) {
+        const c = configs.get(ut.objectId as Ref<PluginConfiguration>)
+        if (c !== undefined) {
+          TxProcessor.updateDoc2Doc(c, ut)
+        }
+      }
+    }
+  }
+}
+
+export function pluginFilterTx (
+  excludedPlugins: PluginConfiguration[],
+  configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
+  systemTx: Tx[]
+): Tx[] {
+  const stx = toIdMap(systemTx)
+  const totalExcluded = new Set<Ref<Tx>>()
+  let msg = ''
+  for (const a of excludedPlugins) {
+    for (const c of configs.values()) {
+      if (a.pluginId === c.pluginId) {
+        for (const id of c.transactions) {
+          if (c.classFilter !== undefined) {
+            const filter = new Set(c.classFilter)
+            const tx = stx.get(id as Ref<Tx>)
+            if (
+              tx?._class === core.class.TxCreateDoc ||
+              tx?._class === core.class.TxUpdateDoc ||
+              tx?._class === core.class.TxRemoveDoc
+            ) {
+              const cud = tx as TxCUD<Doc>
+              if (filter.has(cud.objectClass)) {
+                totalExcluded.add(id as Ref<Tx>)
+              }
+            }
+          } else {
+            totalExcluded.add(id as Ref<Tx>)
+          }
+        }
+        msg += ` ${c.pluginId}:${c.transactions.length}`
+      }
+    }
+  }
+  console.log('exclude plugin', msg)
+  systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
+  return systemTx
 }
