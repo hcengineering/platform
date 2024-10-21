@@ -897,8 +897,7 @@ async function getGeneratePreview (
         _id: sizeId as Ref<PlatformBlob>,
         size: dataBuff.size,
         contentType,
-        etag: upload.etag,
-        storageId: sizeId
+        etag: upload.etag
       }
     } catch (err: any) {
       Analytics.handleError(err)

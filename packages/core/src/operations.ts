@@ -314,7 +314,7 @@ export class TxOperations implements Omit<Client, 'notify'> {
   }
 
   apply (scope?: string, measure?: string): ApplyOperations {
-    return new ApplyOperations(this, scope, measure)
+    return new ApplyOperations(this, scope, measure, this.isDerived)
   }
 
   async diffUpdate<T extends Doc = Doc>(
@@ -444,7 +444,8 @@ export class ApplyOperations extends TxOperations {
   constructor (
     readonly ops: TxOperations,
     readonly scope?: string,
-    readonly measureName?: string
+    readonly measureName?: string,
+    isDerived?: boolean
   ) {
     const txClient: Client = {
       getHierarchy: () => ops.client.getHierarchy(),
@@ -460,7 +461,7 @@ export class ApplyOperations extends TxOperations {
         return {}
       }
     }
-    super(txClient, ops.user)
+    super(txClient, ops.user, isDerived ?? false)
   }
 
   match<T extends Doc>(_class: Ref<Class<T>>, query: DocumentQuery<T>): ApplyOperations {

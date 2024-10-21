@@ -1300,8 +1300,8 @@ class MongoAdapter extends MongoAdapterBase {
         const coll = this.db.collection<Doc>(domain)
 
         promises.push(
-          addOperation(ctx, 'bulk-write', { domain, operations: ops.length }, async (ctx) => {
-            await ctx.with(
+          addOperation(ctx, 'bulk-write', { domain, operations: ops.length }, (ctx) =>
+            ctx.with(
               'bulk-write',
               { domain },
               async () => {
@@ -1318,7 +1318,7 @@ class MongoAdapter extends MongoAdapterBase {
                 operations: ops.length
               }
             )
-          })
+          )
         )
       }
       if (domainBulk.findUpdate.size > 0) {
@@ -1337,7 +1337,7 @@ class MongoAdapter extends MongoAdapterBase {
               ctx,
               'find-result',
               {},
-              async (ctx) => await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray(),
+              (ctx) => coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray(),
               { domain, _ids: domainBulk.findUpdate.size, queueTime: stTime - st }
             )
             result.push(...docs)
@@ -1665,19 +1665,8 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const txCollection = this.db.collection<Tx>(DOMAIN_TX)
-    const cursor = await ctx.with('find', {}, async () => {
-      const c = txCollection.find(
-        { objectSpace: core.space.Model },
-        {
-          sort: {
-            _id: 1,
-            modifiedOn: 1
-          }
-        }
-      )
-      return c
-    })
-    const model = await ctx.with('to-array', {}, async () => await toArray<Tx>(cursor))
+    const cursor = txCollection.find({ objectSpace: core.space.Model })
+    const model = await toArray<Tx>(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

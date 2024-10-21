@@ -13,19 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Plugin, IntlString } from '@hcengineering/platform'
+import { IntlString, Plugin } from '@hcengineering/platform'
 import type { Account, Class, Data, Doc, Domain, PluginConfiguration, Ref, Timestamp } from '../classes'
-import { Space, ClassifierKind, DOMAIN_MODEL } from '../classes'
-import { createClient, ClientConnection } from '../client'
+import { ClassifierKind, DOMAIN_MODEL, Space } from '../classes'
+import { ClientConnection, createClient } from '../client'
+import { clone } from '../clone'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
 import { TxOperations } from '../operations'
-import type { DocumentQuery, FindResult, TxResult, SearchQuery, SearchOptions, SearchResult } from '../storage'
+import type { DocumentQuery, FindResult, SearchOptions, SearchQuery, SearchResult, TxResult } from '../storage'
 import { Tx, TxFactory, TxProcessor } from '../tx'
+import { fillConfiguration, pluginFilterTx } from '../utils'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
-import { clone } from '../clone'
+
+function filterPlugin (plugin: Plugin): (txes: Tx[]) => Promise<Tx[]> {
+  return async (txes) => {
+    const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+    fillConfiguration(txes, configs)
+
+    const excludedPlugins = Array.from(configs.values()).filter((it) => !it.enabled || it.pluginId !== plugin)
+    return pluginFilterTx(excludedPlugins, configs, txes)
+  }
+}
 
 describe('client', () => {
   it('should create client and spaces', async () => {
@@ -136,7 +147,10 @@ describe('client', () => {
     }
     const txCreateDoc1 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData1)
     txes.push(txCreateDoc1)
-    const client1 = new TxOperations(await createClient(connectPlugin, ['testPlugin1' as Plugin]), core.account.System)
+    const client1 = new TxOperations(
+      await createClient(connectPlugin, filterPlugin('testPlugin1' as Plugin)),
+      core.account.System
+    )
     const result1 = await client1.findAll(core.class.PluginConfiguration, {})
 
     expect(result1).toHaveLength(1)
@@ -153,7 +167,10 @@ describe('client', () => {
     }
     const txCreateDoc2 = txFactory.createTxCreateDoc(core.class.PluginConfiguration, core.space.Model, pluginData2)
     txes.push(txCreateDoc2)
-    const client2 = new TxOperations(await createClient(connectPlugin, ['testPlugin1' as Plugin]), core.account.System)
+    const client2 = new TxOperations(
+      await createClient(connectPlugin, filterPlugin('testPlugin1' as Plugin)),
+      core.account.System
+    )
     const result2 = await client2.findAll(core.class.PluginConfiguration, {})
 
     expect(result2).toHaveLength(2)
@@ -176,7 +193,10 @@ describe('client', () => {
       pluginData3
     )
     txes.push(txUpdateDoc)
-    const client3 = new TxOperations(await createClient(connectPlugin, ['testPlugin2' as Plugin]), core.account.System)
+    const client3 = new TxOperations(
+      await createClient(connectPlugin, filterPlugin('testPlugin2' as Plugin)),
+      core.account.System
+    )
     const result3 = await client3.findAll(core.class.PluginConfiguration, {})
 
     expect(result3).toHaveLength(1)

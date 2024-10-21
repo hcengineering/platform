@@ -100,36 +100,6 @@ async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> 
   )
 }
 
-async function migrateContentField (client: MigrationClient): Promise<void> {
-  const ctx = new MeasureMetricsContext('migrate_content_field', {})
-  const storage = client.storageAdapter
-
-  const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
-    _class: document.class.Document,
-    content: { $exists: true }
-  })
-
-  for (const document of documents) {
-    try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
-      if (ydoc === undefined) {
-        ctx.error('document content not found', { document: document.title })
-        continue
-      }
-
-      if (!ydoc.share.has('') || ydoc.share.has('content')) {
-        continue
-      }
-
-      yDocCopyXmlField(ydoc, '', 'content')
-
-      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
-    } catch (err) {
-      ctx.error('error document content migration', { error: err, document: document.title })
-    }
-  }
-}
-
 async function migrateRank (client: MigrationClient): Promise<void> {
   const documents = await client.find<Document>(
     DOMAIN_DOCUMENT,
@@ -228,7 +198,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
     if (document.description.includes('%description:')) {
       try {
-        const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.description, ctx)
+        const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.description)
         if (ydoc === undefined) {
           continue
         }
@@ -239,7 +209,7 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
 
         yDocCopyXmlField(ydoc, 'description', 'content')
 
-        await saveCollaborativeDoc(storage, client.workspaceId, document.description, ydoc, ctx)
+        await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.description, ydoc)
       } catch (err) {
         ctx.error('error document content migration', { error: err, document: document.title })
       }
@@ -264,6 +234,42 @@ async function renameFieldsRevert (client: MigrationClient): Promise<void> {
   }
 }
 
+async function restoreContentField (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('restoreContentField', {})
+  const storage = client.storageAdapter
+
+  const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
+    _class: document.class.Document,
+    content: { $exists: true }
+  })
+
+  for (const document of documents) {
+    try {
+      const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
+      if (ydoc === undefined) {
+        ctx.error('document content not found', { document: document.title })
+        continue
+      }
+
+      // ignore if content is already present
+      if (ydoc.share.has('content') || ydoc.share.has('description')) {
+        continue
+      }
+
+      if (ydoc.share.has('')) {
+        yDocCopyXmlField(ydoc, '', 'content')
+        if (ydoc.share.has('content')) {
+          await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.content, ydoc)
+        } else {
+          ctx.error('document content still not found', { document: document.title })
+        }
+      }
+    } catch (err) {
+      ctx.error('error document content migration', { error: err, document: document.title })
+    }
+  }
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -278,10 +284,6 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'migrate-teamspaces-mixins',
         func: migrateTeamspacesMixins
-      },
-      {
-        state: 'migrateContentField',
-        func: migrateContentField
       },
       {
         state: 'migrateRank',
@@ -300,6 +302,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'renameFieldsRevert',
         func: renameFieldsRevert
+      },
+      {
+        state: 'restoreContentField',
+        func: restoreContentField
       }
     ])
   },

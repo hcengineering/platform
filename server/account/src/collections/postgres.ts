@@ -531,7 +531,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return [this.getV1Migration()]
+    return [this.getV1Migration(), this.getV2Migration()]
   }
 
   // NOTE: NEVER MODIFY EXISTING MIGRATIONS. IF YOU NEED TO ADJUST THE SCHEMA, ADD A NEW MIGRATION.
@@ -624,6 +624,17 @@ export class PostgresAccountDB implements AccountDB {
         account VARCHAR(255) NOT NULL REFERENCES account (_id),
         PRIMARY KEY(workspace, account)
       );
+    `
+    ]
+  }
+
+  private getV2Migration (): [string, string] {
+    return [
+      'account_db_v2_fix_workspace',
+      `
+
+      /* ======= WORKSPACE ======= */
+      ALTER TABLE workspace ALTER COLUMN "versionPatch" type INT4;
     `
     ]
   }

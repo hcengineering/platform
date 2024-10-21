@@ -397,7 +397,7 @@ export async function configurePlatform() {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
 
-  setMetadata(client.metadata.FilterModel, true)
+  setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
 
   // Use binary response transfer for faster performance and small transfer sizes.
