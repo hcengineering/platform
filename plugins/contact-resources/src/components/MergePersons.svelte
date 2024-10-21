@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Channel, Person, getName } from '@hcengineering/contact'
   import core, {
     ArrOf,
@@ -122,15 +123,17 @@
       }
       await client.update(targetPerson, _update)
     }
+    const ops = client.apply()
     for (const channel of resultChannels.values()) {
       if (channel.attachedTo === targetPerson._id) continue
-      await client.update(channel, { attachedTo: targetPerson._id })
+      await ops.update(channel, { attachedTo: targetPerson._id })
     }
     for (const old of oldChannels) {
       if (!(enabledChannels.get(old._id) ?? true)) {
-        await client.remove(old)
+        await ops.remove(old)
       }
     }
+
     for (const mixin in mixinUpdate) {
       const attrs = (mixinUpdate as any)[mixin]
       if (Object.keys(attrs).length > 0) {
@@ -151,6 +154,7 @@
         )
       }
     }
+    await ops.commit()
     await updateAllRefs(client, sourcePerson, targetPerson)
 
     dispatch('close')
@@ -249,28 +253,31 @@
       if (attr.name === '_id') {
         continue
       }
-      const to = attr.type as RefTo<Doc>
-      const descendants = h.getDescendants(attr.attributeOf)
-      for (const d of descendants) {
-        if (h.isDerived(d, core.class.Tx) || h.isDerived(d, core.class.BenchmarkDoc)) {
-          continue
-        }
-        if (h.findDomain(d) !== undefined) {
-          while (true) {
-            const values = await client.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
-            if (values.length === 0) {
-              break
-            }
+      try {
+        const descendants = h.getDescendants(attr.attributeOf)
+        for (const d of descendants) {
+          if (h.isDerived(d, core.class.Tx) || h.isDerived(d, core.class.BenchmarkDoc)) {
+            continue
+          }
+          if (h.findDomain(d) !== undefined) {
+            while (true) {
+              const values = await client.findAll(d, { [attr.name]: sourceAccount._id }, { limit: 100 })
+              if (values.length === 0) {
+                break
+              }
 
-            const builder = client.apply(sourceAccount._id)
-            for (const v of values) {
-              await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
-            }
-            if (builder.txes.length > 0) {
-              await builder.commit()
+              const builder = client.apply(sourceAccount._id)
+              for (const v of values) {
+                await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
+              }
+              if (builder.txes.length > 0) {
+                await builder.commit()
+              }
             }
           }
         }
+      } catch (err: any) {
+        Analytics.handleError(err)
       }
     }
     const arrs = (await client.findAll(core.class.Attribute, { 'type._class': core.class.ArrOf })).filter((it) => {

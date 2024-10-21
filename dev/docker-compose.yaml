@@ -106,7 +106,6 @@ services:
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
       - DB_URL=${MONGO_URL}
       # - DB_URL=postgresql://postgres:example@postgres:5432
       - SES_URL=
@@ -133,7 +132,6 @@ services:
     environment:
       # - WS_OPERATION=create
       - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
       - DB_URL=postgresql://postgres:example@postgres:5432
       - SES_URL=
       - REGION=pg
@@ -161,8 +159,6 @@ services:
       - COLLABORATOR_PORT=3078
       - SECRET=secret
       - ACCOUNTS_URL=http://host.docker.internal:3000
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName":"collaborator","maxPoolSize":2}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   front:
@@ -179,11 +175,8 @@ services:
       - 8087:8080
       - 8088:8080
     environment:
-      - UV_THREADPOOL_SIZE=10
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName":"front","maxPoolSize":1}'
       - ACCOUNTS_URL=http://host.docker.internal:3000
       - UPLOAD_URL=/files
       - ELASTIC_URL=http://host.docker.internal:9200
@@ -298,8 +291,6 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     deploy:
       resources:
@@ -317,8 +308,6 @@ services:
       - ../services/sign/pod-sign/debug/branding.json:/var/cfg/branding.json
     environment:
       - SECRET=secret
-      - MONGO_URL=${MONGO_URL}
-      - 'MONGO_OPTIONS={"appName":"sign","maxPoolSize":1}'
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - ACCOUNTS_URL=http://host.docker.internal:3000

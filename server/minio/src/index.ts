@@ -225,8 +225,7 @@ export class MinioService implements StorageAdapter {
                   provider: this.opt.name,
                   space: core.space.Configuration,
                   modifiedBy: core.account.ConfigUser,
-                  modifiedOn: data.lastModified.getTime(),
-                  storageId: _id
+                  modifiedOn: data.lastModified.getTime()
                 })
               }
               onNext()
@@ -279,7 +278,6 @@ export class MinioService implements StorageAdapter {
         provider: '',
         _class: core.class.Blob,
         _id: this.stripPrefix(rootPrefix, objectName) as Ref<Blob>,
-        storageId: this.stripPrefix(rootPrefix, objectName),
         contentType: result.metaData['content-type'],
         size: result.size,
         etag: result.etag,

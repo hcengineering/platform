@@ -25,7 +25,6 @@ export interface Config {
   Port: number
 
   AccountsUrl: string
-  MongoUrl: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -33,11 +32,10 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   Interval: 'INTERVAL',
   Port: 'COLLABORATOR_PORT',
-  AccountsUrl: 'ACCOUNTS_URL',
-  MongoUrl: 'MONGO_URL'
+  AccountsUrl: 'ACCOUNTS_URL'
 }
 
-const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl', 'MongoUrl']
+const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl']
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -45,8 +43,7 @@ const config: Config = (() => {
     ServiceID: process.env[envMap.ServiceID] ?? 'collaborator-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '30000'),
     Port: parseInt(process.env[envMap.Port] ?? '3078'),
-    AccountsUrl: process.env[envMap.AccountsUrl],
-    MongoUrl: process.env[envMap.MongoUrl]
+    AccountsUrl: process.env[envMap.AccountsUrl]
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

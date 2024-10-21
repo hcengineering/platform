@@ -51,7 +51,7 @@ export const main = async (): Promise<void> => {
   const storageConfigs: StorageConfiguration = storageConfigFromEnv()
   const ctx = new MeasureMetricsContext('love', {}, {}, newMetrics())
   const storageConfig = storageConfigs.storages.findLast((p) => p.name === config.StorageProviderName)
-  const storageAdapter = buildStorageFromConfig(storageConfigs, config.MongoUrl)
+  const storageAdapter = buildStorageFromConfig(storageConfigs)
   const app = express()
   const port = config.Port
   app.use(cors())
@@ -78,12 +78,14 @@ export const main = async (): Promise<void> => {
         for (const res of event.egressInfo.fileResults) {
           const data = dataByUUID.get(res.filename)
           if (data !== undefined) {
-            const client = await WorkspaceClient.create(data.workspace)
             const prefix = rootPrefix(storageConfig, data.workspaceId)
             const filename = stripPrefix(prefix, res.filename)
-            await storageAdapter.syncBlobFromStorage(ctx, data.workspaceId, filename, storageConfig?.name)
-            await client.saveFile(filename, data.name)
-            await client.close()
+            const storedBlob = await storageAdapter.stat(ctx, data.workspaceId, filename)
+            if (storedBlob !== undefined) {
+              const client = await WorkspaceClient.create(data.workspace)
+              await client.saveFile(filename, data.name, storedBlob)
+              await client.close()
+            }
             dataByUUID.delete(res.filename)
           } else {
             console.log('no data found for', res.filename)

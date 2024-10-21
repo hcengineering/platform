@@ -44,7 +44,7 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURI)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const db = await getDB()
   const gmailController = GmailController.create(ctx, db, storageAdapter)

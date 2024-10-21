@@ -17,6 +17,7 @@
 import contact from '@hcengineering/contact'
 import core, {
   type BackupClient,
+  type Class,
   type Client as CoreClient,
   type Doc,
   DOMAIN_DOC_INDEX_STATE,
@@ -72,7 +73,6 @@ export async function diffWorkspace (mongoUrl: string, workspace: WorkspaceId, r
 }
 
 export async function updateField (
-  mongoUrl: string,
   workspaceId: WorkspaceId,
   transactorUrl: string,
   cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
@@ -80,19 +80,18 @@ export async function updateField (
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
-  const client = getMongoClient(mongoUrl)
-  let valueToPut: string | number = cmd.value
-  if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
+
   try {
-    const _client = await client.getClient()
-    try {
-      const db = getWorkspaceMongoDB(_client, workspaceId)
-      await db
-        .collection(cmd.domain)
-        .updateOne({ _id: cmd.objectId as Ref<Doc> }, { $set: { [cmd.attribute]: valueToPut } })
-    } finally {
-      client.close()
+    const doc = await connection.findOne(cmd.objectClass as Ref<Class<Doc>>, { _id: cmd.objectId as Ref<Doc> })
+    if (doc === undefined) {
+      console.error('Document not found')
+      process.exit(1)
     }
+    let valueToPut: string | number = cmd.value
+    if (cmd.type === 'number') valueToPut = parseFloat(valueToPut)
+    ;(doc as any)[cmd.attribute] = valueToPut
+
+    await connection.upload(connection.getHierarchy().getDomain(doc?._class), [doc])
   } finally {
     await connection.close()
   }
