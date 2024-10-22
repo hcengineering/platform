@@ -61,7 +61,9 @@
       else {
         allWidth = 0
         for (let i = 0; i < items.length; i++) {
-          if (elements[i].clientWidth !== undefined && allWidth < elements[i].clientWidth) { allWidth = elements[i].clientWidth }
+          if (elements[i].clientWidth !== undefined && allWidth < elements[i].clientWidth) {
+            allWidth = elements[i].clientWidth
+          }
         }
         dispatch('resize', allWidth + (items.length - 1) * 3)
       }
