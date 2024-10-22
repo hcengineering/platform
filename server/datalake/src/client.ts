@@ -49,11 +49,7 @@ type BlobUploadResult = BlobUploadSuccess | BlobUploadError
 
 /** @public */
 export class Client {
-  private readonly endpoint: string
-
-  constructor (host: string, port?: number) {
-    this.endpoint = port !== undefined ? `${host}:${port}` : host
-  }
+  constructor (private readonly endpoint: string) {}
 
   getObjectUrl (ctx: MeasureContext, workspace: WorkspaceId, objectName: string): string {
     const path = `/blob/${workspace.name}/${encodeURIComponent(objectName)}`
@@ -81,7 +77,9 @@ export class Client {
   ): Promise<Readable> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     const headers = {
-      Range: `bytes=${offset}-${length ?? ''}`
+      Range: length !== undefined
+        ? `bytes=${offset}-${offset + length - 1}`
+        : `bytes=${offset}`
     }
 
     const response = await fetchSafe(ctx, url, { headers })
