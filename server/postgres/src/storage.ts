@@ -112,7 +112,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
     this.processing = true
     try {
       while (true) {
-        console.log('processing q', this.queue.length)
         const next = this.queue.shift()
         if (next === undefined) {
           this.processing = false
