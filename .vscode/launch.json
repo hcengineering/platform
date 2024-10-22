@@ -118,9 +118,9 @@
       "args": ["src/__start.ts"],
       "env": {
         "MONGO_URL": "mongodb://localhost:27017",
-        // "DB_URL": "mongodb://localhost:27017",
-        "REGION": "pg",
-        "DB_URL": "postgresql://postgres:example@localhost:5432",
+        "DB_URL": "mongodb://localhost:27017",
+        "REGION": "",
+        // "DB_URL": "postgresql://postgres:example@localhost:5432",
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3333",
         "ACCOUNTS_URL": "http://localhost:3000",
