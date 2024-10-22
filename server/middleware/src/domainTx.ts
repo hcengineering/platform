@@ -88,8 +88,10 @@ export class DomainTxMiddleware extends BaseMiddleware implements Middleware {
           }
         }
 
-        const r = await ctx.with('adapter-tx', { domain }, async (ctx) => await adapter.tx(ctx, ...txes), {
-          txes: txes.length
+        const r = await ctx.with('adapter-tx', { domain }, (ctx) => adapter.tx(ctx, ...txes), {
+          txes: txes.length,
+          classes: Array.from(new Set(txes.map((it) => it.objectClass))),
+          _classes: Array.from(new Set(txes.map((it) => it._class)))
         })
 
         if (Array.isArray(r)) {

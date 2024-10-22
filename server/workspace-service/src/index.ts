@@ -74,13 +74,6 @@ export function serveWorkspaceAccount (
     process.exit(1)
   }
 
-  // Required by the tool
-  const dbUri = process.env.MONGO_URL
-  if (dbUri === undefined) {
-    console.log('Please provide mongodb url')
-    process.exit(1)
-  }
-
   const waitTimeout = parseInt(process.env.WAIT_TIMEOUT ?? '5000')
 
   setMetadata(serverToken.metadata.Secret, serverSecret)

@@ -210,17 +210,17 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
     { code: 'CM', title: 'Client Management' }
   ]
 
-  await Promise.all(
-    categories.map((c) =>
-      createOrUpdate(
-        tx,
-        documents.class.DocumentCategory,
-        documents.space.QualityDocuments,
-        { ...c, attachments: 0 },
-        ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
-      )
+  const ops = tx.apply()
+  for (const c of categories) {
+    await createOrUpdate(
+      ops,
+      documents.class.DocumentCategory,
+      documents.space.QualityDocuments,
+      { ...c, attachments: 0 },
+      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
     )
-  )
+  }
+  await ops.commit()
 }
 
 async function createTagCategories (tx: TxOperations): Promise<void> {
