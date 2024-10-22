@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher, afterUpdate } from 'svelte'
   import { WithLookup } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import type { Issue } from '@hcengineering/tracker'
@@ -26,13 +27,19 @@
   export let disabled: boolean = false
   export let maxWidth: string | undefined = undefined
 
+  let element: HTMLSpanElement
+  const dispatch = createEventDispatcher()
+
   $: presenters =
     value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
+
+  afterUpdate(() => dispatch('resize', element?.clientWidth))
 </script>
 
-{#if value}
+{#if value && presenters.length > 0}
   <span
-    class="presenter-label select-text p-1"
+    bind:this={element}
+    class="presenter-label select-text"
     class:with-margin={shouldUseMargin}
     class:list={kind === 'list'}
     style:max-width={maxWidth}
@@ -41,7 +48,7 @@
     {#if presenters.length > 0}
       <div class="flex-row-center">
         {#each presenters as mixinPresenter}
-          <Component is={mixinPresenter.presenter} props={{ value }} />
+          <Component is={mixinPresenter.presenter} props={{ value, kind }} />
         {/each}
       </div>
     {/if}
@@ -50,7 +57,6 @@
 
 <style lang="scss">
   .presenter-label {
-    overflow: hidden;
     display: inline-flex;
     align-items: center;
     flex-shrink: 1;
