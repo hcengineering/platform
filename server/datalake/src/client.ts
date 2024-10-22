@@ -128,6 +128,16 @@ export class Client {
     metadata: ObjectMetadata,
     size?: number
   ): Promise<void> {
+    if (size === undefined) {
+      if (Buffer.isBuffer(stream)) {
+        size = stream.length
+      } else if (typeof stream === 'string') {
+        size = Buffer.byteLength(stream)
+      } else {
+        // TODO: Implement size calculation for Readable streams
+        ctx.warn('unknown object size', { workspace, objectName })
+      }
+    }
     if (size === undefined || size < 64 * 1024 * 1024) {
       await ctx.with('direct-upload', {}, async (ctx) => {
         await this.uploadWithFormData(ctx, workspace, objectName, stream, metadata)
@@ -164,14 +174,14 @@ export class Client {
 
     const result = (await response.json()) as BlobUploadResult[]
     if (result.length !== 1) {
-      ctx.error('bad datalake response', { objectName, result })
+      ctx.error('bad datalake response', { workspace, objectName, result })
       throw new Error('Bad datalake response')
     }
 
     const uploadResult = result[0]
 
     if ('error' in uploadResult) {
-      ctx.error('error during blob upload', { objectName, error: uploadResult.error })
+      ctx.error('error during blob upload', { workspace, objectName, error: uploadResult.error })
       throw new Error('Upload failed: ' + uploadResult.error)
     }
   }
@@ -233,7 +243,8 @@ async function fetchSafe (ctx: MeasureContext, url: string, init?: RequestInit):
   }
 
   if (!response.ok) {
-    throw new Error(response.status === 404 ? 'Not Found' : 'HTTP error ' + response.status)
+    const text = await response.text()
+    throw new Error(response.status === 404 ? 'Not Found' : 'HTTP error ' + response.status + ': ' + text)
   }
 
   return response
