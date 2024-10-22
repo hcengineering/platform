@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { type Document, ExternalSpace, Project } from '@hcengineering/controlled-documents'
 import { Attachment } from '@hcengineering/attachment'
-import { type CollectionSize, type Ref, Markup } from '@hcengineering/core'
-import { IconProps } from '@hcengineering/view'
+import { Project } from '@hcengineering/tracker'
+import { AttachedDoc, type CollectionSize, Doc, type Ref } from '@hcengineering/core'
 
 /** @public */
 export enum TestCaseType {
@@ -29,7 +28,14 @@ export enum TestCaseType {
 }
 
 /** @public */
-export const testCaseTypes = [TestCaseType.Functional, TestCaseType.Performance, TestCaseType.Regression, TestCaseType.Security, TestCaseType.Smoke, TestCaseType.Usability]
+export const testCaseTypes = [
+  TestCaseType.Functional, 
+  TestCaseType.Performance, 
+  TestCaseType.Regression, 
+  TestCaseType.Security, 
+  TestCaseType.Smoke, 
+  TestCaseType.Usability
+]
 
 /** @public */
 export enum TestCasePriority {
@@ -39,25 +45,37 @@ export enum TestCasePriority {
 	Urgent
 }
 
-
-
+/** @public */
+export const testCasePriorities = [
+  TestCasePriority.Low, 
+  TestCasePriority.Medium, 
+  TestCasePriority.High, 
+  TestCasePriority.Urgent
+]
 
 /** @public */
-export const productVersionStates = [ProductVersionState.Active, ProductVersionState.Released]
-
-/** @public */
-export interface Product extends ExternalSpace, IconProps {
-  fullDescription?: Markup
-  attachments?: CollectionSize<Attachment>
+ export interface TestProject extends Project {
 }
 
 /** @public */
-export interface ProductVersion extends Project<Product> {
-  major: number
-  minor: number
-  codename?: string
-  description: Markup
-  state: ProductVersionState
-  parent: Ref<ProductVersion>
-  changeControl?: Ref<Document>
+export interface TestSuite extends Doc {
+  name: string
+  description?: string
+  parent: Ref<TestSuite>
+  project: Ref<TestProject>
+}
+
+/** @public */
+export interface TestCase extends AttachedDoc {
+  name: string
+  description?: string
+  type: TestCaseType
+  priority: TestCasePriority
+  // Estimated time in minutes
+  estimatedTime: number
+  preconditions?: string
+  steps?: string
+  suite: Ref<TestSuite>
+  attachments?: CollectionSize<Attachment>
+  comments?: number
 }
