@@ -113,20 +113,16 @@ export async function createWorkspace (
 
     await handleWsEvent?.('create-started', version, 10)
 
-    const { mongodbUri, dbUrl } = prepareTools([])
-    if (mongodbUri === undefined) {
-      throw new Error('No MONGO_URL specified')
-    }
-    const dbUrls = mongodbUri !== undefined && dbUrl !== mongodbUri ? `${dbUrl};${mongodbUri}` : dbUrl
+    const { dbUrl } = prepareTools([])
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
     registerServerPlugins()
     registerStringLoaders()
 
-    const { pipeline, storageAdapter } = await getServerPipeline(ctx, txes, mongodbUri, dbUrl, wsUrl)
+    const { pipeline, storageAdapter } = await getServerPipeline(ctx, txes, dbUrl, wsUrl)
 
     try {
-      const txFactory = getTxAdapterFactory(ctx, dbUrls, wsUrl, null, {
+      const txFactory = getTxAdapterFactory(ctx, dbUrl, wsUrl, null, {
         externalStorage: storageAdapter,
         fullTextUrl: 'http://localhost:9200',
         indexParallel: 0,
@@ -134,7 +130,7 @@ export async function createWorkspace (
         rekoniUrl: '',
         usePassedCtx: true
       })
-      const txAdapter = await txFactory(ctx, hierarchy, dbUrl ?? mongodbUri, wsId, modelDb, storageAdapter)
+      const txAdapter = await txFactory(ctx, hierarchy, dbUrl, wsId, modelDb, storageAdapter)
 
       await childLogger.withLog('init-workspace', {}, async (ctx) => {
         await initModel(ctx, wsId, txes, txAdapter, storageAdapter, ctxModellogger, async (value) => {
@@ -204,17 +200,14 @@ export async function upgradeWorkspace (
   forceIndexes: boolean = false,
   external: boolean = false
 ): Promise<void> {
-  const { mongodbUri, dbUrl } = prepareTools([])
-  if (mongodbUri === undefined) {
-    throw new Error('No MONGO_URL specified')
-  }
+  const { dbUrl } = prepareTools([])
   let pipeline: Pipeline | undefined
   let storageAdapter: StorageAdapter | undefined
 
   registerServerPlugins()
   registerStringLoaders()
   try {
-    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, mongodbUri, dbUrl, {
+    ;({ pipeline, storageAdapter } = await getServerPipeline(ctx, txes, dbUrl, {
       name: ws.workspace,
       workspaceName: ws.workspaceName ?? '',
       workspaceUrl: ws.workspaceUrl ?? ''

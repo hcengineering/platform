@@ -78,10 +78,10 @@ async function loadCollaborativeDocVersion (
 
 /** @public */
 export async function loadCollaborativeDoc (
+  ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
-  collaborativeDoc: CollaborativeDoc,
-  ctx: MeasureContext
+  collaborativeDoc: CollaborativeDoc
 ): Promise<YDoc | undefined> {
   const sources = collaborativeDocUnchain(collaborativeDoc)
 
@@ -101,24 +101,24 @@ export async function loadCollaborativeDoc (
 
 /** @public */
 export async function saveCollaborativeDoc (
+  ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   collaborativeDoc: CollaborativeDoc,
-  ydoc: YDoc,
-  ctx: MeasureContext
+  ydoc: YDoc
 ): Promise<void> {
   const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
-  await saveCollaborativeDocVersion(storageAdapter, workspace, documentId, versionId, ydoc, ctx)
+  await saveCollaborativeDocVersion(ctx, storageAdapter, workspace, documentId, versionId, ydoc)
 }
 
 /** @public */
 export async function saveCollaborativeDocVersion (
+  ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   documentId: string,
   versionId: CollaborativeDocVersion,
-  ydoc: YDoc,
-  ctx: MeasureContext
+  ydoc: YDoc
 ): Promise<void> {
   await ctx.with('saveCollaborativeDoc', {}, async (ctx) => {
     if (versionId === 'HEAD') {

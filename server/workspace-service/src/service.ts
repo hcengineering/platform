@@ -232,7 +232,8 @@ export class WorkspaceWorker {
 
     ctx.info('---UPGRADING----', {
       workspace: ws.workspace,
-      version: this.version,
+      workspaceVersion: ws.version,
+      requestedVersion: this.version,
       region: this.region
     })
 
@@ -263,7 +264,8 @@ export class WorkspaceWorker {
       )
       ctx.info('---UPGRADE-DONE---------', {
         workspace: ws.workspace,
-        version: this.version,
+        oldWorkspaceVersion: ws.version,
+        requestedVersion: this.version,
         region: this.region,
         time: Date.now() - t
       })
@@ -278,7 +280,8 @@ export class WorkspaceWorker {
 
       ctx.error('---UPGRADE-FAILED---------', {
         workspace: ws.workspace,
-        version: this.version,
+        oldWorkspaceVersion: ws.version,
+        requestedVersion: this.version,
         region: this.region,
         time: Date.now() - t
       })

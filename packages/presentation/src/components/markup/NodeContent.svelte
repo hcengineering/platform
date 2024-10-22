@@ -112,7 +112,8 @@
   {:else if node.type === MarkupNodeType.hard_break}
     <br />
   {:else if node.type === MarkupNodeType.ordered_list}
-    <ol style:margin={preview ? '0' : null}>
+    {@const start = toNumber(attrs.start) ?? 1}
+    <ol style:margin={preview ? '0' : null} {start}>
       {#if nodes.length > 0}
         {#each nodes as node}
           <Node {node} {preview} />

@@ -104,6 +104,5 @@ export async function configurePlatform() {
   setMetadata(uiPlugin.metadata.PlatformTitle, 'Tracker')
   setMetadata(workbench.metadata.PlatformTitle, 'Tracker')
 
-  setMetadata(client.metadata.FilterModel, true)
-  setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
+  setMetadata(client.metadata.FilterModel, 'ui')
 }

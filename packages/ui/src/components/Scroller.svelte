@@ -194,8 +194,13 @@
       const topBar = Y - rectScroll.y - shiftTop - 2
       const heightScroll = rectScroll.height - 4 - divBar.clientHeight - shiftTop - shiftBottom
       const procBar = topBar / heightScroll
-      divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
-    } else {
+
+      if (scrollDirection === 'vertical-reverse') {
+        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * (procBar - 1)
+      } else {
+        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+      }
+    } else if (isScrolling === 'horizontal') {
       let X = event.clientX - dXY
       if (X < rectScroll.left + 2 + shiftLeft) X = rectScroll.left + 2 + shiftLeft
       if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight) {
@@ -513,7 +518,11 @@
       divBar.style.top = `${topBar}px`
       const heightScroll = rectScroll.height - 4 - barHeight - shiftTop - shiftBottom
       const procBar = (topBar - rectScroll.top - shiftTop - 2) / heightScroll
-      divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+      if (scrollDirection === 'vertical-reverse') {
+        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * (procBar - 1)
+      } else {
+        divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
+      }
     }
   }
 
@@ -655,6 +664,7 @@
     <div
       class="bar"
       class:hovered={isScrolling === 'vertical'}
+      class:reverse={scrollDirection === 'vertical-reverse'}
       bind:this={divBar}
       on:mousedown|stopPropagation={(ev) => {
         onScrollStart(ev, 'vertical')
@@ -894,6 +904,11 @@
     min-height: 2rem;
     max-height: calc(100% - 12px);
     transform: scaleX(0.5);
+
+    &.reverse {
+      top: auto;
+      bottom: 2px;
+    }
 
     &:hover,
     &.hovered {

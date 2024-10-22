@@ -256,6 +256,7 @@ export function start (
     collaboratorUrl: string
     brandingUrl?: string
     previewConfig: string
+    uploadConfig: string
     pushPublicKey?: string
     disableSignUp?: string
   },
@@ -308,6 +309,7 @@ export function start (
       COLLABORATOR_URL: config.collaboratorUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
+      UPLOAD_CONFIG: config.uploadConfig,
       PUSH_PUBLIC_KEY: config.pushPublicKey,
       DISABLE_SIGNUP: config.disableSignUp,
       ...(extraConfig ?? {})
@@ -501,8 +503,15 @@ export function start (
     void filesHandler(req, res)
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.post('/files', async (req, res) => {
+  app.post('/files', (req, res) => {
+    void handleUpload(req, res)
+  })
+
+  app.post('/files/*', (req, res) => {
+    void handleUpload(req, res)
+  })
+
+  const handleUpload = async (req: Request, res: Response): Promise<void> => {
     await ctx.with(
       'post-file',
       {},
@@ -538,7 +547,7 @@ export function start (
       },
       { url: req.path, query: req.query }
     )
-  })
+  }
 
   const handleDelete = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -888,8 +897,7 @@ async function getGeneratePreview (
         _id: sizeId as Ref<PlatformBlob>,
         size: dataBuff.size,
         contentType,
-        etag: upload.etag,
-        storageId: sizeId
+        etag: upload.etag
       }
     } catch (err: any) {
       Analytics.handleError(err)

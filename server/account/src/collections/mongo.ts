@@ -107,7 +107,7 @@ export class MongoDbCollection<T extends Record<string, any>> implements DbColle
       cursor.limit(limit)
     }
 
-    return await this.collection.find<T>(query as Filter<T>).toArray()
+    return await cursor.toArray()
   }
 
   async findOne (query: Query<T>): Promise<T | null> {

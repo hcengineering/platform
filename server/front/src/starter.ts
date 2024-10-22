@@ -24,12 +24,6 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
-  const url = process.env.MONGO_URL
-  if (url === undefined) {
-    console.error('please provide mongodb url')
-    process.exit(1)
-  }
-
   const elasticUrl = process.env.ELASTIC_URL
   if (elasticUrl === undefined) {
     console.error('please provide elastic url')
@@ -37,7 +31,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   }
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, url)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -101,6 +95,11 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  let uploadConfig = process.env.UPLOAD_CONFIG
+  if (uploadConfig === undefined) {
+    uploadConfig = ''
+  }
+
   let previewConfig = process.env.PREVIEW_CONFIG
   if (previewConfig === undefined) {
     // Use universal preview config
@@ -136,6 +135,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaborator,
     brandingUrl,
     previewConfig,
+    uploadConfig,
     pushPublicKey,
     disableSignUp
   }

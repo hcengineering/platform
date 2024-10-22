@@ -30,6 +30,7 @@ export interface Config {
   AI_URL?:string
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
+  UPLOAD_CONFIG: string
   DESKTOP_UPDATES_URL?: string
   DESKTOP_UPDATES_CHANNEL?: string
   TELEGRAM_BOT_URL?: string
@@ -80,6 +81,7 @@ export interface IPCMainExposed {
   sendNotification: (notififationParams: NotificationParams) => void
   getScreenAccess: () => Promise<boolean>
   getScreenSources: () => Promise<ScreenSource[]>
+  handleAuth: (callback: (token: string) => void) => void
 
   cancelBackup: () => void
   startBackup: (token: string, endpoint: string, workspace: string) => void

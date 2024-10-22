@@ -69,10 +69,15 @@ export interface ClientFactoryOptions {
  */
 export type ClientFactory = (token: string, endpoint: string, opt?: ClientFactoryOptions) => Promise<AccountClient>
 
+// client - will filter out all server model elements
+// It will also filter out all UI Elements, like Actions, View declarations etc.
+// ui - will filter out all server element's and all UI disabled elements.
+export type FilterMode = 'none' | 'client' | 'ui'
+
 export default plugin(clientId, {
   metadata: {
     ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
-    FilterModel: '' as Metadata<boolean>,
+    FilterModel: '' as Metadata<FilterMode>,
     ExtraPlugins: '' as Metadata<Plugin[]>,
     UseBinaryProtocol: '' as Metadata<boolean>,
     UseProtocolCompression: '' as Metadata<boolean>,

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
-  import { createEventDispatcher, ComponentType } from 'svelte'
+  import { createEventDispatcher, ComponentType, afterUpdate } from 'svelte'
 
   import { DateRangeMode } from '@hcengineering/core'
   import ui from '../../plugin'
@@ -86,6 +86,7 @@
       focusManager?.setFocus(idx)
     })
   }
+  afterUpdate(() => dispatch('resize', input?.clientWidth))
 </script>
 
 <button

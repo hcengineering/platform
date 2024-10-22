@@ -908,7 +908,8 @@ export function defineSearch (builder: Builder): void {
       label: documents.string.SearchDocument,
       query: documents.completion.DocumentMetaQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: documents.class.DocumentMeta
+      classToSearch: documents.class.DocumentMeta,
+      priority: 800
     },
     documents.completion.DocumentMetaCategory
   )

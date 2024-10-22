@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
+import client from '@hcengineering/client'
 import { type Client } from '@hcengineering/core'
+import { setMetadata } from '@hcengineering/platform'
 import { createClient, getTransactorEndpoint } from '@hcengineering/server-client'
 
 export async function getClient (token: string): Promise<Client> {
   const endpoint = await getTransactorEndpoint(token)
+  setMetadata(client.metadata.FilterModel, 'client')
   return await createClient(endpoint, token)
 }

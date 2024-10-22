@@ -1334,12 +1334,13 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
   ): Promise<void> {
     await integration.syncLock.get(prj._id)
 
-    const ids = syncDocs.map((it) => (it.external as IssueExternalData).id).filter((it) => it !== undefined)
+    const allSyncDocs = [...syncDocs]
 
     let partsize = 50
     try {
       while (true) {
-        const idsPart = ids.splice(0, partsize)
+        const docsPart = allSyncDocs.splice(0, partsize)
+        const idsPart = docsPart.map((it) => (it.external as IssueExternalData).id).filter((it) => it !== undefined)
         if (idsPart.length === 0) {
           break
         }
@@ -1373,11 +1374,11 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               data: cutObjectArray(response)
             })
           }
-          await this.syncIssues(github.class.GithubPullRequest, repo, issues, derivedClient)
+          await this.syncIssues(github.class.GithubPullRequest, repo, issues, derivedClient, docsPart)
         } catch (err: any) {
           if (partsize > 1) {
             partsize = 1
-            ids.push(...idsPart)
+            allSyncDocs.push(...docsPart)
             this.ctx.warn('pull request external retrieval switch to one by one mode', {
               errors: err.errors,
               msg: err.message,

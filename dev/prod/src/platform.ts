@@ -108,7 +108,12 @@ import github, { githubId } from '@hcengineering/github'
 import '@hcengineering/github-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { loadServerConfig, parsePreviewConfig, presentationId } from '@hcengineering/presentation'
+import presentation, {
+  loadServerConfig,
+  parsePreviewConfig,
+  parseUploadConfig,
+  presentationId
+} from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
 import { setDefaultLanguage, initThemeStore } from '@hcengineering/theme'
@@ -150,6 +155,7 @@ export interface Config {
   // Could be defined for dev environment
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
+  UPLOAD_CONFIG?: string
 }
 
 export interface Branding {
@@ -292,6 +298,7 @@ export async function configurePlatform() {
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
+  setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 
@@ -390,7 +397,7 @@ export async function configurePlatform() {
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
   addLocation(uploaderId, () => import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources'))
 
-  setMetadata(client.metadata.FilterModel, true)
+  setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
 
   // Use binary response transfer for faster performance and small transfer sizes.

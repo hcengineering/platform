@@ -13,11 +13,29 @@
 // limitations under the License.
 //
 
-import { concatLink, type Blob, type Ref } from '@hcengineering/core'
+import { concatLink, type Blob as PlatformBlob, type Ref } from '@hcengineering/core'
 import { PlatformError, Severity, Status, getMetadata } from '@hcengineering/platform'
 import { v4 as uuid } from 'uuid'
 
 import plugin from './plugin'
+
+export type FileUploadMethod = 'form-data' | 'signed-url'
+
+export interface UploadConfig {
+  'form-data': {
+    url: string
+  }
+  'signed-url'?: {
+    url: string
+    size: number
+  }
+}
+
+export interface FileUploadParams {
+  method: FileUploadMethod
+  url: string
+  headers: Record<string, string>
+}
 
 interface FileUploadError {
   key: string
@@ -33,6 +51,46 @@ type FileUploadResult = FileUploadSuccess | FileUploadError
 
 const defaultUploadUrl = '/files'
 const defaultFilesUrl = '/files/:workspace/:filename?file=:blobId&workspace=:workspace'
+
+function parseInt (value: string, fallback: number): number {
+  const number = Number.parseInt(value)
+  return Number.isInteger(number) ? number : fallback
+}
+
+export function parseUploadConfig (config: string, uploadUrl: string): UploadConfig {
+  const uploadConfig: UploadConfig = {
+    'form-data': { url: uploadUrl },
+    'signed-url': undefined
+  }
+
+  if (config !== undefined) {
+    const configs = config.split(';')
+    for (const c of configs) {
+      if (c === '') {
+        continue
+      }
+
+      const [key, size, url] = c.split('|')
+
+      if (url === undefined || url === '') {
+        throw new Error(`Bad upload config: ${c}`)
+      }
+
+      if (key === 'form-data') {
+        uploadConfig['form-data'] = { url }
+      } else if (key === 'signed-url') {
+        uploadConfig['signed-url'] = {
+          url,
+          size: parseInt(size, 0) * 1024 * 1024
+        }
+      } else {
+        throw new Error(`Unknown upload config key: ${key}`)
+      }
+    }
+  }
+
+  return uploadConfig
+}
 
 function getFilesUrl (): string {
   const filesUrl = getMetadata(plugin.metadata.FilesURL) ?? defaultFilesUrl
@@ -61,6 +119,42 @@ export function getUploadUrl (): string {
   return template.replaceAll(':workspace', encodeURIComponent(getCurrentWorkspaceId()))
 }
 
+function getUploadConfig (): UploadConfig {
+  return getMetadata<UploadConfig>(plugin.metadata.UploadConfig) ?? { 'form-data': { url: getUploadUrl() } }
+}
+
+function getFileUploadMethod (blob: Blob): { method: FileUploadMethod, url: string } {
+  const config = getUploadConfig()
+
+  const signedUrl = config['signed-url']
+  if (signedUrl !== undefined && signedUrl.size < blob.size) {
+    return { method: 'signed-url', url: signedUrl.url }
+  }
+
+  return { method: 'form-data', url: config['form-data'].url }
+}
+
+/**
+ * @public
+ */
+export function getFileUploadParams (blobId: string, blob: Blob): FileUploadParams {
+  const workspaceId = encodeURIComponent(getCurrentWorkspaceId())
+  const fileId = encodeURIComponent(blobId)
+
+  const { method, url: urlTemplate } = getFileUploadMethod(blob)
+
+  const url = urlTemplate.replaceAll(':workspace', workspaceId).replaceAll(':blobId', fileId)
+
+  const headers: Record<string, string> =
+    method !== 'signed-url'
+      ? {
+          Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
+        }
+      : {}
+
+  return { method, url, headers }
+}
+
 /**
  * @public
  */
@@ -79,12 +173,40 @@ export function getFileUrl (file: string, filename?: string): string {
 /**
  * @public
  */
-export async function uploadFile (file: File): Promise<Ref<Blob>> {
-  const uploadUrl = getUploadUrl()
-
+export async function uploadFile (file: File): Promise<Ref<PlatformBlob>> {
   const id = generateFileId()
+  const params = getFileUploadParams(id, file)
+
+  if (params.method === 'signed-url') {
+    await uploadFileWithSignedUrl(file, id, params.url)
+  } else {
+    await uploadFileWithFormData(file, id, params.url)
+  }
+
+  return id as Ref<PlatformBlob>
+}
+
+/**
+ * @public
+ */
+export async function deleteFile (id: string): Promise<void> {
+  const fileUrl = getFileUrl(id)
+
+  const resp = await fetch(fileUrl, {
+    method: 'DELETE',
+    headers: {
+      Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
+    }
+  })
+
+  if (resp.status !== 200) {
+    throw new Error('Failed to delete file')
+  }
+}
+
+async function uploadFileWithFormData (file: File, uuid: string, uploadUrl: string): Promise<void> {
   const data = new FormData()
-  data.append('file', file, id)
+  data.append('file', file, uuid)
 
   const resp = await fetch(uploadUrl, {
     method: 'POST',
@@ -110,24 +232,54 @@ export async function uploadFile (file: File): Promise<Ref<Blob>> {
   if ('error' in result[0]) {
     throw Error(`Failed to upload file: ${result[0].error}`)
   }
-
-  return id as Ref<Blob>
 }
 
-/**
- * @public
- */
-export async function deleteFile (id: string): Promise<void> {
-  const fileUrl = getFileUrl(id)
-
-  const resp = await fetch(fileUrl, {
-    method: 'DELETE',
+async function uploadFileWithSignedUrl (file: File, uuid: string, uploadUrl: string): Promise<void> {
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
     headers: {
       Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
     }
   })
 
-  if (resp.status !== 200) {
-    throw new Error('Failed to delete file')
+  if (response.ok) {
+    throw Error(`Failed to genearte signed upload URL: ${response.statusText}`)
+  }
+
+  const signedUrl = await response.text()
+  if (signedUrl === undefined || signedUrl === '') {
+    throw Error('Missing signed upload URL')
+  }
+
+  try {
+    const response = await fetch(signedUrl, {
+      body: file,
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+        'Content-Length': file.size.toString(),
+        'x-amz-meta-last-modified': file.lastModified.toString()
+      }
+    })
+
+    if (!response.ok) {
+      throw Error(`Failed to upload file: ${response.statusText}`)
+    }
+
+    // confirm we uploaded file
+    await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
+      }
+    })
+  } catch (err) {
+    // abort the upload
+    await fetch(uploadUrl, {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer ' + (getMetadata(plugin.metadata.Token) as string)
+      }
+    })
   }
 }

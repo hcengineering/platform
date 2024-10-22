@@ -92,6 +92,15 @@ window.addEventListener('DOMContentLoaded', () => {
     setDownloadProgress(progress)
   })
 
+  ipcMain.handleAuth((token) => {
+    const authLoc = {
+      path: ['login', 'auth'],
+      query: { token }
+    }
+
+    navigate(authLoc)
+  })
+
   ipcMain.on('start-backup', () => {
     // We need to obtain current token and endpoint and trigger backup
     const token = getMetadata(presentation.metadata.Token)

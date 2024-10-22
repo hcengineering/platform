@@ -210,17 +210,17 @@ async function createDocumentCategories (tx: TxOperations): Promise<void> {
     { code: 'CM', title: 'Client Management' }
   ]
 
-  await Promise.all(
-    categories.map((c) =>
-      createOrUpdate(
-        tx,
-        documents.class.DocumentCategory,
-        documents.space.QualityDocuments,
-        { ...c, attachments: 0 },
-        ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
-      )
+  const ops = tx.apply()
+  for (const c of categories) {
+    await createOrUpdate(
+      ops,
+      documents.class.DocumentCategory,
+      documents.space.QualityDocuments,
+      { ...c, attachments: 0 },
+      ((documents.category.DOC as string) + ' - ' + c.code) as Ref<DocumentCategory>
     )
-  )
+  }
+  await ops.commit()
 }
 
 async function createTagCategories (tx: TxOperations): Promise<void> {
@@ -292,7 +292,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
 
     // Migrate sections headers + content
     try {
-      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
+      const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
       if (ydoc === undefined) {
         ctx.error('collaborative document content not found', { document: document.title })
         continue
@@ -334,7 +334,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
         }
       })
 
-      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
+      await saveCollaborativeDoc(ctx, storage, client.workspaceId, document.content, ydoc)
     } catch (err) {
       ctx.error('error collaborative document content migration', { error: err, document: document.title })
     }

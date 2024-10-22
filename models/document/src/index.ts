@@ -492,7 +492,8 @@ function defineDocument (builder: Builder): void {
       label: document.string.SearchDocument,
       query: document.completion.DocumentQuery,
       context: ['search', 'mention', 'spotlight'],
-      classToSearch: document.class.Document
+      classToSearch: document.class.Document,
+      priority: 800
     },
     document.completion.DocumentQueryCategory
   )

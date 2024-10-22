@@ -75,6 +75,7 @@
       {width}
       {shouldIgnoreOverdue}
       on:change={handleDueDateChanged}
+      on:resize
     />
   </div>
 {/if}

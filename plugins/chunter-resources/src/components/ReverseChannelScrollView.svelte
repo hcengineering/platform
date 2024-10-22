@@ -104,6 +104,7 @@
 
   let isPageHidden = false
   let lastMsgBeforeFreeze: Ref<ActivityMessage> | undefined = undefined
+  let needUpdateTimestamp = false
 
   $: messages = $messagesStore
   $: notifyContext = $contextByDocStore.get(doc._id)
@@ -149,14 +150,28 @@
     }
   }
 
+  function handleWindowFocus (): void {
+    checkWindowVisibility(false)
+  }
+
+  function handleWindowBlur (): void {
+    checkWindowVisibility(true)
+  }
+
   function handleVisibilityChange (): void {
-    if (document.hidden) {
+    checkWindowVisibility(document.hidden)
+  }
+
+  function checkWindowVisibility (hidden: boolean): void {
+    if (document.hidden || !document.hasFocus() || hidden) {
+      if (isPageHidden) return
       isPageHidden = true
+      needUpdateTimestamp = true
       lastMsgBeforeFreeze = shouldScrollToNew ? messages[messages.length - 1]?._id : undefined
     } else {
       if (isPageHidden) {
         isPageHidden = false
-        void provider.updateNewTimestamp(notifyContext)
+        needUpdateTimestamp = false
       }
     }
   }
@@ -215,7 +230,10 @@
 
   function scrollToStartOfNew (): void {
     if (scrollDiv == null || lastMsgBeforeFreeze === undefined) return
-
+    if (needUpdateTimestamp) {
+      void provider.updateNewTimestamp(notifyContext)
+      needUpdateTimestamp = false
+    }
     const lastIndex = messages.findIndex(({ _id }) => _id === lastMsgBeforeFreeze)
     if (lastIndex === -1) return
     const firstNewMessage = messages.find(({ createdBy }, index) => index > lastIndex && createdBy !== me._id)
@@ -545,12 +563,16 @@
   onMount(() => {
     chatReadMessagesStore.update(() => new Set())
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleWindowFocus)
+    window.addEventListener('blur', handleWindowBlur)
     addTxListener(newMessageTxListener)
   })
 
   onDestroy(() => {
     unsubscribe()
     document.removeEventListener('visibilitychange', handleVisibilityChange)
+    window.removeEventListener('focus', handleWindowFocus)
+    window.removeEventListener('blur', handleWindowBlur)
     removeTxListener(newMessageTxListener)
   })
 </script>
