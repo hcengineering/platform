@@ -90,6 +90,8 @@ export function serveWorkspaceAccount (
 
   setMetadata(serverNotification.metadata.InboxOnlyNotifications, true)
 
+  let canceled = false
+
   const worker = new WorkspaceWorker(
     version,
     txes,
@@ -100,17 +102,22 @@ export function serveWorkspaceAccount (
     brandings
   )
 
-  void worker.start(measureCtx, {
-    errorHandler: async (ws, err) => {
-      Analytics.handleError(err)
+  void worker.start(
+    measureCtx,
+    {
+      errorHandler: async (ws, err) => {
+        Analytics.handleError(err)
+      },
+      force: false,
+      console: false,
+      logs: 'upgrade-logs',
+      waitTimeout
     },
-    force: false,
-    console: false,
-    logs: 'upgrade-logs',
-    waitTimeout
-  })
+    () => canceled
+  )
 
   const close = (): void => {
+    canceled = true
     onClose?.()
   }
 

@@ -3,12 +3,10 @@ CREATE SCHEMA IF NOT EXISTS blob;
 
 DROP TABLE IF EXISTS blob.blob;
 DROP TABLE IF EXISTS blob.data;
-DROP TYPE IF EXISTS blob.content_type;
 DROP TYPE IF EXISTS blob.location;
 
 -- B L O B
 
-CREATE TYPE blob.content_type AS ENUM ('application','audio','font','image','model','text','video');
 CREATE TYPE blob.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
 
 \echo "Creating blob.data..."
@@ -17,8 +15,7 @@ CREATE TABLE blob.data (
   location blob.location NOT NULL,
   size INT8 NOT NULL,
   filename UUID NOT NULL,
-  type blob.content_type NOT NULL,
-  subtype STRING(64) NOT NULL,
+  type STRING(255) NOT NULL,
   CONSTRAINT pk_data PRIMARY KEY (hash, location)
 );
 

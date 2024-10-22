@@ -71,8 +71,11 @@ export class FullTextIndex implements WithFind {
   }
 
   async close (): Promise<void> {
+    this.indexer.triggerIndexing()
     if (!this.upgrade) {
       await this.indexer.cancel()
+    } else {
+      await this.indexer.processUpload(this.indexer.metrics)
     }
   }
 

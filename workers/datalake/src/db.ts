@@ -25,7 +25,6 @@ export interface BlobDataRecord extends BlobDataId {
   filename: UUID
   size: number
   type: string
-  subtype: string
 }
 
 export interface BlobId {
@@ -47,7 +46,7 @@ export async function getData (sql: postgres.Sql, dataId: BlobDataId): Promise<B
   const { hash, location } = dataId
 
   const rows = await sql<BlobDataRecord[]>`
-    SELECT hash, location, filename, size, type, subtype
+    SELECT hash, location, filename, size, type
     FROM blob.data
     WHERE hash = ${hash} AND location = ${location}
   `
@@ -60,11 +59,11 @@ export async function getData (sql: postgres.Sql, dataId: BlobDataId): Promise<B
 }
 
 export async function createData (sql: postgres.Sql, data: BlobDataRecord): Promise<void> {
-  const { hash, location, filename, size, type, subtype } = data
+  const { hash, location, filename, size, type } = data
 
   await sql`
-    UPSERT INTO blob.data (hash, location, filename, size, type, subtype)
-    VALUES (${hash}, ${location}, ${filename}, ${size}, ${type}, ${subtype})
+    UPSERT INTO blob.data (hash, location, filename, size, type)
+    VALUES (${hash}, ${location}, ${filename}, ${size}, ${type})
   `
 }
 

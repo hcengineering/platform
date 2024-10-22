@@ -163,7 +163,6 @@ async function saveBlob (
   const { location, bucket } = selectStorage(env, workspace)
 
   const size = file.size
-  const [mimetype, subtype] = type.split('/')
   const httpMetadata = { contentType: type, cacheControl }
   const filename = getUniqueFilename()
 
@@ -179,7 +178,7 @@ async function saveBlob (
     } else {
       await bucket.put(filename, file, { httpMetadata })
       await sql.begin((sql) => [
-        db.createData(sql, { hash, location, filename, type: mimetype, subtype, size }),
+        db.createData(sql, { hash, location, filename, type, size }),
         db.createBlob(sql, { workspace, name, hash, location })
       ])
     }
@@ -201,7 +200,7 @@ async function saveBlob (
     } else {
       // Otherwise register a new hash and blob
       await sql.begin((sql) => [
-        db.createData(sql, { hash, location, filename, type: mimetype, subtype, size }),
+        db.createData(sql, { hash, location, filename, type, size }),
         db.createBlob(sql, { workspace, name, hash, location })
       ])
     }
@@ -227,9 +226,8 @@ export async function handleBlobUploaded (env: Env, workspace: string, name: str
   } else {
     const size = object.size
     const type = object.httpMetadata.contentType ?? 'application/octet-stream'
-    const [mimetype, subtype] = type.split('/')
 
-    await db.createData(sql, { hash, location, filename, type: mimetype, subtype, size })
+    await db.createData(sql, { hash, location, filename, type, size })
     await db.createBlob(sql, { workspace, name, hash, location })
   }
 }
