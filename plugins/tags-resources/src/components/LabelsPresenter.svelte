@@ -49,18 +49,30 @@
 
   let allWidth: number
   const widths: number[] = []
+  const elements: HTMLDivElement[] = []
 
   afterUpdate(() => {
     let count: number = 0
     widths.forEach((i) => (count += i))
     full = count > allWidth
     dispatch('change', { full, ckeckFilled })
+    if (elements.length > 0) {
+      if (items.length > 4) dispatch('resize', elements[0]?.clientWidth)
+      else {
+        allWidth = 0
+        for (let i = 0; i < items.length; i++) {
+          if (elements[i].clientWidth !== undefined && allWidth < elements[i].clientWidth) { allWidth = elements[i].clientWidth }
+        }
+        dispatch('resize', allWidth + (items.length - 1) * 3)
+      }
+    }
   })
 </script>
 
 {#if kind === 'list' || kind === 'link'}
   {#if items.length > 4}
     <div
+      bind:this={elements[0]}
       class="label-box no-shrink"
       use:tooltip={{
         component: TagsItemPresenter,
@@ -70,8 +82,8 @@
       <TagsReferencePresenter {items} {kind} />
     </div>
   {:else}
-    {#each items as value}
-      <div class="label-box no-shrink" title={value.title}>
+    {#each items as value, i}
+      <div bind:this={elements[i]} class="label-box no-shrink" title={value.title}>
         <TagReferencePresenter attr={undefined} {value} {kind} />
       </div>
     {/each}

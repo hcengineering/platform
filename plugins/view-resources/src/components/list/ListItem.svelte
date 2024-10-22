@@ -84,6 +84,11 @@
   onMount(() => {
     dispatch('on-mount')
   })
+  let minWidth: number | undefined = undefined
+  const sizes = new Map<number, number>()
+  const calcSizes = (): void => {
+    minWidth = sizes.size > 0 ? Array.from(sizes.values()).reduce((a, b) => a + b, 0) : undefined
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -147,14 +152,19 @@
         {/if}
         <GrowPresenter />
         {#if !compactMode}
-          <div class="compression-bar">
-            {#each model.filter((p) => p.displayProps?.compression === true) as attrModel}
+          <div class="compression-bar" style:min-width={`${minWidth}px`}>
+            {#each model.filter((p) => p.displayProps?.compression === true) as attrModel, index}
               <ListPresenter
                 {docObject}
                 attributeModel={attrModel}
                 props={getProps(props, $restrictionStore.readonly)}
                 value={getObjectValue(attrModel.key, docObject)}
                 onChange={getOnChange(docObject, attrModel)}
+                on:resize={(e) => {
+                  if (e.detail == null) return
+                  sizes.set(index, e.detail)
+                  calcSizes()
+                }}
               />
             {/each}
           </div>
