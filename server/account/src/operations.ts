@@ -1786,6 +1786,9 @@ async function createPersonAccount (
         personAccountId
       )
     } else {
+      if (roleOrder[existingAccount.role] < roleOrder[role]) {
+        await ops.update(existingAccount, { role })
+      }
       const person = await ops.findOne(contact.class.Person, { _id: existingAccount.person })
       if (person === undefined) {
         // Employee was deleted, let's restore it.
@@ -1794,10 +1797,16 @@ async function createPersonAccount (
         await ops.updateDoc(contact.class.PersonAccount, existingAccount.space, existingAccount._id, {
           person: employeeId
         })
-      } else if (ops.getHierarchy().hasMixin(person, contact.mixin.Employee)) {
-        const employee = ops.getHierarchy().as(person, contact.mixin.Employee)
-        if (!employee.active) {
-          await ops.update(employee, {
+      } else if (shouldCreateEmployee) {
+        if (ops.getHierarchy().hasMixin(person, contact.mixin.Employee)) {
+          const employee = ops.getHierarchy().as(person, contact.mixin.Employee)
+          if (!employee.active) {
+            await ops.update(employee, {
+              active: true
+            })
+          }
+        } else {
+          await ops.createMixin(person._id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
             active: true
           })
         }
