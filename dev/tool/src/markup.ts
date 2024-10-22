@@ -72,8 +72,6 @@ async function processFixJsonMarkupFor (
   db: Db,
   storageAdapter: StorageAdapter
 ): Promise<void> {
-  console.log('processing', domain, _class)
-
   const collection = db.collection<Doc>(domain)
   const docs = await collection.find({ _class }).toArray()
   for (const doc of docs) {
@@ -119,8 +117,6 @@ async function processFixJsonMarkupFor (
       }
     }
   }
-
-  console.log('...processed', docs.length)
 }
 
 export async function migrateMarkup (
@@ -151,12 +147,9 @@ export async function migrateMarkup (
     const collection = workspaceDb.collection(domain)
 
     const filter = hierarchy.isMixin(_class) ? { [_class]: { $exists: true } } : { _class }
-
-    const count = await collection.countDocuments(filter)
     const iterator = collection.find<Doc>(filter)
 
     try {
-      console.log('processing', _class, '->', count)
       await processMigrateMarkupFor(ctx, hierarchy, storageAdapter, workspaceId, attributes, iterator, concurrency)
     } finally {
       await iterator.close()

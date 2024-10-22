@@ -14,9 +14,7 @@
 //
 
 import core, {
-  BackupClient,
   Branding,
-  Client as CoreClient,
   coreId,
   DOMAIN_BENCHMARK,
   DOMAIN_MIGRATION,
@@ -34,12 +32,13 @@ import core, {
   TxOperations,
   WorkspaceId,
   WorkspaceIdWithUrl,
+  type Client,
   type Doc,
-  type Ref
+  type Ref,
+  type WithLookup
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger, tryMigrate } from '@hcengineering/model'
 import { DomainIndexHelperImpl, Pipeline, StorageAdapter, type DbAdapter } from '@hcengineering/server-core'
-import { connect } from './connect'
 import { InitScript, WorkspaceInitializer } from './initializer'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
@@ -162,23 +161,15 @@ export async function updateModel (
   try {
     let i = 0
     for (const op of migrateOperations) {
-      logger.log('Migrate', { name: op[0] })
+      const st = Date.now()
       await op[1].upgrade(migrateState, async () => connection as any, logger)
+      const tdelta = Date.now() - st
+      if (tdelta > 0) {
+        logger.log('Create', { name: op[0], time: tdelta })
+      }
       i++
-      await progress((((100 / migrateOperations.length) * i) / 100) * 30)
+      await progress((((100 / migrateOperations.length) * i) / 100) * 100)
     }
-
-    // Create update indexes
-    await createUpdateIndexes(
-      ctx,
-      connection.getHierarchy(),
-      connection.getModel(),
-      pipeline,
-      async (value) => {
-        await progress(30 + (Math.min(value, 100) / 100) * 70)
-      },
-      workspaceId
-    )
     await progress(100)
   } catch (e: any) {
     logger.error('error', { error: e })
@@ -200,6 +191,7 @@ export async function initializeWorkspace (
 ): Promise<void> {
   const initWS = branding?.initWorkspace ?? getMetadata(toolPlugin.metadata.InitWorkspace)
   const scriptUrl = getMetadata(toolPlugin.metadata.InitScriptURL)
+  ctx.info('Init script details', { scriptUrl, initWS })
   if (initWS === undefined || scriptUrl === undefined) return
   try {
     // `https://raw.githubusercontent.com/hcengineering/init/main/script.yaml`
@@ -234,11 +226,12 @@ export async function upgradeModel (
   workspaceId: WorkspaceIdWithUrl,
   txes: Tx[],
   pipeline: Pipeline,
+  connection: Client,
   storageAdapter: StorageAdapter,
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>,
-  forceIndexes: boolean = false
+  updateIndexes: 'perform' | 'skip' | 'disable' = 'skip'
 ): Promise<Tx[]> {
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
@@ -305,87 +298,69 @@ export async function upgradeModel (
       workspaceId
     )
   }
-  if (forceIndexes) {
+  if (updateIndexes === 'perform') {
     await upgradeIndexes()
   }
 
   await ctx.with('migrate', {}, async (ctx) => {
     let i = 0
     for (const op of migrateOperations) {
-      const t = Date.now()
       try {
+        const t = Date.now()
         await ctx.with(op[0], {}, async () => {
           await op[1].migrate(migrateClient, logger)
         })
+        const tdelta = Date.now() - t
+        if (tdelta > 0) {
+          logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+        }
       } catch (err: any) {
         logger.error(`error during migrate: ${op[0]} ${err.message}`, err)
         throw err
       }
-      logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
       await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
       i++
     }
 
-    await tryMigrate(migrateClient, coreId, [
-      {
-        state: 'indexes-v5',
-        func: upgradeIndexes
-      }
-    ])
+    if (updateIndexes === 'skip') {
+      await tryMigrate(migrateClient, coreId, [
+        {
+          state: 'indexes-v5',
+          func: upgradeIndexes
+        }
+      ])
+    }
   })
 
   logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
 
-  let connection: (CoreClient & BackupClient) | undefined
-  const getUpgradeClient = async (): Promise<CoreClient & BackupClient> =>
-    await ctx.with('connect-platform', {}, async (ctx) => {
-      if (connection !== undefined) {
-        return connection
+  await ctx.with('upgrade', {}, async (ctx) => {
+    let i = 0
+    for (const op of migrateOperations) {
+      const t = Date.now()
+      await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, logger))
+      const tdelta = Date.now() - t
+      if (tdelta > 0) {
+        logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: workspaceId.name })
       }
-      connection = (await connect(
-        transactorUrl,
-        workspaceId,
-        undefined,
-        {
-          mode: 'backup',
-          model: 'upgrade',
-          admin: 'true'
-        },
-        model
-      )) as CoreClient & BackupClient
-      return connection
-    })
-  try {
-    await ctx.with('upgrade', {}, async (ctx) => {
-      let i = 0
-      for (const op of migrateOperations) {
-        const t = Date.now()
-        await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, getUpgradeClient, logger))
-        logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
-        await progress(60 + ((100 / migrateOperations.length) * i * 30) / 100)
-        i++
-      }
-    })
-
-    if (connection === undefined) {
-      // We need to send reboot for workspace
-      ctx.info('send force close', { workspace: workspaceId.name, transactorUrl })
-      const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
-      const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
-      try {
-        await fetch(
-          serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
-          {
-            method: 'PUT'
-          }
-        )
-      } catch (err: any) {
-        // Ignore error if transactor is not yet ready
-      }
+      await progress(60 + ((100 / migrateOperations.length) * i * 30) / 100)
+      i++
     }
-  } finally {
-    await connection?.sendForceClose()
-    await connection?.close()
+  })
+
+  // We need to send reboot for workspace
+  ctx.info('send force close', { workspace: workspaceId.name, transactorUrl })
+  const serverEndpoint = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+  const token = generateToken(systemAccountEmail, workspaceId, { admin: 'true' })
+  try {
+    await fetch(
+      serverEndpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${toWorkspaceString(workspaceId)}`,
+      {
+        method: 'PUT'
+      }
+    )
+  } catch (err: any) {
+    // Ignore error if transactor is not yet ready
   }
   return model
 }
@@ -404,7 +379,13 @@ async function prepareMigrationClient (
   const migrateClient = new MigrateClientImpl(pipeline, hierarchy, model, logger, storageAdapter, workspaceId)
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
-  const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
+
+  const _toSet = (vals: WithLookup<MigrationState>[]): Set<string> => {
+    return new Set(vals.map((q) => q.state))
+  }
+
+  const migrateState = new Map<string, Set<string>>(sts.map((it) => [it[0], _toSet(it[1])]))
+  // const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
   migrateClient.migrateState = migrateState
 
   return { migrateClient, migrateState }

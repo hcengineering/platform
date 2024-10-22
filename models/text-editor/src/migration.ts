@@ -53,7 +53,6 @@ async function processMigrateMarkupFor (
   client: MigrationClient,
   iterator: MigrationIterator<Doc>
 ): Promise<void> {
-  let processed = 0
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -88,9 +87,6 @@ async function processMigrateMarkupFor (
     if (operations.length > 0) {
       await client.bulk(domain, operations)
     }
-
-    processed += docs.length
-    console.log('...processed', processed)
   }
 }
 
@@ -122,7 +118,6 @@ async function processFixMigrateMarkupFor (
   client: MigrationClient,
   iterator: MigrationIterator<Doc>
 ): Promise<void> {
-  let processed = 0
   while (true) {
     const docs = await iterator.next(1000)
     if (docs === null || docs.length === 0) {
@@ -164,9 +159,6 @@ async function processFixMigrateMarkupFor (
     if (operations.length > 0) {
       await client.bulk(domain, operations)
     }
-
-    processed += docs.length
-    console.log('...processed', processed)
   }
 }
 

@@ -351,7 +351,9 @@ class TSessionManager implements SessionManager {
         version: this.modelVersion,
         workspaceVersion: versionToString(workspaceInfo.version),
         workspace: workspaceInfo.workspaceId,
-        workspaceUrl: workspaceInfo.workspaceUrl
+        workspaceUrl: workspaceInfo.workspaceUrl,
+        email: token.email,
+        extra: JSON.stringify(token.extra ?? {})
       })
       // Version mismatch, return upgrading.
       return { upgrade: true, upgradeInfo: workspaceInfo.upgrade }
