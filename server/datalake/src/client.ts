@@ -77,9 +77,7 @@ export class Client {
   ): Promise<Readable> {
     const url = this.getObjectUrl(ctx, workspace, objectName)
     const headers = {
-      Range: length !== undefined
-        ? `bytes=${offset}-${offset + length - 1}`
-        : `bytes=${offset}`
+      Range: length !== undefined ? `bytes=${offset}-${offset + length - 1}` : `bytes=${offset}`
     }
 
     const response = await fetchSafe(ctx, url, { headers })
