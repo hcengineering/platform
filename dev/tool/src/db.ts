@@ -18,7 +18,7 @@ import {
   type MeasureMetricsContext
 } from '@hcengineering/core'
 import { getMongoClient, getWorkspaceMongoDB } from '@hcengineering/mongo'
-import { convertDoc, createTable, getDBClient, retryTxn, translateDomain } from '@hcengineering/postgres'
+import { convertDoc, createTable, getDBClient, getDocFieldsByDomains, retryTxn, translateDomain } from '@hcengineering/postgres'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -81,6 +81,13 @@ async function moveWorkspace (
       const currentIds = new Set(current.rows.map((r) => r._id))
       console.log('move domain', domain)
       const docs: Doc[] = []
+      const fields = getDocFieldsByDomains(domain)
+      const filedsWithData = [...fields, 'data']
+      const insertFields: string[] = []
+      for (const field of filedsWithData) {
+        insertFields.push(`"${field}"`)
+      }
+      const insertStr = insertFields.join(', ')
       while (true) {
         while (docs.length < 50000) {
           const doc = (await cursor.next()) as Doc | null
@@ -92,31 +99,27 @@ async function moveWorkspace (
         while (docs.length > 0) {
           const part = docs.splice(0, 500)
           const values: any[] = []
-          for (const doc of part) {
-            const d = convertDoc(doc, ws.workspace)
-            values.push(
-              d._id,
-              d.workspaceId,
-              d._class,
-              d.createdBy ?? d.modifiedBy,
-              d.modifiedBy,
-              d.modifiedOn,
-              d.createdOn ?? d.modifiedOn,
-              d.space,
-              d.attachedTo ?? null,
-              JSON.stringify(d.data)
-            )
+          const vars: string[] = []
+          let index = 1
+          for (let i = 0; i < part.length; i++) {
+            const doc = part[i]
+            const variables: string[] = []
+            const d = convertDoc(domain, doc, ws.workspace)
+            values.push(d.workspaceId)
+            variables.push(`$${index++}`)
+            for (const field of fields) {
+              values.push(d[field])
+              variables.push(`$${index++}`)
+            }
+            values.push(d.data)
+            variables.push(`$${index++}`)
+            vars.push(`(${variables.join(', ')})`)
           }
-          const vals = part
-            .map(
-              (_, i) =>
-                `($${i * 10 + 1}, $${i * 10 + 2}, $${i * 10 + 3}, $${i * 10 + 4}, $${i * 10 + 5}, $${i * 10 + 6}, $${i * 10 + 7}, $${i * 10 + 8}, $${i * 10 + 9}, $${i * 10 + 10})`
-            )
-            .join(',')
+          const vals = vars.join(',')
           try {
             await retryTxn(pgClient, async (client) => {
               await client.query(
-                `INSERT INTO ${translateDomain(domain)} (_id, "workspaceId", _class, "createdBy", "modifiedBy", "modifiedOn", "createdOn", space, "attachedTo", data) VALUES ${vals}`,
+                `INSERT INTO ${translateDomain(domain)} ("workspaceId", ${insertStr}) VALUES ${vals}`,
                 values
               )
             })

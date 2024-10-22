@@ -18,9 +18,11 @@ import core, {
   AccountRole,
   type Class,
   type Doc,
+  type DocumentUpdate,
   type Domain,
   type FieldIndexConfig,
   generateId,
+  type MixinUpdate,
   type Projection,
   type Ref,
   type WorkspaceId
@@ -28,6 +30,7 @@ import core, {
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import { Pool, type PoolClient } from 'pg'
+import { defaultSchema, domainSchemas, getSchema } from './schemas'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
 
@@ -87,24 +90,26 @@ export async function createTable (client: Pool, domains: string[]): Promise<voi
   const toCreate = mapped.filter((it) => !exists.rows.map((it) => it.table_name).includes(it))
   await retryTxn(client, async (client) => {
     for (const domain of toCreate) {
+      const schema = getSchema(domain)
+      const fields: string[] = []
+      for (const key in schema) {
+        const val = schema[key]
+        fields.push(`"${key}" ${val[0]} ${val[1] ? 'NOT NULL' : ''}`)
+      }
+      const colums = fields.join(', ')
       await client.query(
         `CREATE TABLE ${domain} (
-          "workspaceId" VARCHAR(255) NOT NULL,
-          _id VARCHAR(255) NOT NULL,
-          _class VARCHAR(255) NOT NULL,
-          "createdBy" VARCHAR(255),
-          "modifiedBy" VARCHAR(255) NOT NULL,
-          "modifiedOn" bigint NOT NULL,
-          "createdOn" bigint,
-          space VARCHAR(255) NOT NULL,
-          "attachedTo" VARCHAR(255),
+          "workspaceId" text NOT NULL,
+          ${colums}, 
           data JSONB NOT NULL,
           PRIMARY KEY("workspaceId", _id)
         )`
       )
-      await client.query(`
-        CREATE INDEX ${domain}_attachedTo ON ${domain} ("attachedTo")
-      `)
+      if (schema.attachedTo !== undefined) {
+        await client.query(`
+          CREATE INDEX ${domain}_attachedTo ON ${domain} ("attachedTo")
+        `)
+      }
       await client.query(`
         CREATE INDEX ${domain}_class ON ${domain} (_class)
       `)
@@ -221,19 +226,67 @@ export function getDBClient (connectionString: string, database?: string): Postg
   return new ClientRef(existing)
 }
 
-export function convertDoc<T extends Doc> (doc: T, workspaceId: string): DBDoc {
-  const { _id, _class, createdBy, modifiedBy, modifiedOn, createdOn, space, attachedTo, ...data } = doc as any
-  return {
-    _id,
-    _class,
-    createdBy,
-    modifiedBy,
-    modifiedOn,
-    createdOn,
-    space,
-    attachedTo,
+export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: string): DBDoc {
+  const extractedFields: Doc & Record<string, any> = {
+    _id: doc._id,
+    space: doc.space,
+    createdBy: doc.createdBy,
+    modifiedBy: doc.modifiedBy,
+    modifiedOn: doc.modifiedOn,
+    createdOn: doc.createdOn,
+    _class: doc._class
+  }
+  const remainingData: Partial<T> = {}
+
+  for (const key in doc) {
+    if (Object.keys(extractedFields).includes(key)) continue
+    if (getDocFieldsByDomains(domain).includes(key)) {
+      extractedFields[key] = doc[key]
+    } else {
+      remainingData[key] = doc[key]
+    }
+  }
+
+  const res: any = {
+    ...extractedFields,
     workspaceId,
-    data
+    data: remainingData
+  }
+  return res
+}
+
+export function parseUpdate<T extends Doc> (
+  domain: string,
+  ops: DocumentUpdate<T> | MixinUpdate<Doc, T>
+): {
+    extractedFields: Partial<T>
+    remainingData: Partial<T>
+  } {
+  const extractedFields: Partial<T> = {}
+  const remainingData: Partial<T> = {}
+
+  for (const key in ops) {
+    if (key === '$push' || key === '$pull') {
+      const val = (ops as any)[key]
+      for (const k in val) {
+        if (getDocFieldsByDomains(domain).includes(k)) {
+          ;(extractedFields as any)[k] = val[key]
+        } else {
+          ;(remainingData as any)[k] = val[key]
+        }
+      }
+    } else {
+      if (getDocFieldsByDomains(domain).includes(key)) {
+        ;(extractedFields as any)[key] = (ops as any)[key]
+      } else {
+        ;(remainingData as any)[key] = (ops as any)[key]
+      }
+    }
+  }
+
+  return {
+    extractedFields,
+    remainingData
   }
 }
 
@@ -343,39 +396,17 @@ export function parseDoc<T extends Doc> (doc: DBDoc): T {
 
 export interface DBDoc extends Doc {
   workspaceId: string
-  attachedTo?: Ref<Doc>
   data: Record<string, any>
+  [key: string]: any
 }
 
-export function isDataField (field: string): boolean {
-  return !docFields.includes(field)
+export function isDataField (domain: string, field: string): boolean {
+  return !getDocFieldsByDomains(domain).includes(field)
 }
 
-export const docFields: string[] = [
-  '_id',
-  '_class',
-  'createdBy',
-  'modifiedBy',
-  'modifiedOn',
-  'createdOn',
-  'space',
-  'attachedTo'
-] as const
-
-export function getUpdateValue (value: any): string {
-  if (typeof value === 'string') {
-    return '"' + escapeDoubleQuotes(value) + '"'
-  }
-  if (typeof value === 'object') {
-    return JSON.stringify(value)
-  }
-  return value
-}
-
-function escapeDoubleQuotes (jsonString: string): string {
-  const unescapedQuotes = /(?<!\\)"/g
-
-  return jsonString.replace(unescapedQuotes, '\\"')
+export function getDocFieldsByDomains (domain: string): string[] {
+  const schema = domainSchemas[domain] ?? defaultSchema
+  return Object.keys(schema)
 }
 
 export interface JoinProps {
