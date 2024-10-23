@@ -138,7 +138,15 @@ export function withRetryConnUntilTimeout<P extends any[], T> (
 export function withRetryConnUntilSuccess<P extends any[], T> (
   f: (...params: P) => Promise<T>
 ): (...params: P) => Promise<T> {
-  const shouldFail = (err: any): boolean => err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED'
+  const shouldFail = (err: any): boolean => {
+    const res = err?.cause?.code !== 'ECONNRESET' && err?.cause?.code !== 'ECONNREFUSED'
+
+    if (res) {
+      console.error('Failing withRetryConnUntilSuccess with error cause:', err?.cause)
+    }
+
+    return res
+  }
 
   return withRetry(f, shouldFail)
 }

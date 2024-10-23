@@ -415,7 +415,7 @@ async function getCreateReferencesTxes (
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
       const collaborativeDoc = (createdDoc as any)[attr.name] as CollaborativeDoc
       try {
-        const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
+        const ydoc = await loadCollaborativeDoc(ctx, storage, control.workspace, collaborativeDoc)
         if (ydoc !== undefined) {
           const attrReferences = getReferencesData(
             srcDocId,
@@ -467,7 +467,7 @@ async function getUpdateReferencesTxes (
       hasReferenceAttrs = true
       try {
         const collaborativeDoc = (updatedDoc as any)[attr.name] as CollaborativeDoc
-        const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
+        const ydoc = await loadCollaborativeDoc(ctx, storage, control.workspace, collaborativeDoc)
         if (ydoc !== undefined) {
           const attrReferences = getReferencesData(
             srcDocId,

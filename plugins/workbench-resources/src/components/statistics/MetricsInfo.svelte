@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Metrics } from '@hcengineering/core'
+  import { Metrics, type MetricsData } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Button, Expandable, showPopup } from '@hcengineering/ui'
+  import DropdownLabels from '@hcengineering/ui/src/components/DropdownLabels.svelte'
   import { FixedColumn } from '@hcengineering/view-resources'
   import Params from './Params.svelte'
 
@@ -23,8 +24,29 @@
     }
     return `${Math.floor((time / ops) * 100) / 100}`
   }
+
+  export let sortingOrder: 'avg' | 'ops' | 'total' = 'ops'
+  const sortOrder = [
+    { id: 'avg', label: 'Average' },
+    { id: 'ops', label: 'Operations' },
+    { id: 'total', label: 'Total' }
+  ]
+  const getSorted = (v: Record<string, MetricsData>, sortingOrder: 'avg' | 'ops' | 'total') => {
+    if (sortingOrder === 'avg') {
+      return Object.entries(v).sort((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1))
+    } else if (sortingOrder === 'ops') {
+      return Object.entries(v).sort((a, b) => b[1].operations + 1 - (a[1].operations + 1))
+    } else {
+      return Object.entries(v).sort((a, b) => b[1].value - a[1].value)
+    }
+  }
 </script>
 
+{#if level === 0}
+  <div class="p-1 flex flex-grow flex-reverse">
+    <DropdownLabels bind:selected={sortingOrder} items={sortOrder}></DropdownLabels>
+  </div>
+{/if}
 <Expandable
   expanded={level === 0}
   expandable={level !== 0 && haschilds}
@@ -93,12 +115,12 @@
   {/if}
   {#each Object.entries(metrics.measurements) as [k, v], i (k)}
     <div style:margin-left={`${level * 0.5}rem`}>
-      <svelte:self metrics={v} name="{i}. {k}" level={level + 1} />
+      <svelte:self metrics={v} name="{i}. {k}" level={level + 1} {sortingOrder} />
     </div>
   {/each}
   {#each Object.entries(metrics.params) as [k, v], i}
     <div style:margin-left={`${level * 0.5}rem`}>
-      {#each Object.entries(v).sort((a, b) => b[1].value / (b[1].operations + 1) - a[1].value / (a[1].operations + 1)) as [kk, vv]}
+      {#each getSorted(v, sortingOrder) as [kk, vv]}
         {@const childExpandable =
           vv.topResult !== undefined &&
           vv.topResult.length > 0 &&

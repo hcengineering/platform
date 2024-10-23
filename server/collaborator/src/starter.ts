@@ -18,11 +18,11 @@ import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 
 import type { MeasureContext } from '@hcengineering/core'
+import serverClient from '@hcengineering/server-client'
 import type { StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import config from './config'
 import { start } from './server'
-import serverClient from '@hcengineering/server-client'
 
 export async function startCollaborator (ctx: MeasureContext, onClose?: () => void): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
@@ -30,7 +30,7 @@ export async function startCollaborator (ctx: MeasureContext, onClose?: () => vo
   setMetadata(serverClient.metadata.Endpoint, config.AccountsUrl)
 
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
-  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoUrl)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const shutdown = await start(ctx, config, storageAdapter)
 

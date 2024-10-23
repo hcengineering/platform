@@ -1300,8 +1300,8 @@ class MongoAdapter extends MongoAdapterBase {
         const coll = this.db.collection<Doc>(domain)
 
         promises.push(
-          addOperation(ctx, 'bulk-write', { domain, operations: ops.length }, async (ctx) => {
-            await ctx.with(
+          addOperation(ctx, 'bulk-write', { domain, operations: ops.length }, (ctx) =>
+            ctx.with(
               'bulk-write',
               { domain },
               async () => {
@@ -1318,7 +1318,7 @@ class MongoAdapter extends MongoAdapterBase {
                 operations: ops.length
               }
             )
-          })
+          )
         )
       }
       if (domainBulk.findUpdate.size > 0) {
@@ -1337,7 +1337,7 @@ class MongoAdapter extends MongoAdapterBase {
               ctx,
               'find-result',
               {},
-              async (ctx) => await coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray(),
+              (ctx) => coll.find({ _id: { $in: Array.from(domainBulk.findUpdate) } }).toArray(),
               { domain, _ids: domainBulk.findUpdate.size, queueTime: stTime - st }
             )
             result.push(...docs)
@@ -1407,23 +1407,6 @@ class MongoAdapter extends MongoAdapterBase {
       modifiedOn: tx.modifiedOn
     }
     if (isOperator(tx.attributes)) {
-      const operator = Object.keys(tx.attributes)[0]
-      if (operator === '$move') {
-        const keyval = (tx.attributes as any).$move
-        const arr = tx.mixin + '.' + Object.keys(keyval)[0]
-        const desc = keyval[arr]
-        const ops: any = [
-          { updateOne: { filter, update: { $pull: { [arr]: desc.$value } } } },
-          {
-            updateOne: {
-              filter,
-              update: { $set: modifyOp, $push: { [arr]: { $each: [desc.$value], $position: desc.$position } } }
-            }
-          }
-        ]
-        bulk.bulkOperations.push(...ops)
-        return
-      }
       const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
 
       bulk.bulkOperations.push({
@@ -1475,46 +1458,7 @@ class MongoAdapter extends MongoAdapterBase {
   protected txUpdateDoc (bulk: OperationBulk, tx: TxUpdateDoc<Doc>): void {
     if (isOperator(tx.operations)) {
       const operator = Object.keys(tx.operations)[0]
-      if (operator === '$move') {
-        const keyval = (tx.operations as any).$move
-        const arr = Object.keys(keyval)[0]
-        const desc = keyval[arr]
-
-        const ops: any = [
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  '%hash%': null
-                },
-                $pull: {
-                  [arr]: desc.$value
-                }
-              }
-            }
-          },
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn,
-                  '%hash%': null
-                },
-                $push: {
-                  [arr]: {
-                    $each: [desc.$value],
-                    $position: desc.$position
-                  }
-                }
-              }
-            }
-          }
-        ]
-        bulk.bulkOperations.push(...ops)
-      } else if (operator === '$update') {
+      if (operator === '$update') {
         const keyval = (tx.operations as any).$update
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr] as QueryUpdate<any>
@@ -1665,19 +1609,8 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const txCollection = this.db.collection<Tx>(DOMAIN_TX)
-    const cursor = await ctx.with('find', {}, async () => {
-      const c = txCollection.find(
-        { objectSpace: core.space.Model },
-        {
-          sort: {
-            _id: 1,
-            modifiedOn: 1
-          }
-        }
-      )
-      return c
-    })
-    const model = await ctx.with('to-array', {}, async () => await toArray<Tx>(cursor))
+    const cursor = txCollection.find({ objectSpace: core.space.Model })
+    const model = await toArray<Tx>(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

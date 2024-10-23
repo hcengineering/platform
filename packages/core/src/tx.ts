@@ -247,7 +247,6 @@ export type OmitNever<T extends object> = Omit<T, KeysByType<T, never>>
 export interface PushOptions<T extends object> {
   $push?: Partial<OmitNever<ArrayAsElementPosition<Required<T>>>>
   $pull?: Partial<OmitNever<ArrayAsElement<Required<T>>>>
-  $move?: Partial<OmitNever<ArrayMoveDescriptor<Required<T>>>>
 }
 
 /**
@@ -272,16 +271,6 @@ export interface SetEmbeddedOptions<T extends object> {
 /**
  * @public
  */
-export interface PushMixinOptions<D extends Doc> {
-  $pushMixin?: {
-    $mixin: Ref<Mixin<D>>
-    values: Partial<OmitNever<ArrayAsElement<D>>>
-  }
-}
-
-/**
- * @public
- */
 export interface IncOptions<T extends object> {
   $inc?: Partial<OmitNever<NumberProperties<T>>>
 }
@@ -299,7 +288,6 @@ export interface SpaceUpdate {
 export type DocumentUpdate<T extends Doc> = Partial<Data<T>> &
 PushOptions<T> &
 SetEmbeddedOptions<T> &
-PushMixinOptions<T> &
 IncOptions<T> &
 SpaceUpdate
 
