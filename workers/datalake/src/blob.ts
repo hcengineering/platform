@@ -124,11 +124,19 @@ export async function postBlobFormData (request: Request, env: Env, workspace: s
   const contentType = request.headers.get('Content-Type')
   if (contentType === null || !contentType.includes('multipart/form-data')) {
     console.error({ error: 'expected multipart/form-data' })
-    return error(400, 'Expected multipart/form-data')
+    return error(400, 'expected multipart/form-data')
   }
 
   const sql = postgres(env.HYPERDRIVE.connectionString)
-  const formData = await request.formData()
+
+  let formData: FormData
+  try {
+    formData = await request.formData()
+  } catch (err: any) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error({ error: 'failed to parse form data', message })
+    return error(400, 'failed to parse form data')
+  }
 
   const files: [File, key: string][] = []
   formData.forEach((value: any, key: string) => {
