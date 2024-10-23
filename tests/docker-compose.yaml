@@ -43,6 +43,7 @@ services:
     links:
       - mongodb
       - minio
+      - postgres
     ports:
       - 3003:3003
     volumes:
@@ -59,6 +60,7 @@ services:
     image: hardcoreeng/workspace
     links:
       - mongodb
+      - postgres
       - minio
     volumes:
       - ./branding-test.json:/var/cfg/branding.json
@@ -106,6 +108,7 @@ services:
       - elastic
       - minio
       - rekoni
+      - postgres
       - account
     ports:
       - 3334:3334

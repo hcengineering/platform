@@ -420,3 +420,38 @@ export interface JoinProps {
   toClass: Ref<Class<Doc>>
   classes?: Ref<Class<Doc>>[] // filter by classes
 }
+
+export class Mutex {
+  private locked: boolean = false
+  private readonly waitingQueue: Array<(value: boolean) => void> = []
+
+  private async acquire (): Promise<void> {
+    while (this.locked) {
+      await new Promise<boolean>((resolve) => {
+        this.waitingQueue.push(resolve)
+      })
+    }
+    this.locked = true
+  }
+
+  private release (): void {
+    if (!this.locked) {
+      throw new Error('Mutex is not locked')
+    }
+
+    this.locked = false
+    const nextResolver = this.waitingQueue.shift()
+    if (nextResolver !== undefined) {
+      nextResolver(true)
+    }
+  }
+
+  async runExclusive<T>(fn: () => Promise<T> | T): Promise<T> {
+    await this.acquire()
+    try {
+      return await fn()
+    } finally {
+      this.release()
+    }
+  }
+}

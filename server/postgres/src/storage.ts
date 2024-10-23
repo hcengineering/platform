@@ -77,6 +77,7 @@ import {
   isDataField,
   isOwner,
   type JoinProps,
+  Mutex,
   parseDoc,
   parseDocWithProjection,
   parseUpdate,
@@ -88,11 +89,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
   protected readonly queue: ((client: PoolClient) => Promise<any>)[] = []
-  private processing = false
+  private readonly mutex = new Mutex()
 
   protected readonly retryTxn = async (fn: (client: PoolClient) => Promise<any>): Promise<void> => {
-    this.queue.push(fn)
-    await this.processQueue()
+    await this.mutex.runExclusive(async () => {
+      await this.processOps(this.txConnection, fn)
+    })
   }
 
   constructor (
@@ -105,23 +107,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
     protected readonly modelDb: ModelDb
   ) {
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
-  }
-
-  private async processQueue (): Promise<void> {
-    if (this.processing) return
-    this.processing = true
-    try {
-      while (true) {
-        const next = this.queue.shift()
-        if (next === undefined) {
-          this.processing = false
-          break
-        }
-        await this.processOps(this.txConnection, next)
-      }
-    } finally {
-      this.processing = false
-    }
   }
 
   private async processOps (client: PoolClient, operation: (client: PoolClient) => Promise<any>): Promise<void> {
