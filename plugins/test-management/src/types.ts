@@ -15,6 +15,7 @@
 
 import { Attachment } from '@hcengineering/attachment'
 import { Project } from '@hcengineering/tracker'
+import { Employee } from '@hcengineering/contact'
 import { AttachedDoc, type CollectionSize, Doc, type Ref } from '@hcengineering/core'
 
 /** @public */
@@ -54,6 +55,15 @@ export const testCasePriorities = [
 ]
 
 /** @public */
+export enum TestCaseStatus {
+	Draft,
+	ReadyForReview,
+  FixReviewComments,
+	Approved,
+  Rejected
+}
+
+/** @public */
  export interface TestProject extends Project {
 }
 
@@ -71,11 +81,13 @@ export interface TestCase extends AttachedDoc {
   description?: string
   type: TestCaseType
   priority: TestCasePriority
+  status: TestCaseStatus
   // Estimated time in minutes
   estimatedTime: number
   preconditions?: string
   steps?: string
   suite: Ref<TestSuite>
+  assignee: Ref<Employee>
   attachments?: CollectionSize<Attachment>
   comments?: number
 }
