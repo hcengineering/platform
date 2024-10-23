@@ -29,7 +29,7 @@ import { ModelLogger } from './utils'
  * @public
  */
 export type MigrateUpdate<T extends Doc> = Partial<T> &
-Omit<PushOptions<T>, '$move'> &
+PushOptions<T> &
 IncOptions<T> &
 UnsetOptions &
 Record<string, any>

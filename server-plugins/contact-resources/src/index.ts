@@ -117,7 +117,7 @@ async function createPersonSpace (
   person: Ref<Person>,
   control: TriggerControl
 ): Promise<TxCUD<PersonSpace>[]> {
-  const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person }, { limit: 1 })).shift()
+  const personSpace = (await control.findAll(control.ctx, contact.class.PersonSpace, { person }, { limit: 1 }))[0]
   if (personSpace !== undefined) {
     const toAdd = account.filter((it) => !personSpace.members.includes(it))
     if (toAdd.length === 0) return []

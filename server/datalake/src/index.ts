@@ -37,7 +37,7 @@ export class DatalakeService implements StorageAdapter {
   static config = 'datalake'
   client: Client
   constructor (readonly opt: DatalakeConfig) {
-    this.client = new Client(opt.endpoint, opt.port)
+    this.client = new Client(opt.endpoint)
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -167,23 +167,15 @@ export class DatalakeService implements StorageAdapter {
 }
 
 export function processConfigFromEnv (storageConfig: StorageConfiguration): string | undefined {
-  let endpoint = process.env.DATALAKE_ENDPOINT
+  const endpoint = process.env.DATALAKE_ENDPOINT
   if (endpoint === undefined) {
     return 'DATALAKE_ENDPOINT'
-  }
-
-  let port = 80
-  const sp = endpoint.split(':')
-  if (sp.length > 1) {
-    endpoint = sp[0]
-    port = parseInt(sp[1])
   }
 
   const config: DatalakeConfig = {
     kind: 'datalake',
     name: 'datalake',
-    endpoint,
-    port
+    endpoint
   }
   storageConfig.storages.push(config)
   storageConfig.default = 'datalake'

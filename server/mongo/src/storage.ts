@@ -1407,23 +1407,6 @@ class MongoAdapter extends MongoAdapterBase {
       modifiedOn: tx.modifiedOn
     }
     if (isOperator(tx.attributes)) {
-      const operator = Object.keys(tx.attributes)[0]
-      if (operator === '$move') {
-        const keyval = (tx.attributes as any).$move
-        const arr = tx.mixin + '.' + Object.keys(keyval)[0]
-        const desc = keyval[arr]
-        const ops: any = [
-          { updateOne: { filter, update: { $pull: { [arr]: desc.$value } } } },
-          {
-            updateOne: {
-              filter,
-              update: { $set: modifyOp, $push: { [arr]: { $each: [desc.$value], $position: desc.$position } } }
-            }
-          }
-        ]
-        bulk.bulkOperations.push(...ops)
-        return
-      }
       const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
 
       bulk.bulkOperations.push({
@@ -1475,46 +1458,7 @@ class MongoAdapter extends MongoAdapterBase {
   protected txUpdateDoc (bulk: OperationBulk, tx: TxUpdateDoc<Doc>): void {
     if (isOperator(tx.operations)) {
       const operator = Object.keys(tx.operations)[0]
-      if (operator === '$move') {
-        const keyval = (tx.operations as any).$move
-        const arr = Object.keys(keyval)[0]
-        const desc = keyval[arr]
-
-        const ops: any = [
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  '%hash%': null
-                },
-                $pull: {
-                  [arr]: desc.$value
-                }
-              }
-            }
-          },
-          {
-            updateOne: {
-              filter: { _id: tx.objectId },
-              update: {
-                $set: {
-                  modifiedBy: tx.modifiedBy,
-                  modifiedOn: tx.modifiedOn,
-                  '%hash%': null
-                },
-                $push: {
-                  [arr]: {
-                    $each: [desc.$value],
-                    $position: desc.$position
-                  }
-                }
-              }
-            }
-          }
-        ]
-        bulk.bulkOperations.push(...ops)
-      } else if (operator === '$update') {
+      if (operator === '$update') {
         const keyval = (tx.operations as any).$update
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr] as QueryUpdate<any>
