@@ -1717,7 +1717,7 @@ async function updateCollaborators (
 
   if (hierarchy.classHierarchyMixin(objectClass, activity.mixin.ActivityDoc) === undefined) return res
 
-  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { attachedTo: objectId })
+  const contexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, { objectId })
   const addedInfo = await getUsersInfo(ctx, toAdd as Ref<PersonAccount>[], control)
 
   for (const addedUser of addedInfo.values()) {

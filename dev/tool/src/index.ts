@@ -371,7 +371,7 @@ export function devTool (
           lastProcessingTime: Date.now() + 1000 * 60
         })
 
-        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations)
+        await createWorkspace(measureCtx, version, brandingObj, wsInfo, txes, migrateOperations, undefined, true)
 
         await updateWorkspace(db, wsInfo, {
           mode: 'active',
@@ -1717,7 +1717,7 @@ export function devTool (
           lastProcessingTime: Date.now() + 1000 * 60
         })
 
-        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations)
+        await createWorkspace(measureCtx, version, null, wsInfo, txes, migrateOperations, undefined, true)
 
         await updateWorkspace(db, wsInfo, {
           mode: 'active',
