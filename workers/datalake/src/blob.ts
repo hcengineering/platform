@@ -75,7 +75,9 @@ export async function handleBlobGet (
   const status = length !== undefined && length < object.size ? 206 : 200
 
   const response = new Response(object?.body, { headers, status })
-  ctx.waitUntil(cache.put(request, response.clone()))
+  if (response.status === 200) {
+    ctx.waitUntil(cache.put(request, response.clone()))
+  }
 
   return response
 }
