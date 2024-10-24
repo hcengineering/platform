@@ -31,6 +31,7 @@ import core, {
   TxFactory,
   TxProcessor,
   type TxRemoveDoc,
+  type TxResult,
   type TxUpdateDoc,
   addOperation,
   toFindResult,
@@ -91,11 +92,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
     await this.triggers.tx(tx)
     const result = await this.provideTx(ctx, tx)
-    await this.processDerived(ctx, tx)
+    await this.processDerived(ctx, tx, result)
     return result
   }
 
-  private async processDerived (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<void> {
+  private async processDerived (ctx: MeasureContext<SessionData>, txes: Tx[], result: TxResult): Promise<void> {
     const findAll: SessionFindAll = async (ctx, _class, query, options) => {
       const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? ctx
       delete (options as ServerFindOptions<Doc>)?.ctx
@@ -158,16 +159,10 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       await this.processDerivedTxes(ctx, derived)
     }
 
-    const asyncProcess = this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
-    // In case of async context, we execute both async and sync triggers as sync
+    await this.context.sendResult?.(ctx, result)
 
-    if ((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false) {
-      await asyncProcess
-    } else {
-      asyncProcess.catch((err) => {
-        ctx.error('error during processing async triggers', { err })
-      })
-    }
+    // We finished all processing
+    await this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
   }
 
   @withContext('process-sync-triggers')

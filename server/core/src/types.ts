@@ -157,6 +157,8 @@ export interface PipelineContext {
   head?: Middleware
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
+
+  sendResult?: (ctx: MeasureContext, result: TxResult) => Promise<void>
 }
 /**
  * @public
