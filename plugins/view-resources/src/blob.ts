@@ -17,6 +17,10 @@ import { type Blob, type Ref } from '@hcengineering/core'
 import { type BlobMetadata, getImageSize } from '@hcengineering/presentation'
 
 export async function blobImageMetadata (file: File, blob: Ref<Blob>): Promise<BlobMetadata | undefined> {
+  if (file.size === 0) {
+    return undefined
+  }
+
   const size = await getImageSize(file)
 
   return {
@@ -27,6 +31,10 @@ export async function blobImageMetadata (file: File, blob: Ref<Blob>): Promise<B
 }
 
 export async function blobVideoMetadata (file: File, blob: Ref<Blob>): Promise<BlobMetadata | undefined> {
+  if (file.size === 0) {
+    return undefined
+  }
+
   const size = await getVideoSize(file)
 
   if (size === undefined) {
