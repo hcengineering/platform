@@ -68,10 +68,9 @@ export enum TestCaseStatus {
 }
 
 /** @public */
-export interface TestSuite extends Doc {
+export interface TestSuite extends AttachedDoc {
   name: string
   description?: string
-  parent: Ref<TestSuite>
   project: Ref<TestProject>
 }
 
