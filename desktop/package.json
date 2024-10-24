@@ -15,7 +15,8 @@
     "start": "cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=production electron .",
     "start-dev": "cross-env MODEL_VERSION=$(node ../common/scripts/show_version.js) VERSION=$(node ../common/scripts/show_tag.js) NODE_ENV=development electron .",
     "format": "format",
-    "bump": "bump-package-version"
+    "bump": "bump-package-version",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
