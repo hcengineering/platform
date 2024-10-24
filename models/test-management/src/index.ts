@@ -13,147 +13,351 @@
 // limitations under the License.
 //
 
-import type { Person } from '@hcengineering/contact'
-import documents, { TProject } from '@hcengineering/model-controlled-documents'
-import type { TestCase, TestSuite, TestCaseType, TestCasePriority, TestCaseStatus, TestProject } from '@hcengineering/test-management'
-import { type Attachment } from '@hcengineering/attachment'
-import contact from '@hcengineering/contact'
+import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
-import type { Type, CollectionSize, Permission, } from '@hcengineering/core'
-import { IndexKind, Ref } from '@hcengineering/core'
+import core from '@hcengineering/model-core'
+import { AccountRole } from '@hcengineering/core'
+
+import { type Builder } from '@hcengineering/model'
+import task from '@hcengineering/model-task'
+import view from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
+
+import { testManagementId } from '@hcengineering/test-management'
+
 import {
-  type Builder,
-  Model,
-  Prop,
-  TypeRef,
-  UX,
-  TypeMarkup,
-  Index,
-  TypeString,
-  Collection,
-  ReadOnly,
-  Mixin
-} from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
-import core, { TAttachedDoc, TType } from '@hcengineering/model-core'
-import tracker from '@hcengineering/model-tracker'
+  DOMAIN_TEST_MANAGEMENT,
+  TTypeTestCaseType,
+  TTypeTestCasePriority,
+  TTypeTestCaseStatus,
+  TTestProject,
+  TTestSuite,
+  TTestCase
+} from './types'
 
 import testManagement from './plugin'
+import { definePresenters } from './presenters'
 
 export { testManagementId } from '@hcengineering/test-management/src/index'
 
-const testManagementPermissions: Ref<Permission>[] = [
-  documents.permission.CreateDocument,
-  documents.permission.ReviewDocument,
-    documents.permission.ApproveDocument,
-   documents.permission.CoAuthorDocument,
-  	documents.permission.ArchiveDocument,
-  documents.permission.UpdateDocumentOwner,
-  core.permission.UpdateSpace,
-  core.permission.ArchiveSpace
-]
-
-/** @public */
-export function TypeTestCaseType (): Type<TestCaseType> {
-  return { _class: testManagement.class.TypeTestCaseType, label: testManagement.string.TestCaseType }
+function defineApplication (
+  builder: Builder,
+  opt: {
+    allTestCasesId: string
+    testCasesId: string
+  }
+): void {
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: testManagement.string.TestManagementApplication,
+      icon: testManagement.icon.TestManagementApplication,
+      alias: testManagementId,
+      hidden: false,
+      locationResolver: testManagement.resolver.Location,
+      navigatorModel: {
+        specials: [
+          {
+            id: opt.allTestCasesId,
+            position: 'top',
+            label: testManagement.string.AllTestCases,
+            icon: testManagement.icon.TestCases,
+            component: testManagement.component.TestCases,
+            componentProps: {
+              space: undefined,
+              icon: testManagement.icon.TestCases,
+              title: testManagement.string.AllTestCases,
+              config: [
+                ['all', testManagement.string.All, {}],
+                ['active', testManagement.string.Active, {}],
+                ['backlog', testManagement.string.Backlog, {}]
+              ],
+              allProjectsTypes: true
+            }
+          },
+          {
+            id: 'all-projects',
+            component: workbench.component.SpecialView,
+            icon: view.icon.List,
+            accessLevel: AccountRole.User,
+            label: testManagement.string.AllProjects,
+            position: 'bottom',
+            spaceClass: testManagement.class.Project,
+            componentProps: {
+              _class: testManagement.class.Project,
+              icon: view.icon.List,
+              label: testManagement.string.AllProjects
+            }
+          }
+        ],
+        spaces: [
+          {
+            id: 'projects',
+            label: testManagement.string.Projects,
+            spaceClass: testManagement.class.Project,
+            addSpaceLabel: testManagement.string.CreateProject,
+            createComponent: testManagement.component.CreateProject,
+            visibleIf: testManagement.function.IsProjectJoined,
+            icon: testManagement.icon.Home,
+            specials: [
+              {
+                id: opt.testCasesId,
+                label: testManagement.string.TestCases,
+                icon: testManagement.icon.TestCases,
+                component: testManagement.component.TestCases,
+                componentProps: {
+                  icon: testManagement.icon.TestCases,
+                  title: testManagement.string.TestCases,
+                  config: [
+                    ['all', testManagement.string.All, {}],
+                    ['active', testManagement.string.Active, {}],
+                    ['backlog', testManagement.string.Backlog, {}]
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      navHeaderComponent: testManagement.component.NewIssueHeader
+    },
+    testManagement.app.Tracker
+  )
 }
 
-@Model(testManagement.class.TypeTestCaseType, core.class.Type)
-@UX(testManagement.string.TestCaseType)
-export class TTypeTestCaseType extends TType {}
+export function createModel (builder: Builder): void {
+  builder.createModel(
+    TTypeTestCaseType,
+    TTypeTestCasePriority,
+    TTypeTestCaseStatus,
+    TTestProject,
+    TTestSuite,
+    TTestCase
+  )
 
-/** @public */
-export function TypeTestCasePriority (): Type<TestCasePriority> {
-	return { _class: testManagement.class.TypeTestCasePriority, label: testManagement.string.TestCasePriority }
+  builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, activity.mixin.ActivityDoc, {})
+  builder.mixin(testManagement.class.TestCase, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: testManagement.function.GetTestCaseId,
+    decode: testManagement.function.GetTestCaseIdByIdentifier
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestProject,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestSuite,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestCase,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  // defineViewlets(builder)
+
+  const testCasesId = 'testCases'
+  const allTestCasesId = 'allTestCases'
+
+  definePresenters(builder)
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: testManagement.function.TestCaseTitleProvider
+  })
+
+  // defineSortAndGrouping(builder)
+
+  // builder.mixin(testManagement.class.TestCase, core.class.Class, notification.mixin.ClassCollaborators, {
+  //  fields: ['createdBy', 'assignee']
+  // })
+
+  // builder.mixin(testManagement.class.TestCase, core.class.Class, setting.mixin.Editable, {
+  //  value: true
+  // })
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectPanel, {
+    component: testManagement.component.TestCase
+  })
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: testManagement.class.TestCase,
+      action: 'update',
+      icon: testManagement.icon.TestCase,
+      config: {
+        status: {
+          iconPresenter: testManagement.component.TestCaseStatusIcon
+        },
+        priority: {
+          iconPresenter: testManagement.component.PriorityIconPresenter
+        },
+        estimation: {
+          icon: testManagement.icon.Estimation
+        }
+      }
+    },
+    testManagement.ids.TestCaseUpdatedActivityViewlet
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: testManagement.class.TestCase,
+      action: 'create',
+      icon: testManagement.icon.TestCase,
+      valueAttr: 'title'
+    },
+    testManagement.ids.TestCaseCreatedActivityViewlet
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: testManagement.class.TestCase,
+      action: 'remove',
+      icon: testManagement.icon.TestCase,
+      valueAttr: 'title'
+    },
+    testManagement.ids.TestCaseRemovedActivityViewlet
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: testManagement.class.Milestone,
+      action: 'update',
+      config: {
+        status: {
+          iconPresenter: testManagement.component.MilestoneStatusIcon
+        }
+      }
+    },
+    testManagement.ids.MilestionUpdatedActivityViewlet
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: testManagement.class.TestCaseTemplate,
+      action: 'update',
+      config: {
+        priority: {
+          iconPresenter: testManagement.component.PriorityIconPresenter
+        }
+      }
+    },
+    testManagement.ids.TestCaseTemplateUpdatedActivityViewlet
+  )
+
+  defineApplication(builder, { allTestCasesId, testCasesId })
+
+  // defineActions(builder, issuesId, componentsId, myIssuesId)
+
+  // defineFilters(builder)
+
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: testManagement.icon.TestManagementApplication,
+      label: testManagement.string.SearchIssue,
+      title: testManagement.string.TestCases,
+      query: testManagement.completion.TestCaseQuery,
+      context: ['search', 'mention', 'spotlight'],
+      classToSearch: testManagement.class.TestCase,
+      priority: 300
+    },
+    testManagement.completion.TestCaseCategory
+  )
+
+  // defineNotifications(builder)
+
+  builder.createDoc(
+    chunter.class.ChatMessageViewlet,
+    core.space.Model,
+    {
+      messageClass: chunter.class.ChatMessage,
+      objectClass: testManagement.class.TestCase,
+      label: chunter.string.LeftComment
+    },
+    testManagement.ids.TestCaseChatMessageViewlet
+  )
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectIcon, {
+    component: testManagement.component.TestCaseStatusPresenter
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TEST_MANAGEMENT,
+    disabled: [
+      { space: 1 },
+      { attachedToClass: 1 },
+      { status: 1 },
+      { project: 1 },
+      { priority: 1 },
+      { assignee: 1 },
+      { sprint: 1 },
+      { component: 1 },
+      { category: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { relations: 1 },
+      { milestone: 1 },
+      { createdOn: -1 }
+    ]
+  })
+
+  defineSpaceType(builder)
 }
 
-@Model(testManagement.class.TypeTestCasePriority, core.class.Type)
-@UX(testManagement.string.TestCasePriority)
-export class TTypeTestCasePriority extends TType {}
+function defineSpaceType (builder: Builder): void {
+  // builder.createModel(TClassicProjectTypeData)
+  builder.createDoc(
+    task.class.ProjectTypeDescriptor,
+    core.space.Model,
+    {
+      name: testManagement.string.TestManagementApplication,
+      description: testManagement.string.ManageWorkflowStatuses,
+      icon: task.icon.Task,
+      baseClass: testManagement.class.Project,
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ],
+      allowedClassic: true,
+      allowedTaskTypeDescriptors: [testManagement.descriptors.TestCase]
+    },
+    testManagement.descriptors.ProjectType
+  )
 
-/** @public */
-export function TypeTestCaseStatus (): Type<TestCaseStatus> {
-	return { _class: testManagement.class.TypeTestCaseStatus, label: testManagement.string.TestCaseStatus }
+  builder.createDoc(
+    task.class.TaskTypeDescriptor,
+    core.space.Model,
+    {
+      baseClass: testManagement.class.TestCase,
+      allowCreate: true,
+      description: testManagement.string.TestCase,
+      icon: testManagement.icon.TestCase,
+      name: testManagement.string.TestCase,
+      statusCategoriesFunc: testManagement.function.GetIssueStatusCategories
+    },
+    testManagement.descriptors.TestCase
+  )
 }
 
-@Model(testManagement.class.TypeTestCaseStatus, core.class.Type)
-@UX(testManagement.string.TestCaseStatus)
-export class TTypeTestCaseStatus extends TType {}
-
-@Mixin(testManagement.mixin.TestProject, tracker.class.Project)
-@UX(testManagement.string.TestProject)
-export class TTestProject extends TProject implements TestProject {
-}
-
-/**
- * @public
- */
- @Model(testManagement.class.TestSuite, core.class.AttachedDoc)
- @UX(testManagement.string.TestSuite, testManagement.icon.TestSuite, testManagement.string.TestSuite)
- export class TTestSuite extends TAttachedDoc implements TestCase {
-	@Prop(TypeString(), testManagement.string.SuiteName)
-	@Index(IndexKind.FullText)
-	  name!: string
-
-	@Prop(TypeMarkup(), testManagement.string.SuiteDescription)
-    @Index(IndexKind.FullText)
-      description?: string
-
-	@Prop(TypeRef(testManagement.class.TestProject), testManagement.string.Suite)
-      project!: Ref<TTestProject> | null
- }
-
-/**
- * @public
- */
- @Model(testManagement.class.TestCase, core.class.AttachedDoc)
- @UX(testManagement.string.TestCase, testManagement.icon.TestCase, testManagement.string.TestCase)
- export class TTestCase extends TAttachedDoc implements TestCase {
-  @Prop(TypeString(), testManagement.string.TestName)
-  @Index(IndexKind.FullText)
-    name!: string
-
-  @Prop(TypeMarkup(), testManagement.string.TestDescription)
-  @Index(IndexKind.FullText)
-    description?: string
-
-  @Prop(TypeTestCaseType(), testManagement.string.Type)
-  @ReadOnly()
-    type!: TestCaseType
-
-  @Prop(TypeTestCasePriority(), testManagement.string.Priority)
-  @ReadOnly()
-    priority!: TestCasePriority
-
-  @Prop(TypeTestCaseStatus(), testManagement.string.Status)
-  @ReadOnly()
-    status!: TestCaseStatus
-
-  @Prop(TypeString(), testManagement.string.EstimatedTime)
-    estimatedTime?: number
-
-  @Prop(TypeMarkup(), testManagement.string.Preconditions)
-    preconditions?: string
-
-  @Prop(TypeMarkup(), testManagement.string.Preconditions)
-    steps?: string
-
-  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.Suite)
-    suite!: Ref<TestSuite> | null
-
-  @Prop(TypeRef(contact.mixin.Employee), testManagement.string.Assignee)
-    assignee!: Ref<Person> | null
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: CollectionSize<Attachment>
-
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
-    comments?: number
- }
-
-
-
- export function createModel (builder: Builder): void {
- }
- export { testManagementOperation } from './migration'
- export { default } from './plugin'
+export { testManagementOperation } from './migration'
+export { default } from './plugin'
