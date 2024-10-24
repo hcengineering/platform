@@ -16,7 +16,7 @@
 import { Attachment } from '@hcengineering/attachment'
 import { Project } from '@hcengineering/tracker'
 import { Employee } from '@hcengineering/contact'
-import { AttachedDoc, type CollectionSize, Doc, type Ref } from '@hcengineering/core'
+import { AttachedDoc, type CollectionSize, type Ref } from '@hcengineering/core'
 
 /** @public */
 export enum TestCaseType {
@@ -30,42 +30,41 @@ export enum TestCaseType {
 
 /** @public */
 export const testCaseTypes = [
-  TestCaseType.Functional, 
-  TestCaseType.Performance, 
-  TestCaseType.Regression, 
-  TestCaseType.Security, 
-  TestCaseType.Smoke, 
+  TestCaseType.Functional,
+  TestCaseType.Performance,
+  TestCaseType.Regression,
+  TestCaseType.Security,
+  TestCaseType.Smoke,
   TestCaseType.Usability
 ]
 
 /** @public */
 export enum TestCasePriority {
-	Low,
-	Medium,
-	High,
-	Urgent
+  Low,
+  Medium,
+  High,
+  Urgent
 }
 
 /** @public */
 export const testCasePriorities = [
-  TestCasePriority.Low, 
-  TestCasePriority.Medium, 
-  TestCasePriority.High, 
+  TestCasePriority.Low,
+  TestCasePriority.Medium,
+  TestCasePriority.High,
   TestCasePriority.Urgent
 ]
 
 /** @public */
 export enum TestCaseStatus {
-	Draft,
-	ReadyForReview,
+  Draft,
+  ReadyForReview,
   FixReviewComments,
-	Approved,
+  Approved,
   Rejected
 }
 
 /** @public */
- export interface TestProject extends Project {
-}
+export interface TestProject extends Project {}
 
 /** @public */
 export interface TestSuite extends AttachedDoc {

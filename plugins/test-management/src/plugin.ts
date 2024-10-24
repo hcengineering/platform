@@ -37,7 +37,7 @@ export const testManagementPlugin = plugin(testManagementId, {
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
-    TestSuite: '' as Ref<Class<TestSuite>>,
+    TestSuite: '' as Ref<Class<TestSuite>>
   },
   mixin: {
     TestCaseTypeData: '' as Ref<Mixin<TestCase>>
@@ -62,7 +62,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseType: '' as Ref<DocumentSpaceTypeDescriptor>
   },
   viewlet: {
-    TableTestCase: '' as Ref<Viewlet>,
+    TableTestCase: '' as Ref<Viewlet>
   }
 })
 
