@@ -230,6 +230,7 @@ export class Client {
         }
       })
     } catch (err) {
+      ctx.error('failed to upload via signed url', { workspace, objectName, err })
       await this.signObjectDelete(ctx, workspace, objectName)
       throw new Error('Failed to upload via signed URL')
     }
