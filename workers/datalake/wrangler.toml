@@ -10,16 +10,16 @@ kv_namespaces = [
 ]
 
 r2_buckets = [
-  { binding = "DATALAKE_APAC", bucket_name = "datalake-apac", preview_bucket_name = "dev-datalake-eu-west" },
-  { binding = "DATALAKE_EEUR", bucket_name = "datalake-eeur", preview_bucket_name = "dev-datalake-eu-west" },
-  { binding = "DATALAKE_WEUR", bucket_name = "datalake-weur", preview_bucket_name = "dev-datalake-eu-west" },
-  { binding = "DATALAKE_ENAM", bucket_name = "datalake-enam", preview_bucket_name = "dev-datalake-eu-west" },
-  { binding = "DATALAKE_WNAM", bucket_name = "datalake-wnam", preview_bucket_name = "dev-datalake-eu-west" }
+  { binding = "DATALAKE_APAC", bucket_name = "datalake-eu-west", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_EEUR", bucket_name = "datalake-eu-west", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_WEUR", bucket_name = "datalake-eu-west", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_ENAM", bucket_name = "datalake-eu-west", preview_bucket_name = "dev-datalake-eu-west" },
+  { binding = "DATALAKE_WNAM", bucket_name = "datalake-eu-west", preview_bucket_name = "dev-datalake-eu-west" }
 ]
 
 [[hyperdrive]]
 binding = "HYPERDRIVE"
-id = "87259c3ae41e41a7b35e610d4282d85a"
+id = "055e968f3067414eaa30467d8a9c5021"
 localConnectionString = "postgresql://root:roach@localhost:26257/datalake"
 
 [observability]
@@ -46,3 +46,65 @@ DATALAKE_WNAM_BUCKET_NAME = "datalake-wnam"
 # STREAMS_ACCOUNT_ID = ""
 # STREAMS_AUTH_KEY = ""
 # R2_ACCOUNT_ID = ""
+
+
+[env.staging]
+name = "datalake-worker-staging"
+
+kv_namespaces = [
+  { binding = "datalake_blobs", id = "d52f8b6a9a1e495a8d6625d14d8f3188" }
+]
+
+r2_buckets = [
+  { binding = "DATALAKE_APAC", bucket_name = "datalake-staging-wnam" },
+  { binding = "DATALAKE_EEUR", bucket_name = "datalake-staging-wnam" },
+  { binding = "DATALAKE_WEUR", bucket_name = "datalake-staging-weur" },
+  { binding = "DATALAKE_ENAM", bucket_name = "datalake-staging-wnam" },
+  { binding = "DATALAKE_WNAM", bucket_name = "datalake-staging-wnam" }
+]
+
+hyperdrive = [
+  { binding = "HYPERDRIVE", id = "1f713bb2ec1b464cb663983feca4c89e" }
+]
+
+[env.staging.vars]
+DATALAKE_EEUR_BUCKET_NAME = "datalake-staging-weur"
+DATALAKE_WEUR_BUCKET_NAME = "datalake-staging-wnam"
+DATALAKE_APAC_BUCKET_NAME = "datalake-staging-wnam"
+DATALAKE_ENAM_BUCKET_NAME = "datalake-staging-wnam"
+DATALAKE_WNAM_BUCKET_NAME = "datalake-staging-wnam"
+
+[env.staging.observability]
+enabled = true
+head_sampling_rate = 1
+
+
+[env.dev]
+name = "datalake-worker-dev"
+
+kv_namespaces = [
+  { binding = "datalake_blobs", id = "5acdcea18a504ab3a2d73556314b0047" }
+]
+
+r2_buckets = [
+  { binding = "DATALAKE_APAC", bucket_name = "datalake-dev" },
+  { binding = "DATALAKE_EEUR", bucket_name = "datalake-dev" },
+  { binding = "DATALAKE_WEUR", bucket_name = "datalake-dev" },
+  { binding = "DATALAKE_ENAM", bucket_name = "datalake-dev" },
+  { binding = "DATALAKE_WNAM", bucket_name = "datalake-dev" }
+]
+
+hyperdrive = [
+  { binding = "HYPERDRIVE", id = "055e968f3067414eaa30467d8a9c5021" }
+]
+
+[env.dev.vars]
+DATALAKE_EEUR_BUCKET_NAME = "datalake-dev"
+DATALAKE_WEUR_BUCKET_NAME = "datalake-dev"
+DATALAKE_APAC_BUCKET_NAME = "datalake-dev"
+DATALAKE_ENAM_BUCKET_NAME = "datalake-dev"
+DATALAKE_WNAM_BUCKET_NAME = "datalake-dev"
+
+[env.dev.observability]
+enabled = true
+head_sampling_rate = 1
