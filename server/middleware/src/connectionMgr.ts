@@ -23,11 +23,8 @@ export class ConnectionMgrMiddleware extends BaseMiddleware implements Middlewar
     if (ctx.id === undefined) {
       ctx.id = generateId()
     }
-    ctx.warn('Open connection', { id: ctx.id })
-    // this.context.adapterManager?.
     const result = await this.provideTx(ctx, tx)
     await this.context.adapterManager?.closeContext?.(ctx)
-    ctx.warn('close connection', { id: ctx.id })
     return result
   }
 }
