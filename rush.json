@@ -2120,6 +2120,11 @@
       "packageName": "@hcengineering/cloud-datalake",
       "projectFolder": "workers/datalake",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor",
+      "projectFolder": "cloud/transactor",
+      "shouldPublish": false
     }
   ]
 }
