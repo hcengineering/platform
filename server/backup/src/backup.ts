@@ -1840,7 +1840,7 @@ export async function restore (
                     if (Number.isNaN(sz) || sz !== bf.length) {
                       sz = bf.length
                     }
-                    void blobClient.upload(ctx, doc._id, doc.size, doc.contentType, bf).then(() => {
+                    void blobClient.upload(ctx, doc._id, sz, doc.contentType, bf).then(() => {
                       void sendChunk(doc, bf.length).finally(() => {
                         requiredDocs.delete(doc._id)
                         printUploaded('upload', bf.length)
