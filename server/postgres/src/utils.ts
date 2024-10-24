@@ -206,14 +206,17 @@ export class ClientRef implements PostgresClientReference {
  * @public
  */
 export function getDBClient (connectionString: string, database?: string): PostgresClientReference {
-  const key = `${connectionString}${process.env.postgree_OPTIONS ?? '{}'}`
+  const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
+  const key = `${connectionString}${extraOptions}`
   let existing = connections.get(key)
 
   if (existing === undefined) {
     const pool = new Pool({
       connectionString,
       application_name: 'transactor',
-      database
+      database,
+      max: 10,
+      ...extraOptions
     })
 
     existing = new PostgresClientReferenceImpl(pool, () => {
