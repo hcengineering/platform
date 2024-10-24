@@ -53,6 +53,7 @@ import { questionsId } from '@hcengineering/questions'
 import { trainingId } from '@hcengineering/training'
 import { documentsId } from '@hcengineering/controlled-documents'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
+import { testManagementId } from '@hcengineering/test-management'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -94,6 +95,7 @@ import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
+import '@hcengineering/test-manager-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
@@ -185,6 +187,7 @@ function configureI18n (): void {
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
   addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
+  addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {
@@ -304,6 +307,7 @@ export async function configurePlatform (): Promise<void> {
   addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(textEditorId, () => import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources'))
+  addLocation(testManagementId, () => import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
