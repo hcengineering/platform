@@ -138,6 +138,8 @@ export interface DBAdapterManager {
   registerHelper: (helper: DomainHelper) => Promise<void>
 
   initAdapters: (ctx: MeasureContext) => Promise<void>
+
+  closeContext: (ctx: MeasureContext) => Promise<void>
 }
 
 export interface PipelineContext {
@@ -157,6 +159,8 @@ export interface PipelineContext {
   head?: Middleware
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
+
+  endContext?: (ctx: MeasureContext) => Promise<void>
 }
 /**
  * @public

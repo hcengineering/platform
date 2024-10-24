@@ -229,6 +229,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       // We need to send all to recipients
       await this.context.head?.handleBroadcast(ctx)
     }
+    await this.context.endContext?.(ctx)
   }
 
   private async processDerivedTxes (ctx: MeasureContext<SessionData>, derived: Tx[]): Promise<void> {
