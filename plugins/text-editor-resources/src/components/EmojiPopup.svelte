@@ -14,14 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { SearchResultDoc } from '@hcengineering/core'
-  import presentation, { SearchResult, reduceCalls, searchFor, type SearchItem } from '@hcengineering/presentation'
+  import presentation, { reduceCalls } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import emojiReplaceDict from './extension/emojiIdMap.json'
 
   export let query = ''
 
-  let items: SearchItem[] = []
+  let items = Object.entries(emojiReplaceDict)
 
   const dispatch = createEventDispatcher()
 
@@ -29,11 +29,10 @@
   let scrollContainer: HTMLElement
   let selection = 0
 
-  function dispatchItem(item: SearchResultDoc): void {
+  function dispatchItem(item: [string, string]): void {
     dispatch('close', {
-      id: item.id,
-      label: item.shortTitle ?? item.title,
-      objectclass: item.doc._class
+      id: item[0],
+      objectclass: item[1]
     })
   }
 
@@ -58,7 +57,7 @@
       key.stopPropagation()
       if (selection < items.length) {
         const searchItem = items[selection]
-        dispatchItem(searchItem.item)
+        dispatchItem(searchItem)
         return true
       } else {
         return false
@@ -68,10 +67,7 @@
   }
 
   const updateItems = reduceCalls(async function (localQuery: string): Promise<void> {
-    const r = await searchFor('mention', localQuery)
-    if (r.query === query) {
-      items = r.items
-    }
+    items = Object.entries(emojiReplaceDict).filter(([k, v]) => k.includes(localQuery))
   })
   $: void updateItems(query)
 </script>
@@ -87,25 +83,23 @@
         {#if items.length > 0}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <ListView bind:this={list} bind:selection count={items.length}>
-            <svelte:fragment slot="category" let:item={num}>
-              {@const item = items[num]}
-              {#if item.num === 0}
-                <div class="mentonCategory">
-                  <Label label={item.category.title} />
-                </div>
-              {/if}
-            </svelte:fragment>
             <svelte:fragment slot="item" let:item={num}>
               {@const item = items[num]}
-              {@const doc = item.item}
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
                 class="ap-menuItem withComp h-8"
                 on:click={() => {
-                  dispatchItem(doc)
+                  dispatchItem(item)
                 }}
               >
-                <SearchResult value={doc} />
+                <div class="flex-row-center">
+                  <div class="flex-center p-1 content-dark-color flex-no-shrink">
+                    {item[1]}
+                  </div>
+                  <span class="ml-1 max-w-120 overflow-label searchResult">
+                    <span class="name">{item[0]}</span>
+                  </span>
+                </div>
               </div>
             </svelte:fragment>
           </ListView>
@@ -128,12 +122,13 @@
     padding-top: 0.5rem;
   }
 
-  .mentonCategory {
-    padding: 0.5rem 1rem;
-    font-size: 0.625rem;
-    letter-spacing: 0.0625rem;
-    color: var(--theme-dark-color);
-    text-transform: uppercase;
-    line-height: 1rem;
+  .searchResult {
+    display: flex;
+    flex-direction: row;
+
+    .name {
+      display: flex;
+      flex: 1;
+    }
   }
 </style>
