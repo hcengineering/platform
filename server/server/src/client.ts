@@ -192,15 +192,13 @@ export class ClientSession implements Session {
     this.current.tx++
     this.includeSessionContext(ctx.ctx)
 
-    this._pipeline.context.sendResult = async (_ctx, result) => {
-      // Send result immideately
-      await ctx.sendResponse(result)
+    const result = await this._pipeline.tx(ctx.ctx, [tx])
 
-      // We need to broadcast all collected transactions
-      await this._pipeline.handleBroadcast(_ctx)
-    }
+    // Send result immideately
+    await ctx.sendResponse(result)
 
-    await this._pipeline.tx(ctx.ctx, [tx])
+    // We need to broadcast all collected transactions
+    await this._pipeline.handleBroadcast(ctx.ctx)
   }
 
   broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {

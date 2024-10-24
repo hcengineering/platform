@@ -31,7 +31,6 @@ import core, {
   TxFactory,
   TxProcessor,
   type TxRemoveDoc,
-  type TxResult,
   type TxUpdateDoc,
   addOperation,
   toFindResult,
@@ -92,11 +91,11 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
   async tx (ctx: MeasureContext, tx: Tx[]): Promise<TxMiddlewareResult> {
     await this.triggers.tx(tx)
     const result = await this.provideTx(ctx, tx)
-    await this.processDerived(ctx, tx, result)
+    await this.processDerived(ctx, tx)
     return result
   }
 
-  private async processDerived (ctx: MeasureContext<SessionData>, txes: Tx[], result: TxResult): Promise<void> {
+  private async processDerived (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<void> {
     const findAll: SessionFindAll = async (ctx, _class, query, options) => {
       const _ctx: MeasureContext = (options as ServerFindOptions<Doc>)?.ctx ?? ctx
       delete (options as ServerFindOptions<Doc>)?.ctx
@@ -159,10 +158,16 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       await this.processDerivedTxes(ctx, derived)
     }
 
-    await this.context.sendResult?.(ctx, result)
+    const asyncProcess = this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
+    // In case of async context, we execute both async and sync triggers as sync
 
-    // We finished all processing
-    await this.processAsyncTriggers(ctx, triggerControl, findAll, txes, triggers)
+    if ((ctx as MeasureContext<SessionDataImpl>).contextData.isAsyncContext ?? false) {
+      await asyncProcess
+    } else {
+      asyncProcess.catch((err) => {
+        ctx.error('error during processing async triggers', { err })
+      })
+    }
   }
 
   @withContext('process-sync-triggers')
@@ -224,6 +229,7 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
       // We need to send all to recipients
       await this.context.head?.handleBroadcast(ctx)
     }
+    await this.context.endContext?.(ctx)
   }
 
   private async processDerivedTxes (ctx: MeasureContext<SessionData>, derived: Tx[]): Promise<void> {

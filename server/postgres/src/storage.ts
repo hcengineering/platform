@@ -226,7 +226,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
   abstract init (): Promise<void>
 
   async close (): Promise<void> {
-    this.connections.forEach((c) => { c.release() })
+    this.connections.forEach((c) => {
+      c.release()
+    })
     this.refClient.close()
   }
 
