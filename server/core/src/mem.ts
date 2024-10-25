@@ -30,10 +30,12 @@ import core, {
   type StorageIterator,
   toFindResult,
   type Tx,
+  type TxCUD,
+  TxProcessor,
   type TxResult,
   type WorkspaceId
 } from '@hcengineering/core'
-import { type DbAdapterHandler, type DbAdapter, type DomainHelperOperations } from './adapter'
+import { type DbAdapter, type DbAdapterHandler, type DomainHelperOperations } from './adapter'
 
 /**
  * @public
@@ -119,7 +121,7 @@ export class DummyDbAdapter implements DbAdapter {
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
   private readonly modeldb: ModelDb
 
-  constructor (hierarchy: Hierarchy) {
+  constructor (readonly hierarchy: Hierarchy) {
     super()
     this.modeldb = new ModelDb(hierarchy)
   }
@@ -138,7 +140,23 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
   }
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
-    return await this.modeldb.tx(...tx)
+    // Filter transactions with broadcast only flags
+    const ftx = tx.filter((it) => {
+      if (TxProcessor.isExtendsCUD(it._class)) {
+        const cud = it as TxCUD<Doc>
+        const objClass = this.hierarchy.getClass(cud.objectClass)
+        const mix = this.hierarchy.hasMixin(objClass, core.mixin.TransientConfiguration)
+        if (mix && this.hierarchy.as(objClass, core.mixin.TransientConfiguration).broadcastOnly) {
+          // We do not need to store a broadcast only transactions into model.
+          return false
+        }
+      }
+      return true
+    })
+    if (ftx.length === 0) {
+      return []
+    }
+    return await this.modeldb.tx(...ftx)
   }
 }
 

@@ -48,6 +48,7 @@ import type {
   SpaceTypeDescriptor,
   SystemSpace,
   Timestamp,
+  TransientConfiguration,
   Type,
   TypeAny,
   TypedSpace,
@@ -148,7 +149,8 @@ export default plugin(coreId, {
   mixin: {
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
     IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>,
-    SpacesTypeData: '' as Ref<Mixin<Space>>
+    SpacesTypeData: '' as Ref<Mixin<Space>>,
+    TransientConfiguration: '' as Ref<Mixin<TransientConfiguration>>
   },
   space: {
     Tx: '' as Ref<Space>,
