@@ -39,12 +39,12 @@ import {
   TAttachedDoc,
   TAttribute,
   TBlob,
+  TCard,
   TClass,
   TCollection,
   TConfiguration,
   TConfigurationElement,
   TDoc,
-  TCard,
   TDocIndexState,
   TDomainIndexConfiguration,
   TEnum,
@@ -57,6 +57,7 @@ import {
   TObj,
   TPluginConfiguration,
   TRefTo,
+  TTransientConfiguration,
   TType,
   TTypeAny,
   TTypeBlob,
@@ -173,7 +174,8 @@ export function createModel (builder: Builder): void {
     TMigrationState,
     TBlob,
     TDomainIndexConfiguration,
-    TBenchmarkDoc
+    TBenchmarkDoc,
+    TTransientConfiguration
   )
 
   builder.createDoc(
