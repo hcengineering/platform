@@ -15,6 +15,9 @@
 
 import { CopyObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
+import { NodeHttpHandler } from '@smithy/node-http-handler'
+import { Agent as HttpAgent } from 'http'
+import { Agent as HttpsAgent } from 'https'
 
 import core, {
   toWorkspaceString,
@@ -70,7 +73,13 @@ export class S3Service implements StorageAdapter {
         accessKeyId: opt.accessKey,
         secretAccessKey: opt.secretKey
       },
-      region: opt.region ?? 'auto'
+      region: opt.region ?? 'auto',
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 5000,
+        socketTimeout: 120000,
+        httpAgent: new HttpAgent({ maxSockets: 500, keepAlive: true }),
+        httpsAgent: new HttpsAgent({ maxSockets: 500, keepAlive: true })
+      })
     })
 
     this.expireTime = parseInt(this.opt.expireTime ?? '168') * 3600 // use 7 * 24 - hours as default value for expireF
