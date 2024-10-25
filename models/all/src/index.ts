@@ -95,6 +95,8 @@ import documents, { documentsId, createModel as documentsModel } from '@hcengine
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
+import testManagement, { testManagementId, createModel as testManagementModel } from '@hcengineering/model-test-management'
+
 import {
   serverDocumentsId,
   createModel as serverDocumentsModel
@@ -403,6 +405,17 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+	[
+		testManagementModel,
+		testManagementId,
+		{
+		  label: testManagement.string.ConfigLabel,
+		  description: testManagement.string.ConfigDescription,
+		  enabled: false,
+		  beta: false,
+		  classFilter: defaultFilter
+		}
+	  ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
