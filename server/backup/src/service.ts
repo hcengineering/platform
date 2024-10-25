@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   BaseWorkspaceInfo,
   DOMAIN_TX,
@@ -81,7 +82,7 @@ class BackupWorker {
       `****************************************
       backup statistics:`,
       {
-        backuped: stats.processed,
+        processed: stats.processed,
         notChanges: stats.skipped,
         failed: stats.failedWorkspaces.length
       }
@@ -91,15 +92,23 @@ class BackupWorker {
   async schedule (ctx: MeasureContext): Promise<void> {
     console.log('schedule backup with interval', this.config.Interval, 'seconds')
     while (!this.canceled) {
-      const res = await this.backup(ctx)
-      this.printStats(ctx, res)
+      try {
+        const res = await this.backup(ctx, this.config.CoolDown * 1000)
+        this.printStats(ctx, res)
+      } catch (err: any) {
+        Analytics.handleError(err)
+        ctx.error('error retry in cool down/5', { cooldown: this.config.CoolDown, error: err })
+        await new Promise<void>((resolve) => setTimeout(resolve, (this.config.CoolDown / 5) * 1000))
+        continue
+      }
       console.log('cool down', this.config.CoolDown, 'seconds')
       await new Promise<void>((resolve) => setTimeout(resolve, this.config.CoolDown * 1000))
     }
   }
 
   async backup (
-    ctx: MeasureContext
+    ctx: MeasureContext,
+    recheckTimeout: number
   ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
     const workspacesIgnore = new Set(this.config.SkipWorkspaces.split(';'))
     ctx.info('skipped workspaces', { workspacesIgnore })
@@ -135,19 +144,21 @@ class BackupWorker {
       workspaces: workspaces.map((it) => it.workspace)
     })
 
-    return await this.doBackup(ctx, workspaces)
+    return await this.doBackup(ctx, workspaces, recheckTimeout)
   }
 
   async doBackup (
     rootCtx: MeasureContext,
-    workspaces: BaseWorkspaceInfo[]
+    workspaces: BaseWorkspaceInfo[],
+    recheckTimeout: number
   ): Promise<{ failedWorkspaces: BaseWorkspaceInfo[], processed: number, skipped: number }> {
     let index = 0
 
     const failedWorkspaces: BaseWorkspaceInfo[] = []
     let processed = 0
+    const startTime = Date.now()
     for (const ws of workspaces) {
-      if (this.canceled) {
+      if (this.canceled || Date.now() - startTime > recheckTimeout) {
         return { failedWorkspaces, processed, skipped: workspaces.length - processed }
       }
       index++
