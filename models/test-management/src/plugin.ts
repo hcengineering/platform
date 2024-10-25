@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import '@hcengineering/controlled-documents'
 import { testManagementId } from '@hcengineering/test-management'
 import testManganement from '@hcengineering/test-management/src/plugin'
 import type { Doc, Ref, Role } from '@hcengineering/core'

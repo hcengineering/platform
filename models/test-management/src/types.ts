@@ -14,7 +14,7 @@
 //
 
 import type { Person } from '@hcengineering/contact'
-import { TProject } from '@hcengineering/model-controlled-documents'
+import { TProject } from '@hcengineering/model-task'
 import type {
   TestCase,
   TestSuite,
@@ -113,31 +113,31 @@ export class TTestCase extends TAttachedDoc implements TestCase {
   @Index(IndexKind.FullText)
     description?: string
 
-  @Prop(TypeTestCaseType(), testManagement.string.Type)
+  @Prop(TypeTestCaseType(), testManagement.string.TestType)
   @ReadOnly()
     type!: TestCaseType
 
-  @Prop(TypeTestCasePriority(), testManagement.string.Priority)
+  @Prop(TypeTestCasePriority(), testManagement.string.TestPriority)
   @ReadOnly()
     priority!: TestCasePriority
 
-  @Prop(TypeTestCaseStatus(), testManagement.string.Status)
+  @Prop(TypeTestCaseStatus(), testManagement.string.TestStatus)
   @ReadOnly()
     status!: TestCaseStatus
 
-  @Prop(TypeString(), testManagement.string.EstimatedTime)
+  @Prop(TypeString(), testManagement.string.TestEstimatedTime)
     estimatedTime?: number
 
-  @Prop(TypeMarkup(), testManagement.string.Preconditions)
+  @Prop(TypeMarkup(), testManagement.string.TestPreconditions)
     preconditions?: string
 
-  @Prop(TypeMarkup(), testManagement.string.Preconditions)
+  @Prop(TypeMarkup(), testManagement.string.TestSteps)
     steps?: string
 
-  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.Suite)
+  @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
     suite!: Ref<TestSuite> | null
 
-  @Prop(TypeRef(contact.mixin.Employee), testManagement.string.Assignee)
+  @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
     assignee!: Ref<Person> | null
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })

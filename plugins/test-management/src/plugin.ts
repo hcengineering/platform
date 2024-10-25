@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { Mixin, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { Mixin, type Class, type Doc, type Ref, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { ActionCategory, Viewlet } from '@hcengineering/view'
 import type { DocumentSpaceType, DocumentSpaceTypeDescriptor } from '@hcengineering/controlled-documents'
-import { TestSuite, TestCase } from './types'
+import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus } from './types'
 
 /** @public */
 export const testManagementId = 'testManagement' as Plugin
@@ -33,18 +33,41 @@ export const testManagementPlugin = plugin(testManagementId, {
   icon: {
     TestManagement: '' as Asset,
     TestManagementVersion: '' as Asset,
-    TestManagementApplication: '' as Asset
+    TestManagementApplication: '' as Asset,
+    TestCase: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
-    TestSuite: '' as Ref<Class<TestSuite>>
+    TestSuite: '' as Ref<Class<TestSuite>>,
+    TestProject: '' as Ref<Class<TestProject>>,
+    TypeTestCaseType: '' as Ref<Class<Type<TestCaseType>>>,
+    TypeTestCasePriority: '' as Ref<Class<Type<TestCasePriority>>>,
+    TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>
   },
   mixin: {
-    TestCaseTypeData: '' as Ref<Mixin<TestCase>>
+    TestCaseTypeData: '' as Ref<Mixin<TestCase>>,
+    TestProject: '' as Ref<Mixin<TestProject>>
   },
   string: {
     ConfigLabel: '' as IntlString,
-    ConfigDescription: '' as IntlString
+    ConfigDescription: '' as IntlString,
+    TestCaseType: '' as IntlString,
+    TestCasePriority: '' as IntlString,
+    TestCaseStatus: '' as IntlString,
+    TestSuite: '' as IntlString,
+    SuiteName: '' as IntlString,
+    SuiteDescription: '' as IntlString,
+    Suite: '' as IntlString,
+    TestName: '' as IntlString,
+    TestDescription: '' as IntlString,
+    TestType: '' as IntlString,
+    TestPriority: '' as IntlString,
+    TestStatus: '' as IntlString,
+    TestEstimatedTime: '' as IntlString,
+    TestPreconditions: '' as IntlString,
+    TestSteps: '' as IntlString,
+    TestAssignee: '' as IntlString,
+    TestCase: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
