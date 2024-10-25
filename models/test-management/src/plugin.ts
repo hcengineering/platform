@@ -26,8 +26,7 @@ export default mergeIds(testManagementId, testManganement, {
   },
   component: {
     CreateTestCase: '' as AnyComponent,
-    TestCasePresenter: '' as AnyComponent,
-    NewTestCaseHeader: '' as AnyComponent
+    TestCasePresenter: '' as AnyComponent
   },
   function: {},
   role: {

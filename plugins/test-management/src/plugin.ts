@@ -16,6 +16,7 @@
 import { Mixin, type Class, type Doc, type Ref, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 
+import type { ProjectTypeDescriptor } from '@hcengineering/task'
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { ActionCategory, Viewlet } from '@hcengineering/view'
@@ -34,7 +35,10 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestManagement: '' as Asset,
     TestManagementVersion: '' as Asset,
     TestManagementApplication: '' as Asset,
-    TestCase: '' as Asset
+    TestCase: '' as Asset,
+	TestCases: '' as Asset,
+	Home: '' as Asset,
+	Estimation: '' as Asset,
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -42,7 +46,11 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestProject: '' as Ref<Class<TestProject>>,
     TypeTestCaseType: '' as Ref<Class<Type<TestCaseType>>>,
     TypeTestCasePriority: '' as Ref<Class<Type<TestCasePriority>>>,
-    TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>
+    TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>,
+  },
+  descriptors: {
+    ProjectType: '' as Ref<ProjectTypeDescriptor>,
+	TestCase: '' as Ref<ProjectTypeDescriptor>,
   },
   mixin: {
     TestCaseTypeData: '' as Ref<Mixin<TestCase>>,
@@ -67,16 +75,32 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestPreconditions: '' as IntlString,
     TestSteps: '' as IntlString,
     TestAssignee: '' as IntlString,
-    TestCase: '' as IntlString
+    TestCase: '' as IntlString,
+	TestProject: '' as IntlString,
+	TestManagementApplication: '' as IntlString,
+	AllTestCases: '' as IntlString,
+	AllProjects: '' as IntlString,
+	Projects: '' as IntlString,
+	CreateProject: '' as IntlString,
+	TestCases: '' as IntlString,
+	TestManagementDescription: '' as IntlString,
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
   },
   component: {
-    TestCaseSearchIcon: '' as AnyComponent
+    TestCaseSearchIcon: '' as AnyComponent,
+	TestCases: '' as AnyComponent,
+	CreateProject: '' as AnyComponent,
+	NewTestCaseHeader: '' as AnyComponent,
+	TestCase: '' as AnyComponent,
+	TestCaseStatusIcon: '' as AnyComponent,
+	PriorityIconPresenter: '' as AnyComponent,
+	TestCaseStatusPresenter: '' as AnyComponent,
   },
   ids: {
-    NoParent: '' as Ref<TestSuite>
+    NoParent: '' as Ref<TestSuite>,
+	TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>,
   },
   spaceType: {
     TestCaseType: '' as Ref<DocumentSpaceType>
@@ -85,7 +109,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseType: '' as Ref<DocumentSpaceTypeDescriptor>
   },
   viewlet: {
-    TableTestCase: '' as Ref<Viewlet>
+    TableTestCase: '' as Ref<Viewlet>,
   }
 })
 

@@ -28,21 +28,9 @@ import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { IndexKind } from '@hcengineering/core'
 import type { Domain, Type, CollectionSize, Ref } from '@hcengineering/core'
-import {
-  Model,
-  Prop,
-  TypeRef,
-  UX,
-  TypeMarkup,
-  Index,
-  TypeString,
-  Collection,
-  ReadOnly,
-  Mixin
-} from '@hcengineering/model'
+import { Model, Prop, TypeRef, UX, TypeMarkup, Index, TypeString, Collection, ReadOnly } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TType } from '@hcengineering/model-core'
-import tracker from '@hcengineering/model-tracker'
 
 import testManagement from './plugin'
 
@@ -77,7 +65,7 @@ export function TypeTestCaseStatus (): Type<TestCaseStatus> {
 @UX(testManagement.string.TestCaseStatus)
 export class TTypeTestCaseStatus extends TType {}
 
-@Mixin(testManagement.mixin.TestProject, tracker.class.Project)
+@Model(testManagement.class.TestProject, testManagement.class.Project)
 @UX(testManagement.string.TestProject)
 export class TTestProject extends TProject implements TestProject {}
 

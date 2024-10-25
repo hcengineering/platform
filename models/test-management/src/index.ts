@@ -55,7 +55,7 @@ function defineApplication (
       icon: testManagement.icon.TestManagementApplication,
       alias: testManagementId,
       hidden: false,
-      locationResolver: testManagement.resolver.Location,
+      // locationResolver: testManagement.resolver.Location,
       navigatorModel: {
         specials: [
           {
@@ -68,11 +68,6 @@ function defineApplication (
               space: undefined,
               icon: testManagement.icon.TestCases,
               title: testManagement.string.AllTestCases,
-              config: [
-                ['all', testManagement.string.All, {}],
-                ['active', testManagement.string.Active, {}],
-                ['backlog', testManagement.string.Backlog, {}]
-              ],
               allProjectsTypes: true
             }
           },
@@ -83,9 +78,9 @@ function defineApplication (
             accessLevel: AccountRole.User,
             label: testManagement.string.AllProjects,
             position: 'bottom',
-            spaceClass: testManagement.class.Project,
+            spaceClass: testManagement.class.TestProject,
             componentProps: {
-              _class: testManagement.class.Project,
+              _class: testManagement.class.TestProject,
               icon: view.icon.List,
               label: testManagement.string.AllProjects
             }
@@ -95,10 +90,9 @@ function defineApplication (
           {
             id: 'projects',
             label: testManagement.string.Projects,
-            spaceClass: testManagement.class.Project,
+            spaceClass: testManagement.class.TestProject,
             addSpaceLabel: testManagement.string.CreateProject,
             createComponent: testManagement.component.CreateProject,
-            visibleIf: testManagement.function.IsProjectJoined,
             icon: testManagement.icon.Home,
             specials: [
               {
@@ -108,12 +102,7 @@ function defineApplication (
                 component: testManagement.component.TestCases,
                 componentProps: {
                   icon: testManagement.icon.TestCases,
-                  title: testManagement.string.TestCases,
-                  config: [
-                    ['all', testManagement.string.All, {}],
-                    ['active', testManagement.string.Active, {}],
-                    ['backlog', testManagement.string.Backlog, {}]
-                  ]
+                  title: testManagement.string.TestCases
                 }
               }
             ]
@@ -122,7 +111,7 @@ function defineApplication (
       },
       navHeaderComponent: testManagement.component.NewIssueHeader
     },
-    testManagement.app.Tracker
+    testManagement.app.TestManagement
   )
 }
 
@@ -139,11 +128,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(testManagement.class.TestSuite, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(testManagement.class.TestCase, core.class.Class, activity.mixin.ActivityDoc, {})
-
-  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.LinkIdProvider, {
-    encode: testManagement.function.GetTestCaseId,
-    decode: testManagement.function.GetTestCaseIdByIdentifier
-  })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: testManagement.class.TestProject,
@@ -167,9 +151,9 @@ export function createModel (builder: Builder): void {
 
   definePresenters(builder)
 
-  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectTitle, {
+  /*   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: testManagement.function.TestCaseTitleProvider
-  })
+  }) */
 
   // defineSortAndGrouping(builder)
 
@@ -185,7 +169,7 @@ export function createModel (builder: Builder): void {
     component: testManagement.component.TestCase
   })
 
-  builder.createDoc(
+  /*  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
@@ -216,10 +200,10 @@ export function createModel (builder: Builder): void {
       icon: testManagement.icon.TestCase,
       valueAttr: 'title'
     },
-    testManagement.ids.TestCaseCreatedActivityViewlet
-  )
+    testManagement.ids.TestCaseUpdatedActivityViewlet
+  ) */
 
-  builder.createDoc(
+  /*  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
@@ -228,38 +212,8 @@ export function createModel (builder: Builder): void {
       icon: testManagement.icon.TestCase,
       valueAttr: 'title'
     },
-    testManagement.ids.TestCaseRemovedActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: testManagement.class.Milestone,
-      action: 'update',
-      config: {
-        status: {
-          iconPresenter: testManagement.component.MilestoneStatusIcon
-        }
-      }
-    },
-    testManagement.ids.MilestionUpdatedActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: testManagement.class.TestCaseTemplate,
-      action: 'update',
-      config: {
-        priority: {
-          iconPresenter: testManagement.component.PriorityIconPresenter
-        }
-      }
-    },
-    testManagement.ids.TestCaseTemplateUpdatedActivityViewlet
-  )
+    testManagement.ids.TestCaseRemovedViewlet
+  ) */
 
   defineApplication(builder, { allTestCasesId, testCasesId })
 
@@ -267,7 +221,7 @@ export function createModel (builder: Builder): void {
 
   // defineFilters(builder)
 
-  builder.createDoc(
+  /*   builder.createDoc(
     presentation.class.ObjectSearchCategory,
     core.space.Model,
     {
@@ -280,11 +234,11 @@ export function createModel (builder: Builder): void {
       priority: 300
     },
     testManagement.completion.TestCaseCategory
-  )
+  ) */
 
   // defineNotifications(builder)
 
-  builder.createDoc(
+  /*   builder.createDoc(
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {
@@ -293,7 +247,7 @@ export function createModel (builder: Builder): void {
       label: chunter.string.LeftComment
     },
     testManagement.ids.TestCaseChatMessageViewlet
-  )
+  ) */
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectIcon, {
     component: testManagement.component.TestCaseStatusPresenter
@@ -330,16 +284,16 @@ function defineSpaceType (builder: Builder): void {
     core.space.Model,
     {
       name: testManagement.string.TestManagementApplication,
-      description: testManagement.string.ManageWorkflowStatuses,
+      description: testManagement.string.TestManagementDescription,
       icon: task.icon.Task,
-      baseClass: testManagement.class.Project,
+      baseClass: testManagement.class.TestProject,
       availablePermissions: [
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
         core.permission.ForbidDeleteObject
       ],
-      allowedClassic: true,
-      allowedTaskTypeDescriptors: [testManagement.descriptors.TestCase]
+      allowedClassic: true
+      // allowedTaskTypeDescriptors: [testManagement.descriptors.TestCase]
     },
     testManagement.descriptors.ProjectType
   )
@@ -352,8 +306,7 @@ function defineSpaceType (builder: Builder): void {
       allowCreate: true,
       description: testManagement.string.TestCase,
       icon: testManagement.icon.TestCase,
-      name: testManagement.string.TestCase,
-      statusCategoriesFunc: testManagement.function.GetIssueStatusCategories
+      name: testManagement.string.TestCase
     },
     testManagement.descriptors.TestCase
   )
