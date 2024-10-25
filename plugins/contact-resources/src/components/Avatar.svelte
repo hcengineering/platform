@@ -31,8 +31,7 @@
 </script>
 
 <script lang="ts">
-  import { getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
-  import { Account } from '@hcengineering/core'
+  import { Employee, getAvatarProviderId, getFirstName, getLastName, Person } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
@@ -45,10 +44,11 @@
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
-  import { loadUsersStatus, statusByUserStore } from '../utils'
+
+  import { loadUsersStatus, employeeByIdStore, personAccountByPersonId, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
 
-  export let person: Data<WithLookup<AvatarInfo>> | undefined = undefined
+  export let person: (Data<WithLookup<AvatarInfo>> & { _id?: Ref<Person> }) | undefined = undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
@@ -56,7 +56,6 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
   export let showStatus: boolean = true
-  export let account: Ref<Account> | undefined = undefined
 
   export function pulse (): void {
     avatarInst.pulse()
@@ -126,10 +125,14 @@
     loadUsersStatus()
   })
 
-  $: userStatus = account !== undefined ? $statusByUserStore.get(account) : undefined
+  let employee: Employee | undefined = undefined
+
+  $: employee = person?._id && showStatus ? $employeeByIdStore.get(person._id as Ref<Employee>) : undefined
+  $: accounts = employee?.active ? $personAccountByPersonId.get(employee._id) ?? [] : []
+  $: isOnline = accounts.some((account) => $statusByUserStore.get(account._id)?.online === true)
 </script>
 
-{#if showStatus && account}
+{#if showStatus && accounts.length > 0}
   <div class="relative">
     <AvatarInstance
       bind:this={avatarInst}
@@ -144,7 +147,7 @@
       bind:element
       withStatus
     />
-    <div class="hulyAvatar-statusMarker {size}" class:online={userStatus?.online} class:offline={!userStatus?.online} />
+    <div class="hulyAvatar-statusMarker {size}" class:online={isOnline} class:offline={!isOnline} />
   </div>
 {:else}
   <AvatarInstance

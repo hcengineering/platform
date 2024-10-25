@@ -15,11 +15,9 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import { IconSize } from '@hcengineering/ui'
-  import { Person, getName, PersonAccount } from '@hcengineering/contact'
-  import { Account, IdMap } from '@hcengineering/core'
+  import { Person, getName } from '@hcengineering/contact'
 
   import Avatar from './Avatar.svelte'
-  import { personAccountByIdStore } from '../utils'
 
   export let person: Person
   export let avatarSize: IconSize = 'x-small'
@@ -27,23 +25,12 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-
-  function getAccountByPerson (accountById: IdMap<PersonAccount>, person: Person): Account | undefined {
-    return Array.from(accountById.values()).find((account) => account.person === person._id)
-  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex-row-center" on:click>
-  <Avatar
-    {person}
-    size={avatarSize}
-    name={person.name}
-    on:accent-color
-    {showStatus}
-    account={getAccountByPerson($personAccountByIdStore, person)?._id}
-  />
+  <Avatar {person} size={avatarSize} name={person.name} on:accent-color {showStatus} />
   <div class="flex-col min-w-0 {avatarSize === 'tiny' || avatarSize === 'inline' ? 'ml-1' : 'ml-3'}">
     <div class="label overflow-label text-left">{getName(hierarchy, person)}</div>
   </div>
