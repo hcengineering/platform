@@ -42,6 +42,18 @@ export class DbAdapterManagerImpl implements DBAdapterManager {
     private readonly adapters: Map<string, DbAdapter>
   ) {}
 
+  async closeContext (ctx: MeasureContext): Promise<void> {
+    for (const adapter of this.adapters.values()) {
+      try {
+        if (adapter.closeContext !== undefined) {
+          await adapter.closeContext(ctx)
+        }
+      } catch (err: any) {
+        Analytics.handleError(err)
+      }
+    }
+  }
+
   getDefaultAdapter (): DbAdapter {
     return this.defaultAdapter
   }

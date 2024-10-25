@@ -7,7 +7,7 @@ DROP TYPE IF EXISTS blob.location;
 
 -- B L O B
 
-CREATE TYPE blob.location AS ENUM ('kv', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+CREATE TYPE blob.location AS ENUM ('weur', 'eeur', 'wnam', 'enam', 'apac');
 
 \echo "Creating blob.data..."
 CREATE TABLE blob.data (
