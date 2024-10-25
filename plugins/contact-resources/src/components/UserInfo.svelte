@@ -28,7 +28,6 @@
   export let showStatus = true
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -37,6 +36,6 @@
   <Avatar person={value} {size} {icon} name={value.name} on:accent-color {showStatus} />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="label text-left overflow-label">{getName(hierarchy, value)}</div>
+    <div class="label text-left overflow-label">{getName(client.getHierarchy(), value)}</div>
   </div>
 </div>

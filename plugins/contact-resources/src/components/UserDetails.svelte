@@ -24,7 +24,6 @@
   export let showStatus = true
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -32,7 +31,7 @@
 <div class="flex-row-center" on:click>
   <Avatar {person} size={avatarSize} name={person.name} on:accent-color {showStatus} />
   <div class="flex-col min-w-0 {avatarSize === 'tiny' || avatarSize === 'inline' ? 'ml-1' : 'ml-3'}">
-    <div class="label overflow-label text-left">{getName(hierarchy, person)}</div>
+    <div class="label overflow-label text-left">{getName(client.getHierarchy(), person)}</div>
   </div>
 </div>
 
