@@ -1,0 +1,31 @@
+{
+  "string": {
+	"ConfigLabel": "Test Management",
+    "ConfigDescription": "Extension to manage test cases",
+    "TestCaseType": "Type",
+    "TestCasePriority": "Priority",
+    "TestCaseStatus": "Status",
+    "TestSuite": "Test case type",
+    "SuiteName": "Name",
+    "SuiteDescription": "Description",
+    "Suite": "Suite",
+    "TestName": "Name",
+    "TestDescription": "Description",
+    "TestType": "Type",
+    "TestPriority": "Priority",
+    "TestStatus": "Status",
+    "TestEstimatedTime": "Estimated time",
+    "TestPreconditions": "Preconditions",
+    "TestSteps": "Steps",
+    "TestAssignee": "Assignee",
+    "TestCase": "Test case",
+	"TestProject": "Project",
+	"TestManagementApplication": "Test Management",
+	"AllTestCases": "All test cases",
+	"AllProjects": "All projects",
+	"Projects": "Projects",
+	"CreateProject": "Create project",
+	"TestCases": "Test cases",
+	"TestManagementDescription": "Extension to manage test cases"
+  }
+}

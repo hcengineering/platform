@@ -95,7 +95,7 @@ import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
 import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/text-editor-assets'
-import '@hcengineering/test-manager-assets'
+import '@hcengineering/test-management-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { parsePreviewConfig, parseUploadConfig, presentationId } from '@hcengineering/presentation'
@@ -187,7 +187,7 @@ function configureI18n (): void {
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
   addStringsLoader(analyticsCollectorId, async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`))
-  addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management/lang/${lang}.json`))
+  addStringsLoader(testManagementId, async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform (): Promise<void> {

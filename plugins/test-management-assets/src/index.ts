@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import products from '@hcengineering/products'
+import testManagement from '@hcengineering/test-management'
 import { loadMetadata } from '@hcengineering/platform'
 
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(products.icon, {
+loadMetadata(testManagement.icon, {
   TestCase: `${icons}#testCase`,
   TestManagementApplication: `${icons}#testManagementApplication`
 })
