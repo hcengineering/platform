@@ -1100,6 +1100,9 @@ dependencies:
   '@signpdf/utils':
     specifier: ^3.2.4
     version: 3.2.4
+  '@smithy/node-http-handler':
+    specifier: ^3.0.0
+    version: 3.0.0
   '@storybook/addon-essentials':
     specifier: ^7.0.6
     version: 7.6.17(react-dom@18.2.0)(react@18.2.0)
@@ -32630,7 +32633,7 @@ packages:
     dev: false
 
   file:projects/s3.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-K8tCIa7XhsCfCud4PK5ap0pAoF4fGanurF5AJ7Otx97p6m170W2DJIkiplk2x41Ksy9+Zw9dEF2VWRgdDrWX5A==, tarball: file:projects/s3.tgz}
+    resolution: {integrity: sha512-9Jp4CG4EJYJsbePGfW/jFKXlhGI6ctSLUm0Wgu2xHck8JzgYCRuRkOjUdeQ0Tgg3njd+/ho+0eL9DmYooYjdrg==, tarball: file:projects/s3.tgz}
     id: file:projects/s3.tgz
     name: '@rush-temp/s3'
     version: 0.0.0
@@ -32638,6 +32641,7 @@ packages:
       '@aws-sdk/client-s3': 3.577.0
       '@aws-sdk/lib-storage': 3.583.0(@aws-sdk/client-s3@3.577.0)
       '@aws-sdk/s3-request-presigner': 3.582.0
+      '@smithy/node-http-handler': 3.0.0
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
