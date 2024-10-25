@@ -116,6 +116,8 @@ export class DummyDbAdapter implements DbAdapter {
     query: DocumentQuery<T>,
     operations: DocumentUpdate<T>
   ): Promise<void> {}
+
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {}
 }
 
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {

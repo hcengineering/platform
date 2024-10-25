@@ -400,7 +400,7 @@ export async function hideActivityChannels (contexts: DocNotifyContext[]): Promi
 export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
   const notificationsByContext = get(client.inboxNotificationsByContext)
-  const ops = getClient().apply(undefined, 'readActivityChannels')
+  const ops = getClient().apply(undefined, 'readActivityChannels', true)
 
   try {
     for (const context of contexts) {
