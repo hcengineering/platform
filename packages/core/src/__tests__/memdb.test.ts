@@ -29,7 +29,7 @@ import {
   SearchResult
 } from '../storage'
 import { Tx } from '../tx'
-import { genMinModel, test, TestMixin } from './minmodel'
+import { createDoc, deleteDoc, genMinModel, test, TestMixin, updateDoc } from './minmodel'
 
 const txes = genMinModel()
 
@@ -59,17 +59,17 @@ class ClientModel extends ModelDb implements Client {
   async close (): Promise<void> {}
 }
 
-async function createModel (): Promise<{ model: ClientModel, hierarchy: Hierarchy, txDb: TxDb }> {
+async function createModel (modelTxes: Tx[] = txes): Promise<{ model: ClientModel, hierarchy: Hierarchy, txDb: TxDb }> {
   const hierarchy = new Hierarchy()
-  for (const tx of txes) {
+  for (const tx of modelTxes) {
     hierarchy.tx(tx)
   }
   const model = new ClientModel(hierarchy)
-  for (const tx of txes) {
+  for (const tx of modelTxes) {
     await model.tx(tx)
   }
   const txDb = new TxDb(hierarchy)
-  for (const tx of txes) await txDb.tx(tx)
+  for (const tx of modelTxes) await txDb.tx(tx)
   return { model, hierarchy, txDb }
 }
 
@@ -78,7 +78,7 @@ describe('memdb', () => {
     const { txDb } = await createModel()
 
     const result = await txDb.findAll(core.class.Tx, {})
-    expect(result.length).toBe(txes.filter((tx) => tx._class === core.class.TxCreateDoc).length)
+    expect(result.length).toBe(txes.length)
   })
 
   it('should create space', async () => {
@@ -395,5 +395,42 @@ describe('memdb', () => {
     } catch (e) {
       expect(e).toEqual(new Error('createDoc cannot be used for objects inherited from AttachedDoc'))
     }
+  })
+
+  it('has correct accounts', async () => {
+    const modTxes = [...txes]
+
+    modTxes.push(
+      createDoc(core.class.Account, {
+        email: 'system_admin',
+        role: AccountRole.Owner
+      })
+    )
+
+    const system1Account = createDoc(core.class.Account, {
+      email: 'system1',
+      role: AccountRole.Maintainer
+    })
+    modTxes.push(system1Account)
+
+    const user1Account = createDoc(core.class.Account, {
+      email: 'user1',
+      role: AccountRole.User
+    })
+    modTxes.push(user1Account)
+
+    modTxes.push(updateDoc(core.class.Account, core.space.Model, system1Account.objectId, { email: 'user1' }))
+
+    modTxes.push(deleteDoc(core.class.Account, core.space.Model, user1Account.objectId))
+
+    const { model } = await createModel(modTxes)
+
+    expect(model.getAccountByEmail('system_admin')).not.toBeUndefined()
+    expect(model.getAccountByEmail('system_admin')?.role).toBe(AccountRole.Owner)
+
+    expect(model.getAccountByEmail('system1')).toBeUndefined()
+
+    expect(model.getAccountByEmail('user1')).not.toBeUndefined()
+    expect(model.getAccountByEmail('user1')?.role).toBe(AccountRole.Maintainer)
   })
 })

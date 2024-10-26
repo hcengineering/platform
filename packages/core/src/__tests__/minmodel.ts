@@ -15,10 +15,10 @@
 
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Arr, Class, Data, Doc, Interface, Mixin, Obj, Ref } from '../classes'
+import type { Arr, Class, Data, Doc, Interface, Mixin, Obj, Ref, Space } from '../classes'
 import { AttachedDoc, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import core from '../component'
-import type { TxCUD, TxCreateDoc } from '../tx'
+import type { DocumentUpdate, TxCUD, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '../tx'
 import { DOMAIN_TX, TxFactory } from '../tx'
 
 const txFactory = new TxFactory(core.account.System)
@@ -31,8 +31,21 @@ function createInterface (_interface: Ref<Interface<Doc>>, attributes: Data<Inte
   return txFactory.createTxCreateDoc(core.class.Interface, core.space.Model, attributes, _interface)
 }
 
-export function createDoc<T extends Doc> (_class: Ref<Class<T>>, attributes: Data<T>): TxCreateDoc<Doc> {
+export function createDoc<T extends Doc> (_class: Ref<Class<T>>, attributes: Data<T>): TxCreateDoc<T> {
   return txFactory.createTxCreateDoc(_class, core.space.Model, attributes)
+}
+
+export function updateDoc<T extends Doc> (
+  _class: Ref<Class<T>>,
+  space: Ref<Space>,
+  objectId: Ref<T>,
+  operations: DocumentUpdate<T>
+): TxUpdateDoc<Doc> {
+  return txFactory.createTxUpdateDoc(_class, space, objectId, operations)
+}
+
+export function deleteDoc<T extends Doc> (_class: Ref<Class<T>>, space: Ref<Space>, objectId: Ref<T>): TxRemoveDoc<Doc> {
+  return txFactory.createTxRemoveDoc(_class, space, objectId)
 }
 
 export interface TestMixin extends Doc {
