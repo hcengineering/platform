@@ -55,7 +55,7 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let showStatus: boolean = true
+  export let showStatus: boolean = false
 
   export function pulse (): void {
     avatarInst.pulse()

@@ -860,7 +860,7 @@
           >
             <Component
               is={contact.component.Avatar}
-              props={{ person, name: person?.name, size: 'small', account: account._id }}
+              props={{ person, name: person?.name, size: 'small', account: account._id, showStatus: true }}
             />
           </div>
         </div>
