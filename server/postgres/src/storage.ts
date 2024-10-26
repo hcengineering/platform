@@ -327,6 +327,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     })
   }
 
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
+    const translatedQuery = this.buildRawQuery(domain, query)
+    await this.retryTxn(this.client, async (client) => {
+      await client.query(`DELETE FROM ${translateDomain(domain)} WHERE ${translatedQuery}`)
+    })
+  }
+
   async findAll<T extends Doc>(
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,

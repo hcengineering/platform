@@ -313,8 +313,8 @@ export class TxOperations implements Omit<Client, 'notify'> {
     return this.removeDoc(doc._class, doc.space, doc._id)
   }
 
-  apply (scope?: string, measure?: string): ApplyOperations {
-    return new ApplyOperations(this, scope, measure, this.isDerived)
+  apply (scope?: string, measure?: string, derived?: boolean): ApplyOperations {
+    return new ApplyOperations(this, scope, measure, derived ?? this.isDerived)
   }
 
   async diffUpdate<T extends Doc = Doc>(

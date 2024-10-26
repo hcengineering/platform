@@ -70,6 +70,8 @@ class StorageBlobAdapter implements DbAdapter {
     operations: DocumentUpdate<T>
   ): Promise<void> {}
 
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {}
+
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,

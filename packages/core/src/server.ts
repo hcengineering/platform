@@ -85,6 +85,8 @@ export interface LowLevelStorage {
 
   rawUpdate: <T extends Doc>(domain: Domain, query: DocumentQuery<T>, operations: DocumentUpdate<T>) => Promise<void>
 
+  rawDeleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
+
   // Traverse documents
   traverse: <T extends Doc>(
     domain: Domain,
