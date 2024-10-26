@@ -760,7 +760,7 @@
 
     if (unViewed.length === 0) {
       forceRead = true
-      const op = client.apply(undefined, 'chunter.forceReadContext')
+      const op = client.apply(undefined, 'chunter.forceReadContext', true)
       await inboxClient.readDoc(op, object._id)
       await op.commit()
     }

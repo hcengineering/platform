@@ -262,6 +262,10 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
+    await this.db.collection(domain).deleteMany(this.translateRawQuery(query))
+  }
+
   abstract init (): Promise<void>
 
   collection<TSchema extends Document = Document>(domain: Domain): Collection<TSchema> {

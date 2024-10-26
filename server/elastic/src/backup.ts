@@ -142,6 +142,10 @@ class ElasticDataAdapter implements DbAdapter {
     throw new Error('Method not implemented.')
   }
 
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
+    throw new Error('Method not implemented')
+  }
+
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     const indexExists = await this.client.indices.exists({
       index: this.indexName
