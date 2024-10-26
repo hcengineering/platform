@@ -90,7 +90,7 @@
 <style lang="scss">
   .container {
     padding: var(--spacing-2) var(--spacing-2) var(--spacing-2_5);
-    min-height: calc(4.75rem + 0.5px);
+    min-height: calc(4.875rem - 0.5px);
     border-bottom: 1px solid var(--theme-divider-color);
   }
 </style>

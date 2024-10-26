@@ -23,9 +23,6 @@
   min-width: 0;
   border: 1px solid var(--theme-divider-color); // var(--global-surface-02-BorderColor);
   border-radius: var(--small-focus-BorderRadius);
-  border-bottom-right-radius: 0;
-  border-top-right-radius: 0;
-  border-right: 0;
 
   &:not(.modal) {
     background-color: var(--theme-panel-color); // var(--global-surface-02-BackgroundColor);

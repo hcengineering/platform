@@ -64,6 +64,7 @@
         props = $panelstore.panel
       })
     }
+    $panelstore.panel.refit = fitPopupInstance
   } else {
     props = undefined
   }
@@ -132,6 +133,7 @@
     if (!keepSize && props?.element === 'content') {
       keepSize = true
       resizeObserver(contentPanel, checkResize)
+      if (!contentPanel.hasAttribute('data-id')) contentPanel.setAttribute('data-id', 'contentPanel')
     }
   }
 
