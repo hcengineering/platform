@@ -145,6 +145,7 @@
       value={selected}
       {avatarSize}
       tooltipLabels={showTooltip}
+      showPopup={false}
       shouldShowName={false}
       shouldShowPlaceholder
       onEmployeeEdit={_click}

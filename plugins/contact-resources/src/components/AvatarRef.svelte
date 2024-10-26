@@ -30,7 +30,7 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let showStatus: boolean = true
+  export let showStatus: boolean = false
 
   $: empValue = $employeeByIdStore.get(_id as Ref<Employee>) ?? $personByIdStore.get(_id)
 
