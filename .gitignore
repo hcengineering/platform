@@ -103,3 +103,4 @@ bundle.js.map
 tests/profiles
 **/bundle/model.json
 .wrangler
+dump
