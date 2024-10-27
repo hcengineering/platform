@@ -60,7 +60,7 @@ describe('postgres operations', () => {
       dbId = 'pg_testdb_' + generateId()
       dbUri = baseDbUri + '/' + dbId
       const client = await clientRef.getClient()
-      await client.query(`CREATE DATABASE ${dbId}`)
+      await client`CREATE DATABASE ${client(dbId)}`
     } catch (err) {
       console.error(err)
     }

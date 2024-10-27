@@ -1316,9 +1316,6 @@ dependencies:
   '@types/pdfjs-dist':
     specifier: 2.10.378
     version: 2.10.378
-  '@types/pg':
-    specifier: ^8.11.6
-    version: 8.11.6
   '@types/png-chunks-extract':
     specifier: ^1.0.2
     version: 1.0.2
@@ -25518,7 +25515,7 @@ packages:
     dev: false
 
   file:projects/account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-duOFkzCRppNR6RuL9NSfuJoOTnsRRmC8QO8FmT80PlX4+I9X22KpWvgWHM/1I2RKzjDt1AL+W8zH4toqwL/D5g==, tarball: file:projects/account.tgz}
+    resolution: {integrity: sha512-m2pyxgv41Godk3uDJXacbY/eH+YjKchrlqN268CXDaZNIu0xwQoctNjlxfdxn5Ut/+oXjNP50bFDA+SDgpTOTw==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -25540,6 +25537,7 @@ packages:
       node-fetch: 2.7.0
       otp-generator: 4.0.1
       pg: 8.12.0
+      postgres: 3.4.4
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -25556,7 +25554,6 @@ packages:
       - kerberos
       - mongodb-client-encryption
       - node-notifier
-      - pg-native
       - snappy
       - socks
       - supports-color
@@ -31622,7 +31619,7 @@ packages:
     dev: false
 
   file:projects/postgres.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-qZVG4Pk9RAvQfkKRB1iQPPOWsKFvFuFyNBtD/ksT/eW0/ByyGABvYMeQPNenrh3ZH2n/hZ5lH5DON042MXebPg==, tarball: file:projects/postgres.tgz}
+    resolution: {integrity: sha512-/6jhoJPjD7X4j5u87Epy0kCDI5gedKzlzCM/anvCuB57Igtpi6Ji1cX6LrzyJ33gbswI8tlygVs4miiYWToa5g==, tarball: file:projects/postgres.tgz}
     id: file:projects/postgres.tgz
     name: '@rush-temp/postgres'
     version: 0.0.0
@@ -31639,6 +31636,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       pg: 8.12.0
+      postgres: 3.4.4
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
@@ -36075,7 +36073,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-dgOs2ysRWXhSAqAdgds7tTLssdROYsTidpPcozKPLpcQnZsmn0Gs42t/y577rd0diONe8AWyXmUcfJMpj0b0mg==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-Xiug9crD6dZ0BSoLCOQVEQE05/LitZ2QEPOeqZP0k9K31mffLqyYbCZfbRMvWMzBoFolNR8yUC38wIPvkRal1g==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -36107,6 +36105,7 @@ packages:
       mime-types: 2.1.35
       mongodb: 6.9.0-dev.20241016.sha.3d5bd513
       pg: 8.12.0
+      postgres: 3.4.4
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
@@ -36126,7 +36125,6 @@ packages:
       - kerberos
       - mongodb-client-encryption
       - node-notifier
-      - pg-native
       - snappy
       - socks
       - supports-color
