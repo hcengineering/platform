@@ -231,6 +231,13 @@ export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: 
   return res
 }
 
+export function getUpdateValue (val: any): any {
+  if (typeof val === 'object') {
+    return JSON.stringify(val)
+  }
+  return val
+}
+
 export function parseUpdate<T extends Doc> (
   domain: string,
   ops: DocumentUpdate<T> | MixinUpdate<Doc, T>

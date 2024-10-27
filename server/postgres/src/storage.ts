@@ -75,6 +75,7 @@ import {
   escapeBackticks,
   getDBClient,
   getDocFieldsByDomains,
+  getUpdateValue,
   isDataField,
   isOwner,
   type JoinProps,
@@ -155,18 +156,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
     let tries = 0
 
     while (true) {
-      console.log('begin tx')
       await client.unsafe('BEGIN;')
       tries++
 
       try {
         const result = await operation(client)
         await client.unsafe('COMMIT;')
-        console.log('commit tx')
         return result
       } catch (err: any) {
         await client.unsafe('ROLLBACK;')
-        console.log('rollback tx')
 
         if (err.code !== '40001' || tries === maxTries) {
           throw err
@@ -1477,7 +1475,7 @@ class PostgresAdapter extends PostgresAdapterBase {
       for (const key in remainingData) {
         if (ops[key] === undefined) continue
         from = `jsonb_set(${from}, '{${key}}', $${paramsIndex++}::jsonb, true)`
-        params.push(JSON.stringify((remainingData as any)[key]))
+        params.push(getUpdateValue((remainingData as any)[key]))
         dataUpdated = true
       }
       if (dataUpdated) {
