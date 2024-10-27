@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.32",
+	"@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/ui": "^0.6.15",
     "@hcengineering/view": "^0.6.13",

@@ -28,7 +28,7 @@ import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { IndexKind } from '@hcengineering/core'
 import type { Domain, Type, CollectionSize, Ref } from '@hcengineering/core'
-import { Model, Prop, TypeRef, UX, TypeMarkup, Index, TypeString, Collection, ReadOnly } from '@hcengineering/model'
+import { Model, Prop, TypeRef, UX, TypeMarkup, Index, TypeString, Collection, ReadOnly, TypeNumber } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TType } from '@hcengineering/model-core'
 
@@ -113,7 +113,7 @@ export class TTestCase extends TAttachedDoc implements TestCase {
   @ReadOnly()
     status!: TestCaseStatus
 
-  @Prop(TypeString(), testManagement.string.TestEstimatedTime)
+  @Prop(TypeNumber(), testManagement.string.TestEstimatedTime)
     estimatedTime?: number
 
   @Prop(TypeMarkup(), testManagement.string.TestPreconditions)
@@ -123,10 +123,10 @@ export class TTestCase extends TAttachedDoc implements TestCase {
     steps?: string
 
   @Prop(TypeRef(testManagement.class.TestSuite), testManagement.string.TestSuite)
-    suite!: Ref<TestSuite> | null
+    suite!: Ref<TestSuite>
 
   @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
-    assignee!: Ref<Person> | null
+    assignee!: Ref<Person>
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: CollectionSize<Attachment>

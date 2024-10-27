@@ -19,5 +19,10 @@ import { loadMetadata } from '@hcengineering/platform'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(testManagement.icon, {
   TestCase: `${icons}#testCase`,
-  TestManagementApplication: `${icons}#testManagementApplication`
+  TestManagementApplication: `${icons}#testManagementApplication`,
+  TestManagement: `${icons}#testCase`,
+  TestManagementVersion: `${icons}#testCase`,
+  TestCases: `${icons}#testCase`,
+  Home: `${icons}#testCase`,
+  Estimation: `${icons}#testCase`
 })

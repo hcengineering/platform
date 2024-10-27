@@ -16,7 +16,7 @@
 import { Mixin, type Class, type Doc, type Ref, Type } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 
-import type { ProjectTypeDescriptor } from '@hcengineering/task'
+import { ProjectTypeDescriptor, TaskTypeDescriptor } from '@hcengineering/task'
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { ActionCategory, Viewlet } from '@hcengineering/view'
@@ -50,7 +50,7 @@ export const testManagementPlugin = plugin(testManagementId, {
   },
   descriptors: {
     ProjectType: '' as Ref<ProjectTypeDescriptor>,
-	TestCase: '' as Ref<ProjectTypeDescriptor>,
+	TestCase: '' as Ref<TaskTypeDescriptor>,
   },
   mixin: {
     TestCaseTypeData: '' as Ref<Mixin<TestCase>>,

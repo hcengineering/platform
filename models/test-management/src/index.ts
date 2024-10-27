@@ -109,7 +109,7 @@ function defineApplication (
           }
         ]
       },
-      navHeaderComponent: testManagement.component.NewIssueHeader
+      navHeaderComponent: testManagement.component.NewTestCaseHeader
     },
     testManagement.app.TestManagement
   )
@@ -292,8 +292,8 @@ function defineSpaceType (builder: Builder): void {
         core.permission.ArchiveSpace,
         core.permission.ForbidDeleteObject
       ],
-      allowedClassic: true
-      // allowedTaskTypeDescriptors: [testManagement.descriptors.TestCase]
+      allowedClassic: true,
+      allowedTaskTypeDescriptors: [testManagement.descriptors.TestCase]
     },
     testManagement.descriptors.ProjectType
   )

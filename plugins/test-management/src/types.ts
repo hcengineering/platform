@@ -14,9 +14,9 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { Project } from '@hcengineering/tracker'
 import { Employee } from '@hcengineering/contact'
 import { AttachedDoc, type CollectionSize, type Ref } from '@hcengineering/core'
+import type { Project } from '@hcengineering/task'
 
 /** @public */
 export enum TestCaseType {
