@@ -13,61 +13,90 @@
 // limitations under the License.
 //
 
-import { type IRequest, Router, error, html } from 'itty-router'
-import {
-  deleteBlob as handleBlobDelete,
-  handleBlobGet,
-  handleBlobHead,
-  postBlobFormData as handleUploadFormData
-} from './blob'
+import { WorkerEntrypoint } from 'cloudflare:workers'
+import { type IRequestStrict, type RequestHandler, Router, error, html } from 'itty-router'
+
+import { handleBlobDelete, handleBlobGet, handleBlobHead, handleUploadFormData } from './blob'
 import { cors } from './cors'
-import { getImage as handleImageGet } from './image'
-import { getVideoMeta as handleVideoMetaGet } from './video'
+import { handleImageGet } from './image'
+import { handleVideoMetaGet } from './video'
 import { handleSignAbort, handleSignComplete, handleSignCreate } from './sign'
+import { type BlobRequest, type WorkspaceRequest } from './types'
 
 const { preflight, corsify } = cors({
   maxAge: 86400
 })
 
-export default {
-  async fetch (request, env, ctx): Promise<Response> {
-    const router = Router<IRequest>({
-      before: [preflight],
-      finally: [corsify]
-    })
+const router = Router<IRequestStrict, [Env, ExecutionContext], Response>({
+  before: [preflight],
+  finally: [corsify]
+})
 
-    router
-      .get('/blob/:workspace/:name', ({ params }) => handleBlobGet(request, env, ctx, params.workspace, params.name))
-      .head('/blob/:workspace/:name', ({ params }) => handleBlobHead(request, env, ctx, params.workspace, params.name))
-      .delete('/blob/:workspace/:name', ({ params }) => handleBlobDelete(env, params.workspace, params.name))
-      // Image
-      .get('/image/:transform/:workspace/:name', ({ params }) =>
-        handleImageGet(request, params.workspace, params.name, params.transform)
-      )
-      // Video
-      .get('/video/:workspace/:name/meta', ({ params }) =>
-        handleVideoMetaGet(request, env, ctx, params.workspace, params.name)
-      )
-      // Form Data
-      .post('/upload/form-data/:workspace', ({ params }) => handleUploadFormData(request, env, params.workspace))
-      // Signed URL
-      .post('/upload/signed-url/:workspace/:name', ({ params }) =>
-        handleSignCreate(request, env, ctx, params.workspace, params.name)
-      )
-      .put('/upload/signed-url/:workspace/:name', ({ params }) =>
-        handleSignComplete(request, env, ctx, params.workspace, params.name)
-      )
-      .delete('/upload/signed-url/:workspace/:name', ({ params }) =>
-        handleSignAbort(request, env, ctx, params.workspace, params.name)
-      )
-      .all('/', () =>
-        html(
-          `Huly&reg; Datalake&trade; <a href="https://huly.io">https://huly.io</a>
-          &copy; 2024 <a href="https://hulylabs.com">Huly Labs</a>`
-        )
-      )
-      .all('*', () => error(404))
-
-    return await router.fetch(request).catch(error)
+const withWorkspace: RequestHandler<WorkspaceRequest> = (request: WorkspaceRequest) => {
+  if (request.params.workspace === undefined || request.params.workspace === '') {
+    return error(400, 'Missing workspace')
   }
-} satisfies ExportedHandler<Env>
+  request.workspace = decodeURIComponent(request.params.workspace)
+}
+
+const withBlob: RequestHandler<BlobRequest> = (request: BlobRequest) => {
+  if (request.params.name === undefined || request.params.name === '') {
+    return error(400, 'Missing blob name')
+  }
+  request.workspace = decodeURIComponent(request.params.name)
+}
+
+router
+  .get('/blob/:workspace/:name', withBlob, handleBlobGet)
+  .head('/blob/:workspace/:name', withBlob, handleBlobHead)
+  .delete('/blob/:workspace/:name', withBlob, handleBlobDelete)
+  // Image
+  .get('/image/:transform/:workspace/:name', withBlob, handleImageGet)
+  // Video
+  .get('/video/:workspace/:name/meta', withBlob, handleVideoMetaGet)
+  // Form Data
+  .post('/upload/form-data/:workspace', withWorkspace, handleUploadFormData)
+  // Signed URL
+  .post('/upload/signed-url/:workspace/:name', withBlob, handleSignCreate)
+  .put('/upload/signed-url/:workspace/:name', withBlob, handleSignComplete)
+  .delete('/upload/signed-url/:workspace/:name', withBlob, handleSignAbort)
+  .all('/', () =>
+    html(
+      `Huly&reg; Datalake&trade; <a href="https://huly.io">https://huly.io</a>
+      &copy; 2024 <a href="https://hulylabs.com">Huly Labs</a>`
+    )
+  )
+  .all('*', () => error(404))
+
+export default class DatalakeWorker extends WorkerEntrypoint<Env> {
+  async fetch (request: Request): Promise<Response> {
+    return await router.fetch(request, this.env, this.ctx).catch(error)
+  }
+
+  async getBlob (workspace: string, name: string): Promise<ArrayBuffer> {
+    const request = new Request(`https://datalake/blob/${workspace}/${name}`)
+    const response = await router.fetch(request)
+
+    if (!response.ok) {
+      console.error({ error: 'datalake error: ' + response.statusText, workspace, name })
+      throw new Error(`Failed to fetch blob: ${response.statusText}`)
+    }
+
+    return await response.arrayBuffer()
+  }
+
+  async putBlob (workspace: string, name: string, data: ArrayBuffer | Blob | string, type: string): Promise<void> {
+    const request = new Request(`https://datalake/upload/form-data/${workspace}`)
+
+    const body = new FormData()
+    const blob = new Blob([data], { type })
+    body.set('file', blob, name)
+
+    const response = await router.fetch(request, { method: 'POST', body })
+
+    if (!response.ok) {
+      console.error({ error: 'datalake error: ' + response.statusText, workspace, name })
+      throw new Error(`Failed to fetch blob: ${response.statusText}`)
+    }
+  }
+}

@@ -17,7 +17,7 @@ import { AwsClient } from 'aws4fetch'
 import { error } from 'itty-router'
 
 import { handleBlobUploaded } from './blob'
-import { type UUID } from './types'
+import { type BlobRequest, type UUID } from './types'
 import { selectStorage, type Storage } from './storage'
 
 const S3_SIGNED_LINK_TTL = 3600
@@ -39,13 +39,8 @@ function getS3Client (storage: Storage): AwsClient {
   })
 }
 
-export async function handleSignCreate (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleSignCreate (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
   const storage = selectStorage(env, workspace)
   const accountId = env.R2_ACCOUNT_ID
 
@@ -78,13 +73,9 @@ export async function handleSignCreate (
   return new Response(signed.url, { status: 200, headers })
 }
 
-export async function handleSignComplete (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleSignComplete (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const { bucket } = selectStorage(env, workspace)
   const key = signBlobKey(workspace, name)
 
@@ -117,13 +108,9 @@ export async function handleSignComplete (
   return new Response(null, { status: 201 })
 }
 
-export async function handleSignAbort (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleSignAbort (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const key = signBlobKey(workspace, name)
 
   // Check if the blob has been uploaded
