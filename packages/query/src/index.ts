@@ -95,6 +95,8 @@ export class LiveQuery implements WithTx, Client {
   private queryCounter: number = 0
   private closed: boolean = false
 
+  private readonly queriesToUpdate: Map<number, Query> = new Map<number, Query>()
+
   // A map of _class to documents.
   private readonly documentRefs = new Map<string, Map<Ref<Doc>, DocumentRef>>()
 
@@ -694,11 +696,11 @@ export class LiveQuery implements WithTx, Client {
               collection: tx.collection
             }
           }
-          await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d), true, docCache)
+          await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d), true, docCache, true)
         } else if (tx.tx._class === core.class.TxUpdateDoc) {
-          await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>, docCache)
+          await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>, docCache, true)
         } else if (tx.tx._class === core.class.TxRemoveDoc) {
-          await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>)
+          await this.handleDocRemove(q, tx.tx as unknown as TxRemoveDoc<Doc>, true)
         }
       }
     }
@@ -714,13 +716,13 @@ export class LiveQuery implements WithTx, Client {
           await this.handleDocAdd(q, tx, true, docCache)
           continue
         }
-        await this.handleDocUpdate(q, tx, docCache)
+        await this.handleDocUpdate(q, tx, docCache, true)
       }
     }
     return {}
   }
 
-  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>): Promise<void> {
+  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>, bulkUpdate = false): Promise<void> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -743,11 +745,11 @@ export class LiveQuery implements WithTx, Client {
       }
       await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
-      await this.updatedDocCallback(udoc, q)
+      await this.updatedDocCallback(udoc, q, bulkUpdate)
     } else if (await this.matchQuery(q, tx, docCache)) {
       await this.sort(q, tx)
       const udoc = q.result.find((p) => p._id === tx.objectId)
-      await this.updatedDocCallback(udoc, q)
+      await this.updatedDocCallback(udoc, q, bulkUpdate)
     } else if (
       this.client.getHierarchy().isDerived(tx.objectClass, q._class) &&
       q.options?.total === true &&
@@ -757,10 +759,10 @@ export class LiveQuery implements WithTx, Client {
       await this.refresh(q)
       return
     }
-    await this.handleDocUpdateLookup(q, tx)
+    await this.handleDocUpdateLookup(q, tx, bulkUpdate)
   }
 
-  private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>): Promise<void> {
+  private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>, bulkUpdate = false): Promise<void> {
     if (q.options?.lookup === undefined) return
     const lookup = q.options.lookup
     if (q.result instanceof Promise) {
@@ -773,7 +775,7 @@ export class LiveQuery implements WithTx, Client {
       if (q.options?.sort !== undefined) {
         await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.client.getModel())
       }
-      await this.callback(q)
+      await this.callback(q, bulkUpdate)
     }
   }
 
@@ -997,13 +999,13 @@ export class LiveQuery implements WithTx, Client {
     for (const queries of this.queries) {
       const doc = this.client.getHierarchy().isDerived(queries[0], core.class.Tx) ? tx : docTx
       for (const q of queries[1]) {
-        await this.handleDocAdd(q, doc, true, docCache)
+        await this.handleDocAdd(q, doc, true, docCache, true)
       }
     }
     return {}
   }
 
-  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true, docCache: Map<string, Doc>): Promise<void> {
+  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true, docCache: Map<string, Doc>, bulkUpdate = false): Promise<void> {
     if (this.match(q, doc, q.options?.lookup !== undefined)) {
       let needPush = true
       if (q.result instanceof Promise) {
@@ -1040,18 +1042,18 @@ export class LiveQuery implements WithTx, Client {
 
         if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
           if (q.result.pop()?._id !== doc._id || q.options?.total === true) {
-            await this.callback(q)
+            await this.callback(q, bulkUpdate)
           }
         } else {
-          await this.callback(q)
+          await this.callback(q, bulkUpdate)
         }
       }
     }
 
-    await this.handleDocAddLookup(q, doc)
+    await this.handleDocAddLookup(q, doc, bulkUpdate)
   }
 
-  private async callback (q: Query): Promise<void> {
+  private async callback (q: Query, bulkUpdate = false): Promise<void> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -1059,9 +1061,14 @@ export class LiveQuery implements WithTx, Client {
     this.updateDocuments(q, q.result)
 
     const result = q.result
-    Array.from(q.callbacks.values()).forEach((callback) => {
-      callback(toFindResult(this.clone(result), q.total))
-    })
+
+    if (bulkUpdate) {
+      this.queriesToUpdate.set(q.id, q)
+    } else {
+      Array.from(q.callbacks.values()).forEach((callback) => {
+        callback(toFindResult(this.clone(result), q.total))
+      })
+    }
   }
 
   private updateDocuments (q: Query, docs: Doc[], clean: boolean = false): void {
@@ -1093,7 +1100,7 @@ export class LiveQuery implements WithTx, Client {
     }
   }
 
-  private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
+  private async handleDocAddLookup (q: Query, doc: Doc, bulkUpdate = false): Promise<void> {
     if (q.options?.lookup === undefined) return
     const lookup = q.options.lookup
     if (q.result instanceof Promise) {
@@ -1106,7 +1113,7 @@ export class LiveQuery implements WithTx, Client {
       if (q.options?.sort !== undefined) {
         await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.getModel())
       }
-      await this.callback(q)
+      await this.callback(q, bulkUpdate)
     }
   }
 
@@ -1154,13 +1161,13 @@ export class LiveQuery implements WithTx, Client {
           await this.handleDocAdd(q, tx, true, docCache)
           continue
         }
-        await this.handleDocRemove(q, tx)
+        await this.handleDocRemove(q, tx, true)
       }
     }
     return {}
   }
 
-  private async handleDocRemove (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
+  private async handleDocRemove (q: Query, tx: TxRemoveDoc<Doc>, bulkUpdate = false): Promise<void> {
     const h = this.client.getHierarchy()
     if (q.result instanceof Promise) {
       q.result = await q.result
@@ -1181,12 +1188,12 @@ export class LiveQuery implements WithTx, Client {
       if (q.options?.total === true) {
         q.total--
       }
-      await this.callback(q)
+      await this.callback(q, bulkUpdate)
     }
-    await this.handleDocRemoveLookup(q, tx)
+    await this.handleDocRemoveLookup(q, tx, bulkUpdate)
   }
 
-  private async handleDocRemoveLookup (q: Query, tx: TxRemoveDoc<Doc>): Promise<void> {
+  private async handleDocRemoveLookup (q: Query, tx: TxRemoveDoc<Doc>, bulkUpdate = false): Promise<void> {
     if (q.options?.lookup === undefined) return
     let needCallback = false
     const lookupWays = this.getLookupWays(q.options.lookup, tx.objectClass)
@@ -1220,7 +1227,7 @@ export class LiveQuery implements WithTx, Client {
       if (q.options?.sort !== undefined) {
         await resultSort(q.result, q.options?.sort, q._class, this.getHierarchy(), this.getModel())
       }
-      await this.callback(q)
+      await this.callback(q, bulkUpdate)
     }
   }
 
@@ -1293,6 +1300,12 @@ export class LiveQuery implements WithTx, Client {
         await this.changePrivateHandler(evt)
       }
       result.push(await this._tx(tx, docCache))
+    }
+
+    if (this.queriesToUpdate.size > 0) {
+      const copy = new Map(this.queriesToUpdate)
+      this.queriesToUpdate.clear()
+      await Promise.all(Array.from(copy.values()).map(q => this.callback(q)))
     }
     return result
   }
@@ -1520,7 +1533,7 @@ export class LiveQuery implements WithTx, Client {
     return false
   }
 
-  private async updatedDocCallback (updatedDoc: Doc | undefined, q: Query): Promise<void> {
+  private async updatedDocCallback (updatedDoc: Doc | undefined, q: Query, bulkUpdate = false): Promise<void> {
     q.result = q.result as Doc[]
 
     if (q.options?.limit !== undefined && q.result.length > q.options.limit) {
@@ -1533,10 +1546,10 @@ export class LiveQuery implements WithTx, Client {
         return
       }
       if (q.result.pop()?._id !== updatedDoc._id) {
-        await this.callback(q)
+        await this.callback(q, bulkUpdate)
       }
     } else {
-      await this.callback(q)
+      await this.callback(q, bulkUpdate)
     }
   }
 }
