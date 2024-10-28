@@ -15,14 +15,16 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import { Class, Doc, getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, groupByArray, Ref, SortingOrder } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    closePanel,
     Component,
     defineSeparators,
     deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
     Label,
     Location,
     location as locationStore,
@@ -30,9 +32,7 @@
     Scroller,
     Separator,
     TabItem,
-    TabList,
-    closePanel,
-    getCurrentLocation
+    TabList
   } from '@hcengineering/ui'
   import view, { decodeObjectURI } from '@hcengineering/view'
   import { parseLinkId } from '@hcengineering/view-resources'
@@ -142,7 +142,7 @@
     }
   }
 
-  $: filteredData = filterData(filter, selectedTabId, inboxData, $contextByIdStore)
+  $: filteredData = filterData(filter, selectedTabId, inboxData)
 
   const unsubscribeLoc = locationStore.subscribe((newLocation) => {
     void syncLocation(newLocation)
@@ -323,8 +323,7 @@
   function filterData (
     filter: InboxNotificationsFilter,
     selectedTabId: string | number,
-    inboxData: InboxData,
-    contextById: IdMap<DocNotifyContext>
+    inboxData: InboxData
   ): InboxData {
     if (selectedTabId === allTab.id && filter === 'all') {
       return inboxData
@@ -344,7 +343,7 @@
         continue
       }
 
-      const context = contextById.get(key)
+      const context = $contextByIdStore.get(key)
 
       if (context === undefined) {
         continue
@@ -459,6 +458,7 @@
           _class: isChunterChannel(selectedContext, urlObjectClass)
             ? urlObjectClass ?? selectedContext.objectClass
             : selectedContext.objectClass,
+          autofocus: false,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext }

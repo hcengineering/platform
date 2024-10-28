@@ -52,6 +52,7 @@
   export let fullHeight = true
   export let freeze = false
   export let loadMoreAllowed = true
+  export let autofocus = true
 
   const minMsgHeightRem = 2
   const loadMoreThreshold = 200
@@ -659,7 +660,7 @@
 </div>
 
 {#if fixedInput}
-  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} />
+  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus}/>
 {/if}
 
 <style lang="scss">

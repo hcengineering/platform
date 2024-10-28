@@ -30,6 +30,7 @@
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let isAsideOpened = false
   export let syncLocation = true
+  export let autofocus = true
   export let freeze = false
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
@@ -108,6 +109,7 @@
     {collection}
     provider={dataProvider}
     {freeze}
+    {autofocus}
     loadMoreAllowed={!isDocChannel}
   />
 {/if}

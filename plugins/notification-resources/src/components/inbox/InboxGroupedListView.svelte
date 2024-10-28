@@ -41,6 +41,8 @@
   let listSelection = 0
   let element: HTMLDivElement | undefined
 
+  let archivingContexts = new Set<Ref<DocNotifyContext>>()
+
   let displayData: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = []
   let viewlets: ActivityNotificationViewlet[] = []
 
@@ -56,7 +58,39 @@
     )
   }
 
-  function onKeydown (key: KeyboardEvent): void {
+async function archiveContext (listSelection: number) {
+  const contextId = displayData[listSelection]?.[0]
+
+  if (contextId === undefined) {
+    return
+  }
+
+  archivingContexts = archivingContexts.add(contextId)
+  try {
+    const context = $contextByIdStore.get(contextId)
+
+    const nextContextId = displayData[listSelection + 1]?.[0] ?? displayData[listSelection - 1]?.[0]
+    const nextContext = $contextByIdStore.get(nextContextId)
+
+    if (archived) {
+      await unarchiveContextNotifications(context)
+    } else {
+      await archiveContextNotifications(context)
+    }
+
+    list.select(Math.min(listSelection, displayData.length - 2))
+    displayData = displayData.filter(([id]) => id !== contextId)
+
+    if (nextContext !== undefined) {
+      dispatch('click', { context: nextContext })
+    }
+  } catch (e) {
+  }
+
+  archivingContexts.delete(contextId)
+  archivingContexts = archivingContexts
+}
+  async function onKeydown (key: KeyboardEvent): Promise<void> {
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
@@ -71,14 +105,7 @@
       key.preventDefault()
       key.stopPropagation()
 
-      const contextId = displayData[listSelection]?.[0]
-      const context = $contextByIdStore.get(contextId)
-
-      if (archived) {
-        void unarchiveContextNotifications(context)
-      } else {
-        void archiveContextNotifications(context)
-      }
+      await archiveContext(listSelection)
     }
     if (key.code === 'Enter') {
       key.preventDefault()
@@ -126,6 +153,8 @@
           notifications={contextNotifications}
           {archived}
           {viewlets}
+          isArchiving={archivingContexts.has(contextId)}
+          on:archive={() => archiveContext(itemIndex)}
           on:click={(event) => {
             dispatch('click', event.detail)
             listSelection = itemIndex

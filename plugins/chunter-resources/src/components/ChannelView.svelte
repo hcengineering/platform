@@ -41,6 +41,7 @@
 
   export let object: Doc
   export let context: DocNotifyContext | undefined
+  export let autofocus = true
   export let embedded: boolean = false
 
   const client = getClient()
@@ -143,6 +144,7 @@
             {context}
             {object}
             {filters}
+            {autofocus}
             isAsideOpened={(withAside && isAsideShown) || isThreadOpened}
           />
         {/if}
