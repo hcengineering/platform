@@ -18,7 +18,7 @@
     DisplayInboxNotification,
     DocNotifyContext
   } from '@hcengineering/notification'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, Timestamp } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { ListView } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
@@ -40,8 +40,10 @@
   let list: ListView
   let listSelection = 0
   let element: HTMLDivElement | undefined
+  let prevArchived = false
 
   let archivingContexts = new Set<Ref<DocNotifyContext>>()
+  let archivedContexts = new Map<Ref<DocNotifyContext>, Timestamp>()
 
   let displayData: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = []
   let viewlets: ActivityNotificationViewlet[] = []
@@ -50,46 +52,60 @@
     viewlets = res
   })
 
+  $: if (prevArchived !== archived) {
+    prevArchived = archived
+    archivedContexts.clear()
+  }
   $: updateDisplayData(data)
 
   function updateDisplayData (data: InboxData): void {
-    displayData = Array.from(data.entries()).sort(([, notifications1], [, notifications2]) =>
+    let result: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = Array.from(data.entries())
+    if (archivedContexts.size > 0) {
+      result = result.filter(([contextId]) => {
+        const context = $contextByIdStore.get(contextId)
+        return (
+          !archivedContexts.has(contextId) ||
+          (context?.lastUpdateTimestamp ?? 0) > (archivedContexts.get(contextId) ?? 0)
+        )
+      })
+    }
+
+    displayData = result.sort(([, notifications1], [, notifications2]) =>
       notificationsComparator(notifications1[0], notifications2[0])
     )
   }
 
-async function archiveContext (listSelection: number) {
-  const contextId = displayData[listSelection]?.[0]
-
-  if (contextId === undefined) {
-    return
-  }
-
-  archivingContexts = archivingContexts.add(contextId)
-  try {
+  async function archiveContext (listSelection: number): Promise<void> {
+    const contextId = displayData[listSelection]?.[0]
     const context = $contextByIdStore.get(contextId)
-
-    const nextContextId = displayData[listSelection + 1]?.[0] ?? displayData[listSelection - 1]?.[0]
-    const nextContext = $contextByIdStore.get(nextContextId)
-
-    if (archived) {
-      await unarchiveContextNotifications(context)
-    } else {
-      await archiveContextNotifications(context)
+    if (contextId === undefined || context === undefined) {
+      return
     }
 
-    list.select(Math.min(listSelection, displayData.length - 2))
-    displayData = displayData.filter(([id]) => id !== contextId)
+    archivingContexts = archivingContexts.add(contextId)
+    try {
+      const nextContextId = displayData[listSelection + 1]?.[0] ?? displayData[listSelection - 1]?.[0]
+      const nextContext = $contextByIdStore.get(nextContextId)
 
-    if (nextContext !== undefined) {
-      dispatch('click', { context: nextContext })
-    }
-  } catch (e) {
+      if (archived) {
+        void unarchiveContextNotifications(context)
+      } else {
+        void archiveContextNotifications(context)
+      }
+
+      list.select(Math.min(listSelection, displayData.length - 2))
+      archivedContexts = archivedContexts.set(contextId, context.lastUpdateTimestamp ?? 0)
+      displayData = displayData.filter(([id]) => id !== contextId)
+
+      if (selectedContext === contextId || selectedContext === undefined) {
+        dispatch('click', { context: nextContext })
+      }
+    } catch (e) {}
+
+    archivingContexts.delete(contextId)
+    archivingContexts = archivingContexts
   }
 
-  archivingContexts.delete(contextId)
-  archivingContexts = archivingContexts
-}
   async function onKeydown (key: KeyboardEvent): Promise<void> {
     if (key.code === 'ArrowUp') {
       key.stopPropagation()

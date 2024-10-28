@@ -30,10 +30,7 @@
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import {
-    isActivityNotification,
-    isMentionNotification,
-  } from '../utils'
+  import { isActivityNotification, isMentionNotification } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
