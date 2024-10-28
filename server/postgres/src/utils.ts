@@ -29,7 +29,7 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
-import { Pool, type PoolClient } from 'pg'
+import postgres from 'postgres'
 import { defaultSchema, domainSchemas, getSchema } from './schemas'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
@@ -43,53 +43,23 @@ process.on('exit', () => {
 
 const clientRefs = new Map<string, ClientRef>()
 
-export async function retryTxn (pool: Pool, operation: (client: PoolClient) => Promise<any>): Promise<any> {
-  const backoffInterval = 100 // millis
-  const maxTries = 5
-  let tries = 0
-  const client = await pool.connect()
-
-  try {
-    while (true) {
-      await client.query('BEGIN;')
-      tries++
-
-      try {
-        const result = await operation(client)
-        await client.query('COMMIT;')
-        return result
-      } catch (err: any) {
-        await client.query('ROLLBACK;')
-
-        if (err.code !== '40001' || tries === maxTries) {
-          throw err
-        } else {
-          console.log('Transaction failed. Retrying.')
-          console.log(err.message)
-          await new Promise((resolve) => setTimeout(resolve, tries * backoffInterval))
-        }
-      }
-    }
-  } finally {
-    client.release()
-  }
+export async function retryTxn (
+  pool: postgres.Sql,
+  operation: (client: postgres.TransactionSql) => Promise<any>
+): Promise<any> {
+  await pool.begin(async (client) => {
+    const result = await operation(client)
+    return result
+  })
 }
 
-export async function createTable (client: Pool, domains: string[]): Promise<void> {
+export async function createTable (client: postgres.Sql, domains: string[]): Promise<void> {
   if (domains.length === 0) {
     return
   }
   const mapped = domains.map((p) => translateDomain(p))
-  const inArr = mapped.map((it) => `'${it}'`).join(', ')
-  const exists = await client.query(`
-    SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_name IN (${inArr})
-  `)
-
-  const toCreate = mapped.filter((it) => !exists.rows.map((it) => it.table_name).includes(it))
   await retryTxn(client, async (client) => {
-    for (const domain of toCreate) {
+    for (const domain of mapped) {
       const schema = getSchema(domain)
       const fields: string[] = []
       for (const key in schema) {
@@ -97,28 +67,28 @@ export async function createTable (client: Pool, domains: string[]): Promise<voi
         fields.push(`"${key}" ${val[0]} ${val[1] ? 'NOT NULL' : ''}`)
       }
       const colums = fields.join(', ')
-      await client.query(
-        `CREATE TABLE ${domain} (
+      const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
           "workspaceId" text NOT NULL,
           ${colums}, 
           data JSONB NOT NULL,
           PRIMARY KEY("workspaceId", _id)
-        )`
-      )
-      if (schema.attachedTo !== undefined) {
-        await client.query(`
-          CREATE INDEX ${domain}_attachedTo ON ${domain} ("attachedTo")
+        )`)
+      if (res.count > 0) {
+        if (schema.attachedTo !== undefined) {
+          await client.unsafe(`
+            CREATE INDEX ${domain}_attachedTo ON ${domain} ("attachedTo")
+          `)
+        }
+        await client.unsafe(`
+          CREATE INDEX ${domain}_class ON ${domain} (_class)
+        `)
+        await client.unsafe(`
+          CREATE INDEX ${domain}_space ON ${domain} (space)
+        `)
+        await client.unsafe(`
+          CREATE INDEX ${domain}_idxgin ON ${domain} USING GIN (data)
         `)
       }
-      await client.query(`
-        CREATE INDEX ${domain}_class ON ${domain} (_class)
-      `)
-      await client.query(`
-        CREATE INDEX ${domain}_space ON ${domain} (space)
-      `)
-      await client.query(`
-        CREATE INDEX ${domain}_idxgin ON ${domain} USING GIN (data)
-      `)
     }
   })
 }
@@ -134,23 +104,23 @@ export async function shutdown (): Promise<void> {
 }
 
 export interface PostgresClientReference {
-  getClient: () => Promise<Pool>
+  getClient: () => Promise<postgres.Sql>
   close: () => void
 }
 
 class PostgresClientReferenceImpl {
   count: number
-  client: Pool | Promise<Pool>
+  client: postgres.Sql | Promise<postgres.Sql>
 
   constructor (
-    client: Pool | Promise<Pool>,
+    client: postgres.Sql | Promise<postgres.Sql>,
     readonly onclose: () => void
   ) {
     this.count = 0
     this.client = client
   }
 
-  async getClient (): Promise<Pool> {
+  async getClient (): Promise<postgres.Sql> {
     if (this.client instanceof Promise) {
       this.client = await this.client
     }
@@ -183,7 +153,7 @@ export class ClientRef implements PostgresClientReference {
   }
 
   closed = false
-  async getClient (): Promise<Pool> {
+  async getClient (): Promise<postgres.Sql> {
     if (!this.closed) {
       return await this.client.getClient()
     } else {
@@ -211,15 +181,18 @@ export function getDBClient (connectionString: string, database?: string): Postg
   let existing = connections.get(key)
 
   if (existing === undefined) {
-    const pool = new Pool({
+    const sql = postgres(connectionString, {
       connectionString,
       application_name: 'transactor',
       database,
       max: 10,
+      transform: {
+        undefined: null
+      },
       ...extraOptions
     })
 
-    existing = new PostgresClientReferenceImpl(pool, () => {
+    existing = new PostgresClientReferenceImpl(sql, () => {
       connections.delete(key)
     })
     connections.set(key, existing)
@@ -256,6 +229,19 @@ export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: 
     data: remainingData
   }
   return res
+}
+
+export function inferType (val: any): string {
+  if (typeof val === 'string') {
+    return '::text'
+  }
+  if (typeof val === 'number') {
+    return '::numeric'
+  }
+  if (typeof val === 'boolean') {
+    return '::boolean'
+  }
+  return ''
 }
 
 export function parseUpdate<T extends Doc> (
@@ -303,20 +289,22 @@ export function isOwner (account: Account): boolean {
 
 export class DBCollectionHelper implements DomainHelperOperations {
   constructor (
-    protected readonly client: Pool,
+    protected readonly client: postgres.Sql,
     protected readonly workspaceId: WorkspaceId
   ) {}
+
+  async dropIndex (domain: Domain, name: string): Promise<void> {}
 
   domains = new Set<Domain>()
   async create (domain: Domain): Promise<void> {}
 
   async exists (domain: Domain): Promise<boolean> {
-    const exists = await this.client.query(`
+    const exists = await this.client`
       SELECT table_name 
       FROM information_schema.tables 
-      WHERE table_name = '${translateDomain(domain)}'
-    `)
-    return exists.rows.length > 0
+      WHERE table_name = '${this.client(translateDomain(domain))}'
+    `
+    return exists.length > 0
   }
 
   async listDomains (): Promise<Set<Domain>> {
@@ -325,17 +313,15 @@ export class DBCollectionHelper implements DomainHelperOperations {
 
   async createIndex (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {}
 
-  async dropIndex (domain: Domain, name: string): Promise<void> {}
-
   async listIndexes (domain: Domain): Promise<{ name: string }[]> {
     return []
   }
 
   async estimatedCount (domain: Domain): Promise<number> {
-    const res = await this.client.query(`SELECT COUNT(_id) FROM ${translateDomain(domain)} WHERE "workspaceId" = $1`, [
-      this.workspaceId.name
-    ])
-    return res.rows[0].count
+    const res = await this
+      .client`SELECT COUNT(_id) FROM ${this.client(translateDomain(domain))} WHERE "workspaceId" = ${this.workspaceId.name}`
+
+    return res.count
   }
 }
 
