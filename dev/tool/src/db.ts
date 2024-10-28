@@ -26,11 +26,12 @@ import {
   retryTxn,
   translateDomain
 } from '@hcengineering/postgres'
+import { type DBDoc } from '@hcengineering/postgres/types/utils'
 import { getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
 import { type MongoClient } from 'mongodb'
-import { type Pool } from 'pg'
+import type postgres from 'postgres'
 
 export async function moveFromMongoToPG (
   accountDb: AccountDB,
@@ -64,7 +65,7 @@ export async function moveFromMongoToPG (
 async function moveWorkspace (
   accountDb: AccountDB,
   mongo: MongoClient,
-  pgClient: Pool,
+  pgClient: postgres.Sql,
   ws: Workspace,
   region: string
 ): Promise<void> {
@@ -84,17 +85,16 @@ async function moveWorkspace (
     for (const collection of collections) {
       const cursor = collection.find()
       const domain = translateDomain(collection.collectionName)
-      const current = await pgClient.query(`SELECT _id FROM ${domain} WHERE "workspaceId" = $1`, [ws.workspace])
-      const currentIds = new Set(current.rows.map((r) => r._id))
+      const current = await pgClient`SELECT _id FROM ${pgClient(domain)} WHERE "workspaceId" = ${ws.workspace}`
+      const currentIds = new Set(current.map((r) => r._id))
       console.log('move domain', domain)
       const docs: Doc[] = []
       const fields = getDocFieldsByDomains(domain)
       const filedsWithData = [...fields, 'data']
-      const insertFields: string[] = []
+      const insertFields: string[] = ['workspaceId']
       for (const field of filedsWithData) {
-        insertFields.push(`"${field}"`)
+        insertFields.push(field)
       }
-      const insertStr = insertFields.join(', ')
       while (true) {
         while (docs.length < 50000) {
           const doc = (await cursor.next()) as Doc | null
@@ -105,35 +105,15 @@ async function moveWorkspace (
         if (docs.length === 0) break
         while (docs.length > 0) {
           const part = docs.splice(0, 500)
-          const values: any[] = []
-          const vars: string[] = []
-          let index = 1
+          const values: DBDoc[] = []
           for (let i = 0; i < part.length; i++) {
             const doc = part[i]
-            const variables: string[] = []
             const d = convertDoc(domain, doc, ws.workspace)
-            values.push(d.workspaceId)
-            variables.push(`$${index++}`)
-            for (const field of fields) {
-              values.push(d[field])
-              variables.push(`$${index++}`)
-            }
-            values.push(d.data)
-            variables.push(`$${index++}`)
-            vars.push(`(${variables.join(', ')})`)
+            values.push(d)
           }
-          const vals = vars.join(',')
-          try {
-            await retryTxn(pgClient, async (client) => {
-              await client.query(
-                `INSERT INTO ${translateDomain(domain)} ("workspaceId", ${insertStr}) VALUES ${vals}`,
-                values
-              )
-            })
-          } catch (err) {
-            console.log('error when move doc to', domain, err)
-            continue
-          }
+          await retryTxn(pgClient, async (client) => {
+            await client`INSERT INTO ${client(translateDomain(domain))} ${client(values, insertFields)}`
+          })
         }
       }
     }

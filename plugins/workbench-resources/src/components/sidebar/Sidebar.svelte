@@ -17,6 +17,7 @@
   import { WidgetPreference, SidebarEvent, TxSidebarEvent, OpenSidebarWidgetParams } from '@hcengineering/workbench'
   import { Tx } from '@hcengineering/core'
   import { onMount } from 'svelte'
+  import { panelstore } from '@hcengineering/ui'
 
   import workbench from '../../plugin'
   import { createWidgetTab, openWidget, sidebarStore, SidebarVariant } from '../../sidebar'
@@ -33,7 +34,8 @@
     preferences = res
   })
 
-  $: size = $sidebarStore.variant === SidebarVariant.MINI ? 'mini' : undefined
+  $: mini = $sidebarStore.variant === SidebarVariant.MINI
+  $: if ((!mini || mini) && $panelstore.panel?.refit !== undefined) $panelstore.panel.refit()
 
   function txListener (tx: Tx): void {
     if (tx._class === workbench.class.TxSidebarEvent) {
@@ -59,8 +61,8 @@
   })
 </script>
 
-<div class="antiPanel-component antiComponent root size-{size}" id="sidebar">
-  {#if $sidebarStore.variant === SidebarVariant.MINI}
+<div class="antiPanel-application vertical root" class:mini id="sidebar">
+  {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
     <SidebarExpanded {widgets} {preferences} />
@@ -69,10 +71,11 @@
 
 <style lang="scss">
   .root {
-    position: relative;
-    background-color: var(--theme-panel-color);
+    flex-direction: row;
+    min-width: 25rem;
+    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
-    &.size-mini {
+    &.mini {
       width: 3.5rem !important;
       min-width: 3.5rem !important;
       max-width: 3.5rem !important;

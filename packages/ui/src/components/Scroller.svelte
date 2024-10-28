@@ -174,7 +174,7 @@
     }
   }
 
-  const handleScroll = (event: MouseEvent): void => {
+  const handleScroll = (event: PointerEvent): void => {
     scrolling = false
     if (
       (divBar == null && isScrolling === 'vertical') ||
@@ -185,7 +185,7 @@
     }
     const rectScroll = divScroll.getBoundingClientRect()
     if (isScrolling === 'vertical') {
-      let Y = event.clientY - dXY
+      let Y = Math.round(event.clientY) - dXY
       if (Y < rectScroll.top + shiftTop + 2) Y = rectScroll.top + shiftTop + 2
       if (Y > rectScroll.bottom - divBar.clientHeight - shiftBottom - 2) {
         Y = rectScroll.bottom - divBar.clientHeight - shiftBottom - 2
@@ -201,7 +201,7 @@
         divScroll.scrollTop = (divScroll.scrollHeight - divScroll.clientHeight) * procBar
       }
     } else if (isScrolling === 'horizontal') {
-      let X = event.clientX - dXY
+      let X = Math.round(event.clientX) - dXY
       if (X < rectScroll.left + 2 + shiftLeft) X = rectScroll.left + 2 + shiftLeft
       if (X > rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight) {
         X = rectScroll.right - divBarH.clientWidth - (mask !== 'none' ? 12 : 2) - shiftRight
@@ -215,18 +215,18 @@
     }
   }
   const onScrollEnd = (): void => {
-    document.removeEventListener('mousemove', handleScroll)
+    document.removeEventListener('pointermove', handleScroll)
     document.body.style.userSelect = 'auto'
     document.body.style.webkitUserSelect = 'auto'
-    document.removeEventListener('mouseup', onScrollEnd)
+    document.removeEventListener('pointerup', onScrollEnd)
     isScrolling = false
   }
-  const onScrollStart = (event: MouseEvent, direction: 'vertical' | 'horizontal'): void => {
+  const onScrollStart = (event: PointerEvent, direction: 'vertical' | 'horizontal'): void => {
     if (divScroll == null) return
     scrolling = false
-    dXY = direction === 'vertical' ? event.offsetY : event.offsetX
-    document.addEventListener('mouseup', onScrollEnd)
-    document.addEventListener('mousemove', handleScroll)
+    dXY = Math.round(direction === 'vertical' ? event.offsetY : event.offsetX)
+    document.addEventListener('pointerup', onScrollEnd)
+    document.addEventListener('pointermove', handleScroll)
     document.body.style.userSelect = 'none'
     document.body.style.webkitUserSelect = 'none'
     isScrolling = direction
@@ -666,10 +666,10 @@
       class:hovered={isScrolling === 'vertical'}
       class:reverse={scrollDirection === 'vertical-reverse'}
       bind:this={divBar}
-      on:mousedown|stopPropagation={(ev) => {
+      on:pointerdown|stopPropagation={(ev) => {
         onScrollStart(ev, 'vertical')
       }}
-      on:mouseleave={checkFade}
+      on:pointerleave={checkFade}
     />
   {/if}
   {#if horizontal && maskH !== 'none'}
@@ -687,10 +687,10 @@
       class="bar-horizontal"
       class:hovered={isScrolling === 'horizontal'}
       bind:this={divBarH}
-      on:mousedown|stopPropagation={(ev) => {
+      on:pointerdown|stopPropagation={(ev) => {
         onScrollStart(ev, 'horizontal')
       }}
-      on:mouseleave={checkFade}
+      on:pointerleave={checkFade}
     />
   {/if}
 </div>
@@ -864,9 +864,11 @@
       overscroll-behavior: none;
     }
     &::-webkit-scrollbar:vertical {
+      display: none;
       width: 0;
     }
     &::-webkit-scrollbar:horizontal {
+      display: none;
       height: 0;
     }
 

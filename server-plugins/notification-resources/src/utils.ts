@@ -336,7 +336,7 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
 }
 
 async function getSenderName (control: TriggerControl, sender: SenderInfo): Promise<string> {
-  if (sender._id === core.account.System) {
+  if (sender._id === core.account.System || sender._id === core.account.ConfigUser) {
     return await translate(core.string.System, {})
   }
 

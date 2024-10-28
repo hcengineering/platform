@@ -18,7 +18,7 @@ import postgres from 'postgres'
 import * as db from './db'
 import { toUUID } from './encodings'
 import { selectStorage } from './storage'
-import { type UUID } from './types'
+import { type BlobRequest, type WorkspaceRequest, type UUID } from './types'
 import { copyVideo, deleteVideo } from './video'
 
 const expires = 86400
@@ -39,13 +39,9 @@ export function getBlobURL (request: Request, workspace: string, name: string): 
   return new URL(path, request.url).toString()
 }
 
-export async function handleBlobGet (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleBlobGet (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const sql = postgres(env.HYPERDRIVE.connectionString)
   const { bucket } = selectStorage(env, workspace)
 
@@ -82,13 +78,9 @@ export async function handleBlobGet (
   return response
 }
 
-export async function handleBlobHead (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleBlobHead (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const sql = postgres(env.HYPERDRIVE.connectionString)
   const { bucket } = selectStorage(env, workspace)
 
@@ -106,7 +98,9 @@ export async function handleBlobHead (
   return new Response(null, { headers, status: 200 })
 }
 
-export async function deleteBlob (env: Env, workspace: string, name: string): Promise<Response> {
+export async function handleBlobDelete (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const sql = postgres(env.HYPERDRIVE.connectionString)
 
   try {
@@ -120,12 +114,14 @@ export async function deleteBlob (env: Env, workspace: string, name: string): Pr
   }
 }
 
-export async function postBlobFormData (request: Request, env: Env, workspace: string): Promise<Response> {
+export async function handleUploadFormData (request: WorkspaceRequest, env: Env): Promise<Response> {
   const contentType = request.headers.get('Content-Type')
   if (contentType === null || !contentType.includes('multipart/form-data')) {
     console.error({ error: 'expected multipart/form-data' })
     return error(400, 'expected multipart/form-data')
   }
+
+  const { workspace } = request
 
   const sql = postgres(env.HYPERDRIVE.connectionString)
 

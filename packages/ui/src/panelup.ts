@@ -8,6 +8,7 @@ export interface PanelProps {
   _class: string
   element?: PopupAlignment
   rightSection?: AnyComponent
+  refit?: () => void
 }
 
 export const panelstore = writable<{ panel?: PanelProps | undefined }>({ panel: undefined })

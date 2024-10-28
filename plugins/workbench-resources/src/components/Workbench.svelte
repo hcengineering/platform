@@ -872,7 +872,7 @@
         application: currentApplication?._id
       }}
     />
-    <div class="workbench-container inner">
+    <div class="workbench-container inner" class:rounded={$sidebarStore.variant === SidebarVariant.EXPANDED}>
       {#if mainNavigator}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -932,6 +932,7 @@
       <div
         bind:this={contentPanel}
         class={navigatorModel === undefined ? 'hulyPanels-container' : 'hulyComponent overflow-hidden'}
+        data-id={'contentPanel'}
       >
         {#if currentApplication && currentApplication.component}
           <Component
@@ -972,11 +973,11 @@
         </div>
       {/if}
     </div>
+    {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
+      <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
+    {/if}
+    <WidgetsBar />
   </div>
-  {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
-    <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
-  {/if}
-  <WidgetsBar />
   <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
@@ -1002,12 +1003,15 @@
     min-height: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--theme-statusbar-color);
+    background-color: var(--theme-panel-color);
     touch-action: none;
 
     &.inner {
       background-color: var(--theme-navpanel-color);
-      border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+
+      &.rounded {
+        border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
+      }
     }
     &:not(.inner)::after {
       position: absolute;
@@ -1015,8 +1019,6 @@
       inset: 0;
       border: 1px solid var(--theme-divider-color);
       border-radius: var(--medium-BorderRadius);
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 0;
       pointer-events: none;
     }
     .antiPanel-application {

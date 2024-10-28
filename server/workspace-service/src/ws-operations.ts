@@ -34,7 +34,7 @@ function wrapPipeline (ctx: MeasureContext, pipeline: Pipeline, wsUrl: Workspace
     { targets: {}, txes: [] },
     wsUrl,
     null,
-    false,
+    true,
     new Map(),
     new Map(),
     pipeline.context.modelDb
@@ -304,7 +304,7 @@ export async function upgradeWorkspaceWith (
       { targets: {}, txes: [] },
       wsUrl,
       null,
-      false,
+      true,
       new Map(),
       new Map(),
       pipeline.context.modelDb

@@ -340,7 +340,9 @@ export async function upgradeModel (
     let i = 0
     for (const op of migrateOperations) {
       const t = Date.now()
-      await ctx.with(op[0], {}, () => op[1].upgrade(migrateState, async () => connection, logger))
+      await ctx.with(op[0], {}, async () => {
+        await op[1].upgrade(migrateState, async () => connection, logger)
+      })
       const tdelta = Date.now() - t
       if (tdelta > 0) {
         logger.log('upgrade:', { operation: op[0], time: tdelta, workspaceId: workspaceId.name })

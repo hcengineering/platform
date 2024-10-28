@@ -152,9 +152,9 @@
         }}
       >
         {#if personInfo}
-          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} />
+          <Avatar name={person?.name ?? personInfo.name} {person} size={'full'} showStatus={false} />
         {:else if hoveredRoomX === x && hoveredRoomY === y}
-          <Avatar name={meName} person={meAvatar} size={'full'} />
+          <Avatar name={meName} person={meAvatar} size={'full'} showStatus={false} />
         {/if}
       </div>
     {/each}

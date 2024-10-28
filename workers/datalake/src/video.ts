@@ -15,7 +15,7 @@
 
 import { error, json } from 'itty-router'
 
-import { type CloudflareResponse, type StreamUploadResponse } from './types'
+import { type BlobRequest, type CloudflareResponse, type StreamUploadResponse } from './types'
 
 export type StreamUploadState = 'ready' | 'error' | 'inprogress' | 'queued' | 'downloading' | 'pendingupload'
 
@@ -42,13 +42,9 @@ function streamBlobKey (workspace: string, name: string): string {
   return `v/${workspace}/${name}`
 }
 
-export async function getVideoMeta (
-  request: Request,
-  env: Env,
-  ctx: ExecutionContext,
-  workspace: string,
-  name: string
-): Promise<Response> {
+export async function handleVideoMetaGet (request: BlobRequest, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const { workspace, name } = request
+
   const key = streamBlobKey(workspace, name)
 
   const streamInfo = await env.datalake_blobs.get<StreamBlobInfo>(key, { type: 'json' })

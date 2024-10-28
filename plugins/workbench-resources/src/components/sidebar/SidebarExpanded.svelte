@@ -96,84 +96,78 @@
   }
 </script>
 
-<div class="root">
-  <div class="content">
-    {#if widget?.component}
-      <div class="component" use:resizeObserver={resize}>
-        {#if widget.headerLabel}
-          <Header
-            allowFullsize={false}
-            type="type-aside"
-            hideBefore={true}
-            hideActions={false}
-            hideDescription={true}
-            adaptive="disabled"
-            closeOnEscape={false}
-            on:close={() => {
-              if (widget !== undefined) {
-                closeWidget(widget._id)
-              }
-            }}
-          >
-            <Breadcrumbs items={[{ label: widget.headerLabel }]} currentOnly />
-          </Header>
-        {/if}
-        <Component
-          is={widget?.component}
-          props={{ tab, widgetState, height: componentHeight, width: componentWidth, widget }}
+<div class="content">
+  {#if widget?.component}
+    <div class="component" use:resizeObserver={resize}>
+      {#if widget.headerLabel}
+        <Header
+          allowFullsize={false}
+          type="type-aside"
+          hideBefore={true}
+          hideActions={false}
+          hideDescription={true}
+          adaptive="disabled"
+          closeOnEscape={false}
           on:close={() => {
             if (widget !== undefined) {
               closeWidget(widget._id)
             }
           }}
-        />
-      </div>
-    {/if}
-  </div>
-  {#if widget !== undefined && tabs.length > 0}
-    <SidebarTabs
-      {tabs}
-      selected={tab?.id}
-      {widget}
-      on:close={(e) => {
-        void handleTabClose(e.detail, widget)
-      }}
-      on:open={(e) => {
-        handleTabOpen(e.detail, widget)
-      }}
-    />
+        >
+          <Breadcrumbs items={[{ label: widget.headerLabel }]} currentOnly />
+        </Header>
+      {/if}
+      <Component
+        is={widget?.component}
+        props={{ tab, widgetState, height: componentHeight, width: componentWidth, widget }}
+        on:close={() => {
+          if (widget !== undefined) {
+            closeWidget(widget._id)
+          }
+        }}
+      />
+    </div>
   {/if}
-  <WidgetsBar {widgets} {preferences} selected={widgetId} />
 </div>
+{#if widget !== undefined && tabs.length > 0}
+  <SidebarTabs
+    {tabs}
+    selected={tab?.id}
+    {widget}
+    on:close={(e) => {
+      void handleTabClose(e.detail, widget)
+    }}
+    on:open={(e) => {
+      handleTabOpen(e.detail, widget)
+    }}
+  />
+{/if}
+<WidgetsBar {widgets} {preferences} selected={widgetId} />
 
 <style lang="scss">
-  .root {
-    display: flex;
-    flex: 1;
-    height: 100%;
-    overflow: hidden;
-  }
-
   .content {
     display: flex;
     flex-direction: column;
 
-    border-top: 1px solid var(--theme-divider-color);
+    border-top: 1px solid transparent; // var(--theme-divider-color);
+    border-right: 1px solid var(--theme-divider-color);
     overflow: auto;
 
-    flex: 1;
     width: calc(100% - 3.5rem);
     height: 100%;
-    background: var(--theme-panel-color);
-    border-right: 1px solid var(--global-ui-BorderColor);
+    min-width: 0;
+    min-height: 0;
+    background-color: var(--theme-panel-color);
+
+    border-left: none;
   }
 
   .component {
     position: relative;
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex-grow: 1;
     overflow: hidden;
-    border-bottom: 1px solid transparent;
+    background-color: var(--theme-panel-color);
   }
 </style>

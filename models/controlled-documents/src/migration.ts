@@ -294,7 +294,7 @@ async function migrateDocSections (client: MigrationClient): Promise<void> {
     try {
       const ydoc = await loadCollaborativeDoc(ctx, storage, client.workspaceId, document.content)
       if (ydoc === undefined) {
-        ctx.error('collaborative document content not found', { document: document.title })
+        // no content, ignore
         continue
       }
 
