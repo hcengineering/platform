@@ -441,6 +441,8 @@ async function buildModel (
     )
   })
 
+  userTx.sort(compareTxes)
+
   let txes = systemTx.concat(userTx)
   if (modelFilter !== undefined) {
     txes = await modelFilter(txes)
@@ -472,4 +474,9 @@ function getLastTxTime (txes: Tx[]): number {
     }
   }
   return lastTxTime
+}
+
+function compareTxes (a: Tx, b: Tx): number {
+  const result = a._id.localeCompare(b._id)
+  return result !== 0 ? result : a.modifiedOn - b.modifiedOn
 }
