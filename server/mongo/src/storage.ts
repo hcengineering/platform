@@ -1613,7 +1613,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   @withContext('get-model')
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const txCollection = this.db.collection<Tx>(DOMAIN_TX)
-    const cursor = txCollection.find({ objectSpace: core.space.Model })
+    const cursor = txCollection.find({ objectSpace: core.space.Model }, { sort: { _id: 1, modifiedOn: 1 } })
     const model = await toArray<Tx>(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
