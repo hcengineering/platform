@@ -2,6 +2,51 @@
 
 Changelog.
 
+## [0.6.343] - 2024-10-26
+
+* UBERF-8488: · Fix github re-auth ([#7041](https://github.com/hcengineering/platform/issues/7041)) 
+
+## [0.6.342] - 2024-10-26
+
+* UBERF-8540: · Allow derived operations with apply ([#7044](https://github.com/hcengineering/platform/issues/7044)) 
+
+## [0.6.341] - 2024-10-25
+
+* UBERF-8537: · Fix component ([#7040](https://github.com/hcengineering/platform/issues/7040)) 
+* UBERF-8538: · Handle backup service errors ([#7042](https://github.com/hcengineering/platform/issues/7042)) 
+* UBERF-8539: · Do not store TypingInfo into memdb ([#7043](https://github.com/hcengineering/platform/issues/7043)) 
+
+## [0.6.339] - 2024-10-25
+
+* 🐛 BUG FIXES: · Use proper blob size in backup ([#7032](https://github.com/hcengineering/platform/issues/7032)) 
+* ⚙️ MISCELLANEOUS TASKS: · Update datalake configs ([#7033](https://github.com/hcengineering/platform/issues/7033)) 
+* QFIX: · Fix setting ui metadata from config ([#7025](https://github.com/hcengineering/platform/issues/7025)) 
+* UBERF-8528: · Share VS code formatter and plugin settings ([#7024](https://github.com/hcengineering/platform/issues/7024)) 
+
+## [s0.6.338] - 2024-10-23
+
+* 🐛 BUG FIXES: · More datalake logs ([#7019](https://github.com/hcengineering/platform/issues/7019)) 
+
+## [0.6.336] - 2024-10-23
+
+* 🐛 BUG FIXES: · Datalake fixes and perftest ([#7016](https://github.com/hcengineering/platform/issues/7016)) · Datalake memory limit issue ([#7018](https://github.com/hcengineering/platform/issues/7018)) 
+
+## [s0.6.335] - 2024-10-22
+
+* 🐛 BUG FIXES: · Use string content type instead of enum ([#7007](https://github.com/hcengineering/platform/issues/7007)) · Datalake logs and fixes ([#7015](https://github.com/hcengineering/platform/issues/7015)) 
+* UBERF-8525: · Fix Github stuck on adding new integrations ([#7009](https://github.com/hcengineering/platform/issues/7009)) 
+
+## [0.6.334] - 2024-10-21
+
+* 🐛 BUG FIXES: · Another attempt to migrate empty document fields ([#7004](https://github.com/hcengineering/platform/issues/7004)) 
+* QFIX: · Pass isDerived to apply ([#7001](https://github.com/hcengineering/platform/issues/7001)) 
+* QFIX: · Extend patch version values range in PG ([#7005](https://github.com/hcengineering/platform/issues/7005)) 
+* UBERF-8504: · Fix DocSyncInfo in transactions ([#6998](https://github.com/hcengineering/platform/issues/6998)) 
+* UBERF-8508: · Get rid of Mongo in storage adapter ([#6989](https://github.com/hcengineering/platform/issues/6989)) 
+* UBERF-8517: · Fix github external sync ([#6999](https://github.com/hcengineering/platform/issues/6999)) 
+* UBERF-8518: · Optimize client model ([#7000](https://github.com/hcengineering/platform/issues/7000)) 
+* UBERF-8512: · Fix acc memory leak ([#7002](https://github.com/hcengineering/platform/issues/7002)) 
+
 ## [0.6.333] - 2024-10-20
 
 * UBERF-8516: · Stable mentions popup ([#6993](https://github.com/hcengineering/platform/issues/6993)) 

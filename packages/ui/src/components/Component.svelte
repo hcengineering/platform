@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getResource, getResourceP } from '@hcengineering/platform'
+  import { getResourceP } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
   import { SvelteComponent } from 'svelte'
   import type { AnyComponent, AnySvelteComponent } from '../types'
@@ -70,6 +70,7 @@
             }
           })
       } else {
+        loading = false
         Ctor = component
       }
     } else {

@@ -14,16 +14,15 @@
 //
 
 import {
-  type LowLevelStorage,
   type Class,
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
   type FieldIndexConfig,
-  type FindOptions,
   type FindResult,
   type Hierarchy,
+  type LowLevelStorage,
   type MeasureContext,
   type ModelDb,
   type Ref,
@@ -56,40 +55,6 @@ export interface DomainHelper {
   ) => Promise<void>
 }
 
-export interface RawDBAdapterStream<T extends Doc> {
-  next: () => Promise<T[]>
-  close: () => Promise<void>
-}
-
-/**
- * @public
- */
-export interface RawDBAdapter {
-  find: <T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
-  ) => Promise<FindResult<T>>
-  findStream: <T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    query: DocumentQuery<T>,
-    options?: Omit<FindOptions<T>, 'projection' | 'lookup' | 'total'>
-  ) => Promise<RawDBAdapterStream<T>>
-  upload: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
-  update: <T extends Doc>(
-    ctx: MeasureContext,
-    workspace: WorkspaceId,
-    domain: Domain,
-    docs: Map<Ref<T>, DocumentUpdate<T>>
-  ) => Promise<void>
-  clean: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: Ref<T>[]) => Promise<void>
-  close: () => Promise<void>
-}
-
 export type DbAdapterHandler = (
   domain: Domain,
   event: 'add' | 'update' | 'delete' | 'read',
@@ -102,7 +67,9 @@ export type DbAdapterHandler = (
 export interface DbAdapter extends LowLevelStorage {
   init?: (domains?: string[], excludeDomains?: string[]) => Promise<void>
 
-  helper: () => DomainHelperOperations
+  helper?: () => DomainHelperOperations
+
+  closeContext?: (ctx: MeasureContext) => Promise<void>
 
   close: () => Promise<void>
   findAll: <T extends Doc>(

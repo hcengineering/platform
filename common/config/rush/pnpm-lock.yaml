@@ -190,7 +190,7 @@ dependencies:
     version: file:projects/core.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/datalake':
     specifier: file:./projects/datalake.tgz
-    version: file:projects/datalake.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+    version: file:projects/datalake.tgz(esbuild@0.20.1)
   '@rush-temp/desktop':
     specifier: file:./projects/desktop.tgz
     version: file:projects/desktop.tgz(bufferutil@4.0.8)(sass@1.71.1)(utf-8-validate@6.0.4)
@@ -1335,8 +1335,8 @@ dependencies:
     specifier: ~0.32.0
     version: 0.32.0
   '@types/tar-stream':
-    specifier: ^2.2.2
-    version: 2.2.3
+    specifier: ^3.1.3
+    version: 3.1.3
   '@types/toposort':
     specifier: ^2.0.3
     version: 2.0.7
@@ -1620,7 +1620,7 @@ dependencies:
     specifier: ^9.7.1
     version: 9.13.0
   itty-router:
-    specifier: ^5.0.17
+    specifier: ^5.0.18
     version: 5.0.18
   jest:
     specifier: ^29.7.0
@@ -1842,8 +1842,8 @@ dependencies:
     specifier: ^3.0.0
     version: 3.0.3
   tar-stream:
-    specifier: ^2.2.0
-    version: 2.2.0
+    specifier: ^3.1.7
+    version: 3.1.7
   telegraf:
     specifier: ^4.16.3
     version: 4.16.3
@@ -9836,8 +9836,8 @@ packages:
     resolution: {integrity: sha512-7NQmHra/JILCd1QqpSzl8+mJRc8ZHz3uDm8YV1Ks9IhK0epEiTw8aIErbvH9PI+6XbqhyIQy3462nEsn7UVzjQ==}
     dev: false
 
-  /@types/tar-stream@2.2.3:
-    resolution: {integrity: sha512-if3mugZfjVkXOMZdFjIHySxY13r6GXPpyOlsDmLffvyI7tLz9wXE8BFjNivXsvUeyJ1KNlOpfLnag+ISmxgxPw==}
+  /@types/tar-stream@3.1.3:
+    resolution: {integrity: sha512-Zbnx4wpkWBMBSu5CytMbrT5ZpMiF55qgM+EpHzR4yIDu7mv52cej8hTkOc6K+LzpkOAbxwn/m7j3iO+/l42YkQ==}
     dependencies:
       '@types/node': 20.11.19
     dev: false
@@ -26090,14 +26090,14 @@ packages:
     dev: false
 
   file:projects/backup-service.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-yVHrvyvHvtRFu894lGDl0o19qrJv3scuxI80Dg+rQDzjb4nWXAPGAj477N6TR7vrZSmYAmsR5qEaHkXxc35ipg==, tarball: file:projects/backup-service.tgz}
+    resolution: {integrity: sha512-q/p/O9tTXiKT+qik2nsPL+zmBUwyvvfwBIH3RN4Z7vItg7gV/mI38jal1ppQU/Ddnwvfifn/h7tFc/sSTpjG2A==, tarball: file:projects/backup-service.tgz}
     id: file:projects/backup-service.tgz
     name: '@rush-temp/backup-service'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/tar-stream': 2.2.3
+      '@types/tar-stream': 3.1.3
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -26107,7 +26107,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
-      tar-stream: 2.2.0
+      tar-stream: 3.1.7
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -26626,7 +26626,7 @@ packages:
     dev: false
 
   file:projects/cloud-branding.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-LuePDPK46tYQhJ9inFPje2LSd/RqlwYSW0k0UDsNWKNyJn4WwWGngaNblMp22YGBw8wMDgJpbaIjS/BPvZ7RQg==, tarball: file:projects/cloud-branding.tgz}
+    resolution: {integrity: sha512-f1NgjqZw48X0+O4cblNzjU8SeW4RYnvaMvYNFyN+eKbqTDHI1N97+q5f2OoDgRonvaZa+CXMETNFXMSkniWwyA==, tarball: file:projects/cloud-branding.tgz}
     id: file:projects/cloud-branding.tgz
     name: '@rush-temp/cloud-branding'
     version: 0.0.0
@@ -26661,7 +26661,7 @@ packages:
     dev: false
 
   file:projects/cloud-datalake.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.4):
-    resolution: {integrity: sha512-AA2lTsmPKPeYA1MTwIscZFRO40m9Ctc59Er2x8VRLNBBt4mQ01b1CCay4VFVPWYxAzh+Ru9RoUIB7lS+m8sj9Q==, tarball: file:projects/cloud-datalake.tgz}
+    resolution: {integrity: sha512-KdKIEaVTjeWtCEUYfkvyrIYxglGcfM8iICOnTxRzPiVmOIP3kswu7PaUKeH/xeFZQcvRBvhtNI7XT0dBr5mODA==, tarball: file:projects/cloud-datalake.tgz}
     id: file:projects/cloud-datalake.tgz
     name: '@rush-temp/cloud-datalake'
     version: 0.0.0
@@ -27083,13 +27083,12 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/datalake.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-pqgfJAfjDTa3AWRK263xljvkd1GLinDFrjTGW7res8krRskMMJ3K6gj3kfnLjyKmWeAesJQ5CSnFybPnPSJq/Q==, tarball: file:projects/datalake.tgz}
+  file:projects/datalake.tgz(esbuild@0.20.1):
+    resolution: {integrity: sha512-UX1RJWMtrQY5HWrFKnwi2vrRYfR8ZSRo2PtLn04ozWueiiLS3Q61UauAUfPDRtO0K5cJgecH7+gX750dx8oUhQ==, tarball: file:projects/datalake.tgz}
     id: file:projects/datalake.tgz
     name: '@rush-temp/datalake'
     version: 0.0.0
     dependencies:
-      '@aws-sdk/client-s3': 3.577.0
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@types/node-fetch': 2.6.11
@@ -27105,17 +27104,19 @@ packages:
       node-fetch: 2.7.0
       prettier: 3.2.5
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
       - encoding
       - esbuild
       - node-notifier
       - supports-color
-      - ts-node
     dev: false
 
   file:projects/desktop-1.tgz(webpack@5.90.3):
@@ -32920,14 +32921,14 @@ packages:
     dev: false
 
   file:projects/server-backup.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-RCYMutijYbZbV1jzpWwwzQL9bZS8uzTOYX0eZgxmh3aYyU1Ub4v4TixQpdiiH72ujj0V2hPn9bM2hpYaxzbD1w==, tarball: file:projects/server-backup.tgz}
+    resolution: {integrity: sha512-oDyT5+30r1kpzb+Cx/HTsY1f4fRjjtSy7n13JjzYPmkn37nVcHYb1X1RImHxhoiPehYWdftTsE5v5l2on0mOPg==, tarball: file:projects/server-backup.tgz}
     id: file:projects/server-backup.tgz
     name: '@rush-temp/server-backup'
     version: 0.0.0
     dependencies:
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
-      '@types/tar-stream': 2.2.3
+      '@types/tar-stream': 3.1.3
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       eslint: 8.56.0
@@ -32938,7 +32939,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      tar-stream: 2.2.0
+      tar-stream: 3.1.7
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:

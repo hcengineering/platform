@@ -399,6 +399,18 @@ export const notificationOperation: MigrateOperation = {
         func: async (client: MigrationClient): Promise<void> => {
           await client.update(DOMAIN_DOC_NOTIFY, { '%hash%': { $exists: true } }, { $set: { '%hash%': null } })
         }
+      },
+      {
+        state: 'remove-update-txes-docnotify-ctx',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_TX, {
+            _class: core.class.TxUpdateDoc,
+            objectClass: notification.class.DocNotifyContext,
+            'operations.lastViewedTimestamp': {
+              $exists: true
+            }
+          })
+        }
       }
     ])
 

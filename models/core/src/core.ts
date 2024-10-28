@@ -14,8 +14,6 @@
 //
 
 import {
-  type Card,
-  type CollaborativeDoc,
   DOMAIN_BLOB,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
@@ -27,8 +25,10 @@ import {
   type ArrOf,
   type AttachedDoc,
   type Blob,
+  type Card,
   type Class,
   type ClassifierKind,
+  type CollaborativeDoc,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -50,6 +50,7 @@ import {
   type RefTo,
   type Space,
   type Timestamp,
+  type TransientConfiguration,
   type Type,
   type TypeAny,
   type Version
@@ -403,3 +404,9 @@ export class TTypeCollaborativeDocVersion extends TType {}
 @UX(core.string.Rank)
 @Model(core.class.TypeRank, core.class.Type)
 export class TTypeRank extends TType {}
+
+@MMixin(core.mixin.TransientConfiguration, core.class.Class)
+export class TTransientConfiguration extends TClass implements TransientConfiguration {
+  @Prop(TypeBoolean(), core.string.Private)
+    broadcastOnly!: boolean
+}

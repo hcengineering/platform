@@ -91,7 +91,7 @@ export class PlatformWorker {
     this.userManager = new UserManager(db.collection<GithubUserRecord>('users'))
 
     const storageConfig = storageConfigFromEnv()
-    this.storageAdapter = buildStorageFromConfig(storageConfig, config.MongoURL)
+    this.storageAdapter = buildStorageFromConfig(storageConfig)
   }
 
   async close (): Promise<void> {
@@ -390,14 +390,57 @@ export class PlatformWorker {
         }
         const client = new TxOperations(platformClient, payload.accountId)
 
-        const personAuth = await client.findOne(github.class.GithubAuthentication, {
+        let personAuths = await client.findAll(github.class.GithubAuthentication, {
           attachedTo: payload.accountId
         })
-        if (personAuth !== undefined) {
-          if (revoke) {
+        if (personAuths.length > 1) {
+          for (const auth of personAuths.slice(1)) {
+            await client.remove(auth)
+          }
+          personAuths.length = 1
+        }
+
+        if (revoke) {
+          for (const personAuth of personAuths) {
             await client.remove(personAuth, Date.now(), payload.accountId)
-          } else {
-            await client.update<GithubAuthentication>(personAuth, update, false, Date.now(), payload.accountId)
+          }
+        } else {
+          if (personAuths.length > 0) {
+            await client.update<GithubAuthentication>(personAuths[0], update, false, Date.now(), payload.accountId)
+          } else if (dta !== undefined) {
+            const authId = await client.createDoc<GithubAuthentication>(
+              github.class.GithubAuthentication,
+              core.space.Workspace,
+              {
+                error: null,
+                authRequestTime: Date.now(),
+                createdAt: new Date(),
+                followers: 0,
+                following: 0,
+                nodeId: '',
+                updatedAt: new Date(),
+                url: '',
+                repositories: 0,
+                organizations: { totalCount: 0, nodes: [] },
+                closedIssues: 0,
+                openIssues: 0,
+                mergedPRs: 0,
+                openPRs: 0,
+                closedPRs: 0,
+                repositoryDiscussions: 0,
+                starredRepositories: 0,
+                ...update,
+                attachedTo: payload.accountId,
+                login: dta._id
+              },
+              undefined,
+              undefined,
+              payload.accountId
+            )
+
+            personAuths = await client.findAll(github.class.GithubAuthentication, {
+              _id: authId
+            })
           }
         }
 
@@ -454,9 +497,9 @@ export class PlatformWorker {
           }
         }
 
-        if (dta !== undefined && personAuth !== undefined) {
+        if (dta !== undefined && personAuths.length === 1) {
           try {
-            await syncUser(this.ctx, dta, personAuth, client, payload.accountId)
+            await syncUser(this.ctx, dta, personAuths[0], client, payload.accountId)
           } catch (err: any) {
             if (err.response?.data?.message === 'Bad credentials') {
               await this.revokeUserAuth(dta)

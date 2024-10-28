@@ -18,6 +18,7 @@ import {
   ApplyTxMiddleware,
   BroadcastMiddleware,
   ConfigurationMiddleware,
+  ConnectionMgrMiddleware,
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
   DBAdapterMiddleware,
@@ -71,7 +72,7 @@ import { createIndexStages } from './indexing'
 
 export function getTxAdapterFactory (
   metrics: MeasureContext,
-  dbUrls: string,
+  dbUrl: string,
   workspace: WorkspaceIdWithUrl,
   branding: Branding | null,
   opt: {
@@ -86,7 +87,7 @@ export function getTxAdapterFactory (
   },
   extensions?: Partial<DbConfiguration>
 ): DbAdapterFactory {
-  const conf = getConfig(metrics, dbUrls, workspace, branding, metrics, opt, extensions)
+  const conf = getConfig(metrics, dbUrl, workspace, branding, metrics, opt, extensions)
   const adapterName = conf.domains[DOMAIN_TX] ?? conf.defaultAdapter
   const adapter = conf.adapters[adapterName]
   return adapter.factory
@@ -98,7 +99,7 @@ export function getTxAdapterFactory (
 
 export function createServerPipeline (
   metrics: MeasureContext,
-  dbUrls: string,
+  dbUrl: string,
   model: Tx[],
   opt: {
     fullTextUrl: string
@@ -116,7 +117,7 @@ export function createServerPipeline (
   return (ctx, workspace, upgrade, broadcast, branding) => {
     const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
     const wsMetrics = metricsCtx.newChild('🧲 session', {})
-    const conf = getConfig(metrics, dbUrls, workspace, branding, wsMetrics, opt, extensions)
+    const conf = getConfig(metrics, dbUrl, workspace, branding, wsMetrics, opt, extensions)
 
     const middlewares: MiddlewareCreator[] = [
       LookupMiddleware.create,
@@ -129,6 +130,7 @@ export function createServerPipeline (
       ConfigurationMiddleware.create,
       LowLevelMiddleware.create,
       ContextNameMiddleware.create,
+      ConnectionMgrMiddleware.create,
       MarkDerivedEntryMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
       TxMiddleware.create, // Store tx into transaction domain
@@ -163,7 +165,7 @@ export function createServerPipeline (
 
 export function createBackupPipeline (
   metrics: MeasureContext,
-  dbUrls: string,
+  dbUrl: string,
   systemTx: Tx[],
   opt: {
     usePassedCtx?: boolean
@@ -177,7 +179,7 @@ export function createBackupPipeline (
     const wsMetrics = metricsCtx.newChild('🧲 backup', {})
     const conf = getConfig(
       metrics,
-      dbUrls,
+      dbUrl,
       workspace,
       branding,
       wsMetrics,
@@ -229,25 +231,19 @@ export function createBackupPipeline (
 export async function getServerPipeline (
   ctx: MeasureContext,
   model: Tx[],
-  mongodbUri: string | undefined,
   dbUrl: string,
   wsUrl: WorkspaceIdWithUrl
 ): Promise<{
     pipeline: Pipeline
     storageAdapter: StorageAdapter
   }> {
-  const dbUrls = mongodbUri !== undefined && mongodbUri !== dbUrl ? `${dbUrl};${mongodbUri}` : dbUrl
-
   const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-  if (mongodbUri === undefined) {
-    throw new Error('MONGO_URL is not provided')
-  }
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+  const storageAdapter = buildStorageFromConfig(storageConfig)
 
   const pipelineFactory = createServerPipeline(
     ctx,
-    dbUrls,
+    dbUrl,
     model,
     {
       externalStorage: storageAdapter,
@@ -291,7 +287,7 @@ export async function getServerPipeline (
 
 export function getConfig (
   metrics: MeasureContext,
-  dbUrls: string,
+  dbUrl: string,
   workspace: WorkspaceIdWithUrl,
   branding: Branding | null,
   ctx: MeasureContext,
@@ -309,7 +305,6 @@ export function getConfig (
 ): DbConfiguration {
   const metricsCtx = opt.usePassedCtx === true ? ctx : metrics
   const wsMetrics = metricsCtx.newChild('🧲 session', {})
-  const [dbUrl, mongoUrl] = dbUrls.split(';')
   const conf: DbConfiguration & FulltextDBConfiguration = {
     domains: {
       [DOMAIN_TX]: 'Tx',
@@ -324,11 +319,11 @@ export function getConfig (
     defaultAdapter: extensions?.defaultAdapter ?? 'Main',
     adapters: {
       Tx: {
-        factory: mongoUrl !== undefined ? createPostgresTxAdapter : createMongoTxAdapter,
+        factory: dbUrl.startsWith('postgresql') ? createPostgresTxAdapter : createMongoTxAdapter,
         url: dbUrl
       },
       Main: {
-        factory: mongoUrl !== undefined ? createPostgresAdapter : createMongoAdapter,
+        factory: dbUrl.startsWith('postgresql') ? createPostgresAdapter : createMongoAdapter,
         url: dbUrl
       },
       Null: {
@@ -341,7 +336,7 @@ export function getConfig (
       },
       StorageData: {
         factory: createStorageDataAdapter,
-        url: mongoUrl ?? dbUrl
+        url: ''
       },
       FullTextBlob: {
         factory: createElasticBackupDataAdapter,

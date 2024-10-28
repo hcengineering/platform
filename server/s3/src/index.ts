@@ -272,8 +272,7 @@ export class S3Service implements StorageAdapter {
                 provider: this.opt.name,
                 space: core.space.Configuration,
                 modifiedBy: core.account.ConfigUser,
-                modifiedOn: data.LastModified?.getTime() ?? 0,
-                storageId: _id
+                modifiedOn: data.LastModified?.getTime() ?? 0
               })
             }
           }
@@ -298,7 +297,6 @@ export class S3Service implements StorageAdapter {
         provider: '',
         _class: core.class.Blob,
         _id: this.stripPrefix(rootPrefix, objectName) as Ref<Blob>,
-        storageId: this.stripPrefix(rootPrefix, objectName),
         contentType: result.ContentType ?? '',
         size: result.ContentLength ?? 0,
         etag: result.ETag ?? '',

@@ -36,8 +36,7 @@ const serverCore = plugin(serverCoreId, {
     SearchPresenter: '' as Ref<Mixin<SearchPresenter>>
   },
   space: {
-    DocIndexState: '' as Ref<Space>,
-    TriggerState: '' as Ref<Space>
+    DocIndexState: '' as Ref<Space>
   },
   metadata: {
     FrontUrl: '' as Metadata<string>,

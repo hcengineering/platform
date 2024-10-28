@@ -96,12 +96,6 @@ export class MigrateClientImpl implements MigrationClient {
   }
 
   async deleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {
-    const ctx = new MeasureMetricsContext('deleteMany', {})
-    const docs = await this.lowLevel.rawFindAll(domain, query)
-    await this.lowLevel.clean(
-      ctx,
-      domain,
-      docs.map((d) => d._id)
-    )
+    await this.lowLevel.rawDeleteMany(domain, query)
   }
 }

@@ -15,8 +15,8 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
-import type { DocumentQuery } from './storage'
 import { CollaborativeDoc } from './collaboration'
+import type { DocumentQuery } from './storage'
 
 /**
  * @public
@@ -347,6 +347,14 @@ export const DOMAIN_MIGRATION = '_migrations' as Domain
 export const DOMAIN_TRANSIENT = 'transient' as Domain
 
 /**
+ * @public
+ */
+export interface TransientConfiguration extends Class<Doc> {
+  // If set will not store transient objects into memdb
+  broadcastOnly: boolean
+}
+
+/**
  * Special domain to access s3 blob data.
  * @public
  */
@@ -551,8 +559,6 @@ export interface Blob extends Doc {
   // Provider
   provider: string
   // A provider specific id
-  storageId: string
-  // A content type for blob
   contentType: string
   // A etag for blob
   etag: string

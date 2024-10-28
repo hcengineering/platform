@@ -133,18 +133,6 @@ describe('memdb', () => {
     })
     const objClass = (await model.findAll(core.class.Class, { _id: core.class.Obj }))[0] as any
     expect(objClass['test:mixin:TestMixin'].arr).toEqual(expect.arrayContaining(['hello']))
-
-    await ops.updateDoc(test.mixin.TestMixin, core.space.Model, core.class.Obj as unknown as Ref<TestMixin>, {
-      $pushMixin: {
-        $mixin: test.mixin.TestMixin,
-        values: {
-          arr: 'there'
-        }
-      }
-    })
-
-    const objClass2 = (await model.findAll(core.class.Class, { _id: core.class.Obj }))[0] as any
-    expect(objClass2['test:mixin:TestMixin'].arr).toEqual(expect.arrayContaining(['hello', 'there']))
   })
 
   it('should allow delete', async () => {

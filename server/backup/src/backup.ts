@@ -45,7 +45,7 @@ import { type StorageAdapter } from '@hcengineering/server-core'
 import { fullTextPushStagePrefix } from '@hcengineering/server-indexer'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
-import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs'
+import { createReadStream, createWriteStream, existsSync, mkdirSync, statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
 import { PassThrough } from 'node:stream'
@@ -178,7 +178,7 @@ async function loadDigest (
           result.delete(k as Ref<Doc>)
         }
       } catch (err: any) {
-        ctx.error('digest is broken, will do full backup for', { domain })
+        ctx.error('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
       }
     }
     // Stop if stop date is matched and provided
@@ -236,14 +236,10 @@ async function verifyDigest (
                   blobs.set(bname, { doc, buffer: undefined })
                 } else {
                   blobs.delete(bname)
-                  const blob = doc as Blob
-
-                  if (blob.size === bf.length) {
-                    validDocs.add(name as Ref<Doc>)
-                  }
+                  validDocs.add(bname as Ref<Doc>)
                 }
               } else {
-                validDocs.add(name as Ref<Doc>)
+                validDocs.add(bname as Ref<Doc>)
               }
               next()
             })
@@ -265,10 +261,7 @@ async function verifyDigest (
                   sz = bf.length
                 }
 
-                // If blob size matches doc size, remove from requiredDocs
-                if (sz === bf.length) {
-                  validDocs.add(name as Ref<Doc>)
-                }
+                validDocs.add(name as Ref<Doc>)
               }
               next()
             })
@@ -364,7 +357,7 @@ async function verifyDigest (
         }
       } catch (err: any) {
         digestToRemove.add(snapshot)
-        ctx.error('digest is broken, will do full backup for', { domain })
+        ctx.error('digest is broken, will do full backup for', { domain, err: err.message, snapshot })
         modified = true
       }
     }
@@ -1490,6 +1483,7 @@ export async function backupSize (storage: BackupStorage): Promise<void> {
  */
 export async function backupDownload (storage: BackupStorage, storeIn: string): Promise<void> {
   const infoFile = 'backup.json.gz'
+  const sizeFile = 'backup.size.gz'
 
   if (!(await storage.exists(infoFile))) {
     throw new Error(`${infoFile} should present to restore`)
@@ -1499,6 +1493,12 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
   const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
   console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
 
+  let sizeInfo: Record<string, number> = {}
+  if (await storage.exists(sizeFile)) {
+    sizeInfo = JSON.parse(gunzipSync(await storage.loadFile(sizeFile)).toString())
+  }
+  console.log('workspace:', backupInfo.workspace ?? '', backupInfo.version)
+
   const addFileSize = async (file: string | undefined | null, force: boolean = false): Promise<void> => {
     if (file != null) {
       const target = join(storeIn, file)
@@ -1506,8 +1506,11 @@ export async function backupDownload (storage: BackupStorage, storeIn: string): 
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true })
       }
-      if (!existsSync(target) || force) {
-        const fileSize = await storage.stat(file)
+
+      const serverSize: number | undefined = sizeInfo[file]
+
+      if (!existsSync(target) || force || (serverSize !== undefined && serverSize !== statSync(target).size)) {
+        const fileSize = serverSize ?? (await storage.stat(file))
         console.log('downloading', file, fileSize)
         const readStream = await storage.load(file)
         const outp = createWriteStream(target)
@@ -1781,7 +1784,7 @@ export async function restore (
 
       if (sendSize > dataUploadSize || (doc === undefined && docs.length > 0)) {
         totalSend += docs.length
-        ctx.info('upload', {
+        ctx.info('upload-' + c, {
           docs: docs.length,
           totalSend,
           from: docsToAdd.size + totalSend,
@@ -1853,7 +1856,7 @@ export async function restore (
                   chunks.push(chunk)
                 })
                 stream.on('end', () => {
-                  const bf = Buffer.concat(chunks)
+                  const bf = Buffer.concat(chunks as any)
                   const doc = JSON.parse(bf.toString()) as Doc
                   if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
                     const data = migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
@@ -2208,7 +2211,7 @@ export async function compactBackup (
                     chunks.push(chunk)
                   })
                   stream.on('end', () => {
-                    const bf = Buffer.concat(chunks)
+                    const bf = Buffer.concat(chunks as any)
                     const doc = JSON.parse(bf.toString()) as Doc
                     if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
                       const d = blobs.get(bname)
@@ -2311,7 +2314,6 @@ function migradeBlobData (blob: Blob, etag: string): string {
   if (blob._class === 'core:class:BlobData') {
     const bd = blob as unknown as BlobData
     blob.contentType = blob.contentType ?? bd.type
-    blob.storageId = bd._id
     blob.etag = etag
     blob._class = core.class.Blob
     delete (blob as any).type

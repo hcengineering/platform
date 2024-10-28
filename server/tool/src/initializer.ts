@@ -272,7 +272,7 @@ export class WorkspaceInitializer {
     const json = parseMessageMarkdown(data ?? '', this.imageUrl)
     const yDoc = jsonToYDocNoSchema(json, field)
 
-    await saveCollaborativeDoc(this.storageAdapter, this.wsUrl, collabId, yDoc, this.ctx)
+    await saveCollaborativeDoc(this.ctx, this.storageAdapter, this.wsUrl, collabId, yDoc)
     return collabId
   }
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, {
+import {
   Class,
   Doc,
   DocumentQuery,
@@ -28,27 +28,20 @@ import core, {
   ModelDb,
   Ref,
   StorageIterator,
+  toFindResult,
   Tx,
   TxResult,
   WorkspaceId,
   type Blob
 } from '@hcengineering/core'
-import { createMongoAdapter } from '@hcengineering/mongo'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import {
-  DbAdapter,
-  DbAdapterHandler,
-  StorageAdapter,
-  type DomainHelperOperations,
-  type StorageAdapterEx
-} from '@hcengineering/server-core'
+import { DbAdapter, DbAdapterHandler, StorageAdapter, type StorageAdapterEx } from '@hcengineering/server-core'
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,
-    readonly client: StorageAdapter, // Should not be closed
-    readonly ctx: MeasureContext,
-    readonly blobAdapter: DbAdapter // A real blob adapter for Blob documents.
+    readonly client: StorageAdapterEx, // Should not be closed
+    readonly ctx: MeasureContext
   ) {}
 
   async traverse<T extends Doc>(
@@ -56,23 +49,28 @@ class StorageBlobAdapter implements DbAdapter {
     query: DocumentQuery<T>,
     options?: Pick<FindOptions<T>, 'sort' | 'limit' | 'projection'>
   ): Promise<Iterator<T>> {
-    return await this.blobAdapter.traverse(domain, query, options)
+    return {
+      next: async () => {
+        return toFindResult<T>([])
+      },
+      close: async () => {}
+    }
   }
 
   init?: ((domains?: string[], excludeDomains?: string[]) => Promise<void>) | undefined
   on?: ((handler: DbAdapterHandler) => void) | undefined
 
   async rawFindAll<T extends Doc>(domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
-    return await this.blobAdapter.rawFindAll(domain, query, options)
+    return []
   }
 
   async rawUpdate<T extends Doc>(
     domain: Domain,
     query: DocumentQuery<T>,
     operations: DocumentUpdate<T>
-  ): Promise<void> {
-    await this.blobAdapter.rawUpdate(domain, query, operations)
-  }
+  ): Promise<void> {}
+
+  async rawDeleteMany<T extends Doc>(domain: Domain, query: DocumentQuery<T>): Promise<void> {}
 
   async findAll<T extends Doc>(
     ctx: MeasureContext,
@@ -80,15 +78,11 @@ class StorageBlobAdapter implements DbAdapter {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return await this.blobAdapter.findAll(ctx, _class, query, options)
-  }
-
-  helper (): DomainHelperOperations {
-    return this.blobAdapter.helper()
+    return toFindResult([])
   }
 
   async groupBy<T>(ctx: MeasureContext, domain: Domain, field: string): Promise<Set<T>> {
-    return await this.blobAdapter.groupBy(ctx, domain, field)
+    return new Set()
   }
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
@@ -98,53 +92,32 @@ class StorageBlobAdapter implements DbAdapter {
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp[], keepPattern: RegExp[]): Promise<void> {}
 
-  async close (): Promise<void> {
-    await this.blobAdapter.close()
-  }
+  async close (): Promise<void> {}
 
   find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
-    return (this.client as StorageAdapterEx).find(ctx, this.workspaceId)
+    return this.client.find(ctx, this.workspaceId)
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.blobAdapter.load(ctx, domain, docs)
+    const blobs: Blob[] = []
+    for (const d of docs) {
+      const bb = await this.client.stat(ctx, this.workspaceId, d)
+      if (bb !== undefined) {
+        blobs.push(bb)
+      }
+    }
+    return blobs
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    // We need to update docs to have provider === defualt one.
-    if ('adapters' in this.client) {
-      const toUpload: Doc[] = []
-      const adapterEx = this.client as StorageAdapterEx
-      for (const d of docs) {
-        // We need sync stats to be sure all info are correct from storage.
-        if (d._class === core.class.Blob) {
-          const blob = d as Blob
-          const blobStat = await this.client.stat(ctx, this.workspaceId, blob.storageId)
-          if (blobStat !== undefined) {
-            blob.provider = adapterEx.defaultAdapter
-            blob.etag = blobStat.etag
-            blob.contentType = blobStat.contentType
-            blob.version = blobStat.version
-            blob.size = blobStat.size
-            delete (blob as any).downloadUrl
-            delete (blob as any).downloadUrlExpire
-
-            toUpload.push(blob)
-          }
-        }
-      }
-      docs = toUpload
-    }
-    await this.blobAdapter.upload(ctx, domain, docs)
+    // Nothing to do
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await Promise.all([this.blobAdapter.clean(ctx, domain, docs), this.client.remove(this.ctx, this.workspaceId, docs)])
+    await this.client.remove(this.ctx, this.workspaceId, docs)
   }
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
-    await this.blobAdapter.update(ctx, domain, operations)
-  }
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
 }
 
 /**
@@ -163,17 +136,5 @@ export async function createStorageDataAdapter (
   }
   // We need to create bucket if it doesn't exist
   await storage.make(ctx, workspaceId)
-
-  const storageEx = 'adapters' in storage ? (storage as StorageAdapterEx) : undefined
-
-  const blobAdapter = await createMongoAdapter(ctx, hierarchy, url, workspaceId, modelDb, undefined, {
-    calculateHash: (d) => {
-      const blob = d as Blob
-      if (storageEx?.adapters !== undefined && storageEx.adapters.get(blob.provider) === undefined) {
-        return { digest: blob.etag + '_' + storageEx.defaultAdapter, size: blob.size }
-      }
-      return { digest: blob.etag, size: blob.size }
-    }
-  })
-  return new StorageBlobAdapter(workspaceId, storage, ctx, blobAdapter)
+  return new StorageBlobAdapter(workspaceId, storage as StorageAdapterEx, ctx)
 }
