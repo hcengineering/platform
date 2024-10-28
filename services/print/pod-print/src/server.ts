@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
-import { StorageConfiguration } from '@hcengineering/server-core'
+import { generateId } from '@hcengineering/core'
+import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
@@ -112,7 +112,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
 
 export function createServer (storageConfig: StorageConfiguration): { app: Express, close: () => void } {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = new MeasureMetricsContext('print', {})
+  const measureCtx = initStatisticsContext('print', {})
 
   const app = express()
   app.use(cors())

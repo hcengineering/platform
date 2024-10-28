@@ -109,7 +109,7 @@ describe('server', () => {
   }
 
   afterAll(async () => {
-    await cancelOp()
+    await cancelOp.shutdown()
   })
 
   it('should connect to server', (done) => {
@@ -278,7 +278,7 @@ describe('server', () => {
       console.error(err)
     } finally {
       console.log('calling shutdown')
-      await cancelOp()
+      await cancelOp.shutdown()
     }
   })
 })

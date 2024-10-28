@@ -11,7 +11,16 @@ import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
-import serverCore, { type StorageConfiguration, loadBrandingMap } from '@hcengineering/server-core'
+import serverCore, {
+  type ConnectionSocket,
+  type Session,
+  type StorageConfiguration,
+  type UserStatistics,
+  type Workspace,
+  type WorkspaceStatistics,
+  initStatisticsContext,
+  loadBrandingMap
+} from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverTelegram from '@hcengineering/server-telegram'
@@ -20,14 +29,19 @@ import { startHttpServer } from '@hcengineering/server-ws'
 import { join } from 'path'
 import { start } from '.'
 import { profileStart, profileStop } from './inspector'
-import { getMetricsContext } from './metrics'
 
 configureAnalytics(process.env.SENTRY_DSN, {})
 Analytics.setTag('application', 'transactor')
 
+let getUsers: () => WorkspaceStatistics[] = () => {
+  return []
+}
 // Force create server metrics context with proper logging
-getMetricsContext(
-  () =>
+const metricsContext = initStatisticsContext('transactor', {
+  getUsers: (): WorkspaceStatistics[] => {
+    return getUsers()
+  },
+  factory: () =>
     new MeasureMetricsContext(
       'server',
       {},
@@ -38,7 +52,7 @@ getMetricsContext(
         enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
       })
     )
-)
+})
 
 setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 
@@ -59,7 +73,7 @@ setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
 
-const shutdown = start(config.dbUrl, {
+const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fullTextUrl: config.elasticUrl,
   storageConfig,
   rekoniUrl: config.rekoniUrl,
@@ -76,6 +90,31 @@ const shutdown = start(config.dbUrl, {
   },
   mongoUrl: config.mongoUrl
 })
+
+const entryToUserStats = (session: Session, socket: ConnectionSocket): UserStatistics => {
+  return {
+    current: session.current,
+    mins5: session.mins5,
+    userId: session.getUser(),
+    sessionId: socket.id,
+    total: session.total,
+    data: socket.data
+  }
+}
+
+const workspaceToWorkspaceStats = (ws: Workspace): WorkspaceStatistics => {
+  return {
+    clientsTotal: new Set(Array.from(ws.sessions.values()).map((it) => it.session.getUser())).size,
+    sessionsTotal: ws.sessions.size,
+    workspaceName: ws.workspaceName,
+    wsId: ws.workspaceId.name,
+    sessions: Array.from(ws.sessions.values()).map((it) => entryToUserStats(it.session, it.socket))
+  }
+}
+
+getUsers = () => {
+  return Array.from(sessionManager.workspaces.values()).map((it) => workspaceToWorkspaceStats(it))
+}
 
 const close = (): void => {
   console.trace('Exiting from server')

@@ -14,17 +14,17 @@
 //
 
 import { setMetadata } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
 import serverAiBot from '@hcengineering/server-ai-bot'
-import { MeasureMetricsContext } from '@hcengineering/core'
 import serverClient from '@hcengineering/server-client'
+import serverToken from '@hcengineering/server-token'
 
-import config from './config'
-import { closeDB, DbStorage, getDB } from './storage'
-import { AIBotController } from './controller'
+import { initStatisticsContext } from '@hcengineering/server-core'
 import { createBotAccount } from './account'
+import config from './config'
+import { AIBotController } from './controller'
 import { registerLoaders } from './loaders'
 import { createServer, listen } from './server'
+import { closeDB, DbStorage, getDB } from './storage'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -33,7 +33,7 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
 
   registerLoaders()
-  const ctx = new MeasureMetricsContext('ai-bot-service', {})
+  const ctx = initStatisticsContext('ai-bot-service', {})
 
   ctx.info('AI Bot Service started', { firstName: config.FirstName, lastName: config.LastName })
 
