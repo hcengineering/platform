@@ -112,17 +112,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
     this._helper = new DBCollectionHelper(this.client, this.workspaceId)
   }
 
-  protected async withConnection (
+  protected async withConnection<T>(
     ctx: MeasureContext,
-    operation: (client: postgres.ReservedSql) => Promise<any>
-  ): Promise<void> {
+    operation: (client: postgres.ReservedSql) => Promise<T>
+  ): Promise<T> {
     const connection = await this.getConnection(ctx)
     if (connection !== undefined) {
-      await operation(connection)
+      return await operation(connection)
     } else {
       const client = await this.client.reserve()
       try {
-        await operation(client)
+        return await operation(client)
       } finally {
         client.release()
       }
@@ -1419,7 +1419,7 @@ class PostgresAdapter extends PostgresAdapterBase {
           'update with operations',
           { operations: JSON.stringify(Object.keys(tx.operations)) },
           async (ctx) => {
-            await this.withConnection(ctx, async (connection) => {
+            return await this.withConnection(ctx, async (connection) => {
               await this.retryTxn(connection, async (client) => {
                 doc = await this.findDoc(ctx, client, tx.objectClass, tx.objectId, true)
                 if (doc === undefined) return {}
@@ -1441,8 +1441,8 @@ class PostgresAdapter extends PostgresAdapterBase {
               if (tx.retrieve === true && doc !== undefined) {
                 return { object: doc }
               }
+              return {}
             })
-            return {}
           }
         )
       } else {
