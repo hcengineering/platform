@@ -79,7 +79,6 @@ import {
   isDataField,
   isOwner,
   type JoinProps,
-  Mutex,
   parseDoc,
   parseDocWithProjection,
   parseUpdate,
@@ -90,16 +89,36 @@ import {
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
-  protected readonly mutex = new Mutex()
   protected readonly connections = new Map<string, postgres.ReservedSql>()
 
   protected readonly retryTxn = async (
-    connection: postgres.ReservedSql,
+    client: postgres.ReservedSql,
     fn: (client: postgres.ReservedSql) => Promise<any>
   ): Promise<void> => {
-    await this.mutex.runExclusive(async () => {
-      await this.processOps(connection, fn)
-    })
+    const backoffInterval = 100 // millis
+    const maxTries = 5
+    let tries = 0
+
+    while (true) {
+      await client.unsafe('BEGIN;')
+      tries++
+
+      try {
+        const result = await fn(client)
+        await client.unsafe('COMMIT;')
+        return result
+      } catch (err: any) {
+        await client.unsafe('ROLLBACK;')
+
+        if (err.code !== '40001' || tries === maxTries) {
+          throw err
+        } else {
+          console.log('Transaction failed. Retrying.')
+          console.log(err.message)
+          await new Promise((resolve) => setTimeout(resolve, tries * backoffInterval))
+        }
+      }
+    }
   }
 
   constructor (
@@ -145,36 +164,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
     const client = await this.client.reserve()
     this.connections.set(ctx.id, client)
     return client
-  }
-
-  private async processOps (
-    client: postgres.ReservedSql,
-    operation: (client: postgres.ReservedSql) => Promise<any>
-  ): Promise<void> {
-    const backoffInterval = 100 // millis
-    const maxTries = 5
-    let tries = 0
-
-    while (true) {
-      await client.unsafe('BEGIN;')
-      tries++
-
-      try {
-        const result = await operation(client)
-        await client.unsafe('COMMIT;')
-        return result
-      } catch (err: any) {
-        await client.unsafe('ROLLBACK;')
-
-        if (err.code !== '40001' || tries === maxTries) {
-          throw err
-        } else {
-          console.log('Transaction failed. Retrying.')
-          console.log(err.message)
-          await new Promise((resolve) => setTimeout(resolve, tries * backoffInterval))
-        }
-      }
-    }
   }
 
   async traverse<T extends Doc>(
