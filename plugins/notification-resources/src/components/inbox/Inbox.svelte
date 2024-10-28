@@ -308,18 +308,6 @@
     }
   }
 
-  function filterNotifications (
-    filter: InboxNotificationsFilter,
-    notifications: InboxNotification[]
-  ): InboxNotification[] {
-    switch (filter) {
-      case 'unread':
-        return notifications.filter(({ isViewed }) => !isViewed)
-      case 'all':
-        return notifications
-    }
-  }
-
   function filterData (
     filter: InboxNotificationsFilter,
     selectedTabId: string | number,
@@ -332,14 +320,16 @@
     const result = new Map()
 
     for (const [key, notifications] of inboxData) {
-      const resNotifications = filterNotifications(filter, notifications)
+      if (filter === 'unread' && key !== selectedContext?._id && !notifications.some(({ isViewed }) => !isViewed)) {
+        continue
+      }
 
-      if (resNotifications.length === 0) {
+      if (notifications.length === 0) {
         continue
       }
 
       if (selectedTabId === allTab.id) {
-        result.set(key, resNotifications)
+        result.set(key, notifications)
         continue
       }
 
@@ -353,9 +343,9 @@
         selectedTabId === activity.class.ActivityMessage &&
         hierarchy.isDerived(context.objectClass, activity.class.ActivityMessage)
       ) {
-        result.set(key, resNotifications)
+        result.set(key, notifications)
       } else if (context.objectClass === selectedTabId) {
-        result.set(key, resNotifications)
+        result.set(key, notifications)
       }
     }
 
@@ -371,11 +361,13 @@
   function onArchiveToggled (): void {
     showArchive = !showArchive
     selectedTabId = allTab.id
+    void selectContext(undefined)
   }
 
   function onUnreadsToggled (): void {
     filter = filter === 'unread' ? 'all' : 'unread'
     localStorage.setItem('inbox-filter', filter)
+    void selectContext(undefined)
   }
 
   $: items = [
