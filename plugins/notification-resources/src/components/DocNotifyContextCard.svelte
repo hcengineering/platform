@@ -170,7 +170,6 @@
     isActionMenuOpened = false
   }
 
-
   async function checkContext (): Promise<void> {
     dispatch('archive')
   }

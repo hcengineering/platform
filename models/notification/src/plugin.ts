@@ -17,9 +17,9 @@
 import { type Doc, type Ref } from '@hcengineering/core'
 import notification, { notificationId } from '@hcengineering/notification'
 import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
-import { type Application } from '@hcengineering/workbench'
+import { type Application, type LocationData } from '@hcengineering/workbench'
 import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 
 export default mergeIds(notificationId, notification, {
@@ -53,7 +53,8 @@ export default mergeIds(notificationId, notification, {
     HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanReadNotifyContext: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    CanUnReadNotifyContext: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    CanUnReadNotifyContext: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    LocationDataResolver: '' as Resource<(loc: Location) => Promise<LocationData>>
   },
   category: {
     Notification: '' as Ref<ActionCategory>

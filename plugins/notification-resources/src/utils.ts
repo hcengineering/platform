@@ -62,9 +62,10 @@ import {
   type Location,
   type ResolvedLocation
 } from '@hcengineering/ui'
-import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
-import { getObjectLinkId } from '@hcengineering/view-resources'
+import view, { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
+import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
+import type { LocationData } from '@hcengineering/workbench'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
@@ -855,4 +856,21 @@ export function isNotificationAllowed (type: BaseNotificationType, providerId: R
   }
 
   return type.defaultEnabled
+}
+
+export async function locationDataResolver (loc: Location): Promise<LocationData> {
+  const client = getClient()
+
+  try {
+    const [id, _class] = decodeObjectURI(loc.path[3])
+    const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+    const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
+
+    return {
+      objectId: _id,
+      objectClass: _class
+    }
+  } catch (e) {
+    return {}
+  }
 }

@@ -392,6 +392,7 @@ export function createModel (builder: Builder): void {
     {
       label: notification.string.Inbox,
       icon: notification.icon.Notifications,
+      locationDataResolver: notification.function.LocationDataResolver,
       alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,
