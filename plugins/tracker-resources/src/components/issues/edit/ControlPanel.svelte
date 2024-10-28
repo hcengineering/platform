@@ -156,7 +156,7 @@
   <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor value={issue} size={'medium'} shouldShowLabel isEditable={!readonly} />
+  <PriorityEditor value={issue} size={'medium'} shouldShowLabel isEditable={!readonly} width={'100%'} />
 
   <span class="labelOnPanel">
     <Label label={core.string.CreatedBy} />
