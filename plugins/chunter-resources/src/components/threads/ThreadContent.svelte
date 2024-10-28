@@ -13,6 +13,7 @@
 
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let message: ActivityMessage
+  export let autofocus = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -65,6 +66,7 @@
       object={message}
       {channel}
       provider={dataProvider}
+      {autofocus}
       fullHeight={false}
       fixedInput={false}
     >

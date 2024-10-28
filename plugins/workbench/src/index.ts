@@ -32,6 +32,8 @@ import { ViewAction } from '@hcengineering/view'
  */
 
 export interface LocationData {
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
   name?: string
   nameIntl?: IntlString
   icon?: Asset
@@ -93,6 +95,8 @@ export interface WidgetTab {
   widget?: Ref<Widget>
   isPinned?: boolean
   allowedPath?: string
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
   data?: Record<string, any>
 }
 
@@ -258,7 +262,8 @@ export default plugin(workbenchId, {
   },
   function: {
     CreateWidgetTab: '' as Resource<(widget: Widget, tab: WidgetTab, newTab: boolean) => Promise<void>>,
-    CloseWidgetTab: '' as Resource<(widget: Widget, tab: string) => Promise<void>>
+    CloseWidgetTab: '' as Resource<(widget: Widget, tab: string) => Promise<void>>,
+    GetSidebarObject: '' as Resource<() => Partial<Pick<Doc, '_id' | '_class'>>>
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

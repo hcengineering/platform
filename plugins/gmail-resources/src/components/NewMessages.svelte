@@ -96,7 +96,7 @@
           .filter((m) => m.length)
       })
       Analytics.handleEvent(GmailEvents.SentEmail, { to: channel.value })
-      await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
+      await inboxClient.forceReadDoc(channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,

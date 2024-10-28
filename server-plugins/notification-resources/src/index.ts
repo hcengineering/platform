@@ -63,7 +63,6 @@ import notification, {
   InboxNotification,
   MentionInboxNotification,
   notificationId,
-  NotificationStatus,
   NotificationType,
   PushData,
   PushSubscription
@@ -545,7 +544,6 @@ export async function createPushFromInbox (
   )
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, receiver.space, {
     user: receiver._id,
-    status: NotificationStatus.New,
     title,
     body,
     senderId: sender._id,

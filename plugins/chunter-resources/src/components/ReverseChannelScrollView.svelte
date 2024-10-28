@@ -401,9 +401,7 @@
       scrollToBottom()
     }
 
-    const op = client.apply(undefined, 'chunter.scrollDown')
-    await inboxClient.readDoc(op, doc._id)
-    await op.commit()
+    await inboxClient.readDoc(doc._id)
   }
 
   let forceRead = false
@@ -420,9 +418,7 @@
 
     if (unViewed.length === 0) {
       forceRead = true
-      const op = client.apply(undefined, 'chunter.forceReadContext', true)
-      await inboxClient.readDoc(op, object._id)
-      await op.commit()
+      await inboxClient.readDoc(object._id)
     }
   }
 
@@ -643,7 +639,7 @@
       <HistoryLoading isLoading={$isLoadingMoreStore} />
     {/if}
     {#if !fixedInput}
-      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} />
+      <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
     {/if}
   </BaseChatScroller>
   {#if !isThread && isLatestMessageButtonVisible}
@@ -660,7 +656,7 @@
 </div>
 
 {#if fixedInput}
-  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus}/>
+  <ChannelInput {object} {readonly} boundary={scrollDiv} {collection} {isThread} {autofocus} />
 {/if}
 
 <style lang="scss">

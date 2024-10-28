@@ -722,7 +722,12 @@ export class LiveQuery implements WithTx, Client {
     return {}
   }
 
-  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>, bulkUpdate = false): Promise<void> {
+  private async handleDocUpdate (
+    q: Query,
+    tx: TxUpdateDoc<Doc>,
+    docCache: Map<string, Doc>,
+    bulkUpdate = false
+  ): Promise<void> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -762,7 +767,11 @@ export class LiveQuery implements WithTx, Client {
     await this.handleDocUpdateLookup(q, tx, bulkUpdate)
   }
 
-  private async handleDocUpdateLookup (q: Query, tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>, bulkUpdate = false): Promise<void> {
+  private async handleDocUpdateLookup (
+    q: Query,
+    tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>,
+    bulkUpdate = false
+  ): Promise<void> {
     if (q.options?.lookup === undefined) return
     const lookup = q.options.lookup
     if (q.result instanceof Promise) {
@@ -1005,7 +1014,13 @@ export class LiveQuery implements WithTx, Client {
     return {}
   }
 
-  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true, docCache: Map<string, Doc>, bulkUpdate = false): Promise<void> {
+  private async handleDocAdd (
+    q: Query,
+    doc: Doc,
+    handleLookup = true,
+    docCache: Map<string, Doc>,
+    bulkUpdate = false
+  ): Promise<void> {
     if (this.match(q, doc, q.options?.lookup !== undefined)) {
       let needPush = true
       if (q.result instanceof Promise) {
@@ -1305,7 +1320,7 @@ export class LiveQuery implements WithTx, Client {
     if (this.queriesToUpdate.size > 0) {
       const copy = new Map(this.queriesToUpdate)
       this.queriesToUpdate.clear()
-      await Promise.all(Array.from(copy.values()).map(q => this.callback(q)))
+      await Promise.all(Array.from(copy.values()).map((q) => this.callback(q)))
     }
     return result
   }

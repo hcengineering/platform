@@ -22,7 +22,7 @@
 
   export let _id: Ref<ChunterSpace>
   export let _class: Ref<Class<ChunterSpace>>
-  export let autofocus =  true
+  export let autofocus = true
 
   const objectQuery = createQuery()
   const inboxClient = InboxNotificationsClientImpl.getClient()

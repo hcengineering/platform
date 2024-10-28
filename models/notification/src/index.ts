@@ -33,7 +33,8 @@ import {
   type Space,
   type Timestamp,
   type Tx,
-  type TxCUD
+  type TxCUD,
+  DOMAIN_TRANSIENT
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -75,7 +76,6 @@ import {
   type NotificationProvider,
   type NotificationProviderDefaults,
   type NotificationProviderSetting,
-  type NotificationStatus,
   type NotificationTemplate,
   type NotificationType,
   type NotificationTypeSetting,
@@ -92,7 +92,7 @@ export { notificationId, DOMAIN_USER_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_DOC_NOT
 export { notificationOperation } from './migration'
 export { notification as default }
 
-@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_USER_NOTIFY)
+@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_TRANSIENT)
 export class TBrowserNotification extends TDoc implements BrowserNotification {
   senderId?: Ref<Account> | undefined
   tag!: Ref<Doc<Space>>
@@ -100,7 +100,6 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
   body!: string
   onClickLocation?: Location | undefined
   user!: Ref<Account>
-  status!: NotificationStatus
   messageId?: Ref<ActivityMessage>
   messageClass?: Ref<Class<ActivityMessage>>
   objectId!: Ref<Doc>
@@ -367,6 +366,10 @@ export function createModel (builder: Builder): void {
     TNotificationTypeSetting,
     TNotificationProviderDefaults
   )
+
+  builder.mixin(notification.class.BrowserNotification, core.class.Class, core.mixin.TransientConfiguration, {
+    broadcastOnly: true
+  })
 
   builder.createDoc(
     setting.class.SettingsCategory,

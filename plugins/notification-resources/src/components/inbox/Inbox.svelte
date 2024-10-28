@@ -192,7 +192,7 @@
 
     if (thread !== undefined) {
       const fn = await getResource(chunter.function.OpenThreadInSidebar)
-      void fn(thread, undefined, undefined, selectedMessageId)
+      void fn(thread, undefined, undefined, selectedMessageId, { autofocus: false })
     }
 
     if (selectedMessageId !== undefined) {
@@ -453,7 +453,7 @@
           autofocus: false,
           context: selectedContext,
           activityMessage: selectedMessage,
-          props: { context: selectedContext }
+          props: { context: selectedContext, autofocus: false }
         }}
         on:close={() => selectContext(undefined)}
       />

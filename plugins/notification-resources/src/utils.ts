@@ -38,7 +38,6 @@ import core, {
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  NotificationStatus,
   notificationId,
   type ActivityInboxNotification,
   type BaseNotificationType,
@@ -183,7 +182,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     return
   }
 
-  const ops = getClient().apply(undefined, 'archiveContextNotifications')
+  const ops = getClient().apply(undefined, 'archiveContextNotifications', true)
 
   try {
     const notifications = await ops.findAll(
@@ -209,7 +208,7 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     return
   }
 
-  const ops = getClient().apply(undefined, 'unarchiveContextNotifications')
+  const ops = getClient().apply(undefined, 'unarchiveContextNotifications', true)
 
   try {
     const notifications = await ops.findAll(
@@ -790,11 +789,10 @@ export async function subscribePush (): Promise<boolean> {
 async function cleanTag (_id: Ref<Doc>): Promise<void> {
   const client = getClient()
   const notifications = await client.findAll(notification.class.BrowserNotification, {
-    tag: _id,
-    status: NotificationStatus.New
+    tag: _id
   })
   for (const notification of notifications) {
-    await client.update(notification, { status: NotificationStatus.Notified })
+    await client.remove(notification)
   }
 }
 

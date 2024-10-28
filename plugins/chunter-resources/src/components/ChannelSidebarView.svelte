@@ -97,6 +97,8 @@
 {#if threadId && visible}
   <div class="thread" style:height style:width>
     <ThreadView
+      {...tab.data.props}
+      autofocus={false}
       _id={threadId}
       {selectedMessageId}
       syncLocation={false}

@@ -44,7 +44,7 @@
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 
   const client = getClient()
@@ -57,7 +57,7 @@
       const prev = lastId
       lastId = _id
       if (prev !== undefined) {
-        void inboxClient.then((client) => client.readDoc(getClient(), prev))
+        void inboxClient.then((client) => client.readDoc(prev))
       }
       query.query(recruit.class.Vacancy, { _id }, (result) => {
         object = result[0] as Required<Vacancy>

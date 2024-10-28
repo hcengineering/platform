@@ -31,6 +31,7 @@
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   export let showHeader: boolean = true
   export let syncLocation = true
+  export let autofocus = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -143,7 +144,7 @@
 
 {#if message}
   {#key _id}
-    <ThreadContent bind:selectedMessageId {message} />
+    <ThreadContent bind:selectedMessageId {message} {autofocus} />
   {/key}
 {:else if isLoading}
   <Loading />

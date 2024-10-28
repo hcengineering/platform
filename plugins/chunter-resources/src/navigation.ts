@@ -269,6 +269,8 @@ export async function openChannelInSidebar (
 
   const tab: ChatWidgetTab = {
     id: `chunter_${_id}`,
+    objectId: object._id,
+    objectClass: object._class,
     name,
     icon: getChannelClassIcon(object),
     iconComponent: isChannel ? undefined : iconMixin?.component,
@@ -304,6 +306,8 @@ export async function openThreadInSidebarChannel (
 ): Promise<void> {
   const newTab: ChatWidgetTab = {
     ...tab,
+    objectId: message._id,
+    objectClass: message._class,
     name: await translate(chunter.string.ThreadIn, { name: tab.data.channelName }),
     data: { ...tab.data, thread: message._id }
   }
@@ -314,10 +318,12 @@ export async function closeThreadInSidebarChannel (widget: Widget, tab: ChatWidg
   const thread = tab.allowedPath !== undefined ? tab.data.thread : undefined
   const newTab: ChatWidgetTab = {
     ...tab,
+    objectId: tab.data._id,
+    objectClass: tab.data._class,
     id: tab.id.startsWith('thread_') ? generateId() : tab.id,
     name: tab.data.channelName,
     allowedPath: undefined,
-    data: { ...tab.data, thread: undefined }
+    data: { ...tab.data, thread: undefined, props: undefined }
   }
 
   createWidgetTab(widget, newTab)
@@ -330,7 +336,8 @@ export async function openThreadInSidebar (
   _id: Ref<ActivityMessage>,
   msg?: ActivityMessage,
   doc?: Doc,
-  selectedMessageId?: Ref<ActivityMessage>
+  selectedMessageId?: Ref<ActivityMessage>,
+  props?: Record<string, any>
 ): Promise<void> {
   const client = getClient()
 
@@ -371,13 +378,16 @@ export async function openThreadInSidebar (
     id: 'thread_' + _id,
     name: tabName,
     icon: chunter.icon.Thread,
+    objectId: message._id,
+    objectClass: message._class,
     allowedPath,
     data: {
       _id: object?._id,
       _class: object?._class,
       thread: message._id,
       selectedMessageId,
-      channelName: name
+      channelName: name,
+      props
     }
   }
   createWidgetTab(widget, tab, true)
@@ -461,6 +471,8 @@ export async function locationDataResolver (loc: Location): Promise<LocationData
   const name = (await getChannelName(_id, _class, object)) ?? (await translate(titleIntl, {}))
 
   return {
+    objectId: object._id,
+    objectClass: object._class,
     name,
     icon: chunter.icon.Chunter,
     iconComponent: isChunterSpace ? iconMixin?.component : undefined,
