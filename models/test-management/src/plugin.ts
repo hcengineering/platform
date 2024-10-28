@@ -15,7 +15,7 @@
 
 import '@hcengineering/controlled-documents'
 import { testManagementId } from '@hcengineering/test-management'
-import testManganement from '@hcengineering/test-management/src/plugin'
+import testManganement from '@hcengineering/test-management-resources/src/plugin'
 import type { Doc, Ref, Role } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -30,7 +30,8 @@ export default mergeIds(testManagementId, testManganement, {
     TestCasePresenter: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
     ProjectSpacePresenter: '' as AnyComponent,
-    TestSuitePresenter: '' as AnyComponent
+    TestSuitePresenter: '' as AnyComponent,
+	NewProductHeader: '' as AnyComponent
   },
   function: {},
   role: {

@@ -13,8 +13,7 @@
 // limitations under the License.
 -->
 
-<table class="testCase">
-</table>
+<table class="testCase"></table>
 
 <style lang="scss">
   .testCase {
