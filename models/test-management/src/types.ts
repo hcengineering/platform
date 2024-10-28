@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import type { Person } from '@hcengineering/contact'
-import { TProject } from '@hcengineering/model-task'
+import type { Employee } from '@hcengineering/contact'
+import task, { TProject } from '@hcengineering/model-task'
 import type {
   TestCase,
   TestSuite,
@@ -28,7 +28,18 @@ import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { IndexKind } from '@hcengineering/core'
 import type { Domain, Type, CollectionSize, Ref } from '@hcengineering/core'
-import { Model, Prop, TypeRef, UX, TypeMarkup, Index, TypeString, Collection, ReadOnly, TypeNumber } from '@hcengineering/model'
+import {
+  Model,
+  Prop,
+  TypeRef,
+  UX,
+  TypeMarkup,
+  Index,
+  TypeString,
+  Collection,
+  ReadOnly,
+  TypeNumber
+} from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TType } from '@hcengineering/model-core'
 
@@ -65,7 +76,7 @@ export function TypeTestCaseStatus (): Type<TestCaseStatus> {
 @UX(testManagement.string.TestCaseStatus)
 export class TTypeTestCaseStatus extends TType {}
 
-@Model(testManagement.class.TestProject, testManagement.class.Project)
+@Model(testManagement.class.TestProject, task.class.Project)
 @UX(testManagement.string.TestProject)
 export class TTestProject extends TProject implements TestProject {}
 
@@ -74,7 +85,7 @@ export class TTestProject extends TProject implements TestProject {}
  */
 @Model(testManagement.class.TestSuite, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestSuite, testManagement.icon.TestSuite, testManagement.string.TestSuite)
-export class TTestSuite extends TAttachedDoc implements TestCase {
+export class TTestSuite extends TAttachedDoc implements TestSuite {
   @Prop(TypeString(), testManagement.string.SuiteName)
   @Index(IndexKind.FullText)
     name!: string
@@ -83,8 +94,8 @@ export class TTestSuite extends TAttachedDoc implements TestCase {
   @Index(IndexKind.FullText)
     description?: string
 
-  @Prop(TypeRef(testManagement.class.TestProject), testManagement.string.Suite)
-    project!: Ref<TTestProject> | null
+  @Prop(TypeRef(testManagement.class.TestProject), testManagement.string.TestProject)
+    project!: Ref<TTestProject>
 }
 
 /**
@@ -114,7 +125,7 @@ export class TTestCase extends TAttachedDoc implements TestCase {
     status!: TestCaseStatus
 
   @Prop(TypeNumber(), testManagement.string.TestEstimatedTime)
-    estimatedTime?: number
+    estimatedTime!: number
 
   @Prop(TypeMarkup(), testManagement.string.TestPreconditions)
     preconditions?: string
@@ -126,7 +137,7 @@ export class TTestCase extends TAttachedDoc implements TestCase {
     suite!: Ref<TestSuite>
 
   @Prop(TypeRef(contact.mixin.Employee), testManagement.string.TestAssignee)
-    assignee!: Ref<Person>
+    assignee!: Ref<Employee>
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: CollectionSize<Attachment>

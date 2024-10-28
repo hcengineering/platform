@@ -24,5 +24,6 @@ loadMetadata(testManagement.icon, {
   TestManagementVersion: `${icons}#testCase`,
   TestCases: `${icons}#testCase`,
   Home: `${icons}#testCase`,
-  Estimation: `${icons}#testCase`
+  Estimation: `${icons}#testCase`,
+  TestSuite: `${icons}#testCase`
 })
