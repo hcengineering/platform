@@ -95,13 +95,12 @@
   .root {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    padding-block: var(--spacing-2);
     height: 100%;
-    padding: 0.5rem 0;
     width: 3.5rem;
     min-width: 3.5rem;
     max-width: 3.5rem;
-    border-top: 1px solid var(--theme-divider-color);
+    border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
     overflow-y: auto;
   }
 
