@@ -13,9 +13,20 @@
 // limitations under the License.
 //
 
+import { type IRequestStrict } from 'itty-router'
+
 export type Location = 'weur' | 'eeur' | 'wnam' | 'enam' | 'apac'
 
 export type UUID = string & { __uuid: true }
+
+export type WorkspaceRequest = {
+  workspace: string
+} & IRequestStrict
+
+export type BlobRequest = {
+  workspace: string
+  name: string
+} & IRequestStrict
 
 export interface CloudflareResponse {
   success: boolean

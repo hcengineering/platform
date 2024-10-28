@@ -14,15 +14,17 @@
 //
 
 import { getBlobURL } from './blob'
+import { type BlobRequest } from './types'
 
 const prefferedImageFormats = ['webp', 'avif', 'jpeg', 'png']
 
-export async function getImage (
-  request: Request,
-  workspace: string,
-  name: string,
-  transform: string
-): Promise<Response> {
+export async function handleImageGet (request: BlobRequest): Promise<Response> {
+  const {
+    workspace,
+    name,
+    params: { transform }
+  } = request
+
   const Accept = request.headers.get('Accept') ?? 'image/*'
   const image: Record<string, string> = {}
 
