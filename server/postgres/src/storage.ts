@@ -75,7 +75,7 @@ import {
   escapeBackticks,
   getDBClient,
   getDocFieldsByDomains,
-  getUpdateValue,
+  inferType,
   isDataField,
   isOwner,
   type JoinProps,
@@ -1474,8 +1474,9 @@ class PostgresAdapter extends PostgresAdapterBase {
       let dataUpdated = false
       for (const key in remainingData) {
         if (ops[key] === undefined) continue
-        from = `jsonb_set(${from}, '{${key}}', $${paramsIndex++}::jsonb, true)`
-        params.push(getUpdateValue((remainingData as any)[key]))
+        const val = (remainingData as any)[key]
+        from = `jsonb_set(${from}, '{${key}}', to_jsonb($${paramsIndex++}${inferType(val)}) , true)`
+        params.push(val)
         dataUpdated = true
       }
       if (dataUpdated) {

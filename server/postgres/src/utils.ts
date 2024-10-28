@@ -231,11 +231,17 @@ export function convertDoc<T extends Doc> (domain: string, doc: T, workspaceId: 
   return res
 }
 
-export function getUpdateValue (val: any): any {
-  if (typeof val === 'object') {
-    return JSON.stringify(val)
+export function inferType (val: any): string {
+  if (typeof val === 'string') {
+    return '::text'
   }
-  return val
+  if (typeof val === 'number') {
+    return '::numeric'
+  }
+  if (typeof val === 'boolean') {
+    return '::boolean'
+  }
+  return ''
 }
 
 export function parseUpdate<T extends Doc> (
