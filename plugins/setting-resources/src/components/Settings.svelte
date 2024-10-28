@@ -38,7 +38,7 @@
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
-  import { ComponentType, onDestroy } from 'svelte'
+  import { ComponentType, onDestroy, onMount } from 'svelte'
   import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -72,6 +72,11 @@
       })(loc)
     })
   )
+  onMount(() => {
+    setTimeout(() => {
+      if (categoryId === undefined) $deviceInfo.navigator.visible = true
+    }, 500)
+  })
 
   function findCategory (name: string): SettingsCategory | undefined {
     return categories.find((x) => x.name === name)
