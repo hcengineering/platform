@@ -69,7 +69,8 @@
         "MODEL_VERSION": "0.6.287",
         // "VERSION": "0.6.289",
         "ELASTIC_INDEX_NAME": "local_storage_index",
-        "UPLOAD_URL": "/files",      
+        "UPLOAD_URL": "/files",
+        "AI_BOT_URL": "http://localhost:4010"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

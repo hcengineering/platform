@@ -15,9 +15,14 @@
 
 import { LoginInfo, Workspace, WorkspaceLoginInfo } from '@hcengineering/account'
 import aiBot, { aiBotAccountEmail } from '@hcengineering/ai-bot'
-import { AccountRole } from '@hcengineering/core'
+import { AccountRole, isWorkspaceCreating, MeasureContext, systemAccountEmail } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 
-import config from './config'
+import config from '../config'
+import { wait } from './common'
+
+const ASSIGN_WORKSPACE_DELAY_MS = 5 * 1000 // 5 secs
+const MAX_ASSIGN_ATTEMPTS = 5
 
 export async function assignBotToWorkspace (workspace: string): Promise<Workspace> {
   const accountsUrl = config.AccountsURL
@@ -90,4 +95,70 @@ export async function getWorkspaceInfo (token: string): Promise<WorkspaceLoginIn
   ).json()
 
   return workspaceInfo.result as WorkspaceLoginInfo
+}
+
+async function tryGetWorkspaceInfo (ws: string, ctx: MeasureContext): Promise<WorkspaceLoginInfo | undefined> {
+  const systemToken = generateToken(systemAccountEmail, { name: ws })
+  for (let i = 0; i < 5; i++) {
+    try {
+      const info = await getWorkspaceInfo(systemToken)
+
+      if (info == null) {
+        await wait(ASSIGN_WORKSPACE_DELAY_MS)
+        continue
+      }
+
+      return info
+    } catch (e) {
+      ctx.error('Error during get workspace info:', { e })
+      await wait(ASSIGN_WORKSPACE_DELAY_MS)
+    }
+  }
+}
+
+const timeoutByWorkspace = new Map<string, NodeJS.Timeout>()
+const attemptsByWorkspace = new Map<string, number>()
+
+export async function tryAssignToWorkspace (
+  workspace: string,
+  ctx: MeasureContext,
+  clearAttempts = true
+): Promise<boolean> {
+  if (clearAttempts) {
+    attemptsByWorkspace.delete(workspace)
+  }
+  clearTimeout(timeoutByWorkspace.get(workspace))
+  try {
+    const info = await tryGetWorkspaceInfo(workspace, ctx)
+
+    if (info === undefined) {
+      return false
+    }
+
+    if (isWorkspaceCreating(info?.mode)) {
+      const t = setTimeout(() => {
+        void tryAssignToWorkspace(workspace, ctx, false)
+      }, ASSIGN_WORKSPACE_DELAY_MS)
+
+      timeoutByWorkspace.set(workspace, t)
+
+      return false
+    }
+
+    await assignBotToWorkspace(workspace)
+    ctx.info('Assigned to workspace: ', { workspace })
+    return true
+  } catch (e) {
+    ctx.error('Error during assign workspace:', { e })
+    const attempts = attemptsByWorkspace.get(workspace) ?? 0
+    if (attempts < MAX_ASSIGN_ATTEMPTS) {
+      attemptsByWorkspace.set(workspace, attempts + 1)
+      const t = setTimeout(() => {
+        void tryAssignToWorkspace(workspace, ctx, false)
+      }, ASSIGN_WORKSPACE_DELAY_MS)
+      timeoutByWorkspace.set(workspace, t)
+    }
+  }
+
+  return false
 }

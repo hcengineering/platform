@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
-export interface WorkspaceInfoRecord {
-  workspace: string
-  avatarPath?: string
-  avatarLastModified?: number
+export async function wait (delay: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, delay)
+  })
 }

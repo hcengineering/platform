@@ -13,60 +13,15 @@
 // limitations under the License.
 //
 
-import { Token, decodeToken } from '@hcengineering/server-token'
+import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { IncomingHttpHeaders, type Server } from 'http'
-import { TranslateRequest, OnboardingEventRequest } from '@hcengineering/ai-bot'
+import { type Server } from 'http'
+import { TranslateRequest, OnboardingEventRequest, AIEventRequest } from '@hcengineering/ai-bot'
+import { extractToken } from '@hcengineering/server-client'
 
 import { ApiError } from './error'
-import { AIBotController } from './controller'
-
-const extractCookieToken = (cookie?: string): Token | null => {
-  if (cookie === undefined || cookie === null) {
-    return null
-  }
-
-  const cookies = cookie.split(';')
-  const tokenCookie = cookies.find((cookie) => cookie.toLocaleLowerCase().includes('token'))
-  if (tokenCookie === undefined) {
-    return null
-  }
-
-  const encodedToken = tokenCookie.split('=')[1]
-  if (encodedToken === undefined) {
-    return null
-  }
-
-  return decodeToken(encodedToken)
-}
-
-const extractAuthorizationToken = (authorization?: string): Token | null => {
-  if (authorization === undefined || authorization === null) {
-    return null
-  }
-  const encodedToken = authorization.split(' ')[1]
-
-  if (encodedToken === undefined) {
-    return null
-  }
-
-  return decodeToken(encodedToken)
-}
-
-const extractToken = (headers: IncomingHttpHeaders): Token => {
-  try {
-    const token = extractCookieToken(headers.cookie) ?? extractAuthorizationToken(headers.authorization)
-
-    if (token === null) {
-      throw new ApiError(401)
-    }
-
-    return token
-  } catch {
-    throw new ApiError(401)
-  }
-}
+import { AIControl } from '../controller'
 
 type AsyncRequestHandler = (req: Request, res: Response, token: Token, next: NextFunction) => Promise<void>
 
@@ -76,8 +31,11 @@ const handleRequest = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  const token = extractToken(req.headers)
+  if (token === undefined) {
+    throw new ApiError(401)
+  }
   try {
-    const token = extractToken(req.headers)
     await fn(req, res, token, next)
   } catch (err: unknown) {
     next(err)
@@ -88,7 +46,7 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   void handleRequest(fn, req, res, next)
 }
 
-export function createServer (controller: AIBotController): Express {
+export function createServer (controller: AIControl): Express {
   const app = express()
   app.use(cors())
   app.use(express.json())
@@ -106,6 +64,32 @@ export function createServer (controller: AIBotController): Express {
 
       res.status(200)
       res.json(response)
+    })
+  )
+
+  app.post(
+    '/connect',
+    wrapRequest(async (_, res, token) => {
+      await controller.connect(token.workspace.name)
+
+      res.status(200)
+      res.json({})
+    })
+  )
+
+  app.post(
+    '/events',
+    wrapRequest(async (req, res, token) => {
+      if (req.body == null) {
+        throw new ApiError(400)
+      }
+
+      const events = Array.isArray(req.body) ? req.body : [req.body]
+
+      await controller.processEvent(token.workspace.name, events as AIEventRequest[])
+
+      res.status(200)
+      res.json({})
     })
   )
 
