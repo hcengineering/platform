@@ -13,37 +13,40 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
+import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
 import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { setMetadata, translate } from '@hcengineering/platform'
-import serverToken from '@hcengineering/server-token'
 import serverClient from '@hcengineering/server-client'
-import { SplitLogger, configureAnalytics } from '@hcengineering/analytics-service'
-import { Analytics } from '@hcengineering/analytics'
-import { join } from 'path'
-import type { StorageConfiguration } from '@hcengineering/server-core'
+import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import serverToken from '@hcengineering/server-token'
 import telegram from '@hcengineering/telegram'
+import { join } from 'path'
 import { Telegraf } from 'telegraf'
 
 import config from './config'
+import { Limiter } from './limiter'
+import { registerLoaders } from './loaders'
 import { createServer, listen } from './server'
 import { setUpBot } from './telegraf/bot'
-import { PlatformWorker } from './worker'
-import { registerLoaders } from './loaders'
-import { TgContext } from './telegraf/types'
 import { Command } from './telegraf/commands'
-import { Limiter } from './limiter'
+import { TgContext } from './telegraf/types'
+import { PlatformWorker } from './worker'
 
-const ctx = new MeasureMetricsContext(
-  'telegram-bot-service',
-  {},
-  {},
-  newMetrics(),
-  new SplitLogger('telegram-bot-service', {
-    root: join(process.cwd(), 'logs'),
-    enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
-  })
-)
+const ctx = initStatisticsContext('telegram-bot', {
+  factory: () =>
+    new MeasureMetricsContext(
+      'telegram-bot-service',
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger('telegram-bot-service', {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
 
 configureAnalytics(config.SentryDSN, config)
 Analytics.setTag('application', 'telegram-bot-service')

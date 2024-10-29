@@ -1060,7 +1060,7 @@ export function startSessionManager (
       stop: () => Promise<string | undefined>
     }
   } & Partial<Timeouts>
-): () => Promise<void> {
+): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
   const sessions = createSessionManager(
     ctx,
     opt.sessionFactory,
@@ -1071,16 +1071,19 @@ export function startSessionManager (
     },
     opt.profiling
   )
-  return opt.serverFactory(
-    sessions,
-    (rctx, service, ws, msg, workspace) => {
-      sessions.handleRequest(rctx, service, ws, msg, workspace)
-    },
-    ctx,
-    opt.pipelineFactory,
-    opt.port,
-    opt.enableCompression ?? false,
-    opt.accountsUrl,
-    opt.externalStorage
-  )
+  return {
+    shutdown: opt.serverFactory(
+      sessions,
+      (rctx, service, ws, msg, workspace) => {
+        sessions.handleRequest(rctx, service, ws, msg, workspace)
+      },
+      ctx,
+      opt.pipelineFactory,
+      opt.port,
+      opt.enableCompression ?? false,
+      opt.accountsUrl,
+      opt.externalStorage
+    ),
+    sessionManager: sessions
+  }
 }

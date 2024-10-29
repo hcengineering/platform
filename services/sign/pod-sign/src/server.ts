@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, generateId } from '@hcengineering/core'
-import { StorageConfiguration } from '@hcengineering/server-core'
+import { generateId } from '@hcengineering/core'
+import { initStatisticsContext, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { Token } from '@hcengineering/server-token'
 import cors from 'cors'
@@ -60,7 +60,7 @@ const wrapRequest =
 
 export function createServer (storageConfig: StorageConfiguration, brandings: BrandingMap): Express {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = new MeasureMetricsContext('sign', {})
+  const measureCtx = initStatisticsContext('sign', {})
 
   const app = express()
   app.use(cors())

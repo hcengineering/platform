@@ -101,6 +101,5 @@ dev/tool/report.csv
 bundle/*
 bundle.js.map
 tests/profiles
-_*
 **/bundle/model.json
 .wrangler

@@ -94,6 +94,7 @@
         "REGION_INFO": "|Mongo;pg|Postgree",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
+        "STATS_URL": "http://host.docker.internal:4900",
         "SES_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
@@ -109,6 +110,22 @@
       "sourceMaps": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/pods/account",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Stats",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "PORT": "4900",
+        "SERVER_SECRET": "secret",
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/pods/stats",
       "protocol": "inspector"
     },
     {

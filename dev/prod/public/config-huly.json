@@ -19,5 +19,6 @@
   "SIGN_URL": "https://sign.huly.app",
   "PRINT_URL": "https://print.huly.app",
   "DESKTOP_UPDATES_CHANNEL": "huly",
-  "TELEGRAM_BOT_URL": "https://telegram-bot.huly.app"
+  "TELEGRAM_BOT_URL": "https://telegram-bot.huly.app",
+  "STATS_URL": "https://stats.huly.app"
 }

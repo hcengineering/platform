@@ -632,6 +632,9 @@ dependencies:
   '@rush-temp/pod-sign':
     specifier: file:./projects/pod-sign.tgz
     version: file:projects/pod-sign.tgz
+  '@rush-temp/pod-stats':
+    specifier: file:./projects/pod-stats.tgz
+    version: file:projects/pod-stats.tgz
   '@rush-temp/pod-telegram':
     specifier: file:./projects/pod-telegram.tgz
     version: file:projects/pod-telegram.tgz(bufferutil@4.0.8)(ts-node@10.9.2)(utf-8-validate@6.0.4)
@@ -31005,7 +31008,7 @@ packages:
     dev: false
 
   file:projects/pod-collaborator.tgz:
-    resolution: {integrity: sha512-ayRiefa0hytLnCUUVac5/YEwko1XSxpudTToOamTBxzFfXlwGdlK6D2gQMN/dNkbTG4Wc9KLzjlwDb4VXUkLmw==, tarball: file:projects/pod-collaborator.tgz}
+    resolution: {integrity: sha512-AJhluNv49NI/ktWVKeHToGIi3DnJ419Qmsa8PFeR148h3X7uvmlIbPGM5bMQoVfJ1xiR8BpRIFVtu6EYzrs0iA==, tarball: file:projects/pod-collaborator.tgz}
     name: '@rush-temp/pod-collaborator'
     version: 0.0.0
     dependencies:
@@ -31455,6 +31458,46 @@ packages:
       - node-notifier
       - snappy
       - socks
+      - supports-color
+    dev: false
+
+  file:projects/pod-stats.tgz:
+    resolution: {integrity: sha512-vS1oRj3hDBzCAI0SagseVBqSDxd1puF9OQJRbCcn1V0MTYC5MwW8ndQGGG1W45jMK37vgHvgFveUn7FEEhIXOw==, tarball: file:projects/pod-stats.tgz}
+    name: '@rush-temp/pod-stats'
+    version: 0.0.0
+    dependencies:
+      '@koa/cors': 5.0.0
+      '@types/jest': 29.5.12
+      '@types/koa': 2.15.0
+      '@types/koa-bodyparser': 4.3.12
+      '@types/koa-router': 7.4.8
+      '@types/koa__cors': 5.0.0
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
+      cross-env: 7.0.3
+      esbuild: 0.20.1
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.6.2)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      koa: 2.15.3
+      koa-bodyparser: 4.4.1
+      koa-router: 12.0.1
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.6.2)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.6.2)
+      typescript: 5.6.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - node-notifier
       - supports-color
     dev: false
 
@@ -32395,7 +32438,7 @@ packages:
     dev: false
 
   file:projects/rekoni-service.tgz(webpack@5.90.3):
-    resolution: {integrity: sha512-Q0Kc1tYShHVdu2vY3Exnvm9Lvj6lKr5AdUNFpMAVP6qMB0DZPK51hWqEt0BRDSmVLfKGN8g3zWhbG3FSxFs30w==, tarball: file:projects/rekoni-service.tgz}
+    resolution: {integrity: sha512-z8lv7tJyejsIhl5tVjot97nBl0FX6dtUAAfLbEtfPwmiZR/uw6IpvgkfXsVJ0RJwsBMgwD0SpHBwqoxpVrgHww==, tarball: file:projects/rekoni-service.tgz}
     id: file:projects/rekoni-service.tgz
     name: '@rush-temp/rekoni-service'
     version: 0.0.0
