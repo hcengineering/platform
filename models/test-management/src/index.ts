@@ -31,7 +31,8 @@ import {
   TTypeTestCaseStatus,
   TTestProject,
   TTestSuite,
-  TTestCase
+  TTestCase,
+  TDefaultProjectTypeData
 } from './types'
 
 import testManagement from './plugin'
@@ -121,7 +122,8 @@ export function createModel (builder: Builder): void {
     TTypeTestCaseStatus,
     TTestProject,
     TTestSuite,
-    TTestCase
+    TTestCase,
+	TDefaultProjectTypeData
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -293,6 +295,18 @@ function defineSpaceType (builder: Builder): void {
       ]
     },
     testManagement.descriptors.ProjectType
+  )
+
+  builder.createDoc(
+    core.class.SpaceType,
+    core.space.Model,
+    {
+      name: 'Default project type',
+      descriptor: testManagement.descriptors.ProjectType,
+      roles: 0,
+      targetClass: testManagement.mixin.DefaultProjectTypeData
+    },
+    testManagement.spaceType.DefaultProject
   )
 
   /* builder.createDoc(

@@ -13,46 +13,49 @@
 // limitations under the License.
 -->
 <script lang="ts">
+	import { deepEqual } from 'fast-equals'
+	import { createEventDispatcher } from 'svelte'
 	import { AccountArrayEditor } from '@hcengineering/contact-resources'
 	import core, {
 	  Account,
-	  getCurrentAccount,
+	  Data,
+	  DocumentUpdate,
+	  RolesAssignment,
 	  Ref,
 	  Role,
-	  RolesAssignment,
 	  SpaceType,
+	  generateId,
+	  getCurrentAccount,
 	  WithLookup
 	} from '@hcengineering/core'
 	import { TestProject } from '@hcengineering/test-management'
-	import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
-	import task, { ProjectType } from '@hcengineering/task'
-	import ui, { Component, EditBox, Label, Toggle, ToggleWithLabel } from '@hcengineering/ui'
-	import { deepEqual } from 'fast-equals'
-	import { createEventDispatcher } from 'svelte'
+	import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
+	import { EditBox, Label, Toggle } from '@hcengineering/ui'
+	import { SpaceTypeSelector } from '@hcengineering/view-resources'
   
-	import testManagementResources from '../../plugin'
+	import testManagementRes from '../../plugin'
+	import { Analytics } from '@hcengineering/analytics'
   
 	export let project: TestProject | undefined = undefined
-	const dispatch = createEventDispatcher()
   
+	const dispatch = createEventDispatcher()
 	const client = getClient()
 	const hierarchy = client.getHierarchy()
   
-	$: isNew = !project
-  
 	let name: string = project?.name ?? ''
-	const description: string = project?.description ?? ''
-	let typeId: Ref<ProjectType> | undefined = project?.type
-	let spaceType: WithLookup<SpaceType> | undefined
-	let rolesAssignment: RolesAssignment = {}
+	let description: string = project?.description ?? ''
 	let isPrivate: boolean = project?.private ?? false
   
 	let members: Ref<Account>[] =
 	  project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
 	let owners: Ref<Account>[] = project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
+	let rolesAssignment: RolesAssignment = {}
+  
+	let typeId: Ref<SpaceType> | undefined = project?.type ?? testManagementRes.spaceType.DefaultProject
+	let spaceType: WithLookup<SpaceType> | undefined
   
 	$: void loadSpaceType(typeId)
-	async function loadSpaceType (id: typeof typeId): Promise<void> {
+	const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
 	  spaceType =
 		id !== undefined
 		  ? await client
@@ -60,14 +63,12 @@
 			.findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
 		  : undefined
   
-	  if (spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
+	  if (project === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
 		return
 	  }
   
 	  rolesAssignment = getRolesAssignment()
-	}
-  
-	$: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
+	})
   
 	function getRolesAssignment (): RolesAssignment {
 	  if (project === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -83,51 +84,104 @@
 	  }, {})
 	}
   
-	export function canClose (): boolean {
-	  return name === '' && typeId !== undefined
+	async function handleSave (): Promise<void> {
+	  if (project === undefined) {
+		await createTestProject()
+	  } else {
+		await updateTestProject()
+	  }
 	}
   
-	async function createFunnel (): Promise<void> {
+	function getTestProjectData (): Omit<Data<TestProject>, 'type'> {
+	  return {
+		name,
+		description,
+		private: isPrivate,
+		members,
+		owners,
+		archived: false
+	  }
+	}
+  
+	async function updateTestProject (): Promise<void> {
+	  if (project === undefined || spaceType?.targetClass === undefined) {
+		return
+	  }
+  
+	  const data = getTestProjectData()
+	  const update: DocumentUpdate<TestProject> = {}
+	  if (data.name !== project?.name) {
+		update.name = data.name
+	  }
+	  if (data.description !== project?.description) {
+		update.description = data.description
+	  }
+	  if (data.private !== project?.private) {
+		update.private = data.private
+	  }
+	  if (data.members.length !== project?.members.length) {
+		update.members = data.members
+	  } else {
+		for (const member of data.members) {
+		  if (project.members.findIndex((p) => p === member) === -1) {
+			update.members = data.members
+			break
+		  }
+		}
+	  }
+	  if (data.owners?.length !== project?.owners?.length) {
+		update.owners = data.owners
+	  } else {
+		for (const owner of data.owners ?? []) {
+		  if (project.owners?.findIndex((p) => p === owner) === -1) {
+			update.owners = data.owners
+			break
+		  }
+		}
+	  }
+  
+	  if (Object.keys(update).length > 0) {
+		await client.update(project, update)
+	  }
+  
+	  if (!deepEqual(rolesAssignment, getRolesAssignment())) {
+		await client.updateMixin(
+		  project._id,
+		  testManagementRes.class.TestProject,
+		  core.space.Space,
+		  spaceType.targetClass,
+		  rolesAssignment
+		)
+	  }
+  
+	  close()
+	}
+  
+	async function createTestProject (): Promise<void> {
 	  if (typeId === undefined || spaceType?.targetClass === undefined) {
 		return
 	  }
   
-	  const funnelId = await client.createDoc(testManagementResources.class.TestProject, core.space.Space, {
-		name,
-		description,
-		private: isPrivate,
-		archived: false,
-		members,
-		autoJoin,
-		owners,
-		type: typeId
-	  })
+	  const driveId = generateId<TestProject>()
+	  const driveData = getTestProjectData()
+  
+	  await client.createDoc(testManagementRes.class.TestProject, core.space.Space, { ...driveData, type: typeId }, driveId)
   
 	  // Create space type's mixin with roles assignments
-	  await client.createMixin(funnelId, testManagementResources.class.TestProject, core.space.Space, spaceType.targetClass, rolesAssignment)
+	  await client.createMixin(driveId, testManagementRes.class.TestProject, core.space.Space, spaceType.targetClass, rolesAssignment)
+	  //Analytics.handleEvent(TestProjectEvents.TestProjectCreated, { id: driveId })
+	  close(driveId)
 	}
   
-	async function save (): Promise<void> {
-	  if (isNew) {
-		await createFunnel()
-	  } else if (project !== undefined && spaceType?.targetClass !== undefined) {
-		await client.diffUpdate<TestProject>(
-		  project,
-		  { name, description, members, owners, private: isPrivate, autoJoin },
-		  Date.now()
-		)
-  
-		if (!deepEqual(rolesAssignment, getRolesAssignment())) {
-		  await client.updateMixin(
-			project._id,
-			testManagementResources.class.TestProject,
-			core.space.Space,
-			spaceType.targetClass,
-			rolesAssignment
-		  )
-		}
-	  }
+	function close (id?: Ref<TestProject>): void {
+	  dispatch('close', id)
 	}
+  
+	function handleTypeChange (evt: CustomEvent<Ref<SpaceType>>): void {
+	  typeId = evt.detail
+	}
+  
+	$: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
   
 	function handleOwnersChanged (newOwners: Ref<Account>[]): void {
 	  owners = newOwners
@@ -137,7 +191,6 @@
 	}
   
 	function handleMembersChanged (newMembers: Ref<Account>[]): void {
-	  membersChanged = true
 	  // If a member was removed we need to remove it from any roles assignments as well
 	  const newMembersSet = new Set(newMembers)
 	  const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -160,96 +213,115 @@
 	}
   
 	$: canSave =
-	  name.trim().length > 0 && members.length > 0 && owners.length > 0 && owners.some((o) => members.includes(o))
-  
-	let autoJoin = project?.autoJoin ?? spaceType?.autoJoin ?? false
-  
-	$: setDefaultMembers(spaceType)
-  
-	let membersChanged: boolean = false
-  
-	function setDefaultMembers (typeType: SpaceType | undefined): void {
-	  if (typeType === undefined) return
-	  if (membersChanged) return
-	  if (project !== undefined) return
-	  autoJoin = typeType.autoJoin ?? false
-	  if (typeType.members === undefined || typeType.members.length === 0) return
-	  members = typeType.members
-	}
+	  name.trim().length > 0 &&
+	  !(members.length === 0 && isPrivate) &&
+	  typeId !== undefined &&
+	  spaceType?.targetClass !== undefined &&
+	  owners.length > 0 &&
+	  (!isPrivate || owners.some((o) => members.includes(o)))
   </script>
   
-  <SpaceCreateCard
-	label={project ? testManagementResources.string.EditProject : testManagementResources.string.CreateProject}
-	okAction={save}
-	okLabel={!isNew ? ui.string.Save : undefined}
+  <Card
+	label={project ? testManagementRes.string.EditProject : testManagementRes.string.CreateProject}
+	okLabel={project ? presentation.string.Save : presentation.string.Create}
+	okAction={handleSave}
 	{canSave}
-	on:close={() => {
-	  dispatch('close')
-	}}
+	accentHeader
+	width={'medium'}
+	gap={'gapV-6'}
+	onCancel={close}
+	on:changeContent
   >
-	<div class="antiGrid-row">
-	  <EditBox label={testManagementResources.string.ProjectName} bind:value={name} placeholder={testManagementResources.string.ProjectName} autoFocus />
-	</div>
-  
-	<div class="antiGrid-row">
-	  <ToggleWithLabel
-		label={presentation.string.MakePrivate}
-		description={presentation.string.MakePrivateDescription}
-		bind:on={isPrivate}
-	  />
-	</div>
-
-	<div class="antiGrid-row">
-	  <div class="antiGrid-row__header">
-		<Label label={core.string.Owners} />
-	  </div>
-	  <AccountArrayEditor
-		value={owners}
-		label={core.string.Owners}
-		onChange={handleOwnersChanged}
-		kind={'regular'}
-		size={'large'}
-	  />
-	</div>
-  
-	<div class="antiGrid-row">
-	  <div class="antiGrid-row__header">
-		<Label label={testManagementResources.string.Members} />
-	  </div>
-	  <AccountArrayEditor
-		value={members}
-		allowGuests
-		label={testManagementResources.string.Members}
-		onChange={handleMembersChanged}
-		kind={'regular'}
-		size={'large'}
-	  />
-	</div>
-	<div class="antiGrid-row">
-	  <div class="antiGrid-row__header withDesciption">
-		<Label label={core.string.AutoJoin} />
-		<span><Label label={core.string.AutoJoinDescr} /></span>
-	  </div>
-	  <Toggle bind:on={autoJoin} />
-	</div>
-  
-	{#each roles as role}
+	<div class="antiGrid">
 	  <div class="antiGrid-row">
 		<div class="antiGrid-row__header">
-		  <Label label={testManagementResources.string.RoleLabel} params={{ role: role.name }} />
+		  <Label label={core.string.SpaceType} />
+		</div>
+  
+		<SpaceTypeSelector
+		  disabled={project !== undefined}
+		  descriptors={[testManagementRes.descriptors.ProjectType]}
+		  type={typeId}
+		  focusIndex={4}
+		  kind="regular"
+		  size="large"
+		  on:change={handleTypeChange}
+		/>
+	  </div>
+  
+	  <div class="antiGrid-row">
+		<div class="antiGrid-row__header">
+		  <Label label={core.string.Name} />
+		</div>
+		<div class="padding">
+		  <EditBox id="teamspace-title" bind:value={name} placeholder={core.string.Name} kind={'large-style'} autoFocus />
+		</div>
+	  </div>
+  
+	  <div class="antiGrid-row">
+		<div class="antiGrid-row__header topAlign">
+		  <Label label={core.string.Description} />
+		</div>
+		<div class="padding">
+		  <EditBox id="teamspace-description" bind:value={description} placeholder={core.string.Description} />
+		</div>
+	  </div>
+	</div>
+  
+	<div class="antiGrid">
+	  <div class="antiGrid-row">
+		<div class="antiGrid-row__header">
+		  <Label label={core.string.Owners} />
 		</div>
 		<AccountArrayEditor
-		  value={rolesAssignment?.[role._id] ?? []}
-		  label={testManagementResources.string.ProjectMembers}
-		  includeItems={members}
-		  readonly={members.length === 0}
-		  onChange={(refs) => {
-			handleRoleAssignmentChanged(role._id, refs)
-		  }}
+		  value={owners}
+		  label={core.string.Owners}
+		  onChange={handleOwnersChanged}
 		  kind={'regular'}
 		  size={'large'}
 		/>
 	  </div>
-	{/each}
-  </SpaceCreateCard>
+  
+	  <div class="antiGrid-row">
+		<div class="antiGrid-row__header withDesciption">
+		  <Label label={presentation.string.MakePrivate} />
+		  <span><Label label={presentation.string.MakePrivateDescription} /></span>
+		</div>
+		<Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
+	  </div>
+  
+	  <div class="antiGrid-row">
+		<div class="antiGrid-row__header">
+		  <Label label={core.string.Members} />
+		</div>
+		<AccountArrayEditor
+		  value={members}
+		  label={core.string.Members}
+		  onChange={handleMembersChanged}
+		  kind={'regular'}
+		  size={'large'}
+		  allowGuests
+		/>
+	  </div>
+  
+	  {#each roles as role}
+		<div class="antiGrid-row">
+		  <div class="antiGrid-row__header">
+			<Label label={testManagementRes.string.RoleLabel} params={{ role: role.name }} />
+		  </div>
+		  <AccountArrayEditor
+			value={rolesAssignment?.[role._id] ?? []}
+			label={core.string.Members}
+			includeItems={members}
+			readonly={members.length === 0}
+			onChange={(refs) => {
+			  handleRoleAssignmentChanged(role._id, refs)
+			}}
+			kind={'regular'}
+			size={'large'}
+		  />
+		</div>
+	  {/each}
+	</div>
+  </Card>
   
