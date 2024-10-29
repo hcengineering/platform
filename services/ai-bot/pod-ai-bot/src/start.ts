@@ -17,14 +17,14 @@ import { setMetadata } from '@hcengineering/platform'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverClient from '@hcengineering/server-client'
 import serverToken from '@hcengineering/server-token'
-
 import { initStatisticsContext } from '@hcengineering/server-core'
-import { createBotAccount } from './account'
+
 import config from './config'
-import { AIBotController } from './controller'
+import { AIControl } from './controller'
 import { registerLoaders } from './loaders'
-import { createServer, listen } from './server'
 import { closeDB, DbStorage, getDB } from './storage'
+import { createBotAccount } from './utils/account'
+import { createServer, listen } from './server/server'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -49,7 +49,7 @@ export const start = async (): Promise<void> => {
     }
     await new Promise((resolve) => setTimeout(resolve, 3000))
   }
-  const aiController = new AIBotController(storage, ctx)
+  const aiController = new AIControl(storage, ctx)
   const app = createServer(aiController)
   const server = listen(app, config.Port)
 

@@ -45,6 +45,7 @@
     "@hcengineering/client-resources": "^0.6.27",
     "@hcengineering/client": "^0.6.18",
     "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-token": "^0.6.11",
     "ws": "^8.18.0"
   }
 }

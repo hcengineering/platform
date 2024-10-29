@@ -257,6 +257,7 @@ services:
       - ELASTIC_INDEX_NAME=local_storage_index
       - BRANDING_PATH=/var/cfg/branding.json
       - SUPPORT_WORKSPACE=support
+      - AI_BOT_URL=http://host.docker.internal:4010
     restart: unless-stopped
   transactor_pg:
     image: hardcoreeng/transactor
@@ -384,6 +385,7 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://host.docker.internal:4900
+#      - OPENAI_API_KEY=token
     deploy:
       resources:
         limits:

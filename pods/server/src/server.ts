@@ -33,8 +33,6 @@ import {
 } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
-import { serverAiBotId } from '@hcengineering/server-ai-bot'
-import { createAIBotAdapter } from '@hcengineering/server-ai-bot-resources'
 import { createServerPipeline, registerServerPlugins, registerStringLoaders } from '@hcengineering/server-pipeline'
 
 import { readFileSync } from 'node:fs'
@@ -80,17 +78,7 @@ export function start (
     dbUrl,
     model,
     { ...opt, externalStorage, adapterSecurity: dbUrl.startsWith('postgresql') },
-    opt.mongoUrl !== undefined
-      ? {
-          serviceAdapters: {
-            [serverAiBotId]: {
-              factory: createAIBotAdapter,
-              db: '%ai-bot',
-              url: opt.mongoUrl
-            }
-          }
-        }
-      : {}
+    {}
   )
   const sessionFactory = (
     token: Token,
