@@ -15,7 +15,7 @@
 //
 
 import accountPlugin, {
-  assignWorkspace,
+  assignAccountToWs,
   confirmEmail,
   createAcc,
   createWorkspace as createWorkspaceRecord,
@@ -320,7 +320,7 @@ export function devTool (
           console.log('assigning to workspace', workspaceInfo, endpoint)
           const client = await createClient(endpoint, token)
           console.log('assigning to workspace connected', workspaceInfo, endpoint)
-          await assignWorkspace(
+          await assignAccountToWs(
             toolCtx,
             db,
             null,
@@ -1666,21 +1666,39 @@ export function devTool (
     })
   })
 
-  program.command('move-workspace-to-pg <workspace> <region>').action(async (workspace: string, region: string) => {
-    const { dbUrl } = prepareTools()
-    const mongodbUri = getMongoDBUrl()
+  program
+    .command('move-workspace-to-pg <workspace> <region>')
+    .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .action(
+      async (
+        workspace: string,
+        region: string,
+        cmd: {
+          include: string
+        }
+      ) => {
+        const { dbUrl } = prepareTools()
+        const mongodbUri = getMongoDBUrl()
 
-    await withDatabase(mongodbUri, async (db) => {
-      const workspaceInfo = await getWorkspaceById(db, workspace)
-      if (workspaceInfo === null) {
-        throw new Error(`workspace ${workspace} not found`)
+        await withDatabase(mongodbUri, async (db) => {
+          const workspaceInfo = await getWorkspaceById(db, workspace)
+          if (workspaceInfo === null) {
+            throw new Error(`workspace ${workspace} not found`)
+          }
+          if (workspaceInfo.region === region) {
+            throw new Error(`workspace ${workspace} is already migrated`)
+          }
+          await moveWorkspaceFromMongoToPG(
+            db,
+            mongodbUri,
+            dbUrl,
+            workspaceInfo,
+            region,
+            cmd.include === '*' ? undefined : new Set(cmd.include.split(';').map((it) => it.trim()))
+          )
+        })
       }
-      if (workspaceInfo.region === region) {
-        throw new Error(`workspace ${workspace} is already migrated`)
-      }
-      await moveWorkspaceFromMongoToPG(db, mongodbUri, dbUrl, workspaceInfo, region)
-    })
-  })
+    )
 
   program.command('move-account-db-to-pg').action(async () => {
     const { dbUrl } = prepareTools()
@@ -1726,7 +1744,7 @@ export function devTool (
           version
         })
         await createAcc(toolCtx, db, null, email, '1234', '', '', true)
-        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
+        await assignAccountToWs(toolCtx, db, null, email, ws, AccountRole.User)
         console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
         const token = generateToken(systemAccountEmail, wsid)
         const endpoint = await getTransactorEndpoint(token, 'external')

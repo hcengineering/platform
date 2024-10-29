@@ -12,36 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import {
-  generateId,
-  type AttachedData,
-  type Ref,
-  makeCollaborativeDoc,
-  type TxOperations,
-  type Blob,
-  collaborativeDocParse,
-  type Data
-} from '@hcengineering/core'
 import { yDocToBuffer } from '@hcengineering/collaboration'
-import document, { type Document, type Teamspace, getFirstRank } from '@hcengineering/document'
+import {
+  type AttachedData,
+  type Blob,
+  type Data,
+  type Doc,
+  generateId,
+  makeCollaborativeDoc,
+  type Ref,
+  type TxOperations
+} from '@hcengineering/core'
+import document, { type Document, getFirstRank, type Teamspace } from '@hcengineering/document'
 import { makeRank } from '@hcengineering/rank'
 import {
+  jsonToYDocNoSchema,
   MarkupMarkType,
   type MarkupNode,
   MarkupNodeType,
   parseMessageMarkdown,
   traverseNode,
-  traverseNodeMarks,
-  jsonToYDocNoSchema
+  traverseNodeMarks
 } from '@hcengineering/text'
 
-import attachment from '@hcengineering/model-attachment'
 import { type Attachment } from '@hcengineering/attachment'
-import { contentType } from 'mime-types'
+import attachment from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
-import { readdir, stat, readFile } from 'fs/promises'
 import { type Dirent } from 'fs'
+import { readdir, readFile, stat } from 'fs/promises'
+import { contentType } from 'mime-types'
 import { basename, join, parse } from 'path'
+import { type FileUploader } from './importer/uploader'
 
 interface DocumentMetadata {
   id: string
@@ -72,11 +73,9 @@ enum NOTION_MD_LINK_TYPES {
   UNKNOWN
 }
 
-export type FileUploader = (id: string, data: any) => Promise<any>
-
 export async function importNotion (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   dir: string,
   teamspace?: string
 ): Promise<void> {
@@ -95,10 +94,10 @@ export async function importNotion (
       console.error('No teamspaces found in directory: ', dir)
       return
     }
-    await importFiles(client, uploadFile, fileMetaMap, documentMetaMap, spaceIdMap)
+    await importFiles(client, fileUploader, fileMetaMap, documentMetaMap, spaceIdMap)
   } else {
     const spaceId = await createTeamspace(teamspace, client)
-    await importFilesToSpace(client, uploadFile, fileMetaMap, documentMetaMap, spaceId)
+    await importFilesToSpace(client, fileUploader, fileMetaMap, documentMetaMap, spaceId)
   }
 }
 
@@ -203,7 +202,7 @@ async function createTeamspace (name: string, client: TxOperations): Promise<Ref
 
 async function importFilesToSpace (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   fileMetaMap: Map<string, FileMetadata>,
   documentMetaMap: Map<string, DocumentMetadata>,
   spaceId: Ref<Teamspace>
@@ -212,14 +211,14 @@ async function importFilesToSpace (
     if (!fileMeta.isFolder) {
       const docMeta = documentMetaMap.get(notionId)
       if (docMeta === undefined) throw new Error('Cannot find metadata for entry: ' + fileMeta.fileName)
-      await importFile(client, uploadFile, fileMeta, docMeta, spaceId, documentMetaMap)
+      await importFile(client, fileUploader, fileMeta, docMeta, spaceId, documentMetaMap)
     }
   }
 }
 
 async function importFiles (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   fileMetaMap: Map<string, FileMetadata>,
   documentMetaMap: Map<string, DocumentMetadata>,
   spaceIdMap: Map<string, Ref<Teamspace>>
@@ -234,14 +233,14 @@ async function importFiles (
         throw new Error('Teamspace not found for document: ' + docMeta.name)
       }
 
-      await importFile(client, uploadFile, fileMeta, docMeta, spaceId, documentMetaMap)
+      await importFile(client, fileUploader, fileMeta, docMeta, spaceId, documentMetaMap)
     }
   }
 }
 
 async function importFile (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   fileMeta: FileMetadata,
   docMeta: DocumentMetadata,
   spaceId: Ref<Teamspace>,
@@ -259,7 +258,7 @@ async function importFile (
           notionParentId !== undefined && notionParentId !== '' ? documentMetaMap.get(notionParentId) : undefined
 
         const processFileData = getDataProcessor(fileMeta, docMeta)
-        processFileData(client, uploadFile, data, docMeta, spaceId, parentMeta, documentMetaMap)
+        processFileData(client, fileUploader, data, docMeta, spaceId, parentMeta, documentMetaMap)
           .then(() => {
             console.log('IMPORT SUCCEED:', docMeta.name)
             console.log('------------------------------------------------------------------')
@@ -284,7 +283,7 @@ async function importFile (
 
 type DataProcessor = (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -318,7 +317,7 @@ function getDataProcessor (fileMeta: FileMetadata, docMeta: DocumentMetadata): D
 
 async function createDBPageWithAttachments (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -363,12 +362,12 @@ async function createDBPageWithAttachments (
     size: docMeta.size
   }
 
-  await importAttachment(client, uploadFile, data, attachment, space, dbPage)
+  await importAttachment(client, fileUploader, data, attachment, space, dbPage)
 }
 
 async function importDBAttachment (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -394,42 +393,30 @@ async function importDBAttachment (
     mimeType: docMeta.mimeType,
     size: docMeta.size
   }
-  await importAttachment(client, uploadFile, data, attachment, space, dbPage)
+  await importAttachment(client, fileUploader, data, attachment, space, dbPage)
 }
 
 async function importAttachment (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
-  parentMeta?: DocumentMetadata,
-  documentMetaMap?: Map<string, DocumentMetadata>
+  parentMeta?: DocumentMetadata
 ): Promise<void> {
   if (parentMeta === undefined) {
     throw new Error('Cannot import attachment without parent doc: ' + docMeta.id)
   }
 
-  const size = docMeta.size ?? 0
-  const type = docMeta.mimeType ?? DEFAULT_ATTACHMENT_MIME_TYPE
-
-  const form = new FormData()
-  const file = new File([new Blob([data])], docMeta.name)
-  form.append('file', file, docMeta.id)
-  form.append('type', type)
-  form.append('size', size.toString())
-  form.append('name', docMeta.name)
-  form.append('id', docMeta.id)
-  form.append('data', new Blob([data])) // ?
-
-  await uploadFile(docMeta.id, form)
+  const file = new File([data], docMeta.name)
+  await fileUploader.uploadFile(docMeta.id as Ref<Doc>, docMeta.name, file)
 
   const attachedData: AttachedData<Attachment> = {
     file: docMeta.id as Ref<Blob>,
     name: docMeta.name,
     lastModified: Date.now(),
-    type,
-    size
+    type: file.type,
+    size: file.size
   }
 
   await client.addCollection(
@@ -445,7 +432,7 @@ async function importAttachment (
 
 async function importPageDocument (
   client: TxOperations,
-  uploadFile: FileUploader,
+  fileUploader: FileUploader,
   data: Buffer,
   docMeta: DocumentMetadata,
   space: Ref<Teamspace>,
@@ -457,23 +444,13 @@ async function importPageDocument (
   if (documentMetaMap !== undefined) {
     preProcessMarkdown(json, documentMetaMap)
   }
+  const yDoc = jsonToYDocNoSchema(json, 'content')
+  const buffer = yDocToBuffer(yDoc)
 
   const id = docMeta.id as Ref<Document>
   const collabId = makeCollaborativeDoc(id, 'description')
-  const yDoc = jsonToYDocNoSchema(json, 'content')
-  const { documentId } = collaborativeDocParse(collabId)
-  const buffer = yDocToBuffer(yDoc)
 
-  const form = new FormData()
-  const file = new File([new Blob([buffer])], docMeta.name)
-  form.append('file', file, documentId)
-  form.append('type', 'application/ydoc')
-  form.append('size', buffer.length.toString())
-  form.append('name', docMeta.name)
-  form.append('id', docMeta.id)
-  form.append('data', new Blob([buffer])) // ?
-
-  await uploadFile(docMeta.id, form)
+  await fileUploader.uploadCollaborativeDoc(id, collabId, buffer)
 
   const parent = (parentMeta?.id as Ref<Document>) ?? document.ids.NoParent
 

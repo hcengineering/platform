@@ -38,7 +38,6 @@ import core, {
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  NotificationStatus,
   notificationId,
   type ActivityInboxNotification,
   type BaseNotificationType,
@@ -63,9 +62,10 @@ import {
   type Location,
   type ResolvedLocation
 } from '@hcengineering/ui'
-import { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
-import { getObjectLinkId } from '@hcengineering/view-resources'
+import view, { decodeObjectURI, encodeObjectURI, type LinkIdProvider } from '@hcengineering/view'
+import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
 import { get, writable } from 'svelte/store'
+import type { LocationData } from '@hcengineering/workbench'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
@@ -183,7 +183,7 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
     return
   }
 
-  const ops = getClient().apply(undefined, 'archiveContextNotifications')
+  const ops = getClient().apply(undefined, 'archiveContextNotifications', true)
 
   try {
     const notifications = await ops.findAll(
@@ -209,7 +209,7 @@ export async function unarchiveContextNotifications (doc?: DocNotifyContext): Pr
     return
   }
 
-  const ops = getClient().apply(undefined, 'unarchiveContextNotifications')
+  const ops = getClient().apply(undefined, 'unarchiveContextNotifications', true)
 
   try {
     const notifications = await ops.findAll(
@@ -790,11 +790,10 @@ export async function subscribePush (): Promise<boolean> {
 async function cleanTag (_id: Ref<Doc>): Promise<void> {
   const client = getClient()
   const notifications = await client.findAll(notification.class.BrowserNotification, {
-    tag: _id,
-    status: NotificationStatus.New
+    tag: _id
   })
   for (const notification of notifications) {
-    await client.update(notification, { status: NotificationStatus.Notified })
+    await client.remove(notification)
   }
 }
 
@@ -857,4 +856,21 @@ export function isNotificationAllowed (type: BaseNotificationType, providerId: R
   }
 
   return type.defaultEnabled
+}
+
+export async function locationDataResolver (loc: Location): Promise<LocationData> {
+  const client = getClient()
+
+  try {
+    const [id, _class] = decodeObjectURI(loc.path[3])
+    const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+    const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
+
+    return {
+      objectId: _id,
+      objectClass: _class
+    }
+  } catch (e) {
+    return {}
+  }
 }

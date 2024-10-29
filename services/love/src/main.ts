@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { MeasureMetricsContext, WorkspaceId, newMetrics, toWorkspaceString } from '@hcengineering/core'
+import { toWorkspaceString, WorkspaceId } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
+import { initStatisticsContext, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { decodeToken } from '@hcengineering/server-token'
 import cors from 'cors'
@@ -49,7 +49,9 @@ export const main = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   const storageConfigs: StorageConfiguration = storageConfigFromEnv()
-  const ctx = new MeasureMetricsContext('love', {}, {}, newMetrics())
+
+  const ctx = initStatisticsContext('love', {})
+
   const storageConfig = storageConfigs.storages.findLast((p) => p.name === config.StorageProviderName)
   const storageAdapter = buildStorageFromConfig(storageConfigs)
   const app = express()

@@ -215,9 +215,11 @@
       } else {
         const tabToReplace = tabs.findLast((t) => !t.isPinned)
         if (tabToReplace !== undefined) {
-          await client.update(tabToReplace, {
+          const op = client.apply(undefined, undefined, true)
+          await op.update(tabToReplace, {
             location: url
           })
+          await op.commit()
           selectTab(tabToReplace._id)
           prevTabIdStore.set(tabToReplace._id)
         } else {

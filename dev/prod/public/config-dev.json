@@ -6,5 +6,6 @@
   "GMAIL_URL": "https://gmail.hc.engineering",
   "CALENDAR_URL": "https://calendar.hc.engineering",
   "REKONI_URL": "https://rekoni.hc.engineering",
-  "COLLABORATOR_URL": "wss://collaborator.hc.engineering"
+  "COLLABORATOR_URL": "wss://collaborator.hc.engineering",
+  "STATS_URL": "https://stats.hc.engineering"
 }

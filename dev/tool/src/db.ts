@@ -67,24 +67,30 @@ async function moveWorkspace (
   mongo: MongoClient,
   pgClient: postgres.Sql,
   ws: Workspace,
-  region: string
+  region: string,
+  include?: Set<string>
 ): Promise<void> {
   try {
     const wsId = getWorkspaceId(ws.workspace)
     const mongoDB = getWorkspaceMongoDB(mongo, wsId)
     const collections = await mongoDB.collections()
-    await createTable(
-      pgClient,
-      collections.map((c) => c.collectionName)
-    )
+    let tables = collections.map((c) => c.collectionName)
+    if (include !== undefined) {
+      tables = tables.filter((t) => include.has(t))
+    }
+
+    await createTable(pgClient, tables)
     const token = generateToken(systemAccountEmail, wsId)
     const endpoint = await getTransactorEndpoint(token, 'external')
     const connection = (await connect(endpoint, wsId, undefined, {
       model: 'upgrade'
     })) as unknown as Client & BackupClient
     for (const collection of collections) {
-      const cursor = collection.find()
       const domain = translateDomain(collection.collectionName)
+      if (include !== undefined && !include.has(domain)) {
+        continue
+      }
+      const cursor = collection.find()
       const current = await pgClient`SELECT _id FROM ${pgClient(domain)} WHERE "workspaceId" = ${ws.workspace}`
       const currentIds = new Set(current.map((r) => r._id))
       console.log('move domain', domain)
@@ -131,7 +137,8 @@ export async function moveWorkspaceFromMongoToPG (
   mongoUrl: string,
   dbUrl: string | undefined,
   ws: Workspace,
-  region: string
+  region: string,
+  include?: Set<string>
 ): Promise<void> {
   if (dbUrl === undefined) {
     throw new Error('dbUrl is required')
@@ -141,7 +148,7 @@ export async function moveWorkspaceFromMongoToPG (
   const pg = getDBClient(dbUrl)
   const pgClient = await pg.getClient()
 
-  await moveWorkspace(accountDb, mongo, pgClient, ws, region)
+  await moveWorkspace(accountDb, mongo, pgClient, ws, region, include)
   pg.close()
   client.close()
 }

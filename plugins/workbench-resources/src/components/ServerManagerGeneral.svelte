@@ -241,7 +241,7 @@
 {/if}
 
 {#if metrics}
-  <MetricsInfo {metrics} />
+  <MetricsInfo {metrics} sortOrder={'avg'} />
 {/if}
 
 <style lang="scss">

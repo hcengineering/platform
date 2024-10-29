@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import { WorkbenchEvents, type Widget, type WidgetTab } from '@hcengineering/workbench'
-import { getCurrentAccount, type Ref } from '@hcengineering/core'
+import { type Class, type Doc, getCurrentAccount, type Ref } from '@hcengineering/core'
 import { get, writable } from 'svelte/store'
 import { getCurrentLocation } from '@hcengineering/ui'
 import { getResource } from '@hcengineering/platform'
@@ -31,6 +31,8 @@ export interface WidgetState {
   data?: Record<string, any>
   tabs: WidgetTab[]
   tab?: string
+  objectId?: Ref<Doc>
+  objectClass?: Ref<Class<Doc>>
   closedByUser?: boolean
   openedByUser?: boolean
 }
@@ -346,4 +348,23 @@ export function updateTabData (widget: Ref<Widget>, tabId: string, data: Record<
     ...state,
     widgetsState
   })
+}
+
+export function getSidebarObject (): Partial<Pick<Doc, '_id' | '_class'>> {
+  const state = get(sidebarStore)
+  if (state.variant !== SidebarVariant.EXPANDED || state.widget == null) {
+    return {}
+  }
+  const { widgetsState } = state
+  const widgetState = widgetsState.get(state.widget)
+  if (widgetState == null) {
+    return {}
+  }
+
+  const tab = widgetState.tabs.find((it) => it.id === widgetState.tab)
+
+  return {
+    _id: tab?.objectId ?? widgetState.objectId,
+    _class: tab?.objectClass ?? widgetState.objectClass
+  }
 }

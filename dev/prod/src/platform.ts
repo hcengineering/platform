@@ -156,6 +156,7 @@ export interface Config {
   FRONT_URL?: string
   PREVIEW_CONFIG?: string
   UPLOAD_CONFIG?: string
+  STATS_URL?: string
 }
 
 export interface Branding {
@@ -300,6 +301,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
   setMetadata(presentation.metadata.UploadConfig, parseUploadConfig(config.UPLOAD_CONFIG, config.UPLOAD_URL))
+  setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
 

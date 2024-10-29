@@ -826,6 +826,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-stats",
+      "projectFolder": "pods/stats",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-server",
       "projectFolder": "pods/server",
       "shouldPublish": false

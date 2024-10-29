@@ -49,6 +49,7 @@ import type { Token } from '@hcengineering/server-token'
 import { type Readable } from 'stream'
 import type { DbAdapter, DomainHelper } from './adapter'
 import { type StorageAdapter } from './storage'
+import type { StatisticsElement } from './stats'
 
 export interface ServerFindOptions<T extends Doc> extends FindOptions<T> {
   domain?: Domain // Allow to find for Doc's in specified domain only.
@@ -532,14 +533,6 @@ export interface SessionRequest {
   id: string
   params: any
   start: number
-}
-
-/**
- * @public
- */
-export interface StatisticsElement {
-  find: number
-  tx: number
 }
 
 export interface ClientSessionCtx {

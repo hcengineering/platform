@@ -5,21 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Notion import",
-      "type": "node",
-      "request": "launch",
-      // "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1", "-ts", "notion", ],
-      "args": ["src/__start.ts", "import-notion-with-teamspaces", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
-      "env": {
-        "FRONT_URL": "http://localhost:8087",
-      },
-      "runtimeVersion": "20",
-      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "sourceMaps": true,
-      "outputCapture": "std",
-      "cwd": "${workspaceRoot}/dev/import-tool"
-    },
-    {
       "address": "127.0.0.1",
       "localRoot": "${workspaceFolder}",
       "name": "Attach to Remote",
@@ -94,6 +79,7 @@
         "REGION_INFO": "|Mongo;pg|Postgree",
         "ACCOUNT_PORT": "3000",
         "FRONT_URL": "http://localhost:8080",
+        "STATS_URL": "http://host.docker.internal:4900",
         "SES_URL": "",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
@@ -109,6 +95,22 @@
       "sourceMaps": true,
       "outputCapture": "std",
       "cwd": "${workspaceRoot}/pods/account",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Stats",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts"],
+      "env": {
+        "PORT": "4900",
+        "SERVER_SECRET": "secret",
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/pods/stats",
       "protocol": "inspector"
     },
     {
@@ -506,6 +508,35 @@
       "sourceMapPathOverrides": {
         "webpack://*": "${workspaceFolder}/*",
       }
+    },
+    {
+      "name": "Debug Notion import",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "import-notion-to-teamspace", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws5", "-ts", "notion", ],
+      // "args": ["src/__start.ts", "import-notion-with-teamspaces", "/home/anna/work/notion/natalya/Export-fad9ecb4-a1a5-4623-920d-df32dd423743", "-u", "user1", "-pw", "1234", "-ws", "ws1"],
+      "env": {
+        "FRONT_URL": "http://localhost:8087",
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/import-tool"
+    },
+    {
+      "name": "Debug ClickUp import",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start.ts", "import-clickup-tasks", "/home/anna/work/clickup/aleksandr/debug/mentions.csv", "-u", "user1", "-pw", "1234", "-ws", "ws5"],
+      "env": {
+        "FRONT_URL": "http://localhost:8087",
+      },
+      "runtimeVersion": "20",
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}/dev/import-tool"
     },
   ]
 }

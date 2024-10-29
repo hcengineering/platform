@@ -102,6 +102,11 @@
 <style lang="scss">
   .link-container {
     padding: 0px 0.75rem;
+    border-radius: 0.375rem;
+
+    &:not(.readonly) {
+      cursor: pointer;
+    }
     .add-action {
       visibility: hidden;
     }
