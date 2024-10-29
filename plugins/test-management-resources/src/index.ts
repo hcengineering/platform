@@ -17,11 +17,13 @@ import { type Resources } from '@hcengineering/platform'
 import TestCase from './components/TestCase.svelte'
 import NewTestCaseHeader from './components/test-case/NewTestCaseHeader.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
+import ProjectSpacePresenter from './components/project/ProjectSpacePresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     TestCase,
     NewTestCaseHeader,
-	CreateProject
+	CreateProject,
+	ProjectSpacePresenter
   }
 })

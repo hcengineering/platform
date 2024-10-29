@@ -123,7 +123,7 @@ export function createModel (builder: Builder): void {
     TTestProject,
     TTestSuite,
     TTestCase,
-	TDefaultProjectTypeData
+    TDefaultProjectTypeData
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
