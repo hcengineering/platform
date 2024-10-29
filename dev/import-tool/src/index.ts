@@ -20,10 +20,10 @@ import serverClientPlugin, {
   selectWorkspace
 } from '@hcengineering/server-client'
 import { program } from 'commander'
-import { importNotion } from './notion'
+import { importNotion } from './notion/notion'
 import { setMetadata } from '@hcengineering/platform'
 import { FrontFileUploader, type FileUploader } from './importer/uploader'
-import { ClickupImporter } from './clickup'
+import { ClickupImporter } from './clickup/clickup'
 
 /**
  * @public

@@ -42,7 +42,7 @@ import { type Dirent } from 'fs'
 import { readdir, readFile, stat } from 'fs/promises'
 import { contentType } from 'mime-types'
 import { basename, join, parse } from 'path'
-import { type FileUploader } from './importer/uploader'
+import { type FileUploader } from '../importer/uploader'
 
 interface DocumentMetadata {
   id: string
