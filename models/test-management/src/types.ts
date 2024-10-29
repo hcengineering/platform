@@ -14,7 +14,6 @@
 //
 
 import type { Employee } from '@hcengineering/contact'
-import task, { TProject } from '@hcengineering/model-task'
 import type {
   TestCase,
   TestSuite,
@@ -26,9 +25,10 @@ import type {
 import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
-import { IndexKind } from '@hcengineering/core'
-import type { Domain, Type, CollectionSize, Ref } from '@hcengineering/core'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import { Account, IndexKind, type RolesAssignment, type Role, Ref, type Domain, type Type, type CollectionSize } from '@hcengineering/core'
 import {
+  Mixin,
   Model,
   Prop,
   TypeRef,
@@ -41,7 +41,7 @@ import {
   TypeNumber
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TAttachedDoc, TType } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 
 import testManagement from './plugin'
 
@@ -76,9 +76,19 @@ export function TypeTestCaseStatus (): Type<TestCaseStatus> {
 @UX(testManagement.string.TestCaseStatus)
 export class TTypeTestCaseStatus extends TType {}
 
-@Model(testManagement.class.TestProject, task.class.Project)
+@Model(testManagement.class.TestProject, core.class.TypedSpace)
 @UX(testManagement.string.TestProject)
-export class TTestProject extends TProject implements TestProject {}
+export class TTestProject extends TTypedSpace implements TestProject {
+  @Prop(TypeMarkup(), testManagement.string.FullDescription)
+  @Index(IndexKind.FullText)
+    fullDescription?: string
+}
+
+@Mixin(testManagement.mixin.DefaultProjectTypeData, testManagement.class.TestProject)
+@UX(getEmbeddedLabel('Default project'), testManagement.icon.TestProject)
+export class TDefaultProjectTypeData extends TTestProject implements RolesAssignment {
+  [key: Ref<Role>]: Ref<Account>[]
+}
 
 /**
  * @public

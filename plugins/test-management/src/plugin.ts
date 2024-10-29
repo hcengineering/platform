@@ -13,14 +13,21 @@
 // limitations under the License.
 //
 
-import { Mixin, type Class, type Doc, type Ref, Type } from '@hcengineering/core'
+import {
+  Mixin,
+  type Class,
+  type Doc,
+  type Ref,
+  Type,
+  type Status,
+  type SpaceTypeDescriptor,
+  type SpaceType
+} from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 
-import { ProjectTypeDescriptor, TaskTypeDescriptor } from '@hcengineering/task'
 import { plugin } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { ActionCategory, Viewlet } from '@hcengineering/view'
-import type { DocumentSpaceType, DocumentSpaceTypeDescriptor } from '@hcengineering/controlled-documents'
 import { TestSuite, TestCase, TestProject, TestCaseType, TestCasePriority, TestCaseStatus } from './types'
 
 /** @public */
@@ -39,7 +46,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCases: '' as Asset,
     Home: '' as Asset,
     Estimation: '' as Asset,
-    TestSuite: '' as Asset
+    TestSuite: '' as Asset,
+    TestProject: '' as Asset
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -50,12 +58,12 @@ export const testManagementPlugin = plugin(testManagementId, {
     TypeTestCaseStatus: '' as Ref<Class<Type<TestCaseStatus>>>
   },
   descriptors: {
-    ProjectType: '' as Ref<ProjectTypeDescriptor>,
-    TestCase: '' as Ref<TaskTypeDescriptor>
+    ProjectType: '' as Ref<SpaceTypeDescriptor>
   },
   mixin: {
     TestCaseTypeData: '' as Ref<Mixin<TestCase>>,
-    TestProject: '' as Ref<Mixin<TestProject>>
+    TestProject: '' as Ref<Mixin<TestProject>>,
+    DefaultProjectTypeData: '' as Ref<Mixin<TestProject>>
   },
   string: {
     ConfigLabel: '' as IntlString,
@@ -85,7 +93,15 @@ export const testManagementPlugin = plugin(testManagementId, {
     CreateProject: '' as IntlString,
     TestCases: '' as IntlString,
     TestManagementDescription: '' as IntlString,
-	CreateTestCase: '' as IntlString,
+    CreateTestCase: '' as IntlString,
+    FullDescription: '' as IntlString,
+    EditProject: '' as IntlString,
+    ProjectName: '' as IntlString,
+    ProjectType: '' as IntlString,
+    Members: '' as IntlString,
+    RoleLabel: '' as IntlString,
+    ProjectMembers: '' as IntlString,
+    ManageProjectStatuses: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -105,13 +121,29 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCaseUpdatedActivityViewlet: '' as Ref<TestCase>
   },
   spaceType: {
-    TestCaseType: '' as Ref<DocumentSpaceType>
+    TestCaseType: '' as Ref<SpaceType>,
+    DefaultProject: '' as Ref<SpaceType>
   },
   spaceTypeDescriptor: {
-    TestCaseType: '' as Ref<DocumentSpaceTypeDescriptor>
+    TestCaseType: '' as Ref<SpaceTypeDescriptor>
+  },
+  template: {
+    DefaultProject: '' as Ref<SpaceTypeDescriptor>
+  },
+  space: {
+    DefaultProject: '' as Ref<TestProject>
   },
   viewlet: {
     TableTestCase: '' as Ref<Viewlet>
+  },
+  testCaseTypeStatus: {
+    Draft: '' as Ref<Status>,
+    ReviewRequired: '' as Ref<Status>,
+    NeedFixes: '' as Ref<Status>,
+    Ready: '' as Ref<Status>
+  },
+  taskType: {
+    TestCase: '' as Ref<TestCase>
   }
 })
 

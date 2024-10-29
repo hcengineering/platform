@@ -15,8 +15,7 @@
 
 import { Attachment } from '@hcengineering/attachment'
 import { Employee } from '@hcengineering/contact'
-import { AttachedDoc, type CollectionSize, type Ref } from '@hcengineering/core'
-import type { Project } from '@hcengineering/task'
+import { AttachedDoc, type CollectionSize, type Ref, type Markup, TypedSpace } from '@hcengineering/core'
 
 /** @public */
 export enum TestCaseType {
@@ -64,7 +63,9 @@ export enum TestCaseStatus {
 }
 
 /** @public */
-export interface TestProject extends Project {}
+export interface TestProject extends TypedSpace {
+  fullDescription?: Markup
+}
 
 /** @public */
 export interface TestSuite extends AttachedDoc {

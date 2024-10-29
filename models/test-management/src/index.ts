@@ -19,7 +19,6 @@ import core from '@hcengineering/model-core'
 import { AccountRole } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
-import task from '@hcengineering/model-task'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 
@@ -280,26 +279,24 @@ export function createModel (builder: Builder): void {
 function defineSpaceType (builder: Builder): void {
   // builder.createModel(TClassicProjectTypeData)
   builder.createDoc(
-    task.class.ProjectTypeDescriptor,
+    core.class.SpaceTypeDescriptor,
     core.space.Model,
     {
-      name: testManagement.string.TestManagementApplication,
-      description: testManagement.string.TestManagementDescription,
-      icon: task.icon.Task,
+      name: testManagement.string.TestProject,
+      description: testManagement.string.FullDescription,
+      icon: testManagement.icon.TestProject,
       baseClass: testManagement.class.TestProject,
       availablePermissions: [
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
         core.permission.ForbidDeleteObject
-      ],
-      allowedClassic: true,
-      allowedTaskTypeDescriptors: [testManagement.descriptors.TestCase]
+      ]
     },
     testManagement.descriptors.ProjectType
   )
 
-  builder.createDoc(
-    task.class.TaskTypeDescriptor,
+  /* builder.createDoc(
+    core.class.Doc,
     core.space.Model,
     {
       baseClass: testManagement.class.TestCase,
@@ -309,7 +306,7 @@ function defineSpaceType (builder: Builder): void {
       name: testManagement.string.TestCase
     },
     testManagement.descriptors.TestCase
-  )
+  ) */
 }
 
 export { testManagementOperation } from './migration'

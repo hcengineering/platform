@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import '@hcengineering/controlled-documents'
 import { testManagementId } from '@hcengineering/test-management'
 import testManganement from '@hcengineering/test-management-resources/src/plugin'
 import type { Doc, Ref, Role } from '@hcengineering/core'
@@ -31,7 +30,7 @@ export default mergeIds(testManagementId, testManganement, {
     ProjectPresenter: '' as AnyComponent,
     ProjectSpacePresenter: '' as AnyComponent,
     TestSuitePresenter: '' as AnyComponent,
-	NewProductHeader: '' as AnyComponent
+    NewProductHeader: '' as AnyComponent
   },
   function: {},
   role: {
