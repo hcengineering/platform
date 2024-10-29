@@ -26,7 +26,8 @@
 	  "Projects": "Projects",
 	  "CreateProject": "Create project",
 	  "TestCases": "Test cases",
-	  "TestManagementDescription": "Extension to manage test cases"
+	  "TestManagementDescription": "Extension to manage test cases",
+	  "FullDescription": "Description"
 	}
   }
   

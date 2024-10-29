@@ -25,8 +25,15 @@
 	"AllProjects": "All projects",
 	"Projects": "Projects",
 	"CreateProject": "Create project",
+	"EditProject": "Edit project",
 	"TestCases": "Test cases",
 	"TestManagementDescription": "Extension to manage test cases",
-	"CreateTestCase": "Create test case"
+	"CreateTestCase": "New test case",
+	"FullDescription": "Description",
+	"ProjectName": "Name",
+	"ProjectType": "Type",
+	"Members": "Members",
+	"RoleLabel": "Role",
+	"ProjectMembers": "Project members"
   }
 }
