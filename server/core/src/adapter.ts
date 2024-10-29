@@ -107,5 +107,5 @@ export type DbAdapterFactory = (
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage: StorageAdapter
+  storage?: StorageAdapter
 ) => Promise<DbAdapter>

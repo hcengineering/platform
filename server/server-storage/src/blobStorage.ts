@@ -129,10 +129,10 @@ export async function createStorageDataAdapter (
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage: StorageAdapter
+  storage?: StorageAdapter
 ): Promise<DbAdapter> {
   if (storage === undefined) {
-    throw new Error('minio storage adapter require minio')
+    throw new Error('Storage adapter required')
   }
   // We need to create bucket if it doesn't exist
   if (!(await storage.exists(ctx, workspaceId))) {

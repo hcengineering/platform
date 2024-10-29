@@ -2200,6 +2200,11 @@
       "packageName": "@hcengineering/survey-resources",
       "projectFolder": "plugins/survey-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/cloud-transactor",
+      "projectFolder": "workers/transactor",
+      "shouldPublish": false
     }
   ]
 }
