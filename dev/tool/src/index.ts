@@ -15,7 +15,7 @@
 //
 
 import accountPlugin, {
-  assignWorkspace,
+  assignAccountToWs,
   confirmEmail,
   createAcc,
   createWorkspace as createWorkspaceRecord,
@@ -320,7 +320,7 @@ export function devTool (
           console.log('assigning to workspace', workspaceInfo, endpoint)
           const client = await createClient(endpoint, token)
           console.log('assigning to workspace connected', workspaceInfo, endpoint)
-          await assignWorkspace(
+          await assignAccountToWs(
             toolCtx,
             db,
             null,
@@ -1744,7 +1744,7 @@ export function devTool (
           version
         })
         await createAcc(toolCtx, db, null, email, '1234', '', '', true)
-        await assignWorkspace(toolCtx, db, null, email, ws, AccountRole.User)
+        await assignAccountToWs(toolCtx, db, null, email, ws, AccountRole.User)
         console.log('Workspace created in', new Date().getTime() - start.getTime(), 'ms')
         const token = generateToken(systemAccountEmail, wsid)
         const endpoint = await getTransactorEndpoint(token, 'external')
