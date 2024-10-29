@@ -89,13 +89,13 @@
     if (_id && lastId && lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void inboxClient.readDoc(getClient(), prev)
+      void inboxClient.readDoc(prev)
     }
   }
 
   onDestroy(async () => {
     if (issueId === undefined) return
-    void inboxClient.readDoc(getClient(), issueId)
+    void inboxClient.readDoc(issueId)
   })
 
   $: if (issueId !== undefined && _class !== undefined) {

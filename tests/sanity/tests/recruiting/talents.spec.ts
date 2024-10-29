@@ -111,7 +111,7 @@ test.describe('candidate/talents tests', () => {
       mergeLocation: true,
       location: firstLocation,
       mergeTitle: true,
-      title: titleTalent1,
+      title: titleTalent2,
       mergeSource: true,
       source: sourceTalent1
     })
@@ -121,7 +121,7 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentNameFirst)
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
-    await talentDetailsPage.checkMergeContacts(firstLocation, titleTalent2, sourceTalent2)
+    await talentDetailsPage.checkMergeContacts(firstLocation, titleTalent2, sourceTalent1)
   })
 
   test('Match to vacancy', async () => {

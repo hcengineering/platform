@@ -73,7 +73,7 @@
       const prev = lastId
       lastId = _id
       if (prev !== undefined) {
-        void inboxClient.then((client) => client.readDoc(getClient(), prev))
+        void inboxClient.then((client) => client.readDoc(prev))
       }
       query.query(contact.class.Organization, { _id }, (result) => {
         object = result[0]
@@ -82,7 +82,7 @@
   }
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 </script>
 

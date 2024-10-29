@@ -54,12 +54,12 @@
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      void inboxClient.then((client) => client.readDoc(getClient(), prev))
+      void inboxClient.then((client) => client.readDoc(prev))
     }
   }
 
   onDestroy(async () => {
-    void inboxClient.then((client) => client.readDoc(getClient(), _id))
+    void inboxClient.then((client) => client.readDoc(_id))
   })
 
   $: _id !== undefined &&

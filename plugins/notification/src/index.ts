@@ -52,7 +52,6 @@ export const DOMAIN_USER_NOTIFY = 'notification-user' as Domain
  */
 export interface BrowserNotification extends Doc {
   user: Ref<Account>
-  status: NotificationStatus
   title: string
   body: string
   onClickLocation?: Location
@@ -82,14 +81,6 @@ export interface PushSubscription extends Doc {
   user: Ref<Account>
   endpoint: string
   keys: PushSubscriptionKeys
-}
-
-/**
- * @public
- */
-export enum NotificationStatus {
-  New,
-  Notified
 }
 
 /**
@@ -314,8 +305,8 @@ export interface InboxNotificationsClient {
   activityInboxNotifications: Writable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
 
-  readDoc: (client: TxOperations, _id: Ref<Doc>) => Promise<void>
-  forceReadDoc: (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
+  readDoc: (_id: Ref<Doc>) => Promise<void>
+  forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
