@@ -14,7 +14,6 @@
 //
 
 import { DOMAIN_TX, type MeasureContext } from '@hcengineering/core'
-import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import type {
   DbAdapter,
   DbConfiguration,
@@ -49,9 +48,6 @@ export class DBAdapterMiddleware extends BaseMiddleware implements Middleware {
     const adapters = new Map<string, DbAdapter>()
 
     await ctx.with('create-adapters', {}, async (ctx) => {
-      if (this.context.storageAdapter == null) {
-        throw new PlatformError(unknownStatus('StorageSdapter is not specified'))
-      }
       for (const key in this.conf.adapters) {
         const adapterConf = this.conf.adapters[key]
         adapters.set(
