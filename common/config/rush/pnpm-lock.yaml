@@ -1451,6 +1451,9 @@ dependencies:
   csv-parse:
     specifier: ~5.1.0
     version: 5.1.0
+  csvtojson:
+    specifier: ^2.0.10
+    version: 2.0.10
   date-fns:
     specifier: ^2.30.0
     version: 2.30.0
@@ -9258,6 +9261,13 @@ packages:
     resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
     dev: false
 
+  /@types/csvtojson@2.0.0:
+    resolution: {integrity: sha512-F7jFwbbA/V2OKM1VhZccjC+/eeZISvWyqGmhFS9A44jQp3RimDleNYngG+DvCgHjM2EjHwgQe0qqpgDhTqsa7Q==}
+    deprecated: This is a stub types definition. csvtojson provides its own type definitions, so you do not need this installed.
+    dependencies:
+      csvtojson: 2.0.10
+    dev: false
+
   /@types/debug@4.1.12:
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
     dependencies:
@@ -12885,6 +12895,16 @@ packages:
 
   /csv-parse@5.1.0:
     resolution: {integrity: sha512-JL+Q6YEikT2uoe57InjFFa6VejhSv0tDwOxeQ1bVQKeUC/NCnLAAZ8n3PzowPQQLuZ37fysDYZipB2UJkH9C6A==}
+    dev: false
+
+  /csvtojson@2.0.10:
+    resolution: {integrity: sha512-lUWFxGKyhraKCW8Qghz6Z0f2l/PqB1W3AO0HKJzGIQ5JRSlR651ekJDiGJbBT4sRNNv5ddnSGVEnsxP9XRCVpQ==}
+    engines: {node: '>=4.0.0'}
+    hasBin: true
+    dependencies:
+      bluebird: 3.7.2
+      lodash: 4.17.21
+      strip-bom: 2.0.0
     dev: false
 
   /d@1.0.2:
@@ -17107,6 +17127,10 @@ packages:
   /is-unicode-supported@0.1.0:
     resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
     engines: {node: '>=10'}
+    dev: false
+
+  /is-utf8@0.2.1:
+    resolution: {integrity: sha512-rMYPYvCzsXywIsldgLaSoPlw5PfoB/ssr7hY4pLfcodrA5M/eArza1a9VmTiNIBNMjOGr1Ow9mTyU2o69U6U9Q==}
     dev: false
 
   /is-weakmap@2.0.1:
@@ -22912,6 +22936,13 @@ packages:
       ansi-regex: 6.0.1
     dev: false
 
+  /strip-bom@2.0.0:
+    resolution: {integrity: sha512-kwrX1y7czp1E69n2ajbG65mIo9dqvJ+8aBQXOGVxqwvNbsXdFM6Lq37dLAY3mknUwru8CfcCbfOLL/gMo+fi3g==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      is-utf8: 0.2.1
+    dev: false
+
   /strip-bom@3.0.0:
     resolution: {integrity: sha512-vavAMRXOgBVNF6nyEEmL3DBK19iRpDcoIwW+swQ+CbGiu7lju6t+JklA1MHweoWtadgt4ISVUsXLyDq34ddcwA==}
     engines: {node: '>=4'}
@@ -28329,6 +28360,7 @@ packages:
     name: '@rush-temp/import-tool'
     version: 0.0.0
     dependencies:
+      '@types/csvtojson': 2.0.0
       '@types/domhandler': 2.4.5
       '@types/htmlparser2': 3.10.7
       '@types/jest': 29.5.12
@@ -28339,6 +28371,7 @@ packages:
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.6.2)
       commander: 8.3.0
       cross-env: 7.0.3
+      csvtojson: 2.0.10
       docx4js: 3.2.20
       domhandler: 5.0.3
       domutils: 3.1.0
