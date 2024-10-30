@@ -501,6 +501,7 @@ input.search {
 .ml-8 { margin-left: 2rem; }
 .ml-10 { margin-left: 2.5rem; }
 .ml-12 { margin-left: 3rem; }
+.ml-14 { margin-left: 3.5rem; }
 .ml-22 { margin-left: 5.5rem; }
 .ml-auto { margin-left: auto; }
 .mr-0-5 { margin-right: .125rem; }
@@ -927,6 +928,9 @@ a.no-line {
 
 .hidden {
   visibility: hidden;
+}
+.display-none {
+  display: none;
 }
 
 .lines-limit-2, .lines-limit-4 {

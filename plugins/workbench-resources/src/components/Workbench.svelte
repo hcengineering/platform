@@ -158,6 +158,7 @@
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  $deviceInfo.aside.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
 
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
@@ -635,10 +636,12 @@
   $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.navigator.float) {
     $deviceInfo.navigator.visible = false
     $deviceInfo.navigator.float = true
+    $deviceInfo.aside.visible = false
   } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.navigator.float) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
       $deviceInfo.navigator.float = false
       $deviceInfo.navigator.visible = true
+      $deviceInfo.aside.visible = true
     }
   }
   const checkOnHide = (): void => {
@@ -975,13 +978,28 @@
         </div>
       {/if}
     </div>
-    {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
-      <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
+    {#if !$deviceInfo.navigator.float}
+      {#if $sidebarStore.variant === SidebarVariant.EXPANDED}
+        <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short />
+      {/if}
+      <WidgetsBar />
     {/if}
-    <WidgetsBar />
   </div>
   <Dock />
   <div bind:this={cover} class="cover" />
+  {#if $deviceInfo.navigator.float}
+    <div
+      class="antiPanel-navigator right no-print {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'}"
+      style:display={$deviceInfo.aside.visible ? 'flex' : 'none'}
+    >
+      <Separator name={'main'} index={0} color={'transparent'} separatorSize={0} short float={'sidebar'} />
+      <div class="antiPanel-wrap__content hulyNavPanel-container">
+        <WidgetsBar />
+      </div>
+    </div>
+  {/if}
   <TooltipInstance />
   <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
     <svelte:fragment slot="panel-header">
@@ -993,7 +1011,9 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
-  <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
+  <div class="display-none">
+    <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
+  </div>
   <BrowserNotificatator />
 {/if}
 
@@ -1071,11 +1091,11 @@
     }
     .logo-container.mini {
       left: 4px;
-      width: 1.5rem;
-      height: 1.5rem;
+      width: 1.75rem;
+      height: 1.75rem;
     }
     .topmenu-container.mini {
-      left: calc(1.5rem + 8px);
+      left: calc(1.75rem + 8px);
     }
   }
 

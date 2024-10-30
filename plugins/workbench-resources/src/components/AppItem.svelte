@@ -69,8 +69,8 @@
     }
     &.small,
     &.small .icon-container {
-      width: calc(var(--status-bar-height) - 8px);
-      height: calc(var(--status-bar-height) - 8px);
+      width: calc(var(--status-bar-normal-height) - 8px);
+      height: calc(var(--status-bar-normal-height) - 8px);
       border-radius: 0.25rem;
     }
     &.small.selected {

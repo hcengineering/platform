@@ -37,6 +37,7 @@ export { default as NavHeader } from './components/NavHeader.svelte'
 export { default as SpecialElement } from './components/navigator/SpecialElement.svelte'
 export { default as SpaceView } from './components/SpaceView.svelte'
 export { default as TreeSeparator } from './components/navigator/TreeSeparator.svelte'
+export { default as WorkbenchTabs } from './components/WorkbenchTabs.svelte'
 export { SpecialView }
 
 export * from './utils'
