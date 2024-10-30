@@ -16,7 +16,7 @@ import contact, { type Person, type PersonAccount } from '@hcengineering/contact
 import { type Ref, type Timestamp, type TxOperations } from '@hcengineering/core'
 import { MarkupNodeType, traverseNode, type MarkupNode } from '@hcengineering/text'
 import csv from 'csvtojson'
-import { download } from './importer/dowloader'
+import { download } from '../importer/dowloader'
 import {
   WorkspaceImporter,
   type ImportComment,
@@ -24,8 +24,8 @@ import {
   type ImportProject,
   type ImportProjectType,
   type MarkdownPreprocessor
-} from './importer/importer'
-import { type FileUploader } from './importer/uploader'
+} from '../importer/importer'
+import { type FileUploader } from '../importer/uploader'
 
 interface ClickupTask {
   'Task ID': string
