@@ -16,7 +16,6 @@
 import core, {
   AccountRole,
   AttachedDoc,
-  Data,
   Doc,
   Ref,
   toWorkspaceString,
@@ -30,22 +29,17 @@ import core, {
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
-import aiBot, { aiBotAccountEmail, AIBotResponseEvent } from '@hcengineering/ai-bot'
-import { AIBotServiceAdapter, serverAiBotId } from '@hcengineering/server-ai-bot'
+import aiBot, {
+  aiBotAccountEmail,
+  AIEventType,
+  AIMessageEventRequest,
+  AITransferEventRequest
+} from '@hcengineering/ai-bot'
 import contact, { PersonAccount } from '@hcengineering/contact'
 import { ActivityInboxNotification, MentionInboxNotification } from '@hcengineering/notification'
 import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-collector'
-import { getSupportWorkspaceId } from './utils'
 
-async function processWorkspace (control: TriggerControl): Promise<void> {
-  const adapter = control.serviceAdaptersManager.getAdapter(serverAiBotId) as AIBotServiceAdapter | undefined
-
-  if (adapter !== undefined) {
-    await adapter.processWorkspace(control.workspace)
-  } else {
-    console.error('Cannot find server adapter: ', serverAiBotId)
-  }
-}
+import { createAccountRequest, getSupportWorkspaceId, sendAIEvents } from './utils'
 
 async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
   const { members } = direct
@@ -77,8 +71,10 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
   }
 }
 
-function getMessageData (doc: Doc, message: ChatMessage, email: string): Data<AIBotResponseEvent> {
+function getMessageData (doc: Doc, message: ChatMessage, email: string): AIMessageEventRequest {
   return {
+    type: AIEventType.Message,
+    createdOn: message.createdOn ?? message.modifiedOn,
     objectId: message.attachedTo,
     objectClass: message.attachedToClass,
     objectSpace: doc.space,
@@ -91,8 +87,10 @@ function getMessageData (doc: Doc, message: ChatMessage, email: string): Data<AI
   }
 }
 
-function getThreadMessageData (message: ThreadMessage, email: string): Data<AIBotResponseEvent> {
+function getThreadMessageData (message: ThreadMessage, email: string): AIMessageEventRequest {
   return {
+    type: AIEventType.Message,
+    createdOn: message.createdOn ?? message.modifiedOn,
     objectId: message.attachedTo,
     objectClass: message.attachedToClass,
     objectSpace: message.space,
@@ -103,15 +101,6 @@ function getThreadMessageData (message: ThreadMessage, email: string): Data<AIBo
     user: message.createdBy ?? message.modifiedBy,
     email
   }
-}
-
-async function createResponseEvent (
-  message: ChatMessage,
-  control: TriggerControl,
-  data: Data<AIBotResponseEvent>
-): Promise<void> {
-  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotResponseEvent, message.space, data)
-  await control.apply(control.ctx, [eventTx])
 }
 
 async function getThreadParent (control: TriggerControl, message: ChatMessage): Promise<Ref<ChatMessage> | undefined> {
@@ -137,8 +126,8 @@ async function createTransferEvent (
   control: TriggerControl,
   message: ChatMessage,
   account: PersonAccount,
-  data: Data<AIBotResponseEvent>
-): Promise<void> {
+  data: AIMessageEventRequest
+): Promise<AITransferEventRequest | undefined> {
   if (account.role !== AccountRole.Owner) {
     return
   }
@@ -149,7 +138,9 @@ async function createTransferEvent (
     return
   }
 
-  const eventTx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
+  return {
+    type: AIEventType.Transfer,
+    createdOn: message.createdOn ?? message.modifiedOn,
     messageClass: data.messageClass,
     message: message.message,
     collection: data.collection,
@@ -160,9 +151,7 @@ async function createTransferEvent (
     fromWorkspaceUrl: control.workspace.workspaceUrl,
     messageId: message._id,
     parentMessageId: await getThreadParent(control, message)
-  })
-
-  await control.apply(control.ctx, [eventTx])
+  }
 }
 
 async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
@@ -186,18 +175,18 @@ async function onBotDirectMessageSend (control: TriggerControl, message: ChatMes
     return
   }
 
-  let data: Data<AIBotResponseEvent> | undefined
+  let messageEvent: AIMessageEventRequest
 
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    data = getThreadMessageData(message as ThreadMessage, account.email)
+    messageEvent = getThreadMessageData(message as ThreadMessage, account.email)
   } else {
-    data = getMessageData(direct, message, account.email)
+    messageEvent = getMessageData(direct, message, account.email)
   }
 
-  await createResponseEvent(message, control, data)
-  await createTransferEvent(control, message, account, data)
+  const transferEvent = await createTransferEvent(control, message, account, messageEvent)
+  const events = transferEvent !== undefined ? [messageEvent, transferEvent] : [messageEvent]
 
-  await processWorkspace(control)
+  await sendAIEvents(events, control.workspace, control.ctx)
 }
 
 async function onSupportWorkspaceMessage (control: TriggerControl, message: ChatMessage): Promise<void> {
@@ -222,18 +211,20 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
   }
 
   const { workspaceId, email } = channel
-  let data: Data<AIBotResponseEvent> | undefined
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, {
     _id: (message.createdBy ?? message.modifiedBy) as Ref<PersonAccount>
   })[0]
 
+  let data: AIMessageEventRequest
   if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
     data = getThreadMessageData(message as ThreadMessage, account.email)
   } else {
     data = getMessageData(channel, message, account.email)
   }
 
-  const tx = control.txFactory.createTxCreateDoc(aiBot.class.AIBotTransferEvent, message.space, {
+  const transferEvent: AITransferEventRequest = {
+    type: AIEventType.Transfer,
+    createdOn: data.createdOn,
     messageClass: data.messageClass,
     message: message.message,
     collection: data.collection,
@@ -244,11 +235,9 @@ async function onSupportWorkspaceMessage (control: TriggerControl, message: Chat
     fromWorkspaceName: control.workspace.workspaceName,
     messageId: message._id,
     parentMessageId: await getThreadParent(control, message)
-  })
+  }
 
-  await control.apply(control.ctx, [tx])
-
-  await processWorkspace(control)
+  await sendAIEvents([transferEvent], control.workspace, control.ctx)
 }
 
 export async function OnMessageSend (
@@ -407,7 +396,7 @@ export async function OnUserStatus (originTx: Tx, control: TriggerControl): Prom
     return []
   }
 
-  await processWorkspace(control)
+  await createAccountRequest(control.workspace, control.ctx)
 
   return []
 }
@@ -421,5 +410,3 @@ export default async () => ({
     OnUserStatus
   }
 })
-
-export * from './adapter'

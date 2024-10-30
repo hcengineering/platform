@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import aiBot, { aiBotAccountEmail, AIBotEvent, AIBotResponseEvent, AIBotTransferEvent } from '@hcengineering/ai-bot'
+import aiBot, { aiBotAccountEmail, AIMessageEventRequest, AITransferEventRequest } from '@hcengineering/ai-bot'
 import chunter, {
   ChatMessage,
   type ChatWidgetTab,
@@ -43,7 +43,6 @@ import core, {
   Ref,
   Space,
   Tx,
-  TxCreateDoc,
   TxOperations,
   TxProcessor,
   TxRemoveDoc
@@ -60,10 +59,11 @@ import analyticsCollector, { OnboardingChannel } from '@hcengineering/analytics-
 import workbench, { SidebarEvent, TxSidebarEvent } from '@hcengineering/workbench'
 
 import config from './config'
-import { AIBotController } from './controller'
-import { connectPlatform } from './platform'
+import { AIControl } from './controller'
+import { connectPlatform, getDirect } from './utils/platform'
 import { HistoryRecord } from './types'
-import { createChatCompletion, getDirect, login, requestSummary } from './utils'
+import { loginBot } from './utils/account'
+import { createChatCompletion, requestSummary } from './utils/openai'
 
 const MAX_LOGIN_DELAY_MS = 15 * 1000 // 15 ses
 const UPDATE_TYPING_TIMEOUT_MS = 1000
@@ -95,7 +95,7 @@ export class WorkspaceClient {
     readonly transactorUrl: string,
     readonly token: string,
     readonly workspace: string,
-    readonly controller: AIBotController,
+    readonly controller: AIControl,
     readonly ctx: MeasureContext,
     readonly info: WorkspaceInfoRecord | undefined
   ) {
@@ -115,9 +115,6 @@ export class WorkspaceClient {
     await this.uploadAvatarFile(opClient)
     const typing = await opClient.findAll(chunter.class.TypingInfo, { user: aiBot.account.AIBot })
     this.typingMap = new Map(typing.map((t) => [t.objectId, t]))
-    const events = await opClient.findAll(aiBot.class.AIBotEvent, {})
-    void this.processEvents(events)
-
     this.client.notify = (...txes: Tx[]) => {
       void this.txHandler(opClient, txes)
     }
@@ -143,8 +140,6 @@ export class WorkspaceClient {
         await this.blobClient.upload(this.ctx, config.AvatarName, data.length, config.AvatarContentType, data)
         await this.controller.updateAvatarInfo(this.workspace, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.workspace, path: config.AvatarPath })
-      } else {
-        this.ctx.info('Avatar file already uploaded', { workspace: this.workspace, path: config.AvatarPath })
       }
     } catch (e) {
       this.ctx.error('Failed to upload avatar file', { e })
@@ -155,7 +150,7 @@ export class WorkspaceClient {
 
   private async tryLogin (): Promise<void> {
     this.ctx.info('Logging in: ', { workspace: this.workspace })
-    const token = await login()
+    const token = (await loginBot())?.token
 
     clearTimeout(this.loginTimeout)
 
@@ -232,13 +227,13 @@ export class WorkspaceClient {
 
   async createTransferMessage (
     client: TxOperations,
-    event: AIBotTransferEvent,
+    event: AITransferEventRequest,
     _id: Ref<Doc>,
     _class: Ref<Class<Doc>>,
     space: Ref<Space>,
     message: string
   ): Promise<void> {
-    const op = client.apply(undefined, 'AIBotTransferEvent')
+    const op = client.apply(undefined, 'AITransferEventRequest')
     if (event.messageClass === chunter.class.ChatMessage) {
       await this.startTyping(client, space, _id, _class)
       const ref = await op.addCollection<Doc, ChatMessage>(
@@ -249,7 +244,7 @@ export class WorkspaceClient {
         event.collection,
         { message },
         undefined,
-        event.modifiedOn
+        event.createdOn
       )
       await op.createMixin(ref, chunter.class.ChatMessage, space, aiBot.mixin.TransferredMessage, {
         messageId: event.messageId,
@@ -269,7 +264,7 @@ export class WorkspaceClient {
           event.collection,
           { message, objectId: parent.attachedTo, objectClass: parent.attachedToClass },
           undefined,
-          event.modifiedOn
+          event.createdOn
         )
         await op.createMixin(
           ref,
@@ -436,25 +431,27 @@ export class WorkspaceClient {
     this.historyMap.set(objectId, currentHistory)
   }
 
-  async processResponseEvent (event: AIBotResponseEvent): Promise<void> {
+  async processMessageEvent (event: AIMessageEventRequest): Promise<void> {
     if (this.controller.aiClient === undefined) return
-    const client = await this.opClient
+
+    const { user, objectId, objectClass, messageClass } = event
+    const promptText = markupToText(event.message)
+    const prompt: OpenAI.ChatCompletionMessageParam = { content: promptText, role: 'user' }
+    const promptTokens = countTokens([prompt], this.controller.encoding)
+
     if (!this.controller.allowAiReplies(this.workspace, event.email)) {
-      await client.remove(event)
+      void this.pushHistory(promptText, 'user', promptTokens, user, objectId, objectClass)
       return
     }
+
+    const client = await this.opClient
+    const op = client.apply(undefined, 'AIMessageRequestEvent')
     const hierarchy = client.getHierarchy()
 
-    const op = client.apply(undefined, 'AIBotResponseEvent')
-    const { user, objectId, objectClass, messageClass } = event
     const space = hierarchy.isDerived(objectClass, core.class.Space) ? (objectId as Ref<Space>) : event.objectSpace
 
     await this.startTyping(client, space, objectId, objectClass)
 
-    const promptText = markupToText(event.message)
-    const prompt: OpenAI.ChatCompletionMessageParam = { content: promptText, role: 'user' }
-
-    const promptTokens = countTokens([prompt], this.controller.encoding)
     const rawHistory = await this.getHistory(objectId)
     const history = this.toOpenAiHistory(rawHistory, promptTokens)
 
@@ -464,10 +461,7 @@ export class WorkspaceClient {
 
     void this.pushHistory(promptText, prompt.role, promptTokens, user, objectId, objectClass)
 
-    const start = Date.now()
     const chatCompletion = await createChatCompletion(this.controller.aiClient, prompt, user, history)
-    const end = Date.now()
-    this.ctx.info('Chat completion time: ', { time: end - start })
     const response = chatCompletion?.choices[0].message.content
 
     if (response == null) {
@@ -509,7 +503,6 @@ export class WorkspaceClient {
       }
     }
 
-    await op.remove(event)
     await this.finishTyping(op, event.objectId)
     await op.commit()
     await this.controller.transferAIReplyToSupport(parseResponse, {
@@ -523,14 +516,7 @@ export class WorkspaceClient {
     })
   }
 
-  async processTransferEvent (event: AIBotTransferEvent): Promise<void> {
-    const client = await this.opClient
-
-    await this.controller.transfer(event)
-    await client.remove(event)
-  }
-
-  async transferToSupport (event: AIBotTransferEvent, channelRef?: Ref<OnboardingChannel>): Promise<void> {
+  async transferToSupport (event: AITransferEventRequest, channelRef?: Ref<OnboardingChannel>): Promise<void> {
     const client = await this.opClient
     const key = `${event.toEmail}-${event.fromWorkspace}`
     const channel =
@@ -560,7 +546,7 @@ export class WorkspaceClient {
     )
   }
 
-  async transferToUserDirect (event: AIBotTransferEvent): Promise<void> {
+  async transferToUserDirect (event: AITransferEventRequest): Promise<void> {
     const client = await this.opClient
     const direct = this.directByEmail.get(event.toEmail) ?? (await getDirect(client, event.toEmail, this.aiAccount))
 
@@ -579,7 +565,7 @@ export class WorkspaceClient {
     return this.channelByKey.get(key)
   }
 
-  async transfer (event: AIBotTransferEvent): Promise<void> {
+  async transfer (event: AITransferEventRequest): Promise<void> {
     if (event.toWorkspace === config.SupportWorkspace) {
       const channel = this.getChannelRef(event.toEmail, event.fromWorkspace)
 
@@ -603,24 +589,6 @@ export class WorkspaceClient {
     }
   }
 
-  async processEvents (events: AIBotEvent[]): Promise<void> {
-    if (events.length === 0 || this.opClient === undefined) {
-      return
-    }
-
-    for (const event of events) {
-      try {
-        if (event._class === aiBot.class.AIBotResponseEvent) {
-          void this.processResponseEvent(event as AIBotResponseEvent)
-        } else if (event._class === aiBot.class.AIBotTransferEvent) {
-          void this.processTransferEvent(event as AIBotTransferEvent)
-        }
-      } catch (e) {
-        this.ctx.error('Error processing event: ', { e })
-      }
-    }
-  }
-
   async close (): Promise<void> {
     clearTimeout(this.loginTimeout)
 
@@ -639,16 +607,6 @@ export class WorkspaceClient {
     this.ctx.info('Closed workspace client: ', { workspace: this.workspace })
   }
 
-  private async handleCreateTx (tx: TxCreateDoc<Doc>): Promise<void> {
-    if (tx.objectClass === aiBot.class.AIBotResponseEvent) {
-      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AIBotResponseEvent>)
-      await this.processResponseEvent(doc)
-    } else if (tx.objectClass === aiBot.class.AIBotTransferEvent) {
-      const doc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<AIBotTransferEvent>)
-      await this.processTransferEvent(doc)
-    }
-  }
-
   private async handleRemoveTx (tx: TxRemoveDoc<Doc>): Promise<void> {
     if (tx.objectClass === chunter.class.TypingInfo && this.typingMap.has(tx.objectId)) {
       this.typingMap.delete(tx.objectId)
@@ -659,9 +617,7 @@ export class WorkspaceClient {
     for (const ttx of txes) {
       const tx = TxProcessor.extractTx(ttx)
 
-      if (tx._class === core.class.TxCreateDoc) {
-        await this.handleCreateTx(tx as TxCreateDoc<Doc>)
-      } else if (tx._class === core.class.TxRemoveDoc) {
+      if (tx._class === core.class.TxRemoveDoc) {
         await this.handleRemoveTx(tx as TxRemoveDoc<Doc>)
       }
     }

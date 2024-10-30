@@ -13,28 +13,16 @@
 // limitations under the License.
 //
 
-import core, { Account, Ref, TxOperations } from '@hcengineering/core'
+import core, { Account, Client, Ref, TxOperations } from '@hcengineering/core'
+import { createClient } from '@hcengineering/server-client'
 import contact, { PersonAccount } from '@hcengineering/contact'
-import aiBot from '@hcengineering/ai-bot'
-import { loginBot } from './account'
 import chunter, { DirectMessage } from '@hcengineering/chunter'
+import aiBot from '@hcengineering/ai-bot'
 import { deepEqual } from 'fast-equals'
 import notification from '@hcengineering/notification'
-import OpenAI from 'openai'
-import { countTokens } from '@hcengineering/openai'
-import { Tiktoken } from 'js-tiktoken'
 
-import { HistoryRecord } from './types'
-import config from './config'
-
-export async function login (): Promise<string | undefined> {
-  const token = (await loginBot())?.token
-
-  if (token !== undefined) {
-    return token
-  } else {
-    return (await loginBot())?.token
-  }
+export async function connectPlatform (token: string, endpoint: string): Promise<Client> {
+  return await createClient(endpoint, token)
 }
 
 export async function getDirect (
@@ -79,60 +67,4 @@ export async function getDirect (
   })
 
   return dmId
-}
-
-export async function createChatCompletion (
-  client: OpenAI,
-  message: OpenAI.ChatCompletionMessageParam,
-  user?: string,
-  history: OpenAI.ChatCompletionMessageParam[] = [],
-  skipCache = true
-): Promise<OpenAI.ChatCompletion | undefined> {
-  const opt: OpenAI.RequestOptions = {}
-  if (skipCache) {
-    opt.headers = { 'cf-skip-cache': 'true' }
-  }
-  try {
-    return await client.chat.completions.create(
-      {
-        messages: [...history, message],
-        model: config.OpenAIModel,
-        user,
-        stream: false
-      },
-      opt
-    )
-  } catch (e) {
-    console.error(e)
-  }
-
-  return undefined
-}
-
-export async function requestSummary (
-  aiClient: OpenAI,
-  encoding: Tiktoken,
-  history: HistoryRecord[]
-): Promise<{
-    summary?: string
-    tokens: number
-  }> {
-  const summaryPrompt: OpenAI.ChatCompletionMessageParam = {
-    content: `Summarize the following messages, keeping the key points:  ${history.map((msg) => `${msg.role}: ${msg.message}`).join('\n')}`,
-    role: 'user'
-  }
-
-  const response = await createChatCompletion(aiClient, summaryPrompt, undefined, [
-    { role: 'system', content: 'Make a summary of messages history' }
-  ])
-
-  const summary = response?.choices[0].message.content
-
-  if (summary == null) {
-    return { tokens: 0 }
-  }
-
-  const tokens = response?.usage?.completion_tokens ?? countTokens([{ content: summary, role: 'assistant' }], encoding)
-
-  return { summary, tokens }
 }

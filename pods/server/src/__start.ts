@@ -72,6 +72,7 @@ setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
 setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
 setMetadata(serverTelegram.metadata.BotUrl, process.env.TELEGRAM_BOT_URL)
 setMetadata(serverAiBot.metadata.SupportWorkspaceId, process.env.SUPPORT_WORKSPACE)
+setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fullTextUrl: config.elasticUrl,
