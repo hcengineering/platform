@@ -35,7 +35,7 @@ import fs, { createReadStream, mkdtempSync } from 'fs'
 import { rm, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
 
-const cacheControlValue = 'public, max-age=365d'
+const cacheControlValue = 'public, no-cache, must-revalidate, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 async function storageUpload (
@@ -385,14 +385,14 @@ export function start (
       'handle-file',
       {},
       async (ctx) => {
-        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string } }
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
           const token =
             cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
-            (req.query.token as string | undefined)
-          payload = token !== undefined ? decodeToken(token) : payload
+            (req.query.token as string | undefined) ??
+            ''
+          const payload = decodeToken(token)
 
           const uuid = req.params.file ?? req.query.file
           if (uuid === undefined) {
@@ -412,20 +412,6 @@ export function start (
             return
           }
 
-          // try image and octet streams
-          const isImage =
-            blobInfo.contentType.includes('image/') || blobInfo.contentType.includes('application/octet-stream')
-
-          if (token === undefined) {
-            if (blobInfo !== undefined && !isImage) {
-              // Do not allow to return non images with no token.
-              if (token === undefined) {
-                res.status(403).send()
-                return
-              }
-            }
-          }
-
           if (req.method === 'HEAD') {
             res.writeHead(200, {
               'accept-ranges': 'bytes',
@@ -438,6 +424,9 @@ export function start (
             res.end()
             return
           }
+          // try image and octet streams
+          const isImage =
+            blobInfo.contentType.includes('image/') || blobInfo.contentType.includes('application/octet-stream')
 
           const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
           const accept = req.headers.accept
@@ -475,9 +464,7 @@ export function start (
             error?.Code === 'NoSuchKey'
           ) {
             ctx.error('No such storage key', {
-              file: req.query.file,
-              workspace: payload?.workspace,
-              email: payload?.email
+              file: req.query.file
             })
             res.status(404).send()
             return
