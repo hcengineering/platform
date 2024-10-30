@@ -121,7 +121,7 @@ export const testManagementPlugin = plugin(testManagementId, {
     PriorityIconPresenter: '' as AnyComponent,
     TestCaseStatusPresenter: '' as AnyComponent,
 	  TestSuites: '' as AnyComponent,
-    CreateTestSuite: '' as IntlString
+    CreateTestSuite: '' as AnyComponent
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,
@@ -141,7 +141,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     DefaultProject: '' as Ref<TestProject>
   },
   viewlet: {
-    TableTestCase: '' as Ref<Viewlet>
+    TableTestCase: '' as Ref<Viewlet>,
+    TableTestSuites: '' as Ref<Viewlet>
   },
   testCaseTypeStatus: {
     Draft: '' as Ref<Status>,

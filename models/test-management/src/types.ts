@@ -104,8 +104,7 @@ export class TTestSuite extends TDoc implements TestSuite {
   @Index(IndexKind.FullText)
     description?: string
 
-  @Prop(TypeRef(testManagement.class.TestProject), testManagement.string.TestProject)
-    project!: Ref<TTestProject>
+  declare space: Ref<TestProject>
 }
 
 /**

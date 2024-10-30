@@ -69,9 +69,9 @@ export interface TestProject extends TypedSpace {
 
 /** @public */
 export interface TestSuite extends Doc {
+  space: Ref<TestProject>
   name: string
   description?: string
-  project: Ref<TestProject>
 }
 
 /** @public */

@@ -19,13 +19,22 @@ import NewTestCaseHeader from './components/test-case/NewTestCaseHeader.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
 import ProjectSpacePresenter from './components/project/ProjectSpacePresenter.svelte'
 import CreateTestSuite from './components/test-suite/CreateTestSuite.svelte'
+import EditTestSuite from './components/test-suite/EditTestSuite.svelte'
+import TestSuitePresenter from './components/test-suite/TestSuitePresenter.svelte'
+import EditTestCase from './components/test-suite/EditTestCase.svelte'
+import TestCasePresenter from './components/test-suite/TestCasePresenter.svelte'
+
 
 export default async (): Promise<Resources> => ({
   component: {
     TestCase,
     NewTestCaseHeader,
-	CreateProject,
-	ProjectSpacePresenter,
-  CreateTestSuite
+    CreateProject,
+    ProjectSpacePresenter,
+    CreateTestSuite,
+    EditTestSuite,
+    TestSuitePresenter,
+    EditTestCase,
+    TestCasePresenter
   }
 })

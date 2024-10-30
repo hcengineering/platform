@@ -144,23 +144,14 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(testManagement.class.TestProject, core.class.Class, activity.mixin.ActivityDoc, {})
-  builder.mixin(testManagement.class.TestSuite, core.class.Class, activity.mixin.ActivityDoc, {})
-  builder.mixin(testManagement.class.TestCase, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: testManagement.class.TestProject,
     components: { input: chunter.component.ChatMessageInput }
   })
 
-  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
-    ofClass: testManagement.class.TestSuite,
-    components: { input: chunter.component.ChatMessageInput }
-  })
-
-  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
-    ofClass: testManagement.class.TestCase,
-    components: { input: chunter.component.ChatMessageInput }
-  })
+  defineTestSuite(builder)
+  defineTestCase(builder)
 
   // defineViewlets(builder)
 
@@ -339,6 +330,92 @@ function defineSpaceType (builder: Builder): void {
     },
     testManagement.descriptors.TestCase
   ) */
+}
+
+function defineTestSuite (builder: Builder): void {
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestSuite,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  //builder.mixin(products.class.Product, core.class.Class, view.mixin.ObjectIdentifier, {
+  //  provider: products.function.ProductIdentifierProvider
+  //})
+
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.ObjectEditor, {
+    editor: testManagement.component.EditTestSuite
+  })
+
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.ObjectPanel, {
+    component: testManagement.component.EditTestSuite
+  })
+
+  builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestSuitePresenter
+  })
+
+  //builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
+  //  presenter: documents.component.DocumentSpacePresenter
+  //})
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestSuite,
+      descriptor: view.viewlet.Table,
+      config: ['', 'name', 'description'],
+      configOptions: {
+        //hiddenKeys: ['name'],
+      //sortable: true,
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestSuites
+  )
+}
+
+function defineTestCase (builder: Builder): void {
+  builder.mixin(testManagement.class.TestCase, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: testManagement.class.TestCase,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectEditor, {
+    editor: testManagement.component.EditTestCase
+  })
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectPanel, {
+    component: testManagement.component.EditTestCase
+  })
+
+  builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: testManagement.component.TestCasePresenter
+  })
+
+  //builder.mixin(testManagement.class.TestSuite, core.class.Class, view.mixin.SpacePresenter, {
+  //  presenter: documents.component.DocumentSpacePresenter
+  //})
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: testManagement.class.TestCase,
+      descriptor: view.viewlet.Table,
+      config: ['', 'name', 'description'],
+      configOptions: {
+        //hiddenKeys: ['name'],
+      //sortable: true,
+        strict: true
+      }
+    },
+    testManagement.viewlet.TableTestCase
+  )
 }
 
 export { testManagementOperation } from './migration'
