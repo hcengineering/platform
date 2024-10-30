@@ -40,11 +40,9 @@
   }
   $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
   const change = (sel: boolean): void => {
-    console.log('[!!!] onChange - selected: ', sel)
     selected = sel
     onChange(key, sel)
   }
-  // $: console.log('[!!!] selected: ', selected)
 </script>
 
 {#if !isEqual(value, targetEmp, key)}

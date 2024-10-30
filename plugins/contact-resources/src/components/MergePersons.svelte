@@ -225,7 +225,7 @@
   function selectMixin (mixin: Ref<Mixin<Doc>>, field: string, targetValue: boolean) {
     const upd = mixinUpdate[mixin] ?? {}
     if (!targetValue) {
-      ;(upd as any)[field] = (value as any)[field]
+      ;(upd as any)[field] = (sourcePerson as any)[mixin][field]
     } else {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (upd as any)[field]
@@ -354,7 +354,7 @@
         shape={'circle'}
       />
     </div>
-    >>
+    <span class="mx-4">&gt;&gt;</span>
     <div class="flex-row-center">
       <UserBox
         _class={contact.class.Person}

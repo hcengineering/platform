@@ -39,7 +39,7 @@
       {key}
       {onChange}
       cast={hierarchy.isMixin(_class) ? _class : undefined}
-      bind:selected
+      {selected}
     >
       <svelte:fragment slot="item" let:item>
         <svelte:component
