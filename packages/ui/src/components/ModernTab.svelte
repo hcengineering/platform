@@ -36,7 +36,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="container main flex-row-center flex-gap-2 {orientation} {kind}"
+  class="container main flex-between flex-gap-2 {orientation} {kind}"
   style:max-width={orientation === 'horizontal' ? maxSize : 'auto'}
   style:max-height={orientation === 'vertical' ? maxSize : 'auto'}
   class:active={highlighted}
@@ -52,7 +52,7 @@
     </div>
   {/if}
 
-  <span class="overflow-label">
+  <span class="overflow-label flex-grow">
     {#if label}
       {label}
     {:else if labelIntl}
@@ -100,11 +100,14 @@
     &.horizontal {
       padding: 0.125rem 0.125rem 0.125rem 0.5rem;
       height: 1.625rem;
+      min-height: 1.625rem;
+      min-width: 6rem;
     }
 
     &.vertical {
       padding: 0.5rem 0.125rem 0.125rem 0.125rem;
       width: 1.625rem;
+      min-height: 6rem;
       writing-mode: vertical-rl;
       text-orientation: sideways;
     }

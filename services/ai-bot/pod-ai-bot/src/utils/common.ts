@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,16 +11,12 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  import FileUploadStatusBar from './FileUploadStatusBar.svelte'
-  import { uploads } from '../store'
-</script>
+//
 
-{#if $uploads.length > 0}
-  <div class="flex-row-center flex-gap-2">
-    {#each $uploads as upload}
-      <FileUploadStatusBar {upload} />
-    {/each}
-  </div>
-{/if}
+export async function wait (delay: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve()
+    }, delay)
+  })
+}

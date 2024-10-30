@@ -12,15 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import FileUploadStatusBar from './FileUploadStatusBar.svelte'
-  import { uploads } from '../store'
+  import { Label } from '@hcengineering/ui'
+
+  import telegram from '../plugin'
 </script>
 
-{#if $uploads.length > 0}
-  <div class="flex-row-center flex-gap-2">
-    {#each $uploads as upload}
-      <FileUploadStatusBar {upload} />
-    {/each}
-  </div>
-{/if}
+<div class="flex-col flex-gap-1 max-w-100">
+  <Label label={telegram.string.TelegramIntegrationDesc} />
+  <br />
+  <Label label={telegram.string.TelegramIntegrationDesc2} />
+  <span class="mt-3">
+    <Label label={telegram.string.ToSetupNotification} />
+  </span>
+  <span class="fs-bold">
+    <Label label={telegram.string.TelegramNotificationPath} />
+  </span>
+</div>

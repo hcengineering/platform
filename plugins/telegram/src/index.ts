@@ -132,6 +132,10 @@ export default plugin(telegramId, {
     ConnectTelegramBot: '' as IntlString,
     DisconnectMessage: '' as IntlString,
     SyncAllChannels: '' as IntlString,
-    SyncStarredChannels: '' as IntlString
+    SyncStarredChannels: '' as IntlString,
+    TelegramIntegrationDesc: '' as IntlString,
+    TelegramIntegrationDesc2: '' as IntlString,
+    ToSetupNotification: '' as IntlString,
+    TelegramNotificationPath: '' as IntlString
   }
 })

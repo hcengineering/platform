@@ -15,6 +15,9 @@
 
 import { getMetadata } from '@hcengineering/platform'
 import serverAIBot from '@hcengineering/server-ai-bot'
+import { AIEventRequest } from '@hcengineering/ai-bot'
+import { concatLink, MeasureContext, systemAccountEmail, WorkspaceId } from '@hcengineering/core'
+import { generateToken } from '@hcengineering/server-token'
 
 export function getSupportWorkspaceId (): string | undefined {
   const supportWorkspaceId = getMetadata(serverAIBot.metadata.SupportWorkspaceId)
@@ -24,4 +27,50 @@ export function getSupportWorkspaceId (): string | undefined {
   }
 
   return supportWorkspaceId
+}
+
+export async function sendAIEvents (
+  events: AIEventRequest[],
+  workspace: WorkspaceId,
+  ctx: MeasureContext
+): Promise<void> {
+  const url = getMetadata(serverAIBot.metadata.EndpointURL) ?? ''
+
+  if (url === '') {
+    return
+  }
+
+  try {
+    await fetch(concatLink(url, '/events'), {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + generateToken(systemAccountEmail, workspace),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(events)
+    })
+  } catch (err) {
+    ctx.error('Could not send ai events', { err })
+  }
+}
+
+export async function createAccountRequest (workspace: WorkspaceId, ctx: MeasureContext): Promise<void> {
+  const url = getMetadata(serverAIBot.metadata.EndpointURL) ?? ''
+
+  if (url === '') {
+    return
+  }
+
+  try {
+    await fetch(concatLink(url, '/connect'), {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + generateToken(systemAccountEmail, workspace),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({})
+    })
+  } catch (err) {
+    ctx.error('Could not send create ai account request', { err })
+  }
 }

@@ -21,3 +21,4 @@ export default plugin
 export * from './account'
 export * from './blob'
 export * from './client'
+export * from './token'
