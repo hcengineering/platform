@@ -29,8 +29,7 @@
 
   const object: Data<TestSuite> = {
     name: '' as IntlString,
-    description: '',
-    
+    description: ''
   }
 
   let _space = space
@@ -51,8 +50,8 @@
 >
   <svelte:fragment slot="header">
     <SpaceSelector
-      _class={testManagement.class.TestSuite}
-      label={testManagement.string.TestSuite}
+      _class={testManagement.class.TestProject}
+      label={testManagement.string.TestProject}
       bind:space={_space}
       kind={'regular'}
       size={'large'}

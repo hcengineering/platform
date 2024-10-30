@@ -366,7 +366,7 @@ function defineTestSuite (builder: Builder): void {
     {
       attachTo: testManagement.class.TestSuite,
       descriptor: view.viewlet.Table,
-      config: ['', 'name', 'description'],
+      config: ['name', 'description'],
       configOptions: {
         //hiddenKeys: ['name'],
       //sortable: true,
@@ -407,7 +407,7 @@ function defineTestCase (builder: Builder): void {
     {
       attachTo: testManagement.class.TestCase,
       descriptor: view.viewlet.Table,
-      config: ['', 'name', 'description'],
+      config: ['name', 'description'],
       configOptions: {
         //hiddenKeys: ['name'],
       //sortable: true,
