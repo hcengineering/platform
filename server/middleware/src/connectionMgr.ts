@@ -23,9 +23,12 @@ export class ConnectionMgrMiddleware extends BaseMiddleware implements Middlewar
     if (ctx.id === undefined) {
       ctx.id = generateId()
     }
+    ctx.onEnd = async (_ctx: MeasureContext) => {
+      await this.context.adapterManager?.closeContext?.(_ctx)
+    }
     const result = await this.provideTx(ctx, tx)
-    this.context.endContext = async (_ctx: MeasureContext) => {
-      await this.context.adapterManager?.closeContext?.(ctx)
+    if (ctx.onEnd !== undefined) {
+      await ctx.onEnd(ctx)
     }
     return result
   }

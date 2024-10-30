@@ -155,6 +155,9 @@ export class Triggers {
             }
             const tresult = await this.applyTrigger(ctx, ctrl, matches, { trigger, arrays })
             result.push(...tresult)
+            if (ctx.onEnd !== undefined && mode === 'async') {
+              await ctx.onEnd(ctx)
+            }
           },
           { count: matches.length, arrays }
         )

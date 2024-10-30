@@ -33,6 +33,7 @@ import core, {
   type TxRemoveDoc,
   type TxUpdateDoc,
   addOperation,
+  generateId,
   toFindResult,
   withContext
 } from '@hcengineering/core'
@@ -225,11 +226,16 @@ export class TriggersMiddleware extends BaseMiddleware implements Middleware {
     )
 
     if (aresult.length > 0) {
-      await this.processDerivedTxes(ctx, aresult)
-      // We need to send all to recipients
-      await this.context.head?.handleBroadcast(ctx)
+      await ctx.with('process-aync-result', {}, async (ctx) => {
+        ctx.id = generateId()
+        await this.processDerivedTxes(ctx, aresult)
+        // We need to send all to recipients
+        await this.context.head?.handleBroadcast(ctx)
+        if (ctx.onEnd !== undefined) {
+          await ctx.onEnd(ctx)
+        }
+      })
     }
-    await this.context.endContext?.(ctx)
   }
 
   private async processDerivedTxes (ctx: MeasureContext<SessionData>, derived: Tx[]): Promise<void> {

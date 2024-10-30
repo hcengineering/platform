@@ -241,6 +241,10 @@ export function inferType (val: any): string {
   if (typeof val === 'boolean') {
     return '::boolean'
   }
+  if (Array.isArray(val)) {
+    const type = inferType(val[0])
+    return type + '[]'
+  }
   return ''
 }
 

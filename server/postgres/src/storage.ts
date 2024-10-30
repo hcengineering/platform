@@ -89,7 +89,7 @@ import {
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
-  protected readonly connections = new Map<string, postgres.ReservedSql>()
+  protected readonly connections = new Map<string, postgres.ReservedSql | Promise<postgres.ReservedSql>>()
 
   protected readonly retryTxn = async (
     client: postgres.ReservedSql,
@@ -152,7 +152,11 @@ abstract class PostgresAdapterBase implements DbAdapter {
     if (ctx.id === undefined) return
     const conn = this.connections.get(ctx.id)
     if (conn !== undefined) {
-      conn.release()
+      if (conn instanceof Promise) {
+        ;(await conn).release()
+      } else {
+        conn.release()
+      }
       this.connections.delete(ctx.id)
     }
   }
@@ -160,10 +164,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
   protected async getConnection (ctx: MeasureContext): Promise<postgres.ReservedSql | undefined> {
     if (ctx.id === undefined) return
     const conn = this.connections.get(ctx.id)
-    if (conn !== undefined) return conn
-    const client = await this.client.reserve()
+    if (conn !== undefined) return await conn
+    const client = this.client.reserve()
     this.connections.set(ctx.id, client)
-    return client
+    return await client
   }
 
   async traverse<T extends Doc>(
@@ -228,9 +232,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
   abstract init (): Promise<void>
 
   async close (): Promise<void> {
-    this.connections.forEach((c) => {
-      c.release()
-    })
+    for (const c of this.connections.values()) {
+      if (c instanceof Promise) {
+        ;(await c).release()
+      } else {
+        c.release()
+      }
+    }
     this.refClient.close()
   }
 
@@ -1484,7 +1492,7 @@ class PostgresAdapter extends PostgresAdapterBase {
             return { object }
           }
         } catch (err) {
-          console.error(err)
+          console.error(err, { tx, params, updates })
         }
       })
       return {}
