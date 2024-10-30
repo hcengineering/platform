@@ -48,4 +48,4 @@
   })
 </script>
 
-<div bind:this={parentElement}></div>
+<div bind:this={parentElement} class="hidden"></div>

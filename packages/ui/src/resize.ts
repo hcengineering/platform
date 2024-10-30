@@ -166,7 +166,7 @@ export const settingsSeparators: DefSeparators = [
 
 export const mainSeparators: DefSeparators = [
   { minSize: 30, size: 'auto', maxSize: 'auto' },
-  { minSize: 20, size: 30, maxSize: 80, float: 'sidebar' }
+  { minSize: 25, size: 30, maxSize: 80, float: 'sidebar' }
 ]
 
 export const secondNavSeparators: DefSeparators = [{ minSize: 7, size: 7.5, maxSize: 15, float: 'navigator' }, null]

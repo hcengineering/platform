@@ -225,7 +225,7 @@
   function selectMixin (mixin: Ref<Mixin<Doc>>, field: string, targetValue: boolean) {
     const upd = mixinUpdate[mixin] ?? {}
     if (!targetValue) {
-      ;(upd as any)[field] = (value as any)[field]
+      ;(upd as any)[field] = (sourcePerson as any)[mixin][field]
     } else {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete (upd as any)[field]
@@ -354,7 +354,7 @@
         shape={'circle'}
       />
     </div>
-    >>
+    <span class="mx-4">&gt;&gt;</span>
     <div class="flex-row-center">
       <UserBox
         _class={contact.class.Person}
@@ -387,13 +387,7 @@
             <Avatar person={item} size={'x-large'} icon={contact.icon.Person} name={item.name} />
           </svelte:fragment>
         </MergeComparer>
-        <MergeComparer
-          key="name"
-          value={sourcePerson}
-          targetEmp={targetPerson}
-          onChange={select}
-          selected={update.name !== undefined}
-        >
+        <MergeComparer key="name" value={sourcePerson} targetEmp={targetPerson} onChange={select} selected>
           <svelte:fragment slot="item" let:item>
             {getName(client.getHierarchy(), item)}
           </svelte:fragment>
@@ -405,7 +399,7 @@
             targetEmp={targetPerson}
             onChange={select}
             _class={contact.mixin.Employee}
-            selected={toAny(update)[attribute[0]] !== undefined}
+            selected
           />
         {/each}
         {#each mixins as mixin}
@@ -419,7 +413,7 @@
                 selectMixin(mixin, key, value)
               }}
               _class={mixin}
-              selected={toAny(mixinUpdate)?.[mixin]?.[attribute] !== undefined}
+              selected
             />
           {/each}
         {/each}

@@ -378,6 +378,7 @@ export interface DeviceOptions {
   isPortrait: boolean
   isMobile: boolean
   navigator: { visible: boolean, float: boolean, direction: 'vertical' | 'horizontal' }
+  aside: { visible: boolean }
   fontSize: number
   size: WidthType | null
   sizes: Record<WidthType, boolean>

@@ -17,7 +17,7 @@
   import { WidgetPreference, SidebarEvent, TxSidebarEvent, OpenSidebarWidgetParams } from '@hcengineering/workbench'
   import { Tx } from '@hcengineering/core'
   import { onMount } from 'svelte'
-  import { panelstore } from '@hcengineering/ui'
+  import { panelstore, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import workbench from '../../plugin'
   import { createWidgetTab, openWidget, sidebarStore, SidebarVariant } from '../../sidebar'
@@ -61,7 +61,12 @@
   })
 </script>
 
-<div class="antiPanel-application vertical root" class:mini id="sidebar">
+<div
+  id="sidebar"
+  class="antiPanel-application vertical sidebar-container"
+  class:mini
+  class:float={$deviceInfo.navigator.float}
+>
   {#if mini}
     <SidebarMini {widgets} {preferences} />
   {:else if $sidebarStore.variant === SidebarVariant.EXPANDED}
@@ -70,15 +75,25 @@
 </div>
 
 <style lang="scss">
-  .root {
+  .sidebar-container {
     flex-direction: row;
     min-width: 25rem;
     border-radius: 0 var(--medium-BorderRadius) var(--medium-BorderRadius) 0;
 
-    &.mini {
+    &.mini:not(.float) {
       width: 3.5rem !important;
       min-width: 3.5rem !important;
       max-width: 3.5rem !important;
+    }
+    &.mini.float {
+      justify-content: flex-end;
+    }
+  }
+  @media (max-width: 1024px) {
+    .sidebar-container {
+      width: 100%;
+      border: 1px solid var(--theme-navpanel-divider);
+      border-radius: var(--medium-BorderRadius);
     }
   }
 </style>

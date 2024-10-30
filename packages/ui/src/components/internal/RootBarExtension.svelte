@@ -17,7 +17,7 @@
 
 {#each sorted as ext (ext[1].id)}
   {#if ext[0] === position}
-    <div id={ext[1].id} style:margin-right={'1px'}>
+    <div id={ext[1].id} class="clear-mins" style:margin-right={'1px'}>
       <Component
         is={ext[1].component}
         props={ext[1].props}

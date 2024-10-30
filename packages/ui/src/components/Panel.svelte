@@ -168,7 +168,7 @@
   <Header
     type={'type-panel'}
     noPrint={!printHeader}
-    {adaptive}
+    adaptive={$deviceInfo.isMobile ? 'disabled' : adaptive}
     {hideBefore}
     {hideSearch}
     {hideActions}
@@ -261,21 +261,21 @@
   </Header>
   <div class="popupPanel-body {$deviceInfo.isMobile ? 'mobile' : 'main'}" class:asideShown>
     {#if $deviceInfo.isMobile}
-      <Scroller horizontal padding={'.5rem .75rem'}>
-        <div
-          class="popupPanel-body__mobile"
-          use:resizeObserver={(element) => {
-            innerWidth = element.clientWidth
-          }}
-        >
+      <div
+        class="popupPanel-body__mobile"
+        use:resizeObserver={(element) => {
+          innerWidth = element.clientWidth
+        }}
+      >
+        <Scroller horizontal padding={'.5rem .75rem'}>
           {#if $$slots.header && isHeader}
             <div class="popupPanel-body__header mobile bottom-divider" class:max={useMaxWidth}>
               <slot name="header" />
             </div>
           {/if}
           <slot />
-        </div>
-      </Scroller>
+        </Scroller>
+      </div>
     {:else}
       <div
         class="popupPanel-body__main"
