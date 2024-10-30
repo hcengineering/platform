@@ -16,13 +16,14 @@
   import { Person } from '@hcengineering/contact'
   import { Doc, Mixin, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { CheckBox, Label } from '@hcengineering/ui'
+  import { Label, RadioButton } from '@hcengineering/ui'
+  import { FixedColumn } from '@hcengineering/view-resources'
 
   export let value: Person
   export let targetEmp: Person
   export let cast: Ref<Mixin<Doc>> | undefined = undefined
   export let key: string
-  export let selected = false
+  export let selected: boolean = false
   export let onChange: (key: string, value: boolean) => void
 
   const client = getClient()
@@ -38,51 +39,53 @@
     return (value as any)[key] === (targetEmp as any)[key]
   }
   $: attribute = hierarchy.findAttribute(cast ?? value._class, key)
+  const change = (sel: boolean): void => {
+    console.log('[!!!] onChange - selected: ', sel)
+    selected = sel
+    onChange(key, sel)
+  }
+  // $: console.log('[!!!] selected: ', selected)
 </script>
 
 {#if !isEqual(value, targetEmp, key)}
-  <div class="box flex-row-center flex-between">
-    <div class="ml-4">
+  <div class="box flex-row-center flex-gap-4 flex-grow">
+    <FixedColumn key={'mergeLabel'} addClass={'ml-4'}>
       {#if attribute?.label}
         <Label label={attribute.label} />
       {:else}
         {key}
       {/if}
-    </div>
+    </FixedColumn>
 
-    <div class="flex-center">
-      <div class="mr-2">
-        <CheckBox
-          circle
-          checked={selected}
-          on:value={(e) => {
-            selected = false
-            onChange(key, false)
-          }}
-        />
-      </div>
-      <slot name="item" item={value} />
-    </div>
-    <div class="flex-row-center" />
-    <div class="flex-center">
-      <div class="mr-2">
-        <CheckBox
-          circle
-          checked={!selected}
-          on:value={(e) => {
-            selected = true
-            onChange(key, true)
-          }}
-        />
-      </div>
-      <slot name="item" item={targetEmp} />
-    </div>
+    <FixedColumn key={'mergeFirst'} addClass="flex-row-center flex-gap-2 cursor-pointer">
+      <RadioButton
+        bind:group={selected}
+        value={false}
+        action={() => {
+          if (selected) change(false)
+        }}
+      >
+        <slot name="item" item={value} />
+      </RadioButton>
+    </FixedColumn>
+
+    <FixedColumn key={'mergeSecond'} addClass="flex-row-center flex-gap-2 cursor-pointer">
+      <RadioButton
+        bind:group={selected}
+        value={true}
+        action={() => {
+          if (!selected) change(true)
+        }}
+      >
+        <slot name="item" item={targetEmp} />
+      </RadioButton>
+    </FixedColumn>
   </div>
 {/if}
 
 <style lang="scss">
   .box {
-    margin: 0.5rem;
+    margin: 0.5rem 0;
     padding: 0.5rem;
     flex-shrink: 0;
     border: 1px dashed var(--accent-color);

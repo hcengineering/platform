@@ -67,6 +67,7 @@
     <ButtonIcon
       bind:element
       icon={IconMoreH}
+      iconProps={{ fill: 'var(--theme-dark-color)' }}
       size={'extra-small'}
       kind={'tertiary'}
       hasMenu
@@ -75,6 +76,12 @@
     />
   {/if}
   {#if !popup}
-    <ButtonIcon icon={IconAdd} size={'extra-small'} kind={'tertiary'} on:click={createTab} />
+    <ButtonIcon
+      icon={IconAdd}
+      iconProps={{ fill: 'var(--theme-dark-color)' }}
+      size={'extra-small'}
+      kind={'tertiary'}
+      on:click={createTab}
+    />
   {/if}
 </div>

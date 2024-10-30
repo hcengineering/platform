@@ -387,13 +387,7 @@
             <Avatar person={item} size={'x-large'} icon={contact.icon.Person} name={item.name} />
           </svelte:fragment>
         </MergeComparer>
-        <MergeComparer
-          key="name"
-          value={sourcePerson}
-          targetEmp={targetPerson}
-          onChange={select}
-          selected={update.name !== undefined}
-        >
+        <MergeComparer key="name" value={sourcePerson} targetEmp={targetPerson} onChange={select} selected>
           <svelte:fragment slot="item" let:item>
             {getName(client.getHierarchy(), item)}
           </svelte:fragment>
@@ -405,7 +399,7 @@
             targetEmp={targetPerson}
             onChange={select}
             _class={contact.mixin.Employee}
-            selected={toAny(update)[attribute[0]] !== undefined}
+            selected
           />
         {/each}
         {#each mixins as mixin}
@@ -419,7 +413,7 @@
                 selectMixin(mixin, key, value)
               }}
               _class={mixin}
-              selected={toAny(mixinUpdate)?.[mixin]?.[attribute] !== undefined}
+              selected
             />
           {/each}
         {/each}

@@ -204,6 +204,7 @@
             <div class="antiHSpacer x2" />
             <ButtonIcon
               icon={asideOpen ? IconDetailsFilled : IconDetails}
+              iconProps={{ fill: 'var(--theme-dark-color)' }}
               kind={'tertiary'}
               size={'extra-small'}
               hasMenu
@@ -235,6 +236,7 @@
             <RootBarExtension position="right" />
             <ButtonIcon
               icon={asideOpen ? IconDetailsFilled : IconDetails}
+              iconProps={{ fill: 'var(--theme-dark-color)' }}
               kind={'tertiary'}
               size={'extra-small'}
               hasMenu

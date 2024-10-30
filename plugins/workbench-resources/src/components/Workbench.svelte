@@ -1011,7 +1011,7 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
-  <div class="display-none">
+  <div class="hidden max-w-0 max-h-0">
     <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
   </div>
   <BrowserNotificatator />

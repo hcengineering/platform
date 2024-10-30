@@ -23,7 +23,7 @@
   export let targetEmp: Person
   export let key: string
   export let onChange: (key: string, value: boolean) => void
-  export let selected = false
+  export let selected: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -39,7 +39,7 @@
       {key}
       {onChange}
       cast={hierarchy.isMixin(_class) ? _class : undefined}
-      {selected}
+      bind:selected
     >
       <svelte:fragment slot="item" let:item>
         <svelte:component

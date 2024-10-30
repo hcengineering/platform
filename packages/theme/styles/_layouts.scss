@@ -745,6 +745,7 @@ input.search {
 .min-h-16 { min-height: 4rem; }
 .min-h-30 { min-height: 7.5rem; }
 .min-h-60 { min-height: 15rem; }
+.max-w-0 { max-width: 0; }
 .max-w-2 { max-width: .5rem; }
 .max-w-4 { max-width: 1rem; }
 .max-w-9 { max-width: 2.25rem; }
@@ -928,9 +929,6 @@ a.no-line {
 
 .hidden {
   visibility: hidden;
-}
-.display-none {
-  display: none;
 }
 
 .lines-limit-2, .lines-limit-4 {
