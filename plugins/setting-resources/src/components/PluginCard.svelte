@@ -89,6 +89,8 @@
   <div class="content">
     {#if integration && integration.value !== ''}
       {integration.value}
+    {:else if integrationType.descriptionComponent}
+      <Component is={integrationType.descriptionComponent} />
     {:else}
       <Label label={integrationType.description} />
     {/if}
@@ -134,6 +136,7 @@
   }
   .header {
     margin: 1.5rem 1.5rem 1rem;
+    min-height: fit-content;
   }
   .icon {
     flex-shrink: 0;
@@ -158,6 +161,7 @@
     align-items: center;
     column-gap: 1rem;
     padding: 1.5rem 1.75rem 1.25rem;
+    padding-top: 0.5rem;
     height: 5.25rem;
     mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 1.25rem, rgba(0, 0, 0, 1) 2.5rem);
     overflow: hidden;

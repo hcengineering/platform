@@ -36,6 +36,7 @@ export type Handler = Resource<(value: string) => Promise<void>>
 export interface IntegrationType extends Doc {
   label: IntlString
   description: IntlString
+  descriptionComponent?: AnyComponent
   icon: AnyComponent
   allowMultiple: boolean
 
