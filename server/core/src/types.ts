@@ -160,8 +160,6 @@ export interface PipelineContext {
   head?: Middleware
 
   broadcastEvent?: (ctx: MeasureContext, tx: Tx[]) => Promise<void>
-
-  endContext?: (ctx: MeasureContext) => Promise<void>
 }
 /**
  * @public

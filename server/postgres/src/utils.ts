@@ -241,6 +241,10 @@ export function inferType (val: any): string {
   if (typeof val === 'boolean') {
     return '::boolean'
   }
+  if (Array.isArray(val)) {
+    const type = inferType(val[0])
+    return type + '[]'
+  }
   return ''
 }
 
@@ -408,39 +412,4 @@ export interface JoinProps {
   isReverse: boolean
   toClass: Ref<Class<Doc>>
   classes?: Ref<Class<Doc>>[] // filter by classes
-}
-
-export class Mutex {
-  private locked: boolean = false
-  private readonly waitingQueue: Array<(value: boolean) => void> = []
-
-  private async acquire (): Promise<void> {
-    while (this.locked) {
-      await new Promise<boolean>((resolve) => {
-        this.waitingQueue.push(resolve)
-      })
-    }
-    this.locked = true
-  }
-
-  private release (): void {
-    if (!this.locked) {
-      throw new Error('Mutex is not locked')
-    }
-
-    this.locked = false
-    const nextResolver = this.waitingQueue.shift()
-    if (nextResolver !== undefined) {
-      nextResolver(true)
-    }
-  }
-
-  async runExclusive<T>(fn: () => Promise<T> | T): Promise<T> {
-    await this.acquire()
-    try {
-      return await fn()
-    } finally {
-      this.release()
-    }
-  }
 }

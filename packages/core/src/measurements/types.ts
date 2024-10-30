@@ -111,4 +111,6 @@ export interface MeasureContext<Q = any> {
   // Mark current context as complete
   // If no value is passed, time difference will be used.
   end: (value?: number) => void
+
+  onEnd?: (ctx: MeasureContext) => Promise<void>
 }
