@@ -45,6 +45,7 @@ function defineApplication (
   opt: {
     allTestCasesId: string
     testCasesId: string
+	testSuitesId: string
   }
 ): void {
   builder.createDoc(
@@ -96,13 +97,29 @@ function defineApplication (
             icon: testManagement.icon.Home,
             specials: [
               {
+                id: opt.testSuitesId,
+                label: testManagement.string.TestSuites,
+                icon: testManagement.icon.TestSuites,
+                component: workbench.component.SpecialView,
+                componentProps: {
+                  _class: testManagement.class.TestSuite,
+                  icon: testManagement.icon.TestSuites,
+                  title: testManagement.string.TestSuites,
+                  createLabel: testManagement.string.CreateTestSuite,
+                  createComponent: testManagement.component.CreateTestSuite
+                }
+              },
+              {
                 id: opt.testCasesId,
                 label: testManagement.string.TestCases,
                 icon: testManagement.icon.TestCases,
-                component: testManagement.component.TestCases,
+                component: workbench.component.SpecialView,
                 componentProps: {
+                  _class: testManagement.class.TestCase,
                   icon: testManagement.icon.TestCases,
-                  title: testManagement.string.TestCases
+                  title: testManagement.string.TestCases,
+                  createLabel: testManagement.string.CreateTestCase,
+                  createComponent: testManagement.component.CreateTestCase
                 }
               }
             ]
@@ -149,6 +166,7 @@ export function createModel (builder: Builder): void {
 
   const testCasesId = 'testCases'
   const allTestCasesId = 'allTestCases'
+  const testSuitesId = 'testSuites'
 
   definePresenters(builder)
 
@@ -216,7 +234,7 @@ export function createModel (builder: Builder): void {
     testManagement.ids.TestCaseRemovedViewlet
   ) */
 
-  defineApplication(builder, { allTestCasesId, testCasesId })
+  defineApplication(builder, { allTestCasesId, testCasesId, testSuitesId })
 
   // defineActions(builder, issuesId, componentsId, myIssuesId)
 

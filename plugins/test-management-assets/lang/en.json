@@ -34,6 +34,8 @@
 	"ProjectType": "Type",
 	"Members": "Members",
 	"RoleLabel": "Role",
-	"ProjectMembers": "Project members"
+	"ProjectMembers": "Project members",
+	"TestSuites": "Test suites",
+  "CreateTestSuite": "Create test suite"
   }
 }

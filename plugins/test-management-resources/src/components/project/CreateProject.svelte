@@ -34,7 +34,6 @@
 	import { SpaceTypeSelector } from '@hcengineering/view-resources'
   
 	import testManagementRes from '../../plugin'
-	import { Analytics } from '@hcengineering/analytics'
   
 	export let project: TestProject | undefined = undefined
   

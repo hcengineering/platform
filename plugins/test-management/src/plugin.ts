@@ -47,7 +47,8 @@ export const testManagementPlugin = plugin(testManagementId, {
     Home: '' as Asset,
     Estimation: '' as Asset,
     TestSuite: '' as Asset,
-    TestProject: '' as Asset
+    TestProject: '' as Asset,
+	TestSuites: '' as Asset,
   },
   class: {
     TestCase: '' as Ref<Class<TestCase>>,
@@ -101,7 +102,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     Members: '' as IntlString,
     RoleLabel: '' as IntlString,
     ProjectMembers: '' as IntlString,
-    ManageProjectStatuses: '' as IntlString
+    ManageProjectStatuses: '' as IntlString,
+	  TestSuites: '' as IntlString,
+    CreateTestSuite: '' as IntlString
   },
   category: {
     TestManagement: '' as Ref<ActionCategory>
@@ -114,7 +117,9 @@ export const testManagementPlugin = plugin(testManagementId, {
     TestCase: '' as AnyComponent,
     TestCaseStatusIcon: '' as AnyComponent,
     PriorityIconPresenter: '' as AnyComponent,
-    TestCaseStatusPresenter: '' as AnyComponent
+    TestCaseStatusPresenter: '' as AnyComponent,
+	  TestSuites: '' as AnyComponent,
+    CreateTestSuite: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<TestSuite>,
