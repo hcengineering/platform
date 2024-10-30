@@ -41,7 +41,7 @@ import {
   TypeNumber
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TAttachedDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import core, { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 
 import testManagement from './plugin'
 
@@ -93,9 +93,9 @@ export class TDefaultProjectTypeData extends TTestProject implements RolesAssign
 /**
  * @public
  */
-@Model(testManagement.class.TestSuite, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
+@Model(testManagement.class.TestSuite, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestSuite, testManagement.icon.TestSuite, testManagement.string.TestSuite)
-export class TTestSuite extends TAttachedDoc implements TestSuite {
+export class TTestSuite extends TDoc implements TestSuite {
   @Prop(TypeString(), testManagement.string.SuiteName)
   @Index(IndexKind.FullText)
     name!: string
@@ -111,9 +111,9 @@ export class TTestSuite extends TAttachedDoc implements TestSuite {
 /**
  * @public
  */
-@Model(testManagement.class.TestCase, core.class.AttachedDoc, DOMAIN_TEST_MANAGEMENT)
+@Model(testManagement.class.TestCase, core.class.Doc, DOMAIN_TEST_MANAGEMENT)
 @UX(testManagement.string.TestCase, testManagement.icon.TestCase, testManagement.string.TestCase)
-export class TTestCase extends TAttachedDoc implements TestCase {
+export class TTestCase extends TDoc implements TestCase {
   @Prop(TypeString(), testManagement.string.TestName)
   @Index(IndexKind.FullText)
     name!: string

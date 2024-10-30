@@ -18,12 +18,14 @@ import TestCase from './components/TestCase.svelte'
 import NewTestCaseHeader from './components/test-case/NewTestCaseHeader.svelte'
 import CreateProject from './components/project/CreateProject.svelte'
 import ProjectSpacePresenter from './components/project/ProjectSpacePresenter.svelte'
+import CreateTestSuite from './components/test-suite/CreateTestSuite.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     TestCase,
     NewTestCaseHeader,
 	CreateProject,
-	ProjectSpacePresenter
+	ProjectSpacePresenter,
+  CreateTestSuite
   }
 })

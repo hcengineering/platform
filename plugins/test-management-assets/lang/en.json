@@ -36,6 +36,8 @@
 	"RoleLabel": "Role",
 	"ProjectMembers": "Project members",
 	"TestSuites": "Test suites",
-  "CreateTestSuite": "Create test suite"
+  "CreateTestSuite": "Create test suite",
+  "NamePlaceholder": "Suite name",
+  "DescriptionPlaceholder": "Description (optional)"
   }
 }
