@@ -30,7 +30,7 @@ import core, {
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
 import postgres from 'postgres'
-import { defaultSchema, domainSchemas, getSchema } from './schemas'
+import { getDocFieldsByDomains, getSchema } from './schemas'
 
 const connections = new Map<string, PostgresClientReferenceImpl>()
 
@@ -395,11 +395,6 @@ export interface DBDoc extends Doc {
 
 export function isDataField (domain: string, field: string): boolean {
   return !getDocFieldsByDomains(domain).includes(field)
-}
-
-export function getDocFieldsByDomains (domain: string): string[] {
-  const schema = domainSchemas[domain] ?? defaultSchema
-  return Object.keys(schema)
 }
 
 export interface JoinProps {

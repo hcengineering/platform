@@ -74,7 +74,6 @@ import {
   type DBDoc,
   escapeBackticks,
   getDBClient,
-  getDocFieldsByDomains,
   inferType,
   isDataField,
   isOwner,
@@ -85,6 +84,7 @@ import {
   type PostgresClientReference,
   translateDomain
 } from './utils'
+import { getDocFieldsByDomains } from './schemas'
 
 abstract class PostgresAdapterBase implements DbAdapter {
   protected readonly _helper: DBCollectionHelper

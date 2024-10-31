@@ -112,15 +112,16 @@ export async function initModel (
 
   try {
     logger.log('creating database...', workspaceId)
-    await adapter.upload(ctx, DOMAIN_TX, [
-      {
-        _class: core.class.Tx,
-        _id: 'first-tx' as Ref<Doc>,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now(),
-        space: core.space.DerivedTx
-      }
-    ])
+    const firstTx: Tx = {
+      _class: core.class.Tx,
+      _id: 'first-tx' as Ref<Tx>,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      space: core.space.DerivedTx,
+      objectSpace: core.space.DerivedTx,
+    }
+
+    await adapter.upload(ctx, DOMAIN_TX, [firstTx])
 
     await progress(30)
 
