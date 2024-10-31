@@ -14,7 +14,7 @@
 //
 
 import { type DiffHunk, type DiffLine, DiffLineType, EmptyLine } from '@hcengineering/diffview'
-import { type HighlightOptions, highlightLines } from './highlight'
+import { type HighlightOptions, highlightLines } from '@hcengineering/highlight'
 
 export interface RenderOptions {
   syntaxHighlight: {

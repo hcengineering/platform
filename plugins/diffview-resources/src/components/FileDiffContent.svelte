@@ -16,7 +16,7 @@
   import { Html, Loading, themeStore } from '@hcengineering/ui'
   import { DiffFile, DiffLine, DiffLineType, DiffViewMode } from '@hcengineering/diffview'
 
-  import { DiffLineRenderResult, RenderOptions, renderHunk } from '../highlight'
+  import { DiffLineRenderResult, RenderOptions, renderHunk } from '../render'
 
   export let file: DiffFile
   export let mode: DiffViewMode
