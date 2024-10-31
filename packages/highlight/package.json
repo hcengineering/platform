@@ -1,8 +1,8 @@
 {
-  "name": "@hcengineering/diffview-resources",
+  "name": "@hcengineering/highlight",
   "version": "0.6.0",
   "main": "src/index.ts",
-  "author": "Copyright © Hardcore Engineering Inc.",
+  "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile ui",
@@ -39,15 +39,8 @@
   },
   "dependencies": {
     "svelte": "^4.2.12",
-    "@hcengineering/core": "^0.6.32",
-    "@hcengineering/platform": "^0.6.11",
-    "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/ui": "^0.6.15",
-    "@hcengineering/view": "^0.6.13",
-    "@hcengineering/view-resources": "^0.6.0",
-    "@hcengineering/highlight": "^0.6.0",
-    "@hcengineering/diffview": "^0.6.0",
-    "fast-equals": "^5.0.1",
-    "diff2html": "~3.4.35"
+    "highlight.js": "~11.8.0",
+    "lowlight": "^3.1.0"
   }
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { grammars } from '@hcengineering/highlight'
 import { backtickInputRegex, codeBlockOptions, tildeInputRegex } from '@hcengineering/text'
 import { DropdownLabelsPopup, getEventPositionElement, showPopup } from '@hcengineering/ui'
 import { isActive, textblockTypeInputRule } from '@tiptap/core'
@@ -20,7 +21,7 @@ import { type CodeBlockLowlightOptions, CodeBlockLowlight } from '@tiptap/extens
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
-import { common, createLowlight } from 'lowlight'
+import { createLowlight } from 'lowlight'
 import { isChangeEditable } from './editable'
 
 type Lowlight = ReturnType<typeof createLowlight>
@@ -31,7 +32,7 @@ const chevronSvg = `<svg width="16" height="16" viewBox="0 0 32 32" fill="curren
 
 export const codeBlockHighlightOptions: CodeBlockLowlightOptions = {
   ...codeBlockOptions,
-  lowlight: createLowlight(common)
+  lowlight: createLowlight(grammars)
 }
 
 export const CodeBlockHighlighExtension = CodeBlockLowlight.extend<CodeBlockLowlightOptions>({
