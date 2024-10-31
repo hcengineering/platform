@@ -148,7 +148,7 @@
         {/key}
       </div>
       {#if rejectingMessage !== undefined && approver.approved === 'rejected'}
-        <div class="reject-message">{@html rejectingMessage}</div>
+        <div class="reject-message">{rejectingMessage}</div>
       {/if}
     {/each}
   </div>

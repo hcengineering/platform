@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import dompurify from 'dompurify'
+  import DOMPurify from 'dompurify'
 
   export let value: string
 
-  $: sanitized = dompurify.sanitize(value)
+  $: sanitized = DOMPurify.sanitize(value)
 </script>
 
 {@html sanitized}
